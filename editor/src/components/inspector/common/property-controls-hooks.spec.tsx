@@ -6,30 +6,29 @@ import {
   OriginalMainEditorStateContext,
 } from '../../editor/store/store-hook'
 import { useGetPropertyControlsForSelectedComponents } from './property-controls-hooks'
-import { InspectorCallbackContext, InspectorCallbackContextData } from './property-path-hooks'
+import type { InspectorCallbackContextData } from './property-path-hooks'
+import { InspectorCallbackContext } from './property-path-hooks'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import {
+import type {
   AllElementProps,
-  editorModelFromPersistentModel,
   EditorState,
   EditorStorePatched,
-  StoryboardFilePath,
 } from '../../editor/store/editor-state'
+import { editorModelFromPersistentModel, StoryboardFilePath } from '../../editor/store/editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { createTestProjectWithCode } from '../../../sample-projects/sample-project-utils.test-utils'
 import { TestAppUID, TestSceneUID } from '../../canvas/ui-jsx.test-utils'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
+import type { ElementInstanceMetadataMap, ImportInfo } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  ImportInfo,
   jsxElementWithoutUID,
   sameFileOrigin,
 } from '../../../core/shared/element-template'
-import { PropertyControls } from 'utopia-api/core'
+import type { PropertyControls } from 'utopia-api/core'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
@@ -118,6 +117,7 @@ function callPropertyControlsHook(
       null,
       importInfos[0],
       'not-a-conditional',
+      null,
     ),
   }
   let allElementProps: AllElementProps = {
@@ -138,6 +138,7 @@ function callPropertyControlsHook(
       null,
       importInfos[1],
       'not-a-conditional',
+      null,
     )
     allElementProps[EP.toString(selectedViews[1])] = {
       propWithControlButNoValue: 'but there is a value!',
@@ -157,6 +158,7 @@ function callPropertyControlsHook(
       null,
       importInfos[2],
       'not-a-conditional',
+      null,
     )
 
     allElementProps[EP.toString(selectedViews[2])] = { propWithOtherKey: 10 }
@@ -203,6 +205,7 @@ function callPropertyControlsHook(
     userState: null as any,
     workers: null as any,
     persistence: null as any,
+    postActionInteractionSession: null,
     saveCountThisSession: 0,
     builtInDependencies: [],
     storeName: 'editor-store',

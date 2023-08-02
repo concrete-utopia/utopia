@@ -1,6 +1,6 @@
 import { assertNever } from '../../core/shared/utils'
 import { updateAssetFileName } from './server'
-import { DerivedState, EditorState } from './store/editor-state'
+import type { DerivedState, EditorState } from './store/editor-state'
 
 const MAX_HISTORY = 50
 
@@ -72,6 +72,7 @@ export function undo(
   stateHistory: StateHistory,
   runSideEffects: RunEffects,
 ): StateHistory {
+  // FIXME Undo should update the time stamp of any affected files
   if (runSideEffects === 'run-side-effects') {
     // Unwind any asset renames.
     triggerAssetRenames(projectId, stateHistory.current.assetRenames, 'undo')
@@ -91,6 +92,7 @@ export function redo(
   stateHistory: StateHistory,
   runSideEffects: RunEffects,
 ): StateHistory {
+  // FIXME Redo should update the time stamp of any affected files
   const newCurrent = stateHistory.next[0]
   if (runSideEffects === 'run-side-effects') {
     // Playback any asset renames.
@@ -157,7 +159,7 @@ export function replaceLast(
       derived: derived,
       assetRenames: stateHistory.current.assetRenames.concat(assetRenames),
     },
-    next: [],
+    next: stateHistory.next,
   }
   return newHistory
 }

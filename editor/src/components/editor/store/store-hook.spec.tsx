@@ -2,14 +2,15 @@ import React from 'react'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { renderHook } from '@testing-library/react'
+import type { UtopiaStoreAPI } from './store-hook'
 import {
   createStoresAndState,
   EditorStateContext,
   Substores,
   useSelectorWithCallback,
-  UtopiaStoreAPI,
 } from './store-hook'
-import { createEditorState, EditorState, EditorStorePatched } from './editor-state'
+import type { EditorStorePatched } from './editor-state'
+import { createEditorState, EditorState } from './editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
@@ -32,6 +33,7 @@ const initialEditorStore: EditorStorePatched = {
   workers: null as any,
   persistence: null as any,
   saveCountThisSession: 0,
+  postActionInteractionSession: null,
   builtInDependencies: createBuiltInDependenciesList(null),
   storeName: 'editor-store',
 }

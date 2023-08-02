@@ -1,11 +1,12 @@
 import * as PP from '../../shared/property-path'
+import type { ArbitraryJSBlock } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
   clearTopLevelElementUniqueIDs,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsxArbitraryBlock,
+  jsExpression,
   jsExpressionOtherJavaScript,
   jsExpressionValue,
   jsxElement,
@@ -14,12 +15,13 @@ import {
   getJSXAttribute,
   jsxAttributesFromMap,
   isArbitraryJSBlock,
-  ArbitraryJSBlock,
   jsxElementName,
   emptyComments,
+  jsxMapExpression,
 } from '../../shared/element-template'
 import { setJSXValueAtPath } from '../../shared/jsx-attributes'
 import { forEachRight } from '../../shared/either'
+import type { ParseSuccess } from '../../shared/project-file-types'
 import {
   EmptyExportsDetail,
   exportFunction,
@@ -29,11 +31,11 @@ import {
   isParseFailure,
   isParseSuccess,
   parseSuccess,
-  ParseSuccess,
 } from '../../shared/project-file-types'
 import {
   clearParseResultUniqueIDsAndEmptyBlocks,
   JustImportViewAndReact,
+  simplifyParsedTextFileAttributes,
   testParseCode,
   testParseModifyPrint,
 } from './parser-printer.test-utils'
@@ -85,7 +87,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
           if (isJSXElement(view)) {
             expect(getJSXAttribute(view.props, 'data-uid')).not.toBeNull()
             const firstChild = view.children[0]
-            if (isJSExpressionOtherJavaScript(firstChild)) {
+            if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
               const elementWithin =
                 firstChild.elementsWithin[Object.keys(firstChild.elementsWithin)[0]]
               expect(getJSXAttribute(elementWithin.props, 'data-uid')).not.toBeNull()
@@ -177,7 +179,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         const view = firstComponent.rootElement
         if (isJSXElement(view)) {
           const firstChild = view.children[0]
-          if (isJSExpressionOtherJavaScript(firstChild)) {
+          if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
             const elementWithin = firstChild.elementsWithin['bbb']
             const newAttributes = setJSXValueAtPath(
               elementWithin.props,
@@ -224,7 +226,7 @@ export var whatever = props => (
       emptyComments,
     )
 
-    const codeBlock = jsxArbitraryBlock(
+    const codeBlock = jsExpression(
       `<MyComp data-uid='aab'/>`,
       `<MyComp data-uid='aab' />;`,
       `return utopiaCanvasJSXLookup("aab", {
@@ -271,6 +273,7 @@ export var whatever = props => (
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -295,7 +298,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsxMapExpression(
           ` arr.map(({ n }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ n }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
@@ -372,6 +375,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -396,7 +400,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsxMapExpression(
           ` arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} /> ) `,
           `arr.map(({ a: { n } }) => <View data-uid='aab' thing={n} />);`,
           `return arr.map(function (_ref) {
@@ -475,6 +479,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -510,7 +515,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsxMapExpression(
           originalMapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -579,6 +584,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -601,7 +607,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsxMapExpression(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
@@ -631,7 +637,7 @@ export var whatever = (props) => {
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
-                    jsxArbitraryBlock(
+                    jsExpression(
                       `n`,
                       `n;`,
                       `return n;`,
@@ -671,6 +677,7 @@ export var whatever = (props) => {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -706,7 +713,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsExpression(
           mapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -775,6 +782,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -797,7 +805,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsxMapExpression(
           ` [1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div> ) `,
           `[1].map((n) => <div data-uid='aab'><div data-uid='aac'>{n}</div></div>);`,
           `return [1].map(function (n) {
@@ -827,7 +835,7 @@ export var whatever = (props) => {
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
-                    jsxArbitraryBlock(
+                    jsExpression(
                       `n`,
                       `n;`,
                       `return n;`,
@@ -867,6 +875,7 @@ export var whatever = (props) => {
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -902,7 +911,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsxArbitraryBlock(
+        jsxMapExpression(
           mapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -971,6 +980,7 @@ return { arr: arr };`
       null,
       null,
       [exportFunction('whatever')],
+      expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
   })
@@ -1020,7 +1030,9 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 )`
-    const actualResult = clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code))
+    const actualResult = simplifyParsedTextFileAttributes(
+      clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
+    )
     expect(actualResult).toMatchSnapshot()
   })
 
@@ -1126,19 +1138,16 @@ export var storyboard = (
             babelHelpers.createClass(Picker, [{
               key: \\"renderPicker\\",
               value: function renderPicker(locale) {
-                return utopiaCanvasJSXLookup(\\"971\\", {
-                  locale: locale,
-                  React: React,
-                  utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
-                  callerThis: this
+                return React.createElement(RenderPropsFunctionChild, null, function (size) {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
                 });
               }
             }, {
               key: \\"render\\",
               value: function render() {
-                return utopiaCanvasJSXLookup(\\"219\\", {
-                  callerThis: this
-                });
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
               }
             }]);
             return Picker;
@@ -1198,19 +1207,16 @@ export var storyboard = (
             babelHelpers.createClass(Picker, [{
               key: \\"renderPicker\\",
               value: function renderPicker(locale) {
-                return utopiaCanvasJSXLookup(\\"d1b\\", {
-                  locale: locale,
-                  React: React,
-                  utopiaCanvasJSXLookup: utopiaCanvasJSXLookup,
-                  callerThis: this
+                return React.createElement(RenderPropsFunctionChild, null, function (size) {
+                  return React.createElement(\\"div\\", {
+                    id: \\"nasty-div\\"
+                  }, locale, \\" \\", size);
                 });
               }
             }, {
               key: \\"render\\",
               value: function render() {
-                return utopiaCanvasJSXLookup(\\"064\\", {
-                  callerThis: this
-                });
+                return React.createElement(RenderPropsFunctionChild, null, this.renderPicker);
               }
             }]);
             return Picker;
@@ -1270,6 +1276,7 @@ export var storyboard = (
       expect.objectContaining({}),
       null,
       null,
+      expect.objectContaining({}),
       expect.objectContaining({}),
     )
 

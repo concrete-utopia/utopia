@@ -2,27 +2,28 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  requestedNpmDependency,
+import type {
   RequestedNpmDependency,
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
-import { ProjectFile } from '../../core/shared/project-file-types'
+import { requestedNpmDependency } from '../../core/shared/npm-dependency-types'
+import type { ProjectFile } from '../../core/shared/project-file-types'
 import Utils from '../../utils/utils'
-import { EditorPanel, setFocus } from '../common/actions'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorPanel } from '../common/actions'
+import { setFocus } from '../common/actions'
+import type { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import { clearSelection, addToast } from '../editor/actions/action-creators'
+import type { VersionLookupResult } from '../editor/npm-dependency/npm-dependency'
 import {
   dependenciesFromPackageJson,
   findLatestVersion,
   checkPackageVersionExists,
-  VersionLookupResult,
 } from '../editor/npm-dependency/npm-dependency'
+import type { DependencyPackageDetails } from '../editor/store/editor-state'
 import {
   DefaultPackagesList,
-  DependencyPackageDetails,
   packageJsonFileFromProjectContents,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'

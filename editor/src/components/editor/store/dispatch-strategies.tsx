@@ -1,47 +1,58 @@
-import {
+import type {
   ApplicableStrategy,
-  applyCanvasStrategy,
-  findCanvasStrategy,
-  interactionInProgress,
   MetaCanvasStrategy,
-  pickCanvasStateFromEditorState,
   StrategyWithFitness,
 } from '../../canvas/canvas-strategies/canvas-strategies'
 import {
-  createEmptyStrategyState,
-  hasDragModifiersChanged,
+  applyCanvasStrategy,
+  findCanvasStrategy,
+  interactionInProgress,
+  pickCanvasStateFromEditorState,
+} from '../../canvas/canvas-strategies/canvas-strategies'
+import type {
   InteractionSession,
-  interactionSessionHardReset,
-  isKeyboardInteractionData,
-  isNotYetStartedDragInteraction,
   KeyboardInteractionData,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
+import {
+  createEmptyStrategyState,
+  hasDragModifiersChanged,
+  interactionSessionHardReset,
+  isKeyboardInteractionData,
+  isNotYetStartedDragInteraction,
+} from '../../canvas/canvas-strategies/interaction-state'
 import { foldAndApplyCommands } from '../../canvas/commands/commands'
 import { strategySwitched } from '../../canvas/commands/strategy-switched-command'
-import { EditorAction } from '../action-types'
+import type {
+  EditorAction,
+  ExecutePostActionMenuChoice as ExecutePostActionMenuChoice,
+  StartPostActionSession,
+} from '../action-types'
+import { SelectComponents } from '../action-types'
 import {
   isClearInteractionSession,
   isCreateOrUpdateInteractionSession,
+  isTransientAction,
   shouldApplyClearInteractionSessionResult,
 } from '../actions/action-utils'
-import {
+import type {
   DerivedState,
-  deriveState,
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
+  PostActionMenuSession,
 } from './editor-state'
-import {
+import { deriveState } from './editor-state'
+import type {
   CustomStrategyState,
   CustomStrategyStatePatch,
   InteractionCanvasState,
-  strategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { last } from '../../../core/shared/array-utils'
-import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../editor-modes'
 
 interface HandleStrategiesResult {
@@ -60,6 +71,8 @@ export function interactionFinished(
     newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
     newEditorState.canvas.interactionSession?.latestAllElementProps ??
       newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestElementPathTree ??
+      newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -194,6 +207,7 @@ export function interactionHardReset(
           strategyResult.customStatePatch,
         ),
         startingAllElementProps: resetStrategyState.startingAllElementProps,
+        startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
       }
 
       return {
@@ -297,6 +311,8 @@ export function interactionStart(
     newEditorState.canvas.interactionSession?.latestMetadata ?? newEditorState.jsxMetadata,
     newEditorState.canvas.interactionSession?.latestAllElementProps ??
       newEditorState.allElementProps,
+    newEditorState.canvas.interactionSession?.latestElementPathTree ??
+      newEditorState.elementPathTree,
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
@@ -352,6 +368,7 @@ export function interactionStart(
           strategyResult.customStatePatch,
         ),
         startingAllElementProps: newEditorState.canvas.interactionSession.latestAllElementProps,
+        startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
       }
 
       return {
@@ -390,7 +407,7 @@ export function interactionCancel(
   return {
     unpatchedEditorState: updatedEditorState,
     patchedEditorState: updatedEditorState,
-    newStrategyState: createEmptyStrategyState({}, {}),
+    newStrategyState: createEmptyStrategyState({}, {}, {}),
   }
 }
 
@@ -452,6 +469,7 @@ function handleUserChangedStrategy(
         strategyResult.customStatePatch,
       ),
       startingAllElementProps: strategyState.startingAllElementProps,
+      startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
     }
 
     return {
@@ -531,6 +549,7 @@ function handleAccumulatingKeypresses(
           strategyResult.customStatePatch,
         ),
         startingAllElementProps: strategyState.startingAllElementProps,
+        startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
       }
 
       return {
@@ -592,6 +611,7 @@ function handleUpdate(
         strategyResult.customStatePatch,
       ),
       startingAllElementProps: strategyState.startingAllElementProps,
+      startingElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
     }
     return {
       unpatchedEditorState: newEditorState,
@@ -634,6 +654,9 @@ export function handleStrategies(
     jsxMetadata:
       patchedEditorState.canvas.interactionSession?.latestMetadata ??
       patchedEditorState.jsxMetadata,
+    elementPathTree:
+      patchedEditorState.canvas.interactionSession?.latestElementPathTree ??
+      patchedEditorState.elementPathTree,
   }
 
   if (MeasureDispatchTime) {
@@ -653,7 +676,7 @@ export function handleStrategies(
   }
 
   return {
-    unpatchedEditorState,
+    unpatchedEditorState: unpatchedEditorState,
     patchedEditorState: patchedEditorWithMetadata,
     patchedDerivedState,
     newStrategyState: newStrategyState,
@@ -676,30 +699,13 @@ function injectNewMetadataToOldEditorState(
         jsxMetadata: newEditorState.jsxMetadata,
         domMetadata: newEditorState.domMetadata,
         spyMetadata: newEditorState.spyMetadata,
+        lockedElements: newEditorState.lockedElements, // Here because it changes off the back of metadata changes.
         canvas: {
           ...oldEditorState.canvas,
           interactionSession: {
             ...oldEditorState.canvas.interactionSession,
             latestMetadata: newEditorState.canvas.interactionSession.latestMetadata, // the fresh metadata from SAVE_DOM_REPORT
-          },
-        },
-      }
-    }
-  } else if (oldEditorState.canvas.dragState != null) {
-    // we expect metadata to live in EditorState.canvas.dragState.metadata
-    if (newEditorState.canvas.dragState == null) {
-      throw new Error('Dispatch error: SAVE_DOM_REPORT changed canvas.dragState in an illegal way')
-    } else {
-      return {
-        ...oldEditorState,
-        jsxMetadata: newEditorState.jsxMetadata,
-        domMetadata: newEditorState.domMetadata,
-        spyMetadata: newEditorState.spyMetadata,
-        canvas: {
-          ...oldEditorState.canvas,
-          dragState: {
-            ...oldEditorState.canvas.dragState,
-            metadata: newEditorState.canvas.dragState.metadata, // the fresh metadata from SAVE_DOM_REPORT
+            latestElementPathTree: newEditorState.canvas.interactionSession.latestElementPathTree,
           },
         },
       }
@@ -710,6 +716,8 @@ function injectNewMetadataToOldEditorState(
       jsxMetadata: newEditorState.jsxMetadata, // the fresh metadata from SAVE_DOM_REPORT
       domMetadata: newEditorState.domMetadata,
       spyMetadata: newEditorState.spyMetadata,
+      elementPathTree: newEditorState.elementPathTree,
+      lockedElements: newEditorState.lockedElements, // Here because it changes off the back of metadata changes.
     }
   }
 }
@@ -779,4 +787,39 @@ function patchCustomStrategyState(
     ...existingState,
     ...patch,
   }
+}
+
+export function updatePostActionState(
+  postActionInteractionSession: PostActionMenuSession | null,
+  actions: readonly EditorAction[],
+): PostActionMenuSession | null {
+  const anyCancelPostActionMenuAction =
+    actions.filter(
+      (a) =>
+        !isTransientAction(a) ||
+        a.action === 'SELECT_COMPONENTS' ||
+        a.action === 'CLEAR_SELECTION' ||
+        a.action === 'UPDATE_INTERACTION_SESSION',
+    ).length > 0
+
+  const anyExecutePostActionMenuChoiceAction = actions.find(
+    (a): a is ExecutePostActionMenuChoice => a.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
+  )
+
+  const startPostActionSessionAction = actions.find(
+    (a): a is StartPostActionSession => a.action === 'START_POST_ACTION_SESSION',
+  )
+
+  if (startPostActionSessionAction != null || anyExecutePostActionMenuChoiceAction != null) {
+    // do nothing, `postActionInteractionData` was already set in the respective meta actions
+    return postActionInteractionSession
+  }
+
+  if (anyCancelPostActionMenuAction) {
+    // reset `postActionInteractionData`
+    return null
+  }
+
+  // do nothing
+  return postActionInteractionSession
 }

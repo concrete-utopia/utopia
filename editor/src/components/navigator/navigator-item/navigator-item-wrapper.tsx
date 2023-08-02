@@ -6,32 +6,47 @@ import { assertNever } from '../../../core/shared/utils'
 import { createCachedSelector } from 're-reselect'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   JSXConditionalExpression,
+} from '../../../core/shared/element-template'
+import {
   getJSXElementNameLastPart,
   isNullJSXAttributeValue,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import {
+import type {
   DropTargetHint,
   EditorStorePatched,
+  NavigatorEntry,
+} from '../../editor/store/editor-state'
+import {
   isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
   isSyntheticNavigatorEntry,
   navigatorEntriesEqual,
-  NavigatorEntry,
   navigatorEntryToKey,
 } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { DerivedSubstate, MetadataSubstate } from '../../editor/store/store-hook-substore-types'
-import {
-  NavigatorItemContainer,
+import type {
+  DerivedSubstate,
+  MetadataSubstate,
+} from '../../editor/store/store-hook-substore-types'
+import type {
+  ConditionalClauseNavigatorItemContainerProps,
   NavigatorItemDragAndDropWrapperProps,
+  NavigatorItemDragAndDropWrapperPropsBase,
+  SyntheticNavigatorItemContainerProps,
+} from './navigator-item-dnd-container'
+import {
+  ConditionalClauseNavigatorItemContainer,
+  NavigatorItemContainer,
+  SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
+import { front } from '../../../utils/utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -62,13 +77,20 @@ const targetInNavigatorItemsSelector = createCachedSelector(
 
 const elementSupportsChildrenSelector = createCachedSelector(
   (store: EditorStorePatched) => store.editor.projectContents,
+  (store: MetadataSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
   targetInNavigatorItemsSelector,
-  (projectContents, elementMetadata, elementInNavigatorTargets) => {
+  (projectContents, metadata, elementMetadata, pathTrees, elementInNavigatorTargets) => {
     if (!elementInNavigatorTargets || elementMetadata == null) {
       return false
     }
-    return MetadataUtils.targetElementSupportsChildren(projectContents, elementMetadata)
+    return MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      elementMetadata.elementPath,
+      metadata,
+      pathTrees,
+    )
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
@@ -76,11 +98,17 @@ export const labelSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
   (store: MetadataSubstate) => store.editor.allElementProps,
-  (metadata, elementMetadata, allElementProps) => {
+  (store: MetadataSubstate) => store.editor.elementPathTree,
+  (metadata, elementMetadata, allElementProps, pathTrees) => {
     if (elementMetadata == null) {
       return 'Element 👻'
     }
-    return MetadataUtils.getElementLabelFromMetadata(metadata, allElementProps, elementMetadata)
+    return MetadataUtils.getElementLabelFromMetadata(
+      metadata,
+      allElementProps,
+      pathTrees,
+      elementMetadata,
+    )
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
@@ -121,6 +149,7 @@ export function getNavigatorEntryLabel(
       switch (navigatorEntry.childOrAttribute.type) {
         case 'JSX_ELEMENT':
           return getJSXElementNameLastPart(navigatorEntry.childOrAttribute.name)
+        case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
           return '(code)'
         case 'JSX_TEXT_BLOCK':
@@ -242,24 +271,13 @@ export const NavigatorItemWrapper: React.FunctionComponent<
         if (
           (isRegularNavigatorEntry(props.navigatorEntry) ||
             isConditionalClauseNavigatorEntry(props.navigatorEntry)) &&
-          store.editor.navigator.dropTargetHint.displayAtEntry != null &&
+          store.editor.navigator.dropTargetHint?.displayAtEntry != null &&
           navigatorEntriesEqual(
             store.editor.navigator.dropTargetHint.displayAtEntry,
             props.navigatorEntry,
           )
         ) {
           possiblyAppropriateDropTargetHint = store.editor.navigator.dropTargetHint
-        }
-
-        if (
-          isSyntheticNavigatorEntry(props.navigatorEntry) &&
-          maybeConditionalExpression(parentElement) != null
-        ) {
-          possiblyAppropriateDropTargetHint = {
-            type: store.editor.navigator.dropTargetHint.type ?? 'reparent',
-            displayAtEntry: null,
-            moveToEntry: null,
-          }
         }
 
         const elementIsCollapsed = EP.containsPath(
@@ -279,10 +297,9 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       'NavigatorItemWrapper',
     )
 
-  const navigatorItemProps: NavigatorItemDragAndDropWrapperProps = {
+  const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
     index: props.index,
     editorDispatch: dispatch,
-    navigatorEntry: props.navigatorEntry,
     entryDepth: entryDepth,
     selected: isSelected,
     highlighted: isHighlighted,
@@ -299,6 +316,31 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     visibleNavigatorTargets: visibleNavigatorTargets,
   }
 
-  return <NavigatorItemContainer {...navigatorItemProps} />
+  if (props.navigatorEntry.type === 'REGULAR') {
+    const entryProps: NavigatorItemDragAndDropWrapperProps = {
+      ...navigatorItemProps,
+      elementPath: props.navigatorEntry.elementPath,
+    }
+    return <NavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'SYNTHETIC') {
+    const entryProps: SyntheticNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      childOrAttribute: props.navigatorEntry.childOrAttribute,
+      elementPath: props.navigatorEntry.elementPath,
+    }
+    return <SyntheticNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'CONDITIONAL_CLAUSE') {
+    const entryProps: ConditionalClauseNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      navigatorEntry: props.navigatorEntry,
+    }
+    return <ConditionalClauseNavigatorItemContainer {...entryProps} />
+  }
+
+  assertNever(props.navigatorEntry)
 })
 NavigatorItemWrapper.displayName = 'NavigatorItemWrapper'

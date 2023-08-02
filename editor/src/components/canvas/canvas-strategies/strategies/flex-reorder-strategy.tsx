@@ -1,11 +1,13 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import {
-  controlWithProps,
+import type {
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   MoveStrategy,
+} from '../canvas-strategy-types'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
 import {
   DragOutlineControl,
@@ -14,9 +16,9 @@ import {
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { applyReorderCommon } from './reorder-utils'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
-import { retargetStrategyToTopMostGroupLikeElement } from './group-like-helpers'
+import { retargetStrategyToTopMostFragmentLikeElement } from './fragment-like-helpers'
 
 export function flexReorderStrategy(
   canvasState: InteractionCanvasState,
@@ -24,7 +26,7 @@ export function flexReorderStrategy(
   customStrategyState: CustomStrategyState,
 ): MoveStrategy | null {
   const originalTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const retargetedTargets = retargetStrategyToTopMostGroupLikeElement(canvasState)
+  const retargetedTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState)
   const element = MetadataUtils.findElementByElementPath(
     canvasState.startingMetadata,
     retargetedTargets[0],
@@ -41,7 +43,13 @@ export function flexReorderStrategy(
     return null
   }
 
-  if (!areAllSiblingsInOneDimensionFlexOrFlow(retargetedTargets[0], canvasState.startingMetadata)) {
+  if (
+    !areAllSiblingsInOneDimensionFlexOrFlow(
+      retargetedTargets[0],
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+    )
+  ) {
     return null
   }
 

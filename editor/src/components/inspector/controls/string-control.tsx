@@ -4,8 +4,8 @@ import { jsx } from '@emotion/react'
 import classNames from 'classnames'
 import React from 'react'
 import { StringInput } from '../../../uuiui'
-import { usePropControlledState } from '../common/inspector-utils'
-import { DEPRECATEDControlProps } from './control'
+import { usePropControlledState_DEPRECATED } from '../common/inspector-utils'
+import type { DEPRECATEDControlProps } from './control'
 
 export interface StringControlOptions {
   DEPRECATED_labelBelow?: React.ReactChild
@@ -14,11 +14,11 @@ export interface StringControlOptions {
 export const StringControl = React.memo(
   React.forwardRef<HTMLInputElement, DEPRECATEDControlProps<string>>(
     ({ value: propsValue, controlStyles, onBlur, onSubmitValue, ...props }, ref) => {
-      const [mixed, setMixed] = usePropControlledState<boolean>(controlStyles.mixed)
-      const [editDisabled, setEditDisabled] = usePropControlledState<boolean>(
+      const [mixed, setMixed] = usePropControlledState_DEPRECATED<boolean>(controlStyles.mixed)
+      const [editDisabled, setEditDisabled] = usePropControlledState_DEPRECATED<boolean>(
         !controlStyles.interactive,
       )
-      const [stateValue, setStateValue] = usePropControlledState<string>(propsValue)
+      const [stateValue, setStateValue] = usePropControlledState_DEPRECATED<string>(propsValue)
 
       const { showContent, mixed: controlStylesMixed } = controlStyles
       const getDisplayValue = React.useCallback(() => {

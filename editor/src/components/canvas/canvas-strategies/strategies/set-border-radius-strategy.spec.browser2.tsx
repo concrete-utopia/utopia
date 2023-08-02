@@ -1,17 +1,14 @@
 import { fromString } from '../../../../core/shared/element-path'
-import {
-  canvasVector,
-  CanvasVector,
-  Size,
-  size,
-  windowPoint,
-  WindowPoint,
-} from '../../../../core/shared/math-utils'
+import type { CanvasVector, Size, WindowPoint } from '../../../../core/shared/math-utils'
+import { canvasVector, size, windowPoint } from '../../../../core/shared/math-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { selectComponents } from '../../../editor/actions/action-creators'
-import { BorderRadiusCorner, BorderRadiusCorners } from '../../border-radius-control-utils'
-import { EdgePosition, EdgePositionBottomRight } from '../../canvas-types'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
+import { selectComponents, setFocusedElement } from '../../../editor/actions/action-creators'
+import type { BorderRadiusCorner } from '../../border-radius-control-utils'
+import { BorderRadiusCorners } from '../../border-radius-control-utils'
+import type { EdgePosition } from '../../canvas-types'
+import { EdgePositionBottomRight } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
 import {
@@ -20,11 +17,12 @@ import {
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseEnterAtPoint,
+  mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
   renderTestEditorWithCode,
   makeTestProjectCodeWithSnippet,
-  EditorRenderResult,
   getPrintedUiJsCode,
 } from '../../ui-jsx.test-utils'
 
@@ -159,10 +157,16 @@ describe('set border radius strategy', () => {
         y: divBounds.y + Math.floor(divBounds.height / 2),
       }
 
-      const selectedViews = [fromString('Storyboard/Horrible:RootDiv')]
-      await editor.dispatch([selectComponents(selectedViews, false)], true)
-
-      await mouseDoubleClickAtPoint(canvasControlsLayer, divCorner, { modifiers: cmdModifier })
+      const targetPath = fromString('Storyboard/Horrible:RootDiv')
+      const selectedViews = [targetPath]
+      await editor.dispatch(
+        [
+          setFocusedElement(fromString('Storyboard/Horrible')),
+          selectComponents(selectedViews, false),
+        ],
+        true,
+      )
+      await mouseMoveToPoint(canvasControlsLayer, divCorner)
 
       const borderRadiusControls = BorderRadiusCorners.flatMap((corner) =>
         editor.renderedDOM.queryAllByTestId(CircularHandleTestId(corner)),

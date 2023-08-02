@@ -2,33 +2,37 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { defaultEither, isLeft, right } from '../../core/shared/either'
-import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import {
-  CanvasVector,
-  numberIsZero,
-  roundTo,
-  Size,
-  zeroRectIfNullOrInfinity,
-} from '../../core/shared/math-utils'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { isJSXElement } from '../../core/shared/element-template'
+import type { CanvasVector, Size } from '../../core/shared/math-utils'
+import { numberIsZero, roundTo, zeroRectIfNullOrInfinity } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
-import { CSSNumber, CSSNumberUnit, CSSPadding, printCSSNumber } from '../inspector/common/css-utils'
-import { EdgePiece } from './canvas-types'
-import {
+import type { CSSNumber, CSSNumberUnit, CSSPadding } from '../inspector/common/css-utils'
+import { printCSSNumber } from '../inspector/common/css-utils'
+import type { EdgePiece } from './canvas-types'
+import type {
   AdjustPrecision,
-  cssNumberWithRenderedValue,
   CSSNumberWithRenderedValue,
+} from './controls/select-mode/controls-common'
+import {
+  cssNumberWithRenderedValue,
   offsetMeasurementByDelta,
   unitlessCSSNumberWithRenderedValue,
 } from './controls/select-mode/controls-common'
-import { Modifiers } from '../../utils/modifiers'
+import type { Modifiers } from '../../utils/modifiers'
+import type {
+  AdjustCssLengthProperties,
+  LengthPropertyToAdjust,
+} from './commands/adjust-css-length-command'
 import {
-  adjustCssLengthProperty,
-  AdjustCssLengthProperty,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
 } from './commands/adjust-css-length-command'
 import { detectFillHugFixedState } from '../inspector/inspector-common'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export const EdgePieces: Array<EdgePiece> = ['top', 'bottom', 'left', 'right']
 
@@ -263,11 +267,12 @@ export function getSizeUpdateCommandsForNewPadding(
   startingSize: Size,
   selectedElements: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
-): Array<AdjustCssLengthProperty> {
+  pathTrees: ElementPathTrees,
+): AdjustCssLengthProperties {
   const selectedElement = selectedElements[0]
   const targetFrame = MetadataUtils.getFrameOrZeroRect(selectedElement, metadata)
 
-  const allChildPaths = MetadataUtils.getChildrenPathsUnordered(metadata, selectedElement)
+  const allChildPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, selectedElement)
 
   const nonAbsoluteChildrenPaths = allChildPaths.filter((childPath) =>
     MetadataUtils.targetParticipatesInAutoLayout(metadata, childPath),
@@ -279,7 +284,7 @@ export function getSizeUpdateCommandsForNewPadding(
 
   const adjustSizeCommandForDimension = (
     dimension: 'horizontal' | 'vertical',
-  ): AdjustCssLengthProperty | null => {
+  ): LengthPropertyToAdjust | null => {
     const isHorizontal = dimension === 'horizontal'
     const combinedPaddingInDimension = isHorizontal ? combinedXPadding : combinedYPadding
 
@@ -316,13 +321,10 @@ export function getSizeUpdateCommandsForNewPadding(
 
     return numberIsZero(clampedSizeDelta)
       ? null
-      : adjustCssLengthProperty(
-          'always',
-          selectedElement,
+      : lengthPropertyToAdjust(
           stylePropPathMappingFn(dimensionKey, styleStringInArray),
           clampedSizeDelta,
           elementParentBounds?.[dimensionKey],
-          elementParentFlexDirection ?? null,
           'do-not-create-if-doesnt-exist',
         )
   }
@@ -330,14 +332,19 @@ export function getSizeUpdateCommandsForNewPadding(
   const horizontalSizeAdjustment = adjustSizeCommandForDimension('horizontal')
   const verticalSizeAdjustment = adjustSizeCommandForDimension('vertical')
 
-  let adjustLengthCommands: Array<AdjustCssLengthProperty> = []
+  let lengthPropertiesToAdjust: Array<LengthPropertyToAdjust> = []
   if (horizontalSizeAdjustment != null) {
-    adjustLengthCommands.push(horizontalSizeAdjustment)
+    lengthPropertiesToAdjust.push(horizontalSizeAdjustment)
   }
 
   if (verticalSizeAdjustment != null) {
-    adjustLengthCommands.push(verticalSizeAdjustment)
+    lengthPropertiesToAdjust.push(verticalSizeAdjustment)
   }
 
-  return adjustLengthCommands
+  return adjustCssLengthProperties(
+    'always',
+    selectedElement,
+    elementParentFlexDirection ?? null,
+    lengthPropertiesToAdjust,
+  )
 }

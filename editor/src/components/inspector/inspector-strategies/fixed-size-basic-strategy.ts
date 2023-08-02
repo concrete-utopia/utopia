@@ -1,13 +1,21 @@
+import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { WhenToRun } from '../../canvas/commands/commands'
+import type { WhenToRun } from '../../canvas/commands/commands'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
-import { CSSNumber } from '../common/css-utils'
-import { Axis, removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { CSSNumber } from '../common/css-utils'
+import type { Axis } from '../inspector-common'
+import { removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
+import type { InspectorStrategy } from './inspector-strategy'
+import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import {
+  groupErrorToastCommand,
+  maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupState,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const fixedSizeBasicStrategy = (
   whenToRun: WhenToRun,
@@ -18,6 +26,17 @@ export const fixedSizeBasicStrategy = (
   strategy: (metadata, elementPaths) => {
     if (elementPaths.length === 0) {
       return null
+    }
+
+    const invalidGroupState = maybeInvalidGroupState(elementPaths, metadata, {
+      onGroup: () => (value.unit === '%' ? 'group-has-percentage-pins' : null),
+      onGroupChild: (path) => {
+        const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+        return value.unit === '%' ? maybeGroupChildWithoutFixedSizeForFill(group) : null
+      },
+    })
+    if (invalidGroupState != null) {
+      return [groupErrorToastCommand(invalidGroupState)]
     }
 
     return elementPaths.flatMap((path) => {
@@ -34,6 +53,7 @@ export const fixedSizeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
+        queueGroupTrueUp(path),
       ]
     })
   },

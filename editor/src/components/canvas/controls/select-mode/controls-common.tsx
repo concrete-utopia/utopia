@@ -1,12 +1,16 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { roundTo, size, zeroRectIfNullOrInfinity } from '../../../../core/shared/math-utils'
-import { Modifiers } from '../../../../utils/modifiers'
-import { ProjectContentTreeRoot } from '../../../assets'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { ProjectContentTreeRoot } from '../../../assets'
 import { colorTheme } from '../../../../uuiui'
-import { CSSNumber, CSSNumberUnit, printCSSNumber } from '../../../inspector/common/css-utils'
+import type { CSSNumber, CSSNumberUnit } from '../../../inspector/common/css-utils'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 
 export const Emdash: string = '\u2014'
 
@@ -191,9 +195,15 @@ const SHOW_NO_CONTROLS_THRESHOLD = 60
 
 export function canShowCanvasPropControl(
   projectContents: ProjectContentTreeRoot,
-  element: ElementInstanceMetadata,
+  path: ElementPath,
   scale: number,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): Set<CanvasPropControl> {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  if (element == null) {
+    return new Set<CanvasPropControl>([])
+  }
   const frame = zeroRectIfNullOrInfinity(element.globalFrame)
 
   const { width, height } = size((frame.width ?? 0) * scale, (frame.height ?? 0) * scale)
@@ -210,7 +220,14 @@ export function canShowCanvasPropControl(
     return new Set<CanvasPropControl>(['padding'])
   }
 
-  if (!MetadataUtils.targetElementSupportsChildren(projectContents, element)) {
+  if (
+    !MetadataUtils.targetElementSupportsChildren(
+      projectContents,
+      element.elementPath,
+      metadata,
+      elementPathTree,
+    )
+  ) {
     return new Set<CanvasPropControl>(['borderRadius', 'gap'])
   }
 

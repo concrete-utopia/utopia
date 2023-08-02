@@ -2,7 +2,8 @@
 /** @jsx jsx */ import { jsx } from '@emotion/react'
 import createCachedSelector from 're-reselect'
 import React from 'react'
-import { ConditionalCase, getConditionalClausePath } from '../../../../core/model/conditionals'
+import type { ConditionalCase } from '../../../../core/model/conditionals'
+import { getConditionalClausePath } from '../../../../core/model/conditionals'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import {
@@ -11,16 +12,16 @@ import {
 } from '../../../../core/shared/comment-flags'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
+import type {
   ConditionValue,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
   JSXElementChild,
 } from '../../../../core/shared/element-template'
+import { isJSXConditionalExpression } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { unless } from '../../../../utils/react-conditionals'
 import {
   FlexColumn,
@@ -33,25 +34,27 @@ import {
   Tooltip,
   useColorTheme,
   UtopiaStyles,
+  UtopiaTheme,
 } from '../../../../uuiui'
 import { isEntryAConditionalSlot } from '../../../canvas/canvas-utils'
-import { EditorAction } from '../../../editor/action-types'
+import type { EditorAction } from '../../../editor/action-types'
 import {
   setConditionalOverriddenCondition,
   switchConditionalBranches,
   updateConditionalExpression,
 } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { NavigatorEntry } from '../../../editor/store/editor-state'
+import type { NavigatorEntry } from '../../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
+import type { MetadataSubstate } from '../../../editor/store/store-hook-substore-types'
 import { LayoutIcon } from '../../../navigator/navigator-item/layout-icon'
 import {
   getNavigatorEntryLabel,
   labelSelector,
 } from '../../../navigator/navigator-item/navigator-item-wrapper'
 import { getNavigatorTargets } from '../../../navigator/navigator-utils'
-import { ControlStatus, getControlStyles } from '../../common/control-status'
+import type { ControlStatus } from '../../common/control-status'
+import { getControlStyles } from '../../common/control-status'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
 import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
@@ -73,8 +76,9 @@ type BranchNavigatorEntries = {
 
 const branchNavigatorEntriesSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
   (_store: MetadataSubstate, paths: ElementPath[]) => paths,
-  (jsxMetadata, paths): BranchNavigatorEntries | null => {
+  (jsxMetadata, elementPathTree, paths): BranchNavigatorEntries | null => {
     if (paths.length !== 1) {
       return null
     }
@@ -89,7 +93,12 @@ const branchNavigatorEntriesSelector = createCachedSelector(
 
     const conditional = elementMetadata.element.value
 
-    const navigatorEntries = getNavigatorTargets(jsxMetadata, [], []).navigatorTargets
+    const navigatorEntries = getNavigatorTargets(
+      jsxMetadata,
+      elementPathTree,
+      [],
+      [],
+    ).navigatorTargets
 
     function getNavigatorEntry(clause: JSXElementChild): NavigatorEntry | null {
       return (
@@ -304,6 +313,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   function onExpressionChange(e: React.ChangeEvent<HTMLInputElement>) {
     setConditionExpression(e.target.value)
+    setConditionOverride(null)
   }
 
   function onExpressionKeyUp(e: React.KeyboardEvent) {
@@ -342,12 +352,15 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
           style={{
             flexGrow: 1,
             gap: 8,
+            color: colorTheme.dynamicBlue.value,
+            textTransform: 'uppercase',
           }}
         >
-          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} />
+          <InspectorSectionIcons.Conditionals style={{ width: 16, height: 16 }} color='dynamic' />
           <span>Conditional</span>
         </FlexRow>
       </InspectorSubsectionHeader>
+
       {unless(
         originalConditionExpression === 'multiselect',
         <React.Fragment>
@@ -361,8 +374,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               onBlur={onUpdateExpression}
               css={{
                 ...UtopiaStyles.fontStyles.monospaced,
-                textAlign: 'center',
+                textAlign: 'left',
                 fontWeight: 600,
+                background: colorTheme.unavailableGrey10.value,
+                height: 26,
               }}
             />
           </UIGridRow>
@@ -435,12 +450,13 @@ const BranchRow = ({
       <div
         style={{
           borderRadius: 2,
-          padding: '4px 0px',
-          background: colorTheme.bg3.value,
+          padding: '4px 0px 4px 6px',
+          background: colorTheme.unavailableGrey10.value,
+          fontWeight: 600,
           display: 'flex',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          gap: 4,
+          gap: 6,
           overflowX: 'scroll',
           whiteSpace: 'nowrap',
         }}
@@ -450,7 +466,8 @@ const BranchRow = ({
             style={{
               padding: '0px 6px',
               textTransform: 'lowercase',
-              color: colorTheme.fg7.value,
+              color: colorTheme.unavailableGrey.value,
+              fontWeight: 500,
             }}
           >
             Empty

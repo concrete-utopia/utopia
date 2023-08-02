@@ -6,23 +6,22 @@ import { defaultEither, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import { nullIfInfinity, rectanglesEqual } from '../../../../core/shared/math-utils'
 import { CSSCursor } from '../../canvas-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import { highlightElementsCommand } from '../../commands/highlight-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { appendElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
-import { MetaCanvasStrategy } from '../canvas-strategies'
-import {
+import type { MetaCanvasStrategy } from '../canvas-strategies'
+import type {
   CanvasStrategy,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
-  targetPaths,
 } from '../canvas-strategy-types'
+import { getTargetPathsFromInteractionTarget, targetPaths } from '../canvas-strategy-types'
 import {
-  retargetStrategyToChildrenOfContentAffectingElements,
-  treatElementAsContentAffecting,
-} from './group-like-helpers'
+  retargetStrategyToChildrenOfFragmentLikeElements,
+  treatElementAsFragmentLike,
+} from './fragment-like-helpers'
 
 export function ancestorMetaStrategy(
   allOtherStrategies: Array<MetaCanvasStrategy>,
@@ -48,7 +47,7 @@ export function ancestorMetaStrategy(
       return []
     }
 
-    const unrolledChildren = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+    const unrolledChildren = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
     if (unrolledChildren.length !== 1) {
       return []
@@ -57,7 +56,11 @@ export function ancestorMetaStrategy(
     const unrolledChild = unrolledChildren[0]
 
     // Is the selected element an only child?
-    const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, unrolledChild)
+    const siblings = MetadataUtils.getSiblingsOrdered(
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+      unrolledChild,
+    )
     if (siblings.length > 1) {
       return []
     }

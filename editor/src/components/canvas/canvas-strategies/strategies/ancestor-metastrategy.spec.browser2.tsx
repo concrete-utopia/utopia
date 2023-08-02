@@ -1,8 +1,8 @@
 import * as EP from '../../../../core/shared/element-path'
-import { WindowPoint, windowPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { shiftModifier } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests, wait } from '../../../../utils/utils.test-utils'
 import { selectComponents } from '../../../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -11,8 +11,8 @@ import {
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,

@@ -29,3 +29,19 @@ export function intersection<T>(sets: Array<Set<T>>): Set<T> {
 
   return rest.reduce((acc, v) => new Set([...acc].filter((x) => v.has(x))), first)
 }
+
+// Values that are in the first set but not in the second set.
+export function difference<T>(firstSet: Set<T>, secondSet: Set<T>): Set<T> {
+  let result = new Set(firstSet)
+  secondSet.forEach((value) => result.delete(value))
+  return result
+}
+
+export function getSingleValueOnly<T>(set: Set<T>): T {
+  if (set.size === 1) {
+    for (const value of set) {
+      return value
+    }
+  }
+  throw new Error(`Set had ${set.size} when it was expected to have just 1.`)
+}

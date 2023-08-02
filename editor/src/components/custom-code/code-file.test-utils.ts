@@ -1,20 +1,14 @@
+import type { NodeModules, ProjectContents, TextFile } from '../../core/shared/project-file-types'
 import {
   esCodeFile,
   isTextFile,
-  NodeModules,
-  ProjectContents,
   RevisionsState,
-  TextFile,
   textFile,
   textFileContents,
 } from '../../core/shared/project-file-types'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
-import {
-  ProjectContentTreeRoot,
-  contentsToTree,
-  getContentsTreeFileFromString,
-  treeToContents,
-} from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
+import { contentsToTree, getContentsTreeFileFromString, treeToContents } from '../assets'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { replaceAll } from '../../core/shared/string-utils'
@@ -48,13 +42,8 @@ export const Spring = (props) => {
 }
 
 export function createCodeFile(path: string, contents: string): TextFile {
-  const result = lintAndParse(path, contents, null, emptySet())
-  return textFile(
-    textFileContents(contents, result, RevisionsState.BothMatch),
-    null,
-    null,
-    Date.now(),
-  )
+  const result = lintAndParse(path, contents, null, emptySet(), 'trim-bounds')
+  return textFile(textFileContents(contents, result, RevisionsState.BothMatch), null, null, 0)
 }
 
 export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {

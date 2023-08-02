@@ -1,6 +1,6 @@
 import React from 'react'
-import { Sides } from 'utopia-api/core'
-import { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
+import type { Sides } from 'utopia-api/core'
+import type { CanvasRectangle, CanvasPoint } from '../../../core/shared/math-utils'
 import { useColorTheme } from '../../../uuiui'
 
 interface PaddingControlsProps {

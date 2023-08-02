@@ -8,8 +8,8 @@ import {
   sortBy,
   findLastIndex,
 } from '../../shared/array-utils'
+import type { Either } from '../../shared/either'
 import {
-  Either,
   eitherToMaybe,
   flatMap2Either,
   flatMapEither,
@@ -25,61 +25,67 @@ import {
   forEachRight,
   traverseEither,
 } from '../../shared/either'
-import {
+import type {
   ArbitraryJSBlock,
   BoundParam,
-  destructuredArray,
   DestructuredArrayPart,
-  destructuredObject,
-  destructuredParamPart,
   DestructuredParamPart,
   ElementsWithin,
+  JSExpression,
+  JSXElementChild,
+  JSXElementName,
+  Param,
+  TopLevelElement,
+  UtopiaJSXComponent,
+  Comment,
+  VarLetOrConst,
+  FunctionDeclarationSyntax,
+  ImportStatement,
+  ParsedComments,
+  JSExpressionMapOrOtherJavascript,
+} from '../../shared/element-template'
+import {
+  destructuredArray,
+  destructuredObject,
+  destructuredParamPart,
   functionParam,
   isDestructuredObject,
   isJSXAttributeValue,
   isOmittedParam,
   isRegularParam,
   isUtopiaJSXComponent,
-  JSExpression,
-  JSXElementChild,
-  JSXElementName,
   omittedParam,
-  Param,
   regularParam,
-  TopLevelElement,
-  UtopiaJSXComponent,
   utopiaJSXComponent,
   propNamesForParam,
-  JSExpressionOtherJavaScript,
   jsxElementName,
-  Comment,
   singleLineComment,
   multiLineComment,
   WithComments,
-  VarLetOrConst,
-  FunctionDeclarationSyntax,
   getJSXAttributeForced,
-  ImportStatement,
   importStatement,
   isImportStatement,
   unparsedCode,
   emptyComments,
-  ParsedComments,
   parsedComments,
 } from '../../shared/element-template'
 import { messageisFatal } from '../../shared/error-messages'
 import { memoize } from '../../shared/memoize'
 import { defaultIfNull, maybeToArray, optionalMap } from '../../shared/optional-utils'
-import {
+import type {
   HighlightBoundsForUids,
   ImportAlias,
-  importAlias,
   Imports,
   ParsedTextFile,
   ParseSuccess,
   PropertyPathPart,
-  HighlightBounds,
   ExportsDetail,
+  ExportVariable,
+  ExportDetail,
+} from '../../shared/project-file-types'
+import {
+  importAlias,
+  HighlightBounds,
   mergeExportsDetail,
   EmptyExportsDetail,
   TextFile,
@@ -90,30 +96,28 @@ import {
   exportClass,
   exportDefaultFunctionOrClass,
   exportFunction,
-  ExportVariable,
   exportDestructuredAssignment,
   exportVariablesWithModifier,
   parseFailure,
   parseSuccess,
   exportIdentifier,
-  ExportDetail,
   isImportSideEffects,
+  isParseSuccess,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
-import { fastForEach, NO_OP } from '../../shared/utils'
+import { assertNever, fastForEach, NO_OP } from '../../shared/utils'
 import { addImport, emptyImports } from '../common/project-file-utils'
 import { UtopiaTsWorkers } from '../common/worker-types'
 import { lintCode } from '../linter/linter'
+import type { FunctionContents, WithParserMetadata } from './parser-printer-parsing'
 import {
   CanvasMetadataName,
   flattenOutAnnoyingContainers,
-  FunctionContents,
   getPropertyNameText,
   liftParsedElementsIntoFunctionContents,
   parseArbitraryNodes,
   parseOutFunctionContents,
   parseOutJSXElements,
-  WithParserMetadata,
   parseAttributeOtherJavaScript,
   withParserMetadata,
   isExported,
@@ -123,19 +127,21 @@ import {
   markedAsExported,
   markedAsDefault,
 } from './parser-printer-parsing'
-import { getBoundsOfNodes, guaranteeUniqueUidsFromTopLevel } from './parser-printer-utils'
 import { jsonToExpression } from './json-to-expression'
 import { compareOn, comparePrimitive } from '../../../utils/compare'
-import { emptySet } from '../../shared/set-utils'
+import { difference, emptySet } from '../../shared/set-utils'
 import { addCommentsToNode, getLeadingComments } from './parser-printer-comments'
 import { replaceAll } from '../../shared/string-utils'
-import { WorkerCodeUpdate, WorkerParsedUpdate } from '../../../components/editor/action-types'
 import { fixParseSuccessUIDs } from './uid-fix'
 import { applyPrettier } from 'utopia-vscode-common'
 import { BakedInStoryboardVariableName } from '../../model/scene-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { v4 as UUID } from 'uuid'
+import { fromField } from '../../../core/shared/optics/optic-creators'
+import type { Optic } from '../../../core/shared/optics/optics'
+import { modify } from '../../../core/shared/optics/optic-utilities'
+import { updateHighlightBounds } from '../../../core/shared/uid-utils'
 
 function buildPropertyCallingFunction(
   functionName: string,
@@ -154,6 +160,7 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_NESTED_ARRAY':
       return attribute.comments
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return emptyComments
@@ -196,7 +203,10 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
           (prop) => {
             switch (prop.type) {
               case 'PROPERTY_ASSIGNMENT':
-                const key = TS.createStringLiteral(prop.key)
+                const key =
+                  typeof prop.key === 'string'
+                    ? TS.createStringLiteral(prop.key)
+                    : TS.createNumericLiteral(prop.key)
                 addCommentsToNode(key, prop.keyComments)
                 return TS.createPropertyAssignment(key, jsxAttributeToExpression(prop.value))
               case 'SPREAD_ASSIGNMENT':
@@ -221,6 +231,7 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
           }
         })
         return TS.createArrayLiteral(arrayExpressions)
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         const maybeExpressionStatement = rawCodeToExpressionStatement(attribute.javascript)
         return maybeExpressionStatement == null
@@ -394,7 +405,9 @@ function jsxElementToExpression(
             const skip = stripUIDs && propEntry.key === 'data-uid'
             if (!skip) {
               const prop = propEntry.value
-              const identifier = TS.createIdentifier(propEntry.key)
+              const identifier = TS.createIdentifier(
+                typeof propEntry.key === 'string' ? propEntry.key : `${propEntry.key}`,
+              )
               let attributeToAdd: TS.JsxAttribute
               if (isJSXAttributeValue(prop) && typeof prop.value === 'boolean') {
                 // Use the shorthand style for true values, and the explicit style for false values
@@ -446,6 +459,7 @@ function jsxElementToExpression(
         )
       }
     }
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       if (parentIsJSX) {
         const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
@@ -637,7 +651,8 @@ function printUtopiaJSXComponent(
     TS.isJsxElement(asJSX) ||
     TS.isJsxSelfClosingElement(asJSX) ||
     TS.isJsxFragment(asJSX) ||
-    TS.isConditionalExpression(asJSX)
+    TS.isConditionalExpression(asJSX) ||
+    asJSX.kind === TS.SyntaxKind.NullKeyword
   ) {
     let elementNode: TS.Node
     const jsxElementExpression = asJSX
@@ -736,7 +751,7 @@ function printParam(param: Param): TS.ParameterDeclaration {
 }
 
 function printBindingExpression(
-  defaultExpression: JSExpressionOtherJavaScript | null,
+  defaultExpression: JSExpressionMapOrOtherJavascript | null,
 ): TS.Expression | undefined {
   if (defaultExpression == null) {
     return undefined
@@ -1224,6 +1239,7 @@ export function parseCode(
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ParsedTextFile {
+  const originalAlreadyExistingUIDs_MUTABLE: Set<string> = new Set(alreadyExistingUIDs_MUTABLE)
   const sourceFile = TS.createSourceFile(filename, sourceText, TS.ScriptTarget.ES3)
 
   const jsxFactoryFunction = getJsxFactoryFunction(sourceFile)
@@ -1643,9 +1659,7 @@ export function parseCode(
     if (isLeft(sequencedTopLevelElements)) {
       return parseFailure(null, null, sequencedTopLevelElements.value, [])
     }
-    const realTopLevelElements = sequencedTopLevelElements.value
-
-    let topLevelElementsWithFixedUIDs = guaranteeUniqueUidsFromTopLevel(realTopLevelElements)
+    let realTopLevelElements = sequencedTopLevelElements.value
 
     let combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null = null
     if (allArbitraryNodes.length > 0) {
@@ -1674,7 +1688,7 @@ export function parseCode(
         (entry) => getComponentsRenderedWithReactDOM(sourceFile, entry.node),
         allArbitraryNodes,
       )
-      topLevelElementsWithFixedUIDs = topLevelElementsWithFixedUIDs.map((topLevelElement) => {
+      realTopLevelElements = realTopLevelElements.map((topLevelElement) => {
         if (
           isUtopiaJSXComponent(topLevelElement) &&
           componentsRenderedByReactDOM.includes(topLevelElement.name)
@@ -1697,19 +1711,41 @@ export function parseCode(
       })
     }
 
+    // Create the basic success result from the values we have so far.
     const unfixedParseSuccess = parseSuccess(
       imports,
-      topLevelElementsWithFixedUIDs,
+      realTopLevelElements,
       highlightBounds,
       jsxFactoryFunction,
       combinedTopLevelArbitraryBlock,
       detailOfExports,
+      highlightBounds,
     )
+
+    // Determine what new UIDs were generated during this parse.
+    const fixParseSuccessExistingUIDs = new Set(originalAlreadyExistingUIDs_MUTABLE)
+    const newlyCreatedUIDs = difference(alreadyExistingUIDs_MUTABLE, fixParseSuccessExistingUIDs)
+
+    // Fix the `ParseSuccess` instance by copying over UIDs where possible from the previous
+    // parse result while also deduplicating UIDs found in the result.
     const fixedParseSuccess = fixParseSuccessUIDs(
       oldParseResultForUIDComparison,
       unfixedParseSuccess,
-      alreadyExistingUIDs_MUTABLE,
+      fixParseSuccessExistingUIDs,
+      newlyCreatedUIDs,
     )
+
+    // Find the UIDs created from the above `fixParseSuccessUIDs` invocation and include them
+    // in the mutable already existing UIDs as that is used outside this function.
+    const newlyCreatedUIDsFromFix = difference(
+      fixParseSuccessExistingUIDs,
+      originalAlreadyExistingUIDs_MUTABLE,
+    )
+    newlyCreatedUIDsFromFix.forEach((newlyCreatedUID) =>
+      alreadyExistingUIDs_MUTABLE.add(newlyCreatedUID),
+    )
+
+    // Return the corrected result.
     return fixedParseSuccess
   }
 }
@@ -1766,7 +1802,7 @@ function parseParam(
   const dotDotDotToken = param.dotDotDotToken != null
   const parsedExpression: Either<
     string,
-    WithParserMetadata<JSExpressionOtherJavaScript | undefined>
+    WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>
   > = param.initializer == null
     ? right(withParserMetadata(undefined, existingHighlightBounds, [], []))
     : parseAttributeOtherJavaScript(
@@ -1807,7 +1843,7 @@ function parseParam(
 
 function parseBindingName(
   elem: TS.BindingName,
-  expression: WithParserMetadata<JSExpressionOtherJavaScript | undefined>,
+  expression: WithParserMetadata<JSExpressionMapOrOtherJavascript | undefined>,
   file: TS.SourceFile,
   sourceText: string,
   filename: string,
@@ -1931,92 +1967,86 @@ function withJSXElementAttributes(
   TS.transform(sourceFile, [transformer])
 }
 
-type HighlightBoundsWithoutUid = Omit<HighlightBounds, 'uid'>
-const InvalidBoundsMarker = 'INVALID'
-export function boundsAreValid(uid: string): boolean {
-  return !uid.startsWith(InvalidBoundsMarker)
-}
+// In practical usage currently these highlight bounds should only include entries
+// that are selectable, potentially in the future this will extend beyond that but for
+// the moment it doesn't make sense to include highlight bounds for a value deep within
+// some properties for example.
+export function trimHighlightBounds(success: ParseSuccess): ParseSuccess {
+  const highlightBoundsOptic: Optic<ParseSuccess, HighlightBoundsForUids> =
+    fromField('highlightBounds')
+  return modify(
+    highlightBoundsOptic,
+    (highlightBounds) => {
+      let updatedHighlightBounds: HighlightBoundsForUids = {}
 
-export function getHighlightBoundsWithUID(
-  filename: string,
-  sourceText: string,
-): Array<HighlightBounds> {
-  const sourceFile = TS.createSourceFile(
-    filename,
-    sourceText,
-    TS.ScriptTarget.Latest,
-    false,
-    TS.ScriptKind.TSX,
-  )
-
-  let result: Array<HighlightBounds> = []
-
-  if (sourceFile != null) {
-    withJSXElementAttributes(
-      sourceFile,
-      (boundingElement: TS.Node, attributes: TS.JsxAttributes) => {
-        const highlightBoundsForUid = (uid: string) => {
-          const startPosition = TS.getLineAndCharacterOfPosition(
-            sourceFile,
-            boundingElement.getStart(sourceFile, false),
-          )
-          const endPosition = TS.getLineAndCharacterOfPosition(sourceFile, boundingElement.getEnd())
-          return {
-            startCol: startPosition.character,
-            startLine: startPosition.line,
-            endCol: endPosition.character,
-            endLine: endPosition.line,
-            uid: uid,
-          }
+      function includeElement(element: JSXElementChild | ArbitraryJSBlock): void {
+        if (element.uid in highlightBounds) {
+          updatedHighlightBounds[element.uid] = highlightBounds[element.uid]
         }
-        const newBounds = withUID(
-          undefined,
-          attributes,
-          highlightBoundsForUid(`${InvalidBoundsMarker}-${UUID()}`),
-          highlightBoundsForUid,
-        )
-        result.push(newBounds)
-      },
-    )
-  }
+      }
 
-  return result
-}
+      function walkJSXElementChild(element: JSXElementChild): void {
+        switch (element.type) {
+          case 'JSX_ELEMENT':
+          case 'JSX_FRAGMENT':
+            includeElement(element)
+            // Don't include the properties of elements, but concievably we would want
+            // to include things like render props which include an element.
+            for (const child of element.children) {
+              walkJSXElementChild(child)
+            }
+            break
+          case 'JSX_CONDITIONAL_EXPRESSION':
+            includeElement(element)
+            walkJSXElementChild(element.condition)
+            walkJSXElementChild(element.whenTrue)
+            walkJSXElementChild(element.whenFalse)
+            break
+          case 'JSX_TEXT_BLOCK':
+          case 'ATTRIBUTE_VALUE':
+          case 'ATTRIBUTE_NESTED_ARRAY':
+          case 'ATTRIBUTE_NESTED_OBJECT':
+          case 'ATTRIBUTE_FUNCTION_CALL':
+            // Don't walk any further down these.
+            break
+          case 'JSX_MAP_EXPRESSION':
+          case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+            includeElement(element)
+            walkElementsWithin(element.elementsWithin)
+            break
+          default:
+            assertNever(element)
+        }
+      }
 
-export function getHighlightBoundsWithoutUID(
-  filename: string,
-  sourceText: string,
-): Array<HighlightBoundsWithoutUid> {
-  const sourceFile = TS.createSourceFile(
-    filename,
-    sourceText,
-    TS.ScriptTarget.Latest,
-    false,
-    TS.ScriptKind.TSX,
+      function walkElementsWithin(elementsWithin: ElementsWithin): void {
+        for (const elementWithin of Object.values(elementsWithin)) {
+          walkJSXElementChild(elementWithin)
+        }
+      }
+
+      for (const topLevelElement of success.topLevelElements) {
+        switch (topLevelElement.type) {
+          case 'UTOPIA_JSX_COMPONENT':
+            walkJSXElementChild(topLevelElement.rootElement)
+            if (topLevelElement.arbitraryJSBlock != null) {
+              walkElementsWithin(topLevelElement.arbitraryJSBlock.elementsWithin)
+            }
+            break
+          case 'ARBITRARY_JS_BLOCK':
+            walkElementsWithin(topLevelElement.elementsWithin)
+            break
+          case 'IMPORT_STATEMENT':
+          case 'UNPARSED_CODE':
+            break
+          default:
+            assertNever(topLevelElement)
+        }
+      }
+      return updatedHighlightBounds
+    },
+    success,
   )
-
-  let result: Array<HighlightBoundsWithoutUid> = []
-
-  if (sourceFile != null) {
-    withJSXElementAttributes(
-      sourceFile,
-      (boundingElement: TS.Node, attributes: TS.JsxAttributes) => {
-        const startPosition = TS.getLineAndCharacterOfPosition(
-          sourceFile,
-          boundingElement.getStart(sourceFile, false),
-        )
-        const endPosition = TS.getLineAndCharacterOfPosition(sourceFile, boundingElement.getEnd())
-        result.push({
-          startCol: startPosition.character,
-          startLine: startPosition.line,
-          endCol: endPosition.character,
-          endLine: endPosition.line,
-        })
-      },
-    )
-  }
-
-  return result
 }
 
 export function lintAndParse(
@@ -2024,6 +2054,7 @@ export function lintAndParse(
   content: string,
   oldParseResultForUIDComparison: ParseSuccess | null,
   alreadyExistingUIDs_MUTABLE: Set<string>,
+  shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)
   // Only fatal or error messages should bounce the parse.
@@ -2034,7 +2065,11 @@ export function lintAndParse(
       oldParseResultForUIDComparison,
       alreadyExistingUIDs_MUTABLE,
     )
-    return result
+    if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
+      return trimHighlightBounds(result)
+    } else {
+      return result
+    }
   } else {
     return parseFailure(null, null, null, lintResult)
   }

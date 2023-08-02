@@ -1,6 +1,6 @@
 import { AllFramePoints, AllFramePointsExceptSize, LayoutSystem } from 'utopia-api/core'
+import type { AllElementProps } from '../../components/editor/store/editor-state'
 import {
-  AllElementProps,
   transformElementAtPath,
   transformJSXElementAtPath,
 } from '../../components/editor/store/editor-state'
@@ -17,8 +17,8 @@ import {
   left as leftEither,
 } from '../shared/either'
 import Utils from '../../utils/utils'
+import type { CanvasRectangle } from '../shared/math-utils'
 import {
-  CanvasRectangle,
   zeroCanvasRect,
   zeroLocalRect,
   parseNumberOrPercent,
@@ -28,35 +28,35 @@ import {
   isInfinityRectangle,
 } from '../shared/math-utils'
 import { findJSXElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
-import {
+import type {
   DetectedLayoutSystem,
-  jsExpressionValue,
   JSXElement,
   UtopiaJSXComponent,
   JSXAttributes,
   SettableLayoutSystem,
   ElementInstanceMetadataMap,
-  isJSXElement,
   JSXElementChild,
   ElementInstanceMetadata,
-  emptyComments,
 } from '../shared/element-template'
+import { jsExpressionValue, isJSXElement, emptyComments } from '../shared/element-template'
 import { findJSXElementAtStaticPath } from '../model/element-template-utils'
+import type { ValueAtPath } from '../shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
-  ValueAtPath,
-  getJSXAttributeAtPath,
+  getJSXAttributesAtPath,
   setJSXValueAtPath,
   getAllPathsFromAttributes,
 } from '../shared/jsx-attributes'
-import { PropertyPath, ElementPath } from '../shared/project-file-types'
+import type { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { FlexLayoutHelpers } from './layout-helpers'
-import { LayoutPinnedProp, LayoutPinnedProps, StyleLayoutProp } from './layout-helpers-new'
-import { CSSPosition } from '../../components/inspector/common/css-utils'
+import type { LayoutPinnedProp, StyleLayoutProp } from './layout-helpers-new'
+import { LayoutPinnedProps } from './layout-helpers-new'
+import type { CSSPosition } from '../../components/inspector/common/css-utils'
 import type { Notice } from '../../components/common/notice'
 import { createStylePostActionToast } from './layout-notice'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
+import type { ElementPathTrees } from '../shared/element-path-tree'
 
 interface LayoutPropChangeResult {
   components: UtopiaJSXComponent[]
@@ -72,8 +72,13 @@ export function maybeSwitchChildrenLayoutProps(
   components: UtopiaJSXComponent[],
   propertyTarget: ReadonlyArray<string>,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): LayoutPropChangeResult {
-  const children = MetadataUtils.getChildrenUnordered(targetOriginalContextMetadata, target)
+  const children = MetadataUtils.getChildrenOrdered(
+    targetOriginalContextMetadata,
+    pathTrees,
+    target,
+  )
   const result = children.reduce<LayoutPropChangeResult>(
     (working, next) => {
       const { components: workingComponents, didSwitch: workingDidSwitch } = working
@@ -94,6 +99,7 @@ export function maybeSwitchChildrenLayoutProps(
         null,
         propertyTarget,
         allElementProps,
+        pathTrees,
       )
       return {
         components: nextComponents,
@@ -140,6 +146,7 @@ export function maybeSwitchLayoutProps(
   newParentMainAxis: 'horizontal' | 'vertical' | null,
   propertyTarget: ReadonlyArray<string>,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): LayoutPropChangeResult {
   const originalParentPath = EP.parentPath(originalPath)
   const originalParent = MetadataUtils.findElementByElementPath(
@@ -189,7 +196,12 @@ export function maybeSwitchLayoutProps(
       componentMetadata: updatedMetadata,
       didSwitch: true,
       toast: createStylePostActionToast(
-        MetadataUtils.getElementLabel(allElementProps, target, targetOriginalContextMetadata),
+        MetadataUtils.getElementLabel(
+          allElementProps,
+          target,
+          pathTrees,
+          targetOriginalContextMetadata,
+        ),
         originalPropertyPaths,
         updatedPropertyPaths,
       ),
@@ -223,7 +235,12 @@ export function maybeSwitchLayoutProps(
       didSwitch: switchLayoutFunction.didSwitch,
       toast: switchLayoutFunction.didSwitch
         ? createStylePostActionToast(
-            MetadataUtils.getElementLabel(allElementProps, target, targetOriginalContextMetadata),
+            MetadataUtils.getElementLabel(
+              allElementProps,
+              target,
+              pathTrees,
+              targetOriginalContextMetadata,
+            ),
             originalPropertyPaths,
             updatedPropertyPaths,
           )
@@ -952,7 +969,7 @@ export function roundAttributeLayoutValues(
 ): JSXAttributes {
   return propertiesToRound(propertyTarget).reduce((workingAttributes, propertyToRound) => {
     // Lookup the attribute given the property path.
-    const attributeResult = getJSXAttributeAtPath(workingAttributes, propertyToRound)
+    const attributeResult = getJSXAttributesAtPath(workingAttributes, propertyToRound)
     const value = attributeResult.attribute
     switch (value.type) {
       case 'ATTRIBUTE_VALUE':
@@ -996,6 +1013,7 @@ export function roundAttributeLayoutValues(
       case 'ATTRIBUTE_NESTED_ARRAY':
       case 'ATTRIBUTE_NESTED_OBJECT':
       case 'ATTRIBUTE_FUNCTION_CALL':
+      case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         return workingAttributes
       default:

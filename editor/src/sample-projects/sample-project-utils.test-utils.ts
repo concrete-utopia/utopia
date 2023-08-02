@@ -1,21 +1,19 @@
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../components/assets'
 import {
   addFileToProjectContents,
   projectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
   transformContentsTree,
 } from '../components/assets'
-import { PersistentModel, StoryboardFilePath } from '../components/editor/store/editor-state'
+import type { PersistentModel } from '../components/editor/store/editor-state'
+import { StoryboardFilePath } from '../components/editor/store/editor-state'
+import type { ParsedTextFile, ParseFailure, ParseSuccess } from '../core/shared/project-file-types'
 import {
   isParseSuccess,
-  ParsedTextFile,
   RevisionsState,
   textFile,
   textFileContents,
-  ParseFailure,
   isParseFailure,
   isUnparsed,
-  ParseSuccess,
 } from '../core/shared/project-file-types'
 import { emptySet } from '../core/shared/set-utils'
 import { lintAndParse } from '../core/workers/parser-printer/parser-printer'
@@ -48,12 +46,18 @@ export function parseProjectContents(
     if (tree.type === 'PROJECT_CONTENT_FILE') {
       const file = tree.content
       if (file.type === 'TEXT_FILE') {
-        const parsed = lintAndParse(tree.fullPath, file.fileContents.code, null, emptySet())
+        const parsed = lintAndParse(
+          tree.fullPath,
+          file.fileContents.code,
+          null,
+          emptySet(),
+          'trim-bounds',
+        )
         const updatedFile = textFile(
           textFileContents(file.fileContents.code, parsed, RevisionsState.BothMatch),
           null,
           isParseSuccess(parsed) ? parsed : null,
-          Date.now(),
+          file.versionNumber + 1,
         )
         return projectContentFile(tree.fullPath, updatedFile)
       } else {
@@ -66,7 +70,7 @@ export function parseProjectContents(
 }
 
 export function getParseSuccessForStoryboardCode(appUiJsFile: string): ParseSuccess {
-  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null, emptySet())
+  const parsedFile = lintAndParse(StoryboardFilePath, appUiJsFile, null, emptySet(), 'trim-bounds')
 
   if (isParseFailure(parsedFile)) {
     const failure =
@@ -91,10 +95,33 @@ export function createTestProjectWithCode(appUiJsFile: string): PersistentModel 
         textFileContents(appUiJsFile, parsedFile, RevisionsState.BothMatch),
         null,
         parsedFile,
-        Date.now(),
+        0,
       ),
     ),
   }
+}
+
+export function createTestProjectWithMultipleFiles(files: {
+  [filename: string]: string
+}): PersistentModel {
+  const baseModel = complexDefaultProject()
+  return Object.entries(files).reduce((model, [filename, contents]) => {
+    const parsedFile: ParseSuccess = getParseSuccessForStoryboardCode(contents)
+
+    return {
+      ...model,
+      projectContents: addFileToProjectContents(
+        model.projectContents,
+        filename,
+        textFile(
+          textFileContents(contents, parsedFile, RevisionsState.BothMatch),
+          null,
+          parsedFile,
+          0,
+        ),
+      ),
+    }
+  }, baseModel)
 }
 
 export function createModifiedProject(modifiedFiles: { [filename: string]: string }) {
@@ -106,6 +133,7 @@ export function createModifiedProject(modifiedFiles: { [filename: string]: strin
       modifiedFiles[modifiedFilename],
       null,
       emptySet(),
+      'trim-bounds',
     ) as ParsedTextFile
     if (!isParseSuccess(parsedFile)) {
       const failedParse = parsedFile as ParseFailure
@@ -121,7 +149,7 @@ export function createModifiedProject(modifiedFiles: { [filename: string]: strin
         textFileContents(modifiedFiles[modifiedFilename], parsedFile, RevisionsState.BothMatch),
         null,
         parsedFile,
-        Date.now(),
+        0,
       ),
     )
 

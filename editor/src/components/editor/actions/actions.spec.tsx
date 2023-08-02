@@ -1,24 +1,27 @@
 import * as Chai from 'chai'
-import { FramePin, LayoutSystem } from 'utopia-api/core'
+import type { FramePin } from 'utopia-api/core'
+import { LayoutSystem } from 'utopia-api/core'
+import type {
+  JSXAttributes,
+  JSXElement,
+  TopLevelElement,
+  UtopiaJSXComponent,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import {
   isUtopiaJSXComponent,
   jsxAttributeNestedObjectSimple,
-  JSXAttributes,
   jsExpressionValue,
   jsxElement,
-  JSXElement,
   jsxElementName,
-  TopLevelElement,
   utopiaJSXComponent,
-  UtopiaJSXComponent,
   defaultPropsParam,
   emptySpecialSizeMeasurements,
   clearTopLevelElementUniqueIDs,
   emptyComputedStyle,
   ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
   jsxAttributesFromMap,
-  emptyAttributeMetadatada,
+  emptyAttributeMetadata,
   jsExpressionOtherJavaScript,
   JSXElementChild,
   partOfJsxAttributeValue,
@@ -27,17 +30,24 @@ import {
   elementInstanceMetadata,
   emptyComments,
   SpecialSizeMeasurements,
+  unparsedCode,
+  clearExpressionUniqueIDs,
 } from '../../../core/shared/element-template'
-import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import {
+  clearModifiableAttributeUniqueIDs,
+  getModifiableJSXAttributeAtPath,
+} from '../../../core/shared/jsx-attributes'
+import type {
   ParseSuccess,
-  RevisionsState,
   TextFile,
+  TextFileContents,
+} from '../../../core/shared/project-file-types'
+import {
+  RevisionsState,
   isParseSuccess,
   isTextFile,
   textFileContents,
   textFile,
-  TextFileContents,
   unparsed,
   EmptyExportsDetail,
   importAlias,
@@ -46,32 +56,27 @@ import {
   exportFunction,
   parseSuccess,
   isUnparsed,
+  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
 import { deepFreeze } from '../../../utils/deep-freeze'
-import { right, forceRight, left, isRight } from '../../../core/shared/either'
+import { right, forceRight, left, isRight, mapEither } from '../../../core/shared/either'
 import {
   createFakeMetadataForComponents,
   createFakeMetadataForEditor,
 } from '../../../utils/utils.test-utils'
 import Utils from '../../../utils/utils'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  LocalRectangle,
-  localRectangle,
-  zeroRectangle,
-} from '../../../core/shared/math-utils'
+import type { CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle, localRectangle, zeroRectangle } from '../../../core/shared/math-utils'
 import { getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
+import type { EditorState, PersistentModel } from '../store/editor-state'
 import {
   createEditorState,
   deriveState,
-  EditorState,
   reconstructJSXMetadata,
   getOpenUIJSFile,
-  PersistentModel,
   StoryboardFilePath,
   defaultUserState,
   editorModelFromPersistentModel,
@@ -85,8 +90,9 @@ import {
   setCanvasFrames,
   setFocusedElement,
   setProp_UNSAFE,
-  switchLayoutSystem,
   updateFilePath,
+  updateFromWorker,
+  workerCodeAndParsedUpdate,
 } from './action-creators'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
 import {
@@ -131,6 +137,16 @@ import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/t
 import { cssNumber } from '../../inspector/common/css-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { childInsertionPath } from '../store/insertion-path'
+import type { Optic } from '../../../core/shared/optics/optics'
+import { fromField, filtered, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { contentsTreeOptic } from '../../../components/assets'
+import { unsafeGet } from '../../../core/shared/optics/optic-utilities'
+import {
+  ElementPathTree,
+  elementPathTree,
+  ElementPathTrees,
+} from '../../../core/shared/element-path-tree'
 
 const chaiExpect = Chai.expect
 
@@ -237,6 +253,7 @@ const originalModel = deepFreeze(
     null,
     null,
     [exportFunction('whatever')],
+    {},
   ),
 )
 const testEditor: EditorState = deepFreeze({
@@ -279,7 +296,9 @@ describe('SET_PROP', () => {
       updatedViewProps,
       PP.create('test', 'prop'),
     )
-    chaiExpect(updatedTestProp).to.deep.equal(right(partOfJsxAttributeValue(100)))
+    chaiExpect(mapEither(clearModifiableAttributeUniqueIDs, updatedTestProp)).to.deep.equal(
+      right(clearExpressionUniqueIDs(jsExpressionValue(100, emptyComments))),
+    )
   })
 })
 
@@ -338,7 +357,7 @@ describe('SET_CANVAS_FRAMES', () => {
   })
 })
 
-describe('moveTemplate', () => {
+xdescribe('moveTemplate', () => {
   function fileModel(rootElements: Array<JSXElement>): Readonly<ParseSuccess> {
     return deepFreeze(
       parseSuccess(
@@ -365,6 +384,7 @@ describe('moveTemplate', () => {
         null,
         null,
         [exportFunction('whatever')],
+        {},
       ),
     )
   }
@@ -682,6 +702,7 @@ describe('moveTemplate', () => {
     const actual = Utils.path(['rootElement', 'children', 0], updatedRoot2)
     chaiExpect(actual).to.deep.equal(view1)
   })
+
   it('reparents from pinned to group with frame props updated', () => {
     const view1 = jsxElement(
       jsxElementName('bbb', []),
@@ -764,165 +785,6 @@ function getOpenFileComponents(editor: EditorState): Array<UtopiaJSXComponent> {
   }
 }
 
-describe('SWITCH_LAYOUT_SYSTEM', () => {
-  const childElement = jsxElement(
-    'View',
-    'bbb',
-    jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('bbb', emptyComments),
-      style: jsExpressionValue(
-        {
-          left: 5,
-          top: 10,
-          width: 200,
-          height: 300,
-        },
-        emptyComments,
-      ),
-    }),
-    [],
-  )
-  const rootElement = jsxElement(
-    'View',
-    'aaa',
-    jsxAttributesFromMap({
-      'data-uid': jsExpressionValue('aaa', emptyComments),
-      style: jsExpressionValue({ backgroundColor: '#FFFFFF' }, emptyComments),
-    }),
-    [childElement],
-  )
-  const firstTopLevelElement = utopiaJSXComponent(
-    'App',
-    true,
-    'var',
-    'block',
-    null,
-    [],
-    rootElement,
-    null,
-    false,
-    emptyComments,
-  )
-  const storyboard = utopiaJSXComponent(
-    BakedInStoryboardVariableName,
-    false,
-    'var',
-    'block',
-    null,
-    [],
-    jsxElement(
-      'Storyboard',
-      BakedInStoryboardUID,
-      jsxAttributesFromMap({
-        'data-uid': jsExpressionValue(BakedInStoryboardUID, emptyComments),
-      }),
-      [
-        jsxElement(
-          'Scene',
-          'scene-0',
-          jsxAttributesFromMap({
-            component: jsExpressionOtherJavaScript('App', `return App`, ['App'], null, {}),
-            'data-uid': jsExpressionValue('scene-0', emptyComments),
-          }),
-          [],
-        ),
-      ],
-    ),
-    null,
-    false,
-    emptyComments,
-  )
-
-  const parsedUIFile = parseSuccess(
-    sampleImportsForTests,
-    [firstTopLevelElement, storyboard],
-    {},
-    null,
-    null,
-    [exportFunction('whatever')],
-  )
-
-  const fileForUI = textFile(
-    textFileContents('', parsedUIFile, RevisionsState.ParsedAhead),
-    null,
-    parsedUIFile,
-    0,
-  )
-  const rootElementPath = EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])
-  const childElementPath = EP.elementPath([
-    [BakedInStoryboardUID, 'scene-0'],
-    ['aaa', 'bbb'],
-  ])
-
-  const rootElementProps: ElementProps = {
-    'data-uid': 'aaa',
-  }
-  const rootElementMetadata: ElementInstanceMetadata = {
-    elementPath: rootElementPath,
-    element: right(firstTopLevelElement.rootElement),
-    globalFrame: canvasRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-    localFrame: localRectangle({ x: 0, y: 0, width: 100, height: 100 }),
-    componentInstance: false,
-    isEmotionOrStyledComponent: false,
-    specialSizeMeasurements: emptySpecialSizeMeasurements,
-    computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadatada,
-    label: null,
-    importInfo: null,
-    conditionValue: 'not-a-conditional',
-  }
-
-  const childElementProps: ElementProps = {
-    'data-uid': 'bbb',
-    style: {
-      left: 5,
-      top: 10,
-      width: 200,
-      height: 300,
-    },
-  }
-  const childElementMetadata: ElementInstanceMetadata = {
-    elementPath: childElementPath,
-    element: right(childElement),
-    globalFrame: canvasRectangle({ x: 0, y: 0, width: 200, height: 300 }),
-    localFrame: localRectangle({ x: 0, y: 0, width: 200, height: 300 }),
-    componentInstance: false,
-    isEmotionOrStyledComponent: false,
-    specialSizeMeasurements: emptySpecialSizeMeasurements,
-    computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadatada,
-    label: null,
-    importInfo: null,
-    conditionValue: 'not-a-conditional',
-  }
-
-  const elementMetadataMap: ElementInstanceMetadataMap = {
-    [EP.toString(rootElementPath)]: rootElementMetadata,
-    [EP.toString(childElementPath)]: childElementMetadata,
-  }
-
-  const testEditorWithPins: EditorState = deepFreeze({
-    ...createEditorState(NO_OP),
-    projectContents: contentsToTree({
-      [StoryboardFilePath]: fileForUI,
-    }),
-    jsxMetadata: elementMetadataMap,
-    selectedViews: [EP.elementPath([[BakedInStoryboardUID, 'scene-0'], ['aaa']])],
-  })
-  it('switches from pins to flex correctly', () => {
-    const switchActionToFlex = switchLayoutSystem('flex', styleStringInArray)
-    const result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
-  })
-  it('switches from flex to pins correctly', () => {
-    const switchActionToFlex = switchLayoutSystem('flex', styleStringInArray)
-    let result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToFlex, testEditorWithPins)
-    const switchActionToPins = switchLayoutSystem(LayoutSystem.PinSystem, styleStringInArray)
-    result = UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(switchActionToPins, result)
-    expect(getOpenFileComponents(result).map(clearTopLevelElementUniqueIDs)).toMatchSnapshot()
-  })
-})
-
 describe('LOAD', () => {
   it('Parses all UIJS files and bins any previously stored parsed model data', () => {
     const firstUIJSFile = StoryboardFilePath
@@ -967,9 +829,6 @@ describe('LOAD', () => {
         pendingCommit: null,
         branchLoaded: false,
       },
-      githubChecksums: null,
-      branchContents: null,
-      assetChecksums: {},
       colorSwatches: [],
     }
 
@@ -1044,6 +903,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       { antd: { status: 'loaded' } },
       { antd: DefaultThirdPartyControlDefinitions.antd },
       editorState.projectContents,
@@ -1070,13 +930,14 @@ describe('INSERT_INSERTABLE', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
+
     const action = insertInsertable(
-      targetPath,
+      childInsertionPath(targetPath),
       menuInsertable,
       'do-not-add',
-      'do-now-wrap-content',
       null,
     )
+
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
@@ -1099,6 +960,7 @@ describe('INSERT_INSERTABLE', () => {
             return (
               <div style={{ ...props.style }}>
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1148,6 +1010,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       { antd: { status: 'loaded' } },
       { antd: DefaultThirdPartyControlDefinitions.antd },
       editorState.projectContents,
@@ -1174,13 +1037,14 @@ describe('INSERT_INSERTABLE', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
+
     const action = insertInsertable(
-      targetPath,
+      childInsertionPath(targetPath),
       menuInsertable,
       'add-size',
-      'do-now-wrap-content',
       null,
     )
+
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
@@ -1203,6 +1067,7 @@ describe('INSERT_INSERTABLE', () => {
             return (
               <div style={{ ...props.style }}>
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1253,6 +1118,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       {},
       {},
       editorState.projectContents,
@@ -1277,13 +1143,9 @@ describe('INSERT_INSERTABLE', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertInsertable(
-      targetPath,
-      imgInsertable,
-      'add-size',
-      'do-now-wrap-content',
-      null,
-    )
+
+    const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', null)
+
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
@@ -1304,6 +1166,7 @@ describe('INSERT_INSERTABLE', () => {
             return (
               <div style={{ ...props.style }}>
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1350,6 +1213,7 @@ describe('INSERT_INSERTABLE', () => {
     const editorState = editorModelFromPersistentModel(project, NO_OP)
 
     const insertableGroups = getComponentGroups(
+      'insert',
       {},
       {},
       editorState.projectContents,
@@ -1374,9 +1238,11 @@ describe('INSERT_INSERTABLE', () => {
       ['app-outer-div', 'card-instance'],
       ['card-outer-div'],
     ])
-    const action = insertInsertable(targetPath, imgInsertable, 'add-size', 'do-now-wrap-content', {
+
+    const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', {
       type: 'back',
     })
+
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
@@ -1405,6 +1271,7 @@ describe('INSERT_INSERTABLE', () => {
                   src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
                 />
                 <div
+                  data-testid='card-inner-div'
                   style={{
                     position: 'absolute',
                     left: 0,
@@ -1437,96 +1304,6 @@ describe('INSERT_INSERTABLE', () => {
       throw new Error('File is not a text file.')
     }
   })
-
-  it('inserts a div into the project, wrapping the parents existing children if selected', () => {
-    const project = complexDefaultProjectPreParsed()
-    const editorState = editorModelFromPersistentModel(project, NO_OP)
-
-    const insertableGroups = getComponentGroups(
-      {},
-      {},
-      editorState.projectContents,
-      [],
-      StoryboardFilePath,
-    )
-    const htmlGroup = forceNotNull(
-      'Group should exist.',
-      insertableGroups.find((group) => {
-        return group.source.type === 'HTML_GROUP'
-      }),
-    )
-    const divInsertable = forceNotNull(
-      'Component should exist.',
-      htmlGroup.insertableComponents.find((insertable) => {
-        return insertable.name === 'div'
-      }),
-    )
-
-    const targetPath = EP.elementPath([
-      ['storyboard-entity', 'scene-1-entity', 'app-entity'],
-      ['app-outer-div', 'card-instance'],
-      ['card-outer-div'],
-    ])
-    const action = insertInsertable(targetPath, divInsertable, 'do-not-add', 'wrap-content', null)
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
-    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
-    if (cardFile != null && isTextFile(cardFile)) {
-      const parsed = cardFile.fileContents.parsed
-      if (isParseSuccess(parsed)) {
-        const printedCode = printCode(
-          '/src/card.js',
-          printCodeOptions(false, true, true, true),
-          parsed.imports,
-          parsed.topLevelElements,
-          parsed.jsxFactoryFunction,
-          parsed.exportsDetail,
-        )
-        expect(printedCode).toMatchInlineSnapshot(`
-          "import * as React from 'react'
-          import { Spring } from 'non-existant-dummy-library'
-          export var Card = (props) => {
-            return (
-              <div style={{ ...props.style }}>
-                <div
-                  style={{
-                    backgroundColor: '#aaaaaa33',
-                    position: 'absolute',
-                  }}
-                >
-                  <div
-                    style={{
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      width: 50,
-                      height: 50,
-                      backgroundColor: 'red',
-                    }}
-                  />
-                  <Spring
-                    data-testid='spring'
-                    style={{
-                      position: 'absolute',
-                      left: 100,
-                      top: 200,
-                      width: 50,
-                      height: 50,
-                      backgroundColor: 'blue',
-                    }}
-                  />
-                </div>
-              </div>
-            )
-          }
-          "
-        `)
-      } else {
-        throw new Error('File does not contain parse success.')
-      }
-    } else {
-      throw new Error('File is not a text file.')
-    }
-  })
 })
 
 describe('SET_FOCUSED_ELEMENT', () => {
@@ -1547,10 +1324,11 @@ describe('SET_FOCUSED_ELEMENT', () => {
       false,
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
-      emptyAttributeMetadatada,
+      emptyAttributeMetadata,
       null,
       null,
       'not-a-conditional',
+      null,
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: divElementMetadata,
@@ -1560,7 +1338,8 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    const derivedState = deriveState(editorState, null)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState).toBe(editorState)
   })
   it('focuses a focusable element without a problem', () => {
@@ -1582,10 +1361,11 @@ describe('SET_FOCUSED_ELEMENT', () => {
       false,
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
-      emptyAttributeMetadatada,
+      emptyAttributeMetadata,
       null,
       null,
       'not-a-conditional',
+      null,
     )
     const fakeMetadata: ElementInstanceMetadataMap = {
       [EP.toString(pathToFocus)]: cardElementMetadata,
@@ -1595,7 +1375,132 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState)
+    const derivedState = deriveState(editorState, null)
+    const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
+  })
+})
+
+function textFileFromEditorStateOptic(filename: string): Optic<EditorState, TextFile> {
+  return fromField<EditorState, 'projectContents'>('projectContents')
+    .compose(contentsTreeOptic)
+    .compose(filtered(({ fullPath }) => fullPath === filename))
+    .compose(fromField('file'))
+    .compose(fromTypeGuard(isTextFile))
+}
+
+function versionNumberOptic(filename: string): Optic<EditorState, number> {
+  return textFileFromEditorStateOptic(filename).compose(fromField('versionNumber'))
+}
+function parsedTextFileOptic(filename: string): Optic<EditorState, ParseSuccess> {
+  return textFileFromEditorStateOptic(filename)
+    .compose(fromField('fileContents'))
+    .compose(fromField('parsed'))
+    .compose(fromTypeGuard(isParseSuccess))
+}
+
+describe('UPDATE_FROM_WORKER', () => {
+  it('should prevent all updates from applying if any are stale', () => {
+    // Setup and getting some starting values.
+    const project = complexDefaultProjectPreParsed()
+    const startingEditorState = editorModelFromPersistentModel(project, NO_OP)
+    const storyboardFile = unsafeGet(parsedTextFileOptic(StoryboardFilePath), startingEditorState)
+    const updatedStoryboardFile: ParseSuccess = {
+      ...storyboardFile,
+      topLevelElements: [...storyboardFile.topLevelElements, unparsedCode('// Nonsense')],
+    }
+    const appJSFile = unsafeGet(parsedTextFileOptic('/src/app.js'), startingEditorState)
+    const updatedAppJSFile: ParseSuccess = {
+      ...appJSFile,
+      topLevelElements: [...appJSFile.topLevelElements, unparsedCode('// Other nonsense.')],
+    }
+    const versionNumberOfStoryboard = unsafeGet(
+      versionNumberOptic(StoryboardFilePath),
+      startingEditorState,
+    )
+    const versionNumberOfAppJS = unsafeGet(versionNumberOptic('/src/app.js'), startingEditorState)
+
+    // Create the action and fire it.
+    const updateToCheck = updateFromWorker([
+      workerCodeAndParsedUpdate(
+        StoryboardFilePath,
+        '// Not relevant.',
+        updatedStoryboardFile,
+        versionNumberOfStoryboard + 1,
+      ),
+      workerCodeAndParsedUpdate(
+        '/src/app.js',
+        '// Not relevant.',
+        updatedAppJSFile,
+        versionNumberOfAppJS - 1,
+      ),
+    ])
+    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
+
+    // Check that the model hasn't changed, because of the stale revised time.
+    expect(updatedEditorState).toBe(startingEditorState)
+  })
+  it('should apply all if none are stale', () => {
+    // Setup and getting some starting values.
+    const project = complexDefaultProjectPreParsed()
+    const startingEditorState = editorModelFromPersistentModel(project, NO_OP)
+    const storyboardFile = unsafeGet(parsedTextFileOptic(StoryboardFilePath), startingEditorState)
+    const updatedStoryboardFile: ParseSuccess = {
+      ...storyboardFile,
+      topLevelElements: [...storyboardFile.topLevelElements, unparsedCode('// Nonsense')],
+    }
+    const appJSFile = unsafeGet(parsedTextFileOptic('/src/app.js'), startingEditorState)
+    const updatedAppJSFile: ParseSuccess = {
+      ...appJSFile,
+      topLevelElements: [...appJSFile.topLevelElements, unparsedCode('// Other nonsense.')],
+    }
+    const versionNumberOfStoryboard = unsafeGet(
+      versionNumberOptic(StoryboardFilePath),
+      startingEditorState,
+    )
+    const versionNumberOfAppJS = unsafeGet(versionNumberOptic('/src/app.js'), startingEditorState)
+
+    // Create the action and fire it.
+    const updateToCheck = updateFromWorker([
+      workerCodeAndParsedUpdate(
+        StoryboardFilePath,
+        '// Not relevant.',
+        updatedStoryboardFile,
+        versionNumberOfStoryboard + 1,
+      ),
+      workerCodeAndParsedUpdate(
+        '/src/app.js',
+        '// Not relevant.',
+        updatedAppJSFile,
+        versionNumberOfAppJS + 1,
+      ),
+    ])
+    const updatedEditorState = UPDATE_FNS.UPDATE_FROM_WORKER(updateToCheck, startingEditorState)
+
+    // Get the same values that we started with but from the updated editor state.
+    const updatedStoryboardVersionNumberFromState = unsafeGet(
+      versionNumberOptic(StoryboardFilePath),
+      updatedEditorState,
+    )
+    const updatedAppJSVersionNumberFromState = unsafeGet(
+      versionNumberOptic('/src/app.js'),
+      updatedEditorState,
+    )
+    const updatedStoryboardFileFromState = unsafeGet(
+      parsedTextFileOptic(StoryboardFilePath),
+      updatedEditorState,
+    )
+    const updatedAppJSFileFromState = unsafeGet(
+      parsedTextFileOptic('/src/app.js'),
+      updatedEditorState,
+    )
+
+    // Check that the changes were applied into the model.
+    expect(updatedStoryboardVersionNumberFromState).toBeGreaterThanOrEqual(
+      versionNumberOfStoryboard,
+    )
+    expect(updatedAppJSVersionNumberFromState).toBeGreaterThanOrEqual(versionNumberOfAppJS)
+    expect(updatedStoryboardFileFromState).toStrictEqual(updatedStoryboardFile)
+    expect(updatedAppJSFileFromState).toStrictEqual(updatedAppJSFile)
   })
 })

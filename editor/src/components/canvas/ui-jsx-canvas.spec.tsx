@@ -851,7 +851,7 @@ export { ToBeDefaultExported as default }`,
       null,
       `
       import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 export var App = (props) => {
   return <Widget data-uid={'bbb'} />
 }
@@ -1405,8 +1405,12 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             \\"
             data-uid=\\"scene-aaa\\"
           >
-            <div id=\\"nasty-div\\" data-uid=\\"ce9~~~1\\" data-path=\\"d1b~~~2/ce9~~~1\\">
-              huhahuha
+            <div
+              id=\\"nasty-div\\"
+              data-uid=\\"aaa\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa\\"
+            >
+              huha huha
             </div>
           </div>
         </div>
@@ -1523,7 +1527,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
     testCanvasRender(
       null,
       `import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var Cat = (props) => {
   return (
@@ -2297,7 +2301,7 @@ describe('UiJsxCanvas render multifile projects', () => {
               >
                 <div
                   data-uid=\\"bbb~~~1\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/bbb~~~1\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/aaa/bbb~~~1\\"
                 ></div>
               </div>
               <div
@@ -2306,11 +2310,11 @@ describe('UiJsxCanvas render multifile projects', () => {
               >
                 <div
                   data-uid=\\"ddd~~~1\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ddd~~~1\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/ddd~~~1\\"
                 ></div>
                 <div
                   data-uid=\\"eee~~~2\\"
-                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/eee~~~2\\"
+                  data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:outer-div/ccc/eee~~~2\\"
                 ></div>
               </div>
             </div>

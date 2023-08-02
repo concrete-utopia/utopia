@@ -1,5 +1,6 @@
 import Draggable from 'react-draggable'
-import { Resizable, ResizeCallback, ResizeDirection } from 're-resizable'
+import type { ResizeCallback, ResizeDirection } from 're-resizable'
+import { Resizable } from 're-resizable'
 import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -345,27 +346,26 @@ const DesignPanelRootInner = React.memo(() => {
             {isCanvasVisible && navigatorVisible ? (
               <div
                 style={{
+                  height: 'calc(100% - 20px)',
                   position: 'absolute',
-                  zIndex: 20,
-                  overflow: 'hidden',
-                  borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
-                  borderRight: `1px solid ${colorTheme.subduedBorder.value}`,
-                  borderRadius: 8,
-                  top: 4,
-                  left: 4,
-                  bottom: 4,
-                  border: '1px solid black',
+                  top: 0,
+                  left: 0,
+                  zIndex: 1,
+                  margin: 10,
                 }}
               >
                 <ResizableFlexColumn
-                  style={{
-                    overscrollBehavior: 'contain',
-                    backgroundColor: colorTheme.inspectorBackground.value,
-                  }}
                   onResizeStop={onNavigatorResizeStop}
                   defaultSize={{
                     width: navigatorWidth,
                     height: '100%',
+                  }}
+                  style={{
+                    overscrollBehavior: 'contain',
+                    backgroundColor: colorTheme.inspectorBackground.value,
+                    borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+                    overflow: 'scroll',
+                    boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
                   }}
                 >
                   <MiniTitleBar />
@@ -376,17 +376,13 @@ const DesignPanelRootInner = React.memo(() => {
 
             <CanvasWrapperComponent />
             <FloatingInsertMenu />
+
+            {isCanvasVisible && isRightMenuExpanded ? (
+              <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
+            ) : null}
           </SimpleFlexColumn>
         ) : null}
       </SimpleFlexRow>
-
-      {isCanvasVisible ? (
-        <>
-          {isRightMenuExpanded ? (
-            <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
-          ) : null}
-        </>
-      ) : null}
     </>
   )
 })
@@ -432,13 +428,10 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
   return (
     <div
       style={{
+        height: 'calc(100% - 20px)',
         position: 'absolute',
-        border: '1px solid black',
-        borderRadius: 8,
-        top: 4,
-        right: 4,
-        bottom: 4,
-        overflow: 'hidden',
+        right: 0,
+        margin: 10,
       }}
     >
       <Resizable
@@ -451,7 +444,14 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
           width: width,
           height: '100%',
         }}
-        style={{ transition: 'width 100ms ease-in-out' }}
+        style={{
+          transition: 'width 100ms ease-in-out',
+
+          overflow: 'scroll',
+          backgroundColor: colorTheme.inspectorBackground.value,
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        }}
         snap={{
           x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
         }}
@@ -473,10 +473,9 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
             backgroundColor: colorTheme.inspectorBackground.value,
             flexGrow: 0,
             flexShrink: 0,
-            paddingBottom: 100,
+            paddingBottom: props.isInsertMenuSelected ? 0 : 100,
           }}
         >
-          <MiniTitleBar />
           {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
         </SimpleFlexRow>
         <CanvasStrategyInspector />

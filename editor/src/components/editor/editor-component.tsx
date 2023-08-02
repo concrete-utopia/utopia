@@ -53,8 +53,11 @@ import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-dis
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
-import { EditorAction } from './action-types'
+import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
+import { notice } from '../common/notice'
+
+const liveModeToastId = 'play-mode-toast'
 
 function pushProjectURLToBrowserHistory(projectId: string, projectName: string): void {
   // Make sure we don't replace the query params
@@ -89,6 +92,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   const dispatch = useDispatch()
   const editorStoreRef = useRefEditorState((store) => store)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const navigatorTargetsRef = useRefEditorState((store) => store.derived.navigatorTargets)
   const colorTheme = useColorTheme()
   const onWindowMouseUp = React.useCallback((event: MouseEvent) => {
     return [EditorActions.updateMouseButtonsPressed(null, event.button)]
@@ -138,6 +142,26 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
   }, [editorStoreRef])
 
   const setClearKeyboardInteraction = useClearKeyboardInteraction(editorStoreRef)
+
+  const mode = useEditorState(Substores.restOfEditor, (store) => store.editor.mode, 'mode')
+  React.useEffect(() => {
+    setTimeout(() => {
+      if (mode.type === 'live') {
+        dispatch([
+          EditorActions.showToast(
+            notice(
+              'You are in Live mode. Use ⌘ to select and scroll.',
+              'NOTICE',
+              true,
+              liveModeToastId,
+            ),
+          ),
+        ])
+      } else {
+        dispatch([EditorActions.removeToast(liveModeToastId)])
+      }
+    }, 0)
+  }, [mode.type, dispatch])
 
   const onWindowKeyDown = React.useCallback(
     (event: KeyboardEvent) => {
@@ -194,11 +218,25 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
       }
 
       actions.push(
-        ...handleKeyDown(event, editorStoreRef.current.editor, metadataRef, namesByKey, dispatch),
+        ...handleKeyDown(
+          event,
+          editorStoreRef.current.editor,
+          metadataRef,
+          navigatorTargetsRef,
+          namesByKey,
+          dispatch,
+        ),
       )
       return actions
     },
-    [dispatch, editorStoreRef, metadataRef, namesByKey, setClearKeyboardInteraction],
+    [
+      dispatch,
+      editorStoreRef,
+      metadataRef,
+      navigatorTargetsRef,
+      namesByKey,
+      setClearKeyboardInteraction,
+    ],
   )
 
   const onWindowKeyUp = React.useCallback(
@@ -317,6 +355,8 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           width: '100vw',
           overscrollBehaviorX: 'contain',
           color: colorTheme.fg1.value,
+          // the following line prevents user css overriding the editor font
+          fontFamily: 'utopian-inter',
         }}
         onDragEnter={startDragInsertion}
       >
@@ -494,12 +534,14 @@ const ToastRenderer = React.memo(() => {
       key={'toast-stack'}
       style={{
         position: 'fixed',
-        bottom: 40,
+        bottom: 8,
         justifyContent: 'center',
-        left: '30%',
-        overflow: 'scroll',
-        maxHeight: '50%',
+        right: 260,
         zIndex: 100,
+        // padding required to not cut off the boxShadow on each toast
+        paddingTop: 50,
+        paddingLeft: 50,
+        paddingRight: 50,
       }}
     >
       {toasts.map((toast, index) => (

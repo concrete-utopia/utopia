@@ -1,19 +1,20 @@
 import * as EP from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { wait } from '../../../../utils/utils.test-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
   pressKey,
 } from '../../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
+  makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../../editor/actions/action-creators'
-import { InsertMode, TextEditMode } from '../../../editor/editor-modes'
+import type { InsertMode, TextEditMode } from '../../../editor/editor-modes'
 
 describe('Text edit mode', () => {
   describe('Entering text edit mode', () => {
@@ -64,6 +65,99 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    it('Entering text edit mode with double click on conditional with expression in active branch', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+        // @utopia/uid=cond
+        true ? 'Hello' : <div />
+      }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e/cond')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+    })
+
+    it('Entering text edit mode with double click on conditional with expression in both branches', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+        // @utopia/uid=cond
+        true ? 'Hello' : Utopia
+      }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e/cond')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+    })
+    it('Can not entering text edit mode with double click on conditional with expression in active branch when there is sibling', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+          // @utopia/uid=cond
+          true ? 'Hello' : <div />
+        }
+        <div />`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
+    it('Can not enter text edit mode with double click on conditional with element in active branch', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+          // @utopia/uid=cond
+          true ? <div>Hello</div> : <div />
+        }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('Can not enter text edit mode with double click on conditional with expression in active branch which returns an element', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+          // @utopia/uid=cond
+          true ? (() => <div>hello</div>)() : <div />
+        }`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/cond'))
+      await clickOnElement(editor, 'div', 'double-click')
+      // wait for the next frame
+      await wait(1)
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
+        'sb/39e/cond/ff4',
+      )
+    })
     it('Entering text edit mode with double click on selected multiline text editable element', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithMultilineText,
@@ -105,6 +199,45 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    it('Does not enter text edit mode with pressing enter on a selected void html element', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`<img
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          alt='Utopia logo'
+          style={{ height: '100%' }}
+          data-uid='b0e'
+        />`),
+        'await-first-dom-report',
+      )
+      await selectElement(editor, EP.fromString('sb/39e/b0e'))
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/b0e')
+    })
+    it('Does not enter text edit mode with pressing enter on a selected group', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`<Group
+          style={{
+            backgroundColor: 'blue',
+            width: 100,
+            height: 100,
+          }}
+          data-uid='group'
+        />`),
+        'await-first-dom-report',
+      )
+      const target = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:group')
+      await selectElement(editor, target)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(editor.getEditorState().editor.selectedViews[0]).toEqual(target)
+    })
     it('Entering text edit mode with pressing enter on a multiline text editable selected element', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithMultilineText,
@@ -133,6 +266,71 @@ describe('Text edit mode', () => {
       ).toEqual('sb/39e')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
+    })
+    it("can not enter text edit mode with component that doesn't support children", async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      import { Rectangle } from 'utopia-api'
+      
+      var App = () => {
+        return (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: 'white',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+            data-uid='root'
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 77,
+                top: 111,
+                width: 223,
+                height: 317,
+              }}
+              data-uid='rect'
+            />
+          </div>
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            style={{
+              width: 380,
+              height: 540,
+              position: 'absolute',
+              left: 55,
+              top: 104,
+            }}
+            data-label='My App'
+            data-uid='scene'
+          >
+            <App style={{}} data-uid='app' />
+          </Scene>
+        </Storyboard>
+      )
+      `,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/rect')])
+
+      await pressKey('Enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.toasts.length).toEqual(1)
+      expect(editor.getEditorState().editor.toasts[0].message).toEqual(
+        "This element doesn't support children, so it cannot be text edited",
+      )
     })
   })
 
@@ -166,6 +364,26 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e')
     })
+    it('Click to select conditional text editable target', async () => {
+      const editor = await renderTestEditorWithCode(
+        project(`{
+        // @utopia/uid=cond
+        true ? 'Hello' : <div />
+      }`),
+
+        'await-first-dom-report',
+      )
+
+      await pressKey('t')
+      await clickOnElement(editor, 'div')
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+      expect(
+        EP.toString((editor.getEditorState().editor.mode as TextEditMode).editedText!),
+      ).toEqual('sb/39e/cond')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual('sb/39e/cond')
+    })
   })
 })
 
@@ -182,8 +400,8 @@ async function clickOnElement(
   const div = editor.renderedDOM.getByTestId(testId)
   const divBounds = div.getBoundingClientRect()
   const divCorner = {
-    x: divBounds.x + 50,
-    y: divBounds.y + 40,
+    x: divBounds.x + 10,
+    y: divBounds.y + 10,
   }
 
   if (singleOrDoubleClick === 'single-click') {
@@ -194,121 +412,36 @@ async function clickOnElement(
   await editor.getDispatchFollowUpActionsFinished()
 }
 
-const projectWithCodeText = formatTestProjectCode(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+const project = (snippet: string) => {
+  return formatTestProjectCode(`import * as React from 'react'
+  import { Storyboard } from 'utopia-api'
+  
+  const title = 'Hello'
+  export var storyboard = (
+    <Storyboard data-uid='sb'>
+      <div
+        data-testid='div'
+        style={{
+          backgroundColor: '#0091FFAA',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 288,
+          height: 362,
+        }}
+        data-uid='39e'
+      >
+        ${snippet}
+      </div>
+    </Storyboard>
+  )`)
+}
 
-const title = 'Hello'
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div
-      data-testid='div'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 288,
-        height: 362,
-      }}
-      data-uid='39e'
-    >
-      {title}
-    </div>
-  </Storyboard>
-)
-`)
+const projectWithCodeText = project('{title}')
 
-const projectWithText = formatTestProjectCode(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+const projectWithText = project('hello')
 
+const projectWithMultilineText = project(`Hello<br />
+Utopia`)
 
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div
-      data-testid='div'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 288,
-        height: 362,
-      }}
-      data-uid='39e'
-    >
-      Hello
-    </div>
-  </Storyboard>
-)
-`)
-
-const projectWithMultilineText = formatTestProjectCode(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div
-      data-testid='div'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 288,
-        height: 362,
-      }}
-      data-uid='39e'
-    >
-      Hello<br />
-      Utopia
-    </div>
-  </Storyboard>
-)
-`)
-
-const projectWithEmptyText = formatTestProjectCode(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div
-      data-testid='div'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 288,
-        height: 362,
-      }}
-      data-uid='39e'
-    />
-  </Storyboard>
-)
-`)
-
-const projectWithNestedDiv = formatTestProjectCode(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div
-      data-testid='div'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 288,
-        height: 362,
-      }}
-      data-uid='39e'
-    >
-      <div/>
-    </div>
-  </Storyboard>
-)
-`)
+const projectWithEmptyText = project('')

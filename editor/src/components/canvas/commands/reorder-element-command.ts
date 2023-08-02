@@ -1,10 +1,12 @@
-import { IndexPosition } from '../../../utils/utils'
+import type { IndexPosition } from '../../../utils/utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorState } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { reorderComponent } from '../canvas-utils'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
 
 export interface ReorderElement extends BaseCommand {
   type: 'REORDER_ELEMENT'
@@ -37,11 +39,9 @@ export const runReorderElement: CommandFunction<ReorderElement> = (
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const withReorder = reorderComponent(
         editorState.projectContents,
-        editorState.canvas.openFile?.filename ?? null,
         components,
         command.target,
         command.indexPosition,
-        editorState.spyMetadata,
       )
       return getPatchForComponentChange(
         success.topLevelElements,

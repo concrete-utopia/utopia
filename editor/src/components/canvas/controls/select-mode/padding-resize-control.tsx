@@ -1,24 +1,27 @@
 import React from 'react'
-import { CanvasSubstate } from '../../../../components/editor/store/store-hook-substore-types'
-import { CanvasVector, size, Size, windowPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { CanvasSubstate } from '../../../../components/editor/store/store-hook-substore-types'
+import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
+import { size, windowPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../../utils/feature-switches'
-import { emptyModifiers, Modifier, Modifiers } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
-import { EditorDispatch } from '../../../editor/action-types'
+import type { EditorDispatch } from '../../../editor/action-types'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { EditorStorePatched } from '../../../editor/store/editor-state'
+import type { EditorStorePatched } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { printCSSNumber } from '../../../inspector/common/css-utils'
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
+import type { InteractionSession } from '../../canvas-strategies/interaction-state'
 import {
   createInteractionViaMouse,
-  InteractionSession,
   paddingResizeHandle,
 } from '../../canvas-strategies/interaction-state'
-import { CSSCursor, EdgePiece, isHorizontalEdgePiece } from '../../canvas-types'
+import type { EdgePiece } from '../../canvas-types'
+import { CSSCursor, isHorizontalEdgePiece } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import {
   combinePaddings,
@@ -30,12 +33,8 @@ import {
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
-import {
-  CanvasLabel,
-  CSSNumberWithRenderedValue,
-  PillHandle,
-  useHoverWithDelay,
-} from './controls-common'
+import type { CSSNumberWithRenderedValue } from './controls-common'
+import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>

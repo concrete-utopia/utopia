@@ -20,7 +20,7 @@ export function useReParseOpenProjectFile(): () => void {
         ),
         openFile.lastSavedContents,
         openFile.lastParseSuccess,
-        Date.now(),
+        openFile.versionNumber + 1,
       )
       dispatch([updateFile(openFilePath, openFileCodeAhead, false)])
     }

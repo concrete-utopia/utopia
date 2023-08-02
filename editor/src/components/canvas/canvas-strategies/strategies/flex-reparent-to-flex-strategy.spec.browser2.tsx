@@ -1,5 +1,5 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
@@ -7,16 +7,17 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, Modifiers } from '../../../../utils/modifiers'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier } from '../../../../utils/modifiers'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
 import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { setFeatureEnabled } from '../../../../utils/feature-switches'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 
 async function dragElement(
@@ -220,7 +221,7 @@ export var storyboard = (
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
 ${componentInnards}
@@ -525,5 +526,170 @@ describe('Flex Reparent To Flex Strategy', () => {
     </div>
   `),
     )
+  })
+
+  describe('conditionals', () => {
+    it('reparents into conditional, but with absolute positioning', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div
+            style={{
+              position: 'absolute',
+              width: 700,
+              height: 600,
+            }}
+            data-uid='container'
+            data-testid='container'
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 0,
+                top: 0,
+                backgroundColor: 'blue',
+              }}
+              data-uid='flexparent1'
+              data-testid='flexparent1'
+            >
+              {
+                // @utopia/uid=cond
+                true ? null : <div data-uid='false-branch' />
+              }
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                position: 'absolute',
+                width: 250,
+                height: 500,
+                left: 350,
+                top: 0,
+                backgroundColor: 'lightgreen',
+              }}
+              data-uid='flexparent2'
+              data-testid='flexparent2'
+            >
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'teal',
+                }}
+                data-uid='flexchild3'
+                data-testid='flexchild3'
+              />
+              <div
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'red',
+                }}
+                data-uid='flexchild4'
+                data-testid='flexchild4'
+              />
+            </div>
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const targetFlexParent = await renderResult.renderedDOM.findByTestId('flexparent1')
+      const targetFlexParentRect = targetFlexParent.getBoundingClientRect()
+      const targetFlexParentEnd = {
+        x: targetFlexParentRect.x + targetFlexParentRect.width - 15,
+        y: targetFlexParentRect.y + targetFlexParentRect.height / 2,
+      }
+      const flexChildToReparent = await renderResult.renderedDOM.findByTestId('flexchild3')
+      const flexChildToReparentRect = flexChildToReparent.getBoundingClientRect()
+      const flexChildToReparentCenter = {
+        x: flexChildToReparentRect.x + flexChildToReparentRect.width / 2,
+        y: flexChildToReparentRect.y + flexChildToReparentRect.height / 2,
+      }
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+      const dragDelta = windowPoint({
+        x: targetFlexParentEnd.x - flexChildToReparentCenter.x + 5,
+        y: targetFlexParentEnd.y - flexChildToReparentCenter.y,
+      })
+      await dragElement(renderResult, 'flexchild3', dragDelta, cmdModifier)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            position: 'absolute',
+            width: 700,
+            height: 600,
+          }}
+          data-uid='container'
+          data-testid='container'
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              position: 'absolute',
+              width: 250,
+              height: 500,
+              left: 0,
+              top: 0,
+              backgroundColor: 'blue',
+            }}
+            data-uid='flexparent1'
+            data-testid='flexparent1'
+          >
+            {
+              // @utopia/uid=cond
+              true ? (
+                <div
+                  style={{
+                    width: 100,
+                    height: 100,
+                    backgroundColor: 'teal',
+                    position: 'absolute',
+                    left: 190,
+                    top: 200,
+                  }}
+                  data-uid='flexchild3'
+                  data-testid='flexchild3'
+                />
+              ) : <div data-uid='false-branch' />
+            }
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              position: 'absolute',
+              width: 250,
+              height: 500,
+              left: 350,
+              top: 0,
+              backgroundColor: 'lightgreen',
+            }}
+            data-uid='flexparent2'
+            data-testid='flexparent2'
+          >
+            <div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'red',
+              }}
+              data-uid='flexchild4'
+              data-testid='flexchild4'
+            />
+          </div>
+        </div>
+      `),
+      )
+    })
   })
 })

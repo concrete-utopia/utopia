@@ -1,16 +1,14 @@
-import JSZip from 'jszip'
-import { JSZipObject } from 'jszip'
+import type JSZip from 'jszip'
+import type { JSZipObject } from 'jszip'
 import { isText } from 'istextorbinary'
 import { RevisionsState, textFile, textFileContents, unparsed } from '../shared/project-file-types'
 import { assetFile, directory, fileTypeFromFileName, imageFile } from './project-file-utils'
 import { assetResultForBase64, getFileExtension, imageResultForBase64 } from '../shared/file-utils'
-import {
-  addFileToProjectContents,
-  ProjectContentTreeRoot,
-  walkContentsTreeAsync,
-} from '../../components/assets'
-import { Either, isRight, left, right } from '../shared/either'
-import { EditorState, PersistentModel } from '../../components/editor/store/editor-state'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { addFileToProjectContents, walkContentsTreeAsync } from '../../components/assets'
+import type { Either } from '../shared/either'
+import { isRight, left, right } from '../shared/either'
+import type { EditorState, PersistentModel } from '../../components/editor/store/editor-state'
 import { contentsJSONURLFromProjectURL } from '../shared/utils'
 import { EditorDispatch } from '../../components/editor/action-types'
 import { saveAsset } from '../../components/editor/server'
@@ -126,7 +124,7 @@ export async function importZippedGitProject(
                 textFileContents(loadedFile, unparsed, RevisionsState.CodeAhead),
                 null,
                 null,
-                Date.now(),
+                0,
               ),
             )
           }

@@ -3,18 +3,18 @@ import {
   getContentsTreeFileFromString,
   removeFromProjectContents,
 } from '../../components/assets'
+import type { EditorState } from '../../components/editor/store/editor-state'
 import {
   editorModelFromPersistentModel,
-  EditorState,
   StoryboardFilePath,
 } from '../../components/editor/store/editor-state'
 import { complexDefaultProject } from '../../sample-projects/sample-project-utils'
 import { clearTopLevelElementUniqueIDs } from '../shared/element-template'
+import type { ParsedTextFile } from '../shared/project-file-types'
 import {
   foldParsedTextFile,
   isParseSuccess,
   isTextFile,
-  ParsedTextFile,
   RevisionsState,
   textFile,
   textFileContents,
@@ -32,7 +32,13 @@ export var App = (props) => {
   return <div style={{ ...props.style}} data-uid={'aaa'} data-label={'Hat'} />
 }`
   const baseModel = complexDefaultProject()
-  const parsedFile = lintAndParse(StoryboardFilePath, appFile, null, emptySet()) as ParsedTextFile
+  const parsedFile = lintAndParse(
+    StoryboardFilePath,
+    appFile,
+    null,
+    emptySet(),
+    'trim-bounds',
+  ) as ParsedTextFile
 
   if (!isParseSuccess(parsedFile)) {
     throw new Error('The test file parse failed')

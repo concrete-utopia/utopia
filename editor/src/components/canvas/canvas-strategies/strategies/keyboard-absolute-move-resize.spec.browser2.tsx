@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-expressions */
 /* eslint-disable jest/expect-expect */
-import { RenderResult } from '@testing-library/react'
-import sinon, { SinonFakeTimers } from 'sinon'
+import type { RenderResult } from '@testing-library/react'
+import type { SinonFakeTimers } from 'sinon'
+import sinon from 'sinon'
 
 import * as EP from '../../../../core/shared/element-path'
 import {
@@ -10,21 +11,19 @@ import {
   shiftCmdModifier,
   shiftModifier,
 } from '../../../../utils/modifiers'
-import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { selectComponents, setHighlightedView } from '../../../editor/actions/action-creators'
 import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
-} from './group-like-helpers.test-utils'
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
+} from './fragment-like-helpers.test-utils'
 import { ResizeMinimumValue } from './keyboard-absolute-resize-strategy'
 
 const defaultBBBProperties = {
@@ -162,13 +161,13 @@ describe('Keyboard Absolute Move E2E', () => {
   })
 
   describe('retargets to group children', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`moves children of ${type}`, async () => {
         const editor = await renderTestEditorWithCode(
           projectWithGroup(type),
           'await-first-dom-report',
         )
-        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await pressArrowRightHoldingShift3x()
         await editor.getDispatchFollowUpActionsFinished()
@@ -291,13 +290,13 @@ describe('Keyboard switching back and forth between absolute move and absolute r
   })
 
   describe('retargets to group children', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`resizes children of ${type}`, async () => {
         const editor = await renderTestEditorWithCode(
           projectWithGroup(type),
           'await-first-dom-report',
         )
-        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await keyDownArrowRightHoldingCmd3x()
         await editor.getDispatchFollowUpActionsFinished()
@@ -796,12 +795,12 @@ export var storyboard = (
   return result
 }
 
-const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
+const projectWithGroup = (type: FragmentLikeType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    ${getOpeningGroupLikeTag(type)}
+    ${getOpeningFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -830,7 +829,7 @@ export var storyboard = (
       >
         whaddup
       </div>
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
   </Storyboard>
 )
 `

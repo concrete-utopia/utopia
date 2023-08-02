@@ -4,11 +4,13 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { WarningIcon } from '../../../../uuiui/warning-icon'
-import {
+import type {
   Conflict,
-  getGithubFileChangesCount,
   GithubFileChanges,
   GithubFileChangesListItem,
+} from '../../../../core/shared/github/helpers'
+import {
+  getGithubFileChangesCount,
   githubFileChangesToList,
 } from '../../../../core/shared/github/helpers'
 import { Button, colorTheme, FlexColumn, FlexRow } from '../../../../uuiui'
@@ -241,7 +243,7 @@ export const GithubFileChangesList: React.FC<{
               title={conflicting ? 'Potential conflicts' : i.filename}
               css={{
                 paddingRight: 6,
-                color: conflicting ? colorTheme.errorForegroundSubdued.value : 'inherit',
+                color: conflicting ? colorTheme.errorForeground.value : 'inherit',
                 cursor: conflicting ? 'help' : 'default',
                 '&:hover': {
                   cursor: !conflicting && clickable ? 'pointer' : undefined,

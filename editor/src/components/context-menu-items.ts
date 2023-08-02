@@ -1,22 +1,33 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import { Either } from '../core/shared/either'
-import { ElementInstanceMetadataMap, isIntrinsicElement } from '../core/shared/element-template'
-import { CanvasPoint } from '../core/shared/math-utils'
-import { NodeModules, ElementPath } from '../core/shared/project-file-types'
+import type { Either } from '../core/shared/either'
+import { isRight } from '../core/shared/either'
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import {
+  isIntrinsicElement,
+  isJSXElement,
+  isJSXElementLike,
+  isJSXFragment,
+} from '../core/shared/element-template'
+import type { CanvasPoint } from '../core/shared/math-utils'
+import type { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
 import * as PP from '../core/shared/property-path'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
-import { ProjectContentTreeRoot } from './assets'
-import { EditorDispatch } from './editor/action-types'
+import type { ProjectContentTreeRoot } from './assets'
+import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
   copySelectionToClipboard,
-  deleteView,
   duplicateSelected,
   toggleHidden,
 } from './editor/actions/action-creators'
-import { AllElementProps, TransientFilesState } from './editor/store/editor-state'
+import type {
+  AllElementProps,
+  InternalClipboard,
+  NavigatorEntry,
+  PasteHerePostActionMenuData,
+} from './editor/store/editor-state'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -25,6 +36,20 @@ import {
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { defaultTransparentViewElement } from './editor/defaults'
+import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
+import type { ElementPathTrees } from '../core/shared/element-path-tree'
+import { windowToCanvasCoordinates } from './canvas/dom-lookup'
+import { WindowMousePositionRaw } from '../utils/global-positions'
+import type { ElementContextMenuInstance } from './element-context-menu'
+import {
+  PropsPreservedPasteHerePostActionChoice,
+  PropsReplacedPasteHerePostActionChoice,
+} from './canvas/canvas-strategies/post-action-options/post-action-paste'
+import { stripNulls } from '../core/shared/array-utils'
+import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -42,12 +67,17 @@ export interface CanvasData {
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
-  transientFilesState: TransientFilesState | null
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
   focusedElementPath: ElementPath | null
   allElementProps: AllElementProps
+  pathTrees: ElementPathTrees
+  openFile: string | null
+  internalClipboard: InternalClipboard
+  contextMenuInstance: ElementContextMenuInstance
+  autoFocusedPaths: Array<ElementPath>
+  navigatorTargets: Array<NavigatorEntry>
 }
 
 export function requireDispatch(dispatch: EditorDispatch | null | undefined): EditorDispatch {
@@ -81,9 +111,7 @@ export const cutElements: ContextMenuItem<CanvasData> = {
   enabled: true,
   shortcut: '⌘X',
   action: (data, dispatch?: EditorDispatch) => {
-    const deleteTargets = data.selectedViews
-    const deleteActions = deleteTargets.map(deleteView)
-    requireDispatch(dispatch)([copySelectionToClipboard(), ...deleteActions], 'noone')
+    requireDispatch(dispatch)([EditorActions.cutSelectionToClipboard()], 'noone')
   },
 }
 
@@ -125,6 +153,60 @@ export const pasteLayout: ContextMenuItem<CanvasData> = {
   shortcut: '',
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)([EditorActions.pasteProperties('layout')], 'noone')
+  },
+}
+export const pasteToReplace: ContextMenuItem<CanvasData> = {
+  name: 'Paste to Replace',
+  enabled: (data) =>
+    data.internalClipboard.elements.length !== 0 &&
+    data.selectedViews.some((target) => !EP.isRootElementOfInstance(target)),
+  shortcut: '⇧⌘V',
+  action: (data, dispatch?: EditorDispatch) => {
+    const actions = createPasteToReplacePostActionActions(
+      data.selectedViews,
+      data.internalClipboard,
+    )
+    if (actions != null) {
+      requireDispatch(dispatch)(actions, 'noone')
+    }
+  },
+}
+
+export const pasteHere: ContextMenuItem<CanvasData> = {
+  name: 'Paste Here',
+  enabled: (data) => data.internalClipboard.elements.length !== 0,
+  shortcut: '',
+  isHidden: (data: CanvasData) => {
+    return data.contextMenuInstance === 'context-menu-navigator'
+  },
+  action: (data, dispatch?: EditorDispatch) => {
+    if (WindowMousePositionRaw == null) {
+      return
+    }
+    const pointOnCanvas = windowToCanvasCoordinates(
+      data.scale,
+      data.canvasOffset,
+      WindowMousePositionRaw,
+    ).canvasPositionRaw
+    const pasteHerePostActionData = {
+      type: 'PASTE_HERE',
+      position: pointOnCanvas,
+      internalClipboard: data.internalClipboard,
+    } as PasteHerePostActionMenuData
+
+    const defaultChoice =
+      PropsReplacedPasteHerePostActionChoice(pasteHerePostActionData) ??
+      PropsPreservedPasteHerePostActionChoice(pasteHerePostActionData)
+
+    if (defaultChoice != null) {
+      requireDispatch(dispatch)(
+        [
+          EditorActions.startPostActionSession(pasteHerePostActionData),
+          EditorActions.executePostActionMenuChoice(defaultChoice),
+        ],
+        'noone',
+      )
+    }
   },
 }
 
@@ -174,7 +256,11 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
   name: 'Edit Component',
   enabled: (data) => {
     return data.selectedViews.every((view) => {
-      return MetadataUtils.isFocusableComponent(view, data.jsxMetadata)
+      return MetadataUtils.isManuallyFocusableComponent(
+        view,
+        data.jsxMetadata,
+        data.autoFocusedPaths,
+      )
     })
   },
   isHidden: (data) => {
@@ -189,7 +275,7 @@ export const setAsFocusedElement: ContextMenuItem<CanvasData> = {
       const sv = data.selectedViews[0]
       requireDispatch(dispatch)([
         EditorActions.setFocusedElement(sv),
-        EditorActions.scrollToElement(sv, true),
+        EditorActions.scrollToElement(sv, 'keep-scroll-position-if-visible'),
       ])
     }
   },
@@ -219,7 +305,7 @@ export const scrollToElement: ContextMenuItem<CanvasData> = {
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       const sv = data.selectedViews[0]
-      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, false)])
+      requireDispatch(dispatch)([EditorActions.scrollToElement(sv, 'to-center')])
     }
   },
 }
@@ -266,7 +352,12 @@ export const insert: ContextMenuItem<CanvasData> = {
 export const convert: ContextMenuItem<CanvasData> = {
   name: 'Convert Element To…',
   shortcut: 'C',
-  enabled: true,
+  enabled: (data) => {
+    return data.selectedViews.every((path) => {
+      const element = MetadataUtils.findElementByElementPath(data.jsxMetadata, path)
+      return element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+    })
+  },
   action: (data, dispatch) => {
     requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })])
   },
@@ -276,15 +367,40 @@ export const group: ContextMenuItem<CanvasData> = {
   name: 'Group Selection',
   shortcut: '⌘G',
   enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)([EditorActions.wrapInGroup(data.selectedViews)], 'everyone')
+  action: (data: CanvasData, dispatch?: EditorDispatch) => {
+    requireDispatch(dispatch)(
+      [
+        createWrapInGroupActions(
+          data.selectedViews,
+          data.projectContents,
+          data.jsxMetadata,
+          data.allElementProps,
+          data.pathTrees,
+          data.navigatorTargets,
+        ),
+      ],
+      'everyone',
+    )
   },
 }
 
 export const unwrap: ContextMenuItem<CanvasData> = {
   name: 'Unwrap',
   shortcut: '⇧⌘G',
-  enabled: true,
+  enabled: (data) => {
+    return data.selectedViews.some(
+      (path) =>
+        MetadataUtils.targetSupportsChildren(
+          data.projectContents,
+          data.jsxMetadata,
+          data.nodeModules,
+          data.openFile,
+          path,
+          data.pathTrees,
+        ) ||
+        treatElementAsFragmentLike(data.jsxMetadata, data.allElementProps, data.pathTrees, path),
+    )
+  },
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
       requireDispatch(dispatch)([EditorActions.unwrapElement(data.selectedViews[0])], 'everyone')
@@ -294,23 +410,11 @@ export const unwrap: ContextMenuItem<CanvasData> = {
 
 export const wrapInPicker: ContextMenuItem<CanvasData> = {
   name: 'Wrap in…',
-  shortcut: 'G',
+  shortcut: 'W',
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
       [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
-      'everyone',
-    )
-  },
-}
-
-export const wrapInView: ContextMenuItem<CanvasData> = {
-  name: 'Wrap in div',
-  shortcut: '⌘G',
-  enabled: true,
-  action: (data, dispatch?: EditorDispatch) => {
-    requireDispatch(dispatch)(
-      [EditorActions.wrapInView(data.selectedViews, 'default-empty-div')],
       'everyone',
     )
   },

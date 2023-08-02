@@ -1,8 +1,9 @@
 import * as TS from 'typescript'
-import { JSXElement, TopLevelElement } from '../../shared/element-template'
-import { fixUtopiaElement } from '../../shared/uid-utils'
+import type { JSXElement } from '../../shared/element-template'
+import { TopLevelElement, UtopiaJSXComponent } from '../../shared/element-template'
+import { fixUtopiaElement, UIDMappings, WithUIDMappings } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
-import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import { SourceMapConsumer, SourceNode } from 'source-map'
 
 // Checks if the first value is greater than the second one.
@@ -26,19 +27,19 @@ export interface NodesBounds {
 
 export function getBoundsOfNodes(
   sourceFile: TS.SourceFile,
-  node: TS.Node | Array<TS.Node>,
-): NodesBounds {
+  nodeOrNodes: TS.Node | Array<TS.Node>,
+): NodesBounds | null {
   let workingStart: TS.LineAndCharacter | null = null as TS.LineAndCharacter | null
   let workingEnd: TS.LineAndCharacter | null = null as TS.LineAndCharacter | null
 
   let nodes: Array<TS.Node> = []
-  if (Array.isArray(node)) {
-    if (node.length === 0) {
-      throw new Error('Cannot get bounds of empty node array.')
+  if (Array.isArray(nodeOrNodes)) {
+    if (nodeOrNodes.length === 0) {
+      return null
     }
-    nodes = node
+    nodes = nodeOrNodes
   } else {
-    nodes = [node]
+    nodes = [nodeOrNodes]
   }
   fastForEach(nodes, (n) => {
     const start = TS.getLineAndCharacterOfPosition(sourceFile, n.getStart(sourceFile))
@@ -58,21 +59,6 @@ export function getBoundsOfNodes(
       end: workingEnd,
     }
   }
-}
-
-export function guaranteeUniqueUidsFromTopLevel(
-  topLevelElements: Array<TopLevelElement>,
-): Array<TopLevelElement> {
-  return topLevelElements.map((tle) => {
-    if (tle.type === 'UTOPIA_JSX_COMPONENT') {
-      return {
-        ...tle,
-        rootElement: fixUtopiaElement(tle.rootElement, []),
-      }
-    } else {
-      return tle
-    }
-  })
 }
 
 export interface CodeWithMap {

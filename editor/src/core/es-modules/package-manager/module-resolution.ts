@@ -1,23 +1,22 @@
-import {
+import type {
   ProjectFile,
   NodeModules,
   ESCodeFile,
   ESRemoteDependencyPlaceholder,
-  isEsCodeFile,
-  esCodeFile,
 } from '../../shared/project-file-types'
+import { isEsCodeFile, esCodeFile } from '../../shared/project-file-types'
+import type { ParseResult } from '../../../utils/value-parser-utils'
 import {
   optionalObjectKeyParser,
   parseString,
-  ParseResult,
   parseAlternative,
   parseObject,
   parseFalse,
 } from '../../../utils/value-parser-utils'
+import type { Either } from '../../shared/either'
 import {
   applicative3Either,
   applicative4Either,
-  Either,
   foldEither,
   isLeft,
   isRight,
@@ -25,13 +24,14 @@ import {
   right,
 } from '../../shared/either'
 import { setOptionalProp } from '../../shared/object-utils'
-import { getContentsTreeFileFromElements, ProjectContentTreeRoot } from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../../components/assets'
+import { getContentsTreeFileFromElements } from '../../../components/assets'
 import { dropLast, last } from '../../shared/array-utils'
 import { getPartsFromPath, makePathFromParts, normalizePath } from '../../../utils/path-utils'
 import type { MapLike } from 'typescript'
 
 import LRU from 'lru-cache'
-import { BuiltInDependencies } from './built-in-dependencies-list'
+import type { BuiltInDependencies } from './built-in-dependencies-list'
 
 const partialPackageJsonCache: LRU<string, ParseResult<PartialPackageJsonDefinition>> = new LRU({
   max: 20,

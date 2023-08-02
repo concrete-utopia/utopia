@@ -1,14 +1,15 @@
 import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { elementPath } from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
-import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { emptyModifiers } from '../../../../utils/modifiers'
-import { EditorState } from '../../../editor/store/editor-state'
+import type { EditorState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
@@ -21,7 +22,8 @@ import {
 } from '../canvas-strategies'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
 import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
-import { boundingArea, InteractionSession, StrategyState } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
+import { boundingArea, StrategyState } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
@@ -180,6 +182,7 @@ function dragByPixels(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
+    latestElementPathTree: null as any, // the strategy does not use this
   }
 
   const strategyResultCommands =

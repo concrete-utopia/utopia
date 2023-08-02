@@ -1,95 +1,88 @@
 import { PERFORMANCE_MARKS_ALLOWED, PRODUCTION_ENV } from '../../../common/env-vars'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import {
   codeNeedsParsing,
   codeNeedsPrinting,
 } from '../../../core/workers/common/project-file-utils'
+import type { ParseOrPrint, UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import {
   createParseFile,
   createPrintAndReparseFile,
-  createPrintCode,
   getParseResult,
-  ParseOrPrint,
-  UtopiaTsWorkers,
 } from '../../../core/workers/common/worker-types'
 import { runLocalCanvasAction } from '../../../templates/editor-canvas'
 import { runLocalNavigatorAction } from '../../../templates/editor-navigator'
 import { optionalDeepFreeze } from '../../../utils/deep-freeze'
-import Utils from '../../../utils/utils'
-import { CanvasAction, EdgePositionBottom } from '../../canvas/canvas-types'
-import { LocalNavigatorAction } from '../../navigator/actions'
+import type { CanvasAction } from '../../canvas/canvas-types'
+import type { LocalNavigatorAction } from '../../navigator/actions'
 import { PreviewIframeId, projectContentsUpdateMessage } from '../../preview/preview-pane'
-import { EditorAction, EditorDispatch, isLoggedIn, LoginState } from '../action-types'
-import { isTransientAction, isUndoOrRedo, isFromVSCode } from '../actions/action-utils'
+import type { EditorAction, EditorDispatch } from '../action-types'
+import { isLoggedIn } from '../action-types'
+import {
+  isTransientAction,
+  isUndoOrRedo,
+  isFromVSCode,
+  checkAnyWorkerUpdates,
+  onlyActionIsWorkerParsedUpdate,
+  simpleStringifyActions,
+} from '../actions/action-utils'
 import * as EditorActions from '../actions/action-creators'
 import * as History from '../history'
-import { StateHistory } from '../history'
+import type { StateHistory } from '../history'
 import { saveStoredState } from '../stored-state'
-import {
+import type {
   DerivedState,
-  deriveState,
   EditorState,
   EditorStoreFull,
   EditorStoreUnpatched,
+} from './editor-state'
+import {
+  deriveState,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
 } from './editor-state'
-import { runLocalEditorAction } from './editor-update'
+import {
+  runClearPostActionSession,
+  runExecuteStartPostActionMenuAction,
+  runExecuteWithPostActionMenuAction,
+  runLocalEditorAction,
+} from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
-import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
-import { ProjectContentTreeRoot, treeToContents, walkContentsTree } from '../../assets'
+import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import type { ProjectContentTreeRoot } from '../../assets'
+import { treeToContents, walkContentsTree } from '../../assets'
 import { isSendPreviewModel, restoreDerivedState, UPDATE_FNS } from '../actions/actions'
 import { getTransitiveReverseDependencies } from '../../../core/shared/project-contents-dependencies'
 import {
   reduxDevtoolsSendActions,
   reduxDevtoolsUpdateState,
 } from '../../../core/shared/redux-devtools'
-import { pick } from '../../../core/shared/object-utils'
+import { isEmptyObject, pick } from '../../../core/shared/object-utils'
+import type { ProjectChanges } from './vscode-changes'
 import {
-  ProjectChanges,
   emptyProjectChanges,
   combineProjectChanges,
   getProjectChanges,
   sendVSCodeChanges,
 } from './vscode-changes'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { handleStrategies } from './dispatch-strategies'
+import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 
 import { emptySet } from '../../../core/shared/set-utils'
-import {
-  MetaCanvasStrategy,
-  RegisteredCanvasStrategies,
-} from '../../canvas/canvas-strategies/canvas-strategies'
+import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
+import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
 import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import * as EP from '../../../core/shared/element-path'
-import { isTextEditMode } from '../editor-modes'
+import { notice } from '../../../components/common/notice'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { updateSimpleLocks } from '../../../core/shared/element-locking'
 
 type DispatchResultFields = {
   nothingChanged: boolean
   entireUpdateFinished: Promise<any>
 }
 
-export type InnerDispatchResult = EditorStoreFull & DispatchResultFields // TODO delete me
 export type DispatchResult = EditorStoreFull & DispatchResultFields
-
-function simpleStringifyAction(action: EditorAction): string {
-  switch (action.action) {
-    case 'TRANSIENT_ACTIONS':
-      return `Transient: ${simpleStringifyActions(action.transientActions)}`
-    case 'ATOMIC':
-      return `Atomic: ${simpleStringifyActions(action.actions)}`
-    case 'MERGE_WITH_PREV_UNDO':
-      return `Merge with prev undo: ${simpleStringifyActions(action.actions)}`
-    default:
-      return action.action
-  }
-}
-
-export function simpleStringifyActions(actions: ReadonlyArray<EditorAction>): string {
-  return `[\n\t${actions.map(simpleStringifyAction).join(',\n')}\n]`
-}
 
 function processAction(
   dispatchEvent: EditorDispatch,
@@ -138,8 +131,20 @@ function processAction(
     }
   }
 
-  if (action.action === 'UPDATE_CHILD_TEXT') {
-    working = UPDATE_FNS.UPDATE_CHILD_TEXT(action, working)
+  if (action.action === 'UPDATE_TEXT') {
+    working = UPDATE_FNS.UPDATE_TEXT(action, working)
+  }
+
+  if (action.action === 'START_POST_ACTION_SESSION') {
+    working = runExecuteStartPostActionMenuAction(action, working)
+  }
+
+  if (action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE') {
+    working = runExecuteWithPostActionMenuAction(action, working)
+  }
+
+  if (action.action === 'CLEAR_POST_ACTION_SESSION') {
+    working = runClearPostActionSession(working)
   }
 
   // Process action on the JS side.
@@ -171,6 +176,7 @@ function processAction(
   switch (action.action) {
     case 'UNDO':
       newStateHistory = History.undo(working.unpatchedEditor.id, working.history, 'no-side-effects')
+      working.postActionInteractionSession = null
       break
     case 'REDO':
       newStateHistory = History.redo(working.unpatchedEditor.id, working.history, 'no-side-effects')
@@ -189,6 +195,7 @@ function processAction(
     unpatchedEditor: editorAfterNavigator,
     unpatchedDerived: working.unpatchedDerived,
     strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
+    postActionInteractionSession: working.postActionInteractionSession,
     history: newStateHistory,
     userState: working.userState,
     workers: working.workers,
@@ -246,7 +253,6 @@ function maybeRequestModelUpdate(
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (
-        codeNeedsParsing(file.fileContents.revisionsState) &&
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
       ) {
@@ -255,7 +261,7 @@ function maybeRequestModelUpdate(
             fullPath,
             file.fileContents.parsed,
             PRODUCTION_ENV,
-            file.lastRevisedTime,
+            file.versionNumber,
           ),
         )
       } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
@@ -263,27 +269,18 @@ function maybeRequestModelUpdate(
           ? file.fileContents.parsed
           : file.lastParseSuccess
         filesToUpdate.push(
-          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
         )
-      } else if (
-        codeNeedsPrinting(file.fileContents.revisionsState) &&
-        isParseSuccess(file.fileContents.parsed)
-      ) {
-        filesToUpdate.push(
-          createPrintCode(fullPath, file.fileContents.parsed, PRODUCTION_ENV, file.lastRevisedTime),
-        )
-        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
-        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       } else if (forceParseFiles.includes(fullPath)) {
         forciblyParsedFiles.push(fullPath)
         const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
           ? file.fileContents.parsed
           : file.lastParseSuccess
         filesToUpdate.push(
-          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.lastRevisedTime),
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
         )
       } else if (isParseSuccess(file.fileContents.parsed)) {
-        const uidsFromFile = Object.keys(file.fileContents.parsed.highlightBounds)
+        const uidsFromFile = Object.keys(file.fileContents.parsed.fullHighlightBounds)
         fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
       }
     }
@@ -299,22 +296,14 @@ function maybeRequestModelUpdate(
               return EditorActions.workerParsedUpdate(
                 fileResult.filename,
                 fileResult.parseResult,
-                fileResult.lastRevisedTime,
-              )
-            case 'printcoderesult':
-              return EditorActions.workerCodeUpdate(
-                fileResult.filename,
-                fileResult.printResult,
-                fileResult.highlightBounds,
-                fileResult.lastRevisedTime,
+                fileResult.versionNumber,
               )
             case 'printandreparseresult':
               return EditorActions.workerCodeAndParsedUpdate(
                 fileResult.filename,
                 fileResult.printResult,
-                fileResult.highlightBounds,
-                fileResult.parsedResult,
-                fileResult.lastRevisedTime,
+                fileResult.parseResult,
+                fileResult.versionNumber,
               )
             default:
               const _exhaustiveCheck: never = fileResult
@@ -322,7 +311,7 @@ function maybeRequestModelUpdate(
           }
         })
 
-        dispatch([EditorActions.updateFromWorker(updates)])
+        dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])
         return true
       })
       .catch((e) => {
@@ -359,6 +348,7 @@ function maybeRequestModelUpdateOnEditor(
       editor.forceParseFiles,
       dispatch,
     )
+
     const remainingForceParseFiles = editor.forceParseFiles.filter(
       (filePath) => !modelUpdateRequested.forciblyParsedFiles.includes(filePath),
     )
@@ -379,13 +369,82 @@ export function resetDispatchGlobals(): void {
   accumulatedProjectChanges = emptyProjectChanges
 }
 
-export function editorDispatch(
+// With this reducer we can split the actions into groups (arrays) which can be dispatched together without rebuilding the derived state.
+// Between the different group derived state rebuild is needed
+function reducerToSplitToActionGroups(
+  actionGroups: EditorAction[][],
+  currentAction: EditorAction,
+  i: number,
+  actions: readonly EditorAction[],
+): EditorAction[][] {
+  if (currentAction.action === `TRANSIENT_ACTIONS`) {
+    // if this is a transient action we need to split its sub-actions into groups which can be dispatched together
+    const transientActionGroups = currentAction.transientActions.reduce(
+      reducerToSplitToActionGroups,
+      [[]],
+    )
+    const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
+      EditorActions.transientActions(actionGroup),
+    ])
+    return [...actionGroups, ...wrappedTransientActionGroups]
+  } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
+    // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so if the previous action was CLEAR_INTERACTION_SESSION,
+    // then we need to start a new action group
+    return [...actionGroups, [currentAction]]
+  } else {
+    // if this action does not need a rebuilt derived state we can just push it into the last action group to dispatch them together
+    let updatedGroups = actionGroups
+    updatedGroups[actionGroups.length - 1].push(currentAction)
+    return updatedGroups
+  }
+}
+
+export function editorDispatchActionRunner(
   boundDispatch: EditorDispatch,
   dispatchedActions: readonly EditorAction[],
   storedState: EditorStoreFull,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies, // only override this for tests
 ): DispatchResult {
+  const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
+
+  const result: DispatchResult = actionGroupsToProcess.reduce(
+    (working: DispatchResult, actions) => {
+      const newStore = editorDispatchInner(
+        boundDispatch,
+        actions,
+        working,
+        spyCollector,
+        strategiesToUse,
+      )
+      return newStore
+    },
+    { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
+  )
+  // Gather up these values.
+  const updatedFromVSCode = dispatchedActions.some(isFromVSCode)
+  const parsedAfterCodeChanged = onlyActionIsWorkerParsedUpdate(dispatchedActions)
+  const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
+
+  // Whatever changes the actions may have made to the model could result
+  // in some caches needing clearing.
+  const projectChanges = getProjectChanges(
+    storedState.unpatchedEditor,
+    result.unpatchedEditor,
+    updatedFromVSCodeOrParsedAfterCodeChange,
+  )
+  applyProjectChangesToEditor(result.unpatchedEditor, projectChanges)
+
+  return result
+}
+
+export function editorDispatchClosingOut(
+  boundDispatch: EditorDispatch,
+  dispatchedActions: readonly EditorAction[],
+  storedState: EditorStoreFull,
+  result: DispatchResult,
+): DispatchResult {
+  const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
   const isLoadAction = dispatchedActions.some((a) => a.action === 'LOAD')
   const nameUpdated = dispatchedActions.some(
     (action) => action.action === 'SET_PROJECT_NAME' || action.action === 'SET_PROJECT_ID',
@@ -402,101 +461,26 @@ export function editorDispatch(
   const anyFinishCheckpointTimer = dispatchedActions.some((action) => {
     return action.action === 'FINISH_CHECKPOINT_TIMER'
   })
-  const anyWorkerUpdates = dispatchedActions.some(
-    (action) => action.action === 'UPDATE_FROM_WORKER',
-  )
+  const anyWorkerUpdates = checkAnyWorkerUpdates(dispatchedActions)
   const anyUndoOrRedo = dispatchedActions.some(isUndoOrRedo)
   const anySendPreviewModel = dispatchedActions.some(isSendPreviewModel)
-
-  // With this reducer we can split the actions into groups (arrays) which can be dispatched together without rebuilding the derived state.
-  // Between the different group derived state rebuild is needed
-  const reducerToSplitToActionGroups = (
-    actionGroups: EditorAction[][],
-    currentAction: EditorAction,
-    i: number,
-    actions: readonly EditorAction[],
-  ): EditorAction[][] => {
-    if (currentAction.action === `TRANSIENT_ACTIONS`) {
-      // if this is a transient action we need to split its sub-actions into groups which can be dispatched together
-      const transientActionGroups = currentAction.transientActions.reduce(
-        reducerToSplitToActionGroups,
-        [[]],
-      )
-      const wrappedTransientActionGroups = transientActionGroups.map((actionGroup) => [
-        EditorActions.transientActions(actionGroup),
-      ])
-      return [...actionGroups, ...wrappedTransientActionGroups]
-    } else if (i > 0 && actions[i - 1].action === 'CLEAR_INTERACTION_SESSION') {
-      // CLEAR_INTERACTION_SESSION must be the last action for a given action group, so if the previous action was CLEAR_INTERACTION_SESSION,
-      // then we need to start a new action group
-      return [...actionGroups, [currentAction]]
-    } else {
-      // if this action does not need a rebuilt derived state we can just push it into the last action group to dispatch them together
-      let updatedGroups = actionGroups
-      updatedGroups[actionGroups.length - 1].push(currentAction)
-      return updatedGroups
-    }
-  }
-  const actionGroupsToProcess = dispatchedActions.reduce(reducerToSplitToActionGroups, [[]])
-
-  const result: InnerDispatchResult = actionGroupsToProcess.reduce(
-    (working: InnerDispatchResult, actions) => {
-      const newStore = editorDispatchInner(
-        boundDispatch,
-        actions,
-        working,
-        spyCollector,
-        strategiesToUse,
-      )
-      return newStore
-    },
-    { ...storedState, entireUpdateFinished: Promise.resolve(true), nothingChanged: true },
-  )
 
   // The FINISH_CHECKPOINT_TIMER action effectively overrides the case where nothing changed,
   // as it's likely that action on it's own didn't change anything, but the actions that paired with
   // START_CHECKPOINT_TIMER likely did.
   const transientOrNoChange = (allTransient || result.nothingChanged) && !anyFinishCheckpointTimer
-  const workerUpdatedModel = dispatchedActions.some(
-    (action) => action.action === 'UPDATE_FROM_WORKER',
-  )
 
-  const { unpatchedEditorState, patchedEditorState, newStrategyState, patchedDerivedState } = {
-    unpatchedEditorState: result.unpatchedEditor,
-    patchedEditorState: result.patchedEditor,
-    newStrategyState: result.strategyState,
-    patchedDerivedState: result.patchedDerived,
-  }
+  const unpatchedEditorState = result.unpatchedEditor
+  const patchedEditorState = result.patchedEditor
+  const newStrategyState = result.strategyState
+  const patchedDerivedState = result.patchedDerived
 
   const editorFilteredForFiles = filterEditorForFiles(unpatchedEditorState)
 
   const frozenDerivedState = result.unpatchedDerived
 
-  // NOTE:
-  // We add the current editor state to undo history synchronously, although the parsed state can be out of date, and
-  // will be only fixed after the next UPDATE_FROM_WORKER action (which is transient and will not modify the
-  // undo history).
-  // This causes two known bugs:
-  // 1. the first undo step after load is unparsed, so if you undo till the beginning, the canvas is unmounted,
-  //    only mounted back after the worker is ready with the parsing (which causes a blink)
-  // 2. If you modify the code in the code editor, the undo history is going to contain out of date parse results,
-  //    so if you undo back until a code change, the canvas content will briefly contain the position from one
-  //    step earlier. How to reproduce?
-  //    1 - left is initially set to 50
-  //    2 - Change left to 100 via code - undo history now stores CODE_AHEAD version of the model, with the parsed
-  //        model still containing 50 until the workers return the new value (at which point the canvas updates)
-  //    3 - Drag the element on the canvas to update left to 200
-  //    4 - Undo the drag. Canvas renders with left: 50 briefly whilst the worker re-parses, then updates to left: 100
-  //
-  // All these issues are eventually fixed after the worker reparses the code, but they cause visual glitches.
-  //
-  // Potential solution:
-  //    Adding something with CODE_AHEAD or PARSED_AHEAD to the undo stack triggers its own worker request, that then
-  //    only updates that undo stack entry (i.e. that doesn't feed into the rest of the editor at all)
-  //    This worker could get an undo stack item id and only update that item in the undo history after it is ready
-
   const editorWithModelChecked =
-    !anyUndoOrRedo && transientOrNoChange && !workerUpdatedModel
+    !anyUndoOrRedo && transientOrNoChange && !anyWorkerUpdates
       ? { editorState: unpatchedEditorState, modelUpdateFinished: Promise.resolve(true) }
       : maybeRequestModelUpdateOnEditor(unpatchedEditorState, storedState.workers, boundDispatch)
 
@@ -505,10 +489,38 @@ export function editorDispatch(
   const saveCountThisSession = result.saveCountThisSession
 
   const isLoaded = editorFilteredForFiles.isLoaded
+
+  // Permit saving if:
+  // - The editor has initialised and loaded for the first time.
+  //   AND
+  // - The editor isn't loading a project.
+  //   AND
+  // - This is running in a browser (as opposed to a test environment).
   const canSave = isLoaded && !isLoadAction && isBrowserEnvironment
+  const changesShouldTriggerSave = editorChangesShouldTriggerSave(
+    storedState.unpatchedEditor,
+    frozenEditorState,
+  )
+  // Should save in a regular unforced situation if:
+  // - Changes have been made which necessitate a save.
+  //   AND
+  // - These conditions are met:
+  //   - There are changes and they are not transient.
+  //     OR
+  //   - The action is either an undo or redo.
+  //     OR
+  //   - There are worker updates (which ordinarily are transient changes) and a prior save has been triggered.
+  //     As we don't want the first worker updates to trigger a save, because those will have been triggered from a load.
   const shouldSaveIfNotForced =
-    editorChangesShouldTriggerSave(storedState.unpatchedEditor, frozenEditorState) &&
+    changesShouldTriggerSave &&
     (!transientOrNoChange || anyUndoOrRedo || (anyWorkerUpdates && saveCountThisSession > 0))
+  // Should save if:
+  // - It's possible for us to save.
+  //   AND
+  // - At least one of these is the case:
+  //   - The save has been forced.
+  //     OR
+  //   - Save should happen in an unforced situation.
   const shouldSave = canSave && (forceSave || shouldSaveIfNotForced)
 
   // Include asset renames with the history.
@@ -523,15 +535,15 @@ export function editorDispatch(
   }
 
   let newHistory: StateHistory
-  if (transientOrNoChange || !shouldSave) {
-    newHistory = result.history
-  } else if (allMergeWithPrevUndo) {
+  if (allMergeWithPrevUndo) {
     newHistory = History.replaceLast(
       result.history,
       editorFilteredForFiles,
       frozenDerivedState,
       assetRenames,
     )
+  } else if (transientOrNoChange || !shouldSave) {
+    newHistory = result.history
   } else {
     newHistory = History.add(
       result.history,
@@ -548,6 +560,7 @@ export function editorDispatch(
     patchedDerived: patchedDerivedState,
     strategyState: optionalDeepFreeze(newStrategyState),
     history: newHistory,
+    postActionInteractionSession: result.postActionInteractionSession,
     userState: result.userState,
     workers: storedState.workers,
     persistence: storedState.persistence,
@@ -589,10 +602,19 @@ export function editorDispatch(
     )
   }
 
+  // If the action was a load action then we don't want to send across any changes
   if (!isLoadAction) {
-    // If the action was a load action then we don't want to send across any changes
-    const projectChanges = getProjectChanges(storedState.unpatchedEditor, frozenEditorState)
-    applyProjectChanges(frozenEditorState, projectChanges, updatedFromVSCode)
+    const parsedAfterCodeChanged = onlyActionIsWorkerParsedUpdate(dispatchedActions)
+
+    // We don't want to send selection changes coming from updates triggered by changes made in the code editor
+    const updatedFromVSCodeOrParsedAfterCodeChange = updatedFromVSCode || parsedAfterCodeChanged
+
+    const projectChanges = getProjectChanges(
+      storedState.unpatchedEditor,
+      frozenEditorState,
+      updatedFromVSCodeOrParsedAfterCodeChange,
+    )
+    applyProjectChangesToVSCode(frozenEditorState, projectChanges)
   }
 
   const shouldUpdatePreview =
@@ -619,7 +641,7 @@ function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorS
     // FIXME We should be ripping out the parsed models before comparing the project contents here
     oldState.projectContents !== newState.projectContents ||
     oldState.githubSettings !== newState.githubSettings ||
-    oldState.branchContents !== newState.branchContents
+    oldState.branchOriginContents !== newState.branchOriginContents
   )
 }
 
@@ -655,26 +677,27 @@ function maybeCullElementPathCache(
 }
 
 function cullElementPathCache() {
-  const allExistingUids = getAllUniqueUids(lastProjectContents)
+  const allExistingUids = getAllUniqueUids(lastProjectContents).allIDs
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
 
-function applyProjectChanges(
+function applyProjectChangesToVSCode(
   frozenEditorState: EditorState,
   projectChanges: ProjectChanges,
-  updatedFromVSCode: boolean,
-) {
-  accumulatedProjectChanges = combineProjectChanges(
-    accumulatedProjectChanges,
-    updatedFromVSCode ? { ...projectChanges, fileChanges: [] } : projectChanges,
-  )
+): void {
+  accumulatedProjectChanges = combineProjectChanges(accumulatedProjectChanges, projectChanges)
 
   if (frozenEditorState.vscodeReady) {
     const changesToSend = accumulatedProjectChanges
     accumulatedProjectChanges = emptyProjectChanges
     sendVSCodeChanges(changesToSend)
   }
+}
 
+function applyProjectChangesToEditor(
+  frozenEditorState: EditorState,
+  projectChanges: ProjectChanges,
+): void {
   const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
     frozenEditorState.projectContents,
@@ -691,11 +714,11 @@ function applyProjectChanges(
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
-  storedState: InnerDispatchResult,
+  storedState: DispatchResult,
   spyCollector: UiJsxCanvasContextData,
   strategiesToUse: Array<MetaCanvasStrategy>,
-): InnerDispatchResult {
-  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions))
+): DispatchResult {
+  // console.log('DISPATCH', simpleStringifyActions(dispatchedActions), dispatchedActions)
 
   const MeasureDispatchTime =
     (isFeatureEnabled('Debug – Performance Marks (Fast)') ||
@@ -718,7 +741,8 @@ function editorDispatchInner(
     const editorStayedTheSame =
       storedState.nothingChanged &&
       storedState.unpatchedEditor === result.unpatchedEditor &&
-      storedState.userState === result.userState
+      storedState.userState === result.userState &&
+      storedState.postActionInteractionSession === result.postActionInteractionSession
 
     const domMetadataChanged =
       storedState.unpatchedEditor.domMetadata !== result.unpatchedEditor.domMetadata
@@ -727,15 +751,22 @@ function editorDispatchInner(
     const allElementPropsChanged =
       storedState.unpatchedEditor._currentAllElementProps_KILLME !==
       result.unpatchedEditor._currentAllElementProps_KILLME
-    const dragStateLost =
-      storedState.unpatchedEditor.canvas.dragState != null &&
-      result.unpatchedEditor.canvas.dragState == null
-    const metadataChanged =
-      domMetadataChanged || spyMetadataChanged || allElementPropsChanged || dragStateLost
+
+    const metadataChanged = domMetadataChanged || spyMetadataChanged || allElementPropsChanged
     if (metadataChanged) {
-      if (result.unpatchedEditor.canvas.dragState != null) {
-        throw new Error('canvas.dragState should not be used anymore!')
-      } else if (result.unpatchedEditor.canvas.interactionSession != null) {
+      const { metadata, elementPathTree } = reconstructJSXMetadata(result.unpatchedEditor)
+      // Cater for the strategies wiping out the metadata on completion.
+      const storedStateHasEmptyElementPathTree = isEmptyObject(
+        storedState.unpatchedEditor.elementPathTree,
+      )
+      const storedStateHasEmptyMetadata = isEmptyObject(storedState.unpatchedEditor.jsxMetadata)
+      const doNotUpdateLocks = storedStateHasEmptyMetadata && !storedStateHasEmptyElementPathTree
+      // Update the locks as appropriate.
+      const priorSimpleLocks = storedState.unpatchedEditor.lockedElements.simpleLock
+      const updatedSimpleLocks = doNotUpdateLocks
+        ? priorSimpleLocks
+        : updateSimpleLocks(storedState.unpatchedEditor.jsxMetadata, metadata, priorSimpleLocks)
+      if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
           unpatchedEditor: {
@@ -744,8 +775,9 @@ function editorDispatchInner(
               ...result.unpatchedEditor.canvas,
               interactionSession: {
                 ...result.unpatchedEditor.canvas.interactionSession,
-                latestMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+                latestMetadata: metadata,
                 latestAllElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+                latestElementPathTree: elementPathTree,
               },
             },
           },
@@ -755,11 +787,45 @@ function editorDispatchInner(
           ...result,
           unpatchedEditor: {
             ...result.unpatchedEditor,
-            jsxMetadata: reconstructJSXMetadata(result.unpatchedEditor),
+            jsxMetadata: metadata,
+            elementPathTree: elementPathTree,
             allElementProps: result.unpatchedEditor._currentAllElementProps_KILLME,
+            lockedElements: {
+              ...result.unpatchedEditor.lockedElements,
+              simpleLock: updatedSimpleLocks,
+            },
           },
         }
       }
+    }
+
+    const actionNames = simpleStringifyActions(dispatchedActions)
+
+    // Check for duplicate UIDs that have originated from actions being applied.
+    const uniqueIDsResult = getAllUniqueUids(result.unpatchedEditor.projectContents)
+    if (Object.keys(uniqueIDsResult.duplicateIDs).length > 0) {
+      const errorMessage = `Running ${actionNames} resulted in duplicate UIDs ${JSON.stringify(
+        uniqueIDsResult.duplicateIDs,
+      )}.`
+      //if (IS_TEST_ENVIRONMENT) {
+      // In tests blow out with an exception so that the error is correctly attributed.
+      //  throw new Error(errorMessage)
+      //} else {
+      // When running in the browser log the error and tell the user to restart the editor.
+      console.error(errorMessage)
+      const errorToast = EditorActions.addToast(
+        notice(
+          `Utopia has suffered from an irrecoverable error, please reload the editor.`,
+          'ERROR',
+          true,
+          'reload-editor',
+        ),
+      )
+      result = {
+        ...result,
+        unpatchedEditor: UPDATE_FNS.ADD_TOAST(errorToast, result.unpatchedEditor),
+      }
+      //}
     }
 
     let frozenEditorState: EditorState = optionalDeepFreeze(result.unpatchedEditor)
@@ -775,9 +841,6 @@ function editorDispatchInner(
       const derivedState = deriveState(frozenEditorState, storedState.unpatchedDerived)
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
-
-    const actionNames = simpleStringifyActions(dispatchedActions)
-    getAllUniqueUids(frozenEditorState.projectContents, actionNames)
 
     if (MeasureDispatchTime) {
       window.performance.mark('dispatch_end')
@@ -813,6 +876,10 @@ function editorDispatchInner(
       unpatchedDerived: frozenDerivedState,
       patchedDerived: patchedDerivedState,
       strategyState: newStrategyState,
+      postActionInteractionSession: updatePostActionState(
+        result.postActionInteractionSession,
+        dispatchedActions,
+      ),
       history: result.history,
       userState: result.userState,
       workers: storedState.workers,

@@ -1,17 +1,15 @@
-import { getProjectContentsChecksums } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
-import { EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
   updateAgainstGithub,
   updateBranchContents,
-  updateGithubChecksums,
   updateGithubData,
 } from '../../../../components/editor/actions/action-creators'
-import { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
+import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
+import type { GetBranchContentResponse } from '../helpers'
 import {
   getBranchContentFromServer,
-  GetBranchContentResponse,
   githubAPIError,
   githubAPIErrorFromResponse,
   runGithubOperation,
@@ -67,9 +65,6 @@ export async function updateProjectAgainstGithub(
 
       dispatch(
         [
-          updateGithubChecksums(
-            getProjectContentsChecksums(branchLatestContent.branch.content, {}),
-          ),
           updateBranchContents(branchLatestContent.branch.content),
           updateAgainstGithub(
             branchLatestContent.branch.content,

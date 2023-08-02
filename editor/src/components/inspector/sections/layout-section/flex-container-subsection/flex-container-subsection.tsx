@@ -1,11 +1,12 @@
 import React from 'react'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
-import { FlexDirection } from '../../../common/css-utils'
+import type { FlexDirection } from '../../../common/css-utils'
 import { updateFlexDirectionStrategies } from '../../../inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { FlexWrap } from 'utopia-api/core'
-import { ControlStatus, ControlStyles, getControlStyles } from '../../../common/control-status'
+import type { ControlStatus, ControlStyles } from '../../../common/control-status'
+import { getControlStyles } from '../../../common/control-status'
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import {
@@ -47,6 +48,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -57,6 +59,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.elementPathTree,
         editorStateRef.current.allElementProps,
         updateFlexDirectionStrategies(newFlexDirection),
       )

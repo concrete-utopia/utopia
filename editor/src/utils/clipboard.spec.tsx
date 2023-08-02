@@ -10,8 +10,8 @@ import { selectComponents } from '../components/editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../components/editor/store/editor-state'
 import { directory } from '../core/model/project-file-utils'
 import { BakedInStoryboardUID } from '../core/model/scene-utils'
+import type { ProjectContents } from '../core/shared/project-file-types'
 import {
-  ProjectContents,
   RevisionsState,
   textFile,
   textFileContents,
@@ -95,10 +95,8 @@ export var Card = (props) => {
     )
 
     expect(clipboardData?.data.length).toEqual(1)
-    expect(clipboardData?.data[0].type).toEqual('ELEMENT_COPY')
-    expect(clipboardData?.data[0].elements).not.toBeNull()
-    const elements = json5.parse(clipboardData?.data[0].elements ?? '')
-    expect(json5.stringify(elements, null, 2)).toMatchInlineSnapshot(`
+    expect(json5.stringify(clipboardData?.data[0]?.copyDataWithPropsPreserved.elements, null, 2))
+      .toMatchInlineSnapshot(`
       "[
         {
           element: {

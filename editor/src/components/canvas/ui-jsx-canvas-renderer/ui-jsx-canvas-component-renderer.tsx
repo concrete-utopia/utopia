@@ -1,24 +1,21 @@
 import React from 'react'
-import { MapLike } from 'typescript'
-import { PropertyControls } from 'utopia-api/core'
+import type { MapLike } from 'typescript'
+import type { PropertyControls } from 'utopia-api/core'
+import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import {
-  JSXElementChild,
   isUtopiaJSXComponent,
-  UtopiaJSXComponent,
+  isSVGElement,
+  isJSXElement,
 } from '../../../core/shared/element-template'
 import { optionalMap } from '../../../core/shared/optional-utils'
+import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
   DomWalkerInvalidatePathsCtxAtom,
-  DomWalkerInvalidatePathsCtxData,
   UiJsxCanvasCtxAtom,
-  UiJsxCanvasContextData,
   ElementsToRerenderGLOBAL,
 } from '../ui-jsx-canvas'
-import {
-  MutableUtopiaCtxRefData,
-  RerenderUtopiaCtxAtom,
-  SceneLevelUtopiaCtxAtom,
-} from './ui-jsx-canvas-contexts'
+import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-contexts'
+import { RerenderUtopiaCtxAtom, SceneLevelUtopiaCtxAtom } from './ui-jsx-canvas-contexts'
 import { applyPropsParamToPassedProps } from './ui-jsx-canvas-props-utils'
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -28,7 +25,7 @@ import {
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
 import { useContextSelector } from 'use-context-selector'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import { getPathsFromString, getUtopiaID } from '../../../core/shared/uid-utils'
 import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elements'
@@ -172,7 +169,13 @@ export function createComponentRendererComponent(params: {
     // either this updateInvalidatedPaths or the one in SpyWrapper is probably redundant
     if (shouldUpdate()) {
       updateInvalidatedPaths((invalidPaths) => {
-        if (rootElementPath != null) {
+        // Do not add `svg` elements that are the root element of a component.
+        // As they will not be cleared by the DOM walker as they are not instances
+        // of HTMLElement.
+        const isSVGJSXElement =
+          isJSXElement(utopiaJsxComponent.rootElement) &&
+          isSVGElement(utopiaJsxComponent.rootElement.name)
+        if (rootElementPath != null && !isSVGJSXElement) {
           return invalidPaths.add(EP.toString(rootElementPath))
         } else {
           return invalidPaths

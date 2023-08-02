@@ -1,28 +1,28 @@
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import {
-  framePointForPinnedProp,
-  LayoutPinnedProp,
-} from '../../../../core/layout/layout-helpers-new'
+import type { LayoutPinnedProp } from '../../../../core/layout/layout-helpers-new'
+import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  LocalPoint,
+  LocalRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   asLocal,
   boundingRectangleArray,
-  CanvasPoint,
-  CanvasRectangle,
   canvasRectangleToLocalRectangle,
-  CanvasVector,
   isFiniteRectangle,
-  LocalPoint,
-  LocalRectangle,
   nullIfInfinity,
   offsetPoint,
   offsetRect,
@@ -30,16 +30,17 @@ import {
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
 import { getElementFromProjectContents } from '../../../editor/store/editor-state'
-import { FullFrame, getFullFrame } from '../../../frame'
+import type { FullFrame } from '../../../frame'
+import { getFullFrame } from '../../../frame'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CanvasFrameAndTarget } from '../../canvas-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
+import type { CanvasCommand } from '../../commands/commands'
 import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
-  SetCssLengthProperty,
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
@@ -47,27 +48,27 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { honoursPropsPosition } from './absolute-utils'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { applyMoveCommon, flattenSelection } from './shared-move-strategies-helpers'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  retargetStrategyToChildrenOfContentAffectingElements,
-  retargetStrategyToTopMostGroupLikeElement,
-} from './group-like-helpers'
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  retargetStrategyToChildrenOfFragmentLikeElements,
+  retargetStrategyToTopMostFragmentLikeElement,
+} from './fragment-like-helpers'
 import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-outline'
 import { memoize } from '../../../../core/shared/memoize'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -75,8 +76,8 @@ export function convertToAbsoluteAndMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const originalTargets = retargetStrategyToTopMostGroupLikeElement(canvasState) // this needs a better variable name
-  const retargetedTargets = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const originalTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState) // this needs a better variable name
+  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   if (
     !retargetedTargets.every((element) => {
@@ -93,10 +94,15 @@ export function convertToAbsoluteAndMoveStrategy(
     return null
   }
 
-  const autoLayoutSiblings = getAutoLayoutSiblings(canvasState.startingMetadata, originalTargets)
+  const autoLayoutSiblings = getAutoLayoutSiblings(
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    originalTargets,
+  )
   const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
   const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
     originalTargets,
   )
 
@@ -156,7 +162,7 @@ export function convertToAbsoluteAndMoveStrategy(
         }
         const absoluteMoveApplyResult = applyMoveCommon(
           retargetedTargets,
-          getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle contentAffecting elements
+          getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle fragmentLike elements
           canvasState,
           interactionSession,
           getConversionAndMoveCommands,
@@ -237,9 +243,10 @@ const getAutoLayoutSiblingsBounds = memoize(getAutoLayoutSiblingsBoundsInner, { 
 
 function getAutoLayoutSiblingsBoundsInner(
   jsxMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
 ): CanvasRectangle | null {
-  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, targets)
+  const autoLayoutSiblings = getAutoLayoutSiblings(jsxMetadata, pathTrees, targets)
   const autoLayoutSiblingsFrames = autoLayoutSiblings.map((e) => nullIfInfinity(e.globalFrame))
   return boundingRectangleArray(autoLayoutSiblingsFrames)
 }
@@ -248,13 +255,18 @@ const getAutoLayoutSiblings = memoize(getAutoLayoutSiblingsInner, { maxSize: 1 }
 
 function getAutoLayoutSiblingsInner(
   jsxMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
 ): Array<ElementInstanceMetadata> {
   if (!targets.every((t) => EP.isSiblingOf(targets[0], t))) {
     // this function only makes sense if the targets are siblings
     return []
   }
-  return MetadataUtils.getSiblingsParticipatingInAutolayoutUnordered(jsxMetadata, targets[0])
+  return MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(
+    jsxMetadata,
+    pathTrees,
+    targets[0],
+  )
 }
 
 export function getEscapeHatchCommands(
@@ -280,9 +292,10 @@ export function getEscapeHatchCommands(
   const commonAncestor = EP.getCommonParent(selectedElements, false)
   const sortedElements = EP.getOrderedPathsByDepth(selectedElements)
 
-  const elementsToConvertToAbsolute = replaceContentAffectingPathsWithTheirChildrenRecursive(
+  const elementsToConvertToAbsolute = replaceFragmentLikePathsWithTheirChildrenRecursive(
     metadata,
     canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     sortedElements,
   )
 
@@ -381,6 +394,9 @@ function collectReparentCommands(
     return []
   }
   const outcomeResult = getReparentOutcome(
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    canvasState.startingAllElementProps,
     canvasState.builtInDependencies,
     canvasState.projectContents,
     canvasState.nodeModules,
@@ -388,6 +404,7 @@ function collectReparentCommands(
     pathToReparent(path),
     childInsertionPath(targetParent),
     'always',
+    null,
   )
   if (outcomeResult == null) {
     return []

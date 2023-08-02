@@ -2,29 +2,33 @@
 /** @jsx jsx */
 import React from 'react'
 import { css, jsx } from '@emotion/react'
-import { OptionsType } from 'react-select'
+import type { OptionsType } from 'react-select'
 import { animated } from 'react-spring'
-import {
+import type {
   ArrayControlDescription,
   BaseControlDescription,
   ControlDescription,
-  FolderControlDescription,
-  HigherLevelControlDescription,
-  isBaseControlDescription,
   ObjectControlDescription,
-  PropertyControls,
   RegularControlDescription,
   TupleControlDescription,
   UnionControlDescription,
 } from 'utopia-api/core'
+import {
+  FolderControlDescription,
+  HigherLevelControlDescription,
+  isBaseControlDescription,
+  PropertyControls,
+} from 'utopia-api/core'
 import { PathForSceneProps } from '../../../../core/model/scene-utils'
 import { mapToArray } from '../../../../core/shared/object-utils'
-import { ElementPath, PropertyPath } from '../../../../core/shared/project-file-types'
+import type { PropertyPath } from '../../../../core/shared/project-file-types'
+import { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import * as EP from '../../../../core/shared/element-path'
 import { useKeepReferenceEqualityIfPossible } from '../../../../utils/react-performance'
 import Utils from '../../../../utils/utils'
-import { getParseErrorDetails, ParseError, ParseResult } from '../../../../utils/value-parser-utils'
+import type { ParseError } from '../../../../utils/value-parser-utils'
+import { getParseErrorDetails, ParseResult } from '../../../../utils/value-parser-utils'
 import {
   Tooltip,
   //TODO: switch last component to functional component and make use of 'useColorTheme':
@@ -39,7 +43,8 @@ import {
   VerySubdued,
   FlexRow,
 } from '../../../../uuiui'
-import { CSSCursor, getControlStyles } from '../../../../uuiui-deps'
+import type { CSSCursor } from '../../../../uuiui-deps'
+import { getControlStyles } from '../../../../uuiui-deps'
 import { InspectorContextMenuWrapper } from '../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../common/context-menu-items'
 import {
@@ -47,13 +52,15 @@ import {
   useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
-import { ControlStyles, ControlStatus } from '../../common/control-status'
-import { InspectorInfo } from '../../common/property-path-hooks'
+import type { ControlStyles } from '../../common/control-status'
+import { ControlStatus } from '../../common/control-status'
+import type { InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'
-import { SelectOption } from '../../controls/select-control'
+import type { SelectOption } from '../../controls/select-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../widgets/property-label'
 import { PropertyRow } from '../../widgets/property-row'
+import type { ControlForPropProps } from './property-control-controls'
 import {
   CheckboxPropertyControl,
   ColorPropertyControl,
@@ -64,7 +71,6 @@ import {
   Matrix4PropertyControl,
   NumberInputPropertyControl,
   RadioPropertyControl,
-  ControlForPropProps,
   ExpressionInputPropertyControl,
   StringInputPropertyControl,
   VectorPropertyControl,
@@ -73,7 +79,6 @@ import { ExpandableIndicator } from '../../../navigator/navigator-item/expandabl
 import { unless, when } from '../../../../utils/react-conditionals'
 import { PropertyControlsSection } from './property-controls-section'
 import type { ReactEventHandlers } from 'react-use-gesture/dist/types'
-import { InlineLink } from '../../../../uuiui/inline-button'
 import { normalisePathToUnderlyingTarget } from '../../../custom-code/code-file'
 import { openCodeEditorFile } from '../../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
@@ -818,6 +823,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
     },
     'ComponentSectionInner locationOfComponentInstance',
   )
+  ComponentSectionInner.displayName = 'ComponentSectionInner'
 
   const OpenFile = React.useCallback(() => {
     if (locationOfComponentInstance != null) {
@@ -828,9 +834,19 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
   return (
     <React.Fragment>
       <InspectorSectionHeader>
-        <FlexRow style={{ flexGrow: 1, color: colorTheme.primary.value, gap: 8 }}>
-          <Icons.Component color='primary' />
-          <InlineLink onClick={OpenFile}>Component</InlineLink>
+        <FlexRow style={{ flexGrow: 1, color: colorTheme.componentPurple.value, gap: 8 }}>
+          <Icons.Component color='component' />
+          <div
+            onClick={OpenFile}
+            style={{
+              color: colorTheme.componentPurple.value,
+              textDecoration: 'none',
+              cursor: 'pointer',
+              padding: '0 2px',
+            }}
+          >
+            Component
+          </div>
         </FlexRow>
         <SquareButton highlight onClick={toggleSection}>
           <ExpandableIndicator

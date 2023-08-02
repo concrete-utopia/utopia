@@ -1,42 +1,42 @@
 import * as csstree from 'css-tree'
-import {
+import type {
   CSSColor,
   CSSColorHSL,
-  cssColorHSL,
   CSSColorRGB,
-  cssColorRGB,
-  cssKeyword,
   CSSKeyword,
   CSSNumber,
-  cssNumber,
   CSSNumberUnit,
   LengthUnit,
-  LengthUnits,
-  parseColor,
   ParsedCurlyBrace,
-  parsedCurlyBrace,
   ParsedDoubleBar,
-  parsedDoubleBar,
 } from '../../components/inspector/common/css-utils'
 import {
-  Either,
+  cssColorHSL,
+  cssColorRGB,
+  cssKeyword,
+  cssNumber,
+  LengthUnits,
+  parseColor,
+  parsedCurlyBrace,
+  parsedDoubleBar,
+} from '../../components/inspector/common/css-utils'
+import type { Either, Right } from '../../core/shared/either'
+import {
   eitherToMaybe,
   isRight,
   left,
   right,
-  Right,
   sequenceEither,
   traverseEither,
   mapEither,
 } from '../../core/shared/either'
-import * as csstreemissing from '../../missing-types/css-tree'
+import type * as csstreemissing from '../../missing-types/css-tree'
 import utils from '../../utils/utils'
+import type { Parser, ParseResult } from '../../utils/value-parser-utils'
 import {
   arrayIndexNotPresentParseError,
   descriptionParseError,
   parseAlternative,
-  Parser,
-  ParseResult,
 } from '../../utils/value-parser-utils'
 
 export function getLexerPropertyMatches(

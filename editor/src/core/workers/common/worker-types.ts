@@ -1,60 +1,36 @@
-import { ProjectContentTreeRoot } from '../../../components/assets'
-import { ErrorMessage } from '../../shared/error-messages'
-import { TypeDefinitions } from '../../shared/npm-dependency-types'
-import {
+import type { ProjectContentTreeRoot } from '../../../components/assets'
+import type { ErrorMessage } from '../../shared/error-messages'
+import type { TypeDefinitions } from '../../shared/npm-dependency-types'
+import type {
   TextFile,
   ParseSuccess,
-  HighlightBoundsForUids,
   ParsedTextFile,
   ProjectFile,
 } from '../../shared/project-file-types'
-import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 
 export type FileContent = string | TextFile
-
-export interface PrintCode {
-  type: 'printcode'
-  filename: string
-  parseSuccess: ParseSuccess
-  stripUIDs: boolean
-  lastRevisedTime: number
-}
-
-export function createPrintCode(
-  filename: string,
-  parseSuccess: ParseSuccess,
-  stripUIDs: boolean,
-  lastRevisedTime: number,
-): PrintCode {
-  return {
-    type: 'printcode',
-    filename: filename,
-    parseSuccess: parseSuccess,
-    stripUIDs: stripUIDs,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
 
 export interface ParseFile {
   type: 'parsefile'
   filename: string
   content: string
   previousParsed: ParseSuccess | null
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function createParseFile(
   filename: string,
   content: string,
   previousParsed: ParseSuccess | null,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): ParseFile {
   return {
     type: 'parsefile',
     filename: filename,
     content: content,
     previousParsed: previousParsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
@@ -63,21 +39,21 @@ export interface PrintAndReparseFile {
   filename: string
   parseSuccess: ParseSuccess
   stripUIDs: boolean
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function createPrintAndReparseFile(
   filename: string,
   parseSuccess: ParseSuccess,
   stripUIDs: boolean,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): PrintAndReparseFile {
   return {
     type: 'printandreparsefile',
     filename: filename,
     parseSuccess: parseSuccess,
     stripUIDs: stripUIDs,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
@@ -85,78 +61,52 @@ export interface ParsePrintBase {
   messageID: number
 }
 
-export type ParseOrPrint = PrintCode | ParseFile | PrintAndReparseFile
-
-export interface PrintCodeResult {
-  type: 'printcoderesult'
-  filename: string
-  printResult: string
-  highlightBounds: HighlightBoundsForUids
-  lastRevisedTime: number
-}
-
-export function createPrintCodeResult(
-  filename: string,
-  printResult: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): PrintCodeResult {
-  return {
-    type: 'printcoderesult',
-    filename: filename,
-    printResult: printResult,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
+export type ParseOrPrint = ParseFile | PrintAndReparseFile
 
 export interface ParseFileResult {
   type: 'parsefileresult'
   filename: string
   parseResult: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function createParseFileResult(
   filename: string,
   parseResult: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): ParseFileResult {
   return {
     type: 'parsefileresult',
     filename: filename,
     parseResult: parseResult,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
 export interface PrintAndReparseResult {
   type: 'printandreparseresult'
   filename: string
-  parsedResult: ParsedTextFile
-  lastRevisedTime: number
-  highlightBounds: HighlightBoundsForUids
+  parseResult: ParsedTextFile
+  versionNumber: number
   printResult: string
 }
 
 export function createPrintAndReparseResult(
   filename: string,
   parseResult: ParsedTextFile,
-  lastRevisedTime: number,
-  highlightBounds: HighlightBoundsForUids,
+  versionNumber: number,
   printResult: string,
 ): PrintAndReparseResult {
   return {
     type: 'printandreparseresult',
     filename: filename,
-    parsedResult: parseResult,
-    lastRevisedTime: lastRevisedTime,
-    highlightBounds: highlightBounds,
+    parseResult: parseResult,
+    versionNumber: versionNumber,
     printResult: printResult,
   }
 }
 
-export type ParseOrPrintResult = PrintCodeResult | ParseFileResult | PrintAndReparseResult
+export type ParseOrPrintResult = ParseFileResult | PrintAndReparseResult
 
 export interface ParsePrintFilesResult extends ParsePrintBase {
   type: 'parseprintfilesresult'

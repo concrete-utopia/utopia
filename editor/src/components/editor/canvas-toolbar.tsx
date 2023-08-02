@@ -1,4 +1,6 @@
 import * as React from 'react'
+import type { TooltipProps } from '../../uuiui'
+import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
   FlexColumn,
@@ -7,21 +9,20 @@ import {
   LargerIcons,
   SquareButton,
   Tooltip as TooltipWithoutSpanFixme,
-  TooltipProps,
   useColorTheme,
   UtopiaStyles,
 } from '../../uuiui'
 import { Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
 import { stopPropagation } from '../inspector/common/inspector-utils'
-import { EditorAction } from './action-types'
+import type { EditorAction } from './action-types'
 import {
   openFloatingInsertMenu,
   resetCanvas,
   setPanelVisibility,
   setRightMenuTab,
   switchEditorMode,
-  wrapInView,
+  wrapInElement,
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
@@ -36,14 +37,19 @@ import { useDispatch } from './store/dispatch-context'
 import { RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
+import { defaultTransparentViewElement } from './defaults'
+import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
+
+export const CanvasToolbarId = 'canvas-toolbar'
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
   const theme = useColorTheme()
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()
@@ -87,8 +93,15 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch])
 
   const wrapInDivCallback = React.useCallback(() => {
-    dispatch([wrapInView(selectedViewsRef.current, 'default-empty-div')])
-  }, [dispatch, selectedViewsRef])
+    dispatch([
+      wrapInElement(selectedViewsRef.current, {
+        element: defaultTransparentViewElement(
+          generateUidWithExistingComponents(projectContentsRef.current),
+        ),
+        importsToAdd: {},
+      }),
+    ])
+  }, [dispatch, selectedViewsRef, projectContentsRef])
 
   const clickSelectModeButton = React.useCallback(() => {
     dispatch([switchEditorMode(EditorModes.selectMode())])
@@ -158,47 +171,20 @@ export const CanvasToolbar = React.memo(() => {
 
   return (
     <FlexColumn
+      id={CanvasToolbarId}
       style={{
-        position: 'absolute',
-        top: 12,
-        left: 12,
+        gap: 6,
         alignItems: 'stretch',
         width: 64,
-        borderRadius: 4,
         backgroundColor: theme.inspectorBackground.value,
-        boxShadow: UtopiaStyles.popup.boxShadow,
+        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         pointerEvents: 'initial',
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
     >
       <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Scale</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Zoom to 100%' placement='bottom'>
-            <SquareButton highlight style={{ textAlign: 'center', width: 32 }} onClick={zoom100pct}>
-              {zoomLevel * 100}%
-            </SquareButton>
-          </Tooltip>
-        </FlexRow>
-
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Zoom in' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-plus'
-              iconCategory='semantic'
-              onClick={zoomIn}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom out' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-minus'
-              iconCategory='semantic'
-              onClick={zoomOut}
-            />
-          </Tooltip>
-        </FlexRow>
-        <Divider />
         {/* ------------------------------------ */}
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
         <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
@@ -216,9 +202,32 @@ export const CanvasToolbar = React.memo(() => {
               onClick={insertTextCallback}
             />
           </Tooltip>
+          <Tooltip title='Zoom in' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-plus'
+              iconCategory='semantic'
+              onClick={zoomIn}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom out' placement='bottom'>
+            <InsertModeButton
+              iconType='magnifyingglass-minus'
+              iconCategory='semantic'
+              onClick={zoomOut}
+            />
+          </Tooltip>
+          <Tooltip title='Zoom to 100%' placement='bottom'>
+            <SquareButton
+              highlight
+              style={{ textAlign: 'center', width: '100%' }}
+              onClick={zoom100pct}
+            >
+              {zoomLevel * 100}%
+            </SquareButton>
+          </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
+
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
@@ -261,7 +270,6 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Convert</header>
@@ -276,7 +284,7 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
+
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Organise</header>
@@ -294,7 +302,6 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-      <Divider />
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Editor</header>
@@ -388,18 +395,5 @@ const Tooltip = (props: TooltipProps) => {
       {/* TODO why do we need to wrap the children in a span? */}
       <span>{props.children}</span>
     </TooltipWithoutSpanFixme>
-  )
-}
-
-const Divider = () => {
-  return (
-    <div
-      style={{
-        height: 1,
-        width: '100%',
-        marginTop: 8,
-        backgroundColor: colorTheme.fg9.value,
-      }}
-    />
   )
 }

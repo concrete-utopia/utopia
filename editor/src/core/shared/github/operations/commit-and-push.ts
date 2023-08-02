@@ -3,27 +3,25 @@ import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
 import { getProjectContentsChecksums } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
-import { EditorDispatch } from '../../../../components/editor/action-types'
+import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
   updateBranchContents,
-  updateGithubChecksums,
   updateGithubSettings,
 } from '../../../../components/editor/actions/action-creators'
-import {
+import type {
   FileChecksums,
   GithubOperation,
   GithubRepo,
   PersistentModel,
-  projectGithubSettings,
 } from '../../../../components/editor/store/editor-state'
+import { projectGithubSettings } from '../../../../components/editor/store/editor-state'
+import type { GetBranchContentResponse, GithubFailure } from '../helpers'
 import {
   dispatchPromiseActions,
   getBranchContentFromServer,
-  GetBranchContentResponse,
   githubAPIError,
   githubAPIErrorFromResponse,
-  GithubFailure,
   runGithubOperation,
 } from '../helpers'
 import { getBranchesForGithubRepository } from './list-branches'
@@ -31,7 +29,7 @@ import { getBranchesForGithubRepository } from './list-branches'
 export interface SaveProjectToGithubOptions {
   branchName: string | null
   commitMessage: string | null
-  assetChecksums: FileChecksums
+  branchOriginChecksums: FileChecksums
 }
 
 export interface SaveToGithubSuccess {
@@ -118,12 +116,6 @@ export async function saveProjectToGithub(
         case 'SUCCESS':
           dispatch(
             [
-              updateGithubChecksums(
-                getProjectContentsChecksums(
-                  persistentModel.projectContents,
-                  options.assetChecksums,
-                ),
-              ),
               updateGithubSettings(
                 projectGithubSettings(
                   targetRepository,

@@ -2,27 +2,27 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, sortBy } from '../../../core/shared/array-utils'
 import { foldEither, isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXElementLike,
 } from '../../../core/shared/element-template'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import { isJSXElementLike } from '../../../core/shared/element-template'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
 import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import {
   isElementNonDOMElement,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
-} from '../../canvas/canvas-strategies/strategies/group-like-helpers'
-import { getElementContentAffectingType } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
-import { CanvasFrameAndTarget } from '../../canvas/canvas-types'
-import { CanvasCommand } from '../../canvas/commands/commands'
+} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
-import { AllElementProps } from '../../editor/store/editor-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
@@ -36,6 +36,7 @@ type FlexAlignItems = 'center' | 'flex-end'
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   elementPaths: Array<ElementPath>,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
@@ -56,9 +57,18 @@ export function convertLayoutToFlexCommands(
       ]
     }
 
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, path).flatMap((child) =>
-      isElementNonDOMElement(metadata, allElementProps, child)
-        ? replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [child])
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
+      metadata,
+      elementPathTree,
+      path,
+    ).flatMap((child) =>
+      isElementNonDOMElement(metadata, allElementProps, elementPathTree, child)
+        ? replaceNonDOMElementPathsWithTheirChildrenRecursive(
+            metadata,
+            allElementProps,
+            elementPathTree,
+            [child],
+          )
         : child,
     )
 
@@ -86,7 +96,7 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
-        ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
+        ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -105,6 +115,7 @@ export function convertLayoutToFlexCommands(
     const rearrangedChildrenPaths = rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
       metadata,
       allElementProps,
+      elementPathTree,
       path,
       sortedChildrenPaths,
     )
@@ -130,7 +141,7 @@ export function convertLayoutToFlexCommands(
           ]
 
     return [
-      ...ifElementIsFragmentFirstConvertItToFrame(metadata, path),
+      ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -149,9 +160,16 @@ export function convertLayoutToFlexCommands(
 
 function ifElementIsFragmentFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
-  return convertFragmentToFrame(metadata, {}, target) ?? []
+  return convertFragmentToFrame(
+    metadata,
+    elementPathTree,
+    {},
+    target,
+    'convert-even-if-it-has-static-children',
+  )
 }
 
 function guessMatchingFlexSetup(
@@ -372,21 +390,25 @@ interface TopLevelChildrenAndGroups {
 function getTopLevelChildrenAndMeasurementBoundaries(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   parentPath: ElementPath,
 ): TopLevelChildrenAndGroups {
   let topLevelChildren: Array<string> = []
   let maesurementBoundaries: Array<NonDOMElementWithLeaves> = []
 
-  const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, parentPath)
 
   for (const child of childrenPaths) {
-    if (isElementNonDOMElement(metadata, allElementProps, child)) {
+    if (isElementNonDOMElement(metadata, allElementProps, pathTrees, child)) {
       maesurementBoundaries.push({
         element: child,
         leaves: new Set(
-          replaceNonDOMElementPathsWithTheirChildrenRecursive(metadata, allElementProps, [
-            child,
-          ]).map(EP.toString),
+          replaceNonDOMElementPathsWithTheirChildrenRecursive(
+            metadata,
+            allElementProps,
+            pathTrees,
+            [child],
+          ).map(EP.toString),
         ),
       })
     } else {
@@ -438,12 +460,14 @@ function checkAllChildrenPartOfSingleGroup(
 function rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   parentPath: ElementPath,
   sortedChildren: Array<ElementPath>,
 ): Array<ElementPath> | null {
   const childrenAndGroups = getTopLevelChildrenAndMeasurementBoundaries(
     metadata,
     allElementProps,
+    pathTrees,
     parentPath,
   )
 

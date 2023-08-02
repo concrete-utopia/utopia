@@ -1,14 +1,19 @@
-import {
+import type {
   id,
   ElementPath,
   ElementPathPart,
   StaticElementPathPart,
   StaticElementPath,
 } from './project-file-types'
-import { arrayEquals, longestCommonArray, identity, fastForEach } from './utils'
+import {
+  arrayEqualsByReference,
+  longestCommonArray,
+  identity,
+  fastForEach,
+  arrayEqualsByValue,
+} from './utils'
 import { replaceAll } from './string-utils'
 import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
-import { extractOriginalUidFromIndexedUid } from './uid-utils'
 import { forceNotNull } from './optional-utils'
 
 // KILLME, except in 28 places
@@ -110,25 +115,46 @@ export function removePathsWithDeadUIDs(existingUIDs: Set<string>) {
 function getElementPathCache(fullElementPath: ElementPathPart[]): ElementPathCache {
   let workingPathCache: ElementPathCache = globalElementPathCache
 
-  function shiftWorkingCache(cacheToUse: 'rootElementCaches' | 'childCaches', pathPart: string) {
-    if (workingPathCache[cacheToUse][pathPart] == null) {
-      workingPathCache[cacheToUse][pathPart] = emptyElementPathCache()
+  function shiftWorkingCacheRoot(pathPart: string) {
+    const innerCache = workingPathCache.rootElementCaches
+    const pathPartCache = innerCache[pathPart]
+    if (pathPartCache == null) {
+      const newCache = emptyElementPathCache()
+      innerCache[pathPart] = newCache
+      workingPathCache = newCache
+    } else {
+      workingPathCache = pathPartCache
     }
-
-    workingPathCache = workingPathCache[cacheToUse][pathPart]
   }
 
-  fastForEach(fullElementPath, (elementPathPart) => {
+  function shiftWorkingCacheChild(pathPart: string) {
+    const innerCache = workingPathCache.childCaches
+    const pathPartCache = innerCache[pathPart]
+    if (pathPartCache == null) {
+      const newCache = emptyElementPathCache()
+      innerCache[pathPart] = newCache
+      workingPathCache = newCache
+    } else {
+      workingPathCache = pathPartCache
+    }
+  }
+
+  for (const elementPathPart of fullElementPath) {
     if (elementPathPart.length === 0) {
       // Special cased handling for when the path part is empty
-      shiftWorkingCache('rootElementCaches', 'empty-path')
+      shiftWorkingCacheRoot('empty-path')
+    } else {
+      let first: boolean = true
+      for (const pathPart of elementPathPart) {
+        if (first) {
+          shiftWorkingCacheRoot(pathPart)
+        } else {
+          shiftWorkingCacheChild(pathPart)
+        }
+        first = false
+      }
     }
-
-    fastForEach(elementPathPart, (pathPart, index) => {
-      const cacheToUse = index === 0 ? 'rootElementCaches' : 'childCaches'
-      shiftWorkingCache(cacheToUse, pathPart)
-    })
-  })
+  }
 
   return workingPathCache
 }
@@ -308,8 +334,15 @@ export function fullDepth(path: ElementPath): number {
   return path.parts.reduce((working, part) => working + part.length, 0)
 }
 
-export function isInsideFocusedComponent(path: ElementPath): boolean {
-  return path.parts.length > 2
+export function isInsideFocusedComponent(
+  path: ElementPath,
+  autoFocusedPaths: Array<ElementPath>,
+): boolean {
+  return (
+    path.parts.length > 2 ||
+    (path.parts.length > 1 &&
+      !autoFocusedPaths.some((autoFocusedPath) => isDescendantOf(path, autoFocusedPath)))
+  )
 }
 
 function fullElementPathParent(path: StaticElementPathPart[]): StaticElementPathPart[]
@@ -504,7 +537,7 @@ export function appendPartToPath(path: ElementPath, next: ElementPathPart): Elem
 }
 
 function elementPathPartsEqual(l: ElementPathPart, r: ElementPathPart): boolean {
-  return arrayEquals(l, r)
+  return arrayEqualsByReference(l, r)
 }
 
 function stringifiedPathsEqual(l: ElementPath, r: ElementPath): boolean {
@@ -521,6 +554,10 @@ export function pathsEqual(l: ElementPath | null, r: ElementPath | null): boolea
   } else {
     return stringifiedPathsEqual(l, r)
   }
+}
+
+export function arrayOfPathsEqual(l: Array<ElementPath>, r: Array<ElementPath>): boolean {
+  return arrayEqualsByValue(l, r, pathsEqual)
 }
 
 export function containsPath(path: ElementPath, paths: Array<ElementPath>): boolean {
@@ -717,6 +754,7 @@ export function replaceOrDefault(
   return replaceIfAncestor(path, replaceSearch, replaceWith) ?? path
 }
 
+// TODO: remove null
 export function closestSharedAncestor(
   l: ElementPath | null,
   r: ElementPath | null,
@@ -948,6 +986,10 @@ export function dynamicPathToStaticPath(path: ElementPath): StaticElementPath {
   }
 }
 
+export function isDynamicPath(path: ElementPath): boolean {
+  return !pathsEqual(path, dynamicPathToStaticPath(path))
+}
+
 export function makeLastPartOfPathStatic(path: ElementPath): ElementPath {
   const existing = dynamicToStaticLastElementPathPartCache.get(path)
   if (existing == null) {
@@ -1016,11 +1058,27 @@ export function createBackwardsCompatibleScenePath(path: ElementPath): ElementPa
 
 export function isFocused(focusedElementPath: ElementPath | null, path: ElementPath): boolean {
   const lastPart = lastElementPathForPath(path)
-  if (focusedElementPath == null || lastPart == null || isStoryboardDescendant(path)) {
+  if (focusedElementPath == null || lastPart == null) {
     return false
   } else {
+    // FIXME this is incorrect, as it will be marking other instances as focused
     return pathUpToElementPath(focusedElementPath, lastPart, 'dynamic-path') != null
   }
+}
+
+export function isExplicitlyFocused(
+  focusedElementPath: ElementPath | null,
+  autoFocusedPaths: Array<ElementPath>,
+  path: ElementPath,
+): boolean {
+  if (pathsEqual(focusedElementPath, path)) {
+    return true
+  }
+
+  const isNotAutoFocused =
+    path.parts.length > 1 ||
+    !autoFocusedPaths.some((autoFocusedPath) => isDescendantOfOrEqualTo(path, autoFocusedPath))
+  return isNotAutoFocused && isFocused(focusedElementPath, path)
 }
 
 export function getOrderedPathsByDepth(elementPaths: Array<ElementPath>): Array<ElementPath> {
@@ -1046,4 +1104,25 @@ export function getContainingComponent(path: ElementPath): ElementPath {
 export function uniqueElementPaths(paths: Array<ElementPath>): Array<ElementPath> {
   const pathSet = new Set(paths.map(toString))
   return Array.from(pathSet).map(fromString)
+}
+
+export const GeneratedUIDSeparator = `~~~`
+export function createIndexedUid(originalUid: string, index: string | number): string {
+  return `${originalUid}${GeneratedUIDSeparator}${index}`
+}
+
+export function extractOriginalUidFromIndexedUid(uid: string): string {
+  const separatorIndex = uid.indexOf(GeneratedUIDSeparator)
+  if (separatorIndex >= 0) {
+    return uid.substr(0, separatorIndex)
+  } else {
+    return uid
+  }
+}
+
+export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null {
+  if (isEmptyPath(path)) {
+    return null
+  }
+  return fromString(path.parts[0][0])
 }

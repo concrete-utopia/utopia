@@ -7,16 +7,18 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { canvasPointToWindowPoint } from '../../dom-lookup'
-import { MetaCanvasStrategy } from '../canvas-strategies'
-import {
+import type { MetaCanvasStrategy } from '../canvas-strategies'
+import type {
   CanvasStrategy,
   CustomStrategyState,
+  InteractionCanvasState,
+} from '../canvas-strategy-types'
+import {
   emptyStrategyApplicationResult,
   getInsertionSubjectsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { drawToInsertFitness, drawToInsertStrategyFactory } from './draw-to-insert-metastrategy'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
 
@@ -66,6 +68,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           false,
           true,
           'allow-smaller-parent',
+          customStrategyState,
           ['hasOnlyTextChildren', 'supportsChildren'],
         )
         if (applicableReparentFactories.length < 1) {
@@ -78,21 +81,24 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
 
         const textEditableAndHasText = MetadataUtils.targetTextEditableAndHasText(
           canvasState.startingMetadata,
-          targetParent,
+          canvasState.startingElementPathTree,
+          targetParent.intendedParentPath,
         )
 
         const targetParentPathParts =
-          targetParent.parts.length > 0 ? targetParent.parts[0].length : 0
+          targetParent.intendedParentPath.parts.length > 0
+            ? targetParent.intendedParentPath.parts[0].length
+            : 0
         const isRoot = targetParentPathParts === 1
         const isClick = s === 'end-interaction' && interactionSession.interactionData.drag == null
         if (!isRoot && textEditableAndHasText && isClick) {
           return strategyApplicationResult([
-            updateSelectedViews('on-complete', [targetParent]),
+            updateSelectedViews('on-complete', [targetParent.intendedParentPath]),
             setCursorCommand(CSSCursor.Select),
             wildcardPatch('on-complete', {
               mode: {
                 $set: EditorModes.textEditMode(
-                  targetParent,
+                  targetParent.intendedParentPath,
                   canvasPointToWindowPoint(
                     pointOnCanvas,
                     canvasState.scale,
@@ -120,7 +126,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
           return strategyApplicationResult([])
         }
 
-        const targetElement = EP.appendToPath(targetParent, insertionSubject.uid)
+        const targetElement = EP.appendToPath(targetParent.intendedParentPath, insertionSubject.uid)
 
         const result = strategy.apply(s)
         result.commands.push(

@@ -1,25 +1,19 @@
 import * as EP from '../../../../core/shared/element-path'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 import { pressKey } from '../../event-helpers.test-utils'
-import {
-  EditorRenderResult,
-  makeTestProjectCodeWithSnippet,
-  renderTestEditorWithCode,
-} from '../../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
-import sinon, { SinonFakeTimers } from 'sinon'
+import type { SinonFakeTimers } from 'sinon'
+import sinon from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
+import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 import {
-  NavigatorEntry,
-  navigatorEntryToKey,
-} from '../../../../components/editor/store/editor-state'
-import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
-} from './group-like-helpers.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
-import { assertNever } from '../../../../core/shared/utils'
+} from './fragment-like-helpers.test-utils'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 
 const TestProject = (
   display: 'block' | 'inline-block',
@@ -116,7 +110,7 @@ const TestProjectMixedInlineFlow = `
 </div>
 `
 
-const TestProjectWithFragment = (type: ContentAffectingType) => `
+const TestProjectWithFragment = (type: FragmentLikeType) => `
     <div
       style={{
         backgroundColor: '#aaaaaa33',
@@ -139,7 +133,7 @@ const TestProjectWithFragment = (type: ContentAffectingType) => `
         }}
         data-uid='child1'
       />
-      ${getOpeningGroupLikeTag(type)}
+      ${getOpeningFragmentLikeTag(type)}
         <div
           style={{
             backgroundColor: '#aaaaaa33',
@@ -147,7 +141,7 @@ const TestProjectWithFragment = (type: ContentAffectingType) => `
             height: 171,
             contain: 'layout',
           }}
-          data-uid='children-affecting-child1'
+          data-uid='fragment-like-child1'
         />
         <div
           style={{
@@ -156,9 +150,9 @@ const TestProjectWithFragment = (type: ContentAffectingType) => `
             height: 184,
             contain: 'layout',
           }}
-          data-uid='children-affecting-child2'
+          data-uid='fragment-like-child2'
         />
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#ff0000',
@@ -193,6 +187,7 @@ async function pressKeysRepeat(
   direction: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown',
   repeat: number,
 ) {
+  clock.current.tick(1)
   for (var i = 1; i <= repeat; i++) {
     await pressKey(direction)
   }
@@ -732,8 +727,8 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
   })
 
-  AllContentAffectingTypes.forEach((type) => {
-    describe('with children-affecting elements', () => {
+  AllFragmentLikeTypes.forEach((type) => {
+    describe('with fragment-like elements', () => {
       it(`pressing the arrow keys reorders in a flex layout, in a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(TestProjectWithFragment(type)),
@@ -757,11 +752,11 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of children-affecting
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment-like
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
         expect(getRegularNavigatorTargets(renderResult)).toEqual(
@@ -774,11 +769,11 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of children-affecting
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment-like
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
         expect(getRegularNavigatorTargets(renderResult)).toEqual(
@@ -792,11 +787,11 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of children-affecting
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the right of fragment-like
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
         expect(getRegularNavigatorTargets(renderResult)).toEqual(
@@ -809,11 +804,11 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of children-affecting
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // child1 moves to the left of fragment-like
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
         expect(getRegularNavigatorTargets(renderResult)).toEqual(
@@ -830,11 +825,7 @@ describe('Keyboard Reorder Strategy', () => {
         await renderResult.dispatch(
           [
             selectComponents(
-              [
-                EP.fromString(
-                  'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
-                ),
-              ],
+              [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like')],
               false,
             ),
           ],
@@ -847,10 +838,10 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting', // <- the children-affecting element moves to the left of child1
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like', // <- the fragment-like element moves to the left of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
@@ -864,11 +855,11 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // <- the children-affecting element moves to the right of child1
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1', // <- the fragment-like element moves to the right of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
         expect(getRegularNavigatorTargets(renderResult)).toEqual(
@@ -880,10 +871,10 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting', // <- the children-affecting element moves to the left of child1
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like', // <- the fragment-like element moves to the left of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
@@ -899,10 +890,10 @@ describe('Keyboard Reorder Strategy', () => {
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting', // <- the children-affecting element moves to the right of child1
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:parent/children-affecting/inner-fragment/children-affecting-child2',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like', // <- the fragment-like element moves to the right of child1
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:parent/fragment-like/inner-fragment/fragment-like-child2',
           'utopia-storyboard-uid/scene-aaa/app-entity:parent/child2',
         ]
         expect(getRegularNavigatorTargets(renderResult)).toEqual(

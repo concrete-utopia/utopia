@@ -1,5 +1,5 @@
-import { JSXElementName } from '../core/shared/element-template'
-import { PropertyPath } from '../core/shared/project-file-types'
+import type { JSXElementName } from '../core/shared/element-template'
+import type { PropertyPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
 import {
   JSXElementNameKeepDeepEqualityCall,
@@ -12,16 +12,17 @@ import {
   NameAndIconResultArrayKeepDeepEquality,
   LayoutTargetablePropArrayKeepDeepEquality,
 } from './deep-equality-instances'
-import { HigherOrderControl } from '../components/canvas/canvas-types'
-import { Either, left, right } from '../core/shared/either'
+import type { HigherOrderControl } from '../components/canvas/canvas-types'
+import type { Either } from '../core/shared/either'
+import { left, right } from '../core/shared/either'
 import { arrayDeepEquality, createCallWithTripleEquals } from './deep-equality'
-import { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
+import type { NameAndIconResult } from '../components/inspector/common/name-and-icon-hook'
 import {
   DropTargetHint,
   NavigatorState,
   regularNavigatorEntry,
 } from '../components/editor/store/editor-state'
-import { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
+import type { LayoutTargetableProp } from '../core/layout/layout-helpers-new'
 
 describe('ElementPathKeepDeepEquality', () => {
   const oldValue = EP.elementPath([['scene'], ['aaa', 'bbb']])
@@ -144,11 +145,11 @@ describe('HigherOrderControlArrayKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = HigherOrderControlArrayKeepDeepEquality(oldValue, newDifferentValue)
-    expect(result.value[0].type).toBe(oldValue[0].type)
-    expect(result.value[0].component).toBe(oldValue[0].component)
-    expect(result.value[0].controls).toBe(oldValue[0].controls)
-    expect(result.value[0].controlid).toBe(newDifferentValue[0].controlid)
-    expect(result.value[0].followCanvas).toBe(oldValue[0].followCanvas)
+    expect(result.value[0]?.type).toBe(oldValue[0]?.type)
+    expect(result.value[0]?.component).toBe(oldValue[0]?.component)
+    expect(result.value[0]?.controls).toBe(oldValue[0]?.controls)
+    expect(result.value[0]?.controlid).toBe(newDifferentValue[0]?.controlid)
+    expect(result.value[0]?.followCanvas).toBe(oldValue[0]?.followCanvas)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })
@@ -379,10 +380,10 @@ describe('NameAndIconResultArrayKeepDeepEquality', () => {
   })
   it('different but similar value handled appropriately', () => {
     const result = NameAndIconResultArrayKeepDeepEquality(oldValue, newDifferentValue)
-    expect(result.value[0].path).toBe(newDifferentValue[0].path)
-    expect(result.value[0].name).toBe(oldValue[0].name)
-    expect(result.value[0].label).toBe(oldValue[0].label)
-    expect(result.value[0].iconProps).toBe(newDifferentValue[0].iconProps)
+    expect(result.value[0]?.path).toBe(newDifferentValue[0]?.path)
+    expect(result.value[0]?.name).toBe(oldValue[0]?.name)
+    expect(result.value[0]?.label).toBe(oldValue[0]?.label)
+    expect(result.value[0]?.iconProps).toBe(newDifferentValue[0]?.iconProps)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)
   })

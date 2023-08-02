@@ -1,6 +1,9 @@
 import { canvasPoint, point } from '../../../core/shared/math-utils'
 import * as EP from '../../../core/shared/element-path'
-import { simplifiedMetadataMap } from '../../../utils/utils.test-utils'
+import {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  simplifiedMetadataMap,
+} from '../../../utils/utils.test-utils'
 import { setFocusedElement } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import CanvasActions from '../canvas-actions'
@@ -71,6 +74,80 @@ export var storyboard = (
 );
 `
 
+const appJSWithRepresentativeComponent = `
+import * as React from 'react'
+
+const ActivityCardSmall = ({ activity }) => {
+  const [completed, setCompleted] = React.useState(false)
+  const toggleComplete = React.useCallback(
+    () => setCompleted((completed) => !completed),
+    [],
+  )
+  return (
+    <div data-label='Activity Card' data-uid='activity-div'>
+      {
+      // @utopia/uid=conditional
+      completed ? (
+        <div data-uid={'completed-true'}>{activity}</div>
+      ) : (
+        <div data-uid={'completed-false'}>{activity}</div>
+      )}
+    </div>
+  )
+}
+
+const activities = ['Running', 'Cycling']
+
+export var App = () => {
+  const smallCardView = false
+  return (
+    <div
+      data-uid='app-root-div'
+      style={{
+        width: '100%',
+        background: 'var(--orange)',
+        overflowY: 'scroll',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 0,
+      }}
+    >
+      {activities.map((activity) => (
+        <ActivityCardSmall
+          data-uid={'activity-card-small'}
+          activity={activity}
+        />
+      ))}
+    </div>
+  )
+}
+
+`
+
+const storyboardWithSimpleAppComponent = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='storyboard'>
+    <Scene
+      style={{
+        width: 744,
+        height: 1133,
+        position: 'absolute',
+        left: 1036,
+        top: 128,
+      }}
+      data-label='My App'
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`
+
 function createAndRenderModifiedProject(modifiedFiles: { [filename: string]: string }) {
   const project = createModifiedProject(modifiedFiles)
   return renderTestEditorWithModel(project, 'await-first-dom-report')
@@ -97,6 +174,13 @@ export const Card = () => {
     </Button>
   );
 };`,
+  })
+}
+
+function createComponentWithConditionalProject() {
+  return createAndRenderModifiedProject({
+    [StoryboardFilePath]: storyboardWithSimpleAppComponent,
+    ['/src/app.js']: appJSWithRepresentativeComponent,
   })
 }
 
@@ -278,13 +362,16 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-2": Object {
@@ -369,13 +456,16 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-2": Object {
@@ -458,17 +548,23 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/30d": Object {
+          "name": "not-jsx-element",
         },
         "storyboard/scene-2": Object {
           "name": "Scene",
@@ -555,17 +651,23 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root": Object {
           "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance:other-button-root/30d": Object {
+          "name": "not-jsx-element",
         },
         "storyboard/scene-2": Object {
           "name": "Scene",
@@ -604,7 +706,7 @@ describe('Spy Wrapper Template Path Tests', () => {
           EP.elementPath([
             ['storyboard', 'scene-1', 'app'],
             ['other-app-root', 'other-inner-div', 'other-card-instance'],
-            ['other-button-instance', 'other-hi-element~~~2'],
+            ['other-button-instance', '3d8', 'other-hi-element~~~2'],
           ]),
         ),
       ],
@@ -647,22 +749,25 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
-          "name": "HiElement",
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
-          "name": "HiElement",
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8": Object {
           "name": "not-jsx-element",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e/hi-element-fragment-child-1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~1": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc/hi-element-fragment-child-1": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e/hi-element-fragment-child-2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc/hi-element-fragment-child-2": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-2": Object {
@@ -706,10 +811,10 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e/hi-element-fragment-child-1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc/hi-element-fragment-child-1": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e/hi-element-fragment-child-2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc/hi-element-fragment-child-2": Object {
           "name": "div",
         },
         "storyboard/scene-2": Object {
@@ -753,22 +858,25 @@ describe('Spy Wrapper Template Path Tests', () => {
         "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~1": Object {
-          "name": "HiElement",
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2": Object {
-          "name": "HiElement",
-        },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8": Object {
           "name": "not-jsx-element",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e/hi-element-fragment-child-1": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~1": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc/hi-element-fragment-child-1": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~2:38e/hi-element-fragment-child-2": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~2:dbc/hi-element-fragment-child-2": Object {
           "name": "div",
         },
-        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/other-hi-element~~~3": Object {
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance:other-button-instance/3d8/other-hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-2": Object {
@@ -852,13 +960,16 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
       }
@@ -902,13 +1013,13 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "div",
         },
       }
@@ -952,13 +1063,16 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
       }
@@ -1041,17 +1155,23 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root": Object {
           "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root/9b0": Object {
+          "name": "not-jsx-element",
         },
       }
     `,
@@ -1094,13 +1214,13 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "div",
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root": Object {
@@ -1147,17 +1267,23 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root": Object {
           "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance:button-root/9b0": Object {
+          "name": "not-jsx-element",
         },
       }
     `,
@@ -1184,7 +1310,7 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
           EP.elementPath([
             ['storyboard', 'scene-2', 'app2'],
             ['app-outer-div', 'card-instance'],
-            ['button-instance', 'hi-element~~~2'],
+            ['button-instance', 'e34', 'hi-element~~~2'],
           ]),
         ),
       ],
@@ -1239,16 +1365,19 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
       }
@@ -1292,16 +1421,16 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "div",
         },
       }
@@ -1345,17 +1474,252 @@ describe('Spy Wrapper Multifile Template Path Tests', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
+        },
+      }
+    `,
+    )
+  })
+  it('component with generated conditionals with nothing focused', async () => {
+    const { getEditorState } = await createComponentWithConditionalProject()
+
+    const spiedMetadata = getEditorState().editor.spyMetadata
+    const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadata
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
+
+    const finalMetadata = getEditorState().editor.jsxMetadata
+    const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
+
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene/app": Object {
+          "name": "App",
+        },
+        "storyboard/scene/app:app-root-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1": Object {
+          "name": "ActivityCardSmall",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~2": Object {
+          "name": "ActivityCardSmall",
+        },
+      }
+    `,
+    )
+
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~2": Object {
+          "name": "div",
+        },
+      }
+    `,
+    )
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene/app": Object {
+          "name": "App",
+        },
+        "storyboard/scene/app:app-root-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1": Object {
+          "name": "ActivityCardSmall",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~2": Object {
+          "name": "ActivityCardSmall",
+        },
+      }
+    `,
+    )
+  })
+  it('component with generated conditionals with a component focused', async () => {
+    const { getEditorState, dispatch } = await createComponentWithConditionalProject()
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene', 'app'],
+            ['app-root-div', '9a9', 'activity-card-small~~~1'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    const spiedMetadata = getEditorState().editor.spyMetadata
+    const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadata
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
+
+    const finalMetadata = getEditorState().editor.jsxMetadata
+    const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
+
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene/app": Object {
+          "name": "App",
+        },
+        "storyboard/scene/app:app-root-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1": Object {
+          "name": "ActivityCardSmall",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div/conditional": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div/conditional/completed-false": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div/conditional/completed-false/673": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~2": Object {
+          "name": "ActivityCardSmall",
+        },
+      }
+    `,
+    )
+
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div/conditional/completed-false": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~2": Object {
+          "name": "div",
+        },
+      }
+    `,
+    )
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene/app": Object {
+          "name": "App",
+        },
+        "storyboard/scene/app:app-root-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1": Object {
+          "name": "ActivityCardSmall",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div/conditional": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div/conditional/completed-false": Object {
+          "name": "div",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~1:activity-div/conditional/completed-false/673": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene/app:app-root-div/9a9/activity-card-small~~~2": Object {
+          "name": "ActivityCardSmall",
         },
       }
     `,
@@ -1412,7 +1776,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           EP.elementPath([
             ['storyboard', 'scene-2', 'app2'],
             ['app-outer-div', 'card-instance'],
-            ['button-instance', 'hi-element~~~2'],
+            ['button-instance', 'e34', 'hi-element~~~2'],
           ]),
         ),
       ],
@@ -1467,16 +1831,22 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/840": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
       }
@@ -1520,16 +1890,16 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "div",
         },
       }
@@ -1573,16 +1943,22 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/840": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
       }
@@ -1645,7 +2021,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           EP.elementPath([
             ['storyboard', 'scene-2', 'app2'],
             ['app-outer-div', 'card-instance'],
-            ['button-instance', 'hi-element~~~2'],
+            ['button-instance', 'e34', 'hi-element~~~2'],
           ]),
         ),
       ],
@@ -1658,7 +2034,7 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
           EP.elementPath([
             ['storyboard', 'scene-2', 'app2'],
             ['app-outer-div', 'card-instance'],
-            ['button-instance', 'hi-element~~~2'],
+            ['button-instance', 'e34', 'hi-element~~~2'],
             ['hi-element-root', 'hi-element-inner'],
           ]),
         ),
@@ -1714,22 +2090,25 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/hi-element-inner": Object {
           "name": "HiElementInner",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
       }
@@ -1773,22 +2152,22 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/hi-element-inner": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "div",
         },
       }
@@ -1832,22 +2211,25 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
         "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance": Object {
           "name": "Button",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~1": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~1": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2": Object {
           "name": "HiElement",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/hi-element-inner": Object {
           "name": "HiElementInner",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
           "name": "div",
         },
-        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/hi-element~~~3": Object {
+        "storyboard/scene-2/app2:app-outer-div/card-instance:button-instance/e34/hi-element~~~3": Object {
           "name": "HiElement",
         },
       }

@@ -1,8 +1,11 @@
-import { MapLike } from 'typescript'
-import {
+import type { MapLike } from 'typescript'
+import type {
   Param,
   JSExpressionOtherJavaScript,
   BoundParam,
+  JSExpressionMapOrOtherJavascript,
+} from '../../../core/shared/element-template'
+import {
   isRegularParam,
   isDestructuredObject,
   isOmittedParam,
@@ -20,7 +23,7 @@ export function applyPropsParamToPassedProps(
 
   function getParamValue(
     value: unknown,
-    defaultExpression: JSExpressionOtherJavaScript | null,
+    defaultExpression: JSExpressionMapOrOtherJavascript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
       return jsxAttributeToValue(filePath, inScope, requireResult, defaultExpression)

@@ -1,16 +1,22 @@
+import type { CSSProperties } from 'react'
 import React from 'react'
-import { Component, CSSProperties } from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { EditorDispatch } from '../../editor/action-types'
-import * as EditorActions from '../../editor/actions/action-creators'
-import * as EP from '../../../core/shared/element-path'
-import { renameComponent } from '../actions'
-import { StringInput, flexRowStyle, colorTheme, Icons } from '../../../uuiui'
+import type { NavigatorEntry } from '../../../components/editor/store/editor-state'
 import {
+  isConditionalClauseNavigatorEntry,
   isRegularNavigatorEntry,
-  navigatorEntriesEqual,
-  NavigatorEntry,
+  varSafeNavigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
+import {
+  findMaybeConditionalExpression,
+  getConditionalActiveCase,
+  getConditionalFlag,
+} from '../../../core/model/conditionals'
+import { colorTheme, flexRowStyle, StringInput } from '../../../uuiui'
+import type { EditorDispatch } from '../../editor/action-types'
+import * as EditorActions from '../../editor/actions/action-creators'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { renameComponent } from '../actions'
+import { NavigatorItemTestId } from './navigator-item'
 
 interface ItemLabelProps {
   testId: string
@@ -24,154 +30,207 @@ interface ItemLabelProps {
   style?: CSSProperties
 }
 
-interface ItemLabelState {
-  name: string
-  target: NavigatorEntry
-}
+export const ItemLabel = React.memo((props: ItemLabelProps) => {
+  const {
+    name: propsName,
+    testId,
+    dispatch,
+    target,
+    isDynamic,
+    suffix,
+    inputVisible,
+    style,
+  } = props
 
-export class ItemLabel extends Component<ItemLabelProps, ItemLabelState> {
-  elementRef: HTMLInputElement | null = null
-  constructor(props: ItemLabelProps) {
-    super(props)
-    this.state = {
-      name: this.props.name,
-      target: this.props.target,
-    }
-  }
+  const elementRef = React.useRef<HTMLInputElement | null>(null)
 
-  static getDerivedStateFromProps(
-    props: ItemLabelProps,
-    state: ItemLabelState,
-  ): ItemLabelState | null {
-    if (props.target === state.target || navigatorEntriesEqual(props.target, state.target)) {
-      return null
-    } else {
-      return {
-        name: props.name,
-        target: props.target,
+  const [name, setName] = React.useState(propsName)
+
+  const isConditionalClause = React.useMemo(() => {
+    return isConditionalClauseNavigatorEntry(target)
+  }, [target])
+
+  const isActiveConditionalClause = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (!isConditionalClauseNavigatorEntry(target)) {
+        return false
       }
+      const parent = findMaybeConditionalExpression(target.elementPath, store.editor.jsxMetadata)
+      if (parent == null) {
+        return false
+      }
+      const activeCase = getConditionalActiveCase(
+        target.elementPath,
+        parent,
+        store.editor.spyMetadata,
+      )
+      if (activeCase == null) {
+        return false
+      }
+      return activeCase === target.clause
+    },
+    'NavigatorItemLabel isActiveBranchOfOverriddenConditional',
+  )
+
+  React.useEffect(() => {
+    if (inputVisible && elementRef.current != null) {
+      elementRef.current.focus()
+      elementRef.current.select()
     }
-  }
+  }, [inputVisible, testId])
 
-  componentDidUpdate(prevProps: ItemLabelProps, prevState: ItemLabelState) {
-    if (!prevProps.inputVisible && this.props.inputVisible && this.elementRef != null) {
-      this.elementRef.focus()
-      this.elementRef.select()
-    }
-  }
+  const value = React.useMemo(() => {
+    return suffix == null ? name : `${name} ${suffix}`
+  }, [suffix, name])
 
-  cancelRename() {
-    this.setState({
-      name: this.props.name,
-    })
-    this.props.dispatch([EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
-  }
+  const cancelRename = React.useCallback(() => {
+    setName(name)
+    dispatch([EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
+  }, [dispatch, name])
 
-  renameComponent() {
-    if (isRegularNavigatorEntry(this.props.target)) {
+  const triggerRenameComponent = React.useCallback(() => {
+    if (isRegularNavigatorEntry(target)) {
       // if the name would be the same, or if the new name would be empty, just cancel
-      if (this.props.name === this.state.name) {
-        this.cancelRename()
+      if (propsName === name) {
+        cancelRename()
       } else {
-        const nameIsBlank = this.state.name.trim().length === 0
-        const action = renameComponent(
-          this.props.target.elementPath,
-          nameIsBlank ? null : this.state.name,
-        )
-        this.props.dispatch([action, EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
+        const nameIsBlank = name.trim().length === 0
+        const action = renameComponent(target.elementPath, nameIsBlank ? null : name)
+        dispatch([action, EditorActions.setNavigatorRenamingTarget(null)], 'leftpane')
       }
     } else {
-      this.cancelRename()
+      cancelRename()
     }
+  }, [cancelRename, target, propsName, dispatch, name])
+
+  const onInputLabelKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key == 'Enter') {
+        triggerRenameComponent()
+      }
+      if (event.key == 'Escape') {
+        cancelRename()
+      }
+    },
+    [cancelRename, triggerRenameComponent],
+  )
+
+  const onInputLabelBlur = React.useCallback(() => {
+    triggerRenameComponent()
+  }, [triggerRenameComponent])
+
+  function onInputLabelChange(event: React.ChangeEvent<HTMLInputElement>) {
+    setName(event.target.value)
   }
 
-  renderDefaultLabel() {
-    const value =
-      this.props.suffix == null ? this.props.name : `${this.props.name} ${this.props.suffix}`
+  const isActiveBranchOfOverriddenConditional = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (!isConditionalClauseNavigatorEntry(target)) {
+        return false
+      }
 
-    return (
-      <div
-        key='item-label'
-        style={{
-          backgroundColor: 'transparent',
-          paddingTop: 3,
-          paddingBottom: 3,
-          marginLeft: 6,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 6,
-          fontWeight: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 600 : undefined,
-          color: this.props.target.type === 'CONDITIONAL_CLAUSE' ? colorTheme.fg7.value : undefined,
-          textTransform: this.props.target.type === 'CONDITIONAL_CLAUSE' ? 'uppercase' : undefined,
-        }}
-        onDoubleClick={(event) => {
-          if (!this.props.isDynamic && event.altKey && isRegularNavigatorEntry(this.props.target)) {
-            this.props.dispatch(
-              [EditorActions.setNavigatorRenamingTarget(this.props.target.elementPath)],
-              'leftpane',
-            )
-          }
-        }}
-      >
-        {value}
-      </div>
-    )
-  }
+      const conditional = findMaybeConditionalExpression(
+        target.elementPath,
+        store.editor.jsxMetadata,
+      )
+      if (conditional == null) {
+        return false
+      }
 
-  inputLabelUpdateRef = (ref: HTMLInputElement) => {
-    this.elementRef = ref
-  }
-  inputLabelKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key == 'Enter') {
-      this.renameComponent()
-    }
-    if (event.key == 'Escape') {
-      this.cancelRename()
-    }
-  }
+      switch (getConditionalFlag(conditional)) {
+        case true:
+          return target.clause === 'true-case'
+        case false:
+          return target.clause === 'false-case'
+        default:
+          return false
+      }
+    },
+    'NavigatorItemLabel isActiveBranchOfOverriddenConditional',
+  )
 
-  inputLabelBlur = () => this.renameComponent()
-
-  inputLabelChange = (event: React.FormEvent<HTMLElement>) => {
-    this.setState({ name: (event.target as any).value })
-  }
-
-  renderInputLabel() {
-    return (
-      <div key='item-rename-label'>
-        <StringInput
-          key='item-rename-input'
-          testId={this.props.testId}
-          className='rename-input-field'
-          ref={this.inputLabelUpdateRef}
-          type='text'
-          value={this.state.name}
-          onKeyDown={this.inputLabelKeyDown}
-          onBlur={this.inputLabelBlur}
-          onChange={this.inputLabelChange}
-        />
-      </div>
-    )
-  }
-
-  render() {
-    return (
-      <div
-        key='item-label-container'
-        className='item-label-container'
-        style={{
-          ...this.props.style,
-          ...flexRowStyle,
-          fontSize: 11,
-          fontStyle: this.props.isDynamic ? 'italic' : 'normal',
-        }}
-      >
-        {this.props.inputVisible ? this.renderInputLabel() : this.renderDefaultLabel()}
-      </div>
-    )
-  }
-}
+  return (
+    <div
+      ref={elementRef}
+      key='item-label-container'
+      className='item-label-container'
+      style={{
+        ...style,
+        ...flexRowStyle,
+        fontSize: 11,
+        fontStyle: isDynamic ? 'italic' : 'normal',
+        gap: isConditionalClause ? 10 : undefined,
+      }}
+    >
+      {isConditionalClause && (
+        <div
+          style={{
+            width: 18,
+            height: 18,
+            display: 'flex',
+            fontWeight: 'bold',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: isActiveConditionalClause ? 1 : 0,
+            color: isActiveBranchOfOverriddenConditional
+              ? colorTheme.brandNeonPink.value
+              : colorTheme.dynamicBlue.value,
+            marginLeft: 6,
+          }}
+        >
+          ✓
+        </div>
+      )}
+      {inputVisible ? (
+        <div key='item-rename-label'>
+          <StringInput
+            key='item-rename-input'
+            testId={testId}
+            className='rename-input-field'
+            ref={elementRef}
+            type='text'
+            value={name}
+            onKeyDown={onInputLabelKeyDown}
+            onBlur={onInputLabelBlur}
+            onChange={onInputLabelChange}
+          />
+        </div>
+      ) : (
+        <div
+          key='item-label'
+          data-testid={`${NavigatorItemTestId(varSafeNavigatorEntryToKey(target))}-label`}
+          style={{
+            backgroundColor: 'transparent',
+            paddingTop: 3,
+            paddingBottom: 3,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            fontWeight: isConditionalClause ? 600 : undefined,
+            color: isActiveBranchOfOverriddenConditional
+              ? colorTheme.brandNeonPink.value
+              : isActiveConditionalClause
+              ? colorTheme.dynamicBlue.value
+              : isConditionalClause
+              ? colorTheme.fg7.value
+              : undefined,
+            textTransform: isConditionalClause ? 'uppercase' : undefined,
+          }}
+          onDoubleClick={(event) => {
+            if (!isDynamic && event.altKey && isRegularNavigatorEntry(target)) {
+              dispatch([EditorActions.setNavigatorRenamingTarget(target.elementPath)], 'leftpane')
+            }
+          }}
+        >
+          {value}
+        </div>
+      )}
+    </div>
+  )
+})

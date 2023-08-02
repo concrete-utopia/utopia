@@ -1,5 +1,6 @@
 import { stripNulls } from './array-utils'
-import { Either, left, right, mapEither } from './either'
+import type { Either } from './either'
+import { left, right, mapEither } from './either'
 
 enum RawModifier {}
 enum WindowModifier {}
@@ -21,6 +22,12 @@ export type Point<C extends CoordinateMarker> = PointInner & C
 export type RawPoint = RawModifier & PointInner
 export type WindowPoint = WindowModifier & PointInner
 export type CanvasPoint = CanvasModifier & PointInner
+
+export type Delta = {
+  x: number
+  y: number
+}
+
 export interface Segment<C extends CoordinateMarker> {
   a: Point<C>
   b: Point<C>
@@ -75,6 +82,10 @@ export function size(width: number, height: number): Size {
   }
 }
 
+export function sizeFromRectangle(rectangle: Rectangle<any>): Size {
+  return size(rectangle.width, rectangle.height)
+}
+
 export type SimpleRectangle = {
   x: number
   y: number
@@ -90,7 +101,7 @@ export type NodeGraphRectangle = NodeGraphModifier & SimpleRectangle
 
 export type InfinityRectangle<C extends CoordinateMarker> = { type: 'INFINITY_RECTANGLE' } & C
 
-const infinityRectangle = { type: 'INFINITY_RECTANGLE' }
+export const infinityRectangle = { type: 'INFINITY_RECTANGLE' }
 export const infinityCanvasRectangle = infinityRectangle as InfinityRectangle<CanvasModifier>
 export const infinityLocalRectangle = infinityRectangle as InfinityRectangle<LocalModifier>
 
@@ -108,6 +119,21 @@ export function isFiniteRectangle<C extends CoordinateMarker>(
   r: MaybeInfinityRectangle<C>,
 ): r is Rectangle<C> {
   return !isInfinityRectangle(r)
+}
+
+export function isNotNullFiniteRectangle<C extends CoordinateMarker>(
+  r: MaybeInfinityRectangle<C> | null,
+): r is Rectangle<C> {
+  return r != null && isFiniteRectangle(r)
+}
+
+export function forceFiniteRectangle<C extends CoordinateMarker>(
+  r: MaybeInfinityRectangle<C> | null,
+): Rectangle<C> {
+  if (isNotNullFiniteRectangle(r)) {
+    return r
+  }
+  throw new Error('invariant: we expected a finite Rectangle')
 }
 
 export function canvasRectangle(rectangle: null | undefined): null
@@ -134,6 +160,20 @@ export function localRectangle(
     return null
   }
   return rectangle as LocalRectangle
+}
+
+export function windowRectangle(rectangle: null | undefined): null
+export function windowRectangle(rectangle: SimpleRectangle): WindowRectangle
+export function windowRectangle(
+  rectangle: SimpleRectangle | null | undefined,
+): WindowRectangle | null
+export function windowRectangle(
+  rectangle: SimpleRectangle | null | undefined,
+): WindowRectangle | null {
+  if (rectangle == null) {
+    return null
+  }
+  return rectangle as WindowRectangle
 }
 
 export function zeroRectIfNullOrInfinity<C extends CoordinateMarker>(
@@ -261,6 +301,35 @@ export function rectOrigin<C extends CoordinateMarker>(rectangle: Rectangle<C>):
 
 export function sizeFitsInTarget(sizeToCheck: Size, target: Size): boolean {
   return sizeToCheck.width <= target.width && sizeToCheck.height <= target.height
+}
+
+export function rectangleContainsRectangle(
+  outer: CanvasRectangle,
+  inner: CanvasRectangle,
+): boolean {
+  return (
+    outer.x < inner.x &&
+    inner.x + inner.width < outer.x + outer.width &&
+    outer.y < inner.y &&
+    inner.y + inner.height < outer.y + outer.height
+  )
+}
+
+export function rectangleFromTLBR(
+  topLeft: CanvasPoint,
+  bottomRight: CanvasPoint,
+  preventZeroSize?: boolean,
+): CanvasRectangle {
+  function maybePreventZeroSize(n: number) {
+    return preventZeroSize === true && n === 0 ? 1 : n
+  }
+
+  return canvasRectangle({
+    x: maybePreventZeroSize(topLeft.x),
+    y: maybePreventZeroSize(topLeft.y),
+    width: maybePreventZeroSize(bottomRight.x - topLeft.x),
+    height: maybePreventZeroSize(bottomRight.y - topLeft.y),
+  })
 }
 
 export function rectContainsPoint<C extends CoordinateMarker>(

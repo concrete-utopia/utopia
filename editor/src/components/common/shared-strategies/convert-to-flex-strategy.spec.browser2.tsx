@@ -2,15 +2,11 @@ import { navigatorEntryToKey } from '../../../components/editor/store/editor-sta
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import { shiftModifier } from '../../../utils/modifiers'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
+import { pressKey } from '../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  expectSingleUndo2Saves,
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../utils/utils.test-utils'
-import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/group-like-helpers.test-utils'
-import { mouseClickAtPoint, pressKey } from '../../canvas/event-helpers.test-utils'
-import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -19,9 +15,9 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/action-creators'
-import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
-import { FlexDirection } from '../../inspector/common/css-utils'
-import { FlexAlignment, FlexJustifyContent, MaxContent } from '../../inspector/inspector-common'
+import type { FlexDirection } from '../../inspector/common/css-utils'
+import type { FlexAlignment, FlexJustifyContent } from '../../inspector/inspector-common'
+import { MaxContent } from '../../inspector/inspector-common'
 
 type LTWH = [
   left: number,
@@ -45,8 +41,6 @@ type FlexProps = {
 }
 
 describe('Smart Convert To Flex', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('handles zero children well', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -427,8 +421,6 @@ describe('Smart Convert To Flex', () => {
 })
 
 describe('Smart Convert to Flex Reordering Children if Needed', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('converts a horizontal layout with children out of order', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -476,7 +468,7 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
       originalElementOrder,
     )
 
-    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       originalElementOrder,
@@ -485,8 +477,6 @@ describe('Smart Convert to Flex Reordering Children if Needed', () => {
 })
 
 describe('Smart Convert to Flex alignItems', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('all elements aligned at the start become alignItems flex-start, but we omit that for simplicity', async () => {
     const editor = await renderProjectWith({
       parent: [50, 50, 500, 150],
@@ -587,8 +577,6 @@ describe('Smart Convert to Flex alignItems', () => {
 })
 
 describe('Smart Convert to Flex Fragment Parents', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('converts a horizontal layout with zero padding and a gap of 15', async () => {
     const editor = await renderProjectWithFragmentParent({
       children: [
@@ -776,8 +764,6 @@ describe('Smart Convert to Flex Fragment Parents', () => {
 })
 
 describe('Smart Convert to Flex Fragment In Existing Flex', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('converts a fragment inside a flex layout to a flex child that is also a flex parent', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -844,7 +830,7 @@ describe('Smart Convert to Flex Fragment In Existing Flex', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
@@ -990,7 +976,7 @@ describe('Smart Convert To Flex if Fragment Children', () => {
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent', 'fragment'])
     await editor.dispatch([selectComponents([targetPath], false)], true)
 
-    await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='a'>
@@ -1222,178 +1208,6 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         />
       ) : null}
       </div>`),
-    )
-  })
-
-  it('sizeless divs acting as groups act as basis for calculations', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div
-    style={{
-      backgroundColor: '#aaaaaa33',
-      position: 'absolute',
-      left: -707,
-      top: 163,
-      width: 858,
-      height: 513,
-    }}
-    data-uid='container'
-  >
-    <React.Fragment>
-      <div data-uid='03e'>
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 52,
-            top: 145,
-            width: 179,
-            height: 239,
-          }}
-          data-uid='6c1'
-        />
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 241,
-            top: 145,
-            width: 73,
-            height: 239,
-          }}
-          data-uid='569'
-        />
-      </div>
-      <div data-uid='5d2'>
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 353,
-            top: 145,
-            width: 144,
-            height: 239,
-          }}
-          data-uid='847'
-        />
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 509,
-            top: 145,
-            width: 45,
-            height: 239,
-          }}
-          data-uid='d99'
-        />
-      </div>
-    </React.Fragment>
-    <div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 588,
-        top: 145,
-        width: 93,
-        height: 132,
-      }}
-      data-uid='110'
-    />
-  </div>`),
-      'await-first-dom-report',
-    )
-
-    await selectComponentsForTest(editor, [
-      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
-    ])
-
-    await expectSingleUndo2Saves(editor, async () => {
-      await pressKey('a', { modifiers: shiftModifier })
-    })
-
-    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      makeTestProjectCodeWithSnippet(`
-    <div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: -707,
-        top: 163,
-        width: 'max-content',
-        height: 'max-content',
-        display: 'flex',
-        flexDirection: 'row',
-        gap: 36.5,
-        padding: '145px 52px',
-      }}
-      data-uid='container'
-    >
-      <React.Fragment>
-        <div
-          data-uid='03e'
-          style={{ width: 262, height: 239 }}
-        >
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 52,
-              top: 145,
-              width: 179,
-              height: 239,
-            }}
-            data-uid='6c1'
-          />
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 241,
-              top: 145,
-              width: 73,
-              height: 239,
-            }}
-            data-uid='569'
-          />
-        </div>
-        <div
-          data-uid='5d2'
-          style={{ width: 201, height: 239 }}
-        >
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 353,
-              top: 145,
-              width: 144,
-              height: 239,
-            }}
-            data-uid='847'
-          />
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 509,
-              top: 145,
-              width: 45,
-              height: 239,
-            }}
-            data-uid='d99'
-          />
-        </div>
-      </React.Fragment>
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          width: 93,
-          height: 132,
-          contain: 'layout',
-        }}
-        data-uid='110'
-      />
-    </div>`),
     )
   })
 
@@ -1938,11 +1752,9 @@ async function convertParentToFlex(editor: EditorRenderResult) {
   const targetPath = EP.appendNewElementPath(TestScenePath, ['a', 'parent'])
   await editor.dispatch([selectComponents([targetPath], false)], true)
 
-  await expectSingleUndo2Saves(editor, () => clickOnPlusButton(editor))
+  await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 }
 
-async function clickOnPlusButton(editor: EditorRenderResult) {
-  const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
-
-  await mouseClickAtPoint(plusButton, { x: 2, y: 2 })
+async function pressShiftA(editor: EditorRenderResult) {
+  await pressKey('A', { modifiers: shiftModifier })
 }

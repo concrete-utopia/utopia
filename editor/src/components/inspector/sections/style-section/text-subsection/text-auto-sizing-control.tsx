@@ -5,19 +5,18 @@ import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
-import { ControlStatus, getControlStyles } from '../../../common/control-status'
+import type { ControlStatus } from '../../../common/control-status'
+import { getControlStyles } from '../../../common/control-status'
 import { cssNumber } from '../../../common/css-utils'
-import { OptionChainControl, OptionChainOption } from '../../../controls/option-chain-control'
+import type { OptionChainOption } from '../../../controls/option-chain-control'
+import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   metadataSelector,
   selectedViewsSelector,
   useComputedSizeRef,
 } from '../../../inpector-selectors'
-import {
-  detectFillHugFixedStateMultiselect,
-  FixedHugFill,
-  isFixedHugFillEqual,
-} from '../../../inspector-common'
+import type { FixedHugFill } from '../../../inspector-common'
+import { detectFillHugFixedStateMultiselect, isFixedHugFillEqual } from '../../../inspector-common'
 import {
   setPropFixedStrategies,
   setPropHugStrategies,
@@ -26,12 +25,19 @@ import { commandsForFirstApplicableStrategy } from '../../../inspector-strategie
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
-function useAutoSizingTypeAndStatus(): { status: ControlStatus; type: 'fixed' | 'hug' | null } {
+function useAutoSizingTypeAndStatus(): {
+  status: ControlStatus
+  type: 'fixed' | 'hug' | 'hug-group' | 'computed' | 'detected' | null
+} {
   const isEditableText = useEditorState(
     Substores.metadata,
     (store) => {
       return strictEvery(store.editor.selectedViews, (path) =>
-        MetadataUtils.targetTextEditableAndHasText(store.editor.jsxMetadata, path),
+        MetadataUtils.targetTextEditableAndHasText(
+          store.editor.jsxMetadata,
+          store.editor.elementPathTree,
+          path,
+        ),
       )
     },
     'TextAutoSizingControl isEditableText',
@@ -93,6 +99,7 @@ export const TextAutoSizingControl = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const controlStatusAndValueType = useAutoSizingTypeAndStatus()
@@ -111,6 +118,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
@@ -122,6 +130,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropFixedStrategies(
               'always',
@@ -135,6 +144,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropHugStrategies('horizontal'),
           ) ?? []
@@ -142,6 +152,7 @@ export const TextAutoSizingControl = React.memo(() => {
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setPropHugStrategies('vertical'),
           ) ?? []
@@ -151,6 +162,7 @@ export const TextAutoSizingControl = React.memo(() => {
     [
       metadataRef,
       selectedViewsRef,
+      elementPathTreeRef,
       allElementPropsRef,
       widthComputedValue,
       heightComputedValue,

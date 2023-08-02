@@ -28,7 +28,12 @@ export type Letter =
   | 'x'
   | 'y'
   | 'z'
-export type Digit = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+
+const Digits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'] as const
+export type Digit = typeof Digits[number]
+
+export const isDigit = (c: string): c is Digit => (Digits as readonly string[]).includes(c)
+
 export type Bracket = '[' | ']'
 
 export type KeyCharacter =
@@ -66,7 +71,8 @@ function getCachedModifier(modifiers: ReadonlyArray<Modifier>): ReadonlyArray<Mo
   const uniqueAndSortedModifiers = Array.from(new Set(modifiers)).sort()
   const cacheKey = modifiersToString(uniqueAndSortedModifiers)
   if (cacheKey in modifiersCache) {
-    return modifiersCache[cacheKey]
+    // Provably exists because of the `in` check.
+    return modifiersCache[cacheKey]!
   } else {
     modifiersCache[cacheKey] = uniqueAndSortedModifiers
     return uniqueAndSortedModifiers
@@ -95,7 +101,8 @@ function getCachedKey(
   const cachedModifiers = getCachedModifier(modifiers)
   const cacheKey = keyPartsToString(character, modifiers, keyDownOrUp)
   if (cacheKey in keysCache) {
-    return keysCache[cacheKey]
+    // Provably exists because of the `in` check.
+    return keysCache[cacheKey]!
   } else {
     const result: Key = {
       character: character,
@@ -284,7 +291,7 @@ export const Keyboard = {
     }
   },
   keyTriggersOpacityStrategy: function (keyChar: KeyCharacter): boolean {
-    return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(keyChar)
+    return isDigit(keyChar)
   },
   // This needs to be extended when we introduce new keys in canvas strategies
   keyIsInteraction: function (keyChar: KeyCharacter): boolean {

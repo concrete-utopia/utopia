@@ -2,21 +2,21 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { stripNulls } from '../../core/shared/array-utils'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { defaultEither, isLeft, right } from '../../core/shared/either'
-import { ElementInstanceMetadataMap, isJSXElement } from '../../core/shared/element-template'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  CanvasVector,
-  isInfinityRectangle,
-} from '../../core/shared/math-utils'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { isJSXElement } from '../../core/shared/element-template'
+import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
+import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
-import { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
-import { cssNumber, CSSNumber, FlexDirection } from '../inspector/common/css-utils'
-import { Sides, sides } from 'utopia-api/core'
+import type { CSSNumberWithRenderedValue } from './controls/select-mode/controls-common'
+import type { CSSNumber, FlexDirection } from '../inspector/common/css-utils'
+import { cssNumber } from '../inspector/common/css-utils'
+import type { Sides } from 'utopia-api/core'
+import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -106,6 +106,7 @@ function inset(sidess: Sides, rect: CanvasRectangle): CanvasRectangle {
 
 export function gapControlBoundsFromMetadata(
   elementMetadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   selectedElement: ElementPath,
   gap: number,
   flexDirection: FlexDirection,
@@ -120,7 +121,11 @@ export function gapControlBoundsFromMetadata(
 
   const parentBounds = inset(elementPadding, parentFrame)
 
-  const children = MetadataUtils.getChildrenPathsUnordered(elementMetadata, selectedElement)
+  const children = MetadataUtils.getChildrenPathsOrdered(
+    elementMetadata,
+    pathTrees,
+    selectedElement,
+  )
   const childCanvasBounds = stripNulls(
     children
       .map((childPath) => {
@@ -149,6 +154,7 @@ export interface FlexGapData {
 
 export function maybeFlexGapFromElement(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): FlexGapData | null {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -165,7 +171,7 @@ export function maybeFlexGapFromElement(
     return null
   }
 
-  const children = MetadataUtils.getChildrenUnordered(metadata, elementPath)
+  const children = MetadataUtils.getChildrenOrdered(metadata, pathTrees, elementPath)
   if (children.length < 2) {
     return null
   }

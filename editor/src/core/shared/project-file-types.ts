@@ -1,13 +1,8 @@
-import { ImportType, NormalisedFrame } from 'utopia-api/core'
-import {
-  ArbitraryJSBlock,
-  ImportStatement,
-  JSExpression,
-  JSExpressionOtherJavaScript,
-  TopLevelElement,
-} from './element-template'
-import { ErrorMessage } from './error-messages'
-import { arrayEquals, objectEquals } from './utils'
+import type { ImportType, NormalisedFrame } from 'utopia-api/core'
+import type { ArbitraryJSBlock, ImportStatement, TopLevelElement } from './element-template'
+import { JSExpression, JSExpressionOtherJavaScript } from './element-template'
+import type { ErrorMessage } from './error-messages'
+import { arrayEqualsByValue, objectEquals } from './utils'
 
 export type id = string
 enum StaticModifier {}
@@ -144,7 +139,7 @@ export function importStatementFromImportDetails(
 export function importDetailsEquals(first: ImportDetails, second: ImportDetails): boolean {
   return (
     first.importedWithName === second.importedWithName &&
-    arrayEquals(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
+    arrayEqualsByValue(first.importedFromWithin, second.importedFromWithin, importAliasEquals) &&
     first.importedAs === second.importedAs
   )
 }
@@ -377,11 +372,13 @@ export interface HighlightBoundsWithFile extends HighlightBounds {
 
 export type HighlightBoundsWithFileForUids = { [uid: string]: HighlightBoundsWithFile }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ParseSuccess {
   type: 'PARSE_SUCCESS'
   imports: Imports
   topLevelElements: Array<TopLevelElement>
   highlightBounds: HighlightBoundsForUids
+  fullHighlightBounds: HighlightBoundsForUids
   jsxFactoryFunction: string | null
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null
   exportsDetail: ExportsDetail
@@ -394,6 +391,7 @@ export function parseSuccess(
   jsxFactoryFunction: string | null,
   combinedTopLevelArbitraryBlock: ArbitraryJSBlock | null,
   exportsDetail: ExportsDetail,
+  fullHighlightBounds: HighlightBoundsForUids,
 ): ParseSuccess {
   return {
     type: 'PARSE_SUCCESS',
@@ -403,6 +401,7 @@ export function parseSuccess(
     jsxFactoryFunction: jsxFactoryFunction,
     combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     exportsDetail: exportsDetail,
+    fullHighlightBounds: fullHighlightBounds,
   }
 }
 
@@ -410,6 +409,7 @@ export function isParseSuccess(parsed: ParsedTextFile): parsed is ParseSuccess {
   return parsed.type === 'PARSE_SUCCESS'
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface ParseFailure {
   type: 'PARSE_FAILURE'
   diagnostics: Array<ErrorMessage> | null
@@ -437,6 +437,7 @@ export function isParseFailure(parsed: ParsedTextFile): parsed is ParseFailure {
   return parsed.type === 'PARSE_FAILURE'
 }
 
+// Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface Unparsed {
   type: 'UNPARSED'
 }
@@ -520,15 +521,12 @@ export function isParsedJSONFailure(result: ParsedJSONResult): result is ParsedJ
 export type ParsedJSONResult = ParsedJSONSuccess | ParsedJSONFailure
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
-export type RevisionsStateType = ParsedAheadRevisionsState | 'CODE_AHEAD' | 'BOTH_MATCH'
-
-export type ParsedAheadRevisionsState = 'PARSED_AHEAD' | 'PARSED_AHEAD_NEEDS_REPARSING'
+export type RevisionsStateType = 'PARSED_AHEAD' | 'CODE_AHEAD' | 'BOTH_MATCH'
 
 export const RevisionsState = {
   ParsedAhead: 'PARSED_AHEAD',
   CodeAhead: 'CODE_AHEAD',
   BothMatch: 'BOTH_MATCH',
-  ParsedAheadNeedsReparsing: 'PARSED_AHEAD_NEEDS_REPARSING',
 } as const
 
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
@@ -556,28 +554,28 @@ export interface TextFile {
   fileContents: TextFileContents
   lastSavedContents: TextFileContents | null // it is null when the file is saved
   lastParseSuccess: ParseSuccess | null
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export function textFile(
   fileContents: TextFileContents,
   lastSavedContents: TextFileContents | null,
   lastParseSuccess: ParseSuccess | null,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): TextFile {
   return {
     type: 'TEXT_FILE',
     fileContents: fileContents,
     lastSavedContents: lastSavedContents,
     lastParseSuccess: lastParseSuccess,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
 export function codeFile(
   fileContents: string,
   lastSavedContents: string | null,
-  lastRevisedTime: number = 0,
+  versionNumber: number = 0,
 ): TextFile {
   return textFile(
     textFileContents(fileContents, unparsed, RevisionsState.CodeAhead),
@@ -585,7 +583,7 @@ export function codeFile(
       ? null
       : textFileContents(lastSavedContents, unparsed, RevisionsState.CodeAhead),
     null,
-    lastRevisedTime,
+    versionNumber,
   )
 }
 

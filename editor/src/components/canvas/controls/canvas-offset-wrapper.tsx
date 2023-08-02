@@ -1,5 +1,5 @@
 import React from 'react'
-import { CanvasVector } from '../../../core/shared/math-utils'
+import type { CanvasVector } from '../../../core/shared/math-utils'
 import {
   Substores,
   useRefEditorState,

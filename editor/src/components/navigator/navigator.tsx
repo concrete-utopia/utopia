@@ -2,32 +2,37 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import * as EP from '../../core/shared/element-path'
-import Utils from '../../utils/utils'
-import { setFocus } from '../common/actions'
-import { ElementPath } from '../../core/shared/project-file-types'
-import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
-import { DragSelection } from './navigator-item/navigator-item-dnd-container'
-import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { ElementContextMenu } from '../element-context-menu'
-import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
-import { VariableSizeList, ListChildComponentProps } from 'react-window'
-import AutoSizer, { Size } from 'react-virtualized-auto-sizer'
-import { Section, SectionBodyArea, FlexColumn } from '../../uuiui'
+import type { Size } from 'react-virtualized-auto-sizer'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import type { ListChildComponentProps } from 'react-window'
+import { VariableSizeList } from 'react-window'
 import { last, safeIndex } from '../../core/shared/array-utils'
-import { UtopiaTheme } from '../../uuiui/styles/theme/utopia-theme'
+import * as EP from '../../core/shared/element-path'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import { getSelectedNavigatorEntries } from '../../templates/editor-navigator'
 import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performance'
+import Utils from '../../utils/utils'
+import { FlexColumn, Section, SectionBodyArea } from '../../uuiui'
+import { setFocus } from '../common/actions'
+import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { css } from '@emotion/react'
+import type { NavigatorEntry } from '../editor/store/editor-state'
 import {
   isRegularNavigatorEntry,
-  NavigatorEntry,
   navigatorEntryToKey,
+  navigatorEntriesEqual,
 } from '../editor/store/editor-state'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { ElementContextMenu } from '../element-context-menu'
 import { getItemHeight } from './navigator-item/navigator-item'
+import { NavigatorDragLayer } from './navigator-drag-layer'
+import { NavigatorItemWrapper } from './navigator-item/navigator-item-wrapper'
 
 interface ItemProps extends ListChildComponentProps {}
+
+function navigatorEntriesContainTarget(entries: NavigatorEntry[], target: NavigatorEntry): boolean {
+  return !entries.some((t) => t.elementPath === target.elementPath && t.type === target.type)
+}
 
 const Item = React.memo(({ index, style }: ItemProps) => {
   const visibleNavigatorTargets = useEditorState(
@@ -44,6 +49,7 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     return {
       selectedViews: store.editor.selectedViews,
       navigatorTargets: store.derived.navigatorTargets,
+      visibleNavigatorTargets: store.derived.visibleNavigatorTargets,
       currentlySelectedNavigatorEntries: currentlySelectedNavigatorEntries,
     }
   })
@@ -52,10 +58,30 @@ const Item = React.memo(({ index, style }: ItemProps) => {
     return editorSliceRef.current.currentlySelectedNavigatorEntries
   }, [editorSliceRef])
 
+  const visibleTargetIndexToRegularIndex = React.useCallback(
+    (visibleTargetIndex: number) => {
+      const visibleNavigatorEntry =
+        editorSliceRef.current.visibleNavigatorTargets[visibleTargetIndex]
+      if (visibleNavigatorEntry == null) {
+        return null
+      } else {
+        const targetIndex = editorSliceRef.current.navigatorTargets.findIndex((target) =>
+          navigatorEntriesEqual(target, visibleNavigatorEntry),
+        )
+        if (targetIndex >= 0) {
+          return targetIndex
+        } else {
+          return null
+        }
+      }
+    },
+    [editorSliceRef],
+  )
+
   // Used to determine the views that will be selected by starting with the last selected item
   // and selecting everything from there to `targetIndex`.
   const getSelectedViewsInRange = React.useCallback(
-    (targetIndex: number): Array<ElementPath> => {
+    (visibleTargetIndex: number): Array<ElementPath> => {
       const selectedItemIndexes = editorSliceRef.current.selectedViews
         .map((selection) =>
           editorSliceRef.current.navigatorTargets.findIndex(
@@ -64,6 +90,11 @@ const Item = React.memo(({ index, style }: ItemProps) => {
           ),
         )
         .sort((a, b) => a - b)
+      // As we're primarily operating on visible navigator targets, we need to convert the index.
+      const targetIndex = visibleTargetIndexToRegularIndex(visibleTargetIndex)
+      if (targetIndex == null) {
+        return []
+      }
       const lastSelectedItemIndex = last(selectedItemIndexes)
       if (lastSelectedItemIndex == null) {
         const lastSelectedItem = editorSliceRef.current.navigatorTargets[targetIndex]
@@ -94,12 +125,17 @@ const Item = React.memo(({ index, style }: ItemProps) => {
         return selectedViewTargets
       }
     },
-    [editorSliceRef],
+    [editorSliceRef, visibleTargetIndexToRegularIndex],
   )
 
   const targetEntry = visibleNavigatorTargets[index]
   const componentKey = navigatorEntryToKey(targetEntry)
   const deepKeptStyle = useKeepReferenceEqualityIfPossible(style)
+
+  if (navigatorEntriesContainTarget(visibleNavigatorTargets, targetEntry)) {
+    return null
+  }
+
   return (
     <NavigatorItemWrapper
       key={componentKey}
@@ -142,10 +178,21 @@ export const NavigatorComponent = React.memo(() => {
   const itemListRef = React.createRef<VariableSizeList>()
 
   React.useEffect(() => {
-    if (selectionIndex > 0) {
+    if (selectionIndex >= 0) {
       itemListRef.current?.scrollToItem(selectionIndex)
     }
   }, [selectionIndex, itemListRef])
+
+  React.useEffect(() => {
+    /**
+     * VariableSizeList caches the item sizes returned by itemSize={getItemSize}
+     * When a reorder happens, the items are offset, and the cached sizes are not applied to the right items anymore
+     * resetAfterIndex(0, false) clears the cached size of all items, and false means it does not force a re-render
+     *
+     * as a first approximation, this useEffect runs on any change to visibleNavigatorTargets
+     */
+    itemListRef.current?.resetAfterIndex(0, false)
+  }, [visibleNavigatorTargets, itemListRef])
 
   const onFocus = React.useCallback(
     (e: React.FocusEvent<HTMLElement>) => {
@@ -244,6 +291,7 @@ export const NavigatorComponent = React.memo(() => {
             overflowX: 'hidden',
           }}
         >
+          <NavigatorDragLayer />
           <AutoSizer
             disableWidth={true}
             style={{

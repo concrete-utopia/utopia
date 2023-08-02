@@ -2,7 +2,7 @@ import { CSSLoader } from './css-loader'
 import { DefaultLoader } from './default-loader'
 import { FileLoader } from './file-loader'
 import { SVGLoader } from './svg-loader'
-import { ModuleLoader } from './loader-types'
+import type { ModuleLoader } from './loader-types'
 import { applyLoaders } from './loaders'
 import { JSONLoader } from './json-loader'
 

@@ -1,13 +1,13 @@
 import React from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import { assertNever, fastForEach } from '../../../core/shared/utils'
 import { useColorTheme } from '../../../uuiui'
 import { useForceUpdate } from '../../editor/hook-utils'
-import { OnSubmitValue } from '../controls/control'
-import { ControlStatus } from './control-status'
-import { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
-import { ControlMode } from '../sections/layout-section/layout-system-subsection/split-chained-number-input'
+import type { OnSubmitValue } from '../controls/control'
+import type { ControlStatus } from './control-status'
+import type { CSSBackgroundLayer, CSSTransformItem, CSSUnknownArrayItem } from './css-utils'
+import type { ControlMode } from '../sections/layout-section/layout-system-subsection/split-chained-number-input'
 import { useRefEditorState } from '../../editor/store/store-hook'
 import { wrapValue } from '../../../core/shared/math-utils'
 
@@ -45,7 +45,10 @@ export function getIndexedSpliceArrayItem<T extends CSSArrayItem>(index: number)
 
 const forceUpdateFunction = (value: number) => value + 1
 
-export function usePropControlledState<T>(
+/**
+ * @deprecated Please use usePropControlledStateV2 instead.
+ */
+export function usePropControlledState_DEPRECATED<T>(
   propValue: T,
 ): [T, React.Dispatch<T>, React.DispatchWithoutAction] {
   const [localState, setLocalState] = React.useState<T>(propValue)

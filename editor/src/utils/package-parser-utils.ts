@@ -1,10 +1,6 @@
-import {
-  ParseResult,
-  parseString,
-  descriptionParseError,
-  objectKeyParser,
-} from './value-parser-utils'
-import { AnyJson } from '../missing-types/json'
+import type { ParseResult } from './value-parser-utils'
+import { parseString, descriptionParseError, objectKeyParser } from './value-parser-utils'
+import type { AnyJson } from '../missing-types/json'
 import { flatMapEither, right, left, forEachRight } from '../core/shared/either'
 import { isEsCodeFile, NodeModules } from '../core/shared/project-file-types'
 

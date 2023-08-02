@@ -1,9 +1,13 @@
 import { createSelector } from 'reselect'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { useRefEditorState } from '../editor/store/store-hook'
-import { MetadataSubstate, SelectedViewsSubstate } from '../editor/store/store-hook-substore-types'
+import type {
+  MetadataSubstate,
+  SelectedViewsSubstate,
+} from '../editor/store/store-hook-substore-types'
 import {
   DefaultFlexDirection,
   detectFlexAlignJustifyContent,
@@ -14,6 +18,9 @@ import {
 
 export const metadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
   store.editor.jsxMetadata
+
+export const pathTreesSelector = (store: MetadataSubstate): ElementPathTrees =>
+  store.editor.elementPathTree
 
 export const selectedViewsSelector = (store: SelectedViewsSubstate): ElementPath[] =>
   store.editor.selectedViews

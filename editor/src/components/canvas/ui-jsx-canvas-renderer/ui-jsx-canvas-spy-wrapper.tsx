@@ -1,20 +1,23 @@
 import React from 'react'
-import { MapLike } from 'typescript'
-import { Either, foldEither, left, right } from '../../../core/shared/either'
-import {
+import type { MapLike } from 'typescript'
+import type { Either } from '../../../core/shared/either'
+import { foldEither, left, right } from '../../../core/shared/either'
+import type {
   ElementInstanceMetadata,
-  emptyAttributeMetadatada,
+  JSXElementChild,
+  JSXConditionalExpression,
+  ConditionValue,
+} from '../../../core/shared/element-template'
+import {
+  emptyAttributeMetadata,
   emptyComputedStyle,
   emptySpecialSizeMeasurements,
   JSXElementLike,
   isJSXElement,
-  JSXElementChild,
-  isJSXArbitraryBlock,
+  isJSExpression,
   isJSXConditionalExpression,
-  JSXConditionalExpression,
-  ConditionValue,
 } from '../../../core/shared/element-template'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import { makeCanvasElementPropsSafe } from '../../../utils/canvas-react-utils'
 import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import * as EP from '../../../core/shared/element-path'
@@ -51,6 +54,7 @@ export function clearOpposingConditionalSpyValues(
 }
 
 export function addFakeSpyEntry(
+  validPaths: Set<string>,
   metadataContext: UiJsxCanvasContextData,
   elementPath: ElementPath,
   elementOrAttribute: JSXElementChild,
@@ -58,59 +62,44 @@ export function addFakeSpyEntry(
   imports: Imports,
   conditionValue: ConditionValue,
 ): void {
-  let element: Either<string, JSXElementChild>
-  if (isJSXArbitraryBlock(elementOrAttribute)) {
-    const simpleAttributeValue = jsxSimpleAttributeToValue(elementOrAttribute)
-    element = left(
-      foldEither(
-        () => '(unknown)',
-        (value) => {
-          if (value === null) {
-            return 'null'
-          } else if (value === undefined) {
-            return 'undefined'
+  // Ensure that entries are not created which aren't included in `validPaths`,
+  // so that ghost like entries are not created.
+  if (validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))) {
+    const element: Either<string, JSXElementChild> = right(elementOrAttribute)
+    const instanceMetadata: ElementInstanceMetadata = {
+      element: element,
+      elementPath: elementPath,
+      globalFrame: null,
+      localFrame: null,
+      componentInstance: false,
+      isEmotionOrStyledComponent: false,
+      specialSizeMeasurements: emptySpecialSizeMeasurements,
+      computedStyle: emptyComputedStyle,
+      attributeMetadatada: emptyAttributeMetadata,
+      label: null,
+      importInfo: foldEither(
+        () => {
+          return null
+        },
+        (e) => {
+          if (isJSXElement(e)) {
+            return importInfoFromImportDetails(e.name, imports, filePath)
           } else {
-            return value.toString()
+            return null
           }
         },
-        simpleAttributeValue,
+        element,
       ),
-    )
-  } else {
-    element = right(elementOrAttribute)
+      conditionValue: conditionValue,
+      textContent: null,
+    }
+    const elementPathString = EP.toComponentId(elementPath)
+    metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
   }
-  const instanceMetadata: ElementInstanceMetadata = {
-    element: element,
-    elementPath: elementPath,
-    globalFrame: null,
-    localFrame: null,
-    componentInstance: false,
-    isEmotionOrStyledComponent: false,
-    specialSizeMeasurements: emptySpecialSizeMeasurements,
-    computedStyle: emptyComputedStyle,
-    attributeMetadatada: emptyAttributeMetadatada,
-    label: null,
-    importInfo: foldEither(
-      () => {
-        return null
-      },
-      (e) => {
-        if (isJSXElement(e)) {
-          return importInfoFromImportDetails(e.name, imports, filePath)
-        } else {
-          return null
-        }
-      },
-      element,
-    ),
-    conditionValue: conditionValue,
-  }
-  const elementPathString = EP.toComponentId(elementPath)
-  metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
 }
 
 export function buildSpyWrappedElement(
-  jsx: JSXElementLike,
+  jsx: JSXElementChild,
   finalProps: any,
   elementPath: ElementPath,
   metadataContext: UiJsxCanvasContextData,
@@ -143,12 +132,13 @@ export function buildSpyWrappedElement(
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
       computedStyle: emptyComputedStyle,
-      attributeMetadatada: emptyAttributeMetadatada,
+      attributeMetadatada: emptyAttributeMetadata,
       label: null,
       importInfo: isJSXElement(jsx)
         ? importInfoFromImportDetails(jsx.name, imports, filePath)
         : null,
       conditionValue: 'not-a-conditional',
+      textContent: null,
     }
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)

@@ -3,7 +3,9 @@ import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { clamp } from '../../../core/shared/math-utils'
 import { setProperty } from '../../canvas/commands/set-property-command'
-import { cssNumber, FlexDirection, printCSSNumber } from '../common/css-utils'
+import type { FlexDirection } from '../common/css-utils'
+import { cssNumber, printCSSNumber } from '../common/css-utils'
+import type { Axis } from '../inspector-common'
 import {
   fillContainerApplicable,
   nukeAllAbsolutePositioningPropsCommands,
@@ -11,22 +13,26 @@ import {
   widthHeightFromAxis,
   detectParentFlexDirection,
   nukeSizingPropsForAxisCommand,
-  Axis,
   nullOrNonEmpty,
   setParentToFixedIfHugCommands,
 } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
+import {
+  groupErrorToastCommand,
+  maybeGroupChildWithoutFixedSizeForFill,
+  maybeInvalidGroupState,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 export const fillContainerStrategyFlow = (
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): InspectorStrategy => ({
-  name: 'Set tp Fill Container',
+  name: 'Set to Fill Container',
   strategy: (metadata, elementPaths) => {
     const elements = elementPaths.filter((elementPath) =>
       fillContainerApplicable(metadata, elementPath),
@@ -34,6 +40,17 @@ export const fillContainerStrategyFlow = (
 
     if (elements.length === 0) {
       return null
+    }
+
+    const invalidGroupState = maybeInvalidGroupState(elements, metadata, {
+      onGroup: () => 'group-has-percentage-pins',
+      onGroupChild: (path) => {
+        const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
+        return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+      },
+    })
+    if (invalidGroupState != null) {
+      return [groupErrorToastCommand(invalidGroupState)]
     }
 
     return elements.flatMap((path) => {

@@ -1,30 +1,31 @@
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import {
   addFileToProjectContents,
   getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
   walkContentsTree,
 } from '../../components/assets'
-import { EditorModel } from '../../components/editor/action-types'
-import { updateFile } from '../../components/editor/actions/action-creators'
-import { EditorState, StoryboardFilePath } from '../../components/editor/store/editor-state'
+import type { EditorModel } from '../../components/editor/action-types'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import { StoryboardFilePath } from '../../components/editor/store/editor-state'
+import type { Compare } from '../../utils/compare'
 import {
-  Compare,
   compareCompose,
   compareField,
   compareIfIs,
   compareOn,
   comparePrimitive,
 } from '../../utils/compare'
+import type { JSXElement } from '../shared/element-template'
 import {
   emptyComments,
   isUtopiaJSXComponent,
-  JSXElement,
   unparsedCode,
   UtopiaJSXComponent,
   utopiaJSXComponent,
 } from '../shared/element-template'
 import { forEachValue } from '../shared/object-utils'
 import { forceNotNull } from '../shared/optional-utils'
+import type { ParseSuccess } from '../shared/project-file-types'
 import {
   EmptyExportsDetail,
   ExportDetail,
@@ -37,7 +38,6 @@ import {
   isTextFile,
   mergeExportsDetail,
   parseSuccess,
-  ParseSuccess,
   RevisionsState,
   textFile,
   textFileContents,
@@ -350,6 +350,7 @@ function addStoryboardFileForComponent(
             currentSuccess.jsxFactoryFunction,
             currentSuccess.combinedTopLevelArbitraryBlock,
             updatedExports,
+            currentSuccess.fullHighlightBounds,
           )
           const updatedContents = textFileContents(
             fileToModify.fileContents.code,
@@ -360,7 +361,7 @@ function addStoryboardFileForComponent(
             updatedContents,
             fileToModify.lastSavedContents,
             updatedParseSuccess,
-            fileToModify.lastRevisedTime,
+            fileToModify.versionNumber + 1,
           )
           updatedProjectContents = addFileToProjectContents(
             updatedProjectContents,
@@ -400,6 +401,7 @@ function addStoryboardFileForComponent(
     null,
     null,
     [exportVariables([exportVariable(BakedInStoryboardVariableName, null)])],
+    {},
   )
   const storyboardFileContents = textFile(
     textFileContents('', success, RevisionsState.ParsedAhead),

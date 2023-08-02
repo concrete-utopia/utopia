@@ -1,10 +1,12 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { canvasPoint, CanvasVector, canvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasVector } from '../../../../core/shared/math-utils'
 import { optionalMap } from '../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../core/shared/utils'
-import { Modifiers } from '../../../../utils/modifiers'
-import { FlexDirection, printCSSNumber } from '../../../inspector/common/css-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
+import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -16,25 +18,24 @@ import {
   precisionFromModifiers,
 } from '../../controls/select-mode/controls-common'
 import { FlexGapControl } from '../../controls/select-mode/flex-gap-control'
-import {
-  FloatingIndicator,
-  FloatingIndicatorProps,
-} from '../../controls/select-mode/floating-number-indicator'
+import type { FloatingIndicatorProps } from '../../controls/select-mode/floating-number-indicator'
+import { FloatingIndicator } from '../../controls/select-mode/floating-number-indicator'
+import type { FlexGapData } from '../../gap-utils'
 import {
   cursorFromFlexDirection,
   dragDeltaForOrientation,
-  FlexGapData,
   maybeFlexGapFromElement,
 } from '../../gap-utils'
-import { CanvasStrategyFactory, onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { CanvasStrategyFactory } from '../canvas-strategies'
+import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { areAllSiblingsInOneDimensionFlexOrFlow } from './flow-reorder-helpers'
 import { colorTheme } from '../../../../uuiui'
 
@@ -54,8 +55,9 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   }
 
   const selectedElement = selectedElements[0]
-  const children = MetadataUtils.getChildrenPathsUnordered(
+  const children = MetadataUtils.getChildrenPathsOrdered(
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
     selectedElement,
   )
 
@@ -63,11 +65,21 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
     return null
   }
 
-  if (!areAllSiblingsInOneDimensionFlexOrFlow(children[0], canvasState.startingMetadata)) {
+  if (
+    !areAllSiblingsInOneDimensionFlexOrFlow(
+      children[0],
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+    )
+  ) {
     return null
   }
 
-  const flexGap = maybeFlexGapFromElement(canvasState.startingMetadata, selectedElements[0])
+  const flexGap = maybeFlexGapFromElement(
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    selectedElements[0],
+  )
   if (flexGap == null) {
     return null
   }

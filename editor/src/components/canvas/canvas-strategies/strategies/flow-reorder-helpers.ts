@@ -2,31 +2,32 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { allElemsEqual, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import {
+import type {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../../core/shared/element-template'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
-  CanvasVector,
   isInfinityRectangle,
   mod,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
-import {
+import type {
   Direction,
   ForwardOrReverse,
   SimpleFlexDirection,
 } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { DeleteProperties } from '../../commands/delete-properties-command'
-import { SetProperty, setProperty } from '../../commands/set-property-command'
+import type { SetProperty } from '../../commands/set-property-command'
+import { setProperty } from '../../commands/set-property-command'
 import { getTargetPathsFromInteractionTarget, InteractionTarget } from '../canvas-strategy-types'
 import { AllElementProps } from '../../../editor/store/editor-state'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function isValidFlowReorderTarget(
   path: ElementPath,
@@ -47,15 +48,24 @@ export function isValidFlowReorderTarget(
 export function areAllSiblingsInOneDimensionFlexOrFlow(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): boolean {
-  return singleAxisAutoLayoutSiblingDirections(target, metadata) !== 'non-single-axis-autolayout'
+  return (
+    singleAxisAutoLayoutSiblingDirections(target, metadata, elementPathTree) !==
+    'non-single-axis-autolayout'
+  )
 }
 
 export function singleAxisAutoLayoutSiblingDirections(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
-  const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(metadata, target) // including target
+  const siblings = MetadataUtils.getSiblingsParticipatingInAutolayoutOrdered(
+    metadata,
+    elementPathTree,
+    target,
+  ) // including target
   if (siblings.length === 1) {
     return 'non-single-axis-autolayout'
   }
@@ -72,11 +82,21 @@ export type SingleAxisAutolayoutContainerDirections = {
 export function singleAxisAutoLayoutContainerDirections(
   container: ElementPath,
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): SingleAxisAutolayoutContainerDirections | 'non-single-axis-autolayout' {
-  const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(metadata, container)
+  const children = MetadataUtils.getOrderedChildrenParticipatingInAutoLayout(
+    metadata,
+    elementPathTree,
+    container,
+  )
 
-  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(metadata, container)
-  const flexDirection = MetadataUtils.findFlexDirectionForChildren(metadata, container) ?? 'row'
+  const layoutSystem = MetadataUtils.findLayoutSystemForChildren(
+    metadata,
+    elementPathTree,
+    container,
+  )
+  const flexDirection =
+    MetadataUtils.findFlexDirectionForChildren(metadata, elementPathTree, container) ?? 'row'
 
   return singleAxisAutoLayoutDirections(
     children,

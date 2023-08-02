@@ -4,26 +4,29 @@ import { googleFontsList } from '../../../../../../assets/google-fonts-list'
 import { isRight } from '../../../../../core/shared/either'
 import { useExternalResources } from '../../../../../printer-parsers/html/external-resources-parser'
 import { FlexColumn, UtopiaTheme, FlexRow, StringInput, useColorTheme } from '../../../../../uuiui'
-import { ControlStyles, Utils } from '../../../../../uuiui-deps'
+import type { ControlStyles } from '../../../../../uuiui-deps'
+import { Utils } from '../../../../../uuiui-deps'
 import { updatePushNewFontFamilyVariant } from '../../../../navigator/external-resources/google-fonts-resources-list-search'
+import type {
+  GoogleFontsTypeface,
+  SystemDefaultTypeface,
+  WebFontFamilyVariant,
+  WebFontVariant,
+} from '../../../../navigator/external-resources/google-fonts-utils'
 import {
   cssFontStyleToWebFontStyle,
   cssFontWeightToWebFontWeight,
-  GoogleFontsTypeface,
   systemDefaultTypeface,
-  SystemDefaultTypeface,
-  WebFontFamilyVariant,
   webFontFamilyVariant,
   webFontVariant,
-  WebFontVariant,
 } from '../../../../navigator/external-resources/google-fonts-utils'
-import { CSSFontStyle, CSSFontWeight } from '../../../common/css-utils'
-import {
+import type { CSSFontStyle, CSSFontWeight } from '../../../common/css-utils'
+import type {
   OnUnsetValues,
   ParsedValues,
   UseSubmitValueFactory,
 } from '../../../common/property-path-hooks'
-import { OnSubmitValue } from '../../../controls/control'
+import type { OnSubmitValue } from '../../../controls/control'
 import { FontFamilySelectPopupItem } from './font-family-select-popup-item'
 import { ProjectFontDividerItem } from './project-font-divider-item'
 import { ProjectFontHeaderItem } from './project-font-header-item'

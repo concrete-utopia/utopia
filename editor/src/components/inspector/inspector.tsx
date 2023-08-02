@@ -5,23 +5,21 @@ import {
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
 import { isRight, right } from '../../core/shared/either'
-import {
-  isJSXElement,
+import type {
   JSExpression,
   JSXAttributes,
-  jsExpressionValue,
   JSXElement,
   ComputedStyle,
   StyleAttributeMetadata,
-  emptyComments,
 } from '../../core/shared/element-template'
-import { getJSXAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { isJSXElement, jsExpressionValue, emptyComments } from '../../core/shared/element-template'
+import { getJSXAttributesAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
 import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
-import { Alignment, Distribution, EditorAction } from '../editor/action-types'
+import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
@@ -32,14 +30,13 @@ import {
   unsetProperty,
 } from '../editor/actions/action-creators'
 
+import type { EditorStorePatched, ElementsToRerender } from '../editor/store/editor-state'
 import {
-  EditorStorePatched,
-  ElementsToRerender,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
   InspectorCallbackContext,
   InspectorPropsContext,
@@ -47,20 +44,15 @@ import {
 } from './common/property-path-hooks'
 import { ComponentSection } from './sections/component-section/component-section'
 import { EventHandlersSection } from './sections/event-handlers-section/event-handlers-section'
-import {
-  CSSTarget,
-  cssTarget,
-  TargetSelectorLength,
-} from './sections/header-section/target-selector'
+import type { CSSTarget, TargetSelectorLength } from './sections/header-section/target-selector'
+import { cssTarget } from './sections/header-section/target-selector'
 import { ImgSection } from './sections/image-section/image-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
 import { StyleSection } from './sections/style-section/style-section'
-import {
-  TargetSelectorSection,
-  TargetSelectorSectionProps,
-} from './sections/target-selector-section'
+import type { TargetSelectorSectionProps } from './sections/target-selector-section'
+import { TargetSelectorSection } from './sections/target-selector-section'
 import { usePropControlledRef_DANGEROUS } from './common/inspector-utils'
 import {
   useKeepReferenceEqualityIfPossible,
@@ -68,8 +60,8 @@ import {
 } from '../../utils/react-performance'
 import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
-import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
-import { when } from '../../utils/react-conditionals'
+import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import { unless, when } from '../../utils/react-conditionals'
 import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import {
@@ -85,7 +77,15 @@ import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
-import { GroupSection } from './convert-to-group-dropdown'
+import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { allSelectedElementsContractSelector } from './editor-contract-section'
+import { FragmentSection } from './sections/layout-section/fragment-section'
+import { RootElementIndicator } from './controls/root-element-indicator'
+import { CodeElementSection } from './sections/code-element-section'
+import {
+  maybeInvalidGroupState,
+  groupErrorToastAction,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
 
 export interface ElementPathElement {
   name?: string
@@ -167,7 +167,6 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         height: UtopiaTheme.layout.rowHeight.normal,
         position: 'sticky',
         top: 0,
-        zIndex: 1,
         background: colorTheme.inspectorBackground.value,
       }}
     >
@@ -241,77 +240,92 @@ export function shouldInspectorUpdate(
   )
 }
 
+export const InspectorSectionsContainerTestID = 'inspector-sections-container'
+
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
+
+  const hideAllSections = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every(
+        (path) =>
+          MetadataUtils.isConditional(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata),
+      ),
+    'Inspector hideAllSections',
+  )
+
+  const multiselectedContract = useEditorState(
+    Substores.metadata,
+    allSelectedElementsContractSelector,
+    'Inspector multiselectedContract',
+  )
+
   React.useEffect(() => {
     setSelectedTarget(targets[0].path)
   }, [selectedViews, targets, setSelectedTarget])
 
   const dispatch = useDispatch()
-  const {
-    focusedPanel,
-    anyComponents,
-    anyUnknownElements,
-    hasNonDefaultPositionAttributes,
-    aspectRatioLocked,
-  } = useEditorState(
-    Substores.fullStore,
-    (store) => {
-      const rootMetadata = store.editor.jsxMetadata
-      let anyComponentsInner: boolean = false
-      let anyUnknownElementsInner: boolean = false
-      let hasNonDefaultPositionAttributesInner: boolean = false
-      let aspectRatioLockedInner: boolean = false
+  const { focusedPanel, anyComponents, anyUnknownElements, hasNonDefaultPositionAttributes } =
+    useEditorState(
+      Substores.fullStore,
+      (store) => {
+        const rootMetadata = store.editor.jsxMetadata
+        let anyComponentsInner: boolean = false
+        let anyUnknownElementsInner: boolean = false
+        let hasNonDefaultPositionAttributesInner: boolean = false
 
-      Utils.fastForEach(selectedViews, (view) => {
-        const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
-          view,
-          store.editor,
-          store.derived,
-        )
-        anyComponentsInner =
-          anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
-        const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
-        const elementProps = store.editor.allElementProps[EP.toString(view)]
-        if (possibleElement != null && elementProps != null) {
-          // Slightly coarse in definition, but element metadata is in a weird little world of
-          // its own compared to the props.
-          aspectRatioLockedInner =
-            aspectRatioLockedInner || isAspectRatioLockedNew(possibleElement, elementProps)
+        Utils.fastForEach(selectedViews, (view) => {
+          const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
+            view,
+            store.editor,
+            store.derived,
+          )
+          anyComponentsInner =
+            anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
+          const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
+          const elementProps = store.editor.allElementProps[EP.toString(view)]
+          if (possibleElement != null && elementProps != null) {
+            // Slightly coarse in definition, but element metadata is in a weird little world of
+            // its own compared to the props.
 
-          const metadataNotFound =
-            MetadataUtils.findElementByElementPath(rootMetadata, view) == null
-          if (metadataNotFound) {
-            anyUnknownElementsInner = true
-          }
-          if (isRight(possibleElement.element)) {
-            const elem = possibleElement.element.value
-            if (isJSXElement(elem)) {
-              if (!hasNonDefaultPositionAttributesInner) {
-                for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
-                  styleStringInArray,
-                )) {
-                  const attributeAtPath = getJSXAttributeAtPath(elem.props, nonDefaultPositionPath)
-                  if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
-                    hasNonDefaultPositionAttributesInner = true
+            const metadataNotFound =
+              MetadataUtils.findElementByElementPath(rootMetadata, view) == null
+            if (metadataNotFound) {
+              anyUnknownElementsInner = true
+            }
+            if (isRight(possibleElement.element)) {
+              const elem = possibleElement.element.value
+              if (isJSXElement(elem)) {
+                if (!hasNonDefaultPositionAttributesInner) {
+                  for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
+                    styleStringInArray,
+                  )) {
+                    const attributeAtPath = getJSXAttributesAtPath(
+                      elem.props,
+                      nonDefaultPositionPath,
+                    )
+                    if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
+                      hasNonDefaultPositionAttributesInner = true
+                    }
                   }
                 }
               }
             }
           }
+        })
+        return {
+          focusedPanel: store.editor.focusedPanel,
+          anyComponents: anyComponentsInner,
+          anyUnknownElements: anyUnknownElementsInner,
+          hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
         }
-      })
-      return {
-        focusedPanel: store.editor.focusedPanel,
-        anyComponents: anyComponentsInner,
-        anyUnknownElements: anyUnknownElementsInner,
-        hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
-        aspectRatioLocked: aspectRatioLockedInner,
-      }
-    },
-    'Inspector',
-  )
+      },
+      'Inspector',
+    )
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -321,13 +335,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     },
     [dispatch, focusedPanel],
   )
-
-  const toggleAspectRatioLock = React.useCallback(() => {
-    const actions: EditorAction[] = selectedViews.map((path) =>
-      setAspectRatioLock(path, !aspectRatioLocked),
-    )
-    dispatch(actions, 'everyone')
-  }, [dispatch, selectedViews, aspectRatioLocked])
 
   const shouldShowInspector = React.useMemo(() => {
     return props.elementPath.length !== 0 && !anyUnknownElements
@@ -347,30 +354,56 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           style={{
             display: shouldShowInspector ? undefined : 'none',
           }}
+          data-testid={InspectorSectionsContainerTestID}
         >
-          <AlignmentButtons numberOfTargets={selectedViews.length} />
-          {when(isTwindEnabled(), <ClassNameSubsection />)}
-          {anyComponents ? <ComponentSection isScene={false} /> : null}
+          <RootElementIndicator />
+          {unless(
+            hideAllSections,
+            <>
+              <AlignmentButtons numberOfTargets={selectedViews.length} />
+              {when(isTwindEnabled(), <ClassNameSubsection />)}
+              {anyComponents || multiselectedContract === 'fragment' ? (
+                <ComponentSection isScene={false} />
+              ) : null}
+            </>,
+          )}
+          <CodeElementSection paths={selectedViews} />
           <ConditionalSection paths={selectedViews} />
-          <TargetSelectorSection
-            targets={props.targets}
-            selectedTargetPath={props.selectedTargetPath}
-            onSelectTarget={props.onSelectTarget}
-            onStyleSelectorRename={props.onStyleSelectorRename}
-            onStyleSelectorDelete={props.onStyleSelectorDelete}
-            onStyleSelectorInsert={props.onStyleSelectorInsert}
-          />
-          <PositionSection
-            hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-            aspectRatioLocked={aspectRatioLocked}
-            toggleAspectRatioLock={toggleAspectRatioLock}
-          />
-          <SizingSection />
-          <FlexSection />
-          <StyleSection />
-          <WarningSubsection />
-          <ImgSection />
-          <EventHandlersSection />
+          {unless(
+            hideAllSections,
+            <>
+              <TargetSelectorSection
+                targets={props.targets}
+                selectedTargetPath={props.selectedTargetPath}
+                onSelectTarget={props.onSelectTarget}
+                onStyleSelectorRename={props.onStyleSelectorRename}
+                onStyleSelectorDelete={props.onStyleSelectorDelete}
+                onStyleSelectorInsert={props.onStyleSelectorInsert}
+              />
+              {when(multiselectedContract === 'fragment', <FragmentSection />)}
+              {unless(
+                multiselectedContract === 'fragment',
+                // Position and Sizing sections are shown if Frame or Group is selected
+                <>
+                  <PositionSection
+                    hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                  />
+                  <SizingSection />
+                </>,
+              )}
+              {unless(
+                multiselectedContract === 'fragment' || multiselectedContract === 'group',
+                // All the regular inspector sections are only visible if frames are selected
+                <>
+                  <FlexSection />
+                  <StyleSection />
+                  <WarningSubsection />
+                  <ImgSection />
+                  <EventHandlersSection />
+                </>,
+              )}
+            </>,
+          )}
         </div>
       </React.Fragment>
     )
@@ -463,12 +496,13 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
 > = React.memo((props) => {
   const { selectedViews } = props
   const dispatch = useDispatch()
-  const { jsxMetadata, isUIJSFile, allElementProps } = useEditorState(
+  const { jsxMetadata, isUIJSFile, pathTrees, allElementProps } = useEditorState(
     Substores.fullStore,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
         isUIJSFile: isOpenFileUiJs(store.editor),
+        pathTrees: store.editor.elementPathTree,
         allElementProps: store.editor.allElementProps,
       }
     },
@@ -507,13 +541,13 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
         const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
         if (component != null) {
           elements.push({
-            name: MetadataUtils.getElementLabel(allElementProps, path, jsxMetadata),
+            name: MetadataUtils.getElementLabel(allElementProps, path, pathTrees, jsxMetadata),
             path: path,
           })
         }
       })
       return elements
-    }, [selectedViews, jsxMetadata, allElementProps]),
+    }, [selectedViews, jsxMetadata, pathTrees, allElementProps]),
   )
 
   // Memoized Callbacks
@@ -604,6 +638,8 @@ export const InspectorContextProvider = React.memo<{
 }>((props) => {
   const { selectedViews } = props
   const dispatch = useDispatch()
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
   const { jsxMetadata, allElementProps } = useEditorState(
     Substores.metadata,
     (store) => {
@@ -684,6 +720,36 @@ export const InspectorContextProvider = React.memo<{
   const onUnsetValue = React.useCallback(
     (property: PropertyPath | Array<PropertyPath>, transient: boolean) => {
       let actionsArray: Array<EditorAction> = []
+
+      const propTop = PP.create('style', 'top')
+      const propBottom = PP.create('style', 'bottom')
+      const propLeft = PP.create('style', 'left')
+      const propRight = PP.create('style', 'right')
+
+      const invalidGroupState = maybeInvalidGroupState(
+        refElementsToTargetForUpdates.current,
+        metadataRef.current,
+        {
+          onGroup: () => null,
+          onGroupChild: () => {
+            return Array.isArray(property) &&
+              property.some(
+                (p) =>
+                  PP.pathsEqual(p, propTop) ||
+                  PP.pathsEqual(p, propBottom) ||
+                  PP.pathsEqual(p, propLeft) ||
+                  PP.pathsEqual(p, propRight),
+              )
+              ? 'child-has-missing-pins'
+              : null
+          },
+        },
+      )
+      if (invalidGroupState != null) {
+        dispatch([groupErrorToastAction(invalidGroupState)])
+        return
+      }
+
       Utils.fastForEach(refElementsToTargetForUpdates.current, (elem) => {
         if (Array.isArray(property)) {
           Utils.fastForEach(property, (p) => {
@@ -699,14 +765,14 @@ export const InspectorContextProvider = React.memo<{
         : actionsArray
       dispatch(actions, 'everyone')
     },
-    [dispatch, refElementsToTargetForUpdates],
+    [dispatch, refElementsToTargetForUpdates, metadataRef],
   )
 
   const collectActionsToSubmitValue = React.useCallback(
-    (newValue: JSExpression, path: PropertyPath, transient: boolean): Array<EditorAction> => {
+    (path: PropertyPath, transient: boolean, newValuePrinter: () => any): Array<EditorAction> => {
       const actionsArray = [
         ...refElementsToTargetForUpdates.current.map((elem) => {
-          return setProp_UNSAFE(elem, path, newValue)
+          return setProp_UNSAFE(elem, path, newValuePrinter())
         }),
       ]
       return transient

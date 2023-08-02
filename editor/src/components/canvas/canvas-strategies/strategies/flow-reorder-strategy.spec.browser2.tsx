@@ -1,29 +1,29 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import {
   mouseClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
 import {
   isInfinityRectangle,
   offsetPoint,
   rectangleDifference,
   windowPoint,
-  WindowPoint,
 } from '../../../../core/shared/math-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { assert } from 'chai'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
 
 const TestProjectBlockElements = (additionalContainerStyle: string = '') => `
 <div style={{ width: '100%', height: '100%', position: 'absolute', ${additionalContainerStyle} }} data-uid='container'>

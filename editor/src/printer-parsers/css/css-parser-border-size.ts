@@ -1,13 +1,17 @@
-import {
+import type {
   CSSKeyword,
   CSSLineWidth,
-  cssLineWidth,
   CSSLineWidthKeywordValue,
-  cssLineWidthKeywordValues,
   CSSNumber,
 } from '../../components/inspector/common/css-utils'
-import { Either, isRight, left, mapEither } from '../../core/shared/either'
-import { descriptionParseError, parseAlternative, Parser } from '../../utils/value-parser-utils'
+import {
+  cssLineWidth,
+  cssLineWidthKeywordValues,
+} from '../../components/inspector/common/css-utils'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, mapEither } from '../../core/shared/either'
+import type { Parser } from '../../utils/value-parser-utils'
+import { descriptionParseError, parseAlternative } from '../../utils/value-parser-utils'
 import {
   isLexerMatch,
   isNamedSyntaxType,

@@ -2,7 +2,8 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -10,18 +11,20 @@ import type {
   ElementInstanceMetadataMap,
   JSXElement,
 } from '../../../../core/shared/element-template'
-import {
-  boundingRectangleArray,
+import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
   LocalRectangle,
+} from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
   nullIfInfinity,
   offsetRect,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { ProjectContentTreeRoot } from '../../../assets'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from '../../../assets'
 
 import {
   getElementFromProjectContents,
@@ -29,13 +32,15 @@ import {
 } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
-import { CanvasFrameAndTarget, CSSCursor } from '../../canvas-types'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
+import { CSSCursor } from '../../canvas-types'
+import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
 import {
-  adjustCssLengthProperty,
-  AdjustCssLengthProperty,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
-import { CanvasCommand } from '../../commands/commands'
-import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
+import type { CanvasCommand } from '../../commands/commands'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -44,21 +49,20 @@ import {
   collectParentAndSiblingGuidelines,
   runLegacyAbsoluteMoveSnapping,
 } from '../../controls/guideline-helpers'
-import {
+import type {
   ConstrainedDragAxis,
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../../guideline'
+import type { InteractionCanvasState, StrategyApplicationResult } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  StrategyApplicationResult,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
-import { AbsolutePin } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
+import type { InteractionSession } from '../interaction-state'
+import type { AbsolutePin } from './resize-helpers'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
 
@@ -76,11 +80,11 @@ export const getAdjustMoveCommands =
   (
     snappedDragVector: CanvasPoint,
   ): {
-    commands: Array<AdjustCssLengthProperty>
+    commands: Array<AdjustCssLengthProperties>
     intendedBounds: Array<CanvasFrameAndTarget>
   } => {
     const filteredSelectedElements = flattenSelection(targets)
-    let commands: Array<AdjustCssLengthProperty> = []
+    let commands: Array<AdjustCssLengthProperties> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
       const elementResult = getMoveCommandsForSelectedElement(
@@ -118,7 +122,10 @@ export function applyMoveCommon(
 
       return strategyApplicationResult([
         ...commandsForSelectedElements.commands,
-        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        pushIntendedBoundsAndUpdateGroups(
+          commandsForSelectedElements.intendedBounds,
+          'starting-metadata',
+        ),
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
         setCursorCommand(CSSCursor.Select),
@@ -133,6 +140,7 @@ export function applyMoveCommon(
       const moveGuidelines = collectParentAndSiblingGuidelines(
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
+        canvasState.startingElementPathTree,
         originalTargets,
       )
 
@@ -149,7 +157,10 @@ export function applyMoveCommon(
         ...commandsForSelectedElements.commands,
         updateHighlightedViews('mid-interaction', []),
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBounds(commandsForSelectedElements.intendedBounds),
+        pushIntendedBoundsAndUpdateGroups(
+          commandsForSelectedElements.intendedBounds,
+          'starting-metadata',
+        ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),
       ])
@@ -167,7 +178,7 @@ export function getMoveCommandsForSelectedElement(
   interactionSession: InteractionSession,
   options?: MoveCommandsOptions,
 ): {
-  commands: Array<AdjustCssLengthProperty>
+  commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const element: JSXElement | null = getElementFromProjectContents(
@@ -224,12 +235,12 @@ function createMoveCommandsForElement(
   elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
 ): {
-  commands: Array<AdjustCssLengthProperty>
+  commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const { existingPins, extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
 
-  const adjustPinCommands = mapDropNulls((pin) => {
+  const adjustPinProperties = extendedPins.map((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
@@ -247,17 +258,20 @@ function createMoveCommandsForElement(
       (horizontal ? offsetX + drag.x : offsetY + drag.y) * (negative ? -1 : 1)
     const parentDimension = horizontal ? elementParentBounds?.width : elementParentBounds?.height
 
-    return adjustCssLengthProperty(
-      'always',
-      selectedElement,
+    return lengthPropertyToAdjust(
       stylePropPathMappingFn(pin, styleStringInArray),
       updatedPropValue,
       parentDimension,
-      elementParentFlexDirection,
       'create-if-not-existing',
     )
   }, extendedPins)
 
+  const adjustPinCommand = adjustCssLengthProperties(
+    'always',
+    selectedElement,
+    elementParentFlexDirection,
+    adjustPinProperties,
+  )
   const intendedBounds = (() => {
     if (globalFrame == null) {
       return []
@@ -267,7 +281,7 @@ function createMoveCommandsForElement(
     }
   })()
 
-  return { commands: adjustPinCommands, intendedBounds: intendedBounds }
+  return { commands: [adjustPinCommand], intendedBounds: intendedBounds }
 }
 
 export function getMultiselectBounds(

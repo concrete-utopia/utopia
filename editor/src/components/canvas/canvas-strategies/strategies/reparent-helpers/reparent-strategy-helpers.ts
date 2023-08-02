@@ -1,22 +1,25 @@
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
-import { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
+import type { CanvasPoint, Size } from '../../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
+import type { InteractionCanvasState, InteractionTarget } from '../../canvas-strategy-types'
+import { getTargetPathsFromInteractionTarget } from '../../canvas-strategy-types'
+import type { AllowSmallerParent } from '../../interaction-state'
 import {
-  getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  InteractionTarget,
-} from '../../canvas-strategy-types'
-import { AllowSmallerParent } from '../../interaction-state'
-import {
-  flowParentAbsoluteOrStatic,
+  autoLayoutParentAbsoluteOrStatic,
   getReparentTargetUnified,
 } from './reparent-strategy-parent-lookup'
 import { flattenSelection } from '../shared-move-strategies-helpers'
-import { Direction } from '../../../../inspector/common/css-utils'
-import { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
+import type { Direction } from '../../../../inspector/common/css-utils'
+import type { ElementSupportsChildren } from '../../../../../core/model/element-template-utils'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
+import type { InsertionPath } from '../../../../editor/store/insertion-path'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import { assertNever } from '../../../../../core/shared/utils'
 
-export type ReparentStrategy = 'REPARENT_AS_ABSOLUTE' | 'REPARENT_AS_STATIC'
+export type ReparentAsAbsolute = 'REPARENT_AS_ABSOLUTE'
+export type ReparentAsStatic = 'REPARENT_AS_STATIC'
+export type ReparentStrategy = ReparentAsAbsolute | ReparentAsStatic
 
 export type FindReparentStrategyResult = {
   strategy: ReparentStrategy
@@ -24,29 +27,26 @@ export type FindReparentStrategyResult = {
   target: ReparentTarget
 }
 
-export function reparentStrategyForPaste(
-  targetMetadata: ElementInstanceMetadataMap,
-  parent: ElementPath,
-): {
-  strategy: ReparentStrategy
-  isFallback: boolean
-} {
-  const newParentMetadata = MetadataUtils.findElementByElementPath(targetMetadata, parent)
-  const parentIsFlexLayout = MetadataUtils.isFlexLayoutedContainer(newParentMetadata)
+export type StaticReparentTarget =
+  | { type: ReparentAsStatic; insertionPath: InsertionPath }
+  | {
+      type: ReparentAsAbsolute
+      insertionPath: InsertionPath
+    }
 
-  const flowParentReparentType = flowParentAbsoluteOrStatic(targetMetadata, parent)
-  const reparentAsStatic = parentIsFlexLayout || flowParentReparentType === 'REPARENT_AS_STATIC'
-  if (reparentAsStatic) {
-    return {
-      strategy: 'REPARENT_AS_STATIC',
-      isFallback: false,
-    }
-  } else {
-    return {
-      strategy: 'REPARENT_AS_ABSOLUTE',
-      isFallback: false,
-    }
-  }
+export function reparentStrategyForPaste(
+  currentMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  parent: ElementPath,
+): ReparentStrategy {
+  return autoLayoutParentAbsoluteOrStatic(
+    currentMetadata,
+    allElementProps,
+    pathTrees,
+    parent,
+    'prefer-absolute',
+  )
 }
 
 export function findReparentStrategies(
@@ -64,6 +64,7 @@ export function findReparentStrategies(
     cmdPressed,
     canvasState,
     metadata,
+    canvasState.startingElementPathTree,
     canvasState.nodeModules,
     canvasState.startingAllElementProps,
     allowSmallerParent,
@@ -94,29 +95,11 @@ export function findReparentStrategies(
 
 export interface ReparentTarget {
   shouldReparent: boolean
-  newParent: ElementPath
+  newParent: InsertionPath
   shouldShowPositionIndicator: boolean
   newIndex: number
   shouldConvertToInline: Direction | 'do-not-convert'
   defaultReparentType: ReparentStrategy
-}
-
-export function reparentTarget(
-  shouldReparent: boolean,
-  newParent: ElementPath,
-  shouldShowPositionIndicator: boolean,
-  newIndex: number,
-  shouldConvertToInline: Direction | 'do-not-convert',
-  defaultReparentType: ReparentStrategy,
-): ReparentTarget {
-  return {
-    shouldReparent: shouldReparent,
-    newParent: newParent,
-    shouldShowPositionIndicator: shouldShowPositionIndicator,
-    newIndex: newIndex,
-    shouldConvertToInline: shouldConvertToInline,
-    defaultReparentType: defaultReparentType,
-  }
 }
 
 export type ReparentSubjects = NewReparentSubjects | ExistingReparentSubjects
@@ -143,6 +126,19 @@ export function existingReparentSubjects(elements: Array<ElementPath>): Existing
   return {
     type: 'EXISTING_ELEMENTS',
     elements: elements,
+  }
+}
+
+export function getExistingElementsFromReparentSubjects(
+  reparentSubjects: ReparentSubjects,
+): Array<ElementPath> {
+  switch (reparentSubjects.type) {
+    case 'EXISTING_ELEMENTS':
+      return reparentSubjects.elements
+    case 'NEW_ELEMENTS':
+      return []
+    default:
+      assertNever(reparentSubjects)
   }
 }
 

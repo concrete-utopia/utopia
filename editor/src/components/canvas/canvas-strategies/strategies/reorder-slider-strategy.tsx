@@ -7,16 +7,15 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { ReorderSliderControl } from '../../controls/reorder-slider-control'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import { areAllSiblingsInOneDimensionFlexOrFlow, findNewIndex } from './flow-reorder-helpers'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
 
@@ -33,13 +32,21 @@ export function reorderSliderStategy(
     canvasState.startingMetadata,
     target,
   )
-  const siblings = MetadataUtils.getSiblingsUnordered(canvasState.startingMetadata, target)
+  const siblings = MetadataUtils.getSiblingsOrdered(
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+    target,
+  )
   const isAutoLayouted =
     MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
       target,
       canvasState.startingMetadata,
     ) || MetadataUtils.isPositionedByFlow(elementMetadata)
-  const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(target, canvasState.startingMetadata)
+  const is1dLayout = areAllSiblingsInOneDimensionFlexOrFlow(
+    target,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+  )
 
   if (siblings.length <= 1 || !isAutoLayouted || is1dLayout) {
     return null

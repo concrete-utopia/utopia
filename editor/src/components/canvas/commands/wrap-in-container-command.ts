@@ -1,33 +1,42 @@
+import type { JSXElementChild } from '../../../core/shared/element-template'
 import {
   emptyComments,
+  isJSXElement,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxConditionalExpression,
   jsxElement,
-  JSXElementChild,
   jsxFragment,
 } from '../../../core/shared/element-template'
-import { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
 import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import { InsertionSubjectWrapper } from '../../editor/editor-modes'
+import type { InsertionSubjectWrapper } from '../../editor/editor-modes'
 import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
-import { generateUidWithExistingComponents } from '../../../core/model/element-template-utils'
-import { ProjectContentTreeRoot } from '../../assets'
-import { JSXAttributesPart, JSXAttributesEntry } from '../../../core/shared/element-template'
-import { getIndexInParent } from '../../../core/model/element-template-utils'
-import { childInsertionPath } from '../../editor/store/insertion-path'
+import type { ProjectContentTreeRoot } from '../../assets'
+import {
+  generateUidWithExistingComponents,
+  getIndexInParent,
+  insertJSXElementChildren,
+} from '../../../core/model/element-template-utils'
+import { getInsertionPath } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
+import type { CSSProperties } from 'react'
+import type { Property } from 'csstype'
+import { generateConsistentUID } from '../../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
+import { forEachRight, right } from '../../../core/shared/either'
 
 type ContainerToWrapIn = InsertionSubjectWrapper
 
@@ -81,11 +90,25 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
 
       // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
-      const insertionResult = insertElementAtPath(
+
+      const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+      const insertionPath = getInsertionPath(
+        targetParent,
         editor.projectContents,
-        underlyingFilePath,
-        childInsertionPath(targetParent),
-        wrapper,
+        editor.nodeModules.files,
+        editor.canvas.openFile?.filename,
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        wrapperUID,
+        1,
+      )
+      if (insertionPath == null) {
+        return // maybe this should throw instead?
+      }
+
+      const insertionResult = insertJSXElementChildren(
+        insertionPath,
+        [wrapper],
         withElementRemoved,
         index,
       )
@@ -160,66 +183,85 @@ const getInsertionSubjectWrapper = (
 const defaultFalseBranchSideLength = 100
 const defaultFalseBranchText = 'False branch'
 
+function getInsertionSubjectStyleFromConditionalTrueBranch(
+  trueBranch: JSXElementChild,
+): CSSProperties {
+  // Get the various properties that make up the `style` property.
+  let position: Property.Position | null = null
+  let left: number | null = null
+  let top: number | null = null
+  let width: number = 0
+  let height: number = 0
+  if (isJSXElement(trueBranch)) {
+    const positionProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'position'),
+    )
+    forEachRight(positionProperty, (value) => {
+      position = value
+    })
+    const leftProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'left'),
+    )
+    forEachRight(leftProperty, (value) => {
+      left = value
+    })
+    const topProperty = getSimpleAttributeAtPath(right(trueBranch.props), PP.create('style', 'top'))
+    forEachRight(topProperty, (value) => {
+      top = value
+    })
+    const widthProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'width'),
+    )
+    forEachRight(widthProperty, (value) => {
+      width = value
+    })
+    const heightProperty = getSimpleAttributeAtPath(
+      right(trueBranch.props),
+      PP.create('style', 'height'),
+    )
+    forEachRight(heightProperty, (value) => {
+      height = value
+    })
+  }
+  width = Math.max(width, defaultFalseBranchSideLength)
+  height = Math.max(height, defaultFalseBranchSideLength)
+
+  // Build the style property from the properties.
+  const style: CSSProperties = {}
+  if (position != null) {
+    style.position = position
+    if (left != null) {
+      style.left = left
+    }
+    if (top != null) {
+      style.top = top
+    }
+  }
+  style.width = width
+  style.height = height
+  return style
+}
+
 function getInsertionSubjectWrapperConditionalFalseBranch(
   projectContents: ProjectContentTreeRoot,
   trueBranch: JSXElementChild,
 ): JSXElementChild {
-  function isStyleProp(p: JSXAttributesPart): boolean {
-    return p.type === 'JSX_ATTRIBUTES_ENTRY' && p.key === 'style'
-  }
+  const uid = generateConsistentUID(
+    'false-branch',
+    new Set(getAllUniqueUids(projectContents).uniqueIDs),
+  )
 
-  function getStyle(element: JSXElementChild): JSXAttributesEntry {
-    const emptyStyle: JSXAttributesEntry = {
-      type: 'JSX_ATTRIBUTES_ENTRY',
-      key: 'style',
-      value: jsExpressionValue({}, emptyComments),
-      comments: emptyComments,
-    }
+  const style = getInsertionSubjectStyleFromConditionalTrueBranch(trueBranch)
 
-    if (element.type !== 'JSX_ELEMENT') {
-      return emptyStyle
-    }
-    const found = element.props.find(isStyleProp)
-    if (found == null || found.type !== 'JSX_ATTRIBUTES_ENTRY') {
-      return emptyStyle
-    }
-    return found
-  }
-
-  function getNumberProp(e: JSXAttributesEntry, key: string): number | null {
-    if (e.value.type !== 'ATTRIBUTE_VALUE') {
-      return null
-    }
-    const value = e.value.value[key]
-    if (typeof value !== 'number') {
-      return null
-    }
-    return value
-  }
-
-  const uid = generateUidWithExistingComponents(projectContents)
-  const trueBranchStyle = getStyle(trueBranch)
-
+  // Construct the element.
   return jsxElement(
     'div',
     uid,
     jsxAttributesFromMap({
-      style: jsExpressionValue(
-        {
-          position: 'absolute',
-          left: getNumberProp(trueBranchStyle, 'left') ?? 0,
-          top: getNumberProp(trueBranchStyle, 'top') ?? 0,
-          width: Math.max(
-            getNumberProp(trueBranchStyle, 'width') ?? 0,
-            defaultFalseBranchSideLength,
-          ),
-          height: Math.max(
-            getNumberProp(trueBranchStyle, 'height') ?? 0,
-            defaultFalseBranchSideLength,
-          ),
-        },
-        emptyComments,
-      ),
+      style: jsExpressionValue(style, emptyComments),
       'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [jsxTextBlock(defaultFalseBranchText)],

@@ -2,7 +2,7 @@ import React from 'react'
 import Utils from './utils'
 import { keepDeepReferenceEqualityIfPossible } from './react-performance'
 import { omitWithPredicate } from '../core/shared/object-utils'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
 import { isIntrinsicHTMLElementString } from '../core/shared/element-template'
 import { UtopiaKeys, UTOPIA_UID_KEY, UTOPIA_PATH_KEY } from '../core/model/utopia-constants'
@@ -26,9 +26,11 @@ export function applyUIDMonkeyPatch(): void {
   }
 }
 
-function getDisplayName(type: any): string {
+export function getDisplayName(type: any): string {
   // taken from https://github.com/facebook/react/blob/7e405d458d6481fb1c04dfca6afab0651e6f67cd/packages/react/src/ReactElement.js#L415
-  if (typeof type === 'function') {
+  if (type == null) {
+    return 'null'
+  } else if (typeof type === 'function') {
     return type.displayName ?? type.name ?? 'Unknown'
   } else if (typeof type === 'symbol') {
     return type.toString()
@@ -147,7 +149,7 @@ const mangleFunctionType = Utils.memoize(
         }
         return res
       },
-    }[mangledFunctionName]
+    }[mangledFunctionName]!
     ;(mangledFunction as any).theOriginalType = type
     ;(mangledFunction as any).contextTypes = (type as any).contextTypes
     ;(mangledFunction as any).childContextTypes = (type as any).childContextTypes

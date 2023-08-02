@@ -3,18 +3,16 @@ import {
   expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { StartCenterEnd } from './inspector-common'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import type { StartCenterEnd } from './inspector-common'
 import { NineBlockControlTestId, NineBlockSectors, NineBlockTestId } from './nine-block-controls'
 
 describe('Nine-block control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   describe('in flex row', () => {
     for (const [justifyContent, alignItems] of NineBlockSectors) {
       it(`set ${justifyContent} and ${alignItems} via the nine-block control`, async () => {

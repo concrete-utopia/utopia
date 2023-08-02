@@ -1,53 +1,51 @@
-import {
+import type {
   JSExpression,
   JSXElement,
   JSXElementName,
   ElementInstanceMetadataMap,
-  SettableLayoutSystem,
   JSXElementChild,
   JSXConditionalExpression,
   JSXFragment,
 } from '../../core/shared/element-template'
-import { KeysPressed, Key } from '../../utils/keyboard'
-import { IndexPosition } from '../../utils/utils'
-import { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
-import {
+import { SettableLayoutSystem } from '../../core/shared/element-template'
+import type { KeysPressed, Key } from '../../utils/keyboard'
+import type { IndexPosition } from '../../utils/utils'
+import type { CanvasRectangle, Size, WindowPoint, CanvasPoint } from '../../core/shared/math-utils'
+import type {
   CanvasAction,
   CSSCursor,
   PinOrFlexFrameChange,
   SelectionLocked,
 } from '../canvas/canvas-types'
-import { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
-import {
+import type { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
+import type {
   ProjectFile,
   PropertyPath,
-  StaticElementPathPart,
   ElementPath,
   NodeModules,
   Imports,
   ParsedTextFile,
-  HighlightBoundsForUids,
   ImageFile,
 } from '../../core/shared/project-file-types'
-import { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
-import { ElementContextMenuInstance } from '../element-context-menu'
-import { FontSettings } from '../inspector/common/css-utils'
-import { CSSTarget } from '../inspector/sections/header-section/target-selector'
-import { LocalNavigatorAction } from '../navigator/actions/index'
-import { Mode } from './editor-modes'
+import { StaticElementPathPart } from '../../core/shared/project-file-types'
+import type { CodeResultCache, PropertyControlsInfo } from '../custom-code/code-file'
+import type { ElementContextMenuInstance } from '../element-context-menu'
+import type { FontSettings } from '../inspector/common/css-utils'
+import type { CSSTarget } from '../inspector/sections/header-section/target-selector'
+import type { LocalNavigatorAction } from '../navigator/actions/index'
+import type { Mode } from './editor-modes'
 import type {
   RequestedNpmDependency,
   PackageStatusMap,
   PackageStatus,
 } from '../../core/shared/npm-dependency-types'
-import {
+import type {
   ImageDragSessionState,
   DuplicationState,
   EditorState,
   ElementsToRerender,
   ErrorMessages,
   FloatingInsertMenuState,
-  GithubRepo,
   GithubState,
   LeftMenuTab,
   ModalDialog,
@@ -57,27 +55,26 @@ import {
   RightMenuTab,
   StoredEditorState,
   GithubOperation,
-  FileChecksums,
   GithubData,
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
-  NavigatorEntry,
+  PostActionMenuData,
 } from './store/editor-state'
-import { Notice } from '../common/notice'
-import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { NavigatorEntry } from './store/editor-state'
+import type { Notice } from '../common/notice'
 import type { LoginState } from '../../common/user'
-import {
-  InsertableComponent,
-  StylePropOption,
-  WrapContentOption,
-} from '../shared/project-components'
-import { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
-import { BuildType } from '../../core/workers/common/worker-types'
-import { ProjectContentTreeRoot } from '../assets'
-import { GithubOperationType } from './actions/action-creators'
-import { CanvasCommand } from '../canvas/commands/commands'
-import { InsertionPath } from './store/insertion-path'
+import type { InsertableComponent, StylePropOption } from '../shared/project-components'
+import type { LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
+import type { BuildType } from '../../core/workers/common/worker-types'
+import type { ProjectContentTreeRoot } from '../assets'
+import type { GithubOperationType } from './actions/action-creators'
+import type { CanvasCommand } from '../canvas/commands/commands'
+import type { InsertionPath } from './store/insertion-path'
+import type { TextProp } from '../text-editor/text-editor'
+import { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import type { FromVSCodeAction } from './actions/actions-from-vscode'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -123,16 +120,11 @@ export type MoveRowAfter = {
 
 export type ReparentRow = {
   type: 'REPARENT_ROW'
-  target: NavigatorEntry
+  target: ElementPath
+  indexPosition: IndexPosition
 }
 
 export type DropTarget = MoveRowBefore | MoveRowAfter | ReparentRow
-
-export type NavigatorReorder = {
-  action: 'NAVIGATOR_REORDER'
-  dragSources: Array<ElementPath>
-  dropTarget: DropTarget
-}
 
 export type RenameComponent = {
   action: 'RENAME_COMPONENT'
@@ -142,11 +134,6 @@ export type RenameComponent = {
 
 export type ClearSelection = {
   action: 'CLEAR_SELECTION'
-}
-
-export interface InsertScene {
-  action: 'INSERT_SCENE'
-  frame: CanvasRectangle
 }
 
 export interface InsertJSXElement {
@@ -195,13 +182,6 @@ export type UnsetProperty = {
   action: 'UNSET_PROPERTY'
   element: ElementPath
   property: PropertyPath
-}
-
-export type SetProperty = {
-  action: 'SET_PROPERTY'
-  element: ElementPath
-  property: PropertyPath
-  value: JSExpression
 }
 
 export type SetCanvasFrames = {
@@ -344,15 +324,12 @@ export interface ElementPaste {
   originalElementPath: ElementPath
 }
 
-export interface PasteJSXElements {
-  action: 'PASTE_JSX_ELEMENTS'
-  pasteInto: InsertionPath
-  elements: Array<ElementPaste>
-  targetOriginalContextMetadata: ElementInstanceMetadataMap
-}
-
 export interface CopySelectionToClipboard {
   action: 'COPY_SELECTION_TO_CLIPBOARD'
+}
+
+export interface CutSelectionToClipboard {
+  action: 'CUT_SELECTION_TO_CLIPBOARD'
 }
 
 export interface CopyProperties {
@@ -362,7 +339,6 @@ export interface PasteProperties {
   action: 'PASTE_PROPERTIES'
   type: 'style' | 'layout'
 }
-
 export interface SetProjectID {
   action: 'SET_PROJECT_ID'
   id: string
@@ -419,14 +395,14 @@ export interface RemoveToast {
   id: string
 }
 
-export interface SetHighlightedView {
-  action: 'SET_HIGHLIGHTED_VIEW'
-  target: ElementPath
+export interface SetHighlightedViews {
+  action: 'SET_HIGHLIGHTED_VIEWS'
+  targets: ElementPath[]
 }
 
-export interface SetHoveredView {
-  action: 'SET_HOVERED_VIEW'
-  target: ElementPath
+export interface SetHoveredViews {
+  action: 'SET_HOVERED_VIEWS'
+  targets: ElementPath[]
 }
 
 export interface ClearHighlightedViews {
@@ -498,14 +474,6 @@ export type ResetPins = {
   target: ElementPath
 }
 
-export interface WrapInView {
-  action: 'WRAP_IN_VIEW'
-  targets: ElementPath[]
-  layoutSystem: SettableLayoutSystem
-  newParentMainAxis: 'horizontal' | 'vertical' | null
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div'
-}
-
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
@@ -563,6 +531,10 @@ export interface UpdateCodeResultCache {
 export interface SetCodeEditorVisibility {
   action: 'SET_CODE_EDITOR_VISIBILITY'
   value: boolean
+}
+
+export interface OpenCodeEditor {
+  action: 'OPEN_CODE_EDITOR'
 }
 
 export interface SetProjectName {
@@ -663,40 +635,24 @@ export interface RemoveFileConflict {
   path: string
 }
 
-export interface WorkerCodeUpdate {
-  type: 'WORKER_CODE_UPDATE'
-  filePath: string
-  code: string
-  highlightBounds: HighlightBoundsForUids
-  lastRevisedTime: number
-}
-
 export interface WorkerParsedUpdate {
   type: 'WORKER_PARSED_UPDATE'
   filePath: string
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface WorkerCodeAndParsedUpdate {
   type: 'WORKER_CODE_AND_PARSED_UPDATE'
   filePath: string
   code: string
-  highlightBounds: HighlightBoundsForUids
   parsed: ParsedTextFile
-  lastRevisedTime: number
+  versionNumber: number
 }
 
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
-}
-
-export interface UpdateFromCodeEditor {
-  action: 'UPDATE_FROM_CODE_EDITOR'
-  filePath: string
-  savedContent: string
-  unsavedContent: string | null
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
 }
 
 export interface ClearParseOrPrintInFlight {
@@ -741,12 +697,6 @@ export interface SetCodeEditorLintErrors {
   lintErrors: ErrorMessages
 }
 
-export interface SendLinterRequestMessage {
-  action: 'SEND_LINTER_REQUEST_MESSAGE'
-  filePath: string
-  content: string
-}
-
 export interface SaveDOMReport {
   action: 'SAVE_DOM_REPORT'
   elementMetadata: ElementInstanceMetadataMap
@@ -754,16 +704,13 @@ export interface SaveDOMReport {
   invalidatedPaths: Array<string>
 }
 
+export interface TrueUpGroups {
+  action: 'TRUE_UP_GROUPS'
+}
+
 export interface SetProp {
   action: 'SET_PROP'
   target: ElementPath
-  propertyPath: PropertyPath
-  value: JSExpression
-}
-
-export interface SetPropWithElementPath {
-  action: 'SET_PROP_WITH_ELEMENT_PATH'
-  target: StaticElementPathPart
   propertyPath: PropertyPath
   value: JSExpression
 }
@@ -789,12 +736,6 @@ export interface DEPRECATEDToggleEnabledProperty {
 
 export type TextFormattingType = 'bold' | 'italic' | 'underline'
 
-export interface SwitchLayoutSystem {
-  action: 'SWITCH_LAYOUT_SYSTEM'
-  layoutSystem: SettableLayoutSystem
-  propertyTarget: ReadonlyArray<string>
-}
-
 export interface InsertImageIntoUI {
   action: 'INSERT_IMAGE_INTO_UI'
   imagePath: string
@@ -803,7 +744,7 @@ export interface InsertImageIntoUI {
 export interface UpdateJSXElementName {
   action: 'UPDATE_JSX_ELEMENT_NAME'
   target: ElementPath
-  elementName: JSXElementName
+  elementName: { type: 'JSX_ELEMENT'; name: JSXElementName } | { type: 'JSX_FRAGMENT' }
   importsToAdd: Imports
 }
 
@@ -906,26 +847,11 @@ export interface AddStoryboardFile {
   action: 'ADD_STORYBOARD_FILE'
 }
 
-export interface UpdateChildText {
-  action: 'UPDATE_CHILD_TEXT'
+export interface UpdateText {
+  action: 'UPDATE_TEXT'
   target: ElementPath
   text: string
-}
-
-export interface MarkVSCodeBridgeReady {
-  action: 'MARK_VSCODE_BRIDGE_READY'
-  ready: boolean
-}
-
-export interface SelectFromFileAndPosition {
-  action: 'SELECT_FROM_FILE_AND_POSITION'
-  filePath: string
-  line: number
-  column: number
-}
-
-export interface SendCodeEditorInitialisation {
-  action: 'SEND_CODE_EDITOR_INITIALISATION'
+  textProp: TextProp
 }
 
 export interface SetFocusedElement {
@@ -933,10 +859,12 @@ export interface SetFocusedElement {
   focusedElementPath: ElementPath | null
 }
 
+export type ScrollToElementBehaviour = 'keep-scroll-position-if-visible' | 'to-center'
+
 export interface ScrollToElement {
   action: 'SCROLL_TO_ELEMENT'
   target: ElementPath
-  keepScrollPositionIfVisible: boolean
+  behaviour: ScrollToElementBehaviour
 }
 
 export interface SetScrollAnimation {
@@ -947,11 +875,6 @@ export interface SetScrollAnimation {
 export interface SetFollowSelectionEnabled {
   action: 'SET_FOLLOW_SELECTION_ENABLED'
   value: boolean
-}
-
-export interface UpdateConfigFromVSCode {
-  action: 'UPDATE_CONFIG_FROM_VSCODE'
-  config: UtopiaVSCodeConfig
 }
 
 export interface SetLoginState {
@@ -978,17 +901,6 @@ export interface UpdateGithubOperations {
 export interface SetRefreshingDependencies {
   action: 'SET_REFRESHING_DEPENDENCIES'
   value: boolean
-}
-
-export interface UpdateGithubChecksums {
-  action: 'UPDATE_GITHUB_CHECKSUMS'
-  checksums: FileChecksums | null
-}
-
-export interface SetAssetChecksum {
-  action: 'SET_ASSET_CHECKSUM'
-  filename: string
-  checksum: string | null
 }
 
 export interface ResetCanvas {
@@ -1020,10 +932,9 @@ export interface UpdateFormulaBarMode {
 
 export interface InsertInsertable {
   action: 'INSERT_INSERTABLE'
-  targetParent: ElementPath
+  insertionPath: InsertionPath | null
   toInsert: InsertableComponent
   styleProps: StylePropOption
-  wrapContent: WrapContentOption
   indexPosition: IndexPosition | null
 }
 
@@ -1042,11 +953,6 @@ export interface AddTailwindConfig {
   action: 'ADD_TAILWIND_CONFIG'
 }
 
-export interface SetInspectorLayoutSectionHovered {
-  action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED'
-  hovered: boolean
-}
-
 export interface DecrementResizeOptionsSelectedIndex {
   action: 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX'
 }
@@ -1059,15 +965,6 @@ export interface SetResizeOptionsTargetOptions {
   action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS'
   propertyTargetOptions: Array<LayoutTargetableProp>
   index: number | null
-}
-
-export interface HideVSCodeLoadingScreen {
-  action: 'HIDE_VSCODE_LOADING_SCREEN'
-}
-
-export interface SetIndexedDBFailed {
-  action: 'SET_INDEXED_DB_FAILED'
-  indexedDBFailed: boolean
 }
 
 export interface ForceParseFile {
@@ -1118,9 +1015,22 @@ export interface SwitchConditionalBranches {
   target: ElementPath
 }
 
+export interface ExecutePostActionMenuChoice {
+  action: 'EXECUTE_POST_ACTION_MENU_CHOICE'
+  choice: PostActionChoice
+}
+
+export interface StartPostActionSession {
+  action: 'START_POST_ACTION_SESSION'
+  data: PostActionMenuData
+}
+
+export interface ClearPostActionSession {
+  action: 'CLEAR_POST_ACTION_SESSION'
+}
+
 export type EditorAction =
   | ClearSelection
-  | InsertScene
   | InsertJSXElement
   | DeleteSelected
   | DeleteView
@@ -1128,7 +1038,6 @@ export type EditorAction =
   | SwitchEditorMode
   | SelectComponents
   | UnsetProperty
-  | SetProperty
   | Canvas
   | DuplicateSelected
   | MoveSelectedToBack
@@ -1148,14 +1057,13 @@ export type EditorAction =
   | Redo
   | ToggleHidden
   | RenameComponent
-  | NavigatorReorder
   | SetPanelVisibility
   | ToggleFocusedOmniboxTab
   | TogglePane
   | ClosePopup
   | OpenPopup
-  | PasteJSXElements
   | CopySelectionToClipboard
+  | CutSelectionToClipboard
   | CopyProperties
   | PasteProperties
   | SetProjectID
@@ -1169,9 +1077,9 @@ export type EditorAction =
   | ToggleCollapse
   | AddToast
   | RemoveToast
-  | SetHighlightedView
+  | SetHighlightedViews
   | ClearHighlightedViews
-  | SetHoveredView
+  | SetHoveredViews
   | ClearHoveredViews
   | UpdateKeysPressed
   | UpdateMouseButtonsPressed
@@ -1183,7 +1091,6 @@ export type EditorAction =
   | SaveCurrentFile
   | SaveAsset
   | ResetPins
-  | WrapInView
   | WrapInElement
   | OpenFloatingInsertMenu
   | CloseFloatingInsertMenu
@@ -1196,6 +1103,7 @@ export type EditorAction =
   | SelectAllSiblings
   | UpdateCodeResultCache
   | SetCodeEditorVisibility
+  | OpenCodeEditor
   | SetProjectName
   | SetProjectDescription
   | RegenerateThumbnail
@@ -1216,7 +1124,6 @@ export type EditorAction =
   | UpdateGithubData
   | RemoveFileConflict
   | UpdateFromWorker
-  | UpdateFromCodeEditor
   | ClearParseOrPrintInFlight
   | ClearImageFileBlob
   | AddFolder
@@ -1225,14 +1132,12 @@ export type EditorAction =
   | SetMainUIFile
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
-  | SendLinterRequestMessage
   | SaveDOMReport
+  | TrueUpGroups
   | SetProp
-  | SetPropWithElementPath
   | SetFilebrowserRenamingTarget
   | ToggleProperty
   | DEPRECATEDToggleEnabledProperty
-  | SwitchLayoutSystem
   | InsertImageIntoUI
   | SetFocus
   | ResizeLeftPane
@@ -1254,15 +1159,11 @@ export type EditorAction =
   | SetShortcut
   | UpdatePropertyControlsInfo
   | AddStoryboardFile
-  | UpdateChildText
-  | MarkVSCodeBridgeReady
-  | SelectFromFileAndPosition
-  | SendCodeEditorInitialisation
+  | UpdateText
   | SetFocusedElement
   | ScrollToElement
   | SetScrollAnimation
   | SetFollowSelectionEnabled
-  | UpdateConfigFromVSCode
   | SetLoginState
   | SetGithubState
   | SetUserConfiguration
@@ -1276,12 +1177,9 @@ export type EditorAction =
   | SetPropTransient
   | ClearTransientProps
   | AddTailwindConfig
-  | SetInspectorLayoutSectionHovered
   | DecrementResizeOptionsSelectedIndex
   | IncrementResizeOptionsSelectedIndex
   | SetResizeOptionsTargetOptions
-  | HideVSCodeLoadingScreen
-  | SetIndexedDBFailed
   | ForceParseFile
   | RunEscapeHatch
   | SetElementsToRerender
@@ -1289,15 +1187,17 @@ export type EditorAction =
   | UpdateAgainstGithub
   | SetImageDragSessionState
   | UpdateGithubOperations
-  | UpdateGithubChecksums
   | UpdateBranchContents
   | SetRefreshingDependencies
-  | SetAssetChecksum
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
   | SwitchConditionalBranches
   | UpdateConditionalExpression
+  | ExecutePostActionMenuChoice
+  | ClearPostActionSession
+  | StartPostActionSession
+  | FromVSCodeAction
 
 export type DispatchPriority =
   | 'everyone'

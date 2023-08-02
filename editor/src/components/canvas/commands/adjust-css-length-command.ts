@@ -1,174 +1,274 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { isLeft, isRight, left } from '../../../core/shared/either'
+import type { Either } from '../../../core/shared/either'
+import { foldEither, isLeft, isRight, left, mapEither } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
+import type { JSXAttributes, JSXElement } from '../../../core/shared/element-template'
 import {
   emptyComments,
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
+import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
-  GetModifiableAttributeResult,
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
-  ValueAtPath,
+  setJSXValuesAtPaths,
+  unsetJSXValuesAtPaths,
 } from '../../../core/shared/jsx-attributes'
-import { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { EditorState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import {
-  CSSNumber,
-  FlexDirection,
-  parseCSSPercent,
-  parseCSSPx,
-  printCSSNumber,
-} from '../../inspector/common/css-utils'
-import { applyValuesAtPath } from './adjust-number-command'
-import { BaseCommand, CommandFunction, CommandFunctionResult, WhenToRun } from './commands'
+import type { EditorState } from '../../editor/store/editor-state'
+import { modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
+import type { CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
+import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/common/css-utils'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { deleteValuesAtPath } from './delete-properties-command'
+import { patchParseSuccessAtElementPath } from './patch-utils'
 
 export type CreateIfNotExistant = 'create-if-not-existing' | 'do-not-create-if-doesnt-exist'
 
-export interface AdjustCssLengthProperty extends BaseCommand {
-  type: 'ADJUST_CSS_LENGTH_PROPERTY'
-  target: ElementPath
+export interface LengthPropertyToAdjust {
   property: PropertyPath
   valuePx: number
   parentDimensionPx: number | undefined
-  parentFlexDirection: FlexDirection | null
   createIfNonExistant: CreateIfNotExistant
 }
 
-export function adjustCssLengthProperty(
-  whenToRun: WhenToRun,
-  target: ElementPath,
+export function lengthPropertyToAdjust(
   property: PropertyPath,
   valuePx: number,
   parentDimensionPx: number | undefined,
-  parentFlexDirection: FlexDirection | null,
   createIfNonExistant: CreateIfNotExistant,
-): AdjustCssLengthProperty {
+): LengthPropertyToAdjust {
   return {
-    type: 'ADJUST_CSS_LENGTH_PROPERTY',
-    whenToRun: whenToRun,
-    target: target,
     property: property,
     valuePx: valuePx,
     parentDimensionPx: parentDimensionPx,
-    parentFlexDirection: parentFlexDirection,
     createIfNonExistant: createIfNonExistant,
   }
 }
 
-export const runAdjustCssLengthProperty: CommandFunction<AdjustCssLengthProperty> = (
-  editorState: EditorState,
-  command: AdjustCssLengthProperty,
-) => {
-  // in case of width or height change, delete min, max and flex props
-  const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
-    editorState,
-    command.target,
-    command.property,
-    command.parentFlexDirection,
-  )
+export interface AdjustCssLengthProperties extends BaseCommand {
+  type: 'ADJUST_CSS_LENGTH_PROPERTY'
+  target: ElementPath
+  parentFlexDirection: FlexDirection | null
+  properties: Array<LengthPropertyToAdjust>
+}
 
-  // Identify the current value, whatever that may be.
-  const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
+export function adjustCssLengthProperties(
+  whenToRun: WhenToRun,
+  target: ElementPath,
+  parentFlexDirection: FlexDirection | null,
+  properties: Array<LengthPropertyToAdjust>,
+): AdjustCssLengthProperties {
+  return {
+    type: 'ADJUST_CSS_LENGTH_PROPERTY',
+    whenToRun: whenToRun,
+    target: target,
+    parentFlexDirection: parentFlexDirection,
+    properties: properties,
+  }
+}
+
+interface UpdatedPropsAndCommandDescription {
+  updatedProps: JSXAttributes
+  commandDescription: string
+}
+
+export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProperties> = (
+  editorState: EditorState,
+  command: AdjustCssLengthProperties,
+) => {
+  let commandDescriptions: Array<string> = []
+  const updatedEditorState: EditorState = modifyUnderlyingForOpenFile(
     command.target,
-    editorStateWithPropsDeleted,
-    left(`no target element was found at path ${EP.toString(command.target)}`),
-    (_, element) => {
+    editorState,
+    (element) => {
       if (isJSXElement(element)) {
-        return getModifiableJSXAttributeAtPath(element.props, command.property)
-      } else {
-        return left(`No JSXElement was found at path ${EP.toString(command.target)}`)
+        return command.properties.reduce((workingElement, property) => {
+          // Remove any conflicting properties...
+          const attributesWithConflictingPropsDeleted =
+            deleteConflictingPropsForWidthHeightFromAttributes(
+              workingElement.props,
+              property.property,
+              command.parentFlexDirection,
+            )
+          // ...If we were unable to remove those properties, then bail out as we could break something.
+          if (isLeft(attributesWithConflictingPropsDeleted)) {
+            commandDescriptions.push(attributesWithConflictingPropsDeleted.value)
+            return workingElement
+          }
+
+          // Get the current value of the property...
+          const currentValue = getModifiableJSXAttributeAtPath(
+            attributesWithConflictingPropsDeleted.value,
+            property.property,
+          )
+          // ...If the value is not writeable then escape out.
+          if (isLeft(currentValue)) {
+            commandDescriptions.push(
+              `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+                property.property,
+              )} not applied as value is not writeable.`,
+            )
+            return workingElement
+          }
+
+          // ...Determine some other facts about the current value.
+          const currentModifiableValue = currentValue.value
+          const simpleValueResult = jsxSimpleAttributeToValue(currentModifiableValue)
+          const valueProbablyExpression = isLeft(simpleValueResult)
+          const targetPropertyNonExistant: boolean =
+            currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
+
+          // ...If the current value does not exist and we shouldn't create it if it doesn't exist
+          // then exit early from handling this property.
+          if (
+            targetPropertyNonExistant &&
+            property.createIfNonExistant === 'do-not-create-if-doesnt-exist'
+          ) {
+            commandDescriptions.push(
+              `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+                property.property,
+              )} not applied as the property does not exist.`,
+            )
+            return workingElement
+          }
+
+          // ...If the value is an expression then we can't update it.
+          if (valueProbablyExpression) {
+            // TODO add option to override expressions!!!
+            commandDescriptions.push(
+              `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+                property.property,
+              )} not applied as the property is an expression we did not want to override.`,
+            )
+            return workingElement
+          }
+
+          // Commonly used function for handling the updates.
+          function handleUpdateResult(
+            result: Either<string, UpdatedPropsAndCommandDescription>,
+          ): JSXElement {
+            return foldEither(
+              (error) => {
+                commandDescriptions.push(error)
+                return workingElement
+              },
+              (updatedProps) => {
+                commandDescriptions.push(updatedProps.commandDescription)
+                return {
+                  ...workingElement,
+                  props: updatedProps.updatedProps,
+                }
+              },
+              result,
+            )
+          }
+
+          // Parse the current value as a pixel value...
+          const parsePxResult = parseCSSPx(simpleValueResult.value) // TODO make type contain px
+          // ...If the value can be parsed as a pixel value then update it.
+          if (isRight(parsePxResult)) {
+            return handleUpdateResult(
+              updatePixelValueByPixel(
+                attributesWithConflictingPropsDeleted.value,
+                command.target,
+                property.property,
+                parsePxResult.value,
+                property.valuePx,
+              ),
+            )
+          }
+
+          // Parse the current value as a percentage value...
+          const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
+          // ...If the value can be parsed as a percentage value then update it.
+          if (isRight(parsePercentResult)) {
+            return handleUpdateResult(
+              updatePercentageValueByPixel(
+                attributesWithConflictingPropsDeleted.value,
+                command.target,
+                property.property,
+                property.parentDimensionPx,
+                parsePercentResult.value,
+                property.valuePx,
+              ),
+            )
+          }
+
+          // Otherwise if it is permitted to create it if it doesn't exist, then do so.
+          if (property.createIfNonExistant === 'create-if-not-existing') {
+            return handleUpdateResult(
+              setPixelValue(
+                attributesWithConflictingPropsDeleted.value,
+                command.target,
+                property.property,
+                property.valuePx,
+              ),
+            )
+          }
+
+          // Updating the props fallback.
+          commandDescriptions.push(
+            `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
+              property.property,
+            )} not applied as the property is in a CSS unit we do not support. (${
+              simpleValueResult.value
+            })`,
+          )
+          return workingElement
+        }, element)
       }
+
+      // Final fallback.
+      return element
     },
   )
-  if (isLeft(currentValue)) {
+
+  if (commandDescriptions.length === 0) {
+    // Cater for no updates at all happened.
     return {
       editorStatePatches: [],
-      commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-        command.property,
-      )} not applied as value is not writeable.`,
+      commandDescription: `No JSXElement was found at path ${EP.toString(command.target)}.`,
     }
-  }
-  const currentModifiableValue = currentValue.value
-  const simpleValueResult = jsxSimpleAttributeToValue(currentModifiableValue)
-  const valueProbablyExpression = isLeft(simpleValueResult)
-  const targetPropertyNonExistant: boolean = currentModifiableValue.type === 'ATTRIBUTE_NOT_FOUND'
-
-  if (
-    targetPropertyNonExistant &&
-    command.createIfNonExistant === 'do-not-create-if-doesnt-exist'
-  ) {
-    return {
-      editorStatePatches: [],
-      commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-        command.property,
-      )} not applied as the property does not exist.`,
+  } else {
+    if (updatedEditorState === editorState) {
+      // As the `EditorState` never changed, return an empty patch.
+      return {
+        editorStatePatches: [],
+        commandDescription: commandDescriptions.join('\n'),
+      }
+    } else {
+      // Build the patch for the changes.
+      const editorStatePatch = patchParseSuccessAtElementPath(
+        command.target,
+        updatedEditorState,
+        (success) => {
+          return {
+            topLevelElements: {
+              $set: success.topLevelElements,
+            },
+            imports: {
+              $set: success.imports,
+            },
+          }
+        },
+      )
+      return {
+        editorStatePatches: [editorStatePatch],
+        commandDescription: commandDescriptions.join('\n'),
+      }
     }
-  }
-
-  if (valueProbablyExpression) {
-    // TODO add option to override expressions!!!
-    return {
-      editorStatePatches: [],
-      commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-        command.property,
-      )} not applied as the property is an expression we did not want to override.`,
-    }
-  }
-
-  const parsePxResult = parseCSSPx(simpleValueResult.value) // TODO make type contain px
-
-  if (isRight(parsePxResult)) {
-    return updatePixelValueByPixel(
-      editorStateWithPropsDeleted,
-      command.target,
-      command.property,
-      parsePxResult.value,
-      command.valuePx,
-    )
-  }
-
-  const parsePercentResult = parseCSSPercent(simpleValueResult.value) // TODO make type contain %
-  if (isRight(parsePercentResult)) {
-    return updatePercentageValueByPixel(
-      editorStateWithPropsDeleted,
-      command.target,
-      command.property,
-      command.parentDimensionPx,
-      parsePercentResult.value,
-      command.valuePx,
-    )
-  }
-
-  if (command.createIfNonExistant === 'create-if-not-existing') {
-    return setPixelValue(
-      editorStateWithPropsDeleted,
-      command.target,
-      command.property,
-      command.valuePx,
-    )
-  }
-
-  // fallback return
-  return {
-    editorStatePatches: [],
-    commandDescription: `Adjust Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
-      command.property,
-    )} not applied as the property is in a CSS unit we do not support. (${
-      simpleValueResult.value
-    })`,
   }
 }
 
 function setPixelValue(
-  editorState: EditorState,
+  properties: JSXAttributes,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
   value: number,
-) {
+): Either<string, UpdatedPropsAndCommandDescription> {
   const newValueCssNumber: CSSNumber = {
     value: value,
     unit: null,
@@ -182,28 +282,25 @@ function setPixelValue(
     },
   ]
 
-  // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
-    targetElement,
-    propsToUpdate,
-  )
+  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate)
 
-  return {
-    editorStatePatches: [propertyUpdatePatch],
-    commandDescription: `Set css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
-      targetProperty,
-    )} by ${value}`,
-  }
+  return mapEither((updatedProps) => {
+    return {
+      updatedProps: updatedProps,
+      commandDescription: `Set css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+        targetProperty,
+      )} to ${value}.`,
+    }
+  }, updatePropsResult)
 }
 
 function updatePixelValueByPixel(
-  editorState: EditorState,
+  properties: JSXAttributes,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
   currentValue: CSSNumber,
   byValue: number,
-): CommandFunctionResult {
+): Either<string, UpdatedPropsAndCommandDescription> {
   if (currentValue.unit != null && currentValue.unit !== 'px') {
     throw new Error('updatePixelValueByPixel called with a non-pixel cssnumber')
   }
@@ -220,48 +317,42 @@ function updatePixelValueByPixel(
       value: jsExpressionValue(newValue, emptyComments),
     },
   ]
+  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate)
 
-  // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
-    targetElement,
-    propsToUpdate,
-  )
-
-  return {
-    editorStatePatches: [propertyUpdatePatch],
-    commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
-      targetProperty,
-    )} by ${byValue}`,
-  }
+  return mapEither((updatedProps) => {
+    return {
+      updatedProps: updatedProps,
+      commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+        targetProperty,
+      )} by ${byValue}`,
+    }
+  }, updatePropsResult)
 }
 
 function updatePercentageValueByPixel(
-  editorState: EditorState,
+  properties: JSXAttributes,
   targetElement: ElementPath,
   targetProperty: PropertyPath,
   parentDimensionPx: number | undefined,
   currentValue: CSSNumber, // TODO restrict to percentage numbers
   byValue: number,
-): CommandFunctionResult {
+): Either<string, UpdatedPropsAndCommandDescription> {
   if (currentValue.unit == null || currentValue.unit !== '%') {
     throw new Error('updatePercentageValueByPixel called with a non-percentage cssnumber')
   }
   if (parentDimensionPx == null) {
-    return {
-      editorStatePatches: [],
-      commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+    return left(
+      `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
         targetProperty,
       )} not applied because the parent dimensions are unknown for some reason.`,
-    }
+    )
   }
   if (parentDimensionPx === 0) {
-    return {
-      editorStatePatches: [],
-      commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+    return left(
+      `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
         targetProperty,
       )} not applied because the parent dimension is 0.`,
-    }
+    )
   }
   const currentValuePercent = currentValue.value
   const offsetInPercent = (byValue / parentDimensionPx) * 100
@@ -278,19 +369,16 @@ function updatePercentageValueByPixel(
     },
   ]
 
-  // Apply the update to the properties.
-  const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
-    editorState,
-    targetElement,
-    propsToUpdate,
-  )
+  const updatePropsResult = setJSXValuesAtPaths(properties, propsToUpdate)
 
-  return {
-    editorStatePatches: [propertyUpdatePatch],
-    commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
-      targetProperty,
-    )} by ${byValue}`,
-  }
+  return mapEither((updatedProps) => {
+    return {
+      updatedProps: updatedProps,
+      commandDescription: `Adjust Css Length Prop: ${EP.toUid(targetElement)}/${PP.toString(
+        targetProperty,
+      )} by ${byValue}`,
+    }
+  }, updatePropsResult)
 }
 
 const FlexSizeProperties: Array<PropertyPath> = [
@@ -300,12 +388,10 @@ const FlexSizeProperties: Array<PropertyPath> = [
   PP.create('style', 'flexBasis'),
 ]
 
-export function deleteConflictingPropsForWidthHeight(
-  editorState: EditorState,
-  target: ElementPath,
-  propertyPath: PropertyPath,
+function getConflictingPropertiesToDelete(
   parentFlexDirection: FlexDirection | null,
-): EditorState {
+  propertyPath: PropertyPath,
+) {
   let propertiesToDelete: Array<PropertyPath> = []
 
   const parentFlexDimension =
@@ -327,6 +413,31 @@ export function deleteConflictingPropsForWidthHeight(
       }
       break
   }
+  return propertiesToDelete
+}
+
+export function deleteConflictingPropsForWidthHeightFromAttributes(
+  attributes: JSXAttributes,
+  propertyPath: PropertyPath,
+  parentFlexDirection: FlexDirection | null,
+): Either<string, JSXAttributes> {
+  const propertiesToDelete: Array<PropertyPath> = getConflictingPropertiesToDelete(
+    parentFlexDirection,
+    propertyPath,
+  )
+  return unsetJSXValuesAtPaths(attributes, propertiesToDelete)
+}
+
+export function deleteConflictingPropsForWidthHeight(
+  editorState: EditorState,
+  target: ElementPath,
+  propertyPath: PropertyPath,
+  parentFlexDirection: FlexDirection | null,
+): EditorState {
+  const propertiesToDelete: Array<PropertyPath> = getConflictingPropertiesToDelete(
+    parentFlexDirection,
+    propertyPath,
+  )
 
   const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
     editorState,

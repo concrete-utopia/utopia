@@ -4,11 +4,8 @@ import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import composeRefs from '@seznam/compose-react-refs'
 import React from 'react'
-import {
-  ControlStatus,
-  ControlStyles,
-  getControlStyles,
-} from '../../components/inspector/common/control-status'
+import type { ControlStatus, ControlStyles } from '../../components/inspector/common/control-status'
+import { getControlStyles } from '../../components/inspector/common/control-status'
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { InspectorInput, InspectorInputEmotionStyle } from './base-input'
@@ -94,7 +91,7 @@ export const StringInput = React.memo(
             css={{
               borderRadius: 2,
               color: controlStyles.mainColor,
-              backgroundColor: controlStyles.backgroundColor,
+              // backgroundColor: controlStyles.backgroundColor,
               position: 'relative',
               '&:hover': {
                 boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,

@@ -1,73 +1,74 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import type { CSSObject } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import React from 'react'
-import {
-  JSXElementName,
-  jsxElementNameEquals,
-  jsExpressionValue,
-  setJSXAttributesAttribute,
-  jsxElement,
-  emptyComments,
-  JSXAttributes,
-  JSXAttributesPart,
-  isJSXAttributesEntry,
-  getJSXAttribute,
-} from '../../core/shared/element-template'
-import { generateUID } from '../../core/shared/uid-utils'
-import {
-  ElementPath,
-  importDetails,
-  importAlias,
-  Imports,
-  importsEquals,
-} from '../../core/shared/project-file-types'
-import Utils from '../../utils/utils'
-import { FontSettings } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch } from './action-types'
-import { enableInsertModeForJSXElement } from './actions/action-creators'
-import { InsertionSubject, Mode } from './editor-modes'
-import { getOpenFilename } from './store/editor-state'
-import { Substores, useEditorState } from './store/store-hook'
-import { WarningIcon } from '../../uuiui/warning-icon'
-import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
-import {
-  PossiblyUnversionedNpmDependency,
-  PackageStatusMap,
-  PackageStatus,
-} from '../../core/shared/npm-dependency-types'
-import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
-import { PropertyControlsInfo } from '../custom-code/code-file'
-import { InspectorSubsectionHeader, useColorTheme, Icn, UtopiaStyles, UIRow } from '../../uuiui'
-import {
-  getInsertableGroupLabel,
-  getInsertableGroupPackageStatus,
-  getNonEmptyComponentGroups,
-  InsertableComponent,
-  moveSceneToTheBeginningAndSetDefaultSize,
-} from '../shared/project-components'
-import { ProjectContentTreeRoot } from '../assets'
+import type {
+  InputActionMeta,
+  InputProps,
+  MenuListComponentProps,
+  OptionProps,
+  StylesConfig,
+} from 'react-windowed-select'
+import WindowedSelect, { components, createFilter } from 'react-windowed-select'
+import { RightMenuTab } from '../../components/editor/store/editor-state'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
+import { isLeft } from '../../core/shared/either'
+import type { JSXAttributes, JSXElementName } from '../../core/shared/element-template'
+import {
+  emptyComments,
+  getJSXAttribute,
+  jsExpressionValue,
+  jsxElement,
+  jsxElementNameEquals,
+  setJSXAttributesAttribute,
+} from '../../core/shared/element-template'
+import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
+import type { CanvasVector } from '../../core/shared/math-utils'
+import { canvasPoint, point, windowPoint } from '../../core/shared/math-utils'
+import type {
+  PackageStatus,
+  PackageStatusMap,
+  PossiblyUnversionedNpmDependency,
+} from '../../core/shared/npm-dependency-types'
+import type { ElementPath, Imports } from '../../core/shared/project-file-types'
+import { importsEquals } from '../../core/shared/project-file-types'
+import * as PP from '../../core/shared/property-path'
+import { assertNever } from '../../core/shared/utils'
+import { Modifier, emptyModifiers } from '../../utils/modifiers'
+import { Icn, InspectorSubsectionHeader, UIRow, UtopiaTheme, useColorTheme } from '../../uuiui'
+import { getControlStyles } from '../../uuiui-deps'
+import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
+import type { ProjectContentTreeRoot } from '../assets'
 import CanvasActions from '../canvas/canvas-actions'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { Modifier } from '../../utils/modifiers'
-import * as PP from '../../core/shared/property-path'
-import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
+import type { CanvasAction } from '../canvas/canvas-types'
 import { windowToCanvasCoordinates } from '../canvas/dom-lookup'
-import { CanvasVector, point, windowPoint } from '../../core/shared/math-utils'
-import { isLeft } from '../../core/shared/either'
-import { useDispatch } from './store/dispatch-context'
-import { assertNever } from '../../core/shared/utils'
+import type { PropertyControlsInfo } from '../custom-code/code-file'
+import type { FontSettings } from '../inspector/common/css-utils'
+import { NpmDependencyVersionAndStatusIndicator } from '../navigator/dependecy-version-status-indicator'
+import type { InsertableComponent } from '../shared/project-components'
+import {
+  getInsertableGroupLabel,
+  getNonEmptyComponentGroups,
+  moveSceneToTheBeginningAndSetDefaultSize,
+} from '../shared/project-components'
+import type { EditorDispatch } from './action-types'
+import { enableInsertModeForJSXElement, setRightMenuTab } from './actions/action-creators'
 import { defaultDivElement } from './defaults'
+import type { InsertionSubject, Mode } from './editor-modes'
+import { usePossiblyResolvedPackageDependencies } from './npm-dependency/npm-dependency'
+import { useDispatch } from './store/dispatch-context'
+import { Substores, useEditorState } from './store/store-hook'
+
+export const InsertMenuFilterTestId = 'insert-menu-filter'
 
 interface InsertMenuProps {
   lastFontSettings: FontSettings | null
-  editorDispatch: EditorDispatch
   selectedViews: Array<ElementPath>
   mode: Mode
   currentlyOpenFilename: string | null
@@ -80,7 +81,6 @@ interface InsertMenuProps {
 }
 
 export const InsertMenu = React.memo(() => {
-  const dispatch = useDispatch()
   const restOfEditorProps = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -131,7 +131,6 @@ export const InsertMenu = React.memo(() => {
     selectedViews: selectedViews,
     canvasOffset: roundedCanvasOffset,
     projectContents: projectContents,
-    editorDispatch: dispatch,
     dependencies: dependencies,
   }
 
@@ -182,20 +181,6 @@ function elementBeingInserted(insertableComponent: InsertableComponent): Element
   }
 }
 
-function isUidProp(prop: JSXAttributesPart): boolean {
-  return isJSXAttributesEntry(prop) && prop.key === UTOPIA_UID_KEY
-}
-
-const isNonUidProp = (prop: JSXAttributesPart) => !isUidProp(prop)
-
-function nonUidPropsEqual(l: JSXAttributes, r: JSXAttributes): boolean {
-  const nonUidL = l.filter(isNonUidProp)
-  const nonUidR = r.filter(isNonUidProp)
-  return (
-    nonUidL.length === nonUidR.length && nonUidL.every((v, i) => isUidProp(v) || nonUidR[i] === v)
-  )
-}
-
 export function elementBeingInsertedEquals(
   first: ElementBeingInserted | null,
   second: ElementBeingInserted | null,
@@ -211,194 +196,462 @@ export function elementBeingInsertedEquals(
   if (first.type === 'component' && second.type === 'component') {
     return (
       importsEquals(first.importsToAdd, second.importsToAdd) &&
-      jsxElementNameEquals(first.elementName, second.elementName) &&
-      nonUidPropsEqual(first.props, second.props)
+      jsxElementNameEquals(first.elementName, second.elementName)
     )
   }
 
   return first.type === second.type
 }
 
-class InsertMenuInner extends React.Component<InsertMenuProps> {
-  shouldComponentUpdate(nextProps: InsertMenuProps) {
-    const shouldUpdate =
-      this.props.lastFontSettings !== nextProps.lastFontSettings ||
-      this.props.editorDispatch !== nextProps.editorDispatch ||
-      this.props.selectedViews !== nextProps.selectedViews ||
-      this.props.mode !== nextProps.mode ||
-      this.props.dependencies !== nextProps.dependencies ||
-      this.props.packageStatus !== nextProps.packageStatus ||
-      this.props.propertyControlsInfo !== nextProps.propertyControlsInfo
+const enableInsertMode = (
+  component: InsertableComponent,
+  newUID: string,
+  createInteractionSessionCommand: CanvasAction,
+  dispatch: EditorDispatch,
+) => {
+  switch (component.element.type) {
+    case 'JSX_ELEMENT': {
+      const newElement = jsxElement(
+        component.element.name,
+        newUID,
+        setJSXAttributesAttribute(
+          addPositionAbsoluteToProps(component.element.props),
+          'data-uid',
+          jsExpressionValue(newUID, emptyComments),
+        ),
+        component.element.children,
+      )
 
-    return shouldUpdate
-  }
-
-  dispatchOne(action: EditorAction): void {
-    this.props.editorDispatch([action], 'everyone')
-  }
-
-  getNewUID = () => generateUidWithExistingComponents(this.props.projectContents)
-
-  render() {
-    let currentlyBeingInserted: ElementBeingInserted | null = null
-
-    if (this.props.mode.type === 'insert' && this.props.mode.subjects.length === 1) {
-      const insertionSubject: InsertionSubject = this.props.mode.subjects[0]
-      currentlyBeingInserted = componentBeingInserted(
-        insertionSubject.importsToAdd,
-        insertionSubject.element.name,
-        insertionSubject.element.props,
+      return dispatch(
+        [
+          enableInsertModeForJSXElement(
+            newElement,
+            newUID,
+            component.importsToAdd,
+            component.defaultSize,
+          ),
+          createInteractionSessionCommand,
+        ],
+        'everyone',
       )
     }
-
-    const insertableGroups =
-      this.props.currentlyOpenFilename == null
-        ? []
-        : moveSceneToTheBeginningAndSetDefaultSize(
-            getNonEmptyComponentGroups(
-              this.props.packageStatus,
-              this.props.propertyControlsInfo,
-              this.props.projectContents,
-              this.props.dependencies,
-              this.props.currentlyOpenFilename,
-            ),
-          )
-
-    return [
-      ...insertableGroups.map((insertableGroup, groupIndex) => {
-        return (
-          <InsertGroup
-            label={getInsertableGroupLabel(insertableGroup.source)}
-            key={`insert-group-${groupIndex}`}
-            dependencyVersion={null}
-            dependencyStatus={getInsertableGroupPackageStatus(insertableGroup.source)}
-          >
-            {insertableGroup.insertableComponents.map((component, componentIndex) => {
-              const insertItemOnMouseDown = (event: React.MouseEvent) => {
-                const newUID = this.getNewUID()
-
-                const mousePoint = windowToCanvasCoordinates(
-                  this.props.canvasScale,
-                  this.props.canvasOffset,
-                  windowPoint(point(event.clientX, event.clientY)),
-                ).canvasPositionRounded
-
-                const createInteractionSessionCommand = CanvasActions.createInteractionSession(
-                  createInteractionViaMouse(
-                    mousePoint,
-                    Modifier.modifiersForEvent(event),
-                    boundingArea(),
-                    'zero-drag-permitted',
-                  ),
-                )
-
-                switch (component.element.type) {
-                  case 'JSX_ELEMENT': {
-                    const newElement = jsxElement(
-                      component.element.name,
-                      newUID,
-                      setJSXAttributesAttribute(
-                        addPositionAbsoluteToProps(component.element.props),
-                        'data-uid',
-                        jsExpressionValue(newUID, emptyComments),
-                      ),
-                      component.element.children,
-                    )
-
-                    return this.props.editorDispatch(
-                      [
-                        enableInsertModeForJSXElement(
-                          newElement,
-                          newUID,
-                          component.importsToAdd,
-                          component.defaultSize,
-                        ),
-                        createInteractionSessionCommand,
-                      ],
-                      'everyone',
-                    )
-                  }
-                  case 'JSX_CONDITIONAL_EXPRESSION': {
-                    return this.props.editorDispatch(
-                      [
-                        enableInsertModeForJSXElement(
-                          defaultDivElement(newUID),
-                          newUID,
-                          component.importsToAdd,
-                          component.defaultSize,
-                          { wrapInContainer: 'conditional' },
-                        ),
-                        createInteractionSessionCommand,
-                      ],
-                      'everyone',
-                    )
-                  }
-                  case 'JSX_FRAGMENT':
-                    return this.props.editorDispatch(
-                      [
-                        enableInsertModeForJSXElement(
-                          defaultDivElement(newUID),
-                          newUID,
-                          component.importsToAdd,
-                          component.defaultSize,
-                          { wrapInContainer: 'fragment' },
-                        ),
-                        createInteractionSessionCommand,
-                      ],
-                      'everyone',
-                    )
-                  default:
-                    assertNever(component.element)
-                }
-              }
-
-              const insertItemOnMouseUp = (event: React.MouseEvent) => {
-                const mousePoint = windowToCanvasCoordinates(
-                  this.props.canvasScale,
-                  this.props.canvasOffset,
-                  windowPoint(point(event.clientX, event.clientY)),
-                ).canvasPositionRounded
-
-                this.props.editorDispatch(
-                  [CanvasActions.clearInteractionSession(false)],
-                  'everyone',
-                )
-                this.props.editorDispatch(
-                  [
-                    CanvasActions.createInteractionSession(
-                      createHoverInteractionViaMouse(
-                        mousePoint,
-                        Modifier.modifiersForEvent(event),
-                        boundingArea(),
-                        'zero-drag-permitted',
-                      ),
-                    ),
-                  ],
-                  'everyone',
-                )
-              }
-              return (
-                <InsertItem
-                  key={`insert-item-third-party-${groupIndex}-${componentIndex}`}
-                  type={'component'}
-                  label={component.name}
-                  selected={elementBeingInsertedEquals(
-                    currentlyBeingInserted,
-                    elementBeingInserted(component),
-                  )}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  onMouseDown={insertItemOnMouseDown}
-                  // eslint-disable-next-line react/jsx-no-bind
-                  onMouseUp={insertItemOnMouseUp}
-                />
-              )
-            })}
-          </InsertGroup>
-        )
-      }),
-    ]
+    case 'JSX_CONDITIONAL_EXPRESSION': {
+      return dispatch(
+        [
+          enableInsertModeForJSXElement(
+            defaultDivElement(newUID),
+            newUID,
+            component.importsToAdd,
+            component.defaultSize,
+            { wrapInContainer: 'conditional' },
+          ),
+          createInteractionSessionCommand,
+        ],
+        'everyone',
+      )
+    }
+    case 'JSX_FRAGMENT':
+      return dispatch(
+        [
+          enableInsertModeForJSXElement(
+            defaultDivElement(newUID),
+            newUID,
+            component.importsToAdd,
+            component.defaultSize,
+            { wrapInContainer: 'fragment' },
+          ),
+          createInteractionSessionCommand,
+        ],
+        'everyone',
+      )
+    default:
+      assertNever(component.element)
   }
 }
+
+const Input = (props: InputProps) => {
+  return <components.Input {...props} data-testid={InsertMenuFilterTestId} />
+}
+
+const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
+  const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
+  const component: InsertableComponent = props.data.value
+  const { isFocused } = props
+  const isActive: boolean = (props.selectProps as any).isActive
+
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (store) => store.editor.projectContents,
+    'CustomOption project contents',
+  )
+
+  const { canvasScale, canvasOffset } = useEditorState(
+    Substores.canvasOffset,
+    (store) => ({
+      canvasScale: store.editor.canvas.scale,
+      canvasOffset: store.editor.canvas.roundedCanvasOffset,
+    }),
+    'CustomOption canvas offsets',
+  )
+
+  const mode = React.useMemo(() => (props.selectProps as any).mode as Mode, [props.selectProps])
+
+  const currentlyBeingInserted = React.useMemo(() => {
+    if (mode == null || mode.type !== 'insert' || mode.subjects.length !== 1) {
+      return null
+    }
+
+    const insertionSubject: InsertionSubject = mode.subjects[0]
+
+    return componentBeingInserted(
+      insertionSubject.importsToAdd,
+      insertionSubject.element.name,
+      insertionSubject.element.props,
+    )
+  }, [mode])
+
+  const insertItemOnMouseDown = React.useCallback(
+    (event: React.MouseEvent) => {
+      const mousePoint = windowToCanvasCoordinates(
+        canvasScale,
+        canvasOffset,
+        windowPoint(point(event.clientX, event.clientY)),
+      ).canvasPositionRounded
+      enableInsertMode(
+        component,
+        generateUidWithExistingComponents(projectContents),
+        CanvasActions.createInteractionSession(
+          createInteractionViaMouse(
+            mousePoint,
+            Modifier.modifiersForEvent(event),
+            boundingArea(),
+            'zero-drag-permitted',
+          ),
+        ),
+        dispatch,
+      )
+    },
+    [dispatch, canvasOffset, canvasScale, projectContents, component],
+  )
+
+  const insertItemOnMouseUp = React.useCallback(
+    (_event: React.MouseEvent) => {
+      dispatch([CanvasActions.clearInteractionSession(false)], 'everyone')
+    },
+    [dispatch],
+  )
+
+  const isSelected = React.useMemo(() => {
+    const beingInserted = elementBeingInsertedEquals(
+      currentlyBeingInserted,
+      elementBeingInserted(component),
+    )
+    return beingInserted || (isActive && isFocused && currentlyBeingInserted == null)
+  }, [component, currentlyBeingInserted, isFocused, isActive])
+
+  return (
+    <div ref={props.innerRef} {...props.innerProps} style={{}}>
+      <UIRow
+        rowHeight={'smaller'}
+        css={{
+          borderRadius: 2,
+          padding: 4,
+          background: isSelected ? colorTheme.primary.value : undefined,
+          color: isSelected ? colorTheme.white.value : undefined,
+          gap: 4,
+          border: '1px solid transparent',
+          '&:hover': {
+            borderColor: `${colorTheme.primary.value}`,
+          },
+        }}
+        onMouseDown={insertItemOnMouseDown}
+        onMouseUp={insertItemOnMouseUp}
+        data-testid={`insert-item-${props.label}`}
+      >
+        <Icn
+          category='element'
+          type='component'
+          color={isSelected ? 'on-highlight-main' : 'main'}
+          width={18}
+          height={18}
+          style={{ transform: 'scale(0.8)' }}
+        />
+        <span>{props.label}</span>
+      </UIRow>
+    </div>
+  )
+})
+
+type GroupOptionItem = {
+  label: string
+  options: ComponentOptionItem[]
+}
+
+type ComponentOptionItem = {
+  label: string
+  source: string
+  value: InsertableComponent
+}
+
+function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, false> {
+  const colorTheme = useColorTheme()
+  return React.useMemo(
+    () => ({
+      container: (styles): CSSObject => ({
+        height: '100%',
+        paddingLeft: 8,
+        paddingRight: 8,
+      }),
+      control: (styles): CSSObject => ({
+        background: 'transparent',
+        outline: 'none',
+        ':focus-within': {
+          outline: 'none',
+          border: 'none',
+        },
+        padding: 8,
+      }),
+      valueContainer: (styles): CSSObject => ({
+        display: 'flex',
+        position: 'relative',
+        flexGrow: 1,
+        flexShrink: 0,
+        alignItems: 'center',
+        gap: 4,
+      }),
+      indicatorsContainer: (styles): CSSObject => ({
+        display: 'none',
+      }),
+      menu: (styles): CSSObject => {
+        return {
+          marginTop: 8,
+          paddingLeft: 8,
+          paddingRight: 8,
+          height: '100%',
+        }
+      },
+      menuList: (styles): CSSObject => {
+        return {
+          height: '100%',
+          overflow: 'scroll',
+          paddingBottom: 100,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }
+      },
+      input: (styles): CSSObject => {
+        return {
+          ...(InspectorInputEmotionStyle({
+            hasLabel: false,
+            controlStyles: getControlStyles('simple'),
+          }) as CSSObject),
+          paddingLeft: 4,
+          backgroundColor: colorTheme.bg4.value,
+          flexGrow: 1,
+          display: 'flex',
+          alignItems: 'center',
+          cursor: 'text',
+          border: `1px solid ${hasResults ? 'transparent' : colorTheme.error.value}`,
+        }
+      },
+      placeholder: (styles): CSSObject => {
+        return {
+          ...styles,
+          position: 'absolute',
+          marginLeft: 5,
+        }
+      },
+      group: (): CSSObject => {
+        return {
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }
+      },
+      groupHeading: (styles): CSSObject => {
+        return {
+          display: 'flex',
+          alignItems: 'center',
+          height: UtopiaTheme.layout.rowHeight.smaller,
+          fontWeight: 700,
+        }
+      },
+    }),
+    [colorTheme, hasResults],
+  )
+}
+
+const MenuList = React.memo((menuListProps: MenuListComponentProps<ComponentOptionItem, false>) => {
+  const focusedOption: ComponentOptionItem | null = (menuListProps as any).focusedOption
+  const { selectProps } = menuListProps
+
+  React.useEffect(() => {
+    selectProps.onFocusedOptionChange(focusedOption)
+  }, [focusedOption, selectProps])
+
+  return <components.MenuList {...menuListProps} />
+})
+
+const InsertMenuInner = React.memo((props: InsertMenuProps) => {
+  const dispatch = useDispatch()
+  const [filter, setFilter] = React.useState('')
+
+  const insertableGroups = React.useMemo(() => {
+    if (props.currentlyOpenFilename == null) {
+      return []
+    }
+    return moveSceneToTheBeginningAndSetDefaultSize(
+      getNonEmptyComponentGroups(
+        'insert',
+        props.packageStatus,
+        props.propertyControlsInfo,
+        props.projectContents,
+        props.dependencies,
+        props.currentlyOpenFilename,
+      ),
+    )
+  }, [
+    props.packageStatus,
+    props.propertyControlsInfo,
+    props.projectContents,
+    props.dependencies,
+    props.currentlyOpenFilename,
+  ])
+
+  const options = React.useMemo((): GroupOptionItem[] => {
+    return insertableGroups.map((g) => {
+      const groupLabel = getInsertableGroupLabel(g.source)
+      return {
+        label: groupLabel,
+        options: g.insertableComponents.map((c): ComponentOptionItem => {
+          return {
+            label: c.name,
+            source: groupLabel,
+            value: c,
+          }
+        }),
+      }
+    })
+  }, [insertableGroups])
+
+  const filterOption = createFilter({
+    ignoreAccents: true,
+    stringify: (c) => c.data.source + c.data.label,
+    ignoreCase: true,
+    trim: true,
+    matchFrom: 'any',
+  })
+
+  const { hasResults } = React.useMemo(() => {
+    const filteredOptions = options
+      .flatMap((g) => g.options)
+      .filter((o) => filterOption({ data: o } as any, filter))
+    return {
+      hasResults: filteredOptions.length > 0,
+    }
+  }, [options, filter, filterOption])
+
+  function onFilterChange(newValue: string, actionMeta: InputActionMeta) {
+    if (actionMeta.action !== 'input-blur' && actionMeta.action !== 'menu-close') {
+      setFilter(newValue.trim())
+    }
+  }
+
+  const [focusedOption, setFocusedOption] = React.useState<ComponentOptionItem | null>(null)
+
+  const onKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      setIsActive(true)
+      if (e.key === 'Escape') {
+        dispatch([setRightMenuTab(RightMenuTab.Inspector)])
+      }
+      if (e.key === 'Enter' && focusedOption != null) {
+        enableInsertMode(
+          focusedOption.value,
+          generateUidWithExistingComponents(props.projectContents),
+          CanvasActions.createInteractionSession(
+            createInteractionViaMouse(
+              canvasPoint({ x: 0, y: 0 }),
+              emptyModifiers,
+              boundingArea(),
+              'zero-drag-permitted',
+            ),
+          ),
+          dispatch,
+        )
+      }
+    },
+    [dispatch, props.projectContents, focusedOption],
+  )
+
+  const onChange = React.useCallback(
+    (e: ComponentOptionItem) => {
+      onFilterChange(e.label, { action: 'input-change' })
+
+      dispatch(
+        [
+          CanvasActions.createInteractionSession(
+            createHoverInteractionViaMouse(
+              canvasPoint({ x: 0, y: 0 }),
+              emptyModifiers,
+              boundingArea(),
+              'zero-drag-permitted',
+            ),
+          ),
+        ],
+        'everyone',
+      )
+    },
+    [dispatch],
+  )
+
+  function alwaysTrue() {
+    return true
+  }
+
+  const styles = useSelectStyles(hasResults)
+
+  const [isActive, setIsActive] = React.useState(true)
+  function onMouseLeave() {
+    setIsActive(false)
+  }
+  function onMouseEnter() {
+    setIsActive(true)
+  }
+
+  return (
+    <div style={{ height: '100%' }} onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter}>
+      <WindowedSelect
+        autoFocus
+        key={'insert-menu-select'}
+        value={focusedOption}
+        inputValue={filter}
+        onInputChange={onFilterChange}
+        isMulti={false}
+        controlShouldRenderValue={false}
+        hideSelectedOptions={false}
+        menuIsOpen
+        placeholder='Filter…'
+        tabSelectsValue={false}
+        options={options}
+        onKeyDown={onKeyDown}
+        mode={props.mode}
+        components={{
+          Option: Option,
+          Input: Input,
+          MenuList: MenuList,
+        }}
+        isActive={isActive}
+        onFocusedOptionChange={setFocusedOption}
+        onChange={onChange}
+        styles={styles}
+        filterOption={!hasResults ? alwaysTrue : filterOption}
+      />
+    </div>
+  )
+})
 
 function addPositionAbsoluteToProps(props: JSXAttributes) {
   const styleAttributes = getJSXAttribute(props, 'style') ?? jsExpressionValue({}, emptyComments)
@@ -452,52 +705,3 @@ export const InsertGroup: React.FunctionComponent<React.PropsWithChildren<Insert
       </div>
     )
   })
-
-interface InsertItemProps {
-  label: string
-  selected: boolean
-  type: string
-  onMouseDown?: (event: React.MouseEvent<HTMLDivElement>) => void
-  onMouseUp?: (event: React.MouseEvent<HTMLDivElement>) => void
-  category?: string
-  disabled?: boolean
-  warningMessage?: string
-}
-
-export const InsertItem: React.FunctionComponent<React.PropsWithChildren<InsertItemProps>> = (
-  props,
-) => {
-  const colorTheme = useColorTheme()
-  const regularIcon = (
-    <Icn
-      category={props.category ?? 'element'}
-      type={props.type}
-      color={props.selected ? 'primary' : 'main'}
-      width={18}
-      height={18}
-    />
-  )
-  const resultingIcon =
-    props.warningMessage == null ? regularIcon : <WarningIcon tooltipText={props.warningMessage} />
-
-  return (
-    <UIRow
-      rowHeight={'normal'}
-      css={{
-        background: props.selected ? UtopiaStyles.backgrounds.blue : undefined,
-        color: props.selected ? colorTheme.white.value : undefined,
-        opacity: props.disabled ? 0.3 : 1,
-        gap: 8,
-        '&:hover': {
-          border: `1px solid ${colorTheme.primary.value}`,
-        },
-      }}
-      onMouseDown={props.disabled ? Utils.NO_OP : props.onMouseDown}
-      onMouseUp={props.disabled ? Utils.NO_OP : props.onMouseUp}
-      data-testid={`insert-item-${props.label}`}
-    >
-      {resultingIcon}
-      <span>{props.label}</span>
-    </UIRow>
-  )
-}

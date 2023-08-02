@@ -1,38 +1,42 @@
 import { includeToastPatch } from '../../../components/editor/actions/toast-helpers'
+import type { InsertionPath } from '../../editor/store/insertion-path'
 import {
   getElementPathFromInsertionPath,
-  InsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../editor/store/insertion-path'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
+import type { IndexPosition } from '../../../utils/utils'
+import { insertJSXElementChildren } from '../../../core/model/element-template-utils'
 
 export interface ReparentElement extends BaseCommand {
   type: 'REPARENT_ELEMENT'
   target: ElementPath
   newParent: InsertionPath
+  indexPosition: IndexPosition | null
 }
 
 export function reparentElement(
   whenToRun: WhenToRun,
   target: ElementPath,
   newParent: InsertionPath,
+  indexPosition?: IndexPosition | null,
 ): ReparentElement {
   return {
     type: 'REPARENT_ELEMENT',
     whenToRun: whenToRun,
     target: target,
     newParent: newParent,
+    indexPosition: indexPosition ?? null,
   }
 }
 
@@ -58,13 +62,11 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const components = getUtopiaJSXComponentsFromSuccess(successTarget)
             const withElementRemoved = removeElementAtPath(command.target, components)
 
-            const insertionResult = insertElementAtPath(
-              editorState.projectContents,
-              underlyingFilePathTarget,
+            const insertionResult = insertJSXElementChildren(
               command.newParent,
-              underlyingElementTarget,
+              [underlyingElementTarget],
               withElementRemoved,
-              null,
+              command.indexPosition,
             )
             const editorStatePatchOldParentFile = getPatchForComponentChange(
               successTarget.topLevelElements,
@@ -86,13 +88,11 @@ export const runReparentElement: CommandFunction<ReparentElement> = (
             const withElementRemoved = removeElementAtPath(command.target, componentsOldParent)
             const componentsNewParent = getUtopiaJSXComponentsFromSuccess(successNewParent)
 
-            const insertionResult = insertElementAtPath(
-              editorState.projectContents,
-              underlyingFilePathNewParent,
+            const insertionResult = insertJSXElementChildren(
               command.newParent,
-              underlyingElementTarget,
+              [underlyingElementTarget],
               componentsNewParent,
-              null,
+              command.indexPosition,
             )
 
             const editorStatePatchOldParentFile = getPatchForComponentChange(

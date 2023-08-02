@@ -1,8 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
-import { CanvasRectangle, isFiniteRectangle } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { isFiniteRectangle } from '../../../../core/shared/math-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function areYogaChildren(
   componentMetadata: ElementInstanceMetadataMap,
@@ -56,6 +58,7 @@ export function isYogaReverse(flexDirection: string): boolean {
 
 export function getNewIndex(
   componentMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   target: ElementPath,
   parent: ElementPath | null,
   flexDirection: string,
@@ -66,7 +69,7 @@ export function getNewIndex(
   // if the target is not yet a children of the parent, we set currentIndex to Infinity so the logic below acts as if it would be the last sibling
   let alreadyAChild: boolean = true
   let currentIndex: number = Infinity
-  const viewZIndex = MetadataUtils.getIndexInParent(componentMetadata, target)
+  const viewZIndex = MetadataUtils.getIndexInParent(componentMetadata, elementPathTree, target)
   if (viewZIndex >= 0) {
     currentIndex = viewZIndex
   } else {
@@ -75,7 +78,9 @@ export function getNewIndex(
 
   // Note: includes the element we're moving.
   const siblings =
-    parent == null ? [] : MetadataUtils.getImmediateChildrenUnordered(componentMetadata, parent)
+    parent == null
+      ? []
+      : MetadataUtils.getImmediateChildrenOrdered(componentMetadata, elementPathTree, parent)
   const siblingTPs = siblings.map((child) => child.elementPath)
 
   const yogaDirection = getReorderDirection(flexDirection)

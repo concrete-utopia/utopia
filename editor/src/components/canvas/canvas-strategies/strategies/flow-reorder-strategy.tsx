@@ -5,20 +5,22 @@ import {
   DragOutlineControl,
   dragTargetsElementPaths,
 } from '../../controls/select-mode/drag-outline-control'
-import {
-  controlWithProps,
+import type {
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
   MoveStrategy,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+} from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
 import {
   isValidFlowReorderTarget,
   singleAxisAutoLayoutSiblingDirections,
 } from './flow-reorder-helpers'
-import { retargetStrategyToTopMostGroupLikeElement } from './group-like-helpers'
+import { retargetStrategyToTopMostFragmentLikeElement } from './fragment-like-helpers'
 import { applyReorderCommon } from './reorder-utils'
 
 export function flowReorderStrategy(
@@ -27,7 +29,7 @@ export function flowReorderStrategy(
   customStrategyState: CustomStrategyState,
 ): MoveStrategy | null {
   const originalTargets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const retargetedTargets = retargetStrategyToTopMostGroupLikeElement(canvasState)
+  const retargetedTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState)
 
   if (retargetedTargets.length !== 1) {
     return null
@@ -41,6 +43,7 @@ export function flowReorderStrategy(
   const singleAxisAutolayoutDirection = singleAxisAutoLayoutSiblingDirections(
     target,
     canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
   )
 
   if (

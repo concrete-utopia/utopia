@@ -1,4 +1,5 @@
 import { disableStoredStateforTests } from '../editor/stored-state'
+import fastDeepEquals from 'fast-deep-equal'
 try {
   jest.mock('../editor/stored-state', () => ({
     loadStoredState: () => Promise.resolve(null),
@@ -17,9 +18,12 @@ import React from 'react'
 ///// IMPORTANT NOTE - THIS MUST BE BELOW THE REACT IMPORT AND ABOVE ALL OTHER IMPORTS
 const realCreateElement = React.createElement
 let renderCount = 0
+const renderInfo: { current: Array<string> } = { current: [] }
 const monkeyCreateElement = (...params: any[]) => {
   renderCount++
-  return (realCreateElement as any)(...params)
+  const el = (realCreateElement as any)(...params)
+  renderInfo.current.push(getNamedPath(el))
+  return el
 }
 ;(React as any).createElement = monkeyCreateElement
 
@@ -29,19 +33,21 @@ try {
   // probably not Jest env
 }
 
-import { act, render, RenderResult } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
+import { act, render } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
-import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
-import { subscribeWithSelector } from 'zustand/middleware'
-import {
+import type {
   ElementPath,
+  ParsedTextFile,
+  ParseSuccess,
+} from '../../core/shared/project-file-types'
+import {
+  codeFile,
   foldParsedTextFile,
   isParseFailure,
   isParseSuccess,
   isTextFile,
   isUnparsed,
-  ParsedTextFile,
-  ParseSuccess,
   RevisionsState,
   textFile,
   textFileContents,
@@ -55,24 +61,32 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../core/workers/workers'
 import { EditorRoot } from '../../templates/editor'
 import Utils from '../../utils/utils'
-import {
+import { getNamedPath } from '../../utils/react-helpers'
+import type {
   DispatchPriority,
   EditorAction,
   EditorDispatch,
   LoginState,
-  notLoggedIn,
 } from '../editor/action-types'
+import { notLoggedIn } from '../editor/action-types'
 import { load } from '../editor/actions/actions'
 import * as History from '../editor/history'
-import { editorDispatch, resetDispatchGlobals } from '../editor/store/dispatch'
+import type { DispatchResult } from '../editor/store/dispatch'
 import {
-  createEditorState,
-  deriveState,
+  editorDispatchActionRunner,
+  editorDispatchClosingOut,
+  resetDispatchGlobals,
+} from '../editor/store/dispatch'
+import type {
   EditorState,
   EditorStoreFull,
   EditorStorePatched,
-  patchedStoreFromFullStore,
   PersistentModel,
+} from '../editor/store/editor-state'
+import {
+  createEditorState,
+  deriveState,
+  patchedStoreFromFullStore,
   persistentModelForProjectContents,
   StoryboardFilePath,
 } from '../editor/store/editor-state'
@@ -82,10 +96,17 @@ import { CanvasContextMenuPortalTargetID, NO_OP } from '../../core/shared/utils'
 import { emptyUiJsxCanvasContextData } from './ui-jsx-canvas'
 import { testParseCode } from '../../core/workers/parser-printer/parser-printer.test-utils'
 import { printCode, printCodeOptions } from '../../core/workers/parser-printer/parser-printer'
-import { contentsToTree, getContentsTreeFileFromString, ProjectContentTreeRoot } from '../assets'
+import type { PathAndFileEntry, ProjectContentTreeRoot } from '../assets'
+import {
+  contentsToTree,
+  contentsTreeOptic,
+  getContentsTreeFileFromString,
+  treeToContents,
+} from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 import {
+  mergeWithPrevUndo,
   saveDOMReport,
   setPanelVisibility,
   switchEditorMode,
@@ -93,15 +114,15 @@ import {
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
 import { useUpdateOnRuntimeErrors } from '../../core/shared/runtime-report-logs'
-import { clearListOfEvaluatedFiles, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import type { RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
+import { clearListOfEvaluatedFiles } from '../../core/shared/code-exec-utils'
 import { createTestProjectWithCode } from '../../sample-projects/sample-project-utils.test-utils'
 import { DummyPersistenceMachine } from '../editor/persistence/persistence.test-utils'
-import {
-  BuiltInDependencies,
-  createBuiltInDependenciesList,
-} from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { clearAllRegisteredControls } from './canvas-globals'
 import { createEmptyStrategyState } from './canvas-strategies/interaction-state'
+import type { DomWalkerMutableStateData } from './dom-walker'
 import {
   createDomWalkerMutableState,
   invalidateDomWalkerIfNecessary,
@@ -110,13 +131,16 @@ import {
 import { flushSync } from 'react-dom'
 import { shouldInspectorUpdate } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
-import { CanvasStrategy } from './canvas-strategies/canvas-strategy-types'
-import {
-  MetaCanvasStrategy,
-  RegisteredCanvasStrategies,
-} from './canvas-strategies/canvas-strategies'
-import { createStoresAndState, UtopiaStoreAPI } from '../editor/store/store-hook'
-import { isTransientAction } from '../editor/actions/action-utils'
+import type { MetaCanvasStrategy } from './canvas-strategies/canvas-strategies'
+import { RegisteredCanvasStrategies } from './canvas-strategies/canvas-strategies'
+import type { UtopiaStoreAPI } from '../editor/store/store-hook'
+import { createStoresAndState } from '../editor/store/store-hook'
+import { checkAnyWorkerUpdates, simpleStringifyActions } from '../editor/actions/action-utils'
+import { modify } from '../../core/shared/optics/optic-utilities'
+import { fromField } from '../../core/shared/optics/optic-creators'
+import type { DuplicateUIDsResult } from '../../core/model/get-unique-ids'
+import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { carryDispatchResultFields } from './editor-dispatch-flow'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -150,6 +174,11 @@ const FailJestOnCanvasError = () => {
   return null
 }
 
+type ActionsCausingDuplicateUIDs = Array<{
+  actions: ReadonlyArray<EditorAction>
+  duplicateUIDs: DuplicateUIDsResult
+}>
+
 export interface EditorRenderResult {
   dispatch: (
     actions: ReadonlyArray<EditorAction>,
@@ -161,15 +190,42 @@ export interface EditorRenderResult {
   renderedDOM: RenderResult
   getNumberOfCommits: () => number
   getNumberOfRenders: () => number
+  clearRenderInfo: () => void
+  getRenderInfo: () => Array<string>
   clearRecordedActions: () => void
   getRecordedActions: () => ReadonlyArray<EditorAction>
+  getDomWalkerState: () => DomWalkerMutableStateData
+  getActionsCausingDuplicateUIDs: () => ActionsCausingDuplicateUIDs
+}
+
+function formatAllCodeInModel(model: PersistentModel): PersistentModel {
+  // Call formatTestProjectCode on every code file to ensure that simply re-printing and
+  // re-parsing the file will have no effect
+  const combinedOptic = fromField<PersistentModel, 'projectContents'>('projectContents').compose(
+    contentsTreeOptic,
+  )
+  return modify(
+    combinedOptic,
+    (pathAndFile: PathAndFileEntry) => {
+      const { fullPath, file } = pathAndFile
+      if (isTextFile(file) && (fullPath.endsWith('.js') || fullPath.endsWith('.jsx'))) {
+        return {
+          fullPath: pathAndFile.fullPath,
+          file: codeFile(formatTestProjectCode(file.fileContents.code), null),
+        }
+      } else {
+        return pathAndFile
+      }
+    },
+    model,
+  )
 }
 
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
-) {
+): Promise<EditorRenderResult> {
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode),
     awaitFirstDomReport,
@@ -182,7 +238,7 @@ export async function renderTestEditorWithProjectContent(
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
   loginState: LoginState = notLoggedIn,
-) {
+): Promise<EditorRenderResult> {
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
@@ -193,14 +249,16 @@ export async function renderTestEditorWithProjectContent(
 }
 
 export async function renderTestEditorWithModel(
-  model: PersistentModel,
+  rawModel: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   mockBuiltInDependencies?: BuiltInDependencies,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
   loginState: LoginState = notLoggedIn,
 ): Promise<EditorRenderResult> {
+  const model = formatAllCodeInModel(rawModel)
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []
+  let actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs = []
 
   let emptyEditorState = createEditorState(NO_OP)
   const derivedState = deriveState(emptyEditorState, null)
@@ -212,7 +270,7 @@ export async function renderTestEditorWithModel(
     return Promise.all(editorDispatchPromises).then(NO_OP)
   }
 
-  let workingEditorState: EditorStoreFull
+  let workingEditorState: DispatchResult
 
   const spyCollector = emptyUiJsxCanvasContextData()
 
@@ -228,13 +286,52 @@ export async function renderTestEditorWithModel(
     innerStrategiesToUse: Array<MetaCanvasStrategy> = strategiesToUse,
   ) => {
     recordedActions.push(...actions)
-    const result = editorDispatch(
+    const originalEditorState = workingEditorState
+    const result = editorDispatchActionRunner(
       asyncTestDispatch,
       actions,
       workingEditorState,
       spyCollector,
       innerStrategiesToUse,
     )
+
+    const duplicateUIDs = getAllUniqueUids(result.patchedEditor.projectContents).duplicateIDs
+    if (Object.keys(duplicateUIDs).length > 0) {
+      actionsCausingDuplicateUIDs.push({
+        actions: actions,
+        duplicateUIDs: duplicateUIDs,
+      })
+    }
+
+    const anyWorkerUpdates = checkAnyWorkerUpdates(actions)
+    const anyUndoOrRedoOrPostAction = actions.some(
+      (action) =>
+        action.action === 'UNDO' ||
+        action.action === 'REDO' ||
+        action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
+    )
+    const shouldCheckFileTimestamps = !(anyWorkerUpdates || anyUndoOrRedoOrPostAction)
+
+    if (shouldCheckFileTimestamps) {
+      // We compare both the patched and unpatched versions of the new project contents
+      // against only the unpatched version of the old project contents. This is because
+      // we only care about the total change here, as e.g. a continuous drag might introduce
+      // and then remove a property change, resulting in the patch collapsing and the file
+      // reverting to the current unpatched state.
+      expectUpdatedFilesUpdateTimestamp(
+        workingEditorState.unpatchedEditor.projectContents,
+        result.unpatchedEditor.projectContents,
+        actions,
+        'unpatched',
+      )
+      expectUpdatedFilesUpdateTimestamp(
+        workingEditorState.unpatchedEditor.projectContents,
+        result.patchedEditor.projectContents,
+        actions,
+        'patched',
+      )
+    }
+
     editorDispatchPromises.push(result.entireUpdateFinished)
     invalidateDomWalkerIfNecessary(
       domWalkerMutableState,
@@ -257,33 +354,112 @@ export async function renderTestEditorWithModel(
 
     // run dom walker
 
-    const domWalkerResult = runDomWalker({
-      domWalkerMutableState: domWalkerMutableState,
-      selectedViews: workingEditorState.patchedEditor.selectedViews,
-      elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
-      scale: workingEditorState.patchedEditor.canvas.scale,
-      additionalElementsToUpdate:
-        workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
-      rootMetadataInStateRef: {
-        current: workingEditorState.patchedEditor.domMetadata,
-      },
-    })
+    {
+      const domWalkerResult = runDomWalker({
+        domWalkerMutableState: domWalkerMutableState,
+        selectedViews: workingEditorState.patchedEditor.selectedViews,
+        elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+        scale: workingEditorState.patchedEditor.canvas.scale,
+        additionalElementsToUpdate:
+          workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+        rootMetadataInStateRef: {
+          current: workingEditorState.patchedEditor.domMetadata,
+        },
+      })
 
-    if (domWalkerResult != null) {
-      const saveDomReportAction = saveDOMReport(
-        domWalkerResult.metadata,
-        domWalkerResult.cachedPaths,
-        domWalkerResult.invalidatedPaths,
-      )
-      recordedActions.push(saveDomReportAction)
-      const editorWithNewMetadata = editorDispatch(
-        asyncTestDispatch,
-        [saveDomReportAction],
-        workingEditorState,
-        spyCollector,
-      )
-      workingEditorState = editorWithNewMetadata
+      if (domWalkerResult != null) {
+        const saveDomReportAction = saveDOMReport(
+          domWalkerResult.metadata,
+          domWalkerResult.cachedPaths,
+          domWalkerResult.invalidatedPaths,
+        )
+        recordedActions.push(saveDomReportAction)
+        const editorWithNewMetadata = editorDispatchActionRunner(
+          asyncTestDispatch,
+          [saveDomReportAction],
+          workingEditorState,
+          spyCollector,
+        )
+        workingEditorState = carryDispatchResultFields(workingEditorState, editorWithNewMetadata)
+      }
     }
+
+    // true-up groups if needed
+    if (workingEditorState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+      ;(() => {
+        // updated editor with trued up groups
+        const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
+        const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
+          asyncTestDispatch,
+          [{ action: 'TRUE_UP_GROUPS' }],
+          workingEditorState,
+          spyCollector,
+        )
+        workingEditorState = carryDispatchResultFields(
+          workingEditorState,
+          dispatchResultWithTruedUpGroups,
+        )
+
+        editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
+
+        if (
+          projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
+        ) {
+          // no group-related re-render / re-measure is needed, bail out
+          return
+        }
+
+        // re-render the canvas
+        {
+          // TODO run fixElementsToRerender and set ElementsToRerenderGLOBAL
+
+          flushSync(() => {
+            canvasStoreHook.setState(patchedStoreFromFullStore(workingEditorState, 'canvas-store'))
+          })
+        }
+
+        // re-run the dom-walker
+        {
+          const domWalkerResult = runDomWalker({
+            domWalkerMutableState: domWalkerMutableState,
+            selectedViews: workingEditorState.patchedEditor.selectedViews,
+            elementsToFocusOn: workingEditorState.patchedEditor.canvas.elementsToRerender,
+            scale: workingEditorState.patchedEditor.canvas.scale,
+            additionalElementsToUpdate:
+              workingEditorState.patchedEditor.canvas.domWalkerAdditionalElementsToUpdate,
+            rootMetadataInStateRef: {
+              current: workingEditorState.patchedEditor.domMetadata,
+            },
+          })
+
+          if (domWalkerResult != null) {
+            const saveDomReportAction = saveDOMReport(
+              domWalkerResult.metadata,
+              domWalkerResult.cachedPaths,
+              domWalkerResult.invalidatedPaths,
+            )
+            recordedActions.push(saveDomReportAction)
+            const editorWithNewMetadata = editorDispatchActionRunner(
+              asyncTestDispatch,
+              [saveDomReportAction],
+              workingEditorState,
+              spyCollector,
+            )
+            workingEditorState = carryDispatchResultFields(
+              workingEditorState,
+              editorWithNewMetadata,
+            )
+          }
+        }
+      })()
+    }
+
+    workingEditorState = editorDispatchClosingOut(
+      asyncTestDispatch,
+      actions,
+      originalEditorState,
+      workingEditorState,
+    )
 
     // update state with new metadata
 
@@ -313,7 +489,7 @@ export async function renderTestEditorWithModel(
       ? mockBuiltInDependencies
       : createBuiltInDependenciesList(workers)
   const initialEditorStore: EditorStoreFull = {
-    strategyState: createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState({}, {}, {}),
     unpatchedEditor: emptyEditorState,
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
@@ -331,6 +507,7 @@ export async function renderTestEditorWithModel(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
+    postActionInteractionSession: null,
   }
 
   const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(
@@ -348,7 +525,11 @@ export async function renderTestEditorWithModel(
   )
 
   // initializing the local editor state
-  workingEditorState = initialEditorStore
+  workingEditorState = {
+    ...initialEditorStore,
+    nothingChanged: true,
+    entireUpdateFinished: Promise.resolve(true),
+  }
 
   let numberOfCommits = 0
 
@@ -426,10 +607,56 @@ label {
     renderedDOM: result,
     getNumberOfCommits: () => numberOfCommits,
     getNumberOfRenders: () => renderCount - renderCountBaseline,
+    clearRenderInfo: () => (renderInfo.current = []),
+    getRenderInfo: () => renderInfo.current,
     clearRecordedActions: () => {
       recordedActions = []
     },
     getRecordedActions: () => recordedActions,
+    getDomWalkerState: () => domWalkerMutableState,
+    getActionsCausingDuplicateUIDs: () => actionsCausingDuplicateUIDs,
+  }
+}
+
+function expectUpdatedFilesUpdateTimestamp(
+  before: ProjectContentTreeRoot,
+  after: ProjectContentTreeRoot,
+  actions: ReadonlyArray<EditorAction>,
+  unpatchedOrPatched: 'unpatched' | 'patched',
+) {
+  if (before === after) {
+    return
+  } else {
+    const beforeAsMap = treeToContents(before)
+    const afterAsMap = treeToContents(after)
+
+    Object.entries(afterAsMap).forEach(([fileName, newProjectFile]) => {
+      const oldProjectFile = beforeAsMap[fileName]
+
+      // Check every file in the new project contents against the corresponding version in the old project contents.
+      // If a file has been updated in any way (except for updates from the worker) we need to check that the
+      // versionNumber has been updated, otherwise an update from the worker could overwrite it.
+
+      if (
+        oldProjectFile != null &&
+        oldProjectFile !== newProjectFile &&
+        isTextFile(newProjectFile) &&
+        isTextFile(oldProjectFile) &&
+        newProjectFile.versionNumber <= oldProjectFile.versionNumber
+      ) {
+        if (
+          // We use fastDeepEquals here because it is far too easy to blow referential equality
+          !fastDeepEquals(newProjectFile.fileContents, oldProjectFile.fileContents) ||
+          !fastDeepEquals(newProjectFile.lastSavedContents, oldProjectFile.lastSavedContents)
+        ) {
+          throw new Error(
+            `Invalid file update in ${unpatchedOrPatched} editor state caused by ${simpleStringifyActions(
+              actions,
+            )}`,
+          )
+        }
+      }
+    })
   }
 }
 
@@ -445,8 +672,11 @@ export function getPrintedUiJsCode(
   }
 }
 
-export function getPrintedUiJsCodeWithoutUIDs(store: EditorStorePatched): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, StoryboardFilePath)
+export function getPrintedUiJsCodeWithoutUIDs(
+  store: EditorStorePatched,
+  filePath: string = StoryboardFilePath,
+): string {
+  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       StoryboardFilePath,
@@ -475,7 +705,7 @@ export function formatTestProjectCode(code: string): string {
 export function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
 ${componentInnards}
@@ -513,7 +743,7 @@ export function makeTestProjectCodeWithComponentInnardsWithoutUIDs(
 ): string {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
 ${componentInnards}
@@ -549,7 +779,7 @@ export function makeTestProjectCodeWithSnippetStyledComponents(snippet: string):
   /** @jsx jsx */
   import * as React from 'react'
   import { css, jsx } from '@emotion/react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (

@@ -1,7 +1,7 @@
 import styled from '@emotion/styled'
 import { commonSenseUtopiaLayoutShorthands } from './common-layout-shorthands'
 import { flexRowStyle } from '../../styles/layout-styles'
-import React from 'react'
+import type React from 'react'
 import { UtopiaTheme } from '../../styles/theme'
 
 export interface UIRowProp extends React.InputHTMLAttributes<HTMLDivElement> {

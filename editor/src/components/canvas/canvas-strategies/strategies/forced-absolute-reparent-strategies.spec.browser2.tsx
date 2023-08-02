@@ -2,8 +2,10 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
-import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import { wait } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -11,17 +13,18 @@ import {
   mouseDragFromPointWithDelta,
   pressKey,
 } from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { MetaCanvasStrategy, RegisteredCanvasStrategies } from '../canvas-strategies'
-import { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { MetaCanvasStrategy } from '../canvas-strategies'
+import { RegisteredCanvasStrategies } from '../canvas-strategies'
+import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 
 async function dragElement(
@@ -130,7 +133,7 @@ const defaultTestCode = `
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
 ${componentInnards}

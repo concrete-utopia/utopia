@@ -1,16 +1,14 @@
 import { act } from '@testing-library/react'
-import {
-  contentsToTree,
-  getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
-} from '../../../assets'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import { contentsToTree, getContentsTreeFileFromString } from '../../../assets'
 import * as EP from '../../../../core/shared/element-path'
 import { codeFile, isTextFile } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { selectComponents, setFocusedElement } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithProjectContent } from '../../ui-jsx.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { formatTestProjectCode, renderTestEditorWithProjectContent } from '../../ui-jsx.test-utils'
 
 const defaultAbsoluteChildCode = `
 import * as React from 'react'
@@ -265,9 +263,11 @@ describe('Absolute Reparent Strategy (Multi-File)', () => {
     })
 
     await renderResult.getDispatchFollowUpActionsFinished()
-    expect(getFileCode(renderResult, '/src/absolutechild.js')).toEqual(defaultAbsoluteChildCode)
+    expect(getFileCode(renderResult, '/src/absolutechild.js')).toEqual(
+      formatTestProjectCode(defaultAbsoluteChildCode),
+    )
     expect(getFileCode(renderResult, '/src/absoluteparent.js')).toEqual(
-      `import * as React from 'react'
+      formatTestProjectCode(`import * as React from 'react'
 import { AbsoluteChild } from './absolutechild'
 export const AbsoluteParent = () => {
   return (
@@ -285,10 +285,10 @@ export const AbsoluteParent = () => {
     />
   )
 }
-`,
+`),
     )
     expect(getFileCode(renderResult, '/src/app.js')).toEqual(
-      `import * as React from 'react'
+      formatTestProjectCode(`import * as React from 'react'
 import { AbsoluteParent } from './absoluteparent'
 import { FlexParent } from './flexparent'
 import { AbsoluteChild } from '/src/absolutechild.js'
@@ -314,9 +314,13 @@ export var App = () => {
     </div>
   )
 }
-`,
+`),
     )
-    expect(getFileCode(renderResult, '/src/flexchild.js')).toEqual(defaultFlexChildCode)
-    expect(getFileCode(renderResult, '/src/flexparent.js')).toEqual(defaultFlexParentCode)
+    expect(getFileCode(renderResult, '/src/flexchild.js')).toEqual(
+      formatTestProjectCode(defaultFlexChildCode),
+    )
+    expect(getFileCode(renderResult, '/src/flexparent.js')).toEqual(
+      formatTestProjectCode(defaultFlexParentCode),
+    )
   })
 })

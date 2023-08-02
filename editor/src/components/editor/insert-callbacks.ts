@@ -1,6 +1,6 @@
 import React from 'react'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { JSXElement } from '../../core/shared/element-template'
+import type { JSXElement } from '../../core/shared/element-template'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
 import { Modifier } from '../../utils/modifiers'
 import CanvasActions from '../canvas/canvas-actions'
@@ -15,7 +15,7 @@ import {
   defaultImgElement,
   defaultSpanElement,
 } from './defaults'
-import { InsertionSubject } from './editor-modes'
+import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 

@@ -1,13 +1,10 @@
 import * as EP from '../../core/shared/element-path'
-import {
-  expectSingleUndo2Saves,
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../utils/utils.test-utils'
+import { expectSingleUndo2Saves, selectComponentsForTest } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { FlexDirection } from './common/css-utils'
-import { FlexAlignment } from './inspector-common'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import type { FlexDirection } from './common/css-utils'
+import type { FlexAlignment } from './inspector-common'
 import { ThreeBarControlTestId } from './three-bar-control'
 
 const StoryboardId = 'sb'
@@ -15,8 +12,6 @@ const SceneId = 'sc'
 const ParentId = 'p'
 
 describe('three bar control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   describe('set align-items in flex-direcion: column', () => {
     it('align-items: start', async () => {
       const editor = await renderTestEditorWithCode(project('row'), 'await-first-dom-report')

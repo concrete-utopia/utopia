@@ -1,26 +1,24 @@
 import { resolveModulePathIncludingBuiltIns } from '../../core/es-modules/package-manager/module-resolution'
 import { foldEither } from '../../core/shared/either'
 import { emptyImports, mergeImports } from '../../core/workers/common/project-file-utils'
+import type { ImportInfo, TopLevelElement } from '../../core/shared/element-template'
 import {
   importedOrigin,
-  ImportInfo,
   isIntrinsicElement,
   isJSXElement,
+  isJSXFragment,
   sameFileOrigin,
-  TopLevelElement,
   walkElement,
 } from '../../core/shared/element-template'
+import type { ElementPath, Imports, NodeModules } from '../../core/shared/project-file-types'
 import {
-  ElementPath,
   importAlias,
   importDetails,
-  Imports,
   isParseSuccess,
   isTextFile,
-  NodeModules,
 } from '../../core/shared/project-file-types'
-import { ProjectContentTreeRoot } from '../assets'
-import { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { ProjectContentTreeRoot } from '../assets'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
 
@@ -97,6 +95,14 @@ export function getRequiredImportsForElement(
               }
             }
           }
+        } else if (isJSXFragment(elem) && elem.longForm) {
+          importsToAdd = mergeImports(targetFilePath, importsToAdd, {
+            react: {
+              importedAs: 'React',
+              importedFromWithin: [],
+              importedWithName: null,
+            },
+          })
         }
       })
 

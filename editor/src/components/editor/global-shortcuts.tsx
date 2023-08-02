@@ -1,20 +1,16 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import {
-  importAlias,
-  importDetails,
-  ElementPath,
-  Imports,
-} from '../../core/shared/project-file-types'
+import type { ElementPath, Imports } from '../../core/shared/project-file-types'
+import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
+import type { KeyCharacter, KeysPressed } from '../../utils/keyboard'
 import Keyboard, {
-  KeyCharacter,
-  KeysPressed,
   modifiersForEvent,
   StoredKeyCharacters,
   strictCheckModifiers,
 } from '../../utils/keyboard'
-import { Modifier, Modifiers } from '../../utils/modifiers'
+import type { Modifiers } from '../../utils/modifiers'
+import { Modifier } from '../../utils/modifiers'
 import Utils from '../../utils/utils'
 import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
@@ -27,7 +23,7 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from '../inspector/common/css-utils'
-import { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
+import type { EditorAction, EditorDispatch, SwitchEditorMode } from './action-types'
 import * as EditorActions from './actions/action-creators'
 import * as MetaActions from './actions/meta-actions'
 import {
@@ -40,6 +36,7 @@ import {
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
+import type { ShortcutNamesByKey } from './shortcut-definitions'
 import {
   CANCEL_EVERYTHING_SHORTCUT,
   COPY_SELECTION_SHORTCUT,
@@ -84,7 +81,6 @@ import {
   ZOOM_CANVAS_OUT_SHORTCUT,
   ZOOM_UI_IN_SHORTCUT,
   ZOOM_UI_OUT_SHORTCUT,
-  ShortcutNamesByKey,
   CONVERT_ELEMENT_SHORTCUT,
   ADD_ELEMENT_SHORTCUT,
   GROUP_ELEMENT_PICKER_SHORTCUT,
@@ -104,22 +100,25 @@ import {
   REMOVE_ABSOLUTE_POSITIONING,
   RESIZE_TO_FIT,
   JUMP_TO_PARENT_SHORTCUT_BACKSLASH,
+  OPEN_INSERT_MENU,
+  PASTE_TO_REPLACE,
 } from './shortcut-definitions'
-import { DerivedState, EditorState, getOpenFile, RightMenuTab } from './store/editor-state'
+import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
+import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
-import { getDragStateStart, pickColorWithEyeDropper } from '../canvas/canvas-utils'
+import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
+import type { ElementInstanceMetadataMap, JSXElement } from '../../core/shared/element-template'
 import {
-  ElementInstanceMetadataMap,
   emptyComments,
   jsxAttributesFromMap,
   jsExpressionValue,
-  JSXElement,
   jsxElement,
   jsxFragment,
+  isJSXElementLike,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -142,12 +141,9 @@ import {
   setElementTopLeft,
   nukeSizingPropsForAxisCommand,
 } from '../inspector/inspector-common'
-import { CSSProperties } from 'react'
+import type { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
-import {
-  getElementContentAffectingType,
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-} from '../canvas/canvas-strategies/strategies/group-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -158,10 +154,16 @@ import {
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../core/shared/math-utils'
-import { parentPath } from '../../core/shared/element-path'
-import { mapDropNulls } from '../../core/shared/array-utils'
+import * as EP from '../../core/shared/element-path'
+import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { optionalMap } from '../../core/shared/optional-utils'
-import { groupConversionCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  createWrapInGroupActions,
+  groupConversionCommands,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { isRight } from '../../core/shared/either'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -210,8 +212,10 @@ export function editorIsTarget(event: KeyboardEvent, editor: EditorState): boole
 function jumpToParentActions(
   selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  lockedElements: LockedElements,
 ): Array<EditorAction> {
-  const jumpResult = Canvas.jumpToParent(selectedViews, metadata)
+  const jumpResult = Canvas.jumpToParent(selectedViews, metadata, pathTrees, lockedElements)
   switch (jumpResult) {
     case null:
       return []
@@ -219,20 +223,6 @@ function jumpToParentActions(
       return [EditorActions.clearSelection()]
     default:
       return MetaActions.selectComponents([jumpResult], false)
-  }
-}
-
-function getTextEditorTarget(editor: EditorState, derived: DerivedState): ElementPath | null {
-  if (editor.canvas.dragState != null || editor.selectedViews.length !== 1) {
-    return null
-  } else {
-    const target = editor.selectedViews[0]
-    const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-    if (element != null && MetadataUtils.getTextContentOfElement(element) != null) {
-      return target
-    } else {
-      return null
-    }
   }
 }
 
@@ -383,6 +373,7 @@ export function handleKeyDown(
   event: KeyboardEvent,
   editor: EditorState,
   metadataRef: { current: ElementInstanceMetadataMap },
+  navigatorTargetsRef: { current: Array<NavigatorEntry> },
   namesByKey: ShortcutNamesByKey,
   dispatch: EditorDispatch,
 ): Array<EditorAction> {
@@ -405,7 +396,12 @@ export function handleKeyDown(
 
   function cycleSiblings(forwards: boolean): Array<EditorAction> {
     if (isSelectMode(editor.mode)) {
-      const tabbedTo = Canvas.jumpToSibling(editor.selectedViews, editor.jsxMetadata, forwards)
+      const tabbedTo = Canvas.jumpToSibling(
+        editor.selectedViews,
+        editor.jsxMetadata,
+        editor.elementPathTree,
+        forwards,
+      )
       if (tabbedTo != null) {
         return MetaActions.selectComponents([tabbedTo], false)
       }
@@ -439,7 +435,7 @@ export function handleKeyDown(
       [FIRST_CHILD_OR_EDIT_TEXT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
           const firstTextEditableView = editor.selectedViews.find((v) =>
-            MetadataUtils.targetTextEditable(editor.jsxMetadata, v),
+            MetadataUtils.targetTextEditable(editor.jsxMetadata, editor.elementPathTree, v),
           )
           if (firstTextEditableView != null) {
             return [
@@ -454,7 +450,11 @@ export function handleKeyDown(
             ]
           }
 
-          const childToSelect = Canvas.getFirstChild(editor.selectedViews, editor.jsxMetadata)
+          const childToSelect = Canvas.getFirstChild(
+            editor.selectedViews,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+          )
           if (childToSelect != null) {
             return MetaActions.selectComponents([childToSelect], false)
           }
@@ -463,14 +463,24 @@ export function handleKeyDown(
       },
       [JUMP_TO_PARENT_SHORTCUT]: () => {
         if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+          return jumpToParentActions(
+            editor.selectedViews,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.lockedElements,
+          )
         } else {
           return []
         }
       },
       [JUMP_TO_PARENT_SHORTCUT_BACKSLASH]: () => {
         if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+          return jumpToParentActions(
+            editor.selectedViews,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.lockedElements,
+          )
         } else {
           return []
         }
@@ -478,15 +488,22 @@ export function handleKeyDown(
       [CANCEL_EVERYTHING_SHORTCUT]: () => {
         if (isInsertMode(editor.mode) || editor.rightMenu.selectedTab === RightMenuTab.Insert) {
           return MetaActions.cancelInsertModeActions('do-not-apply-changes')
-        } else if (
-          editor.canvas.dragState != null &&
-          getDragStateStart(editor.canvas.dragState, editor.canvas.resizeOptions) != null
-        ) {
-          return [CanvasActions.clearDragState(false)]
         } else if (editor.canvas.interactionSession != null) {
           return [CanvasActions.clearInteractionSession(false)]
         } else if (isSelectMode(editor.mode)) {
-          return jumpToParentActions(editor.selectedViews, editor.jsxMetadata)
+          const focusedElementSelected =
+            editor.selectedViews.length === 1 &&
+            EP.pathsEqual(editor.selectedViews[0], editor.focusedElementPath)
+          if (editor.selectedViews.length === 0 || focusedElementSelected) {
+            return [EditorActions.setFocusedElement(null)]
+          } else {
+            return jumpToParentActions(
+              editor.selectedViews,
+              editor.jsxMetadata,
+              editor.elementPathTree,
+              editor.lockedElements,
+            )
+          }
         }
 
         // TODO: Move this around.
@@ -503,8 +520,20 @@ export function handleKeyDown(
           if (CanvasMousePositionRaw == null) {
             return [EditorActions.clearSelection()]
           }
-          const targetStack = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
-          const nextTarget = Canvas.getNextTarget(editor.selectedViews, targetStack)
+          const targetStack = getAllTargetsAtPoint(
+            'no-filter',
+            WindowMousePositionRaw,
+            editor.canvas.scale,
+            editor.canvas.realCanvasOffset,
+            editor.jsxMetadata,
+          )
+          const nextTarget = Canvas.getNextTarget(
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.lockedElements,
+            editor.selectedViews,
+            targetStack,
+          )
           if (targetStack.length === 0 || nextTarget === null) {
             return [EditorActions.clearSelection()]
           } else {
@@ -553,7 +582,7 @@ export function handleKeyDown(
       [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInView(
+              EditorActions.wrapInElement(
                 editor.selectedViews,
                 detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
                   generateUidWithExistingComponents(editor.projectContents),
@@ -571,20 +600,14 @@ export function handleKeyDown(
       [GROUP_ELEMENT_DEFAULT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) && editor.selectedViews.length > 0
           ? [
-              EditorActions.wrapInElement(editor.selectedViews, {
-                element: jsxFragment(
-                  generateUidWithExistingComponents(editor.projectContents),
-                  [],
-                  true,
-                ),
-                importsToAdd: {
-                  react: {
-                    importedAs: 'React',
-                    importedFromWithin: [],
-                    importedWithName: null,
-                  },
-                },
-              }),
+              createWrapInGroupActions(
+                editor.selectedViews,
+                editor.projectContents,
+                editor.jsxMetadata,
+                editor.allElementProps,
+                editor.elementPathTree,
+                navigatorTargetsRef.current,
+              ),
             ]
           : []
       },
@@ -612,7 +635,6 @@ export function handleKeyDown(
       [START_RENAMING_SHORTCUT]: () => {
         const exitInsertModeActions = [
           EditorActions.switchEditorMode(EditorModes.selectMode()),
-          CanvasActions.clearDragState(false),
           CanvasActions.clearInteractionSession(false),
           EditorActions.clearHighlightedViews(),
         ]
@@ -696,9 +718,7 @@ export function handleKeyDown(
         )
       },
       [CUT_SELECTION_SHORTCUT]: () => {
-        return isSelectMode(editor.mode)
-          ? [EditorActions.copySelectionToClipboard(), EditorActions.deleteSelected()]
-          : []
+        return isSelectMode(editor.mode) ? [EditorActions.cutSelectionToClipboard()] : []
       },
       [UNDO_CHANGES_SHORTCUT]: () => {
         return [EditorActions.undo()]
@@ -740,7 +760,13 @@ export function handleKeyDown(
         return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('navigator')]
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode)) {
+        const possibleToConvert = editor.selectedViews.every((path) => {
+          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+          return (
+            element != null && isRight(element.element) && isJSXElementLike(element.element.value)
+          )
+        })
+        if (isSelectMode(editor.mode) && possibleToConvert) {
           return [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })]
         } else {
           return []
@@ -768,7 +794,7 @@ export function handleKeyDown(
           .then(({ sRGBHex }) =>
             dispatch(
               selectedViews.map((view) =>
-                EditorActions.setProperty(
+                EditorActions.setProp_UNSAFE(
                   view,
                   PP.create('style', 'backgroundColor'),
                   jsExpressionValue(sRGBHex, emptyComments),
@@ -863,6 +889,18 @@ export function handleKeyDown(
         }
         return []
       },
+      [PASTE_TO_REPLACE]: () => {
+        if (isSelectMode(editor.mode)) {
+          const actions = createPasteToReplacePostActionActions(
+            editor.selectedViews,
+            editor.internalClipboard,
+          )
+          if (actions != null) {
+            return actions
+          }
+        }
+        return []
+      },
       [PASTE_STYLE_PROPERTIES]: () => {
         return isSelectMode(editor.mode)
           ? editor.selectedViews.map((target) => {
@@ -888,6 +926,7 @@ export function handleKeyDown(
         const commands = commandsForFirstApplicableStrategy(
           editor.jsxMetadata,
           editor.selectedViews,
+          editor.elementPathTree,
           editor.allElementProps,
           selectedElementsFlexContainers ? removeFlexLayoutStrategies : addFlexLayoutStrategies,
         )
@@ -905,6 +944,7 @@ export function handleKeyDown(
           const maybeGroupConversionCommands = groupConversionCommands(
             editor.jsxMetadata,
             editor.allElementProps,
+            editor.elementPathTree,
             elementPath,
           )
 
@@ -960,12 +1000,19 @@ export function handleKeyDown(
         const commands = toggleResizeToFitSetToFixed(
           editor.jsxMetadata,
           editor.selectedViews,
+          editor.elementPathTree,
           editor.allElementProps,
         )
         if (commands.length === 0) {
           return []
         }
         return [EditorActions.applyCommandsAction(commands)]
+      },
+      [OPEN_INSERT_MENU]: () => {
+        return [
+          EditorActions.setPanelVisibility('rightmenu', true),
+          EditorActions.setRightMenuTab(RightMenuTab.Insert),
+        ]
       },
     })
   }

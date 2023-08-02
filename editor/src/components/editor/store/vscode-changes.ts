@@ -1,6 +1,5 @@
+import type { ProjectContentTreeRoot, ProjectContentsTree } from '../../../components/assets'
 import {
-  ProjectContentTreeRoot,
-  ProjectContentsTree,
   isProjectContentFile,
   getProjectFileFromTree,
   zipContentsTree,
@@ -10,7 +9,8 @@ import {
   getSavedCodeFromTextFile,
   getUnsavedCodeFromTextFile,
 } from '../../../core/model/project-file-utils'
-import { ProjectFile, isTextFile } from '../../../core/shared/project-file-types'
+import type { ProjectFile } from '../../../core/shared/project-file-types'
+import { isTextFile } from '../../../core/shared/project-file-types'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import {
   applyProjectChanges,
@@ -18,20 +18,17 @@ import {
   getSelectedElementChangedMessage,
   sendMessage,
 } from '../../../core/vscode/vscode-bridge'
-import {
+import type {
   UpdateDecorationsMessage,
   SelectedElementChanged,
   AccumulatedToVSCodeMessage,
   ToVSCodeMessageNoAccumulated,
-  accumulatedToVSCodeMessage,
-  toVSCodeExtensionMessage,
 } from 'utopia-vscode-common'
-import {
-  EditorState,
-  getHighlightBoundsForElementPaths,
-  getUnderlyingVSCodeBridgeID,
-} from './editor-state'
+import { accumulatedToVSCodeMessage, toVSCodeExtensionMessage } from 'utopia-vscode-common'
+import type { EditorState } from './editor-state'
+import { getHighlightBoundsForElementPaths, getUnderlyingVSCodeBridgeID } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
+import * as EP from '../../../core/shared/element-path'
 
 export interface WriteProjectFileChange {
   type: 'WRITE_PROJECT_FILE'
@@ -109,11 +106,14 @@ export function collateProjectChanges(
           const fileMarkedDirtyButNoCodeChangeYet =
             firstUnsavedContent == null && secondUnsavedContent === firstSavedContent
 
-          // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
-          // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
-          // has been generated
           const fileShouldBeWritten =
-            savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet)
+            // This means that we'll only send the code across when it is in sync with the parsed model, rather
+            // than sending a stale version of the code across whilst waiting on the new version.
+            secondContents.content.fileContents.revisionsState === 'BOTH_MATCH' &&
+            // When a parsed model is updated but that change hasn't been reflected in the code yet, we end up with a file
+            // that has no code change, so we don't want to write that to the FS for VS Code to act on it until the new code
+            // has been generated
+            (savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet))
 
           if (fileShouldBeWritten) {
             changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
@@ -171,6 +171,7 @@ export function collateProjectChanges(
       zipContentsTree(oldContents, newContents, onElement)
     }
   }
+
   return changesToProcess
 }
 
@@ -186,10 +187,10 @@ export function shouldIncludeVSCodeDecorations(
     [...newEditorState.highlightedViews, ...newEditorState.selectedViews],
     newEditorState,
   )
-  return (
-    oldEditorState.selectedViews !== newEditorState.selectedViews ||
-    oldEditorState.highlightedViews !== newEditorState.highlightedViews ||
-    !shallowEqual(oldHighlightBounds, newHighlightBounds)
+  return !(
+    EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
+    EP.arrayOfPathsEqual(oldEditorState.highlightedViews, newEditorState.highlightedViews) &&
+    shallowEqual(oldHighlightBounds, newHighlightBounds)
   )
 }
 
@@ -206,9 +207,10 @@ export function shouldIncludeSelectedElementChanges(
     newEditorState,
   )
   return (
-    (oldEditorState.selectedViews !== newEditorState.selectedViews ||
-      !shallowEqual(oldHighlightBounds, newHighlightBounds)) &&
-    newEditorState.selectedViews.length > 0
+    !(
+      EP.arrayOfPathsEqual(oldEditorState.selectedViews, newEditorState.selectedViews) &&
+      shallowEqual(oldHighlightBounds, newHighlightBounds)
+    ) && newEditorState.selectedViews.length > 0
   )
 }
 
@@ -288,15 +290,17 @@ export function projectChangesToVSCodeMessages(local: ProjectChanges): Accumulat
 export function getProjectChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
+  updatedFromVSCode: boolean,
 ): ProjectChanges {
   return {
-    fileChanges: getProjectContentsChanges(oldEditorState, newEditorState),
+    fileChanges: updatedFromVSCode ? [] : getProjectContentsChanges(oldEditorState, newEditorState),
     updateDecorations: shouldIncludeVSCodeDecorations(oldEditorState, newEditorState)
       ? getCodeEditorDecorations(newEditorState)
       : null,
-    selectedChanged: shouldIncludeSelectedElementChanges(oldEditorState, newEditorState)
-      ? getSelectedElementChangedMessage(newEditorState)
-      : null,
+    selectedChanged:
+      !updatedFromVSCode && shouldIncludeSelectedElementChanges(oldEditorState, newEditorState)
+        ? getSelectedElementChangedMessage(newEditorState)
+        : null,
   }
 }
 

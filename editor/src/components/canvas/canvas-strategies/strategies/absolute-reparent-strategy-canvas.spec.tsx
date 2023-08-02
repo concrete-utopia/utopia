@@ -7,17 +7,20 @@ import {
 } from '../../../../core/model/scene-utils'
 import { right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
+  SpecialSizeMeasurements,
+} from '../../../../core/shared/element-template'
+import {
   emptyComments,
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxElement,
   jsxElementName,
-  SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
-import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
-import { EditorState } from '../../../editor/store/editor-state'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
+import type { EditorState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorStateWithSelectedViews,
@@ -28,7 +31,8 @@ import {
 } from '../../ui-jsx.test-utils'
 import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
-import { boundingArea, InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
+import { boundingArea } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 import { reparentMetaStrategy } from './reparent-metastrategy'
 
@@ -124,6 +128,7 @@ function reparentElement(
     ),
     latestMetadata: null as any, // the strategy does not use this
     latestAllElementProps: null as any, // the strategy does not use this
+    latestElementPathTree: null as any, // the strategy does not use this
   }
 
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
@@ -215,7 +220,7 @@ xdescribe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (

@@ -1,5 +1,5 @@
 import React from 'react'
-import { CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import { colorTheme } from '../../../uuiui'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'

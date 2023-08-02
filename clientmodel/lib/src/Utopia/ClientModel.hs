@@ -66,10 +66,10 @@ instance Arbitrary RevisionsState where
   shrink = genericShrink
 
 data ParseFailure = ParseFailure
-                  { diagnostics   :: Maybe [Value]
-                  , parsedJSON    :: Value
-                  , errorMessage  :: Maybe Text
-                  , errorMessages :: [Value]
+                  { diagnostics         :: Maybe [Value]
+                  , parsedJSONFailure   :: Value
+                  , errorMessage        :: Maybe Text
+                  , errorMessages       :: [Value]
                   }
                   deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -162,7 +162,8 @@ instance Arbitrary TextFileContents where
 data TextFile = TextFile
               { fileContents      :: TextFileContents
               , lastSavedContents :: Maybe TextFileContents
-              , lastRevisedTime   :: Double
+              , lastParseSuccess  :: Maybe ParsedTextFile
+              , versionNumber     :: Double
               }
               deriving (Eq, Show, Generic, Data, Typeable)
 
@@ -375,7 +376,6 @@ data PersistentModel = PersistentModel
                             , projectSettings     :: Value
                             , navigator           :: Value
                             , githubSettings      :: ProjectGithubSettings
-                            , githubChecksums     :: Maybe GithubChecksums
                             }
                             deriving (Eq, Show, Generic, Data, Typeable)
 

@@ -1,21 +1,23 @@
-import { left } from '../../../../core/shared/either'
+import { left, right } from '../../../../core/shared/either'
 import { elementPath, fromString } from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
-import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import { jsxElement, jsxElementName } from '../../../../core/shared/element-template'
+import type { CanvasPoint } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { Modifiers } from '../../../../utils/modifiers'
 import {
   altModifier,
   altShiftModifier,
   emptyModifiers,
-  Modifiers,
   shiftModifier,
 } from '../../../../utils/modifiers'
-import { AllElementProps, EditorState } from '../../../editor/store/editor-state'
-import { EdgePosition } from '../../canvas-types'
+import type { AllElementProps, EditorState } from '../../../editor/store/editor-state'
+import type { EdgePosition } from '../../canvas-types'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorStateWithSelectedViews,
@@ -64,6 +66,7 @@ function multiselectResizeElements(
       ...interactionSessionWithoutMetadata,
       latestMetadata: {},
       latestAllElementProps: {},
+      latestElementPathTree: {},
     },
   )!.apply('end-interaction')
 
@@ -82,7 +85,7 @@ function multiselectResizeElements(
 const testMetadata: ElementInstanceMetadataMap = {
   'scene-aaa/app-entity:aaa/bbb': {
     elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
-    element: left('div'),
+    element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
     specialSizeMeasurements: {
       position: 'absolute',
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -92,7 +95,7 @@ const testMetadata: ElementInstanceMetadataMap = {
   } as ElementInstanceMetadata,
   'scene-aaa/app-entity:aaa/ccc': {
     elementPath: fromString('scene-aaa/app-entity:aaa/ccc'),
-    element: left('div'),
+    element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
     specialSizeMeasurements: {
       position: 'absolute',
       immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -594,7 +597,7 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
         {
           'scene-aaa/app-entity:aaa/bbb': {
             elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
-            element: left('div'),
+            element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
             specialSizeMeasurements: {
               position: 'absolute',
               immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -1477,7 +1480,7 @@ describe('Absolute Resize Strategy with missing props', () => {
       {
         'scene-aaa/app-entity:aaa/bbb': {
           elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
-          element: left('div'),
+          element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
           specialSizeMeasurements: {
             position: 'absolute',
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -1487,7 +1490,7 @@ describe('Absolute Resize Strategy with missing props', () => {
         } as ElementInstanceMetadata,
         'scene-aaa/app-entity:aaa/bbb/ccc': {
           elementPath: fromString('scene-aaa/app-entity:aaa/bbb/ccc'),
-          element: left('div'),
+          element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
           specialSizeMeasurements: {
             position: 'absolute',
             immediateParentBounds: canvasRectangle({ x: 30, y: 50, width: 100, height: 80 }),
@@ -1562,7 +1565,7 @@ describe('Absolute Resize Strategy with missing props', () => {
       {
         'scene-aaa/app-entity:aaa/bbb': {
           elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
-          element: left('div'),
+          element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
           specialSizeMeasurements: {
             position: 'absolute',
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -1571,7 +1574,7 @@ describe('Absolute Resize Strategy with missing props', () => {
         } as ElementInstanceMetadata,
         'scene-aaa/app-entity:aaa/bbb/ccc': {
           elementPath: fromString('scene-aaa/app-entity:aaa/bbb/ccc'),
-          element: left('div'),
+          element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
           specialSizeMeasurements: {
             position: 'absolute',
             immediateParentBounds: canvasRectangle({ x: 30, y: 50, width: 100, height: 80 }),
@@ -1642,7 +1645,7 @@ describe('Absolute Resize Strategy with missing props', () => {
       {
         'scene-aaa/app-entity:aaa/bbb': {
           elementPath: fromString('scene-aaa/app-entity:aaa/bbb'),
-          element: left('div'),
+          element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
           specialSizeMeasurements: {
             position: 'absolute',
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -1652,7 +1655,7 @@ describe('Absolute Resize Strategy with missing props', () => {
         } as ElementInstanceMetadata,
         'scene-aaa/app-entity:aaa/bbb/ccc': {
           elementPath: fromString('scene-aaa/app-entity:aaa/bbb/ccc'),
-          element: left('div'),
+          element: right(jsxElement(jsxElementName('div', []), 'bbb', [], [])),
           specialSizeMeasurements: {
             position: 'absolute',
             immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 100, height: 80 }),

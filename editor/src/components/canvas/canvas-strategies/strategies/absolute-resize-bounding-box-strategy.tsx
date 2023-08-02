@@ -5,28 +5,35 @@ import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../core/shared/element-template'
+import type { CanvasRectangle, SimpleRectangle } from '../../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
   canvasRectangleToLocalRectangle,
   isInfinityRectangle,
   rectangleDifference,
   roundRectangleToNearestWhole,
   roundTo,
-  SimpleRectangle,
   transformFrameUsingBoundingBox,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { AllElementProps, getElementFromProjectContents } from '../../../editor/store/editor-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { EdgePosition } from '../../canvas-types'
-import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+import type { EdgePosition } from '../../canvas-types'
+import type {
+  AdjustCssLengthProperties,
+  LengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
-import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
 import {
-  SetCssLengthProperty,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
+} from '../../commands/adjust-css-length-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
+import {
   setCssLengthProperty,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
@@ -39,28 +46,31 @@ import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
+import type { AbsolutePin } from './resize-helpers'
 import {
-  AbsolutePin,
   isAnySelectedElementAspectRatioLocked,
   ensureAtLeastTwoPinsForEdgePosition,
   getLockedAspectRatio,
   pickCursorFromEdgePosition,
   resizeBoundingBox,
   supportsAbsoluteResize,
+  onlyEnsureOffsetPinsExist,
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { allowGroupTrueUp, treatElementAsGroupLike } from './group-helpers'
+import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -70,7 +80,7 @@ export function absoluteResizeBoundingBoxStrategy(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = flattenSelection(
-    retargetStrategyToChildrenOfContentAffectingElements(canvasState),
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
   )
 
   if (
@@ -155,6 +165,7 @@ export function absoluteResizeBoundingBoxStrategy(
               lockedAspectRatio,
               centerBased,
               canvasState.startingAllElementProps,
+              canvasState.startingElementPathTree,
             )
 
             const commandsForSelectedElements = retargetedTargets.flatMap((selectedElement) => {
@@ -171,6 +182,11 @@ export function absoluteResizeBoundingBoxStrategy(
               if (element == null || originalFrame == null || isInfinityRectangle(originalFrame)) {
                 return []
               }
+
+              const elementIsGroup = treatElementAsGroupLike(
+                canvasState.startingMetadata,
+                selectedElement,
+              )
 
               const newFrame = roundRectangleToNearestWhole(
                 transformFrameUsingBoundingBox(
@@ -198,8 +214,14 @@ export function absoluteResizeBoundingBoxStrategy(
                   elementParentBounds,
                   elementParentFlexDirection,
                   edgePosition,
+                  elementIsGroup
+                    ? 'only-offset-pins-are-needed'
+                    : 'ensure-two-pins-per-dimension-exists',
                 ),
-                pushIntendedBounds([{ target: selectedElement, frame: newFrame }]),
+                pushIntendedBoundsAndUpdateGroups(
+                  [{ target: selectedElement, frame: newFrame }],
+                  'starting-metadata',
+                ),
               ]
             })
 
@@ -224,75 +246,6 @@ export function absoluteResizeBoundingBoxStrategy(
   }
 }
 
-function createResizeCommandsFromFrame(
-  element: JSXElement,
-  selectedElement: ElementPath,
-  newFrame: CanvasRectangle,
-  originalFrame: CanvasRectangle,
-  elementParentBounds: CanvasRectangle | null,
-  elementParentFlexDirection: FlexDirection | null,
-  edgePosition: EdgePosition,
-): (AdjustCssLengthProperty | SetCssLengthProperty)[] {
-  const pins: Array<AbsolutePin> = ensureAtLeastTwoPinsForEdgePosition(
-    right(element.props),
-    edgePosition,
-  )
-  return mapDropNulls((pin) => {
-    const horizontal = isHorizontalPoint(
-      // TODO avoid using the loaded FramePoint enum
-      framePointForPinnedProp(pin),
-    )
-    const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
-    const rectangleDiff = rectangleDifference(originalFrame, newFrame)
-    const delta = allPinsFromFrame(rectangleDiff)[pin]
-    const roundedDelta = roundTo(delta, 0)
-    const pinDirection = pin === 'right' || pin === 'bottom' ? -1 : 1
-    if (roundedDelta !== 0) {
-      if (isRight(value) && value.value != null) {
-        return adjustCssLengthProperty(
-          'always',
-          selectedElement,
-          stylePropPathMappingFn(pin, styleStringInArray),
-          roundedDelta * pinDirection,
-          horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          elementParentFlexDirection,
-          'create-if-not-existing',
-        )
-      } else {
-        // If this element has a parent, we need to take that parent's bounds into account
-        const frameToUse =
-          elementParentBounds == null
-            ? newFrame
-            : canvasRectangleToLocalRectangle(newFrame, elementParentBounds)
-        const valueToSet = allPinsFromFrame(frameToUse)[pin]
-        return setCssLengthProperty(
-          'always',
-          selectedElement,
-          stylePropPathMappingFn(pin, styleStringInArray),
-          setValueKeepingOriginalUnit(
-            roundTo(valueToSet, 0),
-            horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-          ),
-          elementParentFlexDirection,
-        )
-      }
-    } else {
-      return null
-    }
-  }, pins)
-}
-
-function allPinsFromFrame(frame: SimpleRectangle): { [key: string]: number } {
-  return {
-    left: frame.x,
-    top: frame.y,
-    width: frame.width,
-    height: frame.height,
-    right: frame.x + frame.width,
-    bottom: frame.y + frame.height,
-  }
-}
-
 function snapBoundingBox(
   selectedElements: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
@@ -302,6 +255,7 @@ function snapBoundingBox(
   lockedAspectRatio: number | null,
   centerBased: 'center-based' | 'non-center-based',
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ) {
   const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
     selectedElements,
@@ -312,6 +266,7 @@ function snapBoundingBox(
     lockedAspectRatio,
     centerBased,
     allElementProps,
+    pathTrees,
   )
 
   return {

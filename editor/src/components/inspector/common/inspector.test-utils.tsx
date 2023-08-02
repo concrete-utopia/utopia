@@ -2,7 +2,8 @@ import { produce } from 'immer'
 import React from 'react'
 import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
-import { emptyComments, jsExpressionValue, JSXElement } from '../../../core/shared/element-template'
+import type { JSXElement } from '../../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
 import { isRight } from '../../../core/shared/either'
 import type {
@@ -13,33 +14,38 @@ import type {
 import { createEditorStates } from '../../../utils/utils.test-utils'
 import utils from '../../../utils/utils'
 import { EditorDispatch } from '../../editor/action-types'
+import type { EditorStorePatched } from '../../editor/store/editor-state'
 import {
-  EditorStorePatched,
-  modifyOpenJsxElementAtStaticPath,
   defaultUserState,
   StoryboardFilePath,
+  modifyUnderlyingElementForOpenFile,
 } from '../../editor/store/editor-state'
+import type { UtopiaStoreAPI } from '../../editor/store/store-hook'
 import {
   createStoresAndState,
   EditorStateContext,
   OriginalMainEditorStateContext,
-  UtopiaStoreAPI,
 } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import { InspectorContextProvider } from '../inspector'
-import { getControlStyles, PropertyStatus } from './control-status'
-import { InspectorInfo } from './property-path-hooks'
+import type { PropertyStatus } from './control-status'
+import { getControlStyles } from './control-status'
+import type { InspectorInfo } from './property-path-hooks'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
-import { Frame } from 'utopia-api/core'
-import { PinsInfo } from './layout-property-path-hooks'
-import { cssNumber, CSSNumber } from './css-utils'
+import type { Frame } from 'utopia-api/core'
+import type { PinsInfo } from './layout-property-path-hooks'
+import type { CSSNumber } from './css-utils'
+import { cssNumber } from './css-utils'
 import { mapValues } from '../../../core/shared/object-utils'
-import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
-import { LocalRectangle, localRectangle } from '../../../core/shared/math-utils'
+import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import type { LocalRectangle } from '../../../core/shared/math-utils'
+import { localRectangle } from '../../../core/shared/math-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { NO_OP } from '../../../core/shared/utils'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { fireEvent } from '@testing-library/react'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 
 type UpdateFunctionHelpers = {
   updateStoreWithImmer: (fn: (store: EditorStorePatched) => void) => void
@@ -64,6 +70,7 @@ export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
     workers: null as any,
     persistence: null as any,
     saveCountThisSession: 0,
+    postActionInteractionSession: null,
     builtInDependencies: createBuiltInDependenciesList(null),
   }
 
@@ -109,8 +116,9 @@ export function editPropOfSelectedView(
 ): EditorStorePatched {
   return {
     ...store,
-    editor: modifyOpenJsxElementAtStaticPath(
+    editor: modifyUnderlyingElementForOpenFile(
       store.editor.selectedViews[0] as StaticElementPath,
+      store.editor,
       (element): JSXElement => {
         const updatedAttributes = setJSXValueAtPath(
           element.props,
@@ -126,7 +134,6 @@ export function editPropOfSelectedView(
           throw new Error(`Couldn't set property in test`)
         }
       },
-      store.editor,
     ),
   }
 }
@@ -237,4 +244,20 @@ export const TLBRSimplePins: SimplePinsInfo = {
   height: undefined,
   bottom: { value: SimpleRect.y + SimpleRect.height, unit: null },
   right: { value: SimpleRect.x + SimpleRect.width, unit: null },
+}
+
+export async function changeInspectorNumberControl(
+  editor: EditorRenderResult,
+  testId: string,
+  newValue: string,
+): Promise<void> {
+  const numberInput = editor.renderedDOM.getByTestId(testId) as HTMLInputElement
+
+  numberInput.focus()
+
+  fireEvent.change(numberInput, {
+    target: { value: newValue },
+  })
+
+  numberInput.blur()
 }

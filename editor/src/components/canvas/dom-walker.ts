@@ -4,21 +4,27 @@ import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 import * as EP from '../../core/shared/element-path'
-import {
+import type {
   DetectedLayoutSystem,
   ElementInstanceMetadata,
   ComputedStyle,
-  elementInstanceMetadata,
   SpecialSizeMeasurements,
+  StyleAttributeMetadata,
+  ElementInstanceMetadataMap,
+} from '../../core/shared/element-template'
+import {
+  elementInstanceMetadata,
   specialSizeMeasurements,
   emptySpecialSizeMeasurements,
   emptyComputedStyle,
-  StyleAttributeMetadata,
-  emptyAttributeMetadatada,
-  ElementInstanceMetadataMap,
+  emptyAttributeMetadata,
 } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import {
+  VoidElementsToFilter,
+  getCanvasRectangleFromElement,
+  getDOMAttribute,
+} from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -28,13 +34,15 @@ import {
   mapEither,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
-import {
-  canvasPoint,
+import type {
   CanvasPoint,
   CanvasRectangle,
-  boundingRectangle,
   LocalPoint,
   LocalRectangle,
+} from '../../core/shared/math-utils'
+import {
+  canvasPoint,
+  boundingRectangle,
   localRectangle,
   roundToNearestHalf,
   zeroCanvasRect,
@@ -43,18 +51,19 @@ import {
   infinityCanvasRectangle,
   infinityLocalRectangle,
   zeroRectIfNullOrInfinity,
+  scaleRect,
+  MaybeInfinityCanvasRectangle,
 } from '../../core/shared/math-utils'
+import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
-  CSSNumber,
   parseCSSLength,
-  CSSPosition,
   positionValues,
   computedStyleKeys,
   parseDirection,
   parseFlexDirection,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
-import { UtopiaStoreAPI } from '../editor/store/store-hook'
+import type { UtopiaStoreAPI } from '../editor/store/store-hook'
 import {
   UTOPIA_DO_NOT_TRAVERSE_KEY,
   UTOPIA_PATH_KEY,
@@ -320,24 +329,26 @@ interface RunDomWalkerParams {
   rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap }
 }
 
+interface DomWalkerInternalGlobalProps {
+  validPaths: Array<ElementPath>
+  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>
+  invalidatedPaths: Set<string>
+  invalidatedPathsForStylesheetCache: Set<string>
+  selectedViews: Array<ElementPath>
+  forceInvalidated: boolean
+  scale: number
+  containerRectLazy: () => CanvasRectangle
+  additionalElementsToUpdate: Array<ElementPath>
+}
+
 function runSelectiveDomWalker(
   elementsToFocusOn: Array<ElementPath>,
-  domWalkerMutableState: DomWalkerMutableStateData,
-  selectedViews: Array<ElementPath>,
-  scale: number,
-  rootMetadataInStateRef: { readonly current: ElementInstanceMetadataMap },
-  containerRectLazy: () => CanvasRectangle,
+  globalProps: DomWalkerInternalGlobalProps,
 ): { metadata: ElementInstanceMetadataMap; cachedPaths: ElementPath[] } {
   let workingMetadata: ElementInstanceMetadataMap = {}
 
   const canvasRootContainer = document.getElementById(CanvasContainerID)
   if (canvasRootContainer != null) {
-    const validPathsArr = optionalMap(
-      (paths) => paths.split(' '),
-      canvasRootContainer.getAttribute('data-utopia-valid-paths'),
-    )
-    const validPaths = new Set(validPathsArr)
-
     const parentPoint = canvasPoint({ x: 0, y: 0 })
 
     elementsToFocusOn.forEach((path) => {
@@ -361,20 +372,16 @@ function runSelectiveDomWalker(
               element.childNodes.forEach(collectForElement)
             } else {
               const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-                const staticPath = EP.toString(EP.makeLastPartOfPathStatic(pathWithString.path))
-                return validPaths.has(staticPath)
+                const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+                return globalProps.validPaths.some((vp) => EP.pathsEqual(vp, staticPath))
               })
 
               const { collectedMetadata } = collectAndCreateMetadataForElement(
                 element,
                 parentPoint,
                 path,
-                scale,
-                containerRectLazy,
                 foundValidPaths.map((p) => p.path),
-                domWalkerMutableState.invalidatedPathsForStylesheetCache,
-                selectedViews,
-                domWalkerMutableState.invalidatedPaths,
+                globalProps,
               )
 
               mergeMetadataMaps_MUTATE(workingMetadata, collectedMetadata)
@@ -386,10 +393,16 @@ function runSelectiveDomWalker(
         foundElement.childNodes.forEach(collectForElement)
       }
     })
-    const otherElementPaths = Object.keys(rootMetadataInStateRef.current).filter(
-      (path) => !Object.keys(workingMetadata).includes(path),
+    const otherElementPaths = Object.keys(globalProps.rootMetadataInStateRef.current).filter(
+      (path) =>
+        Object.keys(workingMetadata).find((updatedPath) =>
+          EP.isDescendantOfOrEqualTo(EP.fromString(path), EP.fromString(updatedPath)),
+        ) == null,
     )
-    const rootMetadataForOtherElements = pick(otherElementPaths, rootMetadataInStateRef.current)
+    const rootMetadataForOtherElements = pick(
+      otherElementPaths,
+      globalProps.rootMetadataInStateRef.current,
+    )
     mergeMetadataMaps_MUTATE(rootMetadataForOtherElements, workingMetadata)
 
     return {
@@ -399,8 +412,10 @@ function runSelectiveDomWalker(
   }
 
   return {
-    metadata: rootMetadataInStateRef.current,
-    cachedPaths: Object.values(rootMetadataInStateRef.current).map((p) => p.elementPath),
+    metadata: globalProps.rootMetadataInStateRef.current,
+    cachedPaths: Object.values(globalProps.rootMetadataInStateRef.current).map(
+      (p) => p.elementPath,
+    ),
   }
 }
 
@@ -455,8 +470,31 @@ export function runDomWalker({
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
     const containerRect = lazyValue(() => {
-      return getCanvasRectangleFromElement(canvasRootContainer, scale)
+      return getCanvasRectangleFromElement(canvasRootContainer, scale, 'without-content')
     })
+
+    const validPaths: Array<ElementPath> | null = optionalMap(
+      (paths) => paths.split(' ').map(EP.fromString),
+      canvasRootContainer.getAttribute('data-utopia-valid-paths'),
+    )
+
+    if (validPaths == null) {
+      throw new Error(
+        'Utopia Internal Error: Running DOM-walker without canvasRootPath or validRootPaths',
+      )
+    }
+
+    const globalProps: DomWalkerInternalGlobalProps = {
+      validPaths: validPaths,
+      rootMetadataInStateRef: rootMetadataInStateRef,
+      invalidatedPaths: domWalkerMutableState.invalidatedPaths,
+      invalidatedPathsForStylesheetCache: domWalkerMutableState.invalidatedPathsForStylesheetCache,
+      selectedViews: selectedViews,
+      forceInvalidated: !domWalkerMutableState.initComplete, // TODO do we run walkCanvasRootFragment with initComplete=true anymore? // TODO _should_ we ever run walkCanvasRootFragment with initComplete=false EVER, or instead can we set the canvas root as the invalidated path?
+      scale: scale,
+      containerRectLazy: containerRect,
+      additionalElementsToUpdate: [...additionalElementsToUpdate, ...selectedViews],
+    }
 
     // This assumes that the canvas root is rendering a Storyboard fragment.
     // The necessary validPaths and the root fragment's template path comes from props,
@@ -465,25 +503,9 @@ export function runDomWalker({
       // when we don't rerender all elements we just run the dom walker in selective mode: only update the metatdata
       // of the currently rendered elements (for performance reasons)
       elementsToFocusOn === 'rerender-all-elements'
-        ? walkCanvasRootFragment(
-            canvasRootContainer,
-            rootMetadataInStateRef,
-            domWalkerMutableState.invalidatedPaths,
-            domWalkerMutableState.invalidatedPathsForStylesheetCache,
-            selectedViews,
-            !domWalkerMutableState.initComplete, // TODO do we run walkCanvasRootFragment with initComplete=true anymore? // TODO _should_ we ever run walkCanvasRootFragment with initComplete=false EVER, or instead can we set the canvas root as the invalidated path?
-            scale,
-            containerRect,
-            [...additionalElementsToUpdate, ...selectedViews],
-          )
-        : runSelectiveDomWalker(
-            elementsToFocusOn,
-            domWalkerMutableState,
-            selectedViews,
-            scale,
-            rootMetadataInStateRef,
-            containerRect,
-          )
+        ? walkCanvasRootFragment(canvasRootContainer, globalProps)
+        : runSelectiveDomWalker(elementsToFocusOn, globalProps)
+
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
       performance.measure(
@@ -503,8 +525,7 @@ export function runDomWalker({
 
 function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
   const interactionSessionActive = store.editor.canvas.interactionSession != null
-  const oldDragStateActiveKILLME = store.derived.transientState.filesState != null
-  return interactionSessionActive || oldDragStateActiveKILLME
+  return interactionSessionActive
 }
 
 export function initDomWalkerObservers(
@@ -611,10 +632,13 @@ function collectMetadataForElement(
   globalFrame: CanvasRectangle
   localFrame: LocalRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
+  textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+  const globalFrame = globalFrameForElement(element, scale, containerRectLazy, 'without-content')
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+
+  const textContentsMaybe = element.textContent
 
   const specialSizeMeasurementsObject = getSpecialMeasurements(
     element,
@@ -628,6 +652,7 @@ function collectMetadataForElement(
     globalFrame: globalFrame,
     localFrame: localFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
+    textContentsMaybe: textContentsMaybe,
   }
 }
 
@@ -645,14 +670,8 @@ function collectMetadata(
   parentPoint: CanvasPoint,
   closestOffsetParentPath: ElementPath,
   allUnfilteredChildrenPaths: Array<ElementPath>,
-  scale: number,
-  containerRectLazy: () => CanvasRectangle,
-  invalidatedPaths: Set<string>,
-  invalidatedPathsForStylesheetCache: Set<string>,
-  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
-  invalidated: boolean,
-  selectedViews: Array<ElementPath>,
-  additionalElementsToUpdate: Array<ElementPath>,
+  invalidated: boolean, // TODO rename invalidated from globalProps?
+  globalProps: DomWalkerInternalGlobalProps,
 ): {
   collectedMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
@@ -667,9 +686,9 @@ function collectMetadata(
   }
   const shouldCollect =
     invalidated ||
-    isAnyPathInvalidated(stringPathsForElement, invalidatedPaths) ||
+    isAnyPathInvalidated(stringPathsForElement, globalProps.invalidatedPaths) ||
     pathsForElement.some((pathForElement) => {
-      return additionalElementsToUpdate.some((additionalElementToUpdate) =>
+      return globalProps.additionalElementsToUpdate.some((additionalElementToUpdate) =>
         EP.pathsEqual(pathForElement, additionalElementToUpdate),
       )
     })
@@ -678,15 +697,14 @@ function collectMetadata(
       element,
       parentPoint,
       closestOffsetParentPath,
-      scale,
-      containerRectLazy,
       pathsForElement,
-      invalidatedPathsForStylesheetCache,
-      selectedViews,
-      invalidatedPaths,
+      globalProps,
     )
   } else {
-    const cachedMetadata = pick(pathsForElement.map(EP.toString), rootMetadataInStateRef.current)
+    const cachedMetadata = pick(
+      pathsForElement.map(EP.toString),
+      globalProps.rootMetadataInStateRef.current,
+    )
 
     if (Object.keys(cachedMetadata).length === pathsForElement.length) {
       return {
@@ -703,14 +721,8 @@ function collectMetadata(
         parentPoint,
         closestOffsetParentPath,
         allUnfilteredChildrenPaths,
-        scale,
-        containerRectLazy,
-        invalidatedPaths,
-        invalidatedPathsForStylesheetCache,
-        rootMetadataInStateRef,
-        true,
-        selectedViews,
-        additionalElementsToUpdate,
+        true, // forcing the invalidation
+        globalProps,
       )
     }
   }
@@ -720,33 +732,29 @@ function collectAndCreateMetadataForElement(
   element: HTMLElement,
   parentPoint: CanvasPoint,
   closestOffsetParentPath: ElementPath,
-  scale: number,
-  containerRectLazy: () => CanvasRectangle,
   pathsForElement: ElementPath[],
-  invalidatedPathsForStylesheetCache: Set<string>,
-  selectedViews: ElementPath[],
-  invalidatedPaths: Set<string>,
+  globalProps: DomWalkerInternalGlobalProps,
 ) {
-  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject } =
+  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject, textContentsMaybe } =
     collectMetadataForElement(
       element,
       parentPoint,
       closestOffsetParentPath,
-      scale,
-      containerRectLazy,
+      globalProps.scale,
+      globalProps.containerRectLazy,
     )
 
   const { computedStyle, attributeMetadata } = getComputedStyle(
     element,
     pathsForElement,
-    invalidatedPathsForStylesheetCache,
-    selectedViews,
+    globalProps.invalidatedPathsForStylesheetCache,
+    globalProps.selectedViews,
   )
 
   const collectedMetadata: ElementInstanceMetadataMap = {}
   pathsForElement.forEach((path) => {
     const pathStr = EP.toString(path)
-    invalidatedPaths.delete(pathStr) // mutation!
+    globalProps.invalidatedPaths.delete(pathStr) // global mutation!
 
     collectedMetadata[pathStr] = elementInstanceMetadata(
       path,
@@ -761,6 +769,7 @@ function collectAndCreateMetadataForElement(
       null,
       null,
       'not-a-conditional',
+      textContentsMaybe,
     )
   })
 
@@ -834,12 +843,12 @@ function getSpecialMeasurements(
 
   const coordinateSystemBounds =
     element.offsetParent instanceof HTMLElement
-      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy)
+      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy, 'without-content')
       : null
 
   const immediateParentBounds =
     element.parentElement instanceof HTMLElement
-      ? globalFrameForElement(element.parentElement, scale, containerRectLazy)
+      ? globalFrameForElement(element.parentElement, scale, containerRectLazy, 'without-content')
       : null
 
   const parentElementStyle =
@@ -918,7 +927,20 @@ function getSpecialMeasurements(
   const elementOrContainingParent =
     providesBoundsForAbsoluteChildren || offsetParent == null ? element : offsetParent
 
-  const globalFrame = globalFrameForElement(elementOrContainingParent, scale, containerRectLazy)
+  const globalFrame = globalFrameForElement(
+    elementOrContainingParent,
+    scale,
+    containerRectLazy,
+    'without-content',
+  )
+
+  const globalFrameWithTextContent = globalFrameForElement(
+    element,
+    scale,
+    containerRectLazy,
+    'with-content',
+  )
+
   const globalContentBoxForChildren = canvasRectangle({
     x: globalFrame.x + border.left,
     y: globalFrame.y + border.top,
@@ -965,6 +987,7 @@ function getSpecialMeasurements(
     offset,
     coordinateSystemBounds,
     immediateParentBounds,
+    globalFrameWithTextContent,
     parentProvidesLayout,
     closestOffsetParentPath,
     isParentNonStatic,
@@ -1009,21 +1032,16 @@ function globalFrameForElement(
   element: HTMLElement,
   scale: number,
   containerRectLazy: () => CanvasRectangle,
+  withContent: 'without-content' | 'with-content',
 ) {
-  const elementRect = getCanvasRectangleFromElement(element, scale)
+  const elementRect = getCanvasRectangleFromElement(element, scale, withContent)
+
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
 
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
-  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
-  invalidatedPaths: Set<string>,
-  invalidatedPathsForStylesheetCache: Set<string>,
-  selectedViews: Array<ElementPath>,
-  invalidated: boolean,
-  scale: number,
-  containerRectLazy: () => CanvasRectangle,
-  additionalElementsToUpdate: Array<ElementPath>,
+  globalProps: DomWalkerInternalGlobalProps,
 ): {
   metadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
@@ -1032,45 +1050,27 @@ function walkCanvasRootFragment(
     EP.fromString,
     canvasRoot.getAttribute('data-utopia-root-element-path'),
   )
-  const validPaths: Array<ElementPath> | null = optionalMap(
-    (paths) => paths.split(' ').map(EP.fromString),
-    canvasRoot.getAttribute('data-utopia-valid-paths'),
-  )
 
-  if (canvasRootPath == null || validPaths == null) {
-    throw new Error(
-      'Utopia Internal Error: Running DOM-walker without canvasRootPath or validRootPaths',
-    )
+  if (canvasRootPath == null) {
+    throw new Error('Utopia Internal Error: Running DOM-walker without canvasRootPath')
   }
 
-  invalidatedPaths.delete(EP.toString(canvasRootPath)) // mutation!
+  globalProps.invalidatedPaths.delete(EP.toString(canvasRootPath)) // global mutation!
 
   if (
     ObserversAvailable &&
-    invalidatedPaths.size === 0 &&
-    Object.keys(rootMetadataInStateRef.current).length > 0 &&
-    additionalElementsToUpdate.length === 0 &&
-    !invalidated
+    globalProps.invalidatedPaths.size === 0 &&
+    Object.keys(globalProps.rootMetadataInStateRef.current).length > 0 &&
+    globalProps.additionalElementsToUpdate.length === 0 &&
+    !globalProps.forceInvalidated
   ) {
     // no mutation happened on the entire canvas, just return the old metadata
     return {
-      metadata: rootMetadataInStateRef.current,
+      metadata: globalProps.rootMetadataInStateRef.current,
       cachedPaths: [canvasRootPath],
     }
   } else {
-    const { rootMetadata, cachedPaths } = walkSceneInner(
-      canvasRoot,
-      canvasRootPath,
-      validPaths,
-      rootMetadataInStateRef,
-      invalidatedPaths,
-      invalidatedPathsForStylesheetCache,
-      selectedViews,
-      invalidated,
-      scale,
-      containerRectLazy,
-      additionalElementsToUpdate,
-    )
+    const { rootMetadata, cachedPaths } = walkSceneInner(canvasRoot, canvasRootPath, globalProps)
     // The Storyboard root being a fragment means it is invisible to us in the DOM walker,
     // so walkCanvasRootFragment will create a fake root ElementInstanceMetadata
     // to provide a home for the the (really existing) childMetadata
@@ -1083,10 +1083,11 @@ function walkCanvasRootFragment(
       false,
       emptySpecialSizeMeasurements,
       emptyComputedStyle,
-      emptyAttributeMetadatada,
+      emptyAttributeMetadata,
       null,
       null, // this comes from the Spy Wrapper
       'not-a-conditional',
+      null,
     )
 
     rootMetadata[EP.toString(canvasRootPath)] = metadata
@@ -1097,15 +1098,7 @@ function walkCanvasRootFragment(
 
 function walkScene(
   scene: HTMLElement,
-  validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
-  invalidatedPaths: Set<string>,
-  invalidatedPathsForStylesheetCache: Set<string>,
-  selectedViews: Array<ElementPath>,
-  invalidated: boolean,
-  scale: number,
-  containerRectLazy: () => CanvasRectangle,
-  additionalElementsToUpdate: Array<ElementPath>,
+  globalProps: DomWalkerInternalGlobalProps,
 ): {
   metadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
@@ -1119,28 +1112,21 @@ function walkScene(
 
     if (sceneID != null && instancePath != null && EP.isElementPath(instancePath)) {
       const invalidatedScene =
-        invalidated ||
-        (ObserversAvailable && invalidatedPaths.size > 0 && invalidatedPaths.has(sceneID))
+        globalProps.forceInvalidated ||
+        (ObserversAvailable &&
+          globalProps.invalidatedPaths.size > 0 &&
+          globalProps.invalidatedPaths.has(sceneID))
 
-      invalidatedPaths.delete(sceneID) // mutation!
+      globalProps.invalidatedPaths.delete(sceneID) // global mutation!
 
       const {
         childPaths: rootElements,
         rootMetadata,
         cachedPaths,
-      } = walkSceneInner(
-        scene,
-        instancePath,
-        validPaths,
-        rootMetadataInStateRef,
-        invalidatedPaths,
-        invalidatedPathsForStylesheetCache,
-        selectedViews,
-        invalidatedScene,
-        scale,
-        containerRectLazy,
-        additionalElementsToUpdate,
-      )
+      } = walkSceneInner(scene, instancePath, {
+        ...globalProps,
+        forceInvalidated: invalidatedScene,
+      })
 
       const { collectedMetadata: sceneMetadata, cachedPaths: sceneCachedPaths } = collectMetadata(
         scene,
@@ -1149,14 +1135,8 @@ function walkScene(
         canvasPoint({ x: 0, y: 0 }),
         instancePath,
         rootElements,
-        scale,
-        containerRectLazy,
-        invalidatedPaths,
-        invalidatedPathsForStylesheetCache,
-        rootMetadataInStateRef,
         invalidatedScene,
-        selectedViews,
-        additionalElementsToUpdate,
+        globalProps,
       )
 
       mergeMetadataMaps_MUTATE(rootMetadata, sceneMetadata)
@@ -1173,21 +1153,18 @@ function walkScene(
 function walkSceneInner(
   scene: HTMLElement,
   closestOffsetParentPath: ElementPath,
-  validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
-  invalidatedPaths: Set<string>,
-  invalidatedPathsForStylesheetCache: Set<string>,
-  selectedViews: Array<ElementPath>,
-  invalidated: boolean,
-  scale: number,
-  containerRectLazy: () => CanvasRectangle,
-  additionalElementsToUpdate: Array<ElementPath>,
+  globalProps: DomWalkerInternalGlobalProps,
 ): {
   childPaths: Array<ElementPath>
   rootMetadata: ElementInstanceMetadataMap
   cachedPaths: Array<ElementPath>
 } {
-  const globalFrame: CanvasRectangle = globalFrameForElement(scene, scale, containerRectLazy)
+  const globalFrame: CanvasRectangle = globalFrameForElement(
+    scene,
+    globalProps.scale,
+    globalProps.containerRectLazy,
+    'without-content',
+  )
 
   let childPaths: Array<ElementPath> = []
   let rootMetadataAccumulator: ElementInstanceMetadataMap = {}
@@ -1198,20 +1175,7 @@ function walkSceneInner(
       childPaths: childNodePaths,
       rootMetadata,
       cachedPaths,
-    } = walkElements(
-      childNode,
-      globalFrame,
-      closestOffsetParentPath,
-      validPaths,
-      rootMetadataInStateRef,
-      invalidatedPaths,
-      invalidatedPathsForStylesheetCache,
-      selectedViews,
-      invalidated,
-      scale,
-      containerRectLazy,
-      additionalElementsToUpdate,
-    )
+    } = walkElements(childNode, globalFrame, closestOffsetParentPath, globalProps)
 
     childPaths.push(...childNodePaths)
     mergeMetadataMaps_MUTATE(rootMetadataAccumulator, rootMetadata)
@@ -1230,15 +1194,7 @@ function walkElements(
   element: Node,
   parentPoint: CanvasPoint,
   closestOffsetParentPath: ElementPath,
-  validPaths: Array<ElementPath>,
-  rootMetadataInStateRef: React.MutableRefObject<ElementInstanceMetadataMap>,
-  invalidatedPaths: Set<string>,
-  invalidatedPathsForStylesheetCache: Set<string>,
-  selectedViews: Array<ElementPath>,
-  invalidated: boolean,
-  scale: number,
-  containerRectLazy: () => CanvasRectangle,
-  additionalElementsToUpdate: Array<ElementPath>,
+  globalProps: DomWalkerInternalGlobalProps,
 ): {
   childPaths: ReadonlyArray<ElementPath>
   rootMetadata: ElementInstanceMetadataMap
@@ -1246,18 +1202,7 @@ function walkElements(
 } {
   if (isScene(element)) {
     // we found a nested scene, restart the walk
-    const { metadata, cachedPaths: cachedPaths } = walkScene(
-      element,
-      validPaths,
-      rootMetadataInStateRef,
-      invalidatedPaths,
-      invalidatedPathsForStylesheetCache,
-      selectedViews,
-      invalidated,
-      scale,
-      containerRectLazy,
-      additionalElementsToUpdate,
-    )
+    const { metadata, cachedPaths: cachedPaths } = walkScene(element, globalProps)
 
     const result = {
       childPaths: [],
@@ -1281,23 +1226,28 @@ function walkElements(
     const pathsWithStrings = getPathWithStringsOnDomElement(element)
     for (const pathWithString of pathsWithStrings) {
       invalidatedElement =
-        invalidated ||
+        globalProps.forceInvalidated ||
         (ObserversAvailable &&
-          invalidatedPaths.size > 0 &&
-          invalidatedPaths.has(pathWithString.asString))
+          globalProps.invalidatedPaths.size > 0 &&
+          globalProps.invalidatedPaths.has(pathWithString.asString))
 
-      invalidatedPaths.delete(pathWithString.asString) // mutation!
+      globalProps.invalidatedPaths.delete(pathWithString.asString) // global mutation!
     }
 
     const doNotTraverseAttribute = getDOMAttribute(element, UTOPIA_DO_NOT_TRAVERSE_KEY)
     const traverseChildren: boolean = doNotTraverseAttribute !== 'true'
 
-    const globalFrame = globalFrameForElement(element, scale, containerRectLazy)
+    const globalFrame = globalFrameForElement(
+      element,
+      globalProps.scale,
+      globalProps.containerRectLazy,
+      'without-content',
+    )
 
     // Check this is a path we're interested in, otherwise skip straight to the children
     const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
       const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-      return validPaths.some((validPath) => {
+      return globalProps.validPaths.some((validPath) => {
         return EP.pathsEqual(staticPath, validPath)
       })
     })
@@ -1315,20 +1265,7 @@ function walkElements(
           childPaths: childNodePaths,
           rootMetadata: rootMetadataInner,
           cachedPaths,
-        } = walkElements(
-          child,
-          globalFrame,
-          closestOffsetParentPathInner,
-          validPaths,
-          rootMetadataInStateRef,
-          invalidatedPaths,
-          invalidatedPathsForStylesheetCache,
-          selectedViews,
-          invalidatedElement,
-          scale,
-          containerRectLazy,
-          additionalElementsToUpdate,
-        )
+        } = walkElements(child, globalFrame, closestOffsetParentPathInner, globalProps)
         childPaths.push(...childNodePaths)
         mergeMetadataMaps_MUTATE(rootMetadataAccumulator, rootMetadataInner)
         cachedPathsAccumulator.push(...cachedPaths)
@@ -1344,14 +1281,8 @@ function walkElements(
       parentPoint,
       closestOffsetParentPath,
       uniqueChildPaths,
-      scale,
-      containerRectLazy,
-      invalidatedPaths,
-      invalidatedPathsForStylesheetCache,
-      rootMetadataInStateRef,
       invalidatedElement,
-      selectedViews,
-      additionalElementsToUpdate,
+      globalProps,
     )
 
     mergeMetadataMaps_MUTATE(rootMetadataAccumulator, collectedMetadata)

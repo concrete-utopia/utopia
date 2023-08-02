@@ -1,38 +1,178 @@
-import { getUtopiaID } from '../../../core/shared/uid-utils'
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert"] }] */
+import { getUtopiaID, parseUID } from '../../../core/shared/uid-utils'
 import { getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import * as FastCheck from 'fast-check'
+import type {
+  JSExpression,
+  JSXElement,
+  JSXElementChild,
+  TopLevelElement,
+} from '../../shared/element-template'
 import {
+  emptyComments,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
-  JSExpression,
-  JSXElementChild,
+  jsExpressionOtherJavaScript,
+  jsxElement,
+  walkElements,
 } from '../../shared/element-template'
-import { isParseSuccess, ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
-import { emptySet } from '../../shared/set-utils'
+import type { ParsedTextFile, ParseSuccess } from '../../shared/project-file-types'
+import {
+  isParseSuccess,
+  RevisionsState,
+  textFile,
+  textFileContents,
+} from '../../shared/project-file-types'
+import { emptySet, intersection } from '../../shared/set-utils'
+import { isEmptyObject } from '../../shared/object-utils'
 import { lintAndParse } from './parser-printer'
-import { jsxAttributeArbitrary, jsxElementChildArbitrary } from './parser-printer.test-utils'
-import { Arbitrary } from 'fast-check'
+import {
+  elementsStructure,
+  jsxAttributeArbitrary,
+  jsxElementChildArbitrary,
+} from './parser-printer.test-utils'
+import type { Arbitrary } from 'fast-check'
+import type { FixUIDsState } from './uid-fix'
 import { fixExpressionUIDs, fixJSXElementChildUIDs } from './uid-fix'
+import { foldEither } from '../../../core/shared/either'
+import {
+  getAllUniqueUids,
+  getAllUniqueUIdsFromElementChild,
+} from '../../../core/model/get-unique-ids'
+import { contentsToTree } from '../../../components/assets'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
 }
 
+function validateJSXElementUID(element: JSXElement): void {
+  // Ensure that the `data-uid`attribute matches the `uid` property.
+  const uidAttribute = parseUID(element.props, emptyComments)
+  return foldEither(
+    () => {
+      throw new Error(`No data-uid field in element with uid ${element.uid}.`)
+    },
+    (fromProps) => {
+      if (fromProps !== element.uid) {
+        throw new Error(
+          `Got data-uid field for ${fromProps} in element (of type ${element.type}) with uid ${element.uid}.`,
+        )
+      }
+    },
+    uidAttribute,
+  )
+}
+
+function validateTopLevelElementsElementUIDs(topLevelElements: Array<TopLevelElement>): void {
+  walkElements(topLevelElements, (element) => {
+    if (isJSXElement(element)) {
+      validateJSXElementUID(element)
+    }
+  })
+}
+
+function validateParsedTextFileElementUIDs(parsedTextFile: ParsedTextFile): void {
+  if (isParseSuccess(parsedTextFile)) {
+    validateTopLevelElementsElementUIDs(parsedTextFile.topLevelElements)
+  }
+}
+
+function validateHighlightBoundsForUIDs(parsedTextFile: ParsedTextFile): void {
+  if (isParseSuccess(parsedTextFile)) {
+    for (const highlightBoundsUID of Object.keys(parsedTextFile.highlightBounds)) {
+      const highlightBounds = parsedTextFile.highlightBounds[highlightBoundsUID]
+      if (highlightBoundsUID !== highlightBounds.uid) {
+        throw new Error(
+          `A highlight bounds with a uid of ${highlightBounds.uid} was stored against a key of ${highlightBoundsUID}`,
+        )
+      }
+    }
+  }
+}
+
+function lintAndParseAndValidateResult(
+  filename: string,
+  content: string,
+  oldParseResultForUIDComparison: ParseSuccess | null,
+  alreadyExistingUIDs_MUTABLE: Set<string>,
+  shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
+): ParsedTextFile {
+  const result = lintAndParse(
+    filename,
+    content,
+    oldParseResultForUIDComparison,
+    alreadyExistingUIDs_MUTABLE,
+    shouldTrimBounds,
+  )
+  validateParsedTextFileElementUIDs(result)
+  validateHighlightBoundsForUIDs(result)
+  const projectContents = contentsToTree({
+    ['test.js']: textFile(
+      textFileContents(content, result, RevisionsState.BothMatch),
+      null,
+      oldParseResultForUIDComparison,
+      0,
+    ),
+  })
+  const duplicateUIDs = getAllUniqueUids(projectContents).duplicateIDs
+  if (Object.keys(duplicateUIDs).length > 0) {
+    throw new Error(`Duplicate UIDs identified ${JSON.stringify(duplicateUIDs)}`)
+  }
+  return result
+}
+
 describe('fixParseSuccessUIDs', () => {
+  it('handles a newly inserted component at the start of the file', () => {
+    const initialParse = lintAndParseAndValidateResult(
+      'test.js',
+      duplicateDataUIDPropUIDBaseTestCase,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(initialParse)).toMatchInlineSnapshot(`
+      "e81
+        4a3
+          ffb
+        f4f
+          f01"
+    `)
+    if (isParseSuccess(initialParse)) {
+      const secondParse = lintAndParseAndValidateResult(
+        'test.js',
+        duplicateDataUIDPropUIDTestCaseAdditionalComponent,
+        initialParse,
+        emptySet(),
+        'trim-bounds',
+      )
+      expect(getUidTree(secondParse)).toMatchInlineSnapshot(`
+        "e81
+          4a3
+        aag
+          aae
+            ffb
+          f4f
+            f01"
+      `)
+    } else {
+      throw new Error(`First parse did not succeed.`)
+    }
+  })
   it('does not fix identical file', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       baseFileContents,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
+        4e0
+      434
+        112
       storyboard
         scene
           component"
@@ -40,21 +180,28 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level element change', () => {
-    const newFile = lintAndParse('test.js', baseFileWithTwoTopLevelComponents, null, emptySet())
-    const newFileFixed = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileWithTwoTopLevelComponents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const newFileFixed = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTwoTopLevelComponentsUpdated,
       asParseSuccessOrNull(newFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFileFixed)).toEqual(getUidTree(newFile))
     expect(getUidTree(newFileFixed)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      f0f
-        95f
-      344
-        3da
+        4e0
+      e86
+        c60
+      434
+        112
       storyboard
         scene
           component"
@@ -62,25 +209,27 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('does not die on top level fragment element change', () => {
-    const fileWithFragment = lintAndParse(
+    const fileWithFragment = lintAndParseAndValidateResult(
       'test.js',
       baseFileWithTopLevelFragmentComponent,
       null,
       emptySet(),
+      'trim-bounds',
     )
-    const fileWithFragmentUpdated = lintAndParse(
+    const fileWithFragmentUpdated = lintAndParseAndValidateResult(
       'test.js',
       fileWithTopLevelFragmentComponentUpdateContents,
       asParseSuccessOrNull(fileWithFragment),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(fileWithFragmentUpdated)).toEqual(getUidTree(fileWithFragment))
     expect(getUidTree(fileWithFragmentUpdated)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      a61
-        344
-        3da
+        4e0
+      292
+        434
+        112
       storyboard
         scene
           component"
@@ -88,18 +237,19 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('founds and fixes a single line change', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithSingleUpdateContents,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toEqual(getUidTree(baseFile))
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
+        4e0
+      434
+        112
       storyboard
         scene
           component"
@@ -107,18 +257,19 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('avoids uid shifting caused by single prepending insertion', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedView,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        95f
-        3da
+        4e0
+      434
+        c60
+        112
       storyboard
         scene
           component"
@@ -126,19 +277,20 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('double duplication', () => {
-    const newFile = lintAndParse(
+    const newFile = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViews,
       asParseSuccessOrNull(baseFile),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(newFile)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
-        f22
-        931
+        4e0
+      434
+        112
+        dda
+        03b
       storyboard
         scene
           component"
@@ -146,21 +298,28 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('insertion at the beginning', () => {
-    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null, emptySet())
-    const fourViews = lintAndParse(
+    const threeViews = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithTwoDuplicatedViews,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const fourViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatesAndInsertion,
       asParseSuccessOrNull(threeViews),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(fourViews)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        686
-        3da
-        f22
-        931
+        4e0
+      434
+        a6c
+        112
+        dda
+        03b
       storyboard
         scene
           component"
@@ -168,62 +327,90 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('multiple uid changes but the number of elements stays the same', () => {
-    const threeViews = lintAndParse('test.js', fileWithTwoDuplicatedViews, null, emptySet())
-    const updatedThreeViews = lintAndParse(
+    const threeViews = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithTwoDuplicatedViews,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const updatedThreeViews = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoDuplicatedViewsWithChanges,
       asParseSuccessOrNull(threeViews),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(updatedThreeViews)).toEqual(getUidTree(threeViews))
   })
 
   it('can handle text children fine', () => {
-    const start = lintAndParse('test.js', fileWithTwoTextElements, null, emptySet())
-    const end = lintAndParse(
+    const start = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithTwoTextElements,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const end = lintAndParseAndValidateResult(
       'test.js',
       fileWithTwoTextElementsWithChanges,
       asParseSuccessOrNull(start),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
   it('can handle changes to a parent and child', () => {
-    const start = lintAndParse('test.js', baseFileContents, null, emptySet())
-    const end = lintAndParse(
+    const start = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileContents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const end = lintAndParseAndValidateResult(
       'test.js',
       fileWithChildAndParentUpdated,
       asParseSuccessOrNull(start),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(end)).toEqual(getUidTree(start))
   })
 
   it('re-ordered elements should re-order the uid tree', () => {
-    const beforeReOrder = lintAndParse('test.js', fileWithOneInsertedView, null, emptySet())
-    const afterReOrder = lintAndParse(
+    const beforeReOrder = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithOneInsertedView,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const afterReOrder = lintAndParseAndValidateResult(
       'test.js',
       fileWithOneInsertedViewReOrdered,
       asParseSuccessOrNull(beforeReOrder),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(beforeReOrder)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        95f
-        3da
+        4e0
+      434
+        c60
+        112
       storyboard
         scene
           component"
     `)
     expect(getUidTree(afterReOrder)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        3da
-        95f
+        4e0
+      434
+        112
+        c60
       storyboard
         scene
           component"
@@ -231,69 +418,143 @@ describe('fixParseSuccessUIDs', () => {
   })
 
   it('uids should match including root element when root element changes', () => {
-    const firstResult = lintAndParse('test.js', baseFileContents, null, emptySet())
-    const secondResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileContents,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       baseFileContentsWithDifferentBackground,
       asParseSuccessOrNull(firstResult),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
   it('handles elements within arbitrary blocks', () => {
-    const firstResult = lintAndParse('test.js', fileWithArbitraryBlockInside, null, emptySet())
-    const secondResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithArbitraryBlockInside,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithSlightlyDifferentArbitraryBlockInside,
       asParseSuccessOrNull(firstResult),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(firstResult)).toEqual(getUidTree(secondResult))
   })
 
   it('handles newly inserted duplicate elements without duplicating uids', () => {
-    const firstResult = lintAndParse('test.js', fileWithBasicDiv, null, emptySet())
-    const secondResult = lintAndParse(
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      fileWithBasicDiv,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
+      "4ed
+        4e0
+      434
+        c85
+          f9b
+      storyboard
+        scene
+          component"
+    `)
+    const secondResult = lintAndParseAndValidateResult(
       'test.js',
       fileWithBasicDivDuplicated,
       asParseSuccessOrNull(firstResult),
       emptySet(),
+      'trim-bounds',
     )
     expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
       "4ed
-        random-uuid
-      344
-        593
-          c85
-            random-uuid
+        4e0
+      434
+        c85
+          aab
+            f9b
       storyboard
         scene
           component"
     `)
   })
+  it(`handles an entirely commented out JSX expression which was not previously commented out`, () => {
+    const firstResult = lintAndParseAndValidateResult(
+      'test.js',
+      uncommentedJSXExpression,
+      null,
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(firstResult)).toMatchInlineSnapshot(`
+      "e81
+        678
+          104
+          6b0"
+    `)
+    const secondResult = lintAndParseAndValidateResult(
+      'test.js',
+      commentedOutJSXExpression,
+      asParseSuccessOrNull(firstResult),
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(secondResult)).toMatchInlineSnapshot(`
+      "e81
+        678
+          104"
+    `)
+  })
 })
 
+function checkUIDValues([first, second]: [JSXElementChild, JSXElementChild]): boolean {
+  const firstUIDsResult = getAllUniqueUIdsFromElementChild(first)
+  const secondUIDsResult = getAllUniqueUIdsFromElementChild(second)
+  // Check:
+  // - first has no internal duplicates.
+  // - second has no internal duplicates.
+  // - first doesn't have a uid which is within the second value.
+  return (
+    isEmptyObject(firstUIDsResult.duplicateIDs) &&
+    isEmptyObject(secondUIDsResult.duplicateIDs) &&
+    intersection([new Set(firstUIDsResult.allIDs), new Set(secondUIDsResult.allIDs)]).size === 0
+  )
+}
+
 describe('fixExpressionUIDs', () => {
-  it('if expressions are the same type, their uids will be copied over', () => {
+  it('uids will be copied over', () => {
+    // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
+    // the UIDs are unique.
     const arbitraryExpressionPair: Arbitrary<{ first: JSExpression; second: JSExpression }> =
-      FastCheck.tuple(jsxAttributeArbitrary(2), jsxAttributeArbitrary(2)).map(([first, second]) => {
-        return {
-          first: first,
-          second: second,
-        }
-      })
+      FastCheck.tuple(jsxAttributeArbitrary(2), jsxAttributeArbitrary(2))
+        .filter(checkUIDValues)
+        .map(([first, second]) => {
+          return {
+            first: first,
+            second: second,
+          }
+        })
     function checkCall(value: { first: JSExpression; second: JSExpression }): boolean {
       const { first, second } = value
       const afterFix = fixExpressionUIDs(first, second, {
         mutableAllNewUIDs: emptySet(),
+        uidsExpectedToBeSeen: emptySet(),
         mappings: [],
+        uidUpdateMethod: 'copy-uids-fix-duplicates',
       })
-      if (first.type === second.type) {
-        return first.uid === afterFix.uid
-      } else {
-        return first.uid !== afterFix.uid
-      }
+      return first.uid === afterFix.uid
     }
     const prop = FastCheck.property(arbitraryExpressionPair, checkCall)
     FastCheck.assert(prop, { verbose: true })
@@ -301,27 +562,49 @@ describe('fixExpressionUIDs', () => {
 })
 
 describe('fixJSXElementChildUIDs', () => {
-  it('if expressions are the same type, their uids will be copied over', () => {
+  it('handles the case where an element gets wrapped with an expression', () => {
+    const before = jsxElement('div', 'div-uid', [], [])
+    const after = jsExpressionOtherJavaScript(
+      'something',
+      'return something',
+      [],
+      null,
+      {
+        'div-uid': before,
+      },
+      'expression-uid',
+    )
+    const fixUIDsState: FixUIDsState = {
+      mutableAllNewUIDs: emptySet(),
+      uidsExpectedToBeSeen: new Set('div-uid'),
+      mappings: [],
+      uidUpdateMethod: 'copy-uids-fix-duplicates',
+    }
+
+    const actualResult = fixJSXElementChildUIDs(before, after, fixUIDsState)
+    expect(actualResult.uid).not.toEqual('div-uid')
+  })
+  it('uids will be copied over', () => {
+    // If an entry has duplicated UIDs, then it will result in a differing output as the logic attempts to ensure
+    // the UIDs are unique.
     const arbitraryElementPair: Arbitrary<{ first: JSXElementChild; second: JSXElementChild }> =
-      FastCheck.tuple(jsxElementChildArbitrary(3), jsxElementChildArbitrary(3)).map(
-        ([first, second]) => {
+      FastCheck.tuple(jsxElementChildArbitrary(3), jsxElementChildArbitrary(3))
+        .filter(checkUIDValues)
+        .map(([first, second]) => {
           return {
             first: first,
             second: second,
           }
-        },
-      )
+        })
     function checkCall(value: { first: JSXElementChild; second: JSXElementChild }): boolean {
       const { first, second } = value
       const afterFix = fixJSXElementChildUIDs(first, second, {
         mutableAllNewUIDs: emptySet(),
+        uidsExpectedToBeSeen: emptySet(),
         mappings: [],
+        uidUpdateMethod: 'copy-uids-fix-duplicates',
       })
-      if (first.type === second.type) {
-        return first.uid === afterFix.uid
-      } else {
-        return first.uid !== afterFix.uid
-      }
+      return first.uid === afterFix.uid
     }
     const prop = FastCheck.property(arbitraryElementPair, checkCall)
     FastCheck.assert(prop, { verbose: true })
@@ -343,6 +626,164 @@ export var SameFileApp = (props) => {
   )
 }
 `)
+
+const uncommentedJSXExpression = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 209,
+        top: 99,
+        width: 340,
+        height: 338,
+      }}
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 80,
+          top: 60,
+          width: 104,
+          height: 95,
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 128,
+          top: 205,
+          width: 96,
+          height: 80,
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
+const commentedOutJSXExpression = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 209,
+        top: 99,
+        width: 340,
+        height: 338,
+      }}
+    >
+      {/* <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 80,
+          top: 60,
+          width: 104,
+          height: 95,
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 128,
+          top: 205,
+          width: 96,
+          height: 80,
+        }}
+      /> */}
+    </div>
+  </Storyboard>
+)
+`
+
+const duplicateDataUIDPropUIDBaseTestCase = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}} />
+    </Scene>
+    <Scene
+      style={{
+        width: 744,
+        height: 1133,
+        position: 'absolute',
+        left: 1036,
+        top: 128,
+      }}
+      data-label='My App'
+    >
+      <App style={{}} />
+    </Scene>
+  </Storyboard>
+)
+`
+const duplicateDataUIDPropUIDTestCaseAdditionalComponent = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { Playground } from '/src/playground.js'
+
+const ThisComponent = (props) => (
+  <div>
+    <div />
+  </div>
+)
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <Playground style={{}} />
+    </Scene>
+    <Scene
+      style={{
+        width: 744,
+        height: 1133,
+        position: 'absolute',
+        left: 1036,
+        top: 128,
+      }}
+      data-label='My App'
+    >
+      <App style={{}} />
+    </Scene>
+  </Storyboard>
+)
+`
 
 const baseFileContentsWithDifferentBackground = createFileText(`
 export var SameFileApp = (props) => {
@@ -762,7 +1203,13 @@ function createFileText(codeSnippet: string): string {
   `
 }
 
-const baseFile = lintAndParse('test.js', baseFileContents, null, emptySet())
+const baseFile = lintAndParseAndValidateResult(
+  'test.js',
+  baseFileContents,
+  null,
+  emptySet(),
+  'trim-bounds',
+)
 
 function getUidTree(parsedFile: ParsedTextFile): string {
   if (!isParseSuccess(parsedFile)) {

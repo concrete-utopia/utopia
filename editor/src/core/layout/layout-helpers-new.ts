@@ -2,7 +2,8 @@ import { FramePin, FlexLength, LayoutSystem, FramePoint } from 'utopia-api/core'
 import { PropertyPath, PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { ElementInstanceMetadata } from '../shared/element-template'
-import { CSSNumber, ParsedCSSProperties } from '../../components/inspector/common/css-utils'
+import type { CSSNumber } from '../../components/inspector/common/css-utils'
+import { ParsedCSSProperties } from '../../components/inspector/common/css-utils'
 
 export type LayoutDimension = 'width' | 'height'
 
@@ -90,6 +91,7 @@ export type StyleLayoutProp =
   | 'borderTopRightRadius'
   | 'borderBottomLeftRadius'
   | 'borderBottomRightRadius'
+  | 'zIndex'
 
 export function framePointForPinnedProp(pinnedProp: LayoutPinnedProp): FramePoint {
   switch (pinnedProp) {

@@ -1,4 +1,6 @@
 import * as Prettier from 'prettier/standalone'
+import { setRightMenuTab } from '../../../../components/editor/actions/action-creators'
+import { difference, getSingleValueOnly } from '../../../../core/shared/set-utils'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
@@ -7,22 +9,30 @@ import {
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
 import {
   canvasVector,
+  offsetPoint,
   offsetRect,
   windowPoint,
-  WindowPoint,
 } from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import { selectComponents } from '../../../editor/actions/meta-actions'
-import { NavigatorEntry } from '../../../editor/store/editor-state'
+import { RightMenuTab } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { getCursorFromEditor } from '../../controls/select-mode/cursor-component'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import {
-  EditorRenderResult,
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointToPointNoMouseDown,
+  mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+  pressKey,
+} from '../../event-helpers.test-utils'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import {
   formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
@@ -30,12 +40,16 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
   getRegularNavigatorTargets,
-} from './group-like-helpers.test-utils'
+} from './fragment-like-helpers.test-utils'
+import { queryHelpers } from '@testing-library/react'
+import { forceNotNull } from '../../../../core/shared/optional-utils'
+import { getDomRectCenter } from '../../../../core/shared/dom-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -92,10 +106,17 @@ async function dragAlreadySelectedElement(
     }
   }
 
-  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
-    modifiers: modifiers,
-    midDragCallback: combinedMidDragCallback,
-  })
+  await mouseDownAtPoint(canvasControlsLayer, startPoint)
+
+  await mouseDragFromPointToPointNoMouseDown(
+    canvasControlsLayer,
+    startPoint,
+    offsetPoint(startPoint, dragDelta),
+    {
+      modifiers: modifiers,
+      midDragCallback: combinedMidDragCallback,
+    },
+  )
 }
 
 function getChildrenHiderProjectCode(shouldHide: boolean): string {
@@ -166,7 +187,184 @@ export var ${BakedInStoryboardVariableName} = (
 )`
 }
 
+function getElementByDataUID(renderResult: EditorRenderResult, dataUID: string): HTMLElement {
+  const queryByDataUID = queryHelpers.queryByAttribute.bind(null, 'data-uid')
+  return forceNotNull(
+    `Could not find element with ${dataUID}`,
+    queryByDataUID(renderResult.renderedDOM.container, dataUID),
+  )
+}
+
+async function dragElementByDataUID(
+  renderResult: EditorRenderResult,
+  targetDataId: string,
+  dragDelta: WindowPoint,
+  modifiers: Modifiers,
+  checkCursor: CheckCursor | null,
+  midDragCallback: (() => Promise<void>) | null,
+) {
+  const targetElement = getElementByDataUID(renderResult, targetDataId)
+  const targetElementBounds = targetElement.getBoundingClientRect()
+  const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+  const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+  const combinedMidDragCallback = async () => {
+    if (checkCursor != null) {
+      expect(getCursorFromEditor(renderResult.getEditorState().editor)).toEqual(checkCursor.cursor)
+    }
+    if (midDragCallback != null) {
+      await midDragCallback()
+    }
+  }
+
+  await mouseClickAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+  await mouseDragFromPointWithDelta(canvasControlsLayer, startPoint, dragDelta, {
+    modifiers: modifiers,
+    midDragCallback: combinedMidDragCallback,
+  })
+}
+
 describe('Absolute Reparent Strategy', () => {
+  it('reparents newly inserted elements', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa' data-testid='aaa' />
+      `),
+      'await-first-dom-report',
+    )
+    const targetElement = renderResult.renderedDOM.getByTestId('aaa')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const startingMetadataKeys = new Set(
+      Object.keys(renderResult.getEditorState().editor.jsxMetadata),
+    )
+
+    await renderResult.dispatch([setRightMenuTab(RightMenuTab.Insert)], false)
+
+    // Insert first div.
+    await pressKey('d')
+
+    const firstInsertionPoint = {
+      x: targetElementBounds.x + 50,
+      y: targetElementBounds.y + 50,
+    }
+
+    await mouseMoveToPoint(canvasControlsLayer, firstInsertionPoint)
+    await mouseClickAtPoint(canvasControlsLayer, firstInsertionPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const afterFirstInsertMetadataKeys = new Set(
+      Object.keys(renderResult.getEditorState().editor.jsxMetadata),
+    )
+    const pathOfFirstNewlyInsertedElement = getSingleValueOnly(
+      difference(afterFirstInsertMetadataKeys, startingMetadataKeys),
+    )
+    const uidOfFirstNewlyInsertedElement = EP.toStaticUid(
+      renderResult.getEditorState().editor.jsxMetadata[pathOfFirstNewlyInsertedElement].elementPath,
+    )
+    const firstInsertedElement = getElementByDataUID(renderResult, uidOfFirstNewlyInsertedElement)
+    const firstElementBounds = firstInsertedElement.getBoundingClientRect()
+    const firstElementCenter = getDomRectCenter(firstElementBounds)
+
+    // Insert second div.
+    await pressKey('d')
+
+    const secondInsertionPoint = {
+      x: targetElementBounds.x + 200,
+      y: targetElementBounds.y + 200,
+    }
+
+    await mouseMoveToPoint(canvasControlsLayer, secondInsertionPoint)
+    await mouseClickAtPoint(canvasControlsLayer, secondInsertionPoint)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    const afterSecondInsertMetadataKeys = new Set(
+      Object.keys(renderResult.getEditorState().editor.jsxMetadata),
+    )
+    const pathOfSecondNewlyInsertedElement = getSingleValueOnly(
+      difference(afterSecondInsertMetadataKeys, afterFirstInsertMetadataKeys),
+    )
+    const uidOfSecondNewlyInsertedElement = EP.toStaticUid(
+      renderResult.getEditorState().editor.jsxMetadata[pathOfSecondNewlyInsertedElement]
+        .elementPath,
+    )
+    const secondInsertedElement = getElementByDataUID(renderResult, uidOfSecondNewlyInsertedElement)
+    const secondElementBounds = secondInsertedElement.getBoundingClientRect()
+    const secondElementCenter = getDomRectCenter(secondElementBounds)
+
+    // Reparent second div into first div.
+    const dragDelta = windowPoint({
+      x: firstElementCenter.x - secondElementCenter.x,
+      y: firstElementCenter.y - secondElementCenter.y,
+    })
+    await dragElementByDataUID(
+      renderResult,
+      uidOfSecondNewlyInsertedElement,
+      dragDelta,
+      cmdModifier,
+      null,
+      null,
+    )
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      Prettier.format(
+        `
+  import * as React from 'react'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+  export var App = (props) => {
+    return (
+      <div style={{width: '100%', height: '100%'}} data-uid='aaa' data-testid='aaa'>
+        <div                                                                                                        
+          style={{                                                                                                  
+            backgroundColor: '#aaaaaa33',                                                                           
+            position: 'absolute',                                                                                           
+            left: 1,                                                                                                
+            top: 1,                                                                                                 
+            width: 100,                                                                                             
+            height: 100,                                                                                            
+          }}                                                                                                        
+          data-uid='${uidOfFirstNewlyInsertedElement}'                                                                                            
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 100,
+              height: 100, 
+            }}
+            data-uid='${uidOfSecondNewlyInsertedElement}'
+          />
+        </div>
+      </div>
+    )
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 0, top: 0, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+      </Storyboard>
+    )
+  }
+`,
+        PrettierConfig,
+      ),
+    )
+  })
   it('reparents to the canvas root', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -182,7 +380,14 @@ describe('Absolute Reparent Strategy', () => {
     )
 
     const dragDelta = windowPoint({ x: -1000, y: -1000 })
-    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, null)
+    await dragElement(renderResult, 'bbb', dragDelta, cmdModifier, null, async () => {
+      expect(getRegularNavigatorTargets(renderResult)).toEqual([
+        'utopia-storyboard-uid/scene-aaa',
+        'utopia-storyboard-uid/scene-aaa/app-entity',
+        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'utopia-storyboard-uid/bbb', // only appears in the new target even mid-drag, no ghost element
+      ])
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
 
@@ -190,7 +395,7 @@ describe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -256,7 +461,7 @@ describe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -321,7 +526,7 @@ describe('Absolute Reparent Strategy', () => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -358,7 +563,7 @@ describe('Absolute Reparent Strategy', () => {
     const renderResult = await renderTestEditorWithCode(
       formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -403,7 +608,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
     import * as React from 'react'
-    import { Scene, Storyboard, View } from 'utopia-api'
+    import { Scene, Storyboard, View, Group } from 'utopia-api'
 
     export var App = (props) => {
       return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa' />)
@@ -469,7 +674,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -540,7 +745,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -611,7 +816,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -681,7 +886,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     return (
@@ -726,7 +931,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       return Prettier.format(
         `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
     const elementWidth = 200
@@ -779,7 +984,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -847,7 +1052,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         Prettier.format(
           `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -896,7 +1101,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -964,7 +1169,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         Prettier.format(
           `
 import * as React from 'react'
-import { Scene, Storyboard, View } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var App = (props) => {
   return (<div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -1063,26 +1268,149 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       'utopia-storyboard-uid/scene-aaa/outer-div/children-hider/child-to-reparent',
     ])
   })
-})
 
-describe('children-affecting reparent tests', () => {
-  AllContentAffectingTypes.forEach((type) => {
-    describe(`Absolute reparent with children-affecting element ${type} in the mix`, () => {
-      it('cannot reparent into a children-affecting div', async () => {
+  describe('fragment-like reparent tests', () => {
+    AllFragmentLikeTypes.forEach((type) => {
+      describe(`Absolute reparent with fragment-like element ${type} in the mix`, () => {
+        it('cannot reparent into a fragment-like div', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            testProjectWithUnstyledDivOrFragment(type),
+            'await-first-dom-report',
+          )
+
+          const dragDelta = windowPoint({ x: -75, y: 110 })
+          await dragElement(
+            renderResult,
+            'ccc',
+            dragDelta,
+            cmdModifier,
+            {
+              cursor: CSSCursor.Move,
+            },
+            null,
+          )
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of fragment-like
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
+          ])
+        })
+
+        it('drag-to-moving a child of a fragment-like element does not change the parent if the drag starts over the ancestor', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            testProjectWithUnstyledDivOrFragment(type),
+            'await-first-dom-report',
+          )
+
+          const startingElementOrder = Object.keys(renderResult.getEditorState().editor.spyMetadata)
+
+          const dragDelta = windowPoint({ x: 0, y: -50 })
+          await dragElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          // no reparent have happened
+          expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual(
+            startingElementOrder,
+          )
+        })
+
+        it('drag-to-moving a child of a fragment-like element DOES change the parent if the drag leaves the ancestor', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            testProjectWithUnstyledDivOrFragment(type),
+            'await-first-dom-report',
+          )
+
+          const dragDelta = windowPoint({ x: 0, y: -100 })
+          await dragElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          // no reparent have happened
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-1',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-2', // <- child-2 is now a child of aaa
+          ])
+        })
+
+        it('is possible to reparent a fragment-child into the parent of the fragment, if the drag starts out of the grandparent bounds', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            testProjectWithUnstyledDivOrFragment(type),
+            'await-first-dom-report',
+          )
+
+          const dragDelta = windowPoint({ x: 50, y: 0 })
+          await dragElement(renderResult, 'child-1', dragDelta, cmdModifier, null, null)
+
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getRegularNavigatorTargets(renderResult)).toEqual([
+            'utopia-storyboard-uid/scene-aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-2',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <child-1 is not the direct child of bbb
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
+          ])
+        })
+      })
+
+      it(`reparenting the fragment-like ${type} to an absolute parent works`, async () => {
         const renderResult = await renderTestEditorWithCode(
           testProjectWithUnstyledDivOrFragment(type),
           'await-first-dom-report',
         )
 
-        const dragDelta = windowPoint({ x: -75, y: 110 })
-        await dragElement(
+        const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-1',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+        const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like/inner-fragment/child-2',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+
+        const targetElement = EP.fromString(
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/fragment-like',
+        )
+        // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
+        await renderResult.dispatch(selectComponents([targetElement], false), true)
+        const dragDelta = windowPoint({ x: 0, y: 140 })
+        await dragAlreadySelectedElement(
           renderResult,
-          'ccc',
+          'child-2',
           dragDelta,
           cmdModifier,
-          {
-            cursor: CSSCursor.Move,
-          },
+          null,
           null,
         )
 
@@ -1093,169 +1421,292 @@ describe('children-affecting reparent tests', () => {
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/ccc', // <- ccc becomes a child of aaa/bbb, even though it was dragged over the globalFrame of children-affecting
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like', // <- the fragment-like fragment-like element has been reparented to otherparent, yay!
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
         ])
+
+        const propsOfFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like'
+          ]
+        // the fragment-like element continues to have no style prop
+        expect(propsOfFragment?.style == null).toBeTruthy()
+        const propsOfInnerFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment'
+          ]
+        // the inner fragment-like element continues to have no style prop
+        expect(propsOfInnerFragment?.style == null).toBeTruthy()
+
+        const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+        const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+
+        expect(child1GlobalFrameAfter).toEqual(
+          offsetRect(child1GlobalFrameBefore, canvasVector(dragDelta)),
+        )
+        expect(child2GlobalFrameAfter).toEqual(
+          offsetRect(child2GlobalFrameBefore, canvasVector(dragDelta)),
+        )
       })
 
-      it('drag-to-moving a child of a children-affecting element does not change the parent if the drag starts over the ancestor', async () => {
+      it(`reparenting the fragment-like ${type} from the canvas to an absolute parent works`, async () => {
         const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(type),
+          testProjectWithUnstyledDivOrFragmentOnCanvas(type),
           'await-first-dom-report',
         )
 
-        const startingElementOrder = Object.keys(renderResult.getEditorState().editor.spyMetadata)
+        const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString('utopia-storyboard-uid/fragment-like/inner-fragment/child-1'),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+        const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString('utopia-storyboard-uid/fragment-like/inner-fragment/child-2'),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
 
-        const dragDelta = windowPoint({ x: 0, y: -50 })
-        await dragElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
+        const targetElement = EP.fromString('utopia-storyboard-uid/fragment-like')
+        // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
+        await renderResult.dispatch(selectComponents([targetElement], false), true)
+        const dragDelta = windowPoint({ x: 300, y: 150 })
+        await dragAlreadySelectedElement(
+          renderResult,
+          'child-2',
+          dragDelta,
+          cmdModifier,
+          null,
+          null,
+        )
 
         await renderResult.getDispatchFollowUpActionsFinished()
 
-        // no reparent have happened
-        expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual(
-          startingElementOrder,
-        )
-      })
-
-      it('drag-to-moving a child of a children-affecting element DOES change the parent if the drag leaves the ancestor', async () => {
-        const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(type),
-          'await-first-dom-report',
-        )
-
-        const dragDelta = windowPoint({ x: 0, y: -100 })
-        await dragElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
-
-        await renderResult.getDispatchFollowUpActionsFinished()
-
-        // no reparent have happened
         expect(getRegularNavigatorTargets(renderResult)).toEqual([
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
           'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/child-2', // <- child-2 is now a child of aaa
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like', // <- the fragment-like fragment-like element has been reparented to otherparent, yay!
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
+          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
         ])
-      })
 
-      it('is possible to reparent a fragment-child into the parent of the fragment, if the drag starts out of the grandparent bounds', async () => {
-        const renderResult = await renderTestEditorWithCode(
-          testProjectWithUnstyledDivOrFragment(type),
-          'await-first-dom-report',
+        const propsOfFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like'
+          ]
+        // the fragment-like element continues to have no style prop
+        expect(propsOfFragment?.style == null).toBeTruthy()
+        const propsOfInnerFragment =
+          renderResult.getEditorState().editor.allElementProps[
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment'
+          ]
+        // the inner fragment-like element continues to have no style prop
+        expect(propsOfInnerFragment?.style == null).toBeTruthy()
+
+        const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-1',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
+        )
+        const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          EP.fromString(
+            'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/fragment-like/inner-fragment/child-2',
+          ),
+          renderResult.getEditorState().editor.jsxMetadata,
         )
 
-        const dragDelta = windowPoint({ x: 50, y: 0 })
-        await dragElement(renderResult, 'child-1', dragDelta, cmdModifier, null, null)
-
-        await renderResult.getDispatchFollowUpActionsFinished()
-
-        expect(getRegularNavigatorTargets(renderResult)).toEqual([
-          'utopia-storyboard-uid/scene-aaa',
-          'utopia-storyboard-uid/scene-aaa/app-entity',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-1', // <child-1 is not the direct child of bbb
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
-        ])
+        expect(child1GlobalFrameAfter).toEqual(
+          offsetRect(child1GlobalFrameBefore, canvasVector(dragDelta)),
+        )
+        expect(child2GlobalFrameAfter).toEqual(
+          offsetRect(child2GlobalFrameBefore, canvasVector(dragDelta)),
+        )
       })
     })
+  })
 
-    it(`reparenting the children-affecting ${type} to an absolute parent works`, async () => {
+  describe('conditional slots', () => {
+    it('reparents into a conditional slot if empty', async () => {
       const renderResult = await renderTestEditorWithCode(
-        testProjectWithUnstyledDivOrFragment(type),
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root' style={{background: "#0ff"}}>
+          <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+            { true ? null : <div data-uid='false-branch' /> }
+          </div>
+          <div
+            style={{ backgroundColor: '#f0f', position: 'absolute', width: 50, height: 50, top: 250, left: 250 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
         'await-first-dom-report',
       )
 
-      const child1GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-        EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-1',
-        ),
-        renderResult.getEditorState().editor.jsxMetadata,
-      )
-      const child2GlobalFrameBefore = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-        EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting/inner-fragment/child-2',
-        ),
-        renderResult.getEditorState().editor.jsxMetadata,
-      )
-
-      const targetElement = EP.fromString(
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/children-affecting',
-      )
-      // selecting the fragment-like parent manually, so that dragElement drags _it_ instead of child-2!
-      await renderResult.dispatch(selectComponents([targetElement], false), true)
-      const dragDelta = windowPoint({ x: 0, y: 140 })
-      await dragAlreadySelectedElement(renderResult, 'child-2', dragDelta, cmdModifier, null, null)
+      const dragDelta = windowPoint({ x: -150, y: -150 })
+      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
 
       await renderResult.getDispatchFollowUpActionsFinished()
 
-      expect(getRegularNavigatorTargets(renderResult)).toEqual([
-        'utopia-storyboard-uid/scene-aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/bbb/child-3',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/ccc',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting', // <- the fragment-like children-affecting element has been reparented to otherparent, yay!
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
-        'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
-      ])
-
-      const propsOfFragment =
-        renderResult.getEditorState().editor.allElementProps[
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting'
-        ]
-      // the fragment-like element continues to have no style prop
-      expect(propsOfFragment?.style == null).toBeTruthy()
-      const propsOfInnerFragment =
-        renderResult.getEditorState().editor.allElementProps[
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment'
-        ]
-      // the inner fragment-like element continues to have no style prop
-      expect(propsOfInnerFragment?.style == null).toBeTruthy()
-
-      const child1GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-        EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-1',
-        ),
-        renderResult.getEditorState().editor.jsxMetadata,
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root' style={{background: "#0ff"}}>
+          <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+            {
+              true ? (
+                <div
+                  style={{
+                    backgroundColor: '#f0f',
+                    position: 'absolute',
+                    width: 50,
+                    height: 50,
+                    top: 100,
+                    left: 100
+                  }}
+                  data-uid='bbb'
+                  data-testid='bbb'
+                />
+              ) : (
+                <div data-uid='false-branch' />
+              )
+            }
+          </div>
+        </div>
+      `),
       )
-      const child2GlobalFrameAfter = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-        EP.fromString(
-          'utopia-storyboard-uid/scene-aaa/app-entity:aaa/otherparent/children-affecting/inner-fragment/child-2',
-        ),
-        renderResult.getEditorState().editor.jsxMetadata,
+    })
+    it('reparents into the parent if slot is not empty', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root' style={{background: "#0ff"}}>
+          <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+            { true ? <div data-uid='false-branch' /> : null }
+          </div>
+          <div
+            style={{ backgroundColor: '#f0f', position: 'absolute', width: 50, height: 50, top: 250, left: 250 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+        'await-first-dom-report',
       )
 
-      expect(child1GlobalFrameAfter).toEqual(
-        offsetRect(child1GlobalFrameBefore, canvasVector(dragDelta)),
+      const dragDelta = windowPoint({ x: -150, y: -150 })
+      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root' style={{background: "#0ff"}}>
+          <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+            { true ? <div data-uid='false-branch' /> : null }
+            <div
+              style={{
+                backgroundColor: '#f0f',
+                position: 'absolute',
+                width: 50,
+                height: 50,
+                top: 100,
+                left: 100
+              }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </div>
+        </div>
+      `),
       )
-      expect(child2GlobalFrameAfter).toEqual(
-        offsetRect(child2GlobalFrameBefore, canvasVector(dragDelta)),
+    })
+    it('supports reparenting into nested conditionals', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root' style={{background: "#0ff"}}>
+          <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+            {true ? (
+              true ? (
+                true ? null : (
+                  <div data-uid='false-branch1' />
+                )
+              ) : (
+                <div data-uid='false-branch2' />
+              )
+            ) : (
+              <div data-uid='false-branch3' />
+            )}
+          </div>
+          <div
+            style={{ backgroundColor: '#f0f', position: 'absolute', width: 50, height: 50, top: 250, left: 250 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const dragDelta = windowPoint({ x: -150, y: -150 })
+      await dragElement(renderResult, 'bbb', dragDelta, emptyModifiers, null, null)
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root' style={{background: "#0ff"}}>
+            <div data-uid='aaa' style={{ width: 200, height: 200, position: "absolute", top: 0, left: 0, background: "#ccc" }}>
+              {true ? (
+                true ? (
+                  true ? (
+                    <div
+                      style={{
+                        backgroundColor: '#f0f',
+                        position: 'absolute',
+                        width: 50,
+                        height: 50,
+                        top: 100,
+                        left: 100
+                      }}
+                      data-uid='bbb'
+                      data-testid='bbb'
+                    />
+                  ) : (
+                    <div data-uid='false-branch1' />
+                  )
+                ) : (
+                  <div data-uid='false-branch2' />
+                )
+              ) : (
+                <div data-uid='false-branch3' />
+              )}
+            </div>
+          </div>
+        `),
       )
     })
   })
 })
 
-function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): string {
+function testProjectWithUnstyledDivOrFragment(type: FragmentLikeType): string {
   if (type === 'conditional') {
     FOR_TESTS_setNextGeneratedUids([
       'skip1',
@@ -1268,10 +1719,10 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
       'skip8',
       'skip9',
       'skip10',
-      'children-affecting',
+      'fragment-like',
     ])
   } else {
-    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'children-affecting'])
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'fragment-like'])
   }
 
   return makeTestProjectCodeWithSnippet(`
@@ -1294,7 +1745,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
           }}
           data-uid='bbb'
         >
-          ${getOpeningGroupLikeTag(type)}
+          ${getOpeningFragmentLikeTag(type)}
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
@@ -1319,7 +1770,7 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
               data-uid='child-2'
               data-testid='child-2'
             />
-          ${getClosingGroupLikeTag(type)}
+          ${getClosingFragmentLikeTag(type)}
           <div
             style={{
               backgroundColor: '#aaaaaa33',
@@ -1359,4 +1810,132 @@ function testProjectWithUnstyledDivOrFragment(type: ContentAffectingType): strin
         />
       </div>
   `)
+}
+
+function testProjectWithUnstyledDivOrFragmentOnCanvas(type: FragmentLikeType): string {
+  if (type === 'conditional') {
+    FOR_TESTS_setNextGeneratedUids([
+      'skip1',
+      'skip2',
+      'skip3',
+      'skip4',
+      'skip5',
+      'skip6',
+      'inner-fragment',
+      'skip8',
+      'skip9',
+      'skip10',
+      'fragment-like',
+    ])
+  } else {
+    FOR_TESTS_setNextGeneratedUids(['skip1', 'skip2', 'inner-fragment', 'fragment-like'])
+  }
+
+  const code = `
+  import * as React from 'react'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+  export var App = (props) => {
+    return (<div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='aaa'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 30,
+          top: 75,
+          width: 300,
+          height: 100,
+        }}
+        data-uid='bbb'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 30,
+            height: 30,
+            contain: 'layout',
+            position: 'absolute',
+            left: 270,
+            top: 0,
+          }}
+          data-uid='child-3'
+        />
+      </div>
+      <div
+        style={{
+          backgroundColor: '#0041B3A1',
+          position: 'absolute',
+          left: 170,
+          top: 5,
+          width: 50,
+          height: 30,
+        }}
+        data-uid='ccc'
+        data-testid='ccc'
+      />
+      <div
+        style={{
+          backgroundColor: '#0041B3A1',
+          position: 'absolute',
+          left: 20,
+          top: 210,
+          width: 250,
+          height: 150,
+        }}
+        data-uid='otherparent'
+        data-testid='otherparent'
+      />
+    </div>)
+  }
+
+  export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+      <Storyboard data-uid='${BakedInStoryboardUID}'>
+        <Scene
+          style={{ left: 100, top: -50, width: 400, height: 400 }}
+          data-uid='${TestSceneUID}'
+        >
+          <App
+            data-uid='${TestAppUID}'
+            style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+          />
+        </Scene>
+        ${getOpeningFragmentLikeTag(type)}
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -200,
+              top: 20,
+              width: 50,
+              height: 30,
+            }}
+            data-uid='child-1'
+            data-testid='child-1'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: -100,
+              top: 50,
+              width: 75,
+              height: 40,
+            }}
+            data-uid='child-2'
+            data-testid='child-2'
+          />
+        ${getClosingFragmentLikeTag(type)}
+      </Storyboard>
+    )
+  }
+`
+  return formatTestProjectCode(code)
 }

@@ -2,39 +2,43 @@ import { act, fireEvent } from '@testing-library/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { isInfinityRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import {
+  expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
+  TestAppUID,
   TestScenePath,
+  TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../../editor/actions/meta-actions'
-import { FlexDirection } from '../common/css-utils'
+import type { FlexDirection } from '../common/css-utils'
 import {
+  DetectedLabel,
+  ComputedLabel,
   FillContainerLabel,
   FillFixedHugControlId,
   FixedLabel,
   HugContentsLabel,
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
-import { Axis, FixedHugFillMode, MaxContent } from '../inspector-common'
+import type { Axis, FixedHugFillMode } from '../inspector-common'
+import { MaxContent } from '../inspector-common'
 import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
+import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 
 describe('Fixed / Fill / Hug control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   describe('fill container', () => {
     it('set width to fill container in flex row', async () => {
       const editor = await renderTestEditorWithCode(
@@ -390,6 +394,118 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.maxHeight).toEqual('')
     })
 
+    it('Group with explicit width, height show up as Hug x Hug label, but the number inputs for width and height act like for Fixed divs', async () => {
+      const editor = await renderTestEditorWithCode(
+        `
+        import * as React from 'react'
+        import { Storyboard, Group } from 'utopia-api'
+        import { App } from '/src/app.js'
+
+        export var storyboard = (
+          <Storyboard>
+            <Group
+              data-uid='parent'
+              data-testid='parent'
+              style={{
+                position: 'absolute',
+                left: 50,
+                top: 150,
+                width: 200,
+                height: 300,
+              }}
+            >
+              <div
+                data-testid='child'
+                data-uid='child'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 200,
+                  height: 300,
+                }}
+              />
+            </Group>
+          </Storyboard>
+        )
+`,
+        'await-first-dom-report',
+      )
+
+      const groupDiv = await select(editor, 'parent')
+
+      const hugContentsDropdown = editor.renderedDOM.getAllByText(HugContentsLabel)
+
+      const widthNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-width',
+      ) as HTMLInputElement
+      const heightNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-height',
+      ) as HTMLInputElement
+
+      expect(hugContentsDropdown.length).toEqual(2)
+      expect(widthNumberControl.value).toEqual('200')
+      expect(heightNumberControl.value).toEqual('300')
+
+      expect(widthNumberControl.getAttribute('data-controlstatus')).toEqual('simple')
+      expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('simple')
+    })
+
+    it('Group without width, height show up as Hug x Hug label, but the number inputs for width and height show up as detected', async () => {
+      const editor = await renderTestEditorWithCode(
+        `
+        import * as React from 'react'
+        import { Storyboard, Group } from 'utopia-api'
+        import { App } from '/src/app.js'
+
+        export var storyboard = (
+          <Storyboard>
+            <Group
+              data-uid='parent'
+              data-testid='parent'
+              style={{
+                position: 'absolute',
+                left: 50,
+                top: 150,
+              }}
+            >
+              <div
+                data-testid='child'
+                data-uid='child'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 200,
+                  height: 300,
+                }}
+              />
+            </Group>
+          </Storyboard>
+        )
+`,
+        'await-first-dom-report',
+      )
+
+      const groupDiv = await select(editor, 'parent')
+
+      const hugContentsDropdown = editor.renderedDOM.getAllByText(HugContentsLabel)
+
+      const widthNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-width',
+      ) as HTMLInputElement
+      const heightNumberControl = editor.renderedDOM.getByTestId(
+        'hug-fixed-fill-height',
+      ) as HTMLInputElement
+
+      expect(hugContentsDropdown.length).toEqual(2)
+      expect(widthNumberControl.value).toEqual('200')
+      expect(heightNumberControl.value).toEqual('300')
+
+      expect(widthNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
+      expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
+    })
+
     describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
       it('child is set to fill container on the horizontal axis', async () => {
         const editor = await renderTestEditorWithCode(
@@ -565,7 +681,7 @@ describe('Fixed / Fill / Hug control', () => {
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
       await editor.dispatch(selectComponents([targetPath], false), true)
 
-      const fixedControls = await editor.renderedDOM.findAllByText(FixedLabel)
+      const fixedControls = await editor.renderedDOM.findAllByText(DetectedLabel)
       const horizontalControl = fixedControls[0]
       await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
 
@@ -727,13 +843,14 @@ describe('Fixed / Fill / Hug control', () => {
   })
 
   describe('fixed size', () => {
-    it('global frames are correct for groups of groups', async () => {
+    it('global frames are correct for frames wrapping frames', async () => {
       const editor = await renderTestEditorWithCode(
-        projectWithNestedGroups,
+        projectWithNestedFrames,
         'await-first-dom-report',
       )
 
-      const superGroupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup'))
+      const superGroupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/grandparent'))
+
       expect(superGroupGlobalFrame.width).toBe(326)
       expect(superGroupGlobalFrame.height).toBe(407)
 
@@ -744,7 +861,7 @@ describe('Fixed / Fill / Hug control', () => {
         expect((heightControl as HTMLInputElement).value).toEqual('407')
       }
 
-      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/supergroup/group'))
+      const groupGlobalFrame = await getGlobalFrame(editor, EP.fromString('sb/grandparent/parent'))
       expect(groupGlobalFrame.width).toBe(326)
       expect(groupGlobalFrame.height).toBe(407)
 
@@ -754,6 +871,727 @@ describe('Fixed / Fill / Hug control', () => {
         const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
         expect((heightControl as HTMLInputElement).value).toEqual('407')
       }
+    })
+
+    it('changing the fixed size of a group resize its children', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', bottom: 0, right: 0}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const GroupPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`
+
+      await selectComponentsForTest(editor, [EP.fromString(GroupPath)])
+
+      const groupDiv = editor.renderedDOM.getByTestId('group')
+      expect(groupDiv.style.width).toEqual('200px')
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+      await expectSingleUndo2Saves(editor, async () => {
+        act(() => {
+          fireEvent.change(control, { target: { value: '300' } })
+          fireEvent.blur(control)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.width).toEqual('300px')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 300}}>
+          <div 
+            data-uid='child-1'
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              bottom: 100,
+              right: 150,
+              width: 150,
+              height: 100,
+            }}
+          />
+          <Group data-uid='inner-group' style={{position: 'absolute', bottom: 0, right: 0}}>
+            <div 
+              data-uid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 150,
+                height: 100,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>
+      `),
+      )
+    })
+
+    it('changing a right-pinned child correctly updates the group ancestors', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', bottom: 0, right: 0}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const TargetPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/child-1`
+
+      await selectComponentsForTest(editor, [EP.fromString(TargetPath)])
+
+      const groupDiv = editor.renderedDOM.getByTestId('group')
+      expect(groupDiv.style.width).toEqual('200px')
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+      await expectSingleUndo2Saves(editor, async () => {
+        act(() => {
+          fireEvent.change(control, { target: { value: '150' } })
+          fireEvent.blur(control)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.width).toEqual('250px')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 0, top: 50, width: 250, height: 200}}>
+          <div 
+            data-uid='child-1'
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              bottom: 100,
+              right: 100,
+              width: 150,
+              height: 100,
+            }}
+          />
+          <Group data-uid='inner-group' style={{position: 'absolute', bottom: 0, right: 0}}>
+            <div 
+              data-uid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>
+      `),
+      )
+    })
+
+    it('changing the fixed size of a group inside a group resize its children and the group parent', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const InnerGroupPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/inner-group`
+
+      await selectComponentsForTest(editor, [EP.fromString(InnerGroupPath)])
+
+      const groupDiv = editor.renderedDOM.getByTestId('group')
+      expect(groupDiv.style.width).toEqual('200px')
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+      await expectSingleUndo2Saves(editor, async () => {
+        act(() => {
+          fireEvent.change(control, { target: { value: '150' } })
+          fireEvent.blur(control)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.height).toEqual('250px')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 200, height: 250}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 150,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100, height: 150}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 150,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+      `),
+      )
+    })
+
+    it('changing the fixed size of a child inside a nested group resizes both group parents', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const InnerChildPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/inner-group/child-2`
+
+      await selectComponentsForTest(editor, [EP.fromString(InnerChildPath)])
+
+      const groupDiv = editor.renderedDOM.getByTestId('group')
+      expect(groupDiv.style.width).toEqual('200px')
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+      await expectSingleUndo2Saves(editor, async () => {
+        act(() => {
+          fireEvent.change(control, { target: { value: '200' } })
+          fireEvent.blur(control)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.width).toEqual('300px')
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 300, height: 200}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 200,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100, width: 200, height: 100}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 200,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+      `),
+      )
+    })
+
+    it('changing the fixed size of a group child to % refuses to work', async () => {
+      const startingProject = `
+      <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <div 
+            data-uid='child-1'
+            style={{
+              backgroundColor: 'red',
+              position: 'absolute',
+              bottom: 100,
+              right: 100,
+              width: 100,
+              height: 100,
+            }}
+          />
+          <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100}}>
+            <div 
+              data-uid='child-2'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>
+      `
+
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startingProject),
+        'await-first-dom-report',
+      )
+
+      const ChildPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/child-1`
+
+      await selectComponentsForTest(editor, [EP.fromString(ChildPath)])
+
+      const groupDiv = editor.renderedDOM.getByTestId('group')
+      expect(groupDiv.style.width).toEqual('200px')
+
+      const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      await mouseClickAtPoint(widthControl, { x: 5, y: 5 })
+      await expectNoAction(editor, async () => {
+        act(() => {
+          fireEvent.change(widthControl, { target: { value: '75%' } })
+          fireEvent.blur(widthControl)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.width).toEqual('200px')
+
+      // expect that nothing changed
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(startingProject),
+      )
+
+      const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+      await mouseClickAtPoint(widthControl, { x: 5, y: 5 })
+      await expectNoAction(editor, async () => {
+        act(() => {
+          fireEvent.change(heightControl, { target: { value: '75%' } })
+          fireEvent.blur(heightControl)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.height).toEqual('200px')
+
+      // expect that nothing changed
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(startingProject),
+      )
+    })
+
+    it('Changing the crazy % pin of a group child to px is allowed', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: '50%',
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      const ChildPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group/child-1`
+
+      await selectComponentsForTest(editor, [EP.fromString(ChildPath)])
+
+      const groupDiv = editor.renderedDOM.getByTestId('group')
+      expect(groupDiv.style.width).toEqual('200px')
+
+      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      await expectSingleUndo2Saves(editor, async () => {
+        act(() => {
+          fireEvent.change(control, { target: { value: '100' } })
+          fireEvent.blur(control)
+        })
+      })
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(groupDiv.style.width).toEqual('200px')
+
+      // expect that nothing changed
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 200, height: 200}}>
+            <div 
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100}}>
+              <div 
+                data-uid='child-2'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        </div>
+        `),
+      )
+    })
+  })
+
+  describe('detected size', () => {
+    const project = `
+    <div
+    style={{
+      backgroundColor: '#a6c0dc',
+      position: 'absolute',
+      left: 279,
+      top: 609,
+      width: 415,
+      height: 195,
+    }}
+    data-uid='container'
+  >
+    <span
+      style={{
+        position: 'absolute',
+        wordBreak: 'break-word',
+        left: 51,
+        top: 60,
+      }}
+      data-uid='text'
+      data-testid='text'
+    >
+      whaddup
+    </span>
+    <div
+      style={{
+        backgroundColor: '#4326c5',
+        position: 'absolute',
+        left: 166,
+        top: 49,
+        display: 'flex',
+        flexDirection: 'row',
+        padding: '20px 20.5px',
+      }}
+      data-uid='flex-parent'
+      data-testid='flex-parent'
+    >
+      <div
+        style={{
+          backgroundColor: '#fc6314',
+          width: 117,
+          height: 82,
+          contain: 'layout',
+        }}
+        data-uid='flex-child'
+      />
+    </div>
+  </div>
+    `
+    it('element with no explicit size is classified as `Detected`', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(project),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
+      ])
+
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/flex-parent`,
+        ),
+      ])
+
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`),
+      ])
+
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+    })
+
+    it('can set from detected to fixed size', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(project),
+        'await-first-dom-report',
+      )
+
+      {
+        await selectComponentsForTest(editor, [
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
+        ])
+
+        const control = (await editor.renderedDOM.findAllByText(DetectedLabel))[0]
+
+        await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+        await expectSingleUndo2Saves(editor, async () => {
+          await mouseClickAtPoint(button, { x: 5, y: 5 })
+        })
+
+        const text = editor.renderedDOM.getByTestId('text')
+
+        expect(text.style.width).toEqual('58.5px')
+      }
+
+      {
+        await selectComponentsForTest(editor, [
+          EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/flex-parent`,
+          ),
+        ])
+
+        const control = (await editor.renderedDOM.findAllByText(DetectedLabel))[0]
+
+        await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+        const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+        await expectSingleUndo2Saves(editor, async () => {
+          await mouseClickAtPoint(button, { x: 5, y: 5 })
+        })
+
+        const text = editor.renderedDOM.getByTestId('flex-parent')
+
+        expect(text.style.width).toEqual('158px')
+      }
+    })
+  })
+
+  describe('computed', () => {
+    const project = (widthValue: string) => `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = () => {
+  const width = 44
+  const height = 33
+
+  return (
+    <div
+      data-uid='root'
+      style={{
+        position: 'absolute',
+        width: ${widthValue},
+        height: height,
+        left: 100,
+        top: 100,
+        backgroundColor: '#cfe5ff',
+      }}
+    />
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 200,
+        height: 300,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-uid='scene'
+    >
+      <App data-uid='app' />
+    </Scene>
+  </Storyboard>
+)
+`
+
+    it('width/height for element with code coming from props is classified as computed', async () => {
+      const editor = await renderTestEditorWithCode(project('width'), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+      const computedControls = await editor.renderedDOM.findAllByText(ComputedLabel)
+      expect(computedControls.length).toEqual(2) // both width and height set to `Computed`
+    })
+
+    it('can toggle from computed to fixed', async () => {
+      const editor = await renderTestEditorWithCode(project('width'), 'await-first-dom-report')
+
+      await selectComponentsForTest(editor, [EP.fromString(`sb/scene/app:root`)])
+
+      const control = (await editor.renderedDOM.findAllByText(ComputedLabel))[0]
+
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+      await expectSingleUndo2Saves(editor, async () => {
+        await mouseClickAtPoint(button, { x: 5, y: 5 })
+      })
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(project('44'))
     })
   })
 })
@@ -1208,18 +2046,18 @@ export var storyboard = (
   </Storyboard>
 )
 `
-const projectWithNestedGroups = `import * as React from 'react'
+const projectWithNestedFrames = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    <div data-uid='supergroup'>
-      <div data-uid='group'>
+    <div data-uid='grandparent' style={{ position: 'absolute', width: 326, height: 407, left: 0, top: 0 }}>
+      <div data-uid='parent' style={{ position: 'absolute', width: 326, height: 407, left: 0, top: 0 }}>
         <div
           style={{
             backgroundColor: '#00acff',
             position: 'absolute',
-            left: -783,
-            top: 335,
+            left: 0,
+            top: 0,
             width: 100,
             height: 407,
           }}
@@ -1230,8 +2068,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#ff0001',
             position: 'absolute',
-            left: -557,
-            top: 335,
+            left: 226,
+            top: 0,
             width: 100,
             height: 407,
           }}
@@ -1243,8 +2081,8 @@ export var storyboard = (
         style={{
           backgroundColor: '#ffffff',
           position: 'absolute',
-          left: -670,
-          top: 335,
+          left: 113,
+          top: 0,
           width: 100,
           height: 407,
         }}

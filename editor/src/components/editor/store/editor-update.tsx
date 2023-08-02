@@ -1,14 +1,17 @@
-import { EditorState, DerivedState, UserState } from './editor-state'
-import { EditorAction, EditorDispatch } from '../action-types'
-import { UPDATE_FNS } from '../actions/actions'
+import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import type {
+  EditorAction,
+  EditorDispatch,
+  ExecutePostActionMenuChoice,
+  StartPostActionSession,
+} from '../action-types'
+import { UPDATE_FNS, restoreEditorState } from '../actions/actions'
 
-import { StateHistory } from '../history'
-import { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
+import type { StateHistory } from '../history'
+import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
+import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { getAllUniqueUids } from '../../../core/model/element-template-utils'
-import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
-import { assertNever } from '../../../core/shared/utils'
+import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -73,12 +76,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.MOVE_SELECTED_BACKWARD(state)
     case 'MOVE_SELECTED_FORWARD':
       return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
-    case 'NAVIGATOR_REORDER':
-      return UPDATE_FNS.NAVIGATOR_REORDER(action, state, derivedState, builtInDependencies)
     case 'UNSET_PROPERTY':
       return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
-    case 'SET_PROPERTY':
-      return UPDATE_FNS.SET_PROPERTY(action, state, dispatch)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -86,7 +85,7 @@ export function runSimpleLocalEditorAction(
     case 'SELECT_COMPONENTS':
       return UPDATE_FNS.SELECT_COMPONENTS(action, state, dispatch)
     case 'CLEAR_SELECTION':
-      return UPDATE_FNS.CLEAR_SELECTION(state)
+      return UPDATE_FNS.CLEAR_SELECTION(state, derivedState)
     case 'SELECT_ALL_SIBLINGS':
       return UPDATE_FNS.SELECT_ALL_SIBLINGS(action, state, derivedState)
     case 'UPDATE_EDITOR_MODE':
@@ -97,8 +96,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_HIDDEN(action, state)
     case 'RENAME_COMPONENT':
       return UPDATE_FNS.RENAME_COMPONENT(action, state)
-    case 'INSERT_SCENE':
-      return UPDATE_FNS.INSERT_SCENE(action, state)
     case 'INSERT_JSX_ELEMENT':
       return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':
@@ -117,12 +114,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.OPEN_POPUP(action, state)
     case 'CLOSE_POPUP':
       return UPDATE_FNS.CLOSE_POPUP(action, state)
-    case 'PASTE_JSX_ELEMENTS':
-      return UPDATE_FNS.PASTE_JSX_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'PASTE_PROPERTIES':
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'COPY_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
+    case 'CUT_SELECTION_TO_CLIPBOARD':
+      return UPDATE_FNS.CUT_SELECTION_TO_CLIPBOARD(state, dispatch, builtInDependencies)
     case 'COPY_PROPERTIES':
       return UPDATE_FNS.COPY_PROPERTIES(action, state)
     case 'OPEN_TEXT_EDITOR':
@@ -145,16 +142,12 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_REFRESHING_DEPENDENCIES(action, state)
     case 'UPDATE_GITHUB_OPERATIONS':
       return UPDATE_FNS.UPDATE_GITHUB_OPERATIONS(action, state)
-    case 'UPDATE_GITHUB_CHECKSUMS':
-      return UPDATE_FNS.UPDATE_GITHUB_CHECKSUMS(action, state)
-    case 'SET_ASSET_CHECKSUM':
-      return UPDATE_FNS.SET_ASSET_CHECKSUM(action, state)
     case 'REMOVE_TOAST':
       return UPDATE_FNS.REMOVE_TOAST(action, state)
-    case 'SET_HIGHLIGHTED_VIEW':
-      return UPDATE_FNS.SET_HIGHLIGHTED_VIEW(action, state)
-    case 'SET_HOVERED_VIEW':
-      return UPDATE_FNS.SET_HOVERED_VIEW(action, state)
+    case 'SET_HIGHLIGHTED_VIEWS':
+      return UPDATE_FNS.SET_HIGHLIGHTED_VIEWS(action, state)
+    case 'SET_HOVERED_VIEWS':
+      return UPDATE_FNS.SET_HOVERED_VIEWS(action, state)
     case 'CLEAR_HIGHLIGHTED_VIEWS':
       return UPDATE_FNS.CLEAR_HIGHLIGHTED_VIEWS(action, state)
     case 'CLEAR_HOVERED_VIEWS':
@@ -185,6 +178,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CODE_RESULT_CACHE(action, state)
     case 'SET_CODE_EDITOR_VISIBILITY':
       return UPDATE_FNS.SET_CODE_EDITOR_VISIBILITY(action, state)
+    case 'OPEN_CODE_EDITOR':
+      return UPDATE_FNS.OPEN_CODE_EDITOR(state)
     case 'SET_PROJECT_NAME':
       return UPDATE_FNS.SET_PROJECT_NAME(action, state)
     case 'SET_PROJECT_DESCRIPTION':
@@ -230,6 +225,7 @@ export function runSimpleLocalEditorAction(
     case 'ADD_FOLDER':
       return UPDATE_FNS.ADD_FOLDER(action, state)
     case 'DELETE_FILE':
+    case 'DELETE_FILE_FROM_VSCODE':
       return UPDATE_FNS.DELETE_FILE(action, state, derivedState, userState)
     case 'ADD_TEXT_FILE':
       return UPDATE_FNS.ADD_TEXT_FILE(action, state)
@@ -241,16 +237,14 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_CODE_EDITOR_LINT_ERRORS(action, state)
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
+    case 'TRUE_UP_GROUPS':
+      return UPDATE_FNS.TRUE_UP_GROUPS(state)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
-    case 'SET_PROP_WITH_ELEMENT_PATH':
-      return UPDATE_FNS.SET_PROP_WITH_ELEMENT_PATH(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
       return UPDATE_FNS.TOGGLE_PROPERTY(action, state)
-    case 'SWITCH_LAYOUT_SYSTEM':
-      return UPDATE_FNS.SWITCH_LAYOUT_SYSTEM(action, state)
     case 'CLEAR_IMAGE_FILE_BLOB':
       return UPDATE_FNS.CLEAR_IMAGE_FILE_BLOB(action, state)
     case 'SAVE_CURRENT_FILE':
@@ -258,11 +252,9 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_VIEW':
       return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
     case 'DELETE_SELECTED':
-      return UPDATE_FNS.DELETE_SELECTED(action, state, derivedState, dispatch)
-    case 'WRAP_IN_VIEW':
-      return UPDATE_FNS.WRAP_IN_VIEW(action, state, derivedState, dispatch, builtInDependencies)
+      return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
-      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch, builtInDependencies)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_ELEMENT':
@@ -317,7 +309,7 @@ export function runSimpleLocalEditorAction(
     case 'MARK_VSCODE_BRIDGE_READY':
       return UPDATE_FNS.MARK_VSCODE_BRIDGE_READY(action, state)
     case 'SET_FOCUSED_ELEMENT':
-      return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state)
+      return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state, derivedState)
     case 'SCROLL_TO_ELEMENT':
       return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state, dispatch)
     case 'SET_SCROLL_ANIMATION':
@@ -348,8 +340,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.CLEAR_TRANSIENT_PROPS(action, state)
     case 'ADD_TAILWIND_CONFIG':
       return UPDATE_FNS.ADD_TAILWIND_CONFIG(action, state, dispatch, builtInDependencies)
-    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
-      return UPDATE_FNS.SET_INSPECTOR_LAYOUT_SECTION_HOVERED(action, state)
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
       return UPDATE_FNS.DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX(state)
     case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
@@ -384,5 +374,63 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     default:
       return state
+  }
+}
+
+export function runExecuteWithPostActionMenuAction(
+  action: ExecutePostActionMenuChoice,
+  working: EditorStoreUnpatched,
+): EditorStoreUnpatched {
+  if (working.postActionInteractionSession == null) {
+    throw new Error('no post-action session in progress')
+  }
+
+  const editorState = restoreEditorState(
+    working.unpatchedEditor,
+    working.postActionInteractionSession.editorStateSnapshot,
+  )
+
+  const commands = action.choice.run(
+    editorState,
+    working.postActionInteractionSession.derivedStateSnapshot,
+    working.builtInDependencies,
+  )
+
+  if (commands == null) {
+    return working
+  }
+
+  const newEditorState = foldAndApplyCommandsSimple(editorState, commands)
+  return {
+    ...working,
+    unpatchedEditor: newEditorState,
+    postActionInteractionSession: {
+      ...working.postActionInteractionSession,
+      activeChoiceId: action.choice.id,
+    },
+    history: working.postActionInteractionSession.historySnapshot,
+  }
+}
+
+export function runExecuteStartPostActionMenuAction(
+  action: StartPostActionSession,
+  working: EditorStoreUnpatched,
+): EditorStoreUnpatched {
+  return {
+    ...working,
+    postActionInteractionSession: {
+      historySnapshot: working.history,
+      activeChoiceId: null,
+      postActionMenuData: action.data,
+      editorStateSnapshot: working.unpatchedEditor,
+      derivedStateSnapshot: working.unpatchedDerived,
+    },
+  }
+}
+
+export function runClearPostActionSession(working: EditorStoreUnpatched): EditorStoreUnpatched {
+  return {
+    ...working,
+    postActionInteractionSession: null,
   }
 }

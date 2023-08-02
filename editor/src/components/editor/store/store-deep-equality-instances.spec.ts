@@ -1,3 +1,10 @@
+import type {
+  JSExpressionOtherJavaScript,
+  JSExpressionValue,
+  MultiLineComment,
+  ParsedComments,
+  SingleLineComment,
+} from '../../../core/shared/element-template'
 import {
   emptyComments,
   jsxArraySpread,
@@ -5,27 +12,23 @@ import {
   jsExpressionFunctionCall,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
-  JSExpressionOtherJavaScript,
   jsExpressionOtherJavaScript,
   jsxAttributesEntry,
   jsxAttributesSpread,
   jsExpressionValue,
-  JSExpressionValue,
   jsxElement,
   jsxPropertyAssignment,
   jsxSpreadAssignment,
-  MultiLineComment,
-  ParsedComments,
-  SingleLineComment,
   utopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import * as EP from '../../../core/shared/element-path'
 import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { addToComplexMap, emptyComplexMap } from '../../../utils/map'
+import type { DerivedState } from './editor-state'
 import {
   defaultElementWarnings,
-  DerivedState,
   regularNavigatorEntry,
+  StoryboardFilePath,
   transientCanvasState,
   TransientCanvasState,
   transientFileState,
@@ -52,214 +55,107 @@ import {
   MultiLineCommentKeepDeepEqualityCall,
   ParsedCommentsKeepDeepEqualityCall,
   SingleLineCommentKeepDeepEqualityCall,
-  TransientCanvasStateKeepDeepEquality,
 } from './store-deep-equality-instances'
-
-describe('TransientCanvasStateKeepDeepEquality', () => {
-  const oldValue: TransientCanvasState = transientCanvasState(
-    [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-    {
-      ['/utopia/app.js']: transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('div', 'eee', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
-    },
-    [],
-  )
-  const newSameValue: TransientCanvasState = transientCanvasState(
-    [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-    {
-      ['/utopia/app.js']: transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('div', 'eee', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
-    },
-    [],
-  )
-  const newDifferentValue: TransientCanvasState = transientCanvasState(
-    [EP.elementPath([['scene'], ['aaa', 'ddd']])],
-    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-    [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-    {
-      ['/utopia/app.js']: transientFileState(
-        [
-          utopiaJSXComponent(
-            'App',
-            false,
-            'var',
-            'block',
-            null,
-            [],
-            jsxElement('div', 'eee', [], []),
-            null,
-            false,
-            emptyComments,
-          ),
-        ],
-        emptyImports(),
-      ),
-    },
-    [],
-  )
-
-  it('same reference returns the same reference', () => {
-    const result = TransientCanvasStateKeepDeepEquality()(oldValue, oldValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('same value returns the same reference', () => {
-    const result = TransientCanvasStateKeepDeepEquality()(oldValue, newSameValue)
-    expect(result.value).toBe(oldValue)
-    expect(result.areEqual).toEqual(true)
-  })
-  it('different but similar value handled appropriately', () => {
-    const result = TransientCanvasStateKeepDeepEquality()(oldValue, newDifferentValue)
-    expect(result.value.selectedViews![0].parts).toBe(newDifferentValue.selectedViews![0].parts)
-    expect(result.value.highlightedViews).toBe(oldValue.highlightedViews)
-    expect(result.value.filesState).toBe(oldValue.filesState)
-    expect(result.value).toEqual(newDifferentValue)
-    expect(result.areEqual).toEqual(false)
-  })
-})
+import {
+  RevisionsState,
+  textFile,
+  textFileContents,
+  unparsed,
+} from '../../../core/shared/project-file-types'
 
 describe('DerivedStateKeepDeepEquality', () => {
   const oldValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
-    transientState: transientCanvasState(
-      [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-      {
-        ['/utopia/app.js']: transientFileState(
-          [
-            utopiaJSXComponent(
-              'App',
-              false,
-              'var',
-              'block',
-              null,
-              [],
-              jsxElement('div', 'eee', [], []),
-              null,
-              false,
-              emptyComments,
-            ),
-          ],
-          emptyImports(),
+    elementWarnings: {
+      [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
+    },
+    projectContentsChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
         ),
       },
-      [],
-    ),
-    elementWarnings: addToComplexMap(
-      EP.toString,
-      emptyComplexMap(),
-      EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      defaultElementWarnings,
-    ),
+    },
+    branchOriginContentsChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
+        ),
+      },
+    },
   }
   const newSameValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
-    transientState: transientCanvasState(
-      [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-      {
-        ['/utopia/app.js']: transientFileState(
-          [
-            utopiaJSXComponent(
-              'App',
-              false,
-              'var',
-              'block',
-              null,
-              [],
-              jsxElement('div', 'eee', [], []),
-              null,
-              false,
-              emptyComments,
-            ),
-          ],
-          emptyImports(),
+    elementWarnings: {
+      [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
+    },
+    projectContentsChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
         ),
       },
-      [],
-    ),
-    elementWarnings: addToComplexMap(
-      EP.toString,
-      emptyComplexMap(),
-      EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      defaultElementWarnings,
-    ),
+    },
+    branchOriginContentsChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
+        ),
+      },
+    },
   }
   const newDifferentValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
     visibleNavigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
+    autoFocusedPaths: [EP.elementPath([['scene'], ['aaa']])],
     controls: [],
-    transientState: transientCanvasState(
-      [EP.elementPath([['scene'], ['aaa', 'bbb']])],
-      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-      [EP.elementPath([['scene'], ['aaa', 'ccc']])],
-      {
-        ['/utopia/app.js']: transientFileState(
-          [
-            utopiaJSXComponent(
-              'App',
-              false,
-              'var',
-              'block',
-              null,
-              [],
-              jsxElement('div', 'eee', [], []),
-              null,
-              false,
-              emptyComments,
-            ),
-          ],
-          emptyImports(),
+    elementWarnings: {
+      [EP.toString(EP.elementPath([['scene'], ['aaa', 'bbb']]))]: defaultElementWarnings,
+    },
+    projectContentsChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
         ),
       },
-      [],
-    ),
-    elementWarnings: addToComplexMap(
-      EP.toString,
-      emptyComplexMap(),
-      EP.elementPath([['scene'], ['aaa', 'bbb']]),
-      defaultElementWarnings,
-    ),
+    },
+    branchOriginContentsChecksums: {
+      [StoryboardFilePath]: {
+        checksum: 'aaaaa',
+        file: textFile(
+          textFileContents('// Some code.', unparsed, RevisionsState.CodeAhead),
+          null,
+          null,
+          0,
+        ),
+      },
+    },
   }
   it('same reference returns the same reference', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, oldValue)
@@ -277,8 +173,8 @@ describe('DerivedStateKeepDeepEquality', () => {
       newDifferentValue.navigatorTargets[0].elementPath,
     )
     expect(result.value.visibleNavigatorTargets).toBe(oldValue.visibleNavigatorTargets)
+    expect(result.value.autoFocusedPaths).toBe(oldValue.autoFocusedPaths)
     expect(result.value.controls).toBe(oldValue.controls)
-    expect(result.value.transientState).toBe(oldValue.transientState)
     expect(result.value.elementWarnings).toBe(oldValue.elementWarnings)
     expect(result.value).toEqual(newDifferentValue)
     expect(result.areEqual).toEqual(false)

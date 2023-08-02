@@ -1,12 +1,13 @@
 import React from 'react'
 import { styleStringInArray } from '../../../utils/common-constants'
-import { FlexDirection, FlexWrap } from 'utopia-api/core'
+import type { FlexDirection, FlexWrap } from 'utopia-api/core'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { when } from '../../../utils/react-conditionals'
-import { Icn, IcnProps, PopupList, useColorTheme } from '../../../uuiui'
-import { SelectOption } from '../../../uuiui-deps'
+import type { IcnProps } from '../../../uuiui'
+import { Icn, PopupList, useColorTheme } from '../../../uuiui'
+import type { SelectOption } from '../../../uuiui-deps'
 import { InlineLink } from '../../../uuiui/inline-button'
 import { setProp_UNSAFE } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -167,7 +168,7 @@ export const LayoutParentControl = React.memo((): JSX.Element | null => {
           flexDirection: 'column',
           alignItems: 'stretch',
           justifyContent: 'flex-start',
-          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 0px 1px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px 1px 2px 1px`,
+          boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 0px 1px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px 1px 2px 1px`,
           backgroundColor: colorTheme.inspectorBackground.value,
           textTransform: 'capitalize',
         }}

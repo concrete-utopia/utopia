@@ -1,13 +1,13 @@
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  EditorState,
-  EditorStatePatch,
   forUnderlyingTargetFromEditorState,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
-import { BaseCommand, CommandFunction, getPatchForComponentChange, WhenToRun } from './commands'
+import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { getPatchForComponentChange } from './commands'
 
 export interface DeleteElement extends BaseCommand {
   type: 'DELETE_ELEMENT'
@@ -31,9 +31,9 @@ export const runDeleteElement: CommandFunction<DeleteElement> = (
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
+    (successTarget, _underlyingElementTarget, underlyingTarget, underlyingFilePathTarget) => {
       const components = getUtopiaJSXComponentsFromSuccess(successTarget)
-      const withElementRemoved = removeElementAtPath(command.target, components)
+      const withElementRemoved = removeElementAtPath(underlyingTarget, components)
       editorStatePatches = [
         getPatchForComponentChange(
           successTarget.topLevelElements,

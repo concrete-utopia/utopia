@@ -1,27 +1,28 @@
 import React from 'react'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import {
   UTOPIA_PATH_KEY,
   UTOPIA_SCENE_ID_KEY,
   UTOPIA_INSTANCE_PATH,
   UTOPIA_UID_KEY,
-  UTOPIA_UID_ORIGINAL_PARENTS_KEY,
 } from '../../../core/model/utopia-constants'
-import { flatMapEither, forEachRight } from '../../../core/shared/either'
-import {
+import { forEachRight } from '../../../core/shared/either'
+import type {
   JSXElementChild,
-  isJSXElement,
   JSXElement,
-  jsExpressionValue,
   ElementsWithin,
+  JSExpression,
+  JSXElementLike,
+} from '../../../core/shared/element-template'
+import {
+  isJSXElement,
+  jsExpressionValue,
   isIntrinsicElement,
   isIntrinsicHTMLElement,
-  JSXArbitraryBlock,
   emptyComments,
   jsxTextBlock,
   isJSXFragment,
-  JSXElementLike,
-  isJSXArbitraryBlock,
+  isJSExpression,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -29,15 +30,15 @@ import {
   jsxAttributeToValue,
   setJSXValueAtPath,
 } from '../../../core/shared/jsx-attributes'
-import {
+import type {
   ElementPath,
   HighlightBoundsForUids,
   Imports,
 } from '../../../core/shared/project-file-types'
-import { assertNever, fastForEach, NO_OP } from '../../../core/shared/utils'
+import { assertNever } from '../../../core/shared/utils'
 import { Utils } from '../../../uuiui-deps'
-import { UIFileBase64Blobs } from '../../editor/store/editor-state'
-import { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type { UIFileBase64Blobs } from '../../editor/store/editor-state'
+import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
@@ -50,17 +51,19 @@ import {
   buildSpyWrappedElement,
   clearOpposingConditionalSpyValues,
 } from './ui-jsx-canvas-spy-wrapper'
-import { createIndexedUid, getUtopiaID } from '../../../core/shared/uid-utils'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { isComponentRendererComponent } from './ui-jsx-canvas-component-renderer'
 import { optionalMap } from '../../../core/shared/optional-utils'
 import { canvasMissingJSXElementError } from './canvas-render-errors'
 import { importedFromWhere } from '../../editor/import-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import type { TextEditorProps } from '../../text-editor/text-editor'
 import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
 } from '../../../core/shared/comment-flags'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -70,7 +73,7 @@ export function createLookupRender(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -87,23 +90,14 @@ export function createLookupRender(
   return (element: JSXElement, scope: MapLike<any>): React.ReactChild => {
     index++
     const innerUID = getUtopiaID(element)
-    const generatedUID = createIndexedUid(innerUID, index)
+    const generatedUID = EP.createIndexedUid(innerUID, index)
     const withGeneratedUID = setJSXValueAtPath(
       element.props,
       PP.create('data-uid'),
       jsExpressionValue(generatedUID, emptyComments),
     )
 
-    // TODO BALAZS should this be here? or should the arbitrary block never have a template path with that last generated element?
-    const elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID = optionalMap(
-      EP.parentPath,
-      elementPath,
-    )
-
-    const innerPath = optionalMap(
-      (path) => EP.appendToPath(path, generatedUID),
-      elementPathWithoutTheLastElementBecauseThatsAWeirdGeneratedUID,
-    )
+    const innerPath = optionalMap((path) => EP.appendToPath(path, generatedUID), elementPath)
 
     let augmentedInnerElement = element
     forEachRight(withGeneratedUID, (attrs) => {
@@ -167,7 +161,7 @@ export function renderCoreElement(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   uid: string | undefined,
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
@@ -261,7 +255,48 @@ export function renderCoreElement(
         editedText,
       )
     }
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementPath != null) {
+        addFakeSpyEntry(
+          validPaths,
+          metadataContext,
+          elementPath,
+          element,
+          filePath,
+          imports,
+          'not-a-conditional',
+        )
+      }
+
+      if (elementIsTextEdited) {
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          textProp: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
       const innerRender = createLookupRender(
         elementPath,
         rootScope,
@@ -291,7 +326,7 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSXArbitraryBlock(filePath, requireResult, element, blockScope)
+      return runJSExpression(filePath, requireResult, element, blockScope)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -343,57 +378,140 @@ export function renderCoreElement(
     case 'JSX_CONDITIONAL_EXPRESSION': {
       const commentFlag = findUtopiaCommentFlag(element.comments, 'conditional')
       const override = isUtopiaCommentFlagConditional(commentFlag) ? commentFlag.value : null
-      const conditionValueAsAny =
-        override ?? jsxAttributeToValue(filePath, inScope, requireResult, element.condition)
-      // Coerce `conditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
+      const defaultConditionValueAsAny = jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element.condition,
+      )
+      // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
-      const conditionValue: boolean = !!conditionValueAsAny
-      const actualElement = conditionValue ? element.whenTrue : element.whenFalse
+      const defaultConditionValue: boolean = !!defaultConditionValueAsAny
+      const activeConditionValue = override ?? defaultConditionValue
+      const actualElement = activeConditionValue ? element.whenTrue : element.whenFalse
 
       if (elementPath != null) {
-        clearOpposingConditionalSpyValues(metadataContext, element, conditionValue, elementPath)
-
-        addFakeSpyEntry(metadataContext, elementPath, element, filePath, imports, conditionValue)
-      }
-
-      if (isJSXArbitraryBlock(actualElement)) {
-        return jsxAttributeToValue(filePath, inScope, requireResult, actualElement)
-      } else {
-        const childPath = optionalMap(
-          (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+        clearOpposingConditionalSpyValues(
+          metadataContext,
+          element,
+          activeConditionValue,
           elementPath,
         )
 
-        return renderCoreElement(
+        addFakeSpyEntry(validPaths, metadataContext, elementPath, element, filePath, imports, {
+          active: activeConditionValue,
+          default: defaultConditionValue,
+        })
+      }
+
+      const childPath = optionalMap(
+        (path) => EP.appendToPath(path, getUtopiaID(actualElement)),
+        elementPath,
+      )
+
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        // when the inactive branch is an expression we can edit the full conditional as text
+        const inactiveBranch = activeConditionValue ? element.whenFalse : element.whenTrue
+        const fullTextEdit = isJSExpression(inactiveBranch)
+        const textContent = fullTextEdit
+          ? trimJoinUnescapeTextFromJSXElements([element])
+          : trimJoinUnescapeTextFromJSXElements([actualElement])
+
+        const textProp = (() => {
+          if (fullTextEdit) {
+            return 'fullConditional'
+          }
+          if (activeConditionValue) {
+            return 'whenTrue'
+          }
+          return 'whenFalse'
+        })()
+
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          textProp: textProp,
+        }
+
+        return buildSpyWrappedElement(
           actualElement,
-          childPath,
-          rootScope,
-          inScope,
-          parentComponentInputProps,
-          requireResult,
-          hiddenInstances,
-          displayNoneInstances,
-          fileBlobs,
-          validPaths,
-          uid,
-          reactChildren,
+          textEditorProps,
+          childPath!,
           metadataContext,
           updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
           jsxFactoryFunctionName,
-          codeError,
           shouldIncludeCanvasRootInTheSpy,
-          filePath,
           imports,
-          code,
-          highlightBounds,
-          editedText,
+          filePath,
         )
       }
+
+      return renderCoreElement(
+        actualElement,
+        childPath,
+        rootScope,
+        inScope,
+        parentComponentInputProps,
+        requireResult,
+        hiddenInstances,
+        displayNoneInstances,
+        fileBlobs,
+        validPaths,
+        uid,
+        reactChildren,
+        metadataContext,
+        updateInvalidatedPaths,
+        jsxFactoryFunctionName,
+        codeError,
+        shouldIncludeCanvasRootInTheSpy,
+        filePath,
+        imports,
+        code,
+        highlightBounds,
+        editedText,
+      )
     }
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+      const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
+
+      if (elementIsTextEdited) {
+        const textContent = trimJoinUnescapeTextFromJSXElements([element])
+        const textEditorProps: TextEditorProps = {
+          elementPath: elementPath,
+          filePath: filePath,
+          text: textContent,
+          component: React.Fragment,
+          passthroughProps: {},
+          textProp: 'itself',
+        }
+
+        return buildSpyWrappedElement(
+          element,
+          textEditorProps,
+          elementPath,
+          metadataContext,
+          updateInvalidatedPaths,
+          [],
+          TextEditorWrapper,
+          inScope,
+          jsxFactoryFunctionName,
+          shouldIncludeCanvasRootInTheSpy,
+          imports,
+          filePath,
+        )
+      }
+
       return jsxAttributeToValue(filePath, inScope, requireResult, element)
     default:
       const _exhaustiveCheck: never = element
@@ -401,41 +519,85 @@ export function renderCoreElement(
   }
 }
 
-function trimAndJoinTextFromJSXElements(elements: Array<JSXElementChild>): string | null {
+function trimJoinUnescapeTextFromJSXElements(elements: Array<JSXElementChild>): string {
   let combinedText = ''
   for (let i = 0; i < elements.length; i++) {
-    const c = elements[i]
-    switch (c.type) {
-      case 'JSX_TEXT_BLOCK':
-        combinedText += trimWhitespaces(c.text, elements[i - 1] ?? null, elements[i + 1] ?? null)
-        break
-      case 'JSX_ELEMENT':
-        if (c.name.baseVariable === 'br') {
-          combinedText += '\n'
-        }
-        break
-      case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        if (c.transpiledJavascript === `return ${c.javascript}`) {
-          combinedText += `{${c.originalJavascript}}`
-        }
-        break
-      case 'JSX_FRAGMENT':
-      case 'JSX_CONDITIONAL_EXPRESSION':
-        break
-      case 'ATTRIBUTE_VALUE':
-        if (typeof c.value === 'string') {
-          combinedText += c.value
-        }
-        break
-      case 'ATTRIBUTE_NESTED_ARRAY':
-      case 'ATTRIBUTE_NESTED_OBJECT':
-      case 'ATTRIBUTE_FUNCTION_CALL':
-        break
-      default:
-        assertNever(c)
-    }
+    combinedText += jsxElementChildToText(
+      elements[i],
+      elements[i - 1] ?? null,
+      elements[i + 1] ?? null,
+      'jsx',
+    )
   }
-  return combinedText
+
+  return unescapeHTML(combinedText)
+}
+
+function jsxElementChildToText(
+  element: JSXElementChild,
+  prevElement: JSXElementChild | null,
+  nextElement: JSXElementChild | null,
+  expressionContext: 'jsx' | 'javascript',
+): string {
+  switch (element.type) {
+    case 'JSX_TEXT_BLOCK':
+      return trimWhitespaces(element.text, prevElement ?? null, nextElement ?? null)
+    case 'JSX_ELEMENT':
+      if (element.name.baseVariable === 'br') {
+        return '\n'
+      }
+      return ''
+    case 'JSX_MAP_EXPRESSION':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      // when the context is jsx, we need to wrap expression in curly brackets
+      return expressionContext === 'javascript'
+        ? element.originalJavascript
+        : `{${element.originalJavascript}}`
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      // This is a best effort to reconstruct the original code of the conditional.
+      // Maybe it would be better to store the originalJavascript in JSXConditionalExpression, but that also has its problems, e.g.
+      // when we instantiate expressions from code (for example during wrapping), then we don't want to produce javascript code there from a full hierarchy of elements
+      return `{ ${element.originalConditionString} ? ${jsxElementChildToText(
+        element.whenTrue,
+        null,
+        null,
+        'javascript',
+      )} : ${jsxElementChildToText(element.whenFalse, null, null, 'javascript')} }`
+    case 'ATTRIBUTE_VALUE':
+      if (typeof element.value === 'string') {
+        switch (expressionContext) {
+          // when the context is javascript we need to put string values between quotation marks
+          case 'javascript':
+            const multiline = element.value.split('\n').length > 1
+            if (multiline) {
+              const escaped = element.value.replace('`', '`')
+              return '`' + escaped + '`'
+            }
+            const escaped = element.value.replace("'", "'")
+            return "'" + escaped + "'"
+          case 'jsx':
+            return element.value
+          default:
+            assertNever(expressionContext)
+        }
+      }
+      if (expressionContext == 'javascript') {
+        if (element.value === null) {
+          return 'null'
+        }
+        if (element.value === undefined) {
+          return 'undefined'
+        }
+      }
+      return element.value != null ? element.value.toString() : '{null}'
+    case 'JSX_FRAGMENT':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return ''
+    default:
+      assertNever(element)
+  }
 }
 
 function trimWhitespaces(
@@ -486,7 +648,7 @@ function renderJSXElement(
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
   fileBlobs: UIFileBase64Blobs,
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
@@ -595,16 +757,19 @@ function renderJSXElement(
     throw canvasMissingJSXElementError(jsxFactoryFunctionName, code, jsx, filePath, highlightBounds)
   }
 
-  if (elementPath != null && validPaths.has(EP.makeLastPartOfPathStatic(elementPath))) {
+  if (
+    elementPath != null &&
+    validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
+  ) {
     if (elementIsTextEdited) {
-      const text = trimAndJoinTextFromJSXElements(childrenWithNewTextBlock)
-      const textContent = unescapeHTML(text ?? '')
-      const textEditorProps = {
+      const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
+      const textEditorProps: TextEditorProps = {
         elementPath: elementPath,
         filePath: filePath,
         text: textContent,
         component: FinalElement,
         passthroughProps: finalProps,
+        textProp: 'child',
       }
 
       return buildSpyWrappedElement(
@@ -701,10 +866,10 @@ export function utopiaCanvasJSXLookup(
   }
 }
 
-function runJSXArbitraryBlock(
+function runJSExpression(
   filePath: string,
   requireResult: MapLike<any>,
-  block: JSXArbitraryBlock,
+  block: JSExpression,
   currentScope: MapLike<any>,
 ): any {
   switch (block.type) {
@@ -713,6 +878,7 @@ function runJSXArbitraryBlock(
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsxAttributeToValue(filePath, block, requireResult, block)
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
     default:

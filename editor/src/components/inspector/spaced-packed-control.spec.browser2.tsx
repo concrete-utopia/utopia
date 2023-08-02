@@ -3,11 +3,11 @@ import {
   expectSingleUndo2Saves,
   hoverControlWithCheck,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../canvas/controls/select-mode/subdued-padding-control'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import {
   PackedLabelCopy,
   SpacedLabelCopy,
@@ -21,8 +21,6 @@ const SceneId = 'sc'
 const ParentId = 'p'
 
 describe('spaced - packed control', () => {
-  setFeatureForBrowserTests('Nine block control', true)
-
   it('set element to spaced layout', async () => {
     const editor = await renderTestEditorWithCode(project, 'await-first-dom-report')
     await selectComponentsForTest(editor, [EP.fromString(`${StoryboardId}/${SceneId}/${ParentId}`)])

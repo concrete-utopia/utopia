@@ -1,12 +1,17 @@
-import { EditorAction } from '../action-types'
+import { safeIndex } from '../../../core/shared/array-utils'
+import type { EditorAction } from '../action-types'
+import { isFromVSCodeAction } from './actions-from-vscode'
 
 export function isTransientAction(action: EditorAction): boolean {
   switch (action.action) {
-    case 'CLEAR_DRAG_STATE':
     case 'CLEAR_INTERACTION_SESSION':
       return !action.applyChanges
 
-    case 'DROP_TARGET_HINT':
+    case 'MERGE_WITH_PREV_UNDO':
+      return action.actions.every(isTransientAction)
+
+    case 'SHOW_DROP_TARGET_HINT':
+    case 'HIDE_DROP_TARGET_HINT':
     case 'CLOSE_POPUP':
     case 'OPEN_POPUP':
     case 'ZOOM':
@@ -19,7 +24,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'POSITION_CANVAS':
     case 'SET_FOCUS':
     case 'RESIZE_LEFTPANE':
-    case 'CREATE_DRAG_STATE':
     case 'UNDO':
     case 'REDO':
     case 'CLEAR_SELECTION':
@@ -42,9 +46,9 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_COLLAPSE':
     case 'ADD_TOAST':
     case 'REMOVE_TOAST':
-    case 'SET_HIGHLIGHTED_VIEW':
+    case 'SET_HIGHLIGHTED_VIEWS':
     case 'CLEAR_HIGHLIGHTED_VIEWS':
-    case 'SET_HOVERED_VIEW':
+    case 'SET_HOVERED_VIEWS':
     case 'CLEAR_HOVERED_VIEWS':
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
@@ -59,6 +63,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SELECT_ALL_SIBLINGS':
     case 'SET_PROJECT_ID':
     case 'SET_CODE_EDITOR_VISIBILITY':
+    case 'OPEN_CODE_EDITOR':
     case 'UPDATE_PREVIEW_CONNECTED':
     case 'SEND_PREVIEW_MODEL':
     case 'CLOSE_DESIGNER_FILE':
@@ -105,7 +110,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CLOSE_FLOATING_INSERT_MENU':
     case 'SET_PROP_TRANSIENT':
     case 'CLEAR_TRANSIENT_PROPS':
-    case 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED':
     case 'DECREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'INCREMENT_RESIZE_OPTIONS_SELECTED_INDEX':
     case 'SET_RESIZE_OPTIONS_TARGET_OPTIONS':
@@ -121,21 +125,20 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'TOGGLE_SELECTION_LOCK':
     case 'UPDATE_GITHUB_OPERATIONS':
     case 'SET_REFRESHING_DEPENDENCIES':
-    case 'UPDATE_GITHUB_CHECKSUMS':
     case 'UPDATE_GITHUB_DATA':
     case 'REMOVE_FILE_CONFLICT':
-    case 'SET_ASSET_CHECKSUM':
+    case 'CLEAR_POST_ACTION_SESSION':
+    case 'START_POST_ACTION_SESSION':
       return true
 
+    case 'TRUE_UP_GROUPS':
+    case 'EXECUTE_POST_ACTION_MENU_CHOICE':
     case 'NEW':
     case 'LOAD':
     case 'ATOMIC':
-    case 'MERGE_WITH_PREV_UNDO':
     case 'DELETE_SELECTED':
     case 'DELETE_VIEW':
     case 'UNSET_PROPERTY':
-    case 'SET_PROPERTY':
-    case 'INSERT_SCENE':
     case 'INSERT_JSX_ELEMENT':
     case 'MOVE_SELECTED_TO_BACK':
     case 'MOVE_SELECTED_TO_FRONT':
@@ -144,14 +147,11 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_Z_INDEX':
     case 'DUPLICATE_SELECTED':
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
-    case 'NAVIGATOR_REORDER':
     case 'RENAME_COMPONENT':
-    case 'PASTE_JSX_ELEMENTS':
     case 'PASTE_PROPERTIES':
     case 'TOGGLE_PROPERTY':
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
-    case 'WRAP_IN_VIEW':
     case 'WRAP_IN_ELEMENT':
     case 'UNWRAP_ELEMENT':
     case 'SET_CANVAS_FRAMES':
@@ -165,6 +165,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FILE_PATH':
     case 'ADD_FOLDER':
     case 'DELETE_FILE':
+    case 'DELETE_FILE_FROM_VSCODE':
     case 'ADD_TEXT_FILE':
     case 'UPDATE_FILE':
     case 'UPDATE_PROJECT_CONTENTS':
@@ -173,8 +174,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_FROM_CODE_EDITOR':
     case 'SET_MAIN_UI_FILE':
     case 'SET_PROP':
-    case 'SET_PROP_WITH_ELEMENT_PATH':
-    case 'SWITCH_LAYOUT_SYSTEM':
     case 'SAVE_CURRENT_FILE':
     case 'UPDATE_JSX_ELEMENT_NAME':
     case 'ADD_IMPORTS':
@@ -184,7 +183,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'FINISH_CHECKPOINT_TIMER':
     case 'ADD_MISSING_DIMENSIONS':
     case 'ADD_STORYBOARD_FILE':
-    case 'UPDATE_CHILD_TEXT':
+    case 'UPDATE_TEXT':
     case 'INSERT_INSERTABLE':
     case 'ADD_TAILWIND_CONFIG':
     case 'RUN_ESCAPE_HATCH':
@@ -195,6 +194,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
     case 'SWITCH_CONDITIONAL_BRANCHES':
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
+    case 'CUT_SELECTION_TO_CLIPBOARD':
       return false
     case 'SAVE_ASSET':
       return (
@@ -243,11 +243,8 @@ export function isFromVSCode(action: EditorAction): boolean {
     case 'ATOMIC':
     case 'MERGE_WITH_PREV_UNDO':
       return action.actions.some(isFromVSCode)
-    case 'UPDATE_FROM_CODE_EDITOR':
-    case 'SEND_LINTER_REQUEST_MESSAGE':
-      return true
     default:
-      return false
+      return isFromVSCodeAction(action)
   }
 }
 
@@ -292,4 +289,56 @@ export function shouldApplyClearInteractionSessionResult(action: EditorAction): 
     default:
       return false
   }
+}
+
+export function isWorkerUpdate(action: EditorAction): boolean {
+  return (
+    action.action === 'UPDATE_FROM_WORKER' ||
+    (action.action === 'MERGE_WITH_PREV_UNDO' && checkAnyWorkerUpdates(action.actions))
+  )
+}
+
+export function checkAnyWorkerUpdates(actions: ReadonlyArray<EditorAction>): boolean {
+  return actions.some(isWorkerUpdate)
+}
+
+export function onlyActionIsWorkerParsedUpdate(actions: ReadonlyArray<EditorAction>): boolean {
+  const firstAction = safeIndex(actions, 0)
+  if (firstAction == null || actions.length != 1) {
+    return false
+  } else {
+    return (
+      (firstAction.action === 'UPDATE_FROM_WORKER' &&
+        firstAction.updates.some((update) => update.type === 'WORKER_PARSED_UPDATE')) ||
+      (firstAction.action === 'MERGE_WITH_PREV_UNDO' &&
+        onlyActionIsWorkerParsedUpdate(firstAction.actions))
+    )
+  }
+}
+
+function simpleStringifyAction(action: EditorAction, indentation: number): string {
+  switch (action.action) {
+    case 'TRANSIENT_ACTIONS':
+      return `TRANSIENT_ACTIONS: ${simpleStringifyActions(
+        action.transientActions,
+        indentation + 1,
+      )}`
+    case 'ATOMIC':
+      return `ATOMIC: ${simpleStringifyActions(action.actions, indentation + 1)}`
+    case 'MERGE_WITH_PREV_UNDO':
+      return `MERGE_WITH_PREV_UNDO: ${simpleStringifyActions(action.actions, indentation + 1)}`
+    default:
+      return action.action
+  }
+}
+
+export function simpleStringifyActions(
+  actions: ReadonlyArray<EditorAction>,
+  indentation: number = 1,
+): string {
+  const spacing = '  '.repeat(indentation)
+  const spacingBeforeClose = '  '.repeat(indentation - 1)
+  return `[\n${spacing}${actions
+    .map((a) => simpleStringifyAction(a, indentation))
+    .join(`,\n${spacing}`)}\n${spacingBeforeClose}]`
 }

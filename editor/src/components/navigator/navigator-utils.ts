@@ -1,34 +1,27 @@
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import * as EP from '../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
+import { hasElementsWithin, isJSXConditionalExpression } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
+import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
-  ConditionalClauseNavigatorEntry,
   conditionalClauseNavigatorEntry,
   isConditionalClauseNavigatorEntry,
-  NavigatorEntry,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
 } from '../editor/store/editor-state'
-import {
-  buildTree,
-  ElementPathTree,
-  ElementPathTreeRoot,
-  getSubTree,
-  reorderTree,
-} from '../../core/shared/element-path-tree'
-import { objectValues } from '../../core/shared/object-utils'
+import type { ElementPathTree, ElementPathTrees } from '../../core/shared/element-path-tree'
+import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
 import { fastForEach } from '../../core/shared/utils'
-import { ConditionalCase, getConditionalClausePath } from '../../core/model/conditionals'
-import { UtopiaTheme } from '../../uuiui'
+import type { ConditionalCase } from '../../core/model/conditionals'
+import { getConditionalClausePath } from '../../core/model/conditionals'
 
-function baseNavigatorDepth(path: ElementPath): number {
+export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
   // so that the scenes are the left most entity.
   return EP.fullDepth(path) - 1
@@ -69,15 +62,14 @@ interface GetNavigatorTargetsResults {
 
 export function getNavigatorTargets(
   metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   collapsedViews: Array<ElementPath>,
   hiddenInNavigator: Array<ElementPath>,
 ): GetNavigatorTargetsResults {
   // Note: This value will not necessarily be representative of the structured ordering in
   // the code that produced these elements, between siblings, as a result of it
   // relying on `metadata`, which has insertion ordering.
-  const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map((subTree) => {
-    return reorderTree(subTree, metadata)
-  })
+  const projectTree = elementPathTree
 
   // This function exists separately from getAllPaths because the Navigator handles collapsed views
   let navigatorTargets: Array<NavigatorEntry> = []
@@ -92,29 +84,13 @@ export function getNavigatorTargets(
       if (
         !collapsedAncestor &&
         !isHiddenInNavigator &&
-        !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
+        !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, elementPathTree)
       ) {
         visibleNavigatorTargets.push(regularNavigatorEntry(path))
       }
 
       const isCollapsed = EP.containsPath(path, collapsedViews)
       const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
-
-      function walkSubTree(subTreeChildren: ElementPathTreeRoot): void {
-        let unfurledComponents: Array<ElementPathTree> = []
-
-        fastForEach(subTreeChildren, (child) => {
-          if (EP.isRootElementOfInstance(child.path)) {
-            unfurledComponents.push(child)
-          } else {
-            walkAndAddKeys(child, newCollapsedAncestor)
-          }
-        })
-
-        fastForEach(unfurledComponents, (unfurledComponent) => {
-          walkAndAddKeys(unfurledComponent, newCollapsedAncestor)
-        })
-      }
 
       function walkConditionalClause(
         conditionalSubTree: ElementPathTree,
@@ -142,19 +118,43 @@ export function getNavigatorTargets(
         )
         addNavigatorTargetUnlessCollapsed(clauseTitleEntry)
 
-        // Create the entry for the value of the clause.
-        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
-        if (elementMetadata == null) {
-          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
-          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
+        const isDynamic = (elementPath: ElementPath) => {
+          return (
+            MetadataUtils.isElementGenerated(elementPath) ||
+            MetadataUtils.isGeneratedTextFromMetadata(elementPath, elementPathTree, metadata)
+          )
         }
 
+        const branch =
+          conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+
         // Walk the clause of the conditional.
-        const clausePathTree = conditionalSubTree.children.find((childPath) => {
+        const clausePathTrees = Object.values(conditionalSubTree.children).filter((childPath) => {
+          if (isDynamic(childPath.path) && hasElementsWithin(branch)) {
+            for (const element of Object.values(branch.elementsWithin)) {
+              const firstChildPath = EP.appendToPath(EP.parentPath(clausePath), element.uid)
+              const containedElement = Object.values(metadata).find(({ elementPath }) => {
+                return EP.pathsEqual(EP.dynamicPathToStaticPath(elementPath), firstChildPath)
+              })
+              if (containedElement != null) {
+                return true
+              }
+            }
+          }
           return EP.pathsEqual(childPath.path, clausePath)
         })
-        if (clausePathTree != null) {
-          walkAndAddKeys(clausePathTree, newCollapsedAncestor)
+        if (clausePathTrees.length > 0) {
+          clausePathTrees.map((t) => walkAndAddKeys(t, newCollapsedAncestor))
+        }
+
+        // Create the entry for the value of the clause.
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, clausePath)
+        if (
+          elementMetadata == null &&
+          (clausePathTrees.length === 0 || !clausePathTrees.some((t) => isDynamic(t.path)))
+        ) {
+          const clauseValueEntry = syntheticNavigatorEntry(clausePath, clauseValue)
+          addNavigatorTargetUnlessCollapsed(clauseValueEntry)
         }
       }
 
@@ -174,27 +174,16 @@ export function getNavigatorTargets(
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
       } else {
-        walkSubTree(subTree.children)
+        fastForEach(Object.values(subTree.children), (child) => {
+          walkAndAddKeys(child, newCollapsedAncestor)
+        })
       }
     }
   }
 
-  function getCanvasRoots(trees: ElementPathTree[]): ElementPath[] {
-    if (projectTree.length <= 0) {
-      return []
-    }
-
-    const storyboardTree = trees.find((e) => EP.isStoryboardPath(e.path))
-    if (storyboardTree == null) {
-      return []
-    }
-
-    return storyboardTree.children.map((c) => c.path)
-  }
-
   const canvasRoots = getCanvasRoots(projectTree)
   fastForEach(canvasRoots, (childElement) => {
-    const subTree = getSubTree(projectTree, childElement)
+    const subTree = getSubTree(projectTree, childElement.path)
 
     walkAndAddKeys(subTree, false)
   })

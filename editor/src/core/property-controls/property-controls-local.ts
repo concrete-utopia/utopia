@@ -1,11 +1,11 @@
-import {
+import type {
   registerModule as registerModuleAPI,
   ComponentToRegister,
   ComponentInsertOption,
   PropertyControls,
 } from 'utopia-api/core'
-import { ProjectContentTreeRoot } from '../../components/assets'
-import {
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import type {
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
@@ -13,29 +13,30 @@ import {
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
 import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
 import { parseControlDescription } from './property-controls-parser'
+import type { ParseResult } from '../../utils/value-parser-utils'
 import {
   getParseErrorDetails,
   objectKeyParser,
   optionalObjectKeyParser,
   parseArray,
   parseObject,
-  ParseResult,
   parseString,
 } from '../../utils/value-parser-utils'
-import { UtopiaTsWorkers } from '../workers/common/worker-types'
+import type { UtopiaTsWorkers } from '../workers/common/worker-types'
 import { getCachedParseResultForUserStrings } from './property-controls-local-parser-bridge'
+import type { Either } from '../shared/either'
 import {
   applicative2Either,
   applicative3Either,
   bimapEither,
-  Either,
   foldEither,
   isLeft,
   mapEither,
   sequenceEither,
 } from '../shared/either'
 import { setOptionalProp } from '../shared/object-utils'
-import { addRegisteredControls, ControlsToCheck } from '../../components/canvas/canvas-globals'
+import type { ControlsToCheck } from '../../components/canvas/canvas-globals'
+import { addRegisteredControls } from '../../components/canvas/canvas-globals'
 import { getGlobalEvaluatedFileName } from '../shared/code-exec-utils'
 import { memoize } from '../shared/memoize'
 import fastDeepEqual from 'fast-deep-equal'

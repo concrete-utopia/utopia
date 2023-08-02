@@ -1,13 +1,15 @@
 import React from 'react'
-import { AllElementProps } from '../../editor/store/editor-state'
-import { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { CanvasVector } from '../../../core/shared/math-utils'
-import { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
-import { ProjectContentTreeRoot } from '../../assets'
-import { InsertionSubject } from '../../editor/editor-modes'
-import { CanvasCommand } from '../commands/commands'
-import { InteractionSession, StrategyApplicationStatus } from './interaction-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
+import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { CanvasVector } from '../../../core/shared/math-utils'
+import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from '../../assets'
+import type { InsertionSubject } from '../../editor/editor-modes'
+import type { CanvasCommand } from '../commands/commands'
+import type { StrategyApplicationStatus } from './interaction-state'
+import { InteractionSession } from './interaction-state'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -15,6 +17,7 @@ export interface CustomStrategyState {
   lastReorderIdx: number | null
   duplicatedElementNewUids: { [elementPath: string]: string }
   strategyGeneratedUidsCache: { [elementPath: string]: string | undefined }
+  elementsToRerender: Array<ElementPath>
 }
 
 export type CustomStrategyStatePatch = Partial<CustomStrategyState>
@@ -25,6 +28,7 @@ export function defaultCustomStrategyState(): CustomStrategyState {
     lastReorderIdx: null,
     duplicatedElementNewUids: {},
     strategyGeneratedUidsCache: {},
+    elementsToRerender: [],
   }
 }
 
@@ -91,6 +95,7 @@ export interface InteractionCanvasState {
   scale: number
   canvasOffset: CanvasVector
   startingMetadata: ElementInstanceMetadataMap
+  startingElementPathTree: ElementPathTrees
   startingAllElementProps: AllElementProps
 }
 

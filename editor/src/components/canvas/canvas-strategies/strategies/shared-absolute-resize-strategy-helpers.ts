@@ -4,27 +4,28 @@ import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../core/shared/element-template'
-import {
-  canvasPoint,
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  pointDifference,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { AllElementProps } from '../../../editor/store/editor-state'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { canvasPoint, pointDifference } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
+import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { pickPointOnRect, snapPoint } from '../../canvas-utils'
+import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  adjustCssLengthProperties,
+  lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
-import { AbsolutePin, IsCenterBased, resizeBoundingBox } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
+import type { AbsolutePin, IsCenterBased } from './resize-helpers'
+import { resizeBoundingBox } from './resize-helpers'
+import type { FlexDirection } from '../../../inspector/common/css-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function createResizeCommands(
   element: JSXElement,
@@ -34,9 +35,9 @@ export function createResizeCommands(
   elementGlobalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
-): { commands: AdjustCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
+): { commands: AdjustCssLengthProperties[]; intendedBounds: CanvasFrameAndTarget | null } {
   const pins = pinsForEdgePosition(edgePosition)
-  const commands = mapDropNulls((pin) => {
+  const properties = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
@@ -49,19 +50,23 @@ export function createResizeCommands(
     const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null) {
       // TODO what to do about missing properties?
-      return adjustCssLengthProperty(
-        'always',
-        selectedElement,
+      return lengthPropertyToAdjust(
         stylePropPathMappingFn(pin, styleStringInArray),
         (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
         horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        elementParentFlexDirection,
         'create-if-not-existing',
       )
     } else {
       return null
     }
   }, pins)
+
+  const adjustPropertiesCommand = adjustCssLengthProperties(
+    'always',
+    selectedElement,
+    elementParentFlexDirection,
+    properties,
+  )
 
   const intendedBounds: CanvasFrameAndTarget | null =
     elementGlobalFrame == null
@@ -76,7 +81,7 @@ export function createResizeCommands(
           ),
           target: selectedElement,
         }
-  return { commands, intendedBounds }
+  return { commands: [adjustPropertiesCommand], intendedBounds }
 }
 
 function pinsForEdgePosition(edgePosition: EdgePosition): AbsolutePin[] {
@@ -107,6 +112,7 @@ export function runLegacyAbsoluteResizeSnapping(
   lockedAspectRatio: number | null,
   centerBased: IsCenterBased,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
 ): {
   snapDelta: CanvasVector
   snappedBoundingBox: CanvasRectangle
@@ -134,6 +140,7 @@ export function runLegacyAbsoluteResizeSnapping(
     oppositePoint,
     draggedCorner,
     allElementProps,
+    pathTrees,
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)

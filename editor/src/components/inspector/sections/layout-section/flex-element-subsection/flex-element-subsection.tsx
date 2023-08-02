@@ -27,12 +27,12 @@ import {
 } from '../../../common/property-path-hooks'
 import { isNotUnsetDefaultOrDetected } from '../../../common/control-status'
 import { useRefEditorState } from '../../../../editor/store/store-hook'
-import { PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { PropertyPath } from '../../../../../core/shared/project-file-types'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
 import { useDispatch } from '../../../../../components/editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from '../../../../../components/inspector/inspector-strategies/inspector-strategy'
-import { CSSNumber } from '../../../../../components/inspector/common/css-utils'
+import type { CSSNumber } from '../../../../../components/inspector/common/css-utils'
 import { setPropFixedStrategies } from '../../../../../components/inspector/inspector-strategies/inspector-strategies'
 import { allElemsEqual } from '../../../../../core/shared/array-utils'
 
@@ -312,6 +312,7 @@ const FlexWidthControls = React.memo(() => {
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -322,6 +323,7 @@ const FlexWidthControls = React.memo(() => {
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.elementPathTree,
         editorStateRef.current.allElementProps,
         setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'horizontal', value),
       )
@@ -345,6 +347,7 @@ const FlexHeightControls = React.memo(() => {
     return {
       metadata: store.editor.jsxMetadata,
       selectedViews: store.editor.selectedViews,
+      elementPathTree: store.editor.elementPathTree,
       allElementProps: store.editor.allElementProps,
     }
   })
@@ -355,6 +358,7 @@ const FlexHeightControls = React.memo(() => {
         dispatch,
         editorStateRef.current.metadata,
         editorStateRef.current.selectedViews,
+        editorStateRef.current.elementPathTree,
         editorStateRef.current.allElementProps,
         setPropFixedStrategies(transient ? 'mid-interaction' : 'always', 'vertical', value),
       )

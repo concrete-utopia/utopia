@@ -1,20 +1,14 @@
-import { Sides } from 'utopia-api/core'
+import type { Sides } from 'utopia-api/core'
 import { left, Right } from '../../../core/shared/either'
-import {
-  createImportedFrom,
-  createNotImported,
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   ImportInfo,
   SpecialSizeMeasurements,
 } from '../../../core/shared/element-template'
-import {
-  canvasRectangle,
-  CanvasRectangle,
-  LocalPoint,
-  localRectangle,
-  LocalRectangle,
-} from '../../../core/shared/math-utils'
+import { createImportedFrom, createNotImported } from '../../../core/shared/element-template'
+import type { CanvasRectangle, LocalPoint, LocalRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle, localRectangle } from '../../../core/shared/math-utils'
 import {
   CanvasRectangleKeepDeepEquality,
   DropTargetHintKeepDeepEquality,
@@ -28,7 +22,8 @@ import {
   SpecialSizeMeasurementsKeepDeepEquality,
 } from './store-deep-equality-instances'
 import * as EP from '../../../core/shared/element-path'
-import { DropTargetHint, ElementProps, NavigatorState, regularNavigatorEntry } from './editor-state'
+import type { DropTargetHint, NavigatorState } from './editor-state'
+import { ElementProps, regularNavigatorEntry } from './editor-state'
 
 describe('CanvasRectangleKeepDeepEquality', () => {
   const oldValue: CanvasRectangle = canvasRectangle({
@@ -227,6 +222,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       width: 1000,
       height: 2000,
     }),
+    globalFrameWithTextContent: canvasRectangle({
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 200,
+    }),
     immediateParentProvidesLayout: false,
     closestOffsetParentPath: EP.fromString('some/dummy/path'),
     usesParentBounds: false,
@@ -305,6 +306,12 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
       y: 200,
       width: 1000,
       height: 2000,
+    }),
+    globalFrameWithTextContent: canvasRectangle({
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 200,
     }),
     immediateParentProvidesLayout: true,
     closestOffsetParentPath: EP.fromString('some/dummy/path'),
@@ -440,6 +447,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         width: 1000,
         height: 2000,
       }),
+      globalFrameWithTextContent: canvasRectangle({
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 200,
+      }),
       immediateParentProvidesLayout: false,
       closestOffsetParentPath: EP.fromString('some/dummy/path'),
       usesParentBounds: false,
@@ -513,6 +526,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     label: 'label',
     importInfo: createImportedFrom('old', 'old', 'old'),
     conditionValue: 'not-a-conditional',
+    textContent: null,
   }
   const newDifferentValue: ElementInstanceMetadata = {
     elementPath: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -547,6 +561,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
         y: 200,
         width: 1000,
         height: 2000,
+      }),
+      globalFrameWithTextContent: canvasRectangle({
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 200,
       }),
       immediateParentProvidesLayout: false,
       closestOffsetParentPath: EP.fromString('some/dummy/path'),
@@ -621,6 +641,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
     label: 'new-label',
     importInfo: createImportedFrom('old', 'old', 'old'),
     conditionValue: 'not-a-conditional',
+    textContent: null,
   }
 
   it('same reference returns the same reference', () => {
@@ -682,6 +703,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: 1000,
           height: 2000,
         }),
+        globalFrameWithTextContent: canvasRectangle({
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 200,
+        }),
         immediateParentProvidesLayout: false,
         closestOffsetParentPath: EP.fromString('some/dummy/path'),
         usesParentBounds: false,
@@ -755,6 +782,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       label: 'label',
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
+      textContent: null,
     },
   }
   const newSameValue: ElementInstanceMetadataMap = {
@@ -792,6 +820,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           width: 1000,
           height: 2000,
         }),
+        globalFrameWithTextContent: canvasRectangle({
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 200,
+        }),
         immediateParentProvidesLayout: false,
         closestOffsetParentPath: EP.fromString('some/dummy/path'),
         usesParentBounds: false,
@@ -865,6 +899,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       label: 'label',
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
+      textContent: null,
     },
   }
   const newDifferentValue: ElementInstanceMetadataMap = {
@@ -901,6 +936,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
           y: 200,
           width: 1000,
           height: 2000,
+        }),
+        globalFrameWithTextContent: canvasRectangle({
+          x: 10,
+          y: 20,
+          width: 100,
+          height: 200,
         }),
         immediateParentProvidesLayout: false,
         closestOffsetParentPath: EP.fromString('some/dummy/path'),
@@ -975,6 +1016,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
       label: 'new-label',
       importInfo: createImportedFrom('old', 'old', 'old'),
       conditionValue: 'not-a-conditional',
+      textContent: 'hello',
     },
   }
 
@@ -1011,18 +1053,21 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
 describe('DropTargetHintKeepDeepEquality', () => {
   const oldValue: DropTargetHint = {
     displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-    moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
     type: 'before',
+    targetIndexPosition: { type: 'front' },
   }
   const newSameValue: DropTargetHint = {
     displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-    moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
     type: 'before',
+    targetIndexPosition: { type: 'front' },
   }
   const newDifferentValue: DropTargetHint = {
     displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-    moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+    targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
     type: 'after',
+    targetIndexPosition: { type: 'front' },
   }
 
   it('same reference returns the same reference', () => {
@@ -1049,8 +1094,9 @@ describe('NavigatorStateKeepDeepEquality', () => {
     minimised: false,
     dropTargetHint: {
       displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-      moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
       type: 'before',
+      targetIndexPosition: { type: 'front' },
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -1061,8 +1107,9 @@ describe('NavigatorStateKeepDeepEquality', () => {
     minimised: false,
     dropTargetHint: {
       displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-      moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
       type: 'before',
+      targetIndexPosition: { type: 'front' },
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),
@@ -1073,8 +1120,9 @@ describe('NavigatorStateKeepDeepEquality', () => {
     minimised: true,
     dropTargetHint: {
       displayAtEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
-      moveToEntry: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
+      targetParent: regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']])),
       type: 'before',
+      targetIndexPosition: { type: 'front' },
     },
     collapsedViews: [EP.elementPath([['scene'], ['aaa', 'bbb']])],
     renamingTarget: EP.elementPath([['scene'], ['aaa', 'bbb']]),

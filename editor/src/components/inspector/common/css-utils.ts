@@ -1,64 +1,65 @@
 // FIXME This file shouldn't live under the inspector, and shouldn't be defining types
 import Chroma from 'chroma-js'
 import fastDeepEqual from 'fast-deep-equal'
-import { Property } from 'csstype'
+import type { Property } from 'csstype'
+import type { FramePin } from 'utopia-api/core'
 import {
   FlexAlignment,
   FlexJustifyContent,
   FlexLength,
   FlexWrap,
-  FramePin,
   isPercentPin,
   LayoutSystem,
   UtopiaUtils,
 } from 'utopia-api/core'
-import { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import type { LayoutPropertyTypes, StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { findLastIndex } from '../../../core/shared/array-utils'
+import type { Either, Right as EitherRight } from '../../../core/shared/either'
 import {
   bimapEither,
-  Either,
   eitherToMaybe,
   flatMapEither,
   isLeft,
   isRight,
   left,
   mapEither,
-  Right as EitherRight,
   right,
   traverseEither,
 } from '../../../core/shared/either'
+import type {
+  JSExpression,
+  JSXAttributes,
+  JSExpressionValue,
+  JSXElement,
+} from '../../../core/shared/element-template'
 import {
   emptyComments,
   modifiableAttributeIsAttributeFunctionCall,
   modifiableAttributeIsAttributeNotFound,
   modifiableAttributeIsPartOfAttributeValue,
   isRegularJSXAttribute,
-  JSExpression,
   jsExpressionFunctionCall,
-  JSXAttributes,
   jsExpressionValue,
-  JSExpressionValue,
-  JSXElement,
 } from '../../../core/shared/element-template'
+import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
 import {
-  getJSXAttributeAtPath,
-  getJSXAttributeAtPathInner,
+  getJSXAttributesAtPath,
+  getJSExpressionAtPath,
   getModifiableJSXAttributeAtPath,
   jsxFunctionAttributeToRawValue,
   jsxSimpleAttributeToValue,
-  ModifiableAttribute,
   setJSXValueAtPath,
   setJSXValueInAttributeAtPath,
 } from '../../../core/shared/jsx-attributes'
+import type { NumberOrPercent } from '../../../core/shared/math-utils'
 import {
-  NumberOrPercent,
   numberOrPercentToNumber,
   parseNumber,
   parseNumberOrPercent,
 } from '../../../core/shared/math-utils'
-import { PropertyPath } from '../../../core/shared/project-file-types'
+import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { PrimitiveType, ValueOf } from '../../../core/shared/utils'
+import type { PrimitiveType, ValueOf } from '../../../core/shared/utils'
 import { parseBackgroundSize } from '../../../printer-parsers/css/css-parser-background-size'
 import { parseBorder } from '../../../printer-parsers/css/css-parser-border'
 import Utils from '../../../utils/utils'
@@ -3794,11 +3795,11 @@ export function toggleBackgroundLayers(styleAttribute: JSExpression): JSExpressi
   let workingStyleProp: Either<string, JSExpression> = right(
     styleAttribute,
   ) as EitherRight<JSExpression>
-  const backgroundColorResult = getJSXAttributeAtPathInner(
+  const backgroundColorResult = getJSExpressionAtPath(
     styleAttribute,
     backgroundColorPathWithoutStyle,
   )
-  const backgroundImageResult = getJSXAttributeAtPathInner(
+  const backgroundImageResult = getJSExpressionAtPath(
     styleAttribute,
     backgroundImagePathWithoutStyle,
   )
@@ -3917,7 +3918,7 @@ export function toggleStylePropPaths(
   toggleFn: (attribute: JSExpression) => JSExpression,
 ): (element: JSXElement) => JSXElement {
   return (element: JSXElement): JSXElement => {
-    const styleProp = getJSXAttributeAtPath(element.props, PP.create('style'))
+    const styleProp = getJSXAttributesAtPath(element.props, PP.create('style'))
     const attribute = styleProp.attribute
     if (styleProp.remainingPath == null && isRegularJSXAttribute(attribute)) {
       const newProps = setJSXValueAtPath(element.props, PP.create('style'), toggleFn(attribute))
@@ -3945,6 +3946,14 @@ function printCSSNumberOrUndefinedAsAttributeValue(
       ? printCSSNumberAsAttributeValue(defaultUnitToSkip)(value)
       : jsExpressionValue(undefined, emptyComments)
   }
+}
+
+const printCSSNumberUnitlessOrUndefinedAsAttributeValue = (
+  value: CSSNumber | undefined,
+): JSExpressionValue<string | number | undefined> => {
+  return value != null
+    ? jsExpressionValue(fixNumber(value.value), emptyComments)
+    : jsExpressionValue(undefined, emptyComments)
 }
 
 function parseString(value: unknown): Either<string, string> {
@@ -4151,6 +4160,7 @@ export interface ParsedCSSProperties {
   height: CSSNumber | undefined
   flexBasis: CSSNumber | undefined
   gap: CSSNumber
+  zIndex: CSSNumber | undefined
 }
 
 export type ParsedCSSPropertiesKeys = keyof ParsedCSSProperties
@@ -4356,6 +4366,7 @@ export const cssEmptyValues: ParsedCSSProperties = {
     value: 0,
     unit: null,
   },
+  zIndex: undefined,
 }
 
 type CSSParsers = {
@@ -4427,6 +4438,7 @@ export const cssParsers: CSSParsers = {
   width: parseCSSLengthPercent,
   height: parseCSSLengthPercent,
   flexBasis: parseCSSLengthPercent,
+  zIndex: parseCSSUnitless,
 }
 
 type CSSPrinters = {
@@ -4500,6 +4512,7 @@ const cssPrinters: CSSPrinters = {
   height: printCSSNumberOrUndefinedAsAttributeValue('px'),
   flexBasis: printCSSNumberOrUndefinedAsAttributeValue('px'),
   gap: printCSSNumberAsAttributeValue('px'),
+  zIndex: printCSSNumberUnitlessOrUndefinedAsAttributeValue,
 }
 
 export interface UtopianElementProperties {
@@ -4988,9 +5001,14 @@ export const StyleProperties = [
   'textShadow',
 ]
 
-export const LayoutPropsWithoutTLBR = [
+export const LayoutPropertyList = [
+  'left',
+  'right',
+  'top',
+  'bottom',
   'width',
   'height',
+  'position',
   'float',
   'min-width',
   'min-height',
@@ -5020,19 +5038,23 @@ export const LayoutPropsWithoutTLBR = [
   'overflow',
   'box-sizing',
   'display',
-  'flex',
-  'flex-direction',
-  'flex-wrap',
-  'flex-flow',
-  'justify-content',
-  'align-items',
-  'align-content',
   'order',
+  'flex',
   'flex-grow',
   'flex-shrink',
   'flex-basis',
-  'flex',
+  'flex-direction',
+  'flex-wrap',
+  'flex-flow',
+  'align-items',
+  'align-content',
   'align-self',
+  'justify-content',
+  'justify-items',
+  'justify-self',
+  'gap',
+  'row-gap',
+  'column-gap',
   'grid-template-rows',
   'grid-template-columns',
   'grid-template-areas',
@@ -5055,8 +5077,6 @@ export const LayoutPropsWithoutTLBR = [
   'grid-template-columns',
   'grid-template-rows',
 ]
-
-const LayoutPropertyList = ['left', 'right', 'top', 'bottom', ...LayoutPropsWithoutTLBR]
 
 export function isLayoutPropDetectedInCSS(cssProps: { [key: string]: any }): boolean {
   return LayoutPropertyList.findIndex((prop: string) => cssProps[prop] != null) > -1
@@ -5218,6 +5238,7 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
     value: 0,
     unit: 'px',
   },
+  zIndex: undefined,
 }
 
 export function isTrivialDefaultValue(

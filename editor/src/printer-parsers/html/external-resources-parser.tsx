@@ -1,8 +1,9 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
-import { getContentsTreeFileFromString, ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { getContentsTreeFileFromString } from '../../components/assets'
 import { notice } from '../../components/common/notice'
-import { EditorDispatch } from '../../components/editor/action-types'
+import type { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
 import {
@@ -11,23 +12,24 @@ import {
 } from '../../components/editor/store/editor-state'
 import { Substores, useEditorState } from '../../components/editor/store/store-hook'
 import { ProjectContentSubstate } from '../../components/editor/store/store-hook-substore-types'
-import {
-  useCallbackFactory,
-  UseSubmitValueFactory,
-} from '../../components/inspector/common/property-path-hooks'
-import {
+import type { UseSubmitValueFactory } from '../../components/inspector/common/property-path-hooks'
+import { useCallbackFactory } from '../../components/inspector/common/property-path-hooks'
+import type {
   WebFontVariant,
-  webFontVariant,
   WebFontWeight,
+} from '../../components/navigator/external-resources/google-fonts-utils'
+import {
+  webFontVariant,
   isFontVariantWeight,
 } from '../../components/navigator/external-resources/google-fonts-utils'
 import {
   generatedExternalResourcesLinksClose,
   generatedExternalResourcesLinksOpen,
 } from '../../core/model/new-project-files'
-import { Either, isRight, left, mapEither, right } from '../../core/shared/either'
+import type { Either } from '../../core/shared/either'
+import { isRight, left, mapEither, right } from '../../core/shared/either'
+import type { TextFile } from '../../core/shared/project-file-types'
 import {
-  TextFile,
   isTextFile,
   ProjectContents,
   textFileContents,
@@ -36,8 +38,9 @@ import {
   RevisionsState,
 } from '../../core/shared/project-file-types'
 import { NO_OP } from '../../core/shared/utils'
-import { DescriptionParseError, descriptionParseError } from '../../utils/value-parser-utils'
-import { OnSubmitValue } from '../../uuiui-deps'
+import type { DescriptionParseError } from '../../utils/value-parser-utils'
+import { descriptionParseError } from '../../utils/value-parser-utils'
+import type { OnSubmitValue } from '../../uuiui-deps'
 
 const googleFontsURIBase = 'https://fonts.googleapis.com/css2'
 
@@ -415,7 +418,7 @@ function getExternalResourcesInfo(
 
   const previewHTMLFilePathContents = getTextFileContentsFromPath(htmlFilePath, projectContents)
   if (isRight(previewHTMLFilePathContents)) {
-    const fileContents = previewHTMLFilePathContents.value.fileContents
+    const { fileContents, versionNumber } = previewHTMLFilePathContents.value
     const parsedLinkTagsText = getGeneratedExternalLinkText(fileContents.code)
     if (isRight(parsedLinkTagsText)) {
       const parsedExternalResources = parseLinkTags(parsedLinkTagsText.value)
@@ -434,7 +437,7 @@ function getExternalResourcesInfo(
             dispatch([
               updateFile(
                 htmlFilePath,
-                textFile(newFileContents, newFileContents, null, Date.now()),
+                textFile(newFileContents, newFileContents, null, versionNumber + 1),
                 false,
               ),
             ])

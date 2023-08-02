@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 require('dotenv').config({ path: 'src/.env' })
-import * as puppeteer from 'puppeteer'
+import type * as puppeteer from 'puppeteer'
 import { v4 } from 'uuid'
 import { consoleDoneMessage, setupBrowser, uploadPNGtoAWS } from './utils'
 import * as JSONStream from 'JSONStream'
@@ -82,8 +82,6 @@ function defer() {
 
   return promise
 }
-
-const ResizeButtonXPath = "//a[contains(., 'P R')]"
 
 function consoleMessageForResult(result: FrameResult, beforeOrAfter: 'Before' | 'After'): string {
   return `${beforeOrAfter}: ${result.analytics.percentile50}ms (${result.analytics.frameMin}-${result.analytics.frameMax}ms)`
@@ -279,7 +277,7 @@ async function clickOnce(
 ): Promise<boolean> {
   await page.waitForXPath(xpath)
   const [button] = await page.$x(xpath)
-  await button!.click()
+  await (button as puppeteer.ElementHandle<HTMLButtonElement>)!.click()
   return consoleDoneMessage(page, expectedConsoleMessage, errorMessage)
 }
 

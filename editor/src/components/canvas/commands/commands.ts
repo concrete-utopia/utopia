@@ -1,8 +1,9 @@
 import update, { Spec } from 'immutability-helper'
 import { applyUtopiaJSXComponentsChanges } from '../../../core/model/project-file-utils'
 import { drop } from '../../../core/shared/array-utils'
-import { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { Imports, RevisionsState } from '../../../core/shared/project-file-types'
+import type { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import type { Imports } from '../../../core/shared/project-file-types'
+import { RevisionsState } from '../../../core/shared/project-file-types'
 import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
   getProjectContentKeyPathElements,
@@ -10,63 +11,87 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../assets'
-import { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { CommandDescription } from '../canvas-strategies/interaction-state'
-import { AdjustCssLengthProperty, runAdjustCssLengthProperty } from './adjust-css-length-command'
-import { AdjustNumberProperty, runAdjustNumberProperty } from './adjust-number-command'
-import { ConvertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
-import { ReorderElement, runReorderElement } from './reorder-element-command'
-import { ReparentElement, runReparentElement } from './reparent-element-command'
-import { runSetSnappingGuidelines, SetSnappingGuidelines } from './set-snapping-guidelines-command'
-import { runStrategySwitchedCommand, StrategySwitched } from './strategy-switched-command'
-import {
-  runUpdateHighlightedViews,
-  UpdateHighlightedViews,
-} from './update-highlighted-views-command'
-import { runUpdateSelectedViews, UpdateSelectedViews } from './update-selected-views-command'
-import { runWildcardPatch, WildcardPatch } from './wildcard-patch-command'
-import { runSetCssLengthProperty, SetCssLengthProperty } from './set-css-length-command'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { CommandDescription } from '../canvas-strategies/interaction-state'
+import type { AdjustCssLengthProperties } from './adjust-css-length-command'
+import { runAdjustCssLengthProperties } from './adjust-css-length-command'
+import type { AdjustNumberProperty } from './adjust-number-command'
+import { runAdjustNumberProperty } from './adjust-number-command'
+import type { ConvertToAbsolute } from './convert-to-absolute-command'
+import { runConvertToAbsolute } from './convert-to-absolute-command'
+import type { ReorderElement } from './reorder-element-command'
+import { runReorderElement } from './reorder-element-command'
+import type { ReparentElement } from './reparent-element-command'
+import { runReparentElement } from './reparent-element-command'
+import type { SetSnappingGuidelines } from './set-snapping-guidelines-command'
+import { runSetSnappingGuidelines } from './set-snapping-guidelines-command'
+import type { StrategySwitched } from './strategy-switched-command'
+import { runStrategySwitchedCommand } from './strategy-switched-command'
+import type { UpdateHighlightedViews } from './update-highlighted-views-command'
+import { runUpdateHighlightedViews } from './update-highlighted-views-command'
+import type { UpdateSelectedViews } from './update-selected-views-command'
+import { runUpdateSelectedViews } from './update-selected-views-command'
+import type { WildcardPatch } from './wildcard-patch-command'
+import { runWildcardPatch } from './wildcard-patch-command'
+import type { SetCssLengthProperty } from './set-css-length-command'
+import { runSetCssLengthProperty } from './set-css-length-command'
 import { EditorStateKeepDeepEquality } from '../../editor/store/store-deep-equality-instances'
-import { runShowOutlineHighlight, ShowOutlineHighlight } from './show-outline-highlight-command'
-import { runSetCursor, SetCursorCommand } from './set-cursor-command'
-import {
+import type { ShowOutlineHighlight } from './show-outline-highlight-command'
+import { runShowOutlineHighlight } from './show-outline-highlight-command'
+import type { SetCursorCommand } from './set-cursor-command'
+import { runSetCursor } from './set-cursor-command'
+import type {
   AppendElementsToRerenderCommand,
-  runAppendElementsToRerender,
-  runSetElementsToRerender,
   SetElementsToRerenderCommand,
 } from './set-elements-to-rerender-command'
-import { DuplicateElement, runDuplicateElement } from './duplicate-element-command'
-import { runUpdateFunctionCommand, UpdateFunctionCommand } from './update-function-command'
-import { runPushIntendedBounds, PushIntendedBounds } from './push-intended-bounds-command'
-import { DeleteProperties, runDeleteProperties } from './delete-properties-command'
-import { AddImportsToFile, runAddImportsToFile } from './add-imports-to-file-command'
-import { runSetProperty, SetProperty } from './set-property-command'
 import {
-  runAddToReparentedToPaths,
-  AddToReparentedToPaths,
-} from './add-to-reparented-to-paths-command'
-import {
-  InsertElementInsertionSubject,
-  runInsertElementInsertionSubject,
-} from './insert-element-insertion-subject'
-import { AddElement, runAddElement } from './add-element-command'
-import { runUpdatePropIfExists, UpdatePropIfExists } from './update-prop-if-exists-command'
-import { HighlightElementsCommand, runHighlightElementsCommand } from './highlight-element-command'
-import { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { runShowReorderIndicator, ShowReorderIndicator } from './show-reorder-indicator-command'
-import {
-  ConvertCssPercentToPx,
-  runConvertCssPercentToPx,
-} from './convert-css-percent-to-px-command'
-import { HideInNavigatorCommand, runHideInNavigatorCommand } from './hide-in-navigator-command'
-import { runShowToastCommand, ShowToastCommand } from './show-toast-command'
-import {
-  AddContainLayoutIfNeeded,
-  runAddContainLayoutIfNeeded,
-} from './add-contain-layout-if-needed-command'
-import { RearrangeChildren, runRearrangeChildren } from './rearrange-children-command'
-import { DeleteElement, runDeleteElement } from './delete-element-command'
-import { runWrapInContainerCommand, WrapInContainerCommand } from './wrap-in-container-command'
+  runAppendElementsToRerender,
+  runSetElementsToRerender,
+} from './set-elements-to-rerender-command'
+import type { DuplicateElement } from './duplicate-element-command'
+import { runDuplicateElement } from './duplicate-element-command'
+import type { UpdateFunctionCommand } from './update-function-command'
+import { runUpdateFunctionCommand } from './update-function-command'
+import type { PushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
+import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
+import type { DeleteProperties } from './delete-properties-command'
+import { runDeleteProperties } from './delete-properties-command'
+import type { AddImportsToFile } from './add-imports-to-file-command'
+import { runAddImportsToFile } from './add-imports-to-file-command'
+import type { SetProperty } from './set-property-command'
+import { runSetProperty } from './set-property-command'
+import type { AddToReparentedToPaths } from './add-to-reparented-to-paths-command'
+import { runAddToReparentedToPaths } from './add-to-reparented-to-paths-command'
+import type { InsertElementInsertionSubject } from './insert-element-insertion-subject'
+import { runInsertElementInsertionSubject } from './insert-element-insertion-subject'
+import type { AddElement } from './add-element-command'
+import { runAddElement } from './add-element-command'
+import type { UpdatePropIfExists } from './update-prop-if-exists-command'
+import { runUpdatePropIfExists } from './update-prop-if-exists-command'
+import type { HighlightElementsCommand } from './highlight-element-command'
+import { runHighlightElementsCommand } from './highlight-element-command'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import type { ShowReorderIndicator } from './show-reorder-indicator-command'
+import { runShowReorderIndicator } from './show-reorder-indicator-command'
+import type { ConvertCssPercentToPx } from './convert-css-percent-to-px-command'
+import { runConvertCssPercentToPx } from './convert-css-percent-to-px-command'
+import type { HideInNavigatorCommand } from './hide-in-navigator-command'
+import { runHideInNavigatorCommand } from './hide-in-navigator-command'
+import type { ShowToastCommand } from './show-toast-command'
+import { runShowToastCommand } from './show-toast-command'
+import type { AddContainLayoutIfNeeded } from './add-contain-layout-if-needed-command'
+import { runAddContainLayoutIfNeeded } from './add-contain-layout-if-needed-command'
+import type { RearrangeChildren } from './rearrange-children-command'
+import { runRearrangeChildren } from './rearrange-children-command'
+import type { DeleteElement } from './delete-element-command'
+import { runDeleteElement } from './delete-element-command'
+import type { WrapInContainerCommand } from './wrap-in-container-command'
+import { runWrapInContainerCommand } from './wrap-in-container-command'
+import { patchProjectContentsWithParsedFile } from './patch-utils'
+import type { AddElements } from './add-elements-command'
+import { runAddElements } from './add-elements-command'
+import type { QueueGroupTrueUp } from './queue-group-true-up-command'
+import { runQueueGroupTrueUp } from './queue-group-true-up-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -86,7 +111,7 @@ export type CanvasCommand =
   | UpdateFunctionCommand
   | StrategySwitched
   | AdjustNumberProperty
-  | AdjustCssLengthProperty
+  | AdjustCssLengthProperties
   | ReparentElement
   | DuplicateElement
   | UpdateSelectedViews
@@ -100,7 +125,7 @@ export type CanvasCommand =
   | SetCursorCommand
   | SetElementsToRerenderCommand
   | AppendElementsToRerenderCommand
-  | PushIntendedBounds
+  | PushIntendedBoundsAndUpdateGroups
   | DeleteProperties
   | SetProperty
   | UpdatePropIfExists
@@ -108,6 +133,7 @@ export type CanvasCommand =
   | AddToReparentedToPaths
   | InsertElementInsertionSubject
   | AddElement
+  | AddElements
   | HighlightElementsCommand
   | ConvertCssPercentToPx
   | HideInNavigatorCommand
@@ -116,6 +142,7 @@ export type CanvasCommand =
   | RearrangeChildren
   | DeleteElement
   | WrapInContainerCommand
+  | QueueGroupTrueUp
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -132,7 +159,7 @@ export function runCanvasCommand(
     case 'ADJUST_NUMBER_PROPERTY':
       return runAdjustNumberProperty(editorState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperty(editorState, command)
+      return runAdjustCssLengthProperties(editorState, command)
     case 'REPARENT_ELEMENT':
       return runReparentElement(editorState, command)
     case 'DUPLICATE_ELEMENT':
@@ -159,8 +186,8 @@ export function runCanvasCommand(
       return runSetElementsToRerender(editorState, command)
     case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
       return runAppendElementsToRerender(editorState, command)
-    case 'PUSH_INTENDED_BOUNDS':
-      return runPushIntendedBounds(editorState, command)
+    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
+      return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':
@@ -175,6 +202,8 @@ export function runCanvasCommand(
       return runInsertElementInsertionSubject(editorState, command)
     case 'ADD_ELEMENT':
       return runAddElement(editorState, command)
+    case 'ADD_ELEMENTS':
+      return runAddElements(editorState, command)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
       return runHighlightElementsCommand(editorState, command)
     case 'CONVERT_CSS_PERCENT_TO_PX':
@@ -191,6 +220,8 @@ export function runCanvasCommand(
       return runDeleteElement(editorState, command)
     case 'WRAP_IN_CONTAINER':
       return runWrapInContainerCommand(editorState, command)
+    case 'QUEUE_GROUP_TRUE_UP':
+      return runQueueGroupTrueUp(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -325,46 +356,13 @@ export function getPatchForComponentChange(
     topLevelElements,
     newUtopiaComponents,
   )
-  const projectContentFilePatch: Spec<ProjectContentFile> = {
-    content: {
-      fileContents: {
-        revisionsState: {
-          $set: RevisionsState.ParsedAhead,
-        },
-        parsed: {
-          topLevelElements: {
-            $set: updatedTopLevelElements,
-          },
-          imports: {
-            $set: imports,
-          },
-        },
-      },
-    },
-  }
-  // ProjectContentTreeRoot is a bit awkward to patch.
-  const pathElements = getProjectContentKeyPathElements(filePath)
-  if (pathElements.length === 0) {
-    throw new Error('Invalid path length.')
-  }
-  const remainderPath = drop(1, pathElements)
-  const projectContentsTreePatch: Spec<ProjectContentsTree> = remainderPath.reduceRight(
-    (working: Spec<ProjectContentsTree>, pathPart: string) => {
-      return {
-        children: {
-          [pathPart]: working,
-        },
-      }
-    },
-    projectContentFilePatch,
-  )
 
-  // Finally patch the last part of the path in.
-  const projectContentTreeRootPatch: Spec<ProjectContentTreeRoot> = {
-    [pathElements[0]]: projectContentsTreePatch,
-  }
-
-  return {
-    projectContents: projectContentTreeRootPatch,
-  }
+  return patchProjectContentsWithParsedFile(filePath, {
+    topLevelElements: {
+      $set: updatedTopLevelElements,
+    },
+    imports: {
+      $set: imports,
+    },
+  })
 }

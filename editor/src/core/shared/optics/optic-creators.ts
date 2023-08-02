@@ -1,5 +1,7 @@
-import { prism, lens, traversal, iso, Optic } from './optics'
-import { right, left, foldEither, Either } from '../either'
+import type { Optic } from './optics'
+import { prism, lens, traversal, iso } from './optics'
+import type { Either } from '../either'
+import { right, left, foldEither } from '../either'
 
 // Produces a prism from a type guard, so that only instances of `S` that are an `A` make it through.
 export function fromTypeGuard<S, A extends S>(typeGuard: (s: S) => s is A): Optic<S, A> {
@@ -51,6 +53,28 @@ export function fromObjectField<A, S extends { [key: string]: A }>(fieldName: st
       } else {
         return s
       }
+    },
+  )
+}
+
+// Produces a traversal over a particular element of an array.
+export function fromArrayIndex<A>(index: number): Optic<Array<A>, A> {
+  return traversal(
+    (array) => {
+      if (index in array) {
+        return [array[index]]
+      } else {
+        return []
+      }
+    },
+    (array: Array<A>, modify: (a: A) => A) => {
+      return array.map((arrayValue, arrayIndex) => {
+        if (arrayIndex === index) {
+          return modify(arrayValue)
+        } else {
+          return arrayValue
+        }
+      })
     },
   )
 }
@@ -173,6 +197,18 @@ export function logOptic<S>(): Optic<S, S> {
     (s) => {
       // eslint-disable-next-line no-console
       console.log('logOptic: to', JSON.stringify(s, null, 2))
+      return s
+    },
+  )
+}
+
+// An identity lens which returns the new value on an update.
+export function identityOptic<S>(): Optic<S, S> {
+  return lens(
+    (s) => {
+      return s
+    },
+    (_, s) => {
       return s
     },
   )

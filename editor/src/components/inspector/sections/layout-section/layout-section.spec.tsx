@@ -5,7 +5,8 @@ import {
   enableWhyDidYouRenderOnComponent,
   setupReactWhyDidYouRender,
 } from '../../../../utils/react-memoize.test-utils'
-import { CanvasRectangle, CanvasVector, LocalRectangle } from '../../../../core/shared/math-utils'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
+import { CanvasRectangle, LocalRectangle } from '../../../../core/shared/math-utils'
 import {
   editPropOfSelectedView,
   getStoreHook,
@@ -37,16 +38,12 @@ describe('Position Section', () => {
         selectedViews={storeHookForTest.getState().editor.selectedViews}
         editorStoreData={storeHookForTest}
       >
-        <PositionSection
-          hasNonDefaultPositionAttributes={true}
-          aspectRatioLocked={false}
-          toggleAspectRatioLock={NO_OP}
-        />
+        <PositionSection hasNonDefaultPositionAttributes={true} />
       </TestInspectorContextProvider>,
       { legacyRoot: true },
     )
 
-    expect(getByText('Position (flow)')).toBeDefined()
+    expect(getByText('Frame')).toBeDefined()
 
     act(() => {
       storeHookForTest.updateStoreWithImmer((store) => {

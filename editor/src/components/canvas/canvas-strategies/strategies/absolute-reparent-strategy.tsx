@@ -1,8 +1,7 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { childInsertionPath } from '../../../editor/store/insertion-path'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -10,31 +9,32 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
-import { CanvasStrategyFactory } from '../canvas-strategies'
-import {
+import type { CanvasStrategyFactory } from '../canvas-strategies'
+import type {
   CanvasStrategy,
+  CustomStrategyState,
+  InteractionCanvasState,
+} from '../canvas-strategy-types'
+import {
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession, UpdatedPathMap } from '../interaction-state'
+import type { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition } from './absolute-utils'
-import {
-  replaceContentAffectingPathsWithTheirChildrenRecursive,
-  retargetStrategyToChildrenOfContentAffectingElements,
-} from './group-like-helpers'
+import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
-import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
+import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function baseAbsoluteReparentStrategy(
   reparentTarget: ReparentTarget,
   fitness: number,
+  customStrategyState: CustomStrategyState,
 ): CanvasStrategyFactory {
   return (
     canvasState: InteractionCanvasState,
@@ -51,9 +51,10 @@ export function baseAbsoluteReparentStrategy(
 
     const dragInteractionData = interactionSession.interactionData // Why TypeScript?!
     const filteredSelectedElements = flattenSelection(selectedElements)
-    const isApplicable = replaceContentAffectingPathsWithTheirChildrenRecursive(
+    const isApplicable = replaceFragmentLikePathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,
+      canvasState.startingElementPathTree,
       filteredSelectedElements,
     ).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -75,13 +76,13 @@ export function baseAbsoluteReparentStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -116,26 +117,31 @@ export function baseAbsoluteReparentStrategy(
             if (reparentTarget.shouldReparent && allowedToReparent) {
               const commands = mapDropNulls((selectedElement) => {
                 const reparentResult = getReparentOutcome(
+                  canvasState.startingMetadata,
+                  canvasState.startingElementPathTree,
+                  canvasState.startingAllElementProps,
                   canvasState.builtInDependencies,
                   projectContents,
                   nodeModules,
                   openFile,
                   pathToReparent(selectedElement),
-                  childInsertionPath(newParent),
+                  newParent,
                   'always',
+                  null,
                 )
 
                 if (reparentResult == null) {
                   return null
                 } else {
-                  const offsetCommands = replaceContentAffectingPathsWithTheirChildrenRecursive(
+                  const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
                     canvasState.startingMetadata,
                     canvasState.startingAllElementProps,
+                    canvasState.startingElementPathTree,
                     [selectedElement],
                   ).flatMap((target) => {
                     return getAbsoluteReparentPropertyChanges(
                       target,
-                      newParent,
+                      newParent.intendedParentPath,
                       canvasState.startingMetadata,
                       canvasState.startingMetadata,
                       canvasState.projectContents,
@@ -166,13 +172,24 @@ export function baseAbsoluteReparentStrategy(
                   updatedTargetPaths: updatedTargetPaths,
                 })?.strategy.apply(strategyLifecycle).commands ?? []
 
-              return strategyApplicationResult([
-                ...moveCommands,
-                ...commands.flatMap((c) => c.commands),
-                updateSelectedViews('always', newPaths),
-                setElementsToRerenderCommand([...newPaths, ...filteredSelectedElements]),
-                setCursorCommand(CSSCursor.Move),
+              const elementsToRerender = EP.uniqueElementPaths([
+                ...customStrategyState.elementsToRerender,
+                ...newPaths,
+                ...newPaths.map(EP.parentPath),
+                ...filteredSelectedElements.map(EP.parentPath),
               ])
+              return strategyApplicationResult(
+                [
+                  ...moveCommands,
+                  ...commands.flatMap((c) => c.commands),
+                  updateSelectedViews('always', newPaths),
+                  setElementsToRerenderCommand(elementsToRerender),
+                  setCursorCommand(CSSCursor.Move),
+                ],
+                {
+                  elementsToRerender,
+                },
+              )
             } else {
               const moveCommands =
                 absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(

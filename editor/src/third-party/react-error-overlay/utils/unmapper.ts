@@ -95,7 +95,8 @@ async function unmap(
         null,
       )
     }
-    const sourceT = source[0].token
+    // Should exist because of the length check above.
+    const sourceT = source[0]!.token
     const { line, column } = map.getGeneratedPosition(
       sourceT,
       lineNumber,

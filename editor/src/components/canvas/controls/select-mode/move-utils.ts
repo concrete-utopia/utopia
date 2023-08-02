@@ -1,36 +1,22 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  isInfinityRectangle,
-} from '../../../../core/shared/math-utils'
-import { EditorAction, EditorDispatch } from '../../../editor/action-types'
+import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../../../core/shared/math-utils'
+import type { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { setCanvasFrames } from '../../../editor/actions/action-creators'
-import { EditorState } from '../../../editor/store/editor-state'
+import type { EditorState } from '../../../editor/store/editor-state'
 import * as EP from '../../../../core/shared/element-path'
-import {
-  CanvasFrameAndTarget,
-  flexMoveChange,
-  FlexMoveChange,
-  flexResizeChange,
-  pinFrameChange,
-  PinMoveChange,
-  pinMoveChange,
-} from '../../canvas-types'
-import {
-  ConstrainedDragAxis,
-  Guideline,
-  Guidelines,
-  GuidelineWithRelevantPoints,
-} from '../../guideline'
+import type { CanvasFrameAndTarget, FlexMoveChange, PinMoveChange } from '../../canvas-types'
+import { flexMoveChange, flexResizeChange, pinFrameChange, pinMoveChange } from '../../canvas-types'
+import type { ConstrainedDragAxis, Guideline, GuidelineWithRelevantPoints } from '../../guideline'
+import { Guidelines } from '../../guideline'
 import { getSnapDelta } from '../guideline-helpers'
 import { getNewIndex } from './yoga-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function determineConstrainedDragAxis(dragDelta: CanvasVector): 'x' | 'y' {
   if (Math.abs(dragDelta.x) > Math.abs(dragDelta.y)) {
@@ -79,6 +65,7 @@ export function determineElementsToOperateOnForDragging(
 
 export function dragComponent(
   componentsMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -118,6 +105,7 @@ export function dragComponent(
         const draggedFrame = Utils.offsetRect(originalFrame.frame, dragDelta)
         const newIndex = getNewIndex(
           componentsMetadata,
+          elementPathTree,
           view,
           parentPath,
           flexDirection,
@@ -164,6 +152,7 @@ export function dragComponent(
 
 export function dragComponentForActions(
   componentsMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   selectedViews: Array<ElementPath>,
   originalFrames: Array<CanvasFrameAndTarget>,
   moveGuidelines: Array<Guideline>,
@@ -176,6 +165,7 @@ export function dragComponentForActions(
 ): Array<EditorAction> {
   const frameAndTargets = dragComponent(
     componentsMetadata,
+    elementPathTree,
     selectedViews,
     originalFrames,
     moveGuidelines,
@@ -296,6 +286,7 @@ export function adjustAllSelectedFrames(
     EditorActions.hideAndShowSelectionControls(dispatch)
     actions = dragComponentForActions(
       editor.jsxMetadata,
+      editor.elementPathTree,
       editor.selectedViews,
       originalFrames,
       [],

@@ -3,6 +3,7 @@ import { createSelector } from 'reselect'
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { HEADERS, MODE } from '../../../common/server'
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../components/assets'
 import {
   addFileToProjectContents,
   deriveGithubFileChanges,
@@ -13,40 +14,41 @@ import {
   isProjectContentFile,
   projectContentDirectory,
   projectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
 } from '../../../components/assets'
 import { notice } from '../../../components/common/notice'
-import { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../../components/editor/action-types'
 import {
   deleteFile,
   removeFileConflict,
   showToast,
   updateBranchContents,
   updateFile,
-  updateGithubChecksums,
   updateGithubData,
   updateGithubOperations,
   updateGithubSettings,
   updateProjectContents,
 } from '../../../components/editor/actions/action-creators'
-import {
+import type {
   EditorStorePatched,
+  FileChecksumsWithFile,
+  GithubData,
+  GithubOperation,
+  GithubRepo,
+  GithubUser,
+} from '../../../components/editor/store/editor-state'
+import {
   emptyGithubData,
   emptyGithubSettings,
   FileChecksums,
-  GithubData,
-  GithubOperation,
   githubOperationPrettyName,
-  GithubRepo,
-  GithubUser,
   projectGithubSettings,
 } from '../../../components/editor/store/editor-state'
+import type { UtopiaStoreAPI } from '../../../components/editor/store/store-hook'
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { propOrNull } from '../object-utils'
+import type { ProjectFile } from '../project-file-types'
 import {
   isTextFile,
-  ProjectFile,
   RevisionsState,
   textFile,
   textFileContents,
@@ -54,10 +56,12 @@ import {
 } from '../project-file-types'
 import { emptySet } from '../set-utils'
 import { trimUpToAndIncluding } from '../string-utils'
-import { arrayEquals } from '../utils'
+import { arrayEqualsByReference } from '../utils'
+import { getBranchChecksums } from './operations/get-branch-checksums'
 import { getBranchesForGithubRepository } from './operations/list-branches'
 import { updatePullRequestsForBranch } from './operations/list-pull-requests-for-branch'
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
+import { updateProjectAgainstGithub } from './operations/update-against-branch'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -328,23 +332,24 @@ export async function updateUserDetailsWhenAuthenticated(
 }
 
 const githubFileChangesSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.projectContents,
   (store: EditorStorePatched) => store.userState.githubState.authenticated,
-  (store: EditorStorePatched) => store.editor.githubChecksums,
+  (store: EditorStorePatched) => store.derived.branchOriginContentsChecksums,
   (store: EditorStorePatched) => store.editor.githubData.treeConflicts,
-  (store: EditorStorePatched) => store.editor.assetChecksums,
+  (store: EditorStorePatched) => store.derived.projectContentsChecksums,
   (
-    projectContents,
     githubAuthenticated,
-    githubChecksums,
+    branchOriginContentsChecksums,
     treeConflicts,
-    assetChecksums,
+    projectContentsChecksums,
   ): GithubFileChanges | null => {
     if (!githubAuthenticated) {
       return null
     }
-    const checksums = getProjectContentsChecksums(projectContents, assetChecksums ?? {})
-    return deriveGithubFileChanges(checksums, githubChecksums, treeConflicts)
+    return deriveGithubFileChanges(
+      branchOriginContentsChecksums,
+      projectContentsChecksums,
+      treeConflicts,
+    )
   },
 )
 
@@ -401,10 +406,10 @@ export function githubFileChangesEquals(
     return false
   }
   return (
-    arrayEquals(a.untracked, b.untracked) &&
-    arrayEquals(a.modified, b.modified) &&
-    arrayEquals(a.deleted, b.deleted) &&
-    arrayEquals(a.conflicted, b.conflicted)
+    arrayEqualsByReference(a.untracked, b.untracked) &&
+    arrayEqualsByReference(a.modified, b.modified) &&
+    arrayEqualsByReference(a.deleted, b.deleted) &&
+    arrayEqualsByReference(a.conflicted, b.conflicted)
   )
 }
 
@@ -419,7 +424,6 @@ export function githubFileChangesToList(
   if (changes == null) {
     return []
   }
-
   const toItem = (status: GithubFileStatus, files: Array<string>) =>
     files.map((d) => ({ status: status, filename: d }))
 
@@ -543,7 +547,6 @@ export function withTreeConflicts<T>(value: T, treeConflicts: TreeConflicts): Wi
 }
 
 export function mergeProjectContents(
-  currentTime: number,
   currentTree: ProjectContentTreeRoot,
   originTree: ProjectContentTreeRoot,
   branchTree: ProjectContentTreeRoot,
@@ -565,7 +568,6 @@ export function mergeProjectContents(
       throw new Error(`Invalid state of the elements being null reached.`)
     } else {
       const combinedElement = mergeProjectContentsTree(
-        currentTime,
         fullPath,
         currentContents,
         originContents,
@@ -719,7 +721,6 @@ export function checkForTreeConflicts(
  *       \-->branch
  */
 export function mergeProjectContentsTree(
-  currentTime: number,
   fullPath: string,
   currentContents: ProjectContentsTree | null,
   originContents: ProjectContentsTree | null,
@@ -746,11 +747,16 @@ export function mergeProjectContentsTree(
         label: { a: 'Your Changes', o: 'Original', b: 'Branch Changes' },
         stringSeparator: /\r?\n/,
       }).result.join('\n')
+      const latestVersion = Math.max(
+        currentContents.content.versionNumber,
+        originContents.content.versionNumber,
+        branchContents.content.versionNumber,
+      )
       const updatedTextFile = textFile(
         textFileContents(mergedResult, unparsed, RevisionsState.CodeAhead),
         null,
         null,
-        currentTime,
+        latestVersion + 1,
       )
 
       return withTreeConflicts(projectContentFile(fullPath, updatedTextFile), {})
@@ -762,7 +768,6 @@ export function mergeProjectContentsTree(
   ) {
     // All 3 branches are directories.
     const mergedResult = mergeProjectContents(
-      currentTime,
       currentContents.children,
       originContents.children,
       branchContents.children,
@@ -776,14 +781,53 @@ export function mergeProjectContentsTree(
   }
 }
 
+const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
+
+let githubPollingTimeoutId: number | undefined = undefined
+
+export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): void {
+  if (githubPollingTimeoutId != null) {
+    window.clearTimeout(githubPollingTimeoutId)
+  }
+  function pollGithub(): void {
+    try {
+      const currentState = utopiaStoreAPI.getState()
+      const githubAuthenticated = currentState.userState.githubState.authenticated
+      const githubRepo = currentState.editor.githubSettings.targetRepository
+      const branchName = currentState.editor.githubSettings.branchName
+      const branchOriginContentsChecksums = currentState.derived.branchOriginContentsChecksums
+      const githubUserDetails = currentState.editor.githubData.githubUserDetails
+      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
+      const originCommitSha = currentState.editor.githubSettings.originCommit
+      void refreshGithubData(
+        dispatch,
+        githubAuthenticated,
+        githubRepo,
+        branchName,
+        branchOriginContentsChecksums,
+        githubUserDetails,
+        lastRefreshedCommit,
+        originCommitSha,
+      )
+    } finally {
+      // Trigger another one to run Xms _after_ this has finished.
+      githubPollingTimeoutId = window.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    }
+  }
+
+  // Trigger a poll initially.
+  githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
+}
+
 export async function refreshGithubData(
   dispatch: EditorDispatch,
   githubAuthenticated: boolean,
   githubRepo: GithubRepo | null,
   branchName: string | null,
-  localChecksums: FileChecksums | null,
+  branchOriginChecksums: FileChecksumsWithFile | null,
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
+  originCommitSha: string | null,
 ): Promise<void> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
@@ -796,10 +840,16 @@ export async function refreshGithubData(
     if (githubRepo != null) {
       promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
       promises.push(
-        updateUpstreamChanges(branchName, localChecksums, githubRepo, previousCommitSha),
+        updateUpstreamChanges(branchName, branchOriginChecksums, githubRepo, previousCommitSha),
       )
-      if (branchName != null && localChecksums != null) {
-        promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
+      if (branchName != null) {
+        if (branchOriginChecksums == null) {
+          if (originCommitSha != null) {
+            promises.push(getBranchChecksums(githubRepo, branchName, originCommitSha))
+          }
+        } else {
+          promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
+        }
       }
     } else {
       promises.push(Promise.resolve([updateGithubData({ branches: null })]))
@@ -829,13 +879,13 @@ export async function refreshGithubData(
 
 async function updateUpstreamChanges(
   branchName: string | null,
-  localChecksums: FileChecksums | null,
+  branchOriginChecksums: FileChecksumsWithFile | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
-  if (branchName != null && localChecksums != null) {
+  if (branchName != null && branchOriginChecksums != null) {
     const branchContentResponse = await getBranchContentFromServer(
       githubRepo,
       branchName,
@@ -846,11 +896,15 @@ async function updateUpstreamChanges(
       const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
       if (branchLatestContent.type === 'SUCCESS' && branchLatestContent.branch != null) {
         upstreamChangesSuccess = true
-        const upstreamChecksums = getProjectContentsChecksums(
+        const branchLatestChecksums = getProjectContentsChecksums(
           branchLatestContent.branch.content,
           {},
         )
-        const upstreamChanges = deriveGithubFileChanges(localChecksums, upstreamChecksums, {})
+        const upstreamChanges = deriveGithubFileChanges(
+          branchOriginChecksums,
+          branchLatestChecksums,
+          {},
+        )
         actions.push(
           updateGithubData({
             upstreamChanges: upstreamChanges,
@@ -872,7 +926,6 @@ async function updateUpstreamChanges(
 export function disconnectGithubProjectActions(): EditorAction[] {
   return [
     updateGithubData(emptyGithubData()),
-    updateGithubChecksums(null),
     updateBranchContents(null),
     updateGithubSettings(emptyGithubSettings()),
   ]

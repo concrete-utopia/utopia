@@ -1,5 +1,5 @@
 import * as TS from 'typescript'
-import { ErrorMessage } from '../../shared/error-messages'
+import type { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
 
 export function diagnosticToErrorMessage(diagnostic: TS.Diagnostic): ErrorMessage {

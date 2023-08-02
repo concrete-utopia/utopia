@@ -1,18 +1,20 @@
 import * as TS from 'typescript'
+import type {
+  ImportDetails,
+  Imports,
+  ParsedJSONFailure,
+  ParsedJSONSuccess,
+  ImportAlias,
+  RevisionsStateType,
+} from '../../shared/project-file-types'
 import {
   TextFile,
   ParseFailure,
   ParseSuccess,
   RevisionsState,
-  ImportDetails,
-  Imports,
   HighlightBoundsForUids,
-  ParsedJSONFailure,
-  ParsedJSONSuccess,
-  ImportAlias,
   isParseSuccess,
   ExportsDetail,
-  RevisionsStateType,
 } from '../../shared/project-file-types'
 import { fastForEach } from '../../shared/utils'
 import { defaultIfNull } from '../../shared/optional-utils'
@@ -24,17 +26,11 @@ import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 
 export function codeNeedsPrinting(revisionsState: RevisionsStateType): boolean {
-  return (
-    revisionsState === RevisionsState.ParsedAhead ||
-    revisionsState === RevisionsState.ParsedAheadNeedsReparsing
-  )
+  return revisionsState === RevisionsState.ParsedAhead
 }
 
 export function codeNeedsParsing(revisionsState: RevisionsStateType): boolean {
-  return (
-    revisionsState === RevisionsState.CodeAhead ||
-    revisionsState === RevisionsState.ParsedAheadNeedsReparsing
-  )
+  return revisionsState === RevisionsState.CodeAhead
 }
 
 export function emptyImports(): Imports {

@@ -2,34 +2,28 @@ import { useSetAtom } from 'jotai'
 import React from 'react'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { emptyComments, jsExpressionValue } from '../../../../../core/shared/element-template'
-import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import { assertNever } from '../../../../../core/shared/utils'
+import type { NumberInputProps } from '../../../../../uuiui'
 import {
   ChainedNumberInput,
   InspectorSectionIcons,
-  NumberInputProps,
   SquareButton,
   Tooltip,
 } from '../../../../../uuiui'
-import { EditorAction, EditorDispatch } from '../../../../editor/action-types'
+import type { EditorAction, EditorDispatch } from '../../../../editor/action-types'
 import {
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
 } from '../../../../editor/actions/action-creators'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
-import { ControlStatus, PropertyStatus } from '../../../common/control-status'
+import type { ControlStatus, PropertyStatus } from '../../../common/control-status'
+import type { CSSNumber, CSSNumberType, UnknownOrEmptyInput } from '../../../common/css-utils'
+import { isCSSNumber, isEmptyInputValue, printCSSNumber } from '../../../common/css-utils'
+import type { CanvasControlWithProps } from '../../../common/inspector-atoms'
 import {
-  CSSNumber,
-  CSSNumberType,
-  isCSSNumber,
-  isEmptyInputValue,
-  printCSSNumber,
-  UnknownOrEmptyInput,
-} from '../../../common/css-utils'
-import {
-  CanvasControlWithProps,
   InspectorFocusedCanvasControls,
   InspectorHoveredCanvasControls,
 } from '../../../common/inspector-atoms'

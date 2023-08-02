@@ -1,10 +1,10 @@
 import * as GitHost from 'hosted-git-info'
+import type { ResolvedDependencyVersion } from '../../../components/editor/npm-dependency/npm-dependency'
 import {
   findMatchingVersion,
   isPackageNotFound,
-  ResolvedDependencyVersion,
 } from '../../../components/editor/npm-dependency/npm-dependency'
-import { AnyJson } from '../../../missing-types/json'
+import type { AnyJson } from '../../../missing-types/json'
 import { parseStringToJSON } from '../../../utils/package-parser-utils'
 import {
   appendToPath,
@@ -12,17 +12,16 @@ import {
   getPartsFromPath,
   makePathFromParts,
 } from '../../../utils/path-utils'
+import type { ParseError, ParseResult } from '../../../utils/value-parser-utils'
 import {
   objectKeyParser,
   optionalObjectKeyParser,
-  ParseError,
-  ParseResult,
   parseString,
 } from '../../../utils/value-parser-utils'
 import { pluck } from '../../shared/array-utils'
+import type { Either } from '../../shared/either'
 import {
   applicative3Either,
-  Either,
   flatMapEither,
   foldEither,
   isLeft,
@@ -31,20 +30,19 @@ import {
   mapEither,
   right,
 } from '../../shared/either'
-import {
+import type {
   PackagerServerFile,
   PackagerServerResponse,
   RequestedNpmDependency,
 } from '../../shared/npm-dependency-types'
 import { objectMap } from '../../shared/object-utils'
-import {
-  esCodeFile,
+import type {
   ESCodeFile,
-  esRemoteDependencyPlaceholder,
   ESRemoteDependencyPlaceholder,
   NodeModuleFile,
   NodeModules,
 } from '../../shared/project-file-types'
+import { esCodeFile, esRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 import { isBuiltInDependency } from './built-in-dependencies'
 import type { BuiltInDependencies } from './built-in-dependencies-list'
 import { mangleNodeModulePaths, mergeNodeModules } from './merge-modules'

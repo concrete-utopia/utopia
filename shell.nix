@@ -61,6 +61,12 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
       pnpm install
     '')
+    (pkgs.writeScriptBin "install-website-editor-ci" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+    '')
     (pkgs.writeScriptBin "test-editor" ''
       #!/usr/bin/env bash
       set -e
@@ -121,6 +127,18 @@ let
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
       pnpm run test-browser
     '')
+    (pkgs.writeScriptBin "check-editor-karma-shard-1" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      pnpm run test-browser-shard-1
+    '')
+    (pkgs.writeScriptBin "check-editor-karma-shard-2" ''
+      #!/usr/bin/env bash
+      set -e
+      cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
+      pnpm run test-browser-shard-2
+    '')
     (pkgs.writeScriptBin "test-editor-browser" ''
       #!/usr/bin/env bash
       set -e
@@ -156,12 +174,19 @@ let
       install-website
       check-editor-jest
     '')
-    (pkgs.writeScriptBin "check-editor-karma-ci" ''
+    (pkgs.writeScriptBin "check-editor-karma-ci-shard-1" ''
       #!/usr/bin/env bash
       set -e
       install-editor-ci
       install-website
-      check-editor-karma
+      check-editor-karma-shard-1
+    '')
+    (pkgs.writeScriptBin "check-editor-karma-ci-shard-2" ''
+      #!/usr/bin/env bash
+      set -e
+      install-editor-ci
+      install-website
+      check-editor-karma-shard-2
     '')
     (pkgs.writeScriptBin "build-editor-staging-ci" ''
       #!/usr/bin/env bash

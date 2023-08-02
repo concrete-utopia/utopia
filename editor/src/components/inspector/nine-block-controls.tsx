@@ -1,11 +1,12 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
-import { size, Size } from '../../core/shared/math-utils'
+import type { Size } from '../../core/shared/math-utils'
+import { size } from '../../core/shared/math-utils'
 import { useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { FlexDirection } from './common/css-utils'
+import type { FlexDirection } from './common/css-utils'
 import {
   justifyAlignSelector,
   metadataSelector,
@@ -13,28 +14,28 @@ import {
   packedFlexSettingSelector,
   selectedViewsSelector,
 } from './inpector-selectors'
-import {
-  DefaultFlexDirection,
-  detectFlexDirection,
+import type {
   FlexAlignment,
   FlexJustifyContent,
-  isFlexColumn,
-  justifyContentAlignItemsEquals,
   JustifyContentFlexAlignemt,
   StartCenterEnd,
 } from './inspector-common'
+import {
+  DefaultFlexDirection,
+  detectFlexDirection,
+  isFlexColumn,
+  justifyContentAlignItemsEquals,
+} from './inspector-common'
 import { setFlexAlignJustifyContentStrategies } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { Dot } from './inspector-common-components'
 import { styled } from '@stitches/react'
 import { useSetHoveredControlsHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
-import {
-  SubduedPaddingControlProps,
-  SubduedPaddingControl,
-} from '../canvas/controls/select-mode/subdued-padding-control'
+import type { SubduedPaddingControlProps } from '../canvas/controls/select-mode/subdued-padding-control'
+import { SubduedPaddingControl } from '../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../canvas/padding-utils'
-import { CanvasControlWithProps } from './common/inspector-atoms'
+import type { CanvasControlWithProps } from './common/inspector-atoms'
 import createCachedSelector from 're-reselect'
 
 export const NineBlockControlTestId = 'NineBlockControlTestId'
@@ -268,6 +269,7 @@ export const NineBlockControl = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const flexDirectionRef = useRefEditorState(flexDirectionSelector)
 
@@ -280,11 +282,19 @@ export const NineBlockControl = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        elementPathTreeRef.current,
         allElementPropsRef.current,
         strategies,
       )
     },
-    [allElementPropsRef, dispatch, flexDirectionRef, metadataRef, selectedViewsRef],
+    [
+      allElementPropsRef,
+      dispatch,
+      flexDirectionRef,
+      metadataRef,
+      elementPathTreeRef,
+      selectedViewsRef,
+    ],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =

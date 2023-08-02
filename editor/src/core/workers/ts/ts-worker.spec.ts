@@ -1,4 +1,5 @@
-import { handleMessage, IncomingWorkerMessage } from './ts-worker'
+import type { IncomingWorkerMessage } from './ts-worker'
+import { handleMessage } from './ts-worker'
 import { LayoutSystem } from 'utopia-api/core'
 import {
   EmptyExportsDetail,
@@ -278,6 +279,15 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
               uid: 'aaa',
             },
           },
+          fullHighlightBounds: {
+            aaa: {
+              startCol: 4,
+              startLine: 66,
+              endCol: 12,
+              endLine: 70,
+              uid: 'aaa',
+            },
+          },
           jsxFactoryFunction: 'jsx',
           combinedTopLevelArbitraryBlock: null,
         },
@@ -285,7 +295,7 @@ const SampleInitTSWorkerMessage: IncomingWorkerMessage = {
       ),
       null,
       null,
-      1585568960067,
+      0,
     ),
     '/src': {
       type: 'DIRECTORY',

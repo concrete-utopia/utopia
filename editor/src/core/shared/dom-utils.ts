@@ -1,5 +1,6 @@
-import { ReactDOM } from 'react'
-import { canvasRectangle, CanvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
+import type { ReactDOM } from 'react'
+import type { CanvasRectangle } from './math-utils'
+import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 
@@ -226,23 +227,39 @@ export function setDOMAttribute(element: Element, attributeName: string, value: 
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
+  withContent: 'without-content' | 'with-content',
 ): CanvasRectangle {
-  const boundingRect = element.getBoundingClientRect()
-
-  // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
-  return scaleRect(
-    canvasRectangle({
-      x: roundToNearestHalf(boundingRect.left),
-      y: roundToNearestHalf(boundingRect.top),
-      width: roundToNearestHalf(boundingRect.width),
-      height: roundToNearestHalf(boundingRect.height),
-    }),
-    scale,
-  )
+
+  const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
+    // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
+    return scaleRect(
+      canvasRectangle({
+        x: roundToNearestHalf(rect.left),
+        y: roundToNearestHalf(rect.top),
+        width: roundToNearestHalf(rect.width),
+        height: roundToNearestHalf(rect.height),
+      }),
+      scale,
+    )
+  }
+
+  const boundingRect = element.getBoundingClientRect()
+  const elementRect = domRectToScaledCanvasRectangle(boundingRect)
+  if (withContent === 'without-content') {
+    return elementRect
+  }
+
+  const range = document.createRange()
+  range.selectNode(element)
+  const rangeBounding =
+    // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
+    typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
+
+  return boundingRectangle(elementRect, domRectToScaledCanvasRectangle(rangeBounding))
 }
 
-export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true) {
+export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true): void {
   const cssElement = document.createElement('link')
   cssElement.rel = 'stylesheet'
   cssElement.type = 'text/css'

@@ -9,7 +9,6 @@ import {
   useTriggerAbsoluteMoveSmallPerformanceTest,
   useTriggerAllElementsHighlightPerformanceTest,
   useTriggerRegularHighlightPerformanceTest,
-  useTriggerResizePerformanceTest,
   useTriggerScrollPerformanceTest,
   useTriggerSelectionChangePerformanceTest,
   useTriggerSelectionPerformanceTest,
@@ -18,6 +17,8 @@ import { useReParseOpenProjectFile } from '../../core/model/project-file-helper-
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import { printTree } from '../../core/shared/element-path-tree'
+import { useDispatch } from '../editor/store/dispatch-context'
 
 interface TileProps {
   size: 'smaller' | 'normal' | 'large' | 'max'
@@ -34,6 +35,8 @@ const Tile = styled.div<TileProps>((props) => ({
 export const TestMenu = React.memo(() => {
   const entireStateRef = useRefEditorState((store) => store)
 
+  const dispatch = useDispatch()
+
   const jsxMetadata = useRefEditorState((store) => {
     return store.editor.jsxMetadata
   })
@@ -42,6 +45,10 @@ export const TestMenu = React.memo(() => {
     console.info('Current Editor State:', entireStateRef.current)
     console.info('Latest metadata:', jsxMetadata.current)
   }, [entireStateRef, jsxMetadata])
+
+  const printElementPathTree = React.useCallback(() => {
+    console.info('Tree:\n', printTree(entireStateRef.current.editor.elementPathTree))
+  }, [entireStateRef])
 
   function useRequestVSCodeStatus(): () => void {
     const vscodeState = useEditorState(
@@ -63,7 +70,6 @@ export const TestMenu = React.memo(() => {
   const onReparseClick = useReParseOpenProjectFile()
 
   const onTriggerScrollTest = useTriggerScrollPerformanceTest()
-  const onTriggerResizeTest = useTriggerResizePerformanceTest()
   const onTriggerRegularHighlightTest = useTriggerRegularHighlightPerformanceTest()
   const onTriggerAllElementsHighlightTest = useTriggerAllElementsHighlightPerformanceTest()
   const onTriggerSelectionTest = useTriggerSelectionPerformanceTest()
@@ -103,10 +109,10 @@ export const TestMenu = React.memo(() => {
             <a onClick={printEditorState}>PPP</a>
           </Tile>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerScrollTest}>P S</a>
+            <a onClick={printElementPathTree}>PT</a>
           </Tile>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
-            <a onClick={onTriggerResizeTest}>P R</a>
+            <a onClick={onTriggerScrollTest}>P S</a>
           </Tile>
           <Tile style={{ cursor: 'pointer', marginRight: 10 }} size='large'>
             <a onClick={onTriggerRegularHighlightTest}>PRH</a>

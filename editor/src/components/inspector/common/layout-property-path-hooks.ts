@@ -1,19 +1,17 @@
 import fastDeepEqual from 'fast-deep-equal'
+import type { Frame, FramePin, FramePoint } from 'utopia-api/core'
 import {
   AllFramePoints,
-  Frame,
-  FramePin,
-  FramePoint,
   HorizontalFramePoints,
   isHorizontalPoint,
   isPercentPin,
   valueToUseForPin,
   VerticalFramePoints,
 } from 'utopia-api/core'
+import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import {
   framePointForPinnedProp,
   HorizontalLayoutPinnedProps,
-  LayoutPinnedProp,
   LayoutPinnedProps,
   pinnedPropForFramePoint,
   VerticalLayoutPinnedProps,
@@ -25,15 +23,17 @@ import {
   isJSXElement,
   jsExpressionValue,
 } from '../../../core/shared/element-template'
-import { isInfinityRectangle, LocalRectangle, zeroLocalRect } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { LocalRectangle } from '../../../core/shared/math-utils'
+import { isInfinityRectangle, zeroLocalRect } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import Utils from '../../../utils/utils'
 import { resetPins, setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { FullFrame, getFullFrame } from '../../frame'
+import type { FullFrame } from '../../frame'
+import { getFullFrame } from '../../frame'
+import type { InspectorInfo } from './property-path-hooks'
 import {
-  InspectorInfo,
   useInspectorLayoutInfo,
   useSelectedViews,
   useRefSelectedViews,
@@ -42,12 +42,18 @@ import {
 } from './property-path-hooks'
 
 import React from 'react'
-import { CSSNumber, cssNumberToString } from './css-utils'
+import type { CSSNumber } from './css-utils'
+import { cssNumberToString } from './css-utils'
 import { getJSXComponentsAndImportsForPathFromState } from '../../editor/store/editor-state'
 import { useContextSelector } from 'use-context-selector'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { getFramePointsFromMetadata, MaxContent } from '../inspector-common'
 import { mapDropNulls } from '../../../core/shared/array-utils'
+import {
+  maybeInvalidGroupState,
+  maybeGroupChildWithoutFixedSizeForFill,
+  groupErrorToastAction,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 const HorizontalPropPreference: Array<LayoutPinnedProp> = ['left', 'width', 'right']
 const HorizontalPropPreferenceHug: Array<LayoutPinnedProp> = ['width', 'left', 'right']
@@ -394,6 +400,39 @@ export function usePinToggling(): UsePinTogglingResult {
           parentFrame: parentFrame,
         }
       })
+
+      const invalidGroupState = maybeInvalidGroupState(
+        selectedViewsRef.current,
+        jsxMetadataRef.current,
+        {
+          onGroup: () => {
+            function isNonPercentSide(
+              side: 'width' | 'height',
+              info: InspectorInfo<CSSNumber | undefined>,
+            ) {
+              return (
+                newFrameProp === side &&
+                info.controlStatus !== 'detected' &&
+                info.value?.unit !== '%'
+              )
+            }
+            return isNonPercentSide('width', width) || isNonPercentSide('height', height)
+              ? 'group-has-percentage-pins'
+              : null
+          },
+          onGroupChild: (path) => {
+            const group = MetadataUtils.getJSXElementFromMetadata(
+              jsxMetadataRef.current,
+              EP.parentPath(path),
+            )
+            return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+          },
+        },
+      )
+      if (invalidGroupState != null) {
+        dispatch([groupErrorToastAction(invalidGroupState)])
+        return
+      }
 
       const { pinsToSet, pinsToUnset, shouldSetHorizontalPin } = changePin(
         newFrameProp,

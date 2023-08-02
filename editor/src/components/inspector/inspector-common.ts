@@ -8,28 +8,30 @@ import {
   stripNulls,
   uniq,
 } from '../../core/shared/array-utils'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSXAttributes,
+} from '../../core/shared/element-template'
+import {
   isJSXElement,
   jsxElementName,
   jsxElementNameEquals,
 } from '../../core/shared/element-template'
-import { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
+import type { CSSNumber, FlexDirection } from './common/css-utils'
 import {
   cssNumber,
-  CSSNumber,
   cssPixelLength,
-  FlexDirection,
   parseCSSLengthPercent,
   parseCSSNumber,
 } from './common/css-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
-import { CSSProperties } from 'react'
-import { CanvasCommand } from '../canvas/commands/commands'
+import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
+import type { CSSProperties } from 'react'
+import type { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { setProperty } from '../canvas/commands/set-property-command'
 import { addContainLayoutIfNeeded } from '../canvas/commands/add-contain-layout-if-needed-command'
@@ -42,18 +44,26 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
+import type { CanvasRectangle, SimpleRectangle } from '../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  isFiniteRectangle,
+  isInfinityRectangle,
+  zeroRectIfNullOrInfinity,
+} from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
 import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
 import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
-import { Frame } from 'utopia-api/core'
+import type { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
-import { ControlStatus } from '../../uuiui-deps'
+import type { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
-import { AllElementProps } from '../editor/store/editor-state'
+import type { AllElementProps } from '../editor/store/editor-state'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -235,12 +245,13 @@ export const isFlexColumn = (flexDirection: FlexDirection): boolean =>
 
 export const hugContentsApplicableForContainer = (
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): boolean => {
   return (
     mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
-      MetadataUtils.getChildrenPathsUnordered(metadata, elementPath),
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath),
     ).filter(
       (element) =>
         !(
@@ -448,26 +459,32 @@ export function sizeToVisualDimensionsAlongAxis(
     return []
   }
 
-  const globalFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
-  if (globalFrame == null || isInfinityRectangle(globalFrame)) {
-    return []
-  }
-
-  const dimension = widthHeightFromAxis(axis)
-
-  const value = globalFrame[dimension]
-
-  return [
-    ...pruneFlexPropsCommands(flexChildProps, elementPath),
-    setCssLengthProperty(
-      'always',
-      elementPath,
-      styleP(dimension),
-      setExplicitCssValue(cssPixelLength(value)),
-      element.specialSizeMeasurements.parentFlexDirection ?? null,
-    ),
-  ]
+  return sizeToVisualDimensionsAlongAxisInstance(axis, element)(elementPath)
 }
+
+export const sizeToVisualDimensionsAlongAxisInstance =
+  (axis: Axis, instance: ElementInstanceMetadata) =>
+  (elementPath: ElementPath): Array<CanvasCommand> => {
+    const globalFrame = instance.globalFrame
+    if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+      return []
+    }
+
+    const dimension = widthHeightFromAxis(axis)
+
+    const value = globalFrame[dimension]
+
+    return [
+      ...pruneFlexPropsCommands(flexChildProps, elementPath),
+      setCssLengthProperty(
+        'always',
+        elementPath,
+        styleP(dimension),
+        setExplicitCssValue(cssPixelLength(value)),
+        instance.specialSizeMeasurements.parentFlexDirection ?? null,
+      ),
+    ]
+  }
 
 export const nukeSizingPropsForAxisCommand = (axis: Axis, path: ElementPath): CanvasCommand => {
   switch (axis) {
@@ -527,6 +544,9 @@ export type FixedHugFill =
   | { type: 'fixed'; value: CSSNumber }
   | { type: 'fill'; value: CSSNumber }
   | { type: 'hug' }
+  | { type: 'hug-group'; value: CSSNumber } // hug-group has a Fixed value but shows us Hug on the UI to explain Group behavior
+  | { type: 'computed'; value: CSSNumber }
+  | { type: 'detected'; value: CSSNumber }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -604,26 +624,27 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  if (simpleAttribute === MaxContent) {
+  if (isHugFromStyleAttribute(element.element.value.props, property)) {
     const valueWithType = { type: 'hug' as const }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
+  const isGroupLike = treatElementAsGroupLike(metadata, elementPath)
+
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
   if (parsed != null && parsed.unit === '%') {
-    const valueWithType = { type: 'fill' as const, value: parsed }
+    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fill', value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   if (parsed != null) {
-    const valueWithType = { type: 'fixed' as const, value: parsed }
+    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fixed', value: parsed }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
   const frame = element.globalFrame
   if (frame != null && isFiniteRectangle(frame)) {
     const dimension = widthHeightFromAxis(axis)
-    const valueWithType = { type: 'fixed' as const, value: cssNumber(frame[dimension]) }
 
     const controlStatus = getFallbackControlStatusForProperty(
       property,
@@ -631,10 +652,26 @@ export function detectFillHugFixedState(
       element.attributeMetadatada,
     )
 
+    const valueWithType: FixedHugFill = {
+      type: isGroupLike ? 'hug-group' : controlStatus === 'controlled' ? 'computed' : 'detected',
+      value: cssNumber(frame[dimension]),
+    }
     return { fixedHugFill: valueWithType, controlStatus: controlStatus }
   }
 
   return { fixedHugFill: null, controlStatus: 'unset' }
+}
+
+export function isHugFromStyleAttribute(
+  props: JSXAttributes,
+  property: 'width' | 'height',
+): boolean {
+  const simpleAttribute = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(props), PP.create('style', property)),
+  )
+
+  return simpleAttribute === MaxContent
 }
 
 export function detectFillHugFixedStateMultiselect(
@@ -695,18 +732,21 @@ export function detectPackedSpacedSetting(
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropHugStrategies('horizontal'),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropHugStrategies('vertical'),
     ) ?? []),
@@ -717,18 +757,21 @@ export function resizeToFitCommands(
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropFillStrategies('horizontal', 'default', false),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
       metadata,
       selectedViews,
+      elementPathTree,
       allElementProps,
       setPropFillStrategies('vertical', 'default', false),
     ) ?? []),
@@ -794,6 +837,7 @@ export function setElementTopLeft(
 export function toggleResizeToFitSetToFixed(
   metadata: ElementInstanceMetadataMap,
   elementPaths: Array<ElementPath>,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   if (elementPaths.length === 0) {
@@ -806,18 +850,26 @@ export function toggleResizeToFitSetToFixed(
 
   return isSetToHug
     ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
-    : resizeToFitCommands(metadata, elementPaths, allElementProps)
+    : resizeToFitCommands(metadata, elementPaths, elementPathTree, allElementProps)
+}
+
+function fixedOrHugForGroup(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): 'fixed' | 'hug-group' {
+  return treatElementAsGroupLike(metadata, path) ? 'hug-group' : 'fixed'
 }
 
 export function getFixedFillHugOptionsForElement(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   selectedView: ElementPath,
 ): Set<FixedHugFillMode> {
   return new Set(
     stripNulls([
-      'fixed',
+      fixedOrHugForGroup(metadata, selectedView),
       hugContentsApplicableForText(metadata, selectedView) ||
-      hugContentsApplicableForContainer(metadata, selectedView)
+      hugContentsApplicableForContainer(metadata, pathTrees, selectedView)
         ? 'hug'
         : null,
       fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
@@ -827,11 +879,14 @@ export function getFixedFillHugOptionsForElement(
 
 export function getFillFixedHugOptions(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   selectedViews: Array<ElementPath>,
 ): Array<FixedHugFillMode> {
   return [
     ...intersection(
-      selectedViews.map((selectedView) => getFixedFillHugOptionsForElement(metadata, selectedView)),
+      selectedViews.map((selectedView) =>
+        getFixedFillHugOptionsForElement(metadata, pathTrees, selectedView),
+      ),
     ),
   ]
 }
@@ -931,6 +986,9 @@ export function isFixedHugFillEqual(
       return b.fixedHugFill.type === 'hug'
     case 'fill':
     case 'fixed':
+    case 'computed':
+    case 'detected':
+    case 'hug-group':
       return (
         a.fixedHugFill.type === b.fixedHugFill.type &&
         a.fixedHugFill.value.value === b.fixedHugFill.value.value &&

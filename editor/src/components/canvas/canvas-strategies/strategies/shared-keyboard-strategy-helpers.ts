@@ -1,18 +1,19 @@
-import { InteractionSession, KeyState, StrategyState } from '../interaction-state'
+import type { InteractionSession, KeyState } from '../interaction-state'
+import { StrategyState } from '../interaction-state'
 import { setsEqual } from '../../../../core/shared/set-utils'
 import { last, mapDropNulls } from '../../../../core/shared/array-utils'
-import { Modifier, Modifiers } from '../../../../utils/modifiers'
-import { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
-import { KeyCharacter } from '../../../../utils/keyboard'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { Modifier } from '../../../../utils/modifiers'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import type { KeyCharacter } from '../../../../utils/keyboard'
 import {
   collectParentAndSiblingGuidelines,
   oneGuidelinePerDimension,
 } from '../../controls/guideline-helpers'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance, Guidelines } from '../../guideline'
-import {
-  getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-} from '../canvas-strategy-types'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
+import { Guidelines } from '../../guideline'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
+import { getTargetPathsFromInteractionTarget } from '../canvas-strategy-types'
 import Utils from '../../../../utils/utils'
 
 export interface AccumulatedPresses extends KeyState {
@@ -100,6 +101,7 @@ export function getKeyboardStrategyGuidelines(
   const moveGuidelines = collectParentAndSiblingGuidelines(
     interactionSession.latestMetadata,
     canvasState.startingAllElementProps,
+    canvasState.startingElementPathTree,
     selectedElements,
   ).map((g) => g.guideline)
 

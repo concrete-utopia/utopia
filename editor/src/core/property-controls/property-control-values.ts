@@ -1,36 +1,34 @@
+import type { Parser, ParseResult } from '../../utils/value-parser-utils'
 import {
-  Parser,
   parseAlternative,
   parseString,
   parseBoolean,
   parseNumber,
   parseUndefined,
   parseNull,
-  ParseResult,
   descriptionParseError,
   parseAny,
   parseObject,
   parseArray,
 } from '../../utils/value-parser-utils'
-import {
+import type {
   AllowedEnumType,
   BaseControlDescription,
   ControlDescription,
   UnionControlDescription,
-  isBaseControlDescription,
-  HigherLevelControlDescription,
   FolderControlDescription,
   PropertyControls,
   RegularControlDescription,
 } from 'utopia-api/core'
+import { isBaseControlDescription, HigherLevelControlDescription } from 'utopia-api/core'
+import type { CSSColor } from '../../components/inspector/common/css-utils'
 import {
   parseColor,
-  CSSColor,
   printColorToJsx,
   isCSSColor,
 } from '../../components/inspector/common/css-utils'
+import type { Either } from '../shared/either'
 import {
-  Either,
   foldEither,
   left,
   right,
@@ -41,9 +39,9 @@ import {
   reduceWithEither,
 } from '../shared/either'
 import { compose } from '../shared/function-utils'
+import type { JSExpression, JSXArrayValue } from '../shared/element-template'
 import {
   modifiableAttributeIsAttributeOtherJavaScript,
-  JSExpression,
   jsxArrayValue,
   jsExpressionValue,
   jsExpressionOtherJavaScript,
@@ -51,15 +49,14 @@ import {
   jsExpressionNestedObject,
   jsxPropertyAssignment,
   emptyComments,
-  JSXArrayValue,
   modifiableAttributeIsAttributeNotFound,
 } from '../shared/element-template'
+import type { ModifiableAttribute } from '../shared/jsx-attributes'
 import {
-  ModifiableAttribute,
   jsxSimpleAttributeToValue,
   getModifiableJSXAttributeAtPathFromAttribute,
 } from '../shared/jsx-attributes'
-import { PropertyPathPart } from '../shared/project-file-types'
+import type { PropertyPathPart } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import { forEachValue, mapToArray, objectValues } from '../shared/object-utils'
 type Printer<T> = (value: T) => JSExpression

@@ -1,23 +1,21 @@
 import { MajesticBrokerTestCaseCode } from '../../../test-cases/majestic-broker'
-import { getAllUniqueUids } from '../../model/element-template-utils'
 import { directory, getComponentsFromTopLevelElements } from '../../model/project-file-utils'
-import { uniq } from '../../shared/array-utils'
 import {
   emptyComments,
-  isJSExpressionOtherJavaScript,
+  isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsxArbitraryBlock,
+  jsExpression,
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxElement,
   utopiaJSXComponent,
 } from '../../shared/element-template'
+import type { ProjectContents } from '../../shared/project-file-types'
 import {
   codeFile,
   foldParsedTextFile,
   isParseSuccess,
-  ProjectContents,
   RevisionsState,
   TextFile,
   textFile,
@@ -27,11 +25,8 @@ import {
 import { lintAndParse, parseCode, printCode, printCodeOptions } from './parser-printer'
 import { testParseCode } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
-import {
-  addFileToProjectContents,
-  contentsToTree,
-  ProjectContentTreeRoot,
-} from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../../components/assets'
+import { addFileToProjectContents, contentsToTree } from '../../../components/assets'
 import {
   DefaultPackageJson,
   StoryboardFilePath,
@@ -40,6 +35,7 @@ import { emptySet } from '../../shared/set-utils'
 import { createCodeFile } from '../../../components/custom-code/code-file.test-utils'
 import { renderTestEditorWithProjectContent } from '../../../components/canvas/ui-jsx.test-utils'
 import { updateFile } from '../../../components/editor/actions/action-creators'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 function addCodeFileToProjectContents(
   projectContents: ProjectContentTreeRoot,
@@ -47,12 +43,12 @@ function addCodeFileToProjectContents(
   contents: string,
   alreadyExistingUIDs_MUTABLE: Set<string>,
 ): ProjectContentTreeRoot {
-  const parseResult = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE)
+  const parseResult = lintAndParse(path, contents, null, alreadyExistingUIDs_MUTABLE, 'trim-bounds')
   const file = textFile(
     textFileContents(contents, parseResult, RevisionsState.BothMatch),
     null,
     isParseSuccess(parseResult) ? parseResult : null,
-    Date.now(),
+    0,
   )
   return addFileToProjectContents(projectContents, path, file)
 }
@@ -75,8 +71,9 @@ describe('parseCode', () => {
             0,
           ),
         )
-        const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
-        expect(uniq(uniqueIDs).length).toMatchInlineSnapshot(`77`)
+        const result = getAllUniqueUids(projectContents)
+        expect(result.uniqueIDs).toHaveLength(483)
+        expect(result.duplicateIDs).toEqual({})
       },
       (_) => {
         throw new Error('Is unparsed.')
@@ -107,8 +104,9 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
-    expect(uniq(uniqueIDs).length).toEqual(3)
+    const result = getAllUniqueUids(projectContents)
+    expect(result.uniqueIDs).toHaveLength(8)
+    expect(result.duplicateIDs).toEqual({})
   })
 
   it('fixes duplicated UIDs for multifile projects', () => {
@@ -149,8 +147,9 @@ describe('parseCode', () => {
       alreadyExistingUIDs_MUTABLE,
     )
 
-    const uniqueIDs = getAllUniqueUids(projectContents, 'Unique IDs failure.')
-    expect(uniq(uniqueIDs).length).toEqual(6)
+    const result = getAllUniqueUids(projectContents)
+    expect(result.uniqueIDs).toHaveLength(16)
+    expect(result.duplicateIDs).toEqual({})
   })
 
   it('can successfully load a multifile project with duplicated UIDs', async () => {
@@ -223,11 +222,9 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const uniqueIDs = getAllUniqueUids(
-      renderResult.getEditorState().editor.projectContents,
-      'Unique IDs failure.',
-    )
-    expect(uniq(uniqueIDs).length).toEqual(9)
+    const result = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
+    expect(result.uniqueIDs).toHaveLength(28)
+    expect(result.duplicateIDs).toEqual({})
   })
 
   it('can successfully handle a multifile project with duplicated UIDs added later', async () => {
@@ -285,11 +282,9 @@ describe('parseCode', () => {
       'dont-await-first-dom-report',
     )
 
-    const uniqueIDsBefore = getAllUniqueUids(
-      renderResult.getEditorState().editor.projectContents,
-      'Unique IDs failure.',
-    )
-    expect(uniq(uniqueIDsBefore).length).toEqual(5)
+    const resultBefore = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
+    expect(resultBefore.uniqueIDs).toHaveLength(18)
+    expect(resultBefore.duplicateIDs).toEqual({})
 
     await renderResult.dispatch(
       [
@@ -316,11 +311,9 @@ describe('parseCode', () => {
       false,
     )
 
-    const uniqueIDsAfter = getAllUniqueUids(
-      renderResult.getEditorState().editor.projectContents,
-      'Unique IDs failure.',
-    )
-    expect(uniq(uniqueIDsAfter).length).toEqual(8)
+    const resultAfter = getAllUniqueUids(renderResult.getEditorState().editor.projectContents)
+    expect(resultAfter.uniqueIDs).toHaveLength(27)
+    expect(resultAfter.duplicateIDs).toEqual({})
   })
 })
 
@@ -328,7 +321,7 @@ describe('printCode', () => {
   it('applies changes back into the original code', () => {
     const startingCode = `
 import * as react from 'react'
-import { scene, storyboard, view } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var app = (props) => {
   return (
@@ -360,7 +353,7 @@ export var app = (props) => {
             const rootElement = tle.rootElement
             if (isJSXElement(rootElement)) {
               const firstChild = rootElement.children[0]
-              if (isJSExpressionOtherJavaScript(firstChild)) {
+              if (isJSExpressionMapOrOtherJavaScript(firstChild)) {
                 const firstKey = Object.keys(firstChild.elementsWithin)[0]
                 const firstElementWithin = firstChild.elementsWithin[firstKey]
                 const updatedAttributes = jsxAttributesFromMap({
@@ -384,7 +377,7 @@ export var app = (props) => {
                     firstElementWithin.children,
                   ),
                 }
-                const updatedFirstChild = jsxArbitraryBlock(
+                const updatedFirstChild = jsExpression(
                   firstChild.originalJavascript,
                   firstChild.javascript,
                   firstChild.transpiledJavascript,
@@ -431,7 +424,7 @@ export var app = (props) => {
     const expectedResult = applyPrettier(
       `
 import * as react from 'react'
-import { scene, storyboard, view } from 'utopia-api'
+import { Scene, Storyboard, View, Group } from 'utopia-api'
 
 export var app = (props) => {
   return (

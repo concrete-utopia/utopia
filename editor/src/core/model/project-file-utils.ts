@@ -4,7 +4,7 @@ import * as PP from '../shared/property-path'
 import { isText } from 'istextorbinary'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import Utils from '../../utils/utils'
-import {
+import type {
   Directory,
   HighlightBoundsForUids,
   ImageFile,
@@ -13,31 +13,35 @@ import {
   ParseSuccess,
   ProjectFile,
   ProjectFileType,
-  RevisionsState,
   TextFile,
   AssetFile,
-  foldParsedTextFile,
-  isTextFile,
-  textFile,
   TextFileContents,
-  textFileContents,
   HighlightBoundsWithFileForUids,
-  forEachParseSuccess,
-  isParseSuccess,
   RevisionsStateType,
 } from '../shared/project-file-types'
 import {
-  isJSXElement,
-  isUtopiaJSXComponent,
+  RevisionsState,
+  foldParsedTextFile,
+  isTextFile,
+  textFile,
+  textFileContents,
+  forEachParseSuccess,
+  isParseSuccess,
+} from '../shared/project-file-types'
+import type {
   JSXElementChild,
   JSXElementName,
   TopLevelElement,
   UtopiaJSXComponent,
-  getJSXElementNameLastPart,
   ImportInfo,
+  ElementInstanceMetadata,
+} from '../shared/element-template'
+import {
+  isJSXElement,
+  isUtopiaJSXComponent,
+  getJSXElementNameLastPart,
   createImportedFrom,
   createNotImported,
-  ElementInstanceMetadata,
   isIntrinsicElement,
   isIntrinsicElementFromString,
   isIntrinsicHTMLElement,
@@ -52,15 +56,15 @@ import {
 } from './scene-utils'
 import { mapDropNulls, pluck } from '../shared/array-utils'
 import { forEachValue } from '../shared/object-utils'
+import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../components/assets'
 import {
   getContentsTreeFileFromString,
   projectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
   transformContentsTree,
   walkContentsTree,
 } from '../../components/assets'
-import { extractAsset, extractImage, extractText, FileResult } from '../shared/file-utils'
+import type { FileResult } from '../shared/file-utils'
+import { extractAsset, extractImage, extractText } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
 import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'
@@ -437,17 +441,9 @@ export function canUpdateRevisionsState(
     case RevisionsState.BothMatch:
       return true
     case RevisionsState.ParsedAhead:
-      return (
-        updated === RevisionsState.ParsedAhead ||
-        updated === RevisionsState.ParsedAheadNeedsReparsing ||
-        updated === RevisionsState.BothMatch
-      )
+      return updated === RevisionsState.ParsedAhead || updated === RevisionsState.BothMatch
     case RevisionsState.CodeAhead:
       return updated === RevisionsState.CodeAhead || updated === RevisionsState.BothMatch
-    case RevisionsState.ParsedAheadNeedsReparsing:
-      return (
-        updated === RevisionsState.ParsedAheadNeedsReparsing || updated === RevisionsState.BothMatch
-      )
     default:
       const _exhaustiveCheck: never = existing
       throw new Error(`Invalid revisions state ${existing}`)
@@ -460,9 +456,7 @@ export function isOlderThan(maybeNew: ProjectFile, existing: ProjectFile | null)
   }
 
   return (
-    isTextFile(maybeNew) &&
-    isTextFile(existing) &&
-    maybeNew.lastRevisedTime < existing.lastRevisedTime
+    isTextFile(maybeNew) && isTextFile(existing) && maybeNew.versionNumber < existing.versionNumber
   )
 }
 
@@ -482,20 +476,6 @@ export function updateFileIfPossible(
       existing.fileContents.revisionsState,
     )
   ) {
-    // we should not overwrite RevisionsState.ParsedAheadNeedsReparsing with RevisionsState.ParsedAhead, because we don't want to lose that
-    // the file needs reparsing
-    if (
-      existing.fileContents.revisionsState === RevisionsState.ParsedAheadNeedsReparsing &&
-      updated.fileContents.revisionsState === RevisionsState.ParsedAhead
-    ) {
-      return {
-        ...updated,
-        fileContents: {
-          ...updated.fileContents,
-          revisionsState: RevisionsState.ParsedAheadNeedsReparsing,
-        },
-      }
-    }
     return updated
   }
 
@@ -510,7 +490,12 @@ export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boo
     code: code,
   }
 
-  return textFile(fileContents, file.lastSavedContents, file.lastParseSuccess, Date.now())
+  return textFile(
+    fileContents,
+    file.lastSavedContents,
+    file.lastParseSuccess,
+    file.versionNumber + 1,
+  )
 }
 
 export function imageFile(
@@ -714,14 +699,8 @@ export function saveTextFileContents(
     file.fileContents,
     manualSave,
   )
-  const contentsUpdated = contents !== file.fileContents
   const lastParseSuccess = isParseSuccess(contents.parsed) ? contents.parsed : file.lastParseSuccess
-  return textFile(
-    contents,
-    savedContent,
-    lastParseSuccess,
-    contentsUpdated ? Date.now() : file.lastRevisedTime,
-  )
+  return textFile(contents, savedContent, lastParseSuccess, file.versionNumber + 1)
 }
 
 export function updateLastSavedContents<T>(
@@ -827,7 +806,12 @@ export function updateFileContents(
         getHighlightBoundsFromParseResult(file.fileContents.parsed), // here we just update the code without updating the highlights!
       )
       const newContents = textFileContents(contents, newParsed, RevisionsState.CodeAhead)
-      return textFile(newContents, uiJsLastSavedContents, file.lastParseSuccess, Date.now())
+      return textFile(
+        newContents,
+        uiJsLastSavedContents,
+        file.lastParseSuccess,
+        file.versionNumber + 1,
+      )
     default:
       const _exhaustiveCheck: never = file
       throw new Error(`Unhandled file type ${JSON.stringify(file)}`)

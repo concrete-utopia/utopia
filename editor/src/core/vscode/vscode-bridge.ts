@@ -1,11 +1,16 @@
+import type {
+  DecorationRange,
+  DecorationRangeType,
+  FromUtopiaToVSCodeMessage,
+  ProjectFile as CommonProjectFile,
+  SelectedElementChanged,
+  UpdateDecorationsMessage,
+} from 'utopia-vscode-common'
 import {
   boundsInFile,
-  DecorationRange,
   decorationRange,
-  DecorationRangeType,
   deletePathChange,
   ensureDirectoryExistsChange,
-  FromUtopiaToVSCodeMessage,
   initProject,
   isFromVSCodeExtensionMessage,
   isIndexedDBFailure,
@@ -15,21 +20,27 @@ import {
   isVSCodeFileDelete,
   openFileMessage,
   projectDirectory,
-  ProjectFile as CommonProjectFile,
   projectTextFile,
   selectedElementChanged,
-  SelectedElementChanged,
   setFollowSelectionConfig,
   setVSCodeTheme,
   toVSCodeExtensionMessage,
   updateDecorationsMessage,
-  UpdateDecorationsMessage,
   writeProjectFileChange,
 } from 'utopia-vscode-common'
-import { ProjectContentTreeRoot, walkContentsTree } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import { walkContentsTree } from '../../components/assets'
 import { EditorDispatch } from '../../components/editor/action-types'
+import type { EditorState } from '../../components/editor/store/editor-state'
+import { getHighlightBoundsForElementPath } from '../../components/editor/store/editor-state'
+import type { ProjectFileChange } from '../../components/editor/store/vscode-changes'
+import type { Theme } from '../../uuiui'
+import { getSavedCodeFromTextFile, getUnsavedCodeFromTextFile } from '../model/project-file-utils'
+import type { ElementPath, ProjectFile } from '../shared/project-file-types'
+import { assertNever, NO_OP } from '../shared/utils'
+import type { FromVSCodeAction } from '../../components/editor/actions/actions-from-vscode'
 import {
-  deleteFile,
+  deleteFileFromVSCode,
   hideVSCodeLoadingScreen,
   markVSCodeBridgeReady,
   selectFromFileAndPosition,
@@ -38,16 +49,7 @@ import {
   setIndexedDBFailed,
   updateConfigFromVSCode,
   updateFromCodeEditor,
-} from '../../components/editor/actions/action-creators'
-import {
-  EditorState,
-  getHighlightBoundsForElementPath,
-} from '../../components/editor/store/editor-state'
-import { ProjectFileChange } from '../../components/editor/store/vscode-changes'
-import { Theme } from '../../uuiui'
-import { getSavedCodeFromTextFile, getUnsavedCodeFromTextFile } from '../model/project-file-utils'
-import { ElementPath, ProjectFile } from '../shared/project-file-types'
-import { assertNever, NO_OP } from '../shared/utils'
+} from '../../components/editor/actions/actions-from-vscode'
 
 export const VSCODE_EDITOR_IFRAME_ID = 'vscode-editor'
 
@@ -89,7 +91,7 @@ let registeredHandlers: (messageEvent: MessageEvent) => void = NO_OP
 
 export function initVSCodeBridge(
   projectContents: ProjectContentTreeRoot,
-  dispatch: EditorDispatch,
+  dispatch: (actions: Array<FromVSCodeAction>) => void,
   openFilePath: string | null,
 ) {
   let loadingScreenHidden = false
@@ -110,31 +112,28 @@ export function initVSCodeBridge(
 
       if (openFilePath == null) {
         loadingScreenHidden = true
-        dispatch([hideVSCodeLoadingScreen()], 'everyone')
+        dispatch([hideVSCodeLoadingScreen()])
       }
     } else if (isVSCodeBridgeReady(data) && messageEvent.source != null) {
       // Store the source
       vscodeIFrame = messageEvent.source
-      dispatch([markVSCodeBridgeReady(true)], 'everyone')
+      dispatch([markVSCodeBridgeReady(true)])
     } else if (isFromVSCodeExtensionMessage(data)) {
       const message = data.message
       switch (message.type) {
         case 'EDITOR_CURSOR_POSITION_CHANGED':
-          dispatch(
-            [selectFromFileAndPosition(message.filePath, message.line, message.column)],
-            'everyone',
-          )
+          dispatch([selectFromFileAndPosition(message.filePath, message.line, message.column)])
           break
         case 'UTOPIA_VSCODE_CONFIG_VALUES':
-          dispatch([updateConfigFromVSCode(message.config)], 'everyone')
+          dispatch([updateConfigFromVSCode(message.config)])
           break
         case 'VSCODE_READY':
-          dispatch([sendCodeEditorInitialisation()], 'everyone')
+          dispatch([sendCodeEditorInitialisation()])
           break
         case 'CLEAR_LOADING_SCREEN':
           if (!loadingScreenHidden) {
             loadingScreenHidden = true
-            dispatch([hideVSCodeLoadingScreen()], 'everyone')
+            dispatch([hideVSCodeLoadingScreen()])
           }
           break
         default:
@@ -152,12 +151,11 @@ export function initVSCodeBridge(
         filePath,
         fileContent.unsavedContent ?? fileContent.content,
       )
-      dispatch([updateAction, requestLintAction], 'everyone')
+      dispatch([updateAction, requestLintAction])
     } else if (isVSCodeFileDelete(data)) {
-      const action = deleteFile(data.filePath)
-      dispatch([action], 'everyone')
+      dispatch([deleteFileFromVSCode(data.filePath)])
     } else if (isIndexedDBFailure(data)) {
-      dispatch([setIndexedDBFailed(true)], 'everyone')
+      dispatch([setIndexedDBFailed(true)])
     }
   }
 
@@ -244,21 +242,15 @@ export function getSelectedElementChangedMessage(
   if (highlightBounds == null) {
     return null
   } else {
-    if (document.activeElement?.id === VSCODE_EDITOR_IFRAME_ID) {
-      // If the code editor is active, we don't want to inform it of selection changes as that
-      // would then update the user's cursor in VS Code
-      return null
-    } else {
-      return selectedElementChanged(
-        boundsInFile(
-          highlightBounds.filePath,
-          highlightBounds.startLine,
-          highlightBounds.startCol,
-          highlightBounds.endLine,
-          highlightBounds.endCol,
-        ),
-      )
-    }
+    return selectedElementChanged(
+      boundsInFile(
+        highlightBounds.filePath,
+        highlightBounds.startLine,
+        highlightBounds.startCol,
+        highlightBounds.endLine,
+        highlightBounds.endCol,
+      ),
+    )
   }
 }
 

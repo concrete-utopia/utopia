@@ -1,28 +1,33 @@
-import { ElementPath } from '../shared/project-file-types'
+import type { ElementPath } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  isJSXConditionalExpression,
   JSXConditionalExpression,
   JSXElementChild,
 } from '../shared/element-template'
-import { ElementPathTree } from '../shared/element-path-tree'
+import {
+  isJSExpression,
+  isJSXConditionalExpression,
+  isNullJSXAttributeValue,
+} from '../shared/element-template'
+import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
 import { getUtopiaID } from '../shared/uid-utils'
-import { Optic } from '../shared/optics/optics'
+import type { Optic } from '../shared/optics/optics'
 import { fromField, fromTypeGuard } from '../shared/optics/optic-creators'
 import { findUtopiaCommentFlag, isUtopiaCommentFlagConditional } from '../shared/comment-flags'
-import { isRight } from '../shared/either'
+import { isLeft, isRight } from '../shared/either'
 import { MetadataUtils } from './element-metadata-utils'
+import { forceNotNull } from '../shared/optional-utils'
 
 export type ConditionalCase = 'true-case' | 'false-case'
 
 // Get the path for the clause (true case or false case) of a conditional.
 export function getConditionalClausePath(
   conditionalPath: ElementPath,
-  conditionalClause: JSXElementChild,
+  conditionalBranch: JSXElementChild,
 ): ElementPath {
-  return EP.appendToPath(conditionalPath, getUtopiaID(conditionalClause))
+  return EP.appendToPath(conditionalPath, getUtopiaID(conditionalBranch))
 }
 
 // Ensure that the children of a conditional are the whenTrue clause followed
@@ -30,33 +35,27 @@ export function getConditionalClausePath(
 export function reorderConditionalChildPathTrees(
   conditional: JSXConditionalExpression,
   conditionalPath: ElementPath,
-  childPaths: Array<ElementPathTree>,
+  children: Array<ElementPathTree>,
 ): Array<ElementPathTree> {
-  if (childPaths.length > 2) {
-    throw new Error(`Too many child paths.`)
-  } else {
-    let result: Array<ElementPathTree> = []
+  let result: Array<ElementPathTree> = []
 
-    // The whenTrue clause should be first.
-    const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
-    const trueCasePathTree = childPaths.find((childPath) =>
-      EP.pathsEqual(childPath.path, trueCasePath),
-    )
-    if (trueCasePathTree != null) {
-      result.push(trueCasePathTree)
-    }
-
-    // The whenFalse clause should be second.
-    const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
-    const falseCasePathTree = childPaths.find((childPath) =>
-      EP.pathsEqual(childPath.path, falseCasePath),
-    )
-    if (falseCasePathTree != null) {
-      result.push(falseCasePathTree)
-    }
-
-    return result
+  // The whenTrue clause should be first.
+  const trueCasePath = getConditionalClausePath(conditionalPath, conditional.whenTrue)
+  const trueCasePathString = EP.toString(trueCasePath)
+  const trueCasePathTree = children.find((child) => child.pathString === trueCasePathString)
+  if (trueCasePathTree != null) {
+    result.push(trueCasePathTree)
   }
+
+  // The whenFalse clause should be second.
+  const falseCasePath = getConditionalClausePath(conditionalPath, conditional.whenFalse)
+  const falseCasePathString = EP.toString(falseCasePath)
+  const falseCasePathTree = children.find((child) => child.pathString === falseCasePathString)
+  if (falseCasePathTree != null) {
+    result.push(falseCasePathTree)
+  }
+
+  return result
 }
 
 export const jsxConditionalExpressionOptic: Optic<JSXElementChild, JSXConditionalExpression> =
@@ -78,53 +77,12 @@ export function getClauseOptic(
   }
 }
 
-export function getConditionalCase(
-  elementPath: ElementPath,
-  parent: JSXConditionalExpression,
-  spyParentMetadata: ElementInstanceMetadata,
-  parentPath: ElementPath,
-): ConditionalCase | 'not-a-conditional' {
-  if (spyParentMetadata.conditionValue === 'not-a-conditional') {
-    return 'not-a-conditional'
-  }
-  const parentOverride = getConditionalFlag(parent)
-  if (parentOverride == null) {
-    return spyParentMetadata.conditionValue ? 'true-case' : 'false-case'
-  }
-  if (
-    matchesOverriddenConditionalBranch(elementPath, parentPath, {
-      clause: parent.whenTrue,
-      wantOverride: true,
-      parentOverride: parentOverride,
-    })
-  ) {
-    return 'true-case'
-  }
-  return 'false-case'
-}
-
 export function getConditionalFlag(element: JSXConditionalExpression): boolean | null {
   const flag = findUtopiaCommentFlag(element.comments, 'conditional')
   if (!isUtopiaCommentFlagConditional(flag)) {
     return null
   }
   return flag.value
-}
-
-export function matchesOverriddenConditionalBranch(
-  elementPath: ElementPath,
-  parentPath: ElementPath,
-  params: {
-    clause: JSXElementChild
-    wantOverride: boolean
-    parentOverride: boolean
-  },
-): boolean {
-  const { clause, wantOverride, parentOverride } = params
-  return (
-    wantOverride === parentOverride &&
-    EP.pathsEqual(elementPath, getConditionalClausePath(parentPath, clause))
-  )
 }
 
 export function maybeConditionalExpression(
@@ -166,4 +124,240 @@ export function maybeBranchConditionalCase(
   } else {
     return null
   }
+}
+
+export function maybeConditionalActiveBranch(
+  elementPath: ElementPath | null,
+  jsxMetadata: ElementInstanceMetadataMap,
+): JSXElementChild | null {
+  if (elementPath == null) {
+    return null
+  }
+  const conditional = maybeConditionalExpression(
+    MetadataUtils.findElementByElementPath(jsxMetadata, elementPath),
+  )
+  if (conditional == null) {
+    return null
+  }
+
+  const activeCase = forceNotNull(
+    'conditional should have an active case',
+    getConditionalActiveCase(elementPath, conditional, jsxMetadata),
+  )
+  return getConditionalBranch(conditional, activeCase)
+}
+
+export function getConditionalCaseCorrespondingToBranchPath(
+  branchPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ConditionalCase | null {
+  const conditionalElement = findMaybeConditionalExpression(EP.parentPath(branchPath), metadata)
+  if (conditionalElement == null) {
+    return null
+  }
+
+  return maybeBranchConditionalCase(EP.parentPath(branchPath), conditionalElement, branchPath)
+}
+
+export function getConditionalBranch(
+  conditional: JSXConditionalExpression,
+  clause: ConditionalCase,
+): JSXElementChild {
+  return clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+}
+
+export function isConditionalWithEmptyOrTextEditableActiveBranch(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+): {
+  element: JSXConditionalExpression
+  clause: ConditionalCase | null
+  isEmpty: boolean
+  textEditable: boolean
+} | null {
+  const conditional = findMaybeConditionalExpression(path, metadata)
+  if (conditional == null) {
+    return null
+  }
+  const clause = getConditionalActiveCase(path, conditional, metadata)
+  if (clause == null) {
+    return {
+      element: conditional,
+      isEmpty: false,
+      textEditable: false,
+      clause: clause,
+    }
+  }
+  const branch = clause === 'true-case' ? conditional.whenTrue : conditional.whenFalse
+  return {
+    element: conditional,
+    isEmpty: isNullJSXAttributeValue(branch),
+    textEditable: isTextEditableConditional(path, metadata, elementPathTree),
+    clause: clause,
+  }
+}
+
+export function isNonEmptyConditionalBranch(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): boolean {
+  const parentPath = EP.parentPath(elementPath)
+  const conditionalParent = findMaybeConditionalExpression(parentPath, jsxMetadata)
+  if (conditionalParent == null) {
+    return false
+  }
+  const clause = maybeBranchConditionalCase(parentPath, conditionalParent, elementPath)
+  if (clause == null) {
+    return false
+  }
+  const branch = getConditionalBranch(conditionalParent, clause)
+  return !isNullJSXAttributeValue(branch)
+}
+
+export function isEmptyConditionalBranch(
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): boolean {
+  return !isNonEmptyConditionalBranch(elementPath, jsxMetadata)
+}
+
+export function getConditionalClausePathFromMetadata(
+  conditionalPath: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  clause: ConditionalCase,
+): ElementPath | null {
+  const conditionalElement = findMaybeConditionalExpression(conditionalPath, metadata)
+  if (conditionalElement == null) {
+    return null
+  }
+
+  return getConditionalClausePath(
+    conditionalPath,
+    clause === 'true-case' ? conditionalElement.whenTrue : conditionalElement.whenFalse,
+  )
+}
+
+export function isOverriddenConditional(element: ElementInstanceMetadata | null): boolean {
+  if (
+    element == null ||
+    isLeft(element.element) ||
+    !isJSXConditionalExpression(element.element.value)
+  ) {
+    return false
+  }
+  return getConditionalFlag(element.element.value) != null
+}
+
+export function getConditionalActiveCase(
+  path: ElementPath,
+  conditional: JSXConditionalExpression,
+  metadataMap: ElementInstanceMetadataMap,
+): ConditionalCase | null {
+  const override = getConditionalFlag(conditional)
+  if (override != null) {
+    return override ? 'true-case' : 'false-case'
+  }
+  const metadata = MetadataUtils.findElementByElementPath(metadataMap, path)
+  if (metadata == null) {
+    return 'true-case'
+  }
+  if (metadata.conditionValue === 'not-a-conditional') {
+    return null
+  }
+  return metadata.conditionValue.active ? 'true-case' : 'false-case'
+}
+
+export function conditionalClauseAsBoolean(clause: ConditionalCase): boolean {
+  return clause === 'true-case'
+}
+
+export function isActiveBranchOfConditional(
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  const conditionValue = metadata?.conditionValue
+  if (conditionValue == null || conditionValue === 'not-a-conditional') {
+    return false
+  } else {
+    const clauseValue = conditionalClauseAsBoolean(clause)
+    return clauseValue === conditionValue.active
+  }
+}
+
+export function isDefaultBranchOfConditional(
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  const conditionValue = metadata?.conditionValue
+  if (conditionValue == null || conditionValue === 'not-a-conditional') {
+    return false
+  } else {
+    const clauseValue = conditionalClauseAsBoolean(clause)
+    return clauseValue === conditionValue.default
+  }
+}
+
+export function isActiveOrDefaultBranchOfConditional(
+  clause: ConditionalCase,
+  metadata: ElementInstanceMetadata | null,
+): boolean {
+  return (
+    isActiveBranchOfConditional(clause, metadata) || isDefaultBranchOfConditional(clause, metadata)
+  )
+}
+
+export function findFirstNonConditionalAncestor(
+  initial: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): ElementPath {
+  const parent = EP.parentPath(initial)
+  if (findMaybeConditionalExpression(parent, metadata) == null) {
+    return parent
+  }
+  return findFirstNonConditionalAncestor(parent, metadata)
+}
+
+export function isTextEditableConditional(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+): boolean {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  if (element == null) {
+    // element doesn't exist
+    return false
+  }
+  const conditional = maybeConditionalExpression(element)
+  if (conditional == null) {
+    // element is not a conditional
+    return false
+  }
+  const nonConditionalAncestor = findFirstNonConditionalAncestor(path, metadata)
+  const siblings = MetadataUtils.getChildrenOrdered(
+    metadata,
+    elementPathTree,
+    nonConditionalAncestor,
+  )
+  if (siblings.length !== 1) {
+    // we don't allow text editing of conditional branches when the conditional has siblings
+    // (or if the topmost nested conditional has siblings)
+    return false
+  }
+
+  const childrenInMetadata = MetadataUtils.getNonExpressionDescendants(
+    metadata,
+    elementPathTree,
+    path,
+  )
+  if (childrenInMetadata.length > 0) {
+    // we don't allow text editing of conditional branches when the conditional have children in metadata
+    // that would mean there are elefants in the active branch, which should not be text editable
+    return false
+  }
+
+  // Finally we check if the active conditional branch is a js expression. Maybe this is an overkill,
+  // because the earlier checks already prove this is a leaf element.
+  const activeConditionalBranch = maybeConditionalActiveBranch(path, metadata)
+  return activeConditionalBranch != null && isJSExpression(activeConditionalBranch)
 }

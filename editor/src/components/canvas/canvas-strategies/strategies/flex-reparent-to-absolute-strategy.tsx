@@ -1,26 +1,29 @@
 import { canvasPoint } from '../../../../core/shared/math-utils'
-import { EditorStatePatch } from '../../../editor/store/editor-state'
+import type { EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
-import { CanvasStrategyFactory, pickCanvasStateFromEditorState } from '../canvas-strategies'
-import {
+import type { CanvasStrategyFactory } from '../canvas-strategies'
+import { pickCanvasStateFromEditorState } from '../canvas-strategies'
+import type {
   CanvasStrategy,
-  controlWithProps,
   CustomStrategyState,
+  InteractionCanvasState,
+} from '../canvas-strategy-types'
+import {
+  controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { baseAbsoluteReparentStrategy } from './absolute-reparent-strategy'
 import { getEscapeHatchCommands } from './convert-to-absolute-and-move-strategy'
-import { treatElementAsContentAffecting } from './group-like-helpers'
+import { treatElementAsFragmentLike } from './fragment-like-helpers'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
-import { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
+import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { placeholderCloneCommands } from './reparent-utils'
 import { flattenSelection } from './shared-move-strategies-helpers'
 
@@ -41,13 +44,13 @@ export function baseFlexReparentToAbsoluteStrategy(
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-outlines-control',
           show: 'visible-only-while-active',
         }),
         controlWithProps({
           control: ParentBounds,
-          props: { targetParent: reparentTarget.newParent },
+          props: { targetParent: reparentTarget.newParent.intendedParentPath },
           key: 'parent-bounds-control',
           show: 'visible-only-while-active',
         }),
@@ -81,7 +84,7 @@ export function baseFlexReparentToAbsoluteStrategy(
               canvasState,
               customStrategyState,
               filteredSelectedElements,
-              newParent,
+              newParent.intendedParentPath,
             )
 
             const escapeHatchCommands = getEscapeHatchCommands(
@@ -105,6 +108,7 @@ export function baseFlexReparentToAbsoluteStrategy(
                     const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
                       reparentTarget,
                       0,
+                      customStrategyState,
                     )
                     const reparentCommands =
                       absoluteReparentStrategyToUse(

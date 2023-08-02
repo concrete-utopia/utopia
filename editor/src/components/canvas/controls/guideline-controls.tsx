@@ -1,13 +1,11 @@
 import React from 'react'
 import { Utils } from '../../../uuiui-deps'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { CanvasPoint, CanvasRectangle, CanvasSegment } from '../../../core/shared/math-utils'
 import {
   canvasPoint,
-  CanvasPoint,
   canvasRectangle,
-  CanvasRectangle,
   canvasSegment,
-  CanvasSegment,
   isInfinityRectangle,
   rectanglesEqual,
   segmentIntersection,
@@ -21,10 +19,10 @@ import {
   useSelectorWithCallback,
 } from '../../editor/store/store-hook'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { Guideline } from '../guideline'
+import type { Guideline } from '../guideline'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
-import { CanvasSubstate } from '../../editor/store/store-hook-substore-types'
+import type { CanvasSubstate } from '../../editor/store/store-hook-substore-types'
 import { FLEX_RESIZE_STRATEGY_ID } from '../canvas-strategies/strategies/flex-resize-strategy'
 
 // STRATEGY GUIDELINE CONTROLS

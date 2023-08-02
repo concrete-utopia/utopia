@@ -1,25 +1,22 @@
 import * as Babel from '@babel/standalone'
-import * as BabelTraverse from '@babel/traverse'
+import type * as BabelTraverse from '@babel/traverse'
 import * as BabelTypes from '@babel/types'
 import ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
-import { SourceNode } from 'source-map'
-import { Either, left, right } from '../../shared/either'
+import type { SourceNode } from 'source-map'
+import type { Either } from '../../shared/either'
+import { left, right } from '../../shared/either'
+import type { JSXElement } from '../../shared/element-template'
 import {
   getDefinedElsewhereFromElement,
-  JSXElement,
   getJSXElementNameAsString,
 } from '../../shared/element-template'
 import { getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
 import { fastForEach } from '../../shared/utils'
-import { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import infiniteLoopPrevention from './transform-prevent-infinite-loops'
-import {
-  ElementsWithinInPosition,
-  CodeWithMap,
-  wrapCodeInParens,
-  wrapCodeInParensWithMap,
-} from './parser-printer-utils'
+import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-utils'
+import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 interface TranspileResult {
@@ -33,7 +30,7 @@ interface TranspileResult {
  * with calls to a function that is specially injected by the
  * canvas to return an invocation of the canvas element renderer.
  */
-function babelRewriteJSXArbitraryBlockCode(
+function babelRewriteJSExpressionCode(
   elementsWithin: ElementsWithinInPosition,
   insertCanvasRenderCall: boolean,
 ): () => {
@@ -226,7 +223,7 @@ export function insertDataUIDsIntoCode(
       codeToUse = wrapCodeInParens(codeToUse)
     }
     const plugins: Array<any> = [
-      babelRewriteJSXArbitraryBlockCode(elementsWithin, false),
+      babelRewriteJSExpressionCode(elementsWithin, false),
       ReactSyntaxPlugin,
     ]
     const transformResult = Babel.transform(codeToUse, {
@@ -269,7 +266,7 @@ export function transpileJavascriptFromCode(
     }
     let plugins: Array<any> = []
     if (Object.keys(elementsWithin).length > 0) {
-      plugins.push(babelRewriteJSXArbitraryBlockCode(elementsWithin, true))
+      plugins.push(babelRewriteJSExpressionCode(elementsWithin, true))
     }
     plugins.push(infiniteLoopPrevention)
     plugins.push('external-helpers')

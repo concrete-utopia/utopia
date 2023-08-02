@@ -1,18 +1,15 @@
 import React from 'react'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
-import { usePropControlledRef_DANGEROUS } from '../../inspector/common/inspector-utils'
-import { getControlStyles, SelectOption, Utils } from '../../../uuiui-deps'
-import * as EP from '../../../core/shared/element-path'
+import type { SelectOption } from '../../../uuiui-deps'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { PopupList } from '../../../uuiui'
-import { JSXElementName, jsxElementNameEquals } from '../../../core/shared/element-template'
+import type { JSXElementName } from '../../../core/shared/element-template'
+import { jsxElementNameEquals } from '../../../core/shared/element-template'
 import { getElementsToTarget } from '../../inspector/common/inspector-utils'
-import { Imports } from '../../../core/shared/project-file-types'
-import {
-  getComponentGroupsAsSelectOptions,
-  InsertableComponent,
-} from '../../../components/shared/project-components'
+import type { Imports } from '../../../core/shared/project-file-types'
+import type { InsertableComponent } from '../../../components/shared/project-components'
+import { getComponentGroupsAsSelectOptions } from '../../../components/shared/project-components'
 import { usePossiblyResolvedPackageDependencies } from '../../../components/editor/npm-dependency/npm-dependency'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -38,7 +35,11 @@ export const RenderAsRow = React.memo(() => {
   const onElementTypeChange = React.useCallback(
     (newElementName: JSXElementName, importsToAdd: Imports) => {
       const actions = refElementsToTargetForUpdates.current.flatMap((path) => {
-        return EditorActions.updateJSXElementName(path, newElementName, importsToAdd)
+        return EditorActions.updateJSXElementName(
+          path,
+          { type: 'JSX_ELEMENT', name: newElementName },
+          importsToAdd,
+        )
       })
       dispatch(actions, 'everyone')
     },
@@ -86,6 +87,7 @@ export const RenderAsRow = React.memo(() => {
       return []
     } else {
       return getComponentGroupsAsSelectOptions(
+        'insert',
         packageStatus,
         propertyControlsInfo,
         projectContents,

@@ -1,3 +1,6 @@
+import * as PP from '../../../core/shared/property-path'
+import * as EP from '../../../core/shared/element-path'
+
 import deepEqual from 'fast-deep-equal'
 import * as ObjectPath from 'object-path'
 import React from 'react'
@@ -11,35 +14,39 @@ import {
   useEditorState,
   useRefEditorState,
 } from '../../../components/editor/store/store-hook'
+import type {
+  ControlStatus,
+  ControlStyles,
+  PropertyStatus,
+} from '../../../components/inspector/common/control-status'
 import {
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
-  ControlStatus,
-  ControlStyles,
   getControlStatusFromPropertyStatus,
   getControlStyles,
-  PropertyStatus,
 } from '../../../components/inspector/common/control-status'
+import type {
+  ParsedCSSProperties,
+  ParsedCSSPropertiesKeys,
+  ParsedElementProperties,
+  ParsedElementPropertiesKeys,
+  ParsedProperties,
+  ParsedPropertiesKeys,
+  ParsedPropertiesValues,
+} from '../../../components/inspector/common/css-utils'
 import {
   emptyValues,
   isCSSUnknownFunctionParameters,
   isLayoutPropDetectedInCSS,
   maybePrintCSSValue,
   parseAnyParseableValue,
-  ParsedCSSProperties,
-  ParsedCSSPropertiesKeys,
   ParsedCSSPropertiesKeysNoLayout,
-  ParsedElementProperties,
-  ParsedElementPropertiesKeys,
-  ParsedProperties,
-  ParsedPropertiesKeys,
-  ParsedPropertiesValues,
   printCSSValue,
   cssNumber,
   isTrivialDefaultValue,
   CSSNumber,
 } from '../../../components/inspector/common/css-utils'
-import { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
+import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
 import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   getFilePathForImportedComponent,
@@ -48,9 +55,9 @@ import {
   isUtopiaAPIComponent,
 } from '../../../core/model/project-file-utils'
 import { addUniquely, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import type { Either } from '../../../core/shared/either'
 import {
   defaultEither,
-  Either,
   eitherToMaybe,
   flatMapEither,
   foldEither,
@@ -59,33 +66,38 @@ import {
   mapEither,
   unwrapEither,
 } from '../../../core/shared/either'
+import type {
+  JSXAttributes,
+  ComputedStyle,
+  StyleAttributeMetadata,
+  StyleAttributeMetadataEntry,
+} from '../../../core/shared/element-template'
 import {
   getJSXElementNameLastPart,
   getJSXElementNameNoPathName,
   isJSXElement,
-  JSXAttributes,
   UtopiaJSXComponent,
-  ComputedStyle,
   getJSXAttribute,
-  StyleAttributeMetadata,
-  StyleAttributeMetadataEntry,
   JSExpression,
+  isRegularJSXAttribute,
+  clearExpressionUniqueIDs,
 } from '../../../core/shared/element-template'
-import {
-  getAllPathsFromAttributes,
+import type {
   GetModifiableAttributeResult,
-  getModifiableJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
   ModifiableAttribute,
 } from '../../../core/shared/jsx-attributes'
-import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
 import {
+  getAllPathsFromAttributes,
+  getModifiableJSXAttributeAtPath,
+  jsxSimpleAttributeToValue,
+} from '../../../core/shared/jsx-attributes'
+import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
+import type {
   PropertyPath,
   ElementPath,
   PropertyPathPart,
 } from '../../../core/shared/project-file-types'
-import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
+
 import { fastForEach } from '../../../core/shared/utils'
 import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import {
@@ -101,8 +113,11 @@ import { omitWithPredicate } from '../../../core/shared/object-utils'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
 import fastDeepEquals from 'fast-deep-equal'
 import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
-import { EditorAction } from '../../editor/action-types'
+import type { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
+import { Optic } from '../../../core/shared/optics/optics'
+import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { modify } from '../../../core/shared/optics/optic-utilities'
 
 export interface InspectorPropsContextData {
   selectedViews: Array<ElementPath>
@@ -118,9 +133,9 @@ export interface InspectorCallbackContextData {
   onSubmitValue: (newValue: any, propertyPath: PropertyPath, transient: boolean) => void
   onUnsetValue: (propertyPath: PropertyPath | Array<PropertyPath>, transient: boolean) => void
   collectActionsToSubmitValue: (
-    newValue: any,
     propertyPath: PropertyPath,
     transient: boolean,
+    newValuePrinter: () => any,
   ) => Array<EditorAction>
   collectActionsToUnsetValue: (
     propertyPath: PropertyPath | Array<PropertyPath>,
@@ -393,9 +408,9 @@ export function useInspectorContext(): {
     transient: boolean,
   ) => void
   collectActionsToSubmitValue: (
-    newValue: any,
     propertyPath: PropertyPath,
     transient: boolean,
+    newValuePrinter: () => any,
   ) => Array<EditorAction>
   collectActionsToUnsetValue: (
     propertyPath: PropertyPath | Array<PropertyPath>,
@@ -609,9 +624,9 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
   pathMappingFn: PathMappingFn<P>,
   target: readonly string[],
   collectActionsToSubmitValue: (
-    newValue: any,
     propertyPath: PropertyPath,
     transient: boolean,
+    newValuePrinter: () => any,
   ) => Array<EditorAction>,
   collectActionsToUnsetValue: (
     propertyPath: PropertyPath | Array<PropertyPath>,
@@ -627,8 +642,11 @@ function useCreateOnSubmitValue<P extends ParsedPropertiesKeys, T = ParsedProper
         const propertyPath = pathMappingFn(propKey, target)
         const valueToPrint = untransformedValue[propKey]
         if (valueToPrint != null) {
-          const printedProperty = printCSSValue(propKey, valueToPrint as ParsedProperties[P])
-          actions.push(...collectActionsToSubmitValue(printedProperty, propertyPath, transient))
+          actions.push(
+            ...collectActionsToSubmitValue(propertyPath, transient, () =>
+              printCSSValue(propKey, valueToPrint as ParsedProperties[P]),
+            ),
+          )
         } else {
           actions.push(...collectActionsToUnsetValue(propertyPath, transient))
         }
@@ -743,6 +761,11 @@ function useGetSpiedProps<P extends ParsedPropertiesKeys>(
   )
 }
 
+const getModifiableAttributeResultToExpressionOptic = eitherRight<
+  string,
+  ModifiableAttribute
+>().compose(fromTypeGuard(isRegularJSXAttribute))
+
 export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
   pathMappingFn: PathMappingFn<P>,
   propKeys: P[],
@@ -754,9 +777,17 @@ export function useGetMultiselectedProps<P extends ParsedPropertiesKeys>(
         const keyFn = (propKey: P) => propKey
         const mapFn = (propKey: P) => {
           return contextData.editedMultiSelectedProps.map((props) => {
-            return getModifiableJSXAttributeAtPath(
+            const result = getModifiableJSXAttributeAtPath(
               props,
               pathMappingFn(propKey, contextData.targetPath),
+            )
+            // This wipes the uid from any `JSExpression` values we may have retrieved,
+            // as that can cause the deep equality check to fail for different elements
+            // with the same value for a given property.
+            return modify(
+              getModifiableAttributeResultToExpressionOptic,
+              clearExpressionUniqueIDs,
+              result,
             )
           })
         }

@@ -1,36 +1,13 @@
 import { extractFile } from '../core/model/project-file-utils'
-import { FileResult } from '../core/shared/file-utils'
-import { CopyData } from './clipboard'
+import type { FileResult } from '../core/shared/file-utils'
+import type { CopyData } from './clipboard'
 
 export interface PasteResult {
   utopiaData: CopyData[]
   files: Array<FileResult>
 }
 
-export async function parsePasteEvent(clipboardData: DataTransfer | null): Promise<PasteResult> {
-  if (clipboardData == null) {
-    return {
-      files: [],
-      utopiaData: [],
-    }
-  }
-  const utopiaData = extractUtopiaDataFromClipboardData(clipboardData)
-  if (utopiaData.length > 0) {
-    return {
-      files: [],
-      utopiaData: utopiaData,
-    }
-  } else {
-    const items = clipboardData.items
-    const imageArray = await extractFiles(items)
-    return {
-      files: imageArray,
-      utopiaData: [],
-    }
-  }
-}
-
-function extractFiles(items: DataTransferItemList): Promise<Array<FileResult>> {
+export function extractFiles(items: DataTransferItemList): Promise<Array<FileResult>> {
   const fileItems = Array.from(items).filter((item) => item.kind === 'file')
   return Promise.all<FileResult>(
     fileItems.map((item) => {
@@ -53,7 +30,7 @@ const UtopiaPrefixLength = UtopiaDataPrefix.length
 const UtopiaDataPostfix = '(/utopia)'
 const UtopiaPostfixLength = UtopiaDataPostfix.length
 
-function extractUtopiaDataFromClipboardData(data: DataTransfer): Array<CopyData> {
+export function extractUtopiaDataFromClipboardData(data: DataTransfer): Array<CopyData> {
   const htmlString = data.getData('text/html')
   if (htmlString !== '') {
     return extractUtopiaDataFromHtml(htmlString)
@@ -62,7 +39,7 @@ function extractUtopiaDataFromClipboardData(data: DataTransfer): Array<CopyData>
   }
 }
 
-function extractUtopiaDataFromHtml(htmlString: string): Array<CopyData> {
+export function extractUtopiaDataFromHtml(htmlString: string): Array<CopyData> {
   const comments: string[] = []
   // parse them html
   const htmlElement = document.createElement('html')

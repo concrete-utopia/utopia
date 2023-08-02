@@ -1,8 +1,9 @@
 import { unescape } from 'he'
-import React, { CSSProperties } from 'react'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { CSSProperties } from 'react'
+import React from 'react'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { keyCharacterFromCode } from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
@@ -17,14 +18,16 @@ import {
   isAdjustFontWeightShortcut,
 } from '../canvas/canvas-strategies/strategies/keyboard-set-font-weight-strategy'
 import { setProperty } from '../canvas/commands/set-property-command'
-import { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
+import type { ApplyCommandsAction, EditorAction, EditorDispatch } from '../editor/action-types'
 import {
   applyCommandsAction,
   deleteView,
-  updateChildText,
+  updateText,
   updateEditorMode,
+  showToast,
 } from '../editor/actions/action-creators'
-import { Coordinates, EditorModes } from '../editor/editor-modes'
+import type { Coordinates } from '../editor/editor-modes'
+import { EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -38,15 +41,20 @@ import {
 import { useColorTheme } from '../../uuiui'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
+import { assertNever } from '../../core/shared/utils'
+import { notice } from '../common/notice'
 
 export const TextEditorSpanId = 'text-editor'
 
-interface TextEditorProps {
+export type TextProp = 'itself' | 'child' | 'whenTrue' | 'whenFalse' | 'fullConditional'
+
+export interface TextEditorProps {
   elementPath: ElementPath
   text: string
   component: React.ComponentType<React.PropsWithChildren<any>>
   passthroughProps: Record<string, any>
   filePath: string
+  textProp: TextProp
 }
 
 const entities = {
@@ -57,17 +65,77 @@ const entities = {
 }
 
 // canvas → editor
-export function escapeHTML(s: string): string {
-  return (
-    s
-      // a trailing newline is added by contenteditable for multiline strings, so get rid of it
-      .replace(/\n$/, '')
-      // clean up angular braces
-      .replace('<', entities.lesserThan)
-      .replace('>', entities.greaterThan)
+export function escapeHTML(s: string, textProp: TextProp): string {
+  const withoutNewLines = s
+    // a trailing newline is added by contenteditable for multiline strings, so get rid of it
+    .replace(/\n$/, '')
+
+  //encode < and > when necessary
+  const encoded = encodeHTMLWhenNotInJsCode(withoutNewLines)
+
+  switch (textProp) {
+    case 'child':
       // restore br tags
-      .replace(/\n/g, '\n<br />')
-  )
+      return encoded.replace(/\n/g, '\n<br />')
+    case 'itself':
+    case 'fullConditional':
+    case 'whenTrue':
+    case 'whenFalse':
+      return encoded
+    default:
+      assertNever(textProp)
+  }
+}
+
+// This is a very basic function to separate the real text content and the JS content in curly brackets
+// We only want to html encode in text content, but not in js content
+// E.g. we don't want to encode the < in `{ 2>3 ? "foo" : "bar" }
+function encodeHTMLWhenNotInJsCode(s: string): string {
+  let result = ''
+  let parenCounter = 0
+  let inSingleQuotation = false
+  let inDoubleQuotation = false
+
+  const isInJSExpression = () => parenCounter > 0
+
+  for (let ch of s) {
+    let characterToPrint = ch
+    switch (ch) {
+      case '{':
+        if (!inSingleQuotation && !inDoubleQuotation) {
+          parenCounter++
+        }
+        break
+      case '}':
+        if (!inSingleQuotation && !inDoubleQuotation) {
+          parenCounter--
+        }
+        break
+      case '<':
+        if (!isInJSExpression()) {
+          characterToPrint = entities.lesserThan
+        }
+        break
+      case '>':
+        if (!isInJSExpression()) {
+          characterToPrint = entities.greaterThan
+        }
+        break
+      case '"':
+        if (!inSingleQuotation) {
+          inDoubleQuotation = !inDoubleQuotation
+        }
+        break
+      case "'":
+        if (!inDoubleQuotation) {
+          inSingleQuotation = !inSingleQuotation
+        }
+        break
+    }
+    result += characterToPrint
+  }
+
+  return result
 }
 
 // editor → canvas
@@ -217,7 +285,7 @@ export const TextEditorWrapper = React.memo((props: TextEditorProps) => {
 })
 
 const TextEditor = React.memo((props: TextEditorProps) => {
-  const { elementPath, text, component, passthroughProps } = props
+  const { elementPath, text, component, passthroughProps, textProp } = props
   const dispatch = useDispatch()
   const cursorPosition = useEditorState(
     Substores.restOfEditor,
@@ -279,19 +347,37 @@ const TextEditor = React.memo((props: TextEditorProps) => {
         } else {
           if (elementState != null && savedContentRef.current !== content) {
             savedContentRef.current = content
-            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content)]))
+            requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
           }
         }
       }
     }
-  }, [dispatch, elementPath, elementState, metadataRef])
+  }, [dispatch, elementPath, elementState, metadataRef, textProp])
 
-  React.useEffect(() => {
+  React.useLayoutEffect(() => {
     if (myElement.current == null) {
       return
     }
     myElement.current.textContent = firstTextProp
   }, [firstTextProp])
+
+  React.useEffect(() => {
+    if (myElement.current == null) {
+      setTimeout(() => {
+        dispatch([
+          updateEditorMode(EditorModes.selectMode()),
+          showToast(
+            notice(
+              "This element doesn't support children, so it cannot be text edited",
+              'WARNING',
+              false,
+              'text-editor-does-not-support-children',
+            ),
+          ),
+        ])
+      }, 0)
+    }
+  }, [dispatch])
 
   React.useEffect(() => {
     if (myElement.current == null) {
@@ -344,11 +430,14 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     const content = myElement.current?.textContent
     if (content != null && elementState != null && savedContentRef.current !== content) {
       savedContentRef.current = content
-      dispatch([getSaveAction(elementPath, content), updateEditorMode(EditorModes.selectMode())])
+      dispatch([
+        getSaveAction(elementPath, content, textProp),
+        updateEditorMode(EditorModes.selectMode()),
+      ])
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode())])
     }
-  }, [dispatch, elementPath, elementState])
+  }, [dispatch, elementPath, elementState, textProp])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -484,6 +573,10 @@ function filterEventHandlerProps(props: Record<string, any>) {
   return filteredProps
 }
 
-function getSaveAction(elementPath: ElementPath, content: string): EditorAction {
-  return updateChildText(elementPath, escapeHTML(content))
+function getSaveAction(
+  elementPath: ElementPath,
+  content: string,
+  textProp: TextProp,
+): EditorAction {
+  return updateText(elementPath, escapeHTML(content, textProp), textProp)
 }

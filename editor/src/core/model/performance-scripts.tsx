@@ -1,7 +1,8 @@
 import React, { useRef } from 'react'
 import * as ReactDOM from 'react-dom'
 import CanvasActions from '../../components/canvas/canvas-actions'
-import { DebugDispatch, DispatchPriority, EditorAction } from '../../components/editor/action-types'
+import type { DebugDispatch } from '../../components/editor/action-types'
+import { DispatchPriority, EditorAction } from '../../components/editor/action-types'
 import {
   clearSelection,
   deleteView,
@@ -26,13 +27,8 @@ import {
   zeroPoint,
   zeroRectangle,
 } from '../shared/math-utils'
-import {
-  CanvasContainerID,
-  resizeDragState,
-  updateResizeDragState,
-} from '../../components/canvas/canvas-types'
+import { CanvasContainerID } from '../../components/canvas/canvas-types'
 import { MetadataUtils } from './element-metadata-utils'
-import { getOriginalFrames } from '../../components/canvas/canvas-utils'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import { EditorModes } from '../../components/editor/editor-modes'
@@ -47,19 +43,19 @@ import { NavigatorContainerId } from '../../components/navigator/navigator'
 import { emptyComments, jsExpressionValue } from '../shared/element-template'
 import { last } from '../shared/array-utils'
 import { load } from '../../components/editor/actions/actions'
-import { ProjectContentTreeRoot } from '../../components/assets'
-import {
+import type { ProjectContentTreeRoot } from '../../components/assets'
+import type {
   EditorStorePatched,
   PersistentModel,
-  regularNavigatorEntryOptic,
 } from '../../components/editor/store/editor-state'
+import { regularNavigatorEntryOptic } from '../../components/editor/store/editor-state'
 import { CURRENT_PROJECT_VERSION } from '../../components/editor/actions/migrations/migrations'
-import { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { LargeProjectContents } from '../../test-cases/large-project'
 import { v4 as UUID } from 'uuid'
 import { SmallSingleDivProjectContents } from '../../test-cases/simple-single-div-project'
 import { useDispatch } from '../../components/editor/store/dispatch-context'
-import { compose5Optics, Optic } from '../shared/optics/optics'
+import { Optic } from '../shared/optics/optics'
 import { ElementPath } from '../shared/project-file-types'
 import { fromField, traverseArray } from '../shared/optics/optic-creators'
 import { toArrayOf } from '../shared/optics/optic-utilities'
@@ -134,9 +130,6 @@ async function loadProject(
       pendingCommit: null,
       branchLoaded: false,
     },
-    githubChecksums: null,
-    branchContents: null,
-    assetChecksums: {},
     colorSwatches: [],
   }
 
@@ -184,13 +177,11 @@ async function loadProject(
   return editorReady
 }
 
-const storeToAllRegularPaths: Optic<EditorStorePatched, ElementPath> = compose5Optics(
-  fromField('derived'),
-  fromField('navigatorTargets'),
-  traverseArray(),
-  regularNavigatorEntryOptic,
-  fromField('elementPath'),
-)
+const storeToAllRegularPaths = fromField<EditorStorePatched, 'derived'>('derived')
+  .compose(fromField('navigatorTargets'))
+  .compose(traverseArray())
+  .compose(regularNavigatorEntryOptic)
+  .compose(fromField('elementPath'))
 
 export function useTriggerScrollPerformanceTest(): () => void {
   const dispatch = useDispatch() as DebugDispatch
@@ -234,86 +225,6 @@ export function useTriggerScrollPerformanceTest(): () => void {
     }
     requestAnimationFrame(step)
   }, [dispatch, allPaths, builtInDependencies])
-  return trigger
-}
-
-export function useTriggerResizePerformanceTest(): () => void {
-  const dispatch = useDispatch() as DebugDispatch
-  const metadata = useRefEditorState((store) => store.editor.jsxMetadata)
-  const selectedViews = useRefEditorState((store) => store.editor.selectedViews)
-  const builtInDependencies = useEditorState(
-    Substores.restOfStore,
-    (store) => store.builtInDependencies,
-    'useTriggerResizePerformanceTest builtInDependencies',
-  )
-  const allPaths = useRefEditorState(
-    React.useCallback((store) => toArrayOf(storeToAllRegularPaths, store), []),
-  )
-  const trigger = React.useCallback(async () => {
-    const editorReady = await loadProject(dispatch, builtInDependencies, LargeProjectContents)
-    if (!editorReady) {
-      console.info('RESIZE_TEST_ERROR')
-      return
-    }
-    const targetPath = [...allPaths.current].sort(
-      (a, b) => EP.toString(b).length - EP.toString(a).length,
-    )[0]
-    await dispatch([
-      switchEditorMode(EditorModes.selectMode()),
-      selectComponents([targetPath], false),
-    ]).entireUpdateFinished
-
-    const target = selectedViews.current[0]
-    const targetFrame = MetadataUtils.findElementByElementPath(
-      metadata.current,
-      target,
-    )?.globalFrame
-    const targetStartPoint =
-      targetFrame == null || isInfinityRectangle(targetFrame)
-        ? (zeroPoint as CanvasVector)
-        : ({
-            x: targetFrame.x + targetFrame.width,
-            y: targetFrame.y + targetFrame.height,
-          } as CanvasVector)
-
-    const originalFrames = getOriginalFrames(selectedViews.current, metadata.current)
-
-    let framesPassed = 0
-    async function step() {
-      markStart('resize', framesPassed)
-      const dragState = updateResizeDragState(
-        resizeDragState(
-          targetFrame == null || isInfinityRectangle(targetFrame)
-            ? (zeroRectangle as CanvasRectangle)
-            : targetFrame,
-          originalFrames,
-          { x: 1, y: 1 },
-          { x: 1, y: 1 },
-          metadata.current,
-          [target],
-          false,
-          [],
-        ),
-        targetStartPoint,
-        { x: framesPassed % 100, y: framesPassed % 100 } as CanvasVector,
-        'width',
-        true,
-        false,
-        false,
-      )
-      await dispatch([CanvasActions.createDragState(dragState)]).entireUpdateFinished
-      markEnd('resize', framesPassed)
-      measureStep('resize', framesPassed)
-      if (framesPassed < NumberOfIterations) {
-        framesPassed++
-        requestAnimationFrame(step)
-      } else {
-        await dispatch([CanvasActions.clearDragState(false)]).entireUpdateFinished
-        console.info('RESIZE_TEST_FINISHED')
-      }
-    }
-    requestAnimationFrame(step)
-  }, [dispatch, metadata, selectedViews, allPaths, builtInDependencies])
   return trigger
 }
 

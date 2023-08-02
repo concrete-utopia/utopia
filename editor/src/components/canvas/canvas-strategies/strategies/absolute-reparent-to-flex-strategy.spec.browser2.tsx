@@ -1,5 +1,5 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
@@ -7,21 +7,27 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { cmdModifier, emptyModifiers, Modifiers } from '../../../../utils/modifiers'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers } from '../../../../utils/modifiers'
 import {
   BakedInStoryboardVariableName,
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
 import {
   mouseClickAtPoint,
+  mouseDoubleClickAtPoint,
   mouseDownAtPoint,
+  mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ExtraPadding } from './reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
+import { selectComponents } from '../../../editor/actions/action-creators'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -167,7 +173,7 @@ const defaultTestCode = `
 function makeTestProjectCodeWithComponentInnards(componentInnards: string): string {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export var App = (props) => {
 ${componentInnards}
@@ -483,6 +489,56 @@ describe('Absolute Reparent To Flex Strategy', () => {
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(defaultTestCode),
     )
+  })
+
+  it('cannot reparent a code element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(defaultTestCode),
+      'await-first-dom-report',
+    )
+
+    // To select a code element we first select the parent and then double click on one of
+    // generated children of the code element
+    const parentPath = EP.fromString(
+      'utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent',
+    )
+    await renderResult.dispatch([selectComponents([parentPath], false)], false)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const generatedAbsolutechildren = await renderResult.renderedDOM.findAllByTestId(
+      'generatedabsolutechild',
+    )
+    const absoluteChild = generatedAbsolutechildren[0]
+    const absoluteChildRect = absoluteChild.getBoundingClientRect()
+    const absoluteChildCenter = {
+      x: absoluteChildRect.x + absoluteChildRect.width / 2,
+      y: absoluteChildRect.y + absoluteChildRect.height / 2,
+    }
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    await mouseDoubleClickAtPoint(canvasControlsLayer, absoluteChildCenter)
+
+    const firstFlexChild = await renderResult.renderedDOM.findByTestId('flexchild1')
+    const firstFlexChildRect = firstFlexChild.getBoundingClientRect()
+    const firstFlexChildCenter = {
+      x: firstFlexChildRect.x + firstFlexChildRect.width / 2,
+      y: firstFlexChildRect.y + firstFlexChildRect.height / 2,
+    }
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    await mouseDragFromPointToPoint(canvasControlsLayer, absoluteChildCenter, firstFlexChildCenter)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(defaultTestCode),
+    )
+
+    // Ensure that the code element was selected, and not one of the generated children
+    expect(renderResult.getEditorState().editor.selectedViews).toEqual([
+      EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/absoluteparent/6f1'),
+    ])
   })
 })
 

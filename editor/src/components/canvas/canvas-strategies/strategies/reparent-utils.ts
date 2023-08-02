@@ -1,19 +1,22 @@
-import { ProjectContentTreeRoot } from '../../../assets'
+import type { ProjectContentTreeRoot } from '../../../assets'
 import {
   addImport,
   emptyImports,
   mergeImports,
 } from '../../../../core/workers/common/project-file-utils'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
-import { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
-import { CanvasCommand } from '../../commands/commands'
+import type { ElementPath, Imports, NodeModules } from '../../../../core/shared/project-file-types'
+import type { CanvasCommand } from '../../commands/commands'
 import { reparentElement } from '../../commands/reparent-element-command'
-import {
+import type {
   ElementInstanceMetadataMap,
+  JSXElementChild,
+} from '../../../../core/shared/element-template'
+import {
   isIntrinsicElement,
   isJSXElement,
   JSXElement,
-  JSXElementChild,
   walkElement,
 } from '../../../../core/shared/element-template'
 import * as EP from '../../../../core/shared/element-path'
@@ -24,28 +27,30 @@ import {
 } from '../../../editor/import-utils'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { addImportsToFile } from '../../commands/add-imports-to-file-command'
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { CSSCursor } from '../../canvas-types'
 import { addToReparentedToPaths } from '../../commands/add-to-reparented-to-paths-command'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { addElement } from '../../commands/add-element-command'
-import {
-  CustomStrategyState,
-  InteractionCanvasState,
-  InteractionLifecycle,
-} from '../canvas-strategy-types'
+import type { CustomStrategyState, InteractionCanvasState } from '../canvas-strategy-types'
+import { InteractionLifecycle } from '../canvas-strategy-types'
 import { duplicateElement } from '../../commands/duplicate-element-command'
 import { wildcardPatch } from '../../commands/wildcard-patch-command'
 import { hideInNavigatorCommand } from '../../commands/hide-in-navigator-command'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
 import {
   childInsertionPath,
   getElementPathFromInsertionPath,
-  InsertionPath,
   isChildInsertionPath,
 } from '../../../editor/store/insertion-path'
 import { getUtopiaID } from '../../../../core/shared/uid-utils'
+import type { IndexPosition } from '../../../../utils/utils'
+import { fastForEach } from '../../../../core/shared/utils'
+import { addElements } from '../../commands/add-elements-command'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { getRequiredGroupTrueUps } from '../../commands/queue-group-true-up-command'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -81,6 +86,9 @@ export function elementToReparent(element: JSXElementChild, imports: Imports): E
 export type ToReparent = PathToReparent | ElementToReparent
 
 export function getReparentOutcome(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -88,6 +96,7 @@ export function getReparentOutcome(
   toReparent: ToReparent,
   targetParent: InsertionPath | null,
   whenToRun: 'always' | 'on-complete',
+  indexPosition: IndexPosition | null,
 ): GetReparentOutcomeResult | null {
   // Cater for something being reparented to the canvas.
   let newParent: InsertionPath
@@ -101,18 +110,6 @@ export function getReparentOutcome(
     }
   } else {
     newParent = targetParent
-  }
-
-  // Early exit if there's no need to make any change.
-  if (
-    toReparent.type === 'PATH_TO_REPARENT' &&
-    isChildInsertionPath(newParent) &&
-    EP.pathsEqual(newParent.intendedParentPath, EP.parentPath(toReparent.target))
-  ) {
-    return {
-      commands: [],
-      newPath: toReparent.target,
-    }
   }
 
   const newParentElementPath = getElementPathFromInsertionPath(newParent)
@@ -148,13 +145,26 @@ export function getReparentOutcome(
         builtInDependencies,
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(reparentElement(whenToRun, toReparent.target, newParent))
+      commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+      commands.push(
+        ...getRequiredGroupTrueUps(
+          projectContents,
+          metadata,
+          pathTrees,
+          allElementProps,
+          toReparent.target,
+        ),
+      )
       newPath = EP.appendToPath(newParentElementPath, EP.toUid(toReparent.target))
       break
     case 'ELEMENT_TO_REPARENT':
       newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
-      commands.push(addElement(whenToRun, newParent, toReparent.element))
+      commands.push(
+        addElement(whenToRun, newParent, toReparent.element, {
+          indexPosition: indexPosition ?? undefined,
+        }),
+      )
       break
     default:
       const _exhaustiveCheck: never = toReparent
@@ -169,6 +179,86 @@ export function getReparentOutcome(
     commands: commands,
     newPath: newPath,
   }
+}
+
+export function getReparentOutcomeMultiselect(
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+  toReparentMultiple: Array<ToReparent>,
+  targetParent: InsertionPath | null,
+  whenToRun: 'always' | 'on-complete',
+  indexPosition: IndexPosition | null,
+): Array<CanvasCommand> | null {
+  // Cater for something being reparented to the canvas.
+  let newParent: InsertionPath
+  if (targetParent == null) {
+    const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
+    if (storyboardElementPath == null) {
+      console.warn(`Unable to find storyboard path.`)
+      return null
+    } else {
+      newParent = childInsertionPath(storyboardElementPath)
+    }
+  } else {
+    newParent = targetParent
+  }
+
+  const newParentElementPath = getElementPathFromInsertionPath(newParent)
+
+  // Lookup the filename that will be added to.
+  const newTargetFilePath = forceNotNull(
+    `Unable to determine target path for ${
+      newParent == null ? null : EP.toString(newParentElementPath)
+    }`,
+    withUnderlyingTarget(
+      newParentElementPath,
+      projectContents,
+      nodeModules,
+      openFile,
+      null,
+      (success, element, underlyingTarget, underlyingFilePath) => {
+        return underlyingFilePath
+      },
+    ),
+  )
+
+  let commands: Array<CanvasCommand> = []
+  let elementsToInsert: Array<JSXElementChild> = []
+  fastForEach(toReparentMultiple, (toReparent) => {
+    switch (toReparent.type) {
+      case 'PATH_TO_REPARENT':
+        const importsToAdd = getRequiredImportsForElement(
+          toReparent.target,
+          projectContents,
+          nodeModules,
+          openFile,
+          newTargetFilePath,
+          builtInDependencies,
+        )
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
+        commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+        break
+      case 'ELEMENT_TO_REPARENT':
+        commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
+        elementsToInsert.push(toReparent.element)
+        break
+      default:
+        const _exhaustiveCheck: never = toReparent
+        throw new Error(`Unhandled to reparent value ${JSON.stringify(toReparent)}`)
+    }
+  })
+
+  if (elementsToInsert.length > 0) {
+    commands.push(
+      addElements(whenToRun, newParent, elementsToInsert, {
+        indexPosition: indexPosition ?? undefined,
+      }),
+    )
+  }
+
+  return commands
 }
 
 export function cursorForMissingReparentedItems(

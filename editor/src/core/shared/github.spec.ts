@@ -7,7 +7,8 @@ import {
 } from './github/helpers'
 
 import * as FastCheck from 'fast-check'
-import { projectContentFile, ProjectContentsTree } from '../../components/assets'
+import type { ProjectContentsTree } from '../../components/assets'
+import { projectContentFile } from '../../components/assets'
 import {
   codeFile,
   imageFile,
@@ -100,25 +101,18 @@ describe('mergeProjectContentsTree', () => {
       ProjectContentsTree | null,
       ProjectContentsTree | null,
     ]): boolean {
-      mergeProjectContentsTree(2000000, fullPath, currentContents, originContents, branchContents)
+      mergeProjectContentsTree(fullPath, currentContents, originContents, branchContents)
       return true
     }
     const property = FastCheck.property(parameters, checkMergeProjectContentsTree)
     FastCheck.assert(property, { verbose: true })
   })
   it('should return the current contents when a change only exists for that', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
-    const currentContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('current code', null, 1000000),
-    )
-    const branchContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
-    const mergedContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('current code', null, 2000000),
-    )
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
+    const currentContents = projectContentFile('/myfile.txt', codeFile('current code', null, 1))
+    const branchContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 2))
+    const mergedContents = projectContentFile('/myfile.txt', codeFile('current code', null, 3))
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -128,15 +122,11 @@ describe('mergeProjectContentsTree', () => {
     expect(actualResult.treeConflicts).toEqual({})
   })
   it('should return the branch contents when a change only exists for that', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
-    const currentContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('origin code', null, 1000000),
-    )
-    const branchContents = projectContentFile('/myfile.txt', codeFile('branch code', null, 1000000))
-    const mergedContents = projectContentFile('/myfile.txt', codeFile('branch code', null, 2000000))
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
+    const currentContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1))
+    const branchContents = projectContentFile('/myfile.txt', codeFile('branch code', null, 2))
+    const mergedContents = projectContentFile('/myfile.txt', codeFile('branch code', null, 3))
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -146,11 +136,10 @@ describe('mergeProjectContentsTree', () => {
     expect(actualResult.treeConflicts).toEqual({})
   })
   it('should return the current contents when it is null', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
     const currentContents = null
-    const branchContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
+    const branchContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1))
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -160,14 +149,10 @@ describe('mergeProjectContentsTree', () => {
     expect(actualResult.treeConflicts).toEqual({})
   })
   it('should return the branch contents when it is null', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
-    const currentContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('origin code', null, 1000000),
-    )
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
+    const currentContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1))
     const branchContents = null
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -177,12 +162,9 @@ describe('mergeProjectContentsTree', () => {
     expect(actualResult.treeConflicts).toEqual({})
   })
   it('should return merged contents when a change exists in both cases', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
-    const currentContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('current code', null, 1000000),
-    )
-    const branchContents = projectContentFile('/myfile.txt', codeFile('branch code', null, 1000000))
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
+    const currentContents = projectContentFile('/myfile.txt', codeFile('current code', null, 1))
+    const branchContents = projectContentFile('/myfile.txt', codeFile('branch code', null, 2))
     const mergedCode = `<<<<<<< Your Changes
 current code
 ||||||| Original
@@ -190,9 +172,8 @@ origin code
 =======
 branch code
 >>>>>>> Branch Changes`
-    const mergedContents = projectContentFile('/myfile.txt', codeFile(mergedCode, null, 2000000))
+    const mergedContents = projectContentFile('/myfile.txt', codeFile(mergedCode, null, 3))
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -202,17 +183,13 @@ branch code
     expect(actualResult.treeConflicts).toEqual({})
   })
   it('should return a tree conflict if the current contents has changed and the branch contents has changed file type', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
-    const currentContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('current code', null, 1000000),
-    )
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
+    const currentContents = projectContentFile('/myfile.txt', codeFile('current code', null, 1))
     const branchContents = projectContentFile(
       '/myfile.txt',
       imageFile('jpg', undefined, undefined, undefined, 0, undefined),
     )
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -224,17 +201,13 @@ branch code
     })
   })
   it('should return a tree conflict if the branch contents has changed and the current contents has changed file type', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
     const currentContents = projectContentFile(
       '/myfile.txt',
       imageFile('jpg', undefined, undefined, undefined, 0, undefined),
     )
-    const branchContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('current code', null, 1000000),
-    )
+    const branchContents = projectContentFile('/myfile.txt', codeFile('current code', null, 1))
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -246,14 +219,10 @@ branch code
     })
   })
   it('should return a tree conflict if the current contents has changed and the branch contents has been deleted', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
-    const currentContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('current code', null, 1000000),
-    )
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
+    const currentContents = projectContentFile('/myfile.txt', codeFile('current code', null, 1))
     const branchContents = null
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,
@@ -265,14 +234,10 @@ branch code
     })
   })
   it('should return a tree conflict if the branch contents has changed and the current contents has been deleted', () => {
-    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 1000000))
+    const originContents = projectContentFile('/myfile.txt', codeFile('origin code', null, 0))
     const currentContents = null
-    const branchContents = projectContentFile(
-      '/myfile.txt',
-      codeFile('current code', null, 1000000),
-    )
+    const branchContents = projectContentFile('/myfile.txt', codeFile('current code', null, 1))
     const actualResult = mergeProjectContentsTree(
-      2000000,
       '/myfile.txt',
       currentContents,
       originContents,

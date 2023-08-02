@@ -1,197 +1,182 @@
 import * as json5 from 'json5'
-import { findJSXElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  getElementsByUIDFromTopLevelElements,
-  isUtopiaJSXComponent,
-  JSXElement,
-  JSXElementChild,
-  TopLevelElement,
-  UtopiaJSXComponent,
-  isJSXElement,
-  emptyJsxMetadata,
-  JSExpression,
-  walkElements,
-  JSXAttributes,
-  isJSXConditionalExpression,
-  JSXConditionalExpression,
-  isJSXArbitraryBlock,
-} from '../../../core/shared/element-template'
-import {
-  insertJSXElementChild,
+  findJSXElementChildAtPath,
   removeJSXElementChild,
   transformJSXComponentAtPath,
-  findJSXElementAtStaticPath,
-  findJSXElementChildAtPath,
-  InsertChildAndDetails,
-  insertChildAndDetails,
 } from '../../../core/model/element-template-utils'
 import {
-  correctProjectContentsPath,
-  getOrDefaultScenes,
+  applyToAllUIJSFiles,
+  applyUtopiaJSXComponentsChanges,
+  getHighlightBoundsForProject,
+  getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
   saveTextFileContents,
-  getHighlightBoundsFromParseResult,
-  updateFileContents,
-  getHighlightBoundsForProject,
-  applyUtopiaJSXComponentsChanges,
-  applyToAllUIJSFiles,
 } from '../../../core/model/project-file-utils'
-import type { ErrorMessage, ErrorMessageSeverity } from '../../../core/shared/error-messages'
-import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
+import { getStoryboardElementPath } from '../../../core/model/scene-utils'
+import type { Either } from '../../../core/shared/either'
+import { forEachRight, isRight, left, mapEither, right } from '../../../core/shared/either'
+import type {
+  ElementInstanceMetadataMap,
+  JSExpression,
+  JSXConditionalExpression,
+  JSXElement,
+  JSXElementChild,
+  JSXFragment,
+  TopLevelElement,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import {
-  Imports,
-  ParseSuccess,
-  ProjectFile,
-  RevisionsState,
+  emptyJsxMetadata,
+  getElementsByUIDFromTopLevelElements,
+  isJSExpression,
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXFragment,
+  isUtopiaJSXComponent,
+  walkElements,
+} from '../../../core/shared/element-template'
+import type { ErrorMessage, ErrorMessageSeverity } from '../../../core/shared/error-messages'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  LocalRectangle,
+  WindowPoint,
+} from '../../../core/shared/math-utils'
+import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
+import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
+import type {
   ElementPath,
-  TextFile,
-  isTextFile,
-  StaticElementPath,
-  NodeModules,
-  foldParsedTextFile,
-  textFileContents,
-  isParseSuccess,
-  codeFile,
-  isParseFailure,
-  isParsedTextFile,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
-  PropertyPath,
   HighlightBoundsWithFileForUids,
-  parseSuccess,
-  ParsedAheadRevisionsState,
-  RevisionsStateType,
+  Imports,
+  NodeModules,
+  ParseSuccess,
+  ProjectFile,
+  StaticElementPath,
+  TextFile,
 } from '../../../core/shared/project-file-types'
-import { diagnosticToErrorMessage } from '../../../core/workers/ts/ts-utils'
 import {
+  RevisionsState,
+  codeFile,
+  foldParsedTextFile,
+  isParseFailure,
+  isParseSuccess,
+  isParsedTextFile,
+  isTextFile,
+  parseSuccess,
+  textFileContents,
+} from '../../../core/shared/project-file-types'
+import type {
   ExportsInfo,
   MultiFileBuildResult,
   UtopiaTsWorkers,
 } from '../../../core/workers/common/worker-types'
-import {
-  bimapEither,
-  Either,
-  foldEither,
-  forEachRight,
-  isLeft,
-  isRight,
-  left,
-  mapEither,
-  right,
-} from '../../../core/shared/either'
-import { KeysPressed } from '../../../utils/keyboard'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import Utils, { IndexPosition } from '../../../utils/utils'
-import {
-  CanvasPoint,
-  CanvasRectangle,
-  CanvasVector,
-  isFiniteRectangle,
-  LocalRectangle,
-  WindowPoint,
-} from '../../../core/shared/math-utils'
+import type { KeysPressed } from '../../../utils/keyboard'
+import type { IndexPosition } from '../../../utils/utils'
+import Utils from '../../../utils/utils'
+import type { ProjectContentTreeRoot } from '../../assets'
 import {
   addFileToProjectContents,
-  ensureDirectoriesExist,
-  getContentsTreeFileFromElements,
   getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
-  transformContentsTree,
-  walkContentsTree,
+  getProjectContentsChecksums,
 } from '../../assets'
-import {
+import type {
+  CSSCursor,
   CanvasFrameAndTarget,
   CanvasModel,
-  CSSCursor,
-  DragState,
   FrameAndTarget,
   HigherOrderControl,
 } from '../../canvas/canvas-types'
+import { getParseSuccessForFilePath } from '../../canvas/canvas-utils'
+import type { EditorPanel } from '../../common/actions/index'
+import type { CodeResultCache, PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
 import {
-  getParseSuccessOrTransientForFilePath,
-  produceCanvasTransientState,
-} from '../../canvas/canvas-utils'
-import { CursorPosition } from '../../code-editor/code-editor-utils'
-import { EditorPanel } from '../../common/actions/index'
-import {
-  CodeResultCache,
   generateCodeResultCache,
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
-  PropertyControlsInfo,
-  ResolveFn,
 } from '../../custom-code/code-file'
-import { convertModeToSavedMode, EditorModes, Mode, PersistedMode } from '../editor-modes'
-import { FontSettings } from '../../inspector/common/css-utils'
-import { DebugDispatch, EditorDispatch, LoginState, ProjectListing } from '../action-types'
+import type { FontSettings } from '../../inspector/common/css-utils'
+import type { EditorDispatch, LoginState, ProjectListing } from '../action-types'
 import { CURRENT_PROJECT_VERSION } from '../actions/migrations/migrations'
-import { StateHistory } from '../history'
-import {
-  BakedInStoryboardVariableName,
-  getStoryboardElementPath,
-} from '../../../core/model/scene-utils'
+import type { Mode, PersistedMode } from '../editor-modes'
+import { EditorModes, convertModeToSavedMode } from '../editor-modes'
+import type { StateHistory } from '../history'
 
-import {
-  toUid,
-  toString,
-  dynamicPathToStaticPath,
-  staticElementPath,
-} from '../../../core/shared/element-path'
+import { dynamicPathToStaticPath, toUid } from '../../../core/shared/element-path'
 
-import { Notice } from '../../common/notice'
-import { emptyComplexMap, ComplexMap, addToComplexMap } from '../../../utils/map'
 import * as friendlyWords from 'friendly-words'
-import { assertNever, fastForEach } from '../../../core/shared/utils'
-import { ShortcutConfiguration } from '../shortcut-definitions'
-import { loginNotYetKnown, notLoggedIn } from '../../../common/user'
-import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
+import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
+import { ProjectIDPlaceholderPrefix, defaultConfig } from 'utopia-vscode-common'
+import { loginNotYetKnown } from '../../../common/user'
+import * as EP from '../../../core/shared/element-path'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { assertNever } from '../../../core/shared/utils'
+import type { Notice } from '../../common/notice'
+import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
-  JSXElementChildKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import * as EP from '../../../core/shared/element-path'
-import { defaultConfig, UtopiaVSCodeConfig, ProjectIDPlaceholderPrefix } from 'utopia-vscode-common'
 
 import * as OPI from 'object-path-immutable'
-import { MapLike } from 'typescript'
-import { pick } from '../../../core/shared/object-utils'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import type { MapLike } from 'typescript'
+import type { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
+import { objectMap, pick } from '../../../core/shared/object-utils'
 
+import type { Spec } from 'immutability-helper'
 import { v4 as UUID } from 'uuid'
-import { PersistenceMachine } from '../persistence/persistence'
+import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { memoize } from '../../../core/shared/memoize'
-import { emptySet } from '../../../core/shared/set-utils'
-import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import { Spec } from 'immutability-helper'
-import { InteractionSession, StrategyState } from '../../canvas/canvas-strategies/interaction-state'
-import { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
-import { MouseButtonsPressed } from '../../../utils/mouse'
+import type { ConditionalCase } from '../../../core/model/conditionals'
+import { getConditionalClausePathFromMetadata } from '../../../core/model/conditionals'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
-import { FileResult } from '../../../core/shared/file-utils'
-import {
+import type { FileResult } from '../../../core/shared/file-utils'
+import type {
   GithubBranch,
   GithubFileChanges,
   GithubFileStatus,
   RepositoryEntry,
   TreeConflicts,
 } from '../../../core/shared/github/helpers'
-import { getPreferredColorScheme, Theme } from '../../../uuiui/styles/theme'
-import type { ThemeSubstate } from './store-hook-substore-types'
-import { ValueAtPath } from '../../../core/shared/jsx-attributes'
-import { ConditionalCase } from '../../../core/model/conditionals'
-import { Optic } from '../../../core/shared/optics/optics'
+import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
+import { memoize } from '../../../core/shared/memoize'
 import { fromTypeGuard } from '../../../core/shared/optics/optic-creators'
-import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
-import { treatElementAsContentAffecting } from '../../canvas/canvas-strategies/strategies/group-like-helpers'
+import type { Optic } from '../../../core/shared/optics/optics'
+import { emptySet } from '../../../core/shared/set-utils'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { childInsertionPath, conditionalClauseInsertionPath, InsertionPath } from './insertion-path'
+import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
+import type { MouseButtonsPressed } from '../../../utils/mouse'
+import type { Theme } from '../../../uuiui/styles/theme'
+import { getPreferredColorScheme } from '../../../uuiui/styles/theme'
+import type {
+  InteractionSession,
+  StrategyState,
+} from '../../canvas/canvas-strategies/interaction-state'
+import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
+import type { PersistenceMachine } from '../persistence/persistence'
+import type { InsertionPath } from './insertion-path'
+import { childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
+import type { ThemeSubstate } from './store-hook-substore-types'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type {
+  CopyData,
+  ElementPasteWithMetadata,
+  ReparentTargetForPaste,
+} from '../../../utils/clipboard'
+import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  getGroupChildStateWithGroupMetadata,
+  getGroupState,
+  isInvalidGroupState,
+  treatElementAsGroupLikeFromMetadata,
+} from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -206,10 +191,14 @@ export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = 260
 
-const DefaultNavigatorWidth = 280
+export const DefaultNavigatorWidth = 280
 export const NavigatorWidthAtom = atomWithPubSub({
   key: 'NavigatorWidthAtom',
   defaultValue: DefaultNavigatorWidth,
+})
+export const CanvasSizeAtom = atomWithPubSub({
+  key: 'CanvasSizeAtom',
+  defaultValue: size(0, 0),
 })
 
 export enum RightMenuTab {
@@ -243,6 +232,7 @@ export const DefaultPackagesList: Array<DependencyPackageDetails> = [
 ]
 
 export const StoryboardFilePath: string = '/utopia/storyboard.js'
+export const PlaygroundFilePath: string = '/src/playground.js'
 
 export interface OriginalPath {
   originalTP: ElementPath
@@ -410,6 +400,7 @@ export const defaultUserState: UserState = {
 }
 
 export type EditorStoreShared = {
+  postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
   history: StateHistory
   userState: UserState
@@ -602,17 +593,18 @@ export function designerFile(filename: string): DesignerFile {
 export type ThemeSetting = 'light' | 'dark' | 'system'
 export const DefaultTheme: ThemeSetting = 'system'
 
-export type DropTargetType = 'before' | 'after' | 'reparent' | null
+export type DropTargetType = 'before' | 'after' | 'reparent'
 
 export interface DropTargetHint {
-  displayAtEntry: NavigatorEntry | null
-  moveToEntry: NavigatorEntry | null
+  displayAtEntry: NavigatorEntry
+  targetParent: NavigatorEntry
   type: DropTargetType
+  targetIndexPosition: IndexPosition
 }
 
 export interface NavigatorState {
   minimised: boolean
-  dropTargetHint: DropTargetHint
+  dropTargetHint: DropTargetHint | null
   collapsedViews: ElementPath[]
   renamingTarget: ElementPath | null
   highlightedTargets: Array<ElementPath>
@@ -893,10 +885,24 @@ export function editorStateCanvasControls(
 
 export type ElementsToRerender = Array<ElementPath> | 'rerender-all-elements'
 
+export interface InternalClipboard {
+  styleClipboard: Array<ValueAtPath>
+  elements: Array<CopyData>
+}
+
+export function internalClipboard(
+  styleClipboard: Array<ValueAtPath>,
+  elements: Array<CopyData>,
+): InternalClipboard {
+  return {
+    styleClipboard,
+    elements,
+  }
+}
+
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
   visible: boolean
-  dragState: DragState | null
   interactionSession: InteractionSession | null
   scale: number
   snappingThreshold: number
@@ -921,7 +927,6 @@ export interface EditorStateCanvas {
 export function editorStateCanvas(
   elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
   visible: boolean,
-  dragState: DragState | null,
   interactionSession: InteractionSession | null,
   scale: number,
   snappingThreshold: number,
@@ -945,7 +950,6 @@ export function editorStateCanvas(
   return {
     elementsToRerender: elementsToRerender,
     visible: visible,
-    dragState: dragState,
     interactionSession: interactionSession,
     scale: scale,
     snappingThreshold: snappingThreshold,
@@ -971,18 +975,15 @@ export function editorStateCanvas(
 export interface EditorStateInspector {
   visible: boolean
   classnameFocusCounter: number
-  layoutSectionHovered: boolean
 }
 
 export function editorStateInspector(
   visible: boolean,
   classnameFocusCounter: number,
-  layoutSectionHovered: boolean,
 ): EditorStateInspector {
   return {
     visible: visible,
     classnameFocusCounter: classnameFocusCounter,
-    layoutSectionHovered: layoutSectionHovered,
   }
 }
 
@@ -1265,7 +1266,65 @@ export function newColorSwatch(id: string, hex: string): ColorSwatch {
   }
 }
 
+export interface FileWithChecksum {
+  file: ProjectFile
+  checksum: string
+}
+
 export type FileChecksums = { [filename: string]: string } // key = filename, value = sha1 hash of the file
+
+export type FileChecksumsWithFile = { [filename: string]: FileWithChecksum }
+
+export function fileChecksumsWithFileToFileChecksums(
+  fileChecksums: FileChecksumsWithFile,
+): FileChecksums {
+  return objectMap((entry) => entry.checksum, fileChecksums)
+}
+
+export interface PastePostActionMenuData {
+  type: 'PASTE'
+  target: ReparentTargetForPaste
+  dataWithPropsReplaced: ElementPasteWithMetadata | null
+  dataWithPropsPreserved: ElementPasteWithMetadata
+  pasteTargetsToIgnore: Array<ElementPath>
+  targetOriginalPathTrees: ElementPathTrees
+  canvasViewportCenter: CanvasPoint
+}
+
+export interface PasteHerePostActionMenuData {
+  type: 'PASTE_HERE'
+  position: CanvasPoint
+  internalClipboard: InternalClipboard
+}
+
+export interface PasteToReplacePostActionMenuData {
+  type: 'PASTE_TO_REPLACE'
+  targets: Array<ElementPath>
+  internalClipboard: InternalClipboard
+}
+export interface NavigatorReparentPostActionMenuData {
+  type: 'NAVIGATOR_REPARENT'
+  dragSources: Array<ElementPath>
+  targetParent: ElementPath
+  indexPosition: IndexPosition
+  canvasViewportCenter: CanvasPoint
+  jsxMetadata: ElementInstanceMetadataMap
+  allElementProps: AllElementProps
+}
+
+export type PostActionMenuData =
+  | PastePostActionMenuData
+  | PasteHerePostActionMenuData
+  | PasteToReplacePostActionMenuData
+  | NavigatorReparentPostActionMenuData
+
+export interface PostActionMenuSession {
+  activeChoiceId: string | null
+  historySnapshot: StateHistory
+  editorStateSnapshot: EditorState
+  derivedStateSnapshot: DerivedState
+  postActionMenuData: PostActionMenuData
+}
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -1277,11 +1336,13 @@ export interface EditorState {
   projectDescription: string
   projectVersion: number
   isLoaded: boolean
+  trueUpGroupsForElementAfterDomWalkerRuns: Array<ElementPath>
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
+  elementPathTree: ElementPathTrees
   projectContents: ProjectContentTreeRoot
-  branchContents: ProjectContentTreeRoot | null
+  branchOriginContents: ProjectContentTreeRoot | null // The contents from the branch at the origin commit.
   codeResultCache: CodeResultCache
   propertyControlsInfo: PropertyControlsInfo
   nodeModules: EditorStateNodeModules
@@ -1338,12 +1399,10 @@ export interface EditorState {
   githubSettings: ProjectGithubSettings
   imageDragSessionState: ImageDragSessionState
   githubOperations: Array<GithubOperation>
-  githubChecksums: FileChecksums | null
   githubData: GithubData
   refreshingDependencies: boolean
-  assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
-  styleClipboard: Array<ValueAtPath>
+  internalClipboard: InternalClipboard
 }
 
 export function editorState(
@@ -1355,9 +1414,11 @@ export function editorState(
   projectDescription: string,
   projectVersion: number,
   isLoaded: boolean,
+  trueUpGroupsForElementAfterDomWalkerRuns: Array<ElementPath>,
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   codeResultCache: CodeResultCache,
   propertyControlsInfo: PropertyControlsInfo,
@@ -1415,13 +1476,11 @@ export function editorState(
   githubSettings: ProjectGithubSettings,
   imageDragSessionState: ImageDragSessionState,
   githubOperations: Array<GithubOperation>,
-  githubChecksums: FileChecksums | null,
-  branchContents: ProjectContentTreeRoot | null,
+  branchOriginContents: ProjectContentTreeRoot | null,
   githubData: GithubData,
   refreshingDependencies: boolean,
-  assetChecksums: FileChecksums,
   colorSwatches: Array<ColorSwatch>,
-  styleClipboard: Array<ValueAtPath>,
+  internalClipboardData: InternalClipboard,
 ): EditorState {
   return {
     id: id,
@@ -1432,11 +1491,13 @@ export function editorState(
     projectDescription: projectDescription,
     projectVersion: projectVersion,
     isLoaded: isLoaded,
+    trueUpGroupsForElementAfterDomWalkerRuns: trueUpGroupsForElementAfterDomWalkerRuns,
     spyMetadata: spyMetadata,
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
+    elementPathTree: elementPathTree,
     projectContents: projectContents,
-    branchContents: branchContents,
+    branchOriginContents: branchOriginContents,
     codeResultCache: codeResultCache,
     propertyControlsInfo: propertyControlsInfo,
     nodeModules: nodeModules,
@@ -1493,12 +1554,10 @@ export function editorState(
     githubSettings: githubSettings,
     imageDragSessionState: imageDragSessionState,
     githubOperations: githubOperations,
-    githubChecksums: githubChecksums,
     githubData: githubData,
     refreshingDependencies: refreshingDependencies,
-    assetChecksums: assetChecksums,
     colorSwatches: colorSwatches,
-    styleClipboard: styleClipboard,
+    internalClipboard: internalClipboardData,
   }
 }
 
@@ -1645,6 +1704,7 @@ export function modifyParseSuccessWithSimple(
     success.jsxFactoryFunction,
     success.combinedTopLevelArbitraryBlock,
     success.exportsDetail,
+    {},
   )
 }
 
@@ -1654,146 +1714,48 @@ export interface ParseSuccessAndEditorChanges<T> {
   additionalData: T
 }
 
-export function modifyOpenParseSuccess(
-  transform: (
-    parseSuccess: ParseSuccess,
-    underlying: StaticElementPath | null,
-    underlyingFilePath: string,
-  ) => ParseSuccess,
-  model: EditorState,
-): EditorState {
-  return modifyUnderlyingTargetElement(
-    null,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
-    model,
-    (elem) => elem,
-    transform,
-  )
-}
-
-export function modifyOpenScenesAndJSXElements(
-  transform: (utopiaComponents: Array<UtopiaJSXComponent>) => Array<UtopiaJSXComponent>,
-  model: EditorState,
-): EditorState {
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const updatedResult = transform(oldUtopiaJSXComponents)
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      updatedResult,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  return modifyOpenParseSuccess(successTransform, model)
-}
-
-export function modifyOpenJSXElements(
-  transform: (utopiaComponents: Array<UtopiaJSXComponent>) => Array<UtopiaJSXComponent>,
-  model: EditorState,
-): EditorState {
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const updatedUtopiaJSXComponents = transform(oldUtopiaJSXComponents)
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      updatedUtopiaJSXComponents,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  return modifyOpenParseSuccess(successTransform, model)
-}
-
-export function modifyOpenJSXElementsAndMetadata(
-  transform: (
-    utopiaComponents: Array<UtopiaJSXComponent>,
-    componentMetadata: ElementInstanceMetadataMap,
-  ) => { components: Array<UtopiaJSXComponent>; componentMetadata: ElementInstanceMetadataMap },
-  target: ElementPath,
-  model: EditorState,
-): EditorState {
-  let workingMetadata: ElementInstanceMetadataMap = model.jsxMetadata
-  const successTransform = (success: ParseSuccess) => {
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(success)
-    // Apply the transformation.
-    const transformResult = transform(oldUtopiaJSXComponents, model.jsxMetadata)
-    workingMetadata = transformResult.componentMetadata
-
-    const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-      success.topLevelElements,
-      transformResult.components,
-    )
-
-    return {
-      ...success,
-      topLevelElements: newTopLevelElements,
-    }
-  }
-  const beforeUpdatingMetadata = modifyUnderlyingElementForOpenFile(
-    target,
-    model,
-    (elem) => elem,
-    successTransform,
-  )
-  return {
-    ...beforeUpdatingMetadata,
-    jsxMetadata: workingMetadata,
-  }
-}
-
 export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyOpenJsxElementOrConditionalAtPath(
     path,
     (element) => (isJSXElement(element) ? transform(element) : element),
     model,
-    revisionsState,
   )
 }
 
 export function modifyOpenJsxElementOrConditionalAtPath(
   path: ElementPath,
   transform: (
-    element: JSXElement | JSXConditionalExpression,
-  ) => JSXElement | JSXConditionalExpression,
+    element: JSXElement | JSXConditionalExpression | JSXFragment,
+  ) => JSXElement | JSXConditionalExpression | JSXFragment,
   model: EditorState,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
-    transform,
+    (element) =>
+      isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)
+        ? transform(element)
+        : element,
     defaultModifyParseSuccess,
-    revisionsState,
   )
 }
 
-export function modifyOpenJsxElementAtStaticPath(
-  path: StaticElementPath,
-  transform: (element: JSXElement) => JSXElement,
+export function modifyOpenJsxChildAtPath(
+  path: ElementPath,
+  transform: (element: JSXElementChild) => JSXElementChild,
   model: EditorState,
 ): EditorState {
-  return modifyUnderlyingTargetElement(
+  return modifyUnderlyingTarget(
     path,
     forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
-    (element) => (isJSXElement(element) ? transform(element) : element),
+    (element) => transform(element),
+    defaultModifyParseSuccess,
   )
 }
 
@@ -1865,7 +1827,6 @@ export function getJSXComponentsAndImportsForPathFromState(
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
-    derived.transientState.filesState,
   )
 }
 
@@ -1874,7 +1835,6 @@ export function getJSXComponentsAndImportsForPath(
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  transientFilesState: TransientFilesState | null,
 ): {
   underlyingFilePath: string
   components: UtopiaJSXComponent[]
@@ -1888,65 +1848,11 @@ export function getJSXComponentsAndImportsForPath(
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
-  const result = getParseSuccessOrTransientForFilePath(
-    elementFilePath,
-    projectContents,
-    transientFilesState,
-  )
+  const result = getParseSuccessForFilePath(elementFilePath, projectContents)
   return {
     underlyingFilePath: elementFilePath,
     components: result.topLevelElements.filter(isUtopiaJSXComponent),
     imports: result.imports,
-  }
-}
-
-function modifyOpenScenes_INTERNAL(
-  transform: (topLevelElementsIncludingScene: UtopiaJSXComponent[]) => UtopiaJSXComponent[],
-  model: EditorState,
-): EditorState {
-  return modifyOpenScenesAndJSXElements((componentsIncludingScenes) => {
-    return transform(componentsIncludingScenes)
-  }, model)
-}
-
-export function addNewScene(model: EditorState, newSceneElement: JSXElement): EditorState {
-  return modifyOpenScenes_INTERNAL(
-    (components) =>
-      addSceneToJSXComponents(
-        model.projectContents,
-        model.canvas.openFile?.filename ?? null,
-        components,
-        newSceneElement,
-      ).components,
-    model,
-  )
-}
-
-export function addSceneToJSXComponents(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  components: UtopiaJSXComponent[],
-  newSceneElement: JSXElement,
-): InsertChildAndDetails {
-  const storyoardComponentRootElement = components.find(
-    (c) => c.name === BakedInStoryboardVariableName,
-  )?.rootElement
-  const storyboardComponentUID =
-    storyoardComponentRootElement != null ? getUtopiaID(storyoardComponentRootElement) : null
-  if (storyboardComponentUID != null) {
-    const storyboardComponentElementPath = EP.elementPath([
-      staticElementPath([storyboardComponentUID]),
-    ])
-    return insertJSXElementChild(
-      projectContents,
-      openFile,
-      childInsertionPath(storyboardComponentElementPath),
-      newSceneElement,
-      components,
-      null,
-    )
-  } else {
-    return insertChildAndDetails(components)
   }
 }
 
@@ -1960,24 +1866,6 @@ export function removeElementAtPath(
   } else {
     return removeJSXElementChild(staticTarget, components)
   }
-}
-
-export function insertElementAtPath(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  targetParent: InsertionPath | null,
-  elementToInsert: JSXElementChild,
-  components: Array<UtopiaJSXComponent>,
-  indexPosition: IndexPosition | null,
-): InsertChildAndDetails {
-  return insertJSXElementChild(
-    projectContents,
-    openFile,
-    targetParent,
-    elementToInsert,
-    components,
-    indexPosition,
-  )
 }
 
 export function transformElementAtPath(
@@ -2064,17 +1952,23 @@ export interface ElementWarnings {
   widthOrHeightZero: boolean
   absoluteWithUnpositionedParent: boolean
   dynamicSceneChildWidthHeightPercentage: boolean
+  invalidGroup: InvalidGroupState | null
+  invalidGroupChild: InvalidGroupState | null
 }
 
 export function elementWarnings(
   widthOrHeightZero: boolean,
   absoluteWithUnpositionedParent: boolean,
   dynamicSceneChildWidthHeightPercentage: boolean,
+  invalidGroup: InvalidGroupState | null,
+  invalidGroupChild: InvalidGroupState | null,
 ): ElementWarnings {
   return {
     widthOrHeightZero: widthOrHeightZero,
     absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
     dynamicSceneChildWidthHeightPercentage: dynamicSceneChildWidthHeightPercentage,
+    invalidGroup: invalidGroup,
+    invalidGroupChild: invalidGroupChild,
   }
 }
 
@@ -2082,6 +1976,8 @@ export const defaultElementWarnings: ElementWarnings = {
   widthOrHeightZero: false,
   absoluteWithUnpositionedParent: false,
   dynamicSceneChildWidthHeightPercentage: false,
+  invalidGroup: null,
+  invalidGroupChild: null,
 }
 
 export interface RegularNavigatorEntry {
@@ -2181,7 +2077,7 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional-clause-${EP.toComponentId(entry.elementPath)}-${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
         ? `attribute`
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
@@ -2197,7 +2093,7 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
     case 'CONDITIONAL_CLAUSE':
       return `conditional_clause_${EP.toVarSafeComponentId(entry.elementPath)}_${entry.clause}`
     case 'SYNTHETIC':
-      const childOrAttributeDetails = isJSXArbitraryBlock(entry.childOrAttribute)
+      const childOrAttributeDetails = isJSExpression(entry.childOrAttribute)
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
@@ -2231,34 +2127,25 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
 export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
   fromTypeGuard(isSyntheticNavigatorEntry)
 
-export function reparentTargetFromNavigatorEntry(
-  navigatorEntry: RegularNavigatorEntry | ConditionalClauseNavigatorEntry,
-): InsertionPath {
-  switch (navigatorEntry.type) {
-    case 'REGULAR':
-      return childInsertionPath(navigatorEntry.elementPath)
-    case 'CONDITIONAL_CLAUSE':
-      return conditionalClauseInsertionPath(navigatorEntry.elementPath, navigatorEntry.clause)
-    default:
-      assertNever(navigatorEntry)
-  }
-}
-
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
+  autoFocusedPaths: Array<ElementPath>
   controls: Array<HigherOrderControl>
-  transientState: TransientCanvasState
-  elementWarnings: ComplexMap<ElementPath, ElementWarnings>
+  elementWarnings: { [key: string]: ElementWarnings }
+  projectContentsChecksums: FileChecksumsWithFile
+  branchOriginContentsChecksums: FileChecksumsWithFile | null
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     navigatorTargets: [],
     visibleNavigatorTargets: [],
+    autoFocusedPaths: [],
     controls: [],
-    transientState: produceCanvasTransientState(editor.selectedViews, editor, false),
-    elementWarnings: emptyComplexMap(),
+    elementWarnings: {},
+    projectContentsChecksums: {},
+    branchOriginContentsChecksums: {},
   }
 }
 
@@ -2288,9 +2175,6 @@ export interface PersistentModel {
     minimised: boolean
   }
   githubSettings: ProjectGithubSettings
-  githubChecksums: FileChecksums | null
-  branchContents: ProjectContentTreeRoot | null
-  assetChecksums: FileChecksums
   colorSwatches: Array<ColorSwatch>
 }
 
@@ -2332,9 +2216,6 @@ export function mergePersistentModel(
       minimised: second.navigator.minimised,
     },
     githubSettings: second.githubSettings,
-    githubChecksums: second.githubChecksums,
-    branchContents: second.branchContents,
-    assetChecksums: second.assetChecksums,
     colorSwatches: second.colorSwatches,
   }
 }
@@ -2364,9 +2245,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectDescription: 'Made with Utopia',
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
+    trueUpGroupsForElementAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
+    elementPathTree: {},
     projectContents: {},
     codeResultCache: generateCodeResultCache({}, {}, [], {}, dispatch, {}, []),
     propertyControlsInfo: { ...DefaultThirdPartyControlDefinitions },
@@ -2413,7 +2296,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,
@@ -2455,7 +2337,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     inspector: {
       visible: true,
       classnameFocusCounter: 0,
-      layoutSectionHovered: false,
     },
     dependencyList: {
       minimised: false,
@@ -2476,11 +2357,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     navigator: {
       minimised: false,
-      dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
-        type: null,
-      },
+      dropTargetHint: null,
       collapsedViews: [],
       renamingTarget: null,
       highlightedTargets: [],
@@ -2524,13 +2401,14 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     githubSettings: emptyGithubSettings(),
     imageDragSessionState: notDragging(),
     githubOperations: [],
-    githubChecksums: null,
-    branchContents: null,
+    branchOriginContents: null,
     githubData: emptyGithubData(),
     refreshingDependencies: false,
-    assetChecksums: {},
     colorSwatches: [],
-    styleClipboard: [],
+    internalClipboard: {
+      styleClipboard: [],
+      elements: [],
+    },
   }
 }
 
@@ -2543,10 +2421,12 @@ export interface OriginalCanvasAndLocalFrame {
 }
 
 function getElementWarningsInner(
+  projectContents: ProjectContentTreeRoot,
   rootMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-): ComplexMap<ElementPath, ElementWarnings> {
-  let result: ComplexMap<ElementPath, ElementWarnings> = emptyComplexMap()
+  pathTrees: ElementPathTrees,
+): { [key: string]: ElementWarnings } {
+  let result: { [key: string]: ElementWarnings } = {}
   Object.values(rootMetadata).forEach((elementMetadata) => {
     // Check to see if this element is collapsed in one dimension.
     const globalFrame = elementMetadata.globalFrame
@@ -2555,25 +2435,49 @@ function getElementWarningsInner(
       isFiniteRectangle(globalFrame) &&
       (globalFrame.width === 0 || globalFrame.height === 0)
 
+    const parentPath = EP.parentPath(elementMetadata.elementPath)
+
     // Identify if this element looks to be trying to position itself with "pins", but
     // the parent element isn't appropriately configured.
-    const isParentGroupLike = treatElementAsContentAffecting(
+    const isParentFragmentLike = treatElementAsFragmentLike(
       rootMetadata,
       allElementProps,
-      EP.parentPath(elementMetadata.elementPath),
+      pathTrees,
+      parentPath,
     )
 
     const isParentNotConfiguredForPins =
       MetadataUtils.isPositionAbsolute(elementMetadata) &&
       !elementMetadata.specialSizeMeasurements.immediateParentProvidesLayout
-    const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentGroupLike
+    const absoluteWithUnpositionedParent = isParentNotConfiguredForPins && !isParentFragmentLike
+
+    const parentElement = MetadataUtils.findElementByElementPath(rootMetadata, parentPath)
+
+    const groupState = treatElementAsGroupLikeFromMetadata(elementMetadata)
+      ? getGroupState(
+          elementMetadata.elementPath,
+          rootMetadata,
+          pathTrees,
+          allElementProps,
+          projectContents,
+        )
+      : null
+    const invalidGroup = isInvalidGroupState(groupState) ? groupState : null
+
+    const groupChildState =
+      parentElement != null && treatElementAsGroupLikeFromMetadata(parentElement)
+        ? getGroupChildStateWithGroupMetadata(projectContents, elementMetadata, parentElement)
+        : null
+    const invalidGroupChild = isInvalidGroupState(groupChildState) ? groupChildState : null
 
     const warnings: ElementWarnings = {
       widthOrHeightZero: widthOrHeightZero,
       absoluteWithUnpositionedParent: absoluteWithUnpositionedParent,
       dynamicSceneChildWidthHeightPercentage: false,
+      invalidGroup: invalidGroup,
+      invalidGroupChild: invalidGroupChild,
     }
-    result = addToComplexMap(toString, result, elementMetadata.elementPath, warnings)
+    result[EP.toString(elementMetadata.elementPath)] = warnings
   })
   return result
 }
@@ -2583,27 +2487,43 @@ const getElementWarnings = memoize(getElementWarningsInner, { maxSize: 1 })
 type CacheableDerivedState = {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
-  elementWarnings: ComplexMap<ElementPath, ElementWarnings>
+  elementWarnings: { [key: string]: ElementWarnings }
+  autoFocusedPaths: Array<ElementPath>
 }
 
 function deriveCacheableStateInner(
+  projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   collapsedViews: ElementPath[],
   hiddenInNavigator: ElementPath[],
 ): CacheableDerivedState {
   const { navigatorTargets, visibleNavigatorTargets } = getNavigatorTargets(
     jsxMetadata,
+    elementPathTree,
     collapsedViews,
     hiddenInNavigator,
   )
 
-  const warnings = getElementWarnings(jsxMetadata, allElementProps)
+  const warnings = getElementWarnings(
+    projectContents,
+    jsxMetadata,
+    allElementProps,
+    elementPathTree,
+  )
+
+  const autoFocusedPaths = MetadataUtils.getAllPaths(jsxMetadata, elementPathTree).filter(
+    (path) => {
+      return MetadataUtils.isAutofocusable(jsxMetadata, elementPathTree, path)
+    },
+  )
 
   return {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
     elementWarnings: warnings,
+    autoFocusedPaths: autoFocusedPaths,
   }
 }
 
@@ -2624,8 +2544,11 @@ export function deriveState(
     navigatorTargets,
     visibleNavigatorTargets,
     elementWarnings: warnings,
+    autoFocusedPaths,
   } = deriveCacheableState(
+    editor.projectContents,
     editor.jsxMetadata,
+    editor.elementPathTree,
     editor.allElementProps,
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
@@ -2634,13 +2557,20 @@ export function deriveState(
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
+    autoFocusedPaths: autoFocusedPaths,
     controls: derivedState.controls,
-    transientState: produceCanvasTransientState(
-      oldDerivedState?.transientState.selectedViews ?? editor.selectedViews,
-      editor,
-      true,
-    ),
     elementWarnings: warnings,
+    projectContentsChecksums: getProjectContentsChecksums(
+      editor.projectContents,
+      oldDerivedState?.projectContentsChecksums ?? {},
+    ),
+    branchOriginContentsChecksums:
+      editor.branchOriginContents == null
+        ? null
+        : getProjectContentsChecksums(
+            editor.branchOriginContents,
+            oldDerivedState?.branchOriginContentsChecksums ?? {},
+          ),
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
@@ -2654,7 +2584,6 @@ export function createCanvasModelKILLME(
 ): CanvasModel {
   return {
     controls: derivedState.controls,
-    dragState: editor.canvas.dragState,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
     mode: editor.mode,
@@ -2680,9 +2609,11 @@ export function editorModelFromPersistentModel(
     projectDescription: persistentModel.projectDescription,
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
+    trueUpGroupsForElementAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
+    elementPathTree: {},
     codeResultCache: generateCodeResultCache(
       persistentModel.projectContents,
       {},
@@ -2737,7 +2668,6 @@ export function editorModelFromPersistentModel(
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
-      dragState: null, // TODO change dragState if editorMode changes
       interactionSession: null,
       visible: true,
       scale: 1,
@@ -2779,7 +2709,6 @@ export function editorModelFromPersistentModel(
     inspector: {
       visible: true,
       classnameFocusCounter: 0,
-      layoutSectionHovered: false,
     },
     dependencyList: persistentModel.dependencyList,
     genericExternalResources: {
@@ -2812,11 +2741,7 @@ export function editorModelFromPersistentModel(
     safeMode: false,
     saveError: false,
     navigator: {
-      dropTargetHint: {
-        displayAtEntry: null,
-        moveToEntry: null,
-        type: null,
-      },
+      dropTargetHint: null,
       collapsedViews: [],
       renamingTarget: null,
       minimised: persistentModel.navigator.minimised,
@@ -2842,12 +2767,13 @@ export function editorModelFromPersistentModel(
     imageDragSessionState: notDragging(),
     githubOperations: [],
     refreshingDependencies: false,
-    githubChecksums: persistentModel.githubChecksums,
-    branchContents: persistentModel.branchContents,
+    branchOriginContents: null,
     githubData: emptyGithubData(),
-    assetChecksums: {},
     colorSwatches: persistentModel.colorSwatches,
-    styleClipboard: [],
+    internalClipboard: {
+      styleClipboard: [],
+      elements: [],
+    },
   }
   return editor
 }
@@ -2884,9 +2810,6 @@ export function persistentModelFromEditorModel(editor: EditorState): PersistentM
       minimised: editor.navigator.minimised,
     },
     githubSettings: editor.githubSettings,
-    githubChecksums: editor.githubChecksums,
-    branchContents: editor.branchContents,
-    assetChecksums: editor.assetChecksums,
     colorSwatches: editor.colorSwatches,
   }
 }
@@ -2920,9 +2843,6 @@ export function persistentModelForProjectContents(
       minimised: false,
     },
     githubSettings: emptyGithubSettings(),
-    githubChecksums: null,
-    branchContents: null,
-    assetChecksums: {},
     colorSwatches: [],
   }
 }
@@ -3151,26 +3071,41 @@ export function parseFailureAsErrorMessages(
   }
 }
 
-export function reconstructJSXMetadata(editor: EditorState): ElementInstanceMetadataMap {
+export function reconstructJSXMetadata(editor: EditorState): {
+  metadata: ElementInstanceMetadataMap
+  elementPathTree: ElementPathTrees
+} {
   const uiFile = getOpenUIJSFile(editor)
   if (uiFile == null) {
-    return editor.jsxMetadata
+    return {
+      metadata: editor.jsxMetadata,
+      elementPathTree: editor.elementPathTree,
+    }
   } else {
     return foldParsedTextFile(
-      (_) => editor.jsxMetadata,
+      (_) => {
+        return {
+          metadata: editor.jsxMetadata,
+          elementPathTree: editor.elementPathTree,
+        }
+      },
       (success) => {
         const elementsByUID = getElementsByUIDFromTopLevelElements(success.topLevelElements)
-        const mergedMetadata = MetadataUtils.mergeComponentMetadata(
+        const { mergedMetadata, elementPathTree } = MetadataUtils.mergeComponentMetadata(
           elementsByUID,
           editor.spyMetadata,
           editor.domMetadata,
-          editor.projectContents,
-          editor.nodeModules.files,
-          editor.canvas.openFile?.filename ?? null,
         )
-        return ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata).value
+        return {
+          metadata: ElementInstanceMetadataMapKeepDeepEquality(editor.jsxMetadata, mergedMetadata)
+            .value,
+          elementPathTree: elementPathTree,
+        }
       },
-      (_) => editor.jsxMetadata,
+      (_) => ({
+        metadata: editor.jsxMetadata,
+        elementPathTree: editor.elementPathTree,
+      }),
       uiFile.fileContents.parsed,
     )
   }
@@ -3255,7 +3190,6 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
@@ -3266,16 +3200,12 @@ export function modifyParseSuccessAtPath(
       if (updatedParseSuccess === parsedFileContents) {
         return editor
       } else {
-        const updatedRevisionState = getNextRevisionsState(
-          projectFile.fileContents.revisionsState,
-          revisionsState,
-        )
         const updatedFile = saveTextFileContents(
           projectFile,
           textFileContents(
             projectFile.fileContents.code,
             updatedParseSuccess,
-            updatedRevisionState,
+            RevisionsState.ParsedAhead,
           ),
           false,
         )
@@ -3305,92 +3235,11 @@ export function modifyUnderlyingTarget(
     underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElementChild,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
-): EditorState {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    editor.projectContents,
-    editor.nodeModules.files,
-    currentFilePath,
-    target,
-  )
-  const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-
-  function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
-    // Apply the JSXElement level changes.
-    const oldUtopiaJSXComponents = getUtopiaJSXComponentsFromSuccess(oldParseSuccess)
-    let elementModified: boolean = false
-    let updatedUtopiaJSXComponents: Array<UtopiaJSXComponent>
-    if (targetSuccess.normalisedPath == null) {
-      updatedUtopiaJSXComponents = oldUtopiaJSXComponents
-    } else {
-      const nonNullNormalisedPath = targetSuccess.normalisedPath
-      function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        const updatedElement = modifyElement(element, nonNullNormalisedPath, targetSuccess.filePath)
-        elementModified = updatedElement !== element
-        return updatedElement
-      }
-      updatedUtopiaJSXComponents = transformElementAtPath(
-        oldUtopiaJSXComponents,
-        targetSuccess.normalisedPath,
-        innerModifyElement,
-      )
-    }
-    // Try to keep the old structures where possible.
-    if (elementModified) {
-      const newTopLevelElements = applyUtopiaJSXComponentsChanges(
-        oldParseSuccess.topLevelElements,
-        updatedUtopiaJSXComponents,
-      )
-
-      return {
-        ...oldParseSuccess,
-        topLevelElements: newTopLevelElements,
-      }
-    } else {
-      return oldParseSuccess
-    }
-  }
-
-  return modifyParseSuccessAtPath(
-    targetSuccess.filePath,
-    editor,
-    innerModifyParseSuccess,
-    revisionsState,
-  )
-}
-
-export function modifyUnderlyingForOpenFile(
-  target: ElementPath | null,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElementChild,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElementChild,
-): EditorState {
-  return modifyUnderlyingTarget(
-    target,
-    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
-    editor,
-    modifyElement,
-  )
-}
-
-export function modifyUnderlyingTargetElement(
-  target: ElementPath | null,
-  currentFilePath: string,
-  editor: EditorState,
-  modifyElement: (
-    element: JSXElement | JSXConditionalExpression,
-    underlying: ElementPath,
-    underlyingFilePath: string,
-  ) => JSXElement | JSXConditionalExpression = (element) => element,
   modifyParseSuccess: (
     parseSuccess: ParseSuccess,
     underlying: StaticElementPath | null,
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
-  revisionsState: ParsedAheadRevisionsState = RevisionsState.ParsedAhead,
 ): EditorState {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     editor.projectContents,
@@ -3402,7 +3251,7 @@ export function modifyUnderlyingTargetElement(
 
   function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
     // Apply the ParseSuccess level changes.
-    let updatedParseSuccess: ParseSuccess = modifyParseSuccess(
+    const updatedParseSuccess: ParseSuccess = modifyParseSuccess(
       oldParseSuccess,
       targetSuccess.normalisedPath,
       targetSuccess.filePath,
@@ -3417,17 +3266,9 @@ export function modifyUnderlyingTargetElement(
     } else {
       const nonNullNormalisedPath = targetSuccess.normalisedPath
       function innerModifyElement(element: JSXElementChild): JSXElementChild {
-        if (isJSXElement(element) || isJSXConditionalExpression(element)) {
-          const updatedElement = modifyElement(
-            element,
-            nonNullNormalisedPath,
-            targetSuccess.filePath,
-          )
-          elementModified = updatedElement !== element
-          return updatedElement
-        } else {
-          return element
-        }
+        const updatedElement = modifyElement(element, nonNullNormalisedPath, targetSuccess.filePath)
+        elementModified = updatedElement !== element
+        return updatedElement
       }
       updatedUtopiaJSXComponents = transformElementAtPath(
         oldUtopiaJSXComponents,
@@ -3451,29 +3292,57 @@ export function modifyUnderlyingTargetElement(
     }
   }
 
-  return modifyParseSuccessAtPath(
-    targetSuccess.filePath,
+  return modifyParseSuccessAtPath(targetSuccess.filePath, editor, innerModifyParseSuccess)
+}
+
+export function modifyUnderlyingForOpenFile(
+  target: ElementPath | null,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElementChild,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElementChild,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
     editor,
-    innerModifyParseSuccess,
-    revisionsState,
+    modifyElement,
   )
 }
 
-function getNextRevisionsState(
-  prevRevisionState: RevisionsStateType,
-  nextRevisionState: ParsedAheadRevisionsState,
-): ParsedAheadRevisionsState {
-  if (
-    prevRevisionState === RevisionsState.ParsedAheadNeedsReparsing &&
-    nextRevisionState === RevisionsState.ParsedAhead
-  ) {
-    return RevisionsState.ParsedAheadNeedsReparsing
-  }
-  return nextRevisionState
+export function modifyUnderlyingTargetElement(
+  target: ElementPath,
+  currentFilePath: string,
+  editor: EditorState,
+  modifyElement: (
+    element: JSXElement | JSXConditionalExpression | JSXFragment,
+    underlying: ElementPath,
+    underlyingFilePath: string,
+  ) => JSXElement | JSXConditionalExpression | JSXFragment = (element) => element,
+  modifyParseSuccess: (
+    parseSuccess: ParseSuccess,
+    underlying: StaticElementPath | null,
+    underlyingFilePath: string,
+  ) => ParseSuccess = defaultModifyParseSuccess,
+): EditorState {
+  return modifyUnderlyingTarget(
+    target,
+    currentFilePath,
+    editor,
+    (element, underlying, underlyingFilePath) => {
+      if (isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)) {
+        return modifyElement(element, underlying, underlyingFilePath)
+      }
+      return element
+    },
+    modifyParseSuccess,
+  )
 }
 
 export function modifyUnderlyingElementForOpenFile(
-  target: ElementPath | null,
+  target: ElementPath,
   editor: EditorState,
   modifyElement: (
     element: JSXElement,

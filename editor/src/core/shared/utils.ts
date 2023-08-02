@@ -1,8 +1,9 @@
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { replaceAll } from './string-utils'
 import urljoin from 'url-join'
 import { appendHash } from './dom-utils'
-import { Either, flatMapEither, left, mapEither, right } from './either'
+import type { Either } from './either'
+import { flatMapEither, left, mapEither, right } from './either'
 
 // This file shouldn't import anything as it is for exporting simple shared utility functions between various projects
 export const EditorID = 'utopia-editor-root'
@@ -30,11 +31,31 @@ export function fastForEach<T>(a: readonly T[], fn: (t: T, index: number) => voi
   }
 }
 
-export function arrayEquals<T>(a: Array<T>, b: Array<T>, eq?: (l: T, r: T) => boolean): boolean {
+export function arrayEqualsByReference<T>(a: Array<T>, b: Array<T>): boolean {
   if (a === b) {
     return true
   } else {
-    const equals = eq == null ? (l: T, r: T) => l === r : eq
+    if (a.length === b.length) {
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) {
+          return false
+        }
+      }
+      return true
+    } else {
+      return false
+    }
+  }
+}
+
+export function arrayEqualsByValue<T>(
+  a: Array<T>,
+  b: Array<T>,
+  equals: (l: T, r: T) => boolean,
+): boolean {
+  if (a === b) {
+    return true
+  } else {
     if (a.length === b.length) {
       for (let i = 0; i < a.length; i++) {
         if (!equals(a[i], b[i])) {

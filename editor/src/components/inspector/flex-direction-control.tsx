@@ -1,20 +1,18 @@
 import React from 'react'
 import { createSelector } from 'reselect'
-import { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { Icons, useColorTheme } from '../../uuiui'
 import { useSetHoveredControlsHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
-import {
-  SubduedPaddingControlProps,
-  SubduedPaddingControl,
-} from '../canvas/controls/select-mode/subdued-padding-control'
+import type { SubduedPaddingControlProps } from '../canvas/controls/select-mode/subdued-padding-control'
+import { SubduedPaddingControl } from '../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../canvas/padding-utils'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { AllElementProps } from '../editor/store/editor-state'
+import type { AllElementProps } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { FlexDirection } from './common/css-utils'
-import { CanvasControlWithProps } from './common/inspector-atoms'
+import type { FlexDirection } from './common/css-utils'
+import type { CanvasControlWithProps } from './common/inspector-atoms'
 import {
   flexDirectionSelector,
   metadataSelector,
@@ -26,6 +24,7 @@ import {
   updateFlexDirectionStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 const nFlexContainersSelector = createSelector(
   metadataSelector,
@@ -49,6 +48,7 @@ export const FlexDirectionToggle = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const nFlexContainers = useEditorState(
@@ -65,10 +65,11 @@ export const FlexDirectionToggle = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        elementPathTreeRef.current,
         allElementPropsRef.current,
         e.button === 0 ? 'column' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const handleRowClick = React.useCallback(
@@ -77,10 +78,11 @@ export const FlexDirectionToggle = React.memo(() => {
         dispatch,
         metadataRef.current,
         selectedViewsRef.current,
+        elementPathTreeRef.current,
         allElementPropsRef.current,
         e.button === 0 ? 'row' : null,
       ),
-    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =
@@ -158,6 +160,7 @@ function maybeSetFlexDirection(
   dispatch: EditorDispatch,
   metadata: ElementInstanceMetadataMap,
   selectedViews: ElementPath[],
+  elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   desiredFlexDirection: FlexDirection | null,
 ) {
@@ -165,5 +168,12 @@ function maybeSetFlexDirection(
     desiredFlexDirection == null
       ? removeFlexDirectionStrategies()
       : updateFlexDirectionStrategies(desiredFlexDirection)
-  executeFirstApplicableStrategy(dispatch, metadata, selectedViews, allElementProps, strategies)
+  executeFirstApplicableStrategy(
+    dispatch,
+    metadata,
+    selectedViews,
+    elementPathTree,
+    allElementProps,
+    strategies,
+  )
 }

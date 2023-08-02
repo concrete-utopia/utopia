@@ -1,5 +1,6 @@
 import React from 'react'
 import * as ReactDOM from 'react-dom'
+import type { ContextMenuItem, CanvasData } from './context-menu-items'
 import {
   bringForward,
   bringToFront,
@@ -13,13 +14,10 @@ import {
   sendToBack,
   toggleVisibility,
   unwrap,
-  wrapInView,
   wrapInPicker,
   toggleBackgroundLayersItem,
   toggleBorderItem,
   toggleShadowItem,
-  ContextMenuItem,
-  CanvasData,
   setAsFocusedElement,
   scrollToElement,
   insert,
@@ -29,26 +27,30 @@ import {
   pasteStyle,
   pasteLayout,
   copyPropertiesMenuItem,
+  pasteToReplace,
+  pasteHere,
 } from './context-menu-items'
 import { MomentumContextMenu } from './context-menu-wrapper'
 import { useRefEditorState, useEditorState, Substores } from './editor/store/store-hook'
 import { CanvasContextMenuPortalTargetID } from '../core/shared/utils'
-import { EditorDispatch } from './editor/action-types'
+import type { EditorDispatch } from './editor/action-types'
 import { setHighlightedView } from './editor/actions/action-creators'
 import { selectComponents } from './editor/actions/meta-actions'
 import * as EP from '../core/shared/element-path'
-import { ElementPath } from '../core/shared/project-file-types'
+import type { ElementPath } from '../core/shared/project-file-types'
 import { useNamesAndIconsAllPaths } from './inspector/common/name-and-icon-hook'
-import { FlexRow, Icn, IcnProps, useColorTheme } from '../uuiui'
+import type { IcnProps } from '../uuiui'
+import { FlexRow, Icn, useColorTheme } from '../uuiui'
 import { getAllTargetsAtPoint } from './canvas/dom-lookup'
 import { WindowMousePositionRaw } from '../utils/global-positions'
-import { pointsEqual, WindowPoint } from '../core/shared/math-utils'
+import type { WindowPoint } from '../core/shared/math-utils'
+import { pointsEqual } from '../core/shared/math-utils'
 import { useDispatch } from './editor/store/dispatch-context'
 
 export type ElementContextMenuInstance =
   | 'context-menu-navigator'
   | 'context-menu-canvas'
-  | 'context-menu-instance-inspector'
+  | 'context-menu-canvas-no-selection'
 
 interface ElementContextMenuProps {
   contextMenuInstance: ElementContextMenuInstance
@@ -64,6 +66,8 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   copyPropertiesMenuItem,
   pasteStyle,
   pasteLayout,
+  pasteToReplace,
+  pasteHere,
   duplicateElement,
   lineSeparator,
   insert,
@@ -72,7 +76,7 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   escapeHatch,
   lineSeparator,
   wrapInPicker,
-  wrapInView,
+  group,
   unwrap,
   rename,
   lineSeparator,
@@ -88,13 +92,17 @@ const ElementContextMenuItems: Array<ContextMenuItem<CanvasData>> = [
   toggleShadowItem,
 ]
 
+const ContextMenuItemsNoSelection: Array<ContextMenuItem<CanvasData>> = [pasteHere]
+
 function useCanvasContextMenuItems(
   contextMenuInstance: ElementContextMenuInstance,
   dispatch: EditorDispatch,
 ): Array<ContextMenuItem<CanvasData>> {
   const elementNamesAndIcons = useNamesAndIconsAllPaths()
 
-  if (contextMenuInstance === 'context-menu-canvas') {
+  if (contextMenuInstance === 'context-menu-canvas-no-selection') {
+    return ContextMenuItemsNoSelection
+  } else if (contextMenuInstance === 'context-menu-canvas') {
     let elementsUnderCursor: Array<ElementPath> = []
     let lastMousePosition: WindowPoint | null = null
     const elementListSubmenu: Array<ContextMenuItem<CanvasData>> = elementNamesAndIcons.map(
@@ -122,7 +130,13 @@ function useCanvasContextMenuItems(
               WindowMousePositionRaw == null ||
               !pointsEqual(lastMousePosition, WindowMousePositionRaw)
             ) {
-              elementsUnderCursor = getAllTargetsAtPoint('no-filter', WindowMousePositionRaw)
+              elementsUnderCursor = getAllTargetsAtPoint(
+                'no-filter',
+                WindowMousePositionRaw,
+                data.scale,
+                data.canvasOffset,
+                data.jsxMetadata,
+              )
               lastMousePosition = WindowMousePositionRaw
             }
             return !elementsUnderCursor.some((underCursor: ElementPath) =>
@@ -176,15 +190,15 @@ const SelectableElementItem = (props: SelectableElementItemProps) => {
 
   return (
     <FlexRow ref={rawRef}>
-      <Icn {...iconProps} color={isHighlighted ? 'on-highlight-main' : 'secondary'} />
+      <Icn {...iconProps} color={isHighlighted ? 'on-highlight-main' : 'main'} />
       <span style={{ paddingLeft: 6 }}>{label}</span>
     </FlexRow>
   )
 }
 
-export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
-  const dispatch = useDispatch()
-
+function useCanvasContextMenuGetData(
+  contextMenuInstance: ElementContextMenuInstance,
+): () => CanvasData {
   const editorSliceRef = useRefEditorState((store) => {
     const resolveFn = store.editor.codeResultCache.curriedResolveFn(store.editor.projectContents)
     return {
@@ -193,16 +207,20 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       jsxMetadata: store.editor.jsxMetadata,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
-      transientFilesState: store.derived.transientState.filesState,
       resolve: resolveFn,
       hiddenInstances: store.editor.hiddenInstances,
       scale: store.editor.canvas.scale,
       focusedElementPath: store.editor.focusedElementPath,
       allElementProps: store.editor.allElementProps,
+      pathTrees: store.editor.elementPathTree,
+      openFile: store.editor.canvas.openFile?.filename ?? null,
+      internalClipboard: store.editor.internalClipboard,
+      autoFocusedPaths: store.derived.autoFocusedPaths,
+      navigatorTargets: store.derived.navigatorTargets,
     }
   })
 
-  const getData: () => CanvasData = React.useCallback(() => {
+  return React.useCallback(() => {
     const currentEditor = editorSliceRef.current
     return {
       canvasOffset: currentEditor.canvasOffset,
@@ -210,15 +228,25 @@ export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementCo
       jsxMetadata: currentEditor.jsxMetadata,
       projectContents: currentEditor.projectContents,
       nodeModules: currentEditor.nodeModules,
-      transientFilesState: currentEditor.transientFilesState,
       resolve: currentEditor.resolve,
       hiddenInstances: currentEditor.hiddenInstances,
       scale: currentEditor.scale,
       focusedElementPath: currentEditor.focusedElementPath,
       allElementProps: currentEditor.allElementProps,
+      pathTrees: currentEditor.pathTrees,
+      openFile: currentEditor.openFile,
+      internalClipboard: currentEditor.internalClipboard,
+      contextMenuInstance: contextMenuInstance,
+      autoFocusedPaths: currentEditor.autoFocusedPaths,
+      navigatorTargets: currentEditor.navigatorTargets,
     }
-  }, [editorSliceRef])
+  }, [editorSliceRef, contextMenuInstance])
+}
 
+export const ElementContextMenu = React.memo(({ contextMenuInstance }: ElementContextMenuProps) => {
+  const dispatch = useDispatch()
+
+  const getData: () => CanvasData = useCanvasContextMenuGetData(contextMenuInstance)
   const contextMenuItems = useCanvasContextMenuItems(contextMenuInstance, dispatch)
 
   const portalTarget = document.getElementById(CanvasContextMenuPortalTargetID)

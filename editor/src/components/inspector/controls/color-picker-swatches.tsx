@@ -12,7 +12,7 @@ import {
 } from '../../../uuiui'
 import { updateColorSwatches } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { ColorSwatch } from '../../editor/store/editor-state'
+import type { ColorSwatch } from '../../editor/store/editor-state'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { cssColorToChromaColorOrDefault } from '../common/css-utils'
 
@@ -44,7 +44,7 @@ export const ColorPickerSwatches = React.memo((props: ColorPickerSwatchesProps) 
   }, [currentColor, colorSwatches])
 
   React.useEffect(() => {
-    dispatch([updateColorSwatches(colorSwatches)], 'everyone')
+    setTimeout(() => dispatch([updateColorSwatches(colorSwatches)], 'everyone'), 0)
   }, [colorSwatches, dispatch])
 
   React.useEffect(() => {

@@ -4,8 +4,10 @@ import { jsx } from '@emotion/react'
 import * as EditorActions from '../editor/actions/action-creators'
 import React from 'react'
 import { UtopiaStyles, SimpleFlexRow, UtopiaTheme, SimpleFlexColumn } from '../../uuiui'
-import { Notice, NoticeLevel } from './notice'
+import type { Notice, NoticeLevel } from './notice'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { assertNever } from '../../core/shared/utils'
+import { when } from '../../utils/react-conditionals'
 
 interface NoticeProps extends Notice {
   style?: React.CSSProperties
@@ -15,16 +17,35 @@ interface NoticeProps extends Notice {
 export const getStylesForLevel = (level: NoticeLevel): React.CSSProperties => {
   let resultingStyle = UtopiaStyles.noticeStyles.info
 
-  if (level === 'WARNING') {
-    resultingStyle = UtopiaStyles.noticeStyles.warning
-  } else if (level === 'ERROR') {
-    resultingStyle = UtopiaStyles.noticeStyles.error
-  } else if (level === 'SUCCESS') {
-    resultingStyle = UtopiaStyles.noticeStyles.success
-  } else if (level === 'PRIMARY') {
-    resultingStyle = UtopiaStyles.noticeStyles.primary
+  switch (level) {
+    case 'WARNING':
+      return UtopiaStyles.noticeStyles.warning
+    case 'ERROR':
+      return UtopiaStyles.noticeStyles.error
+    case 'SUCCESS':
+      return UtopiaStyles.noticeStyles.success
+    case 'PRIMARY':
+      return UtopiaStyles.noticeStyles.primary
+    case 'INFO':
+      return UtopiaStyles.noticeStyles.info
+    case 'NOTICE':
+      return UtopiaStyles.noticeStyles.notice
+    default:
+      assertNever(level)
   }
-  return resultingStyle
+}
+
+export const getPrefixForLevel = (level: NoticeLevel): string => {
+  switch (level) {
+    case 'WARNING':
+      return '﹗'
+    case 'ERROR':
+      return '⚠️'
+    case 'SUCCESS':
+      return '✓'
+    default:
+      return ''
+  }
 }
 
 const ToastTimeout = 5500
@@ -53,11 +74,18 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
     <div
       key={'toast-item'}
       style={{
+        background: '#111',
         ...getStylesForLevel(props.level ?? 'INFO'),
-        boxShadow: UtopiaStyles.shadowStyles.medium.boxShadow,
-        borderRadius: 3,
-        width: 270,
+        borderRadius: 6,
+        boxShadow:
+          '0px 0px .5px rgba(0, 0, 0, .12), 0px 10px 16px rgba(0, 0, 0, .12), 0px 2px 5px rgba(0, 0, 0, .15), 0px 2px 14px rgba(0, 0, 0, .15), 0px 0px 0px 0.5px rgba(0, 0, 0, .2)',
+        color: 'white',
+        width: 290,
         minHeight: 27,
+        fontSize: 12,
+        fontWeight: 400,
+        letterSpacing: 0.2,
+        fontFamily: 'utopian-Inter',
         overflow: 'hidden',
         overflowWrap: 'break-word',
         wordWrap: 'break-word',
@@ -69,33 +97,33 @@ export const Toast: React.FunctionComponent<React.PropsWithChildren<NoticeProps>
       }}
     >
       <div
-        style={{ flexGrow: 1, fontWeight: 500, padding: 8, display: 'flex', alignItems: 'center' }}
+        style={{ flexGrow: 1, padding: 8, display: 'flex', alignItems: 'center' }}
         id='toast-message'
       >
+        {getPrefixForLevel(props.level)}&nbsp;
         {props.message}
       </div>
-
-      <div
-        css={{
-          backgroundColor: 'hsl(0,0%,0%,3%)',
-          display: 'flex',
-          flex: '0 0 24px',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: 14,
-          cursor: 'pointer',
-          '&:hover': {
-            backgroundColor: 'hsl(0,0%,0%,5%)',
-          },
-          '&:active': {
-            backgroundColor: 'hsl(0,0%,0%,6%)',
-          },
-        }}
-        onClick={deleteToast}
-        id='toast-button'
-      >
-        ×
-      </div>
+      {when(
+        props.persistent,
+        <div
+          css={{
+            display: 'flex',
+            flex: '0 0 24px',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 14,
+            cursor: 'pointer',
+            opacity: 0.3,
+            '&:hover': {
+              opacity: 1,
+            },
+          }}
+          onClick={deleteToast}
+          id='toast-button'
+        >
+          ×
+        </div>,
+      )}
     </div>
   )
 }

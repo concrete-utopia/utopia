@@ -9,9 +9,11 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   projectDescription: 'Made with Utopia',
   projectVersion: null as any,
   isLoaded: false,
+  trueUpGroupsForElementAfterDomWalkerRuns: [],
   spyMetadata: null as any,
   domMetadata: null as any,
   jsxMetadata: null as any,
+  elementPathTree: {},
   projectContents: {},
   codeResultCache: null as any,
   propertyControlsInfo: null as any,
@@ -58,7 +60,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   canvas: {
     elementsToRerender: 'rerender-all-elements',
-    dragState: null,
     interactionSession: null,
     visible: true,
     scale: 1,
@@ -100,7 +101,6 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   inspector: {
     visible: true,
     classnameFocusCounter: 0,
-    layoutSectionHovered: false,
   },
   dependencyList: {
     minimised: false,
@@ -121,11 +121,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   navigator: {
     minimised: false,
-    dropTargetHint: {
-      displayAtEntry: null,
-      moveToEntry: null,
-      type: null,
-    },
+    dropTargetHint: null,
     collapsedViews: [],
     renamingTarget: null,
     highlightedTargets: [],
@@ -169,11 +165,12 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   githubSettings: null as any,
   imageDragSessionState: null as any,
   githubOperations: [],
-  githubChecksums: null,
-  branchContents: null,
+  branchOriginContents: null,
   githubData: null as any,
   refreshingDependencies: false,
-  assetChecksums: {},
   colorSwatches: [],
-  styleClipboard: [],
+  internalClipboard: {
+    styleClipboard: [],
+    elements: [],
+  },
 }

@@ -30,7 +30,7 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { cartesianProduct, mapArrayToDictionary } from '../../../../core/shared/array-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
@@ -43,23 +43,22 @@ import {
 } from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
+import type { FragmentLikeType } from './fragment-like-helpers'
 import {
-  AllContentAffectingNonDomElementTypes,
-  AllContentAffectingTypes,
-  ContentAffectingType,
-  treatElementAsContentAffecting,
-} from './group-like-helpers'
-import { getClosingGroupLikeTag, getOpeningGroupLikeTag } from './group-like-helpers.test-utils'
+  AllFragmentLikeNonDomElementTypes,
+  AllFragmentLikeTypes,
+  treatElementAsFragmentLike,
+} from './fragment-like-helpers'
 import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-  wait,
-} from '../../../../utils/utils.test-utils'
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+} from './fragment-like-helpers.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 
 const complexProject = () => {
   const code = `
   import * as React from 'react'
-  import { Scene, Storyboard, View } from 'utopia-api'
+  import { Scene, Storyboard, View, Group } from 'utopia-api'
 
   export const Card = (props) => {
     return (
@@ -618,10 +617,7 @@ describe('Convert to Absolute', () => {
       'await-first-dom-report',
     )
 
-    const targetToConvert = EP.fromString('sb/scene/app')
-    // Update after the children affecting work:
-    // Converting App recognizes app as children-affecting, and converts sb/scene/app/child instead!
-    // (previously it used to update App and leave child unaffected)
+    const targetToConvert = EP.fromString('sb/scene/app/child')
     await renderResult.dispatch([runEscapeHatch([targetToConvert])], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -919,18 +915,18 @@ describe('Convert to absolute/escape hatch', () => {
     },
   )
 
-  cartesianProduct(['flex', 'flow'] as const, AllContentAffectingNonDomElementTypes).forEach(
+  cartesianProduct(['flex', 'flow'] as const, AllFragmentLikeNonDomElementTypes).forEach(
     ([parentLayoutSystem, type]) => {
       it(`dragging group-like element ${type} out of sibling bounds in ${parentLayoutSystem} context`, async () => {
         const renderResult = await renderTestEditorWithCode(
           makeTestProjectCodeWithSnippet(
-            codeWithGroupLikeELementForEscapeHatch(parentLayoutSystem, type),
+            codeWithFragmentLikeELementForEscapeHatch(parentLayoutSystem, type),
           ),
           'await-first-dom-report',
         )
 
         const groupElementPath = EP.fromString(
-          `utopia-storyboard-uid/scene-aaa/app-entity:container/children-affecting`,
+          `utopia-storyboard-uid/scene-aaa/app-entity:container/fragment-like`,
         )
         const child2 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child2'])
         const child3 = EP.appendPartToPath(groupElementPath, ['inner-fragment', 'child3'])
@@ -985,9 +981,15 @@ describe('Convert to absolute/escape hatch', () => {
 
         const jsxMetadataAfter = renderResult.getEditorState().editor.jsxMetadata
         const allElementPropsAfter = renderResult.getEditorState().editor.allElementProps
+        const pathTreesAfter = renderResult.getEditorState().editor.elementPathTree
 
         expect(
-          treatElementAsContentAffecting(jsxMetadataAfter, allElementPropsAfter, groupElementPath),
+          treatElementAsFragmentLike(
+            jsxMetadataAfter,
+            allElementPropsAfter,
+            pathTreesAfter,
+            groupElementPath,
+          ),
         ).toEqual(true) // make sure the original group-like element remained group-like
 
         // check that the children became absolute
@@ -1324,9 +1326,9 @@ function codeForDragToEscapeHatchProject(flowOrFlex: 'flow' | 'flex'): string {
   `
 }
 
-function codeWithGroupLikeELementForEscapeHatch(
+function codeWithFragmentLikeELementForEscapeHatch(
   flowOrFlex: 'flow' | 'flex',
-  type: ContentAffectingType,
+  type: FragmentLikeType,
 ): string {
   return `
     <div
@@ -1348,7 +1350,7 @@ function codeWithGroupLikeELementForEscapeHatch(
         data-uid='child1'
         data-testid='child1'
       />
-      ${getOpeningGroupLikeTag(type)}
+      ${getOpeningFragmentLikeTag(type)}
         <div
           style={{
             backgroundColor: '#00FF00',
@@ -1368,7 +1370,7 @@ function codeWithGroupLikeELementForEscapeHatch(
           }}
           data-uid='child3'
         />
-      ${getClosingGroupLikeTag(type)}
+      ${getClosingFragmentLikeTag(type)}
     </div>
   `
 }

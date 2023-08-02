@@ -1,24 +1,25 @@
 import { shallowEqual } from '../../../../core/shared/equality-utils'
 import * as PP from '../../../../core/shared/property-path'
-import Keyboard, { KeyCharacter } from '../../../../utils/keyboard'
-import { emptyModifiers, Modifier, Modifiers } from '../../../../utils/modifiers'
+import type { KeyCharacter } from '../../../../utils/keyboard'
+import Keyboard, { isDigit } from '../../../../utils/keyboard'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { setProperty } from '../../commands/set-property-command'
+import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
 import {
-  InteractionCanvasState,
-  CanvasStrategy,
   getTargetPathsFromInteractionTarget,
   emptyStrategyApplicationResult,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession, KeyState } from '../interaction-state'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import type { InteractionSession, KeyState } from '../interaction-state'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { getLastKeyPressState } from './shared-keyboard-strategy-helpers'
 
 export function keyboardSetOpacityStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const selectedElements = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   if (selectedElements.length === 0) {
     return null
@@ -53,8 +54,6 @@ export function keyboardSetOpacityStrategy(
 function getKeySequence(keyStates: Array<KeyState>): string {
   return keyStates.flatMap((s) => Array.from(s.keysPressed.values())).join('')
 }
-
-const isDigit = (c: string) => ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(c)
 
 export function parseOpacityFromKeyboard(keys: string): string | null {
   let tail = keys.slice(-3)

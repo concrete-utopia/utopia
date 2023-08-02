@@ -1,10 +1,10 @@
 import * as EP from '../../../../core/shared/element-path'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   CanvasRectangle,
-  CanvasVector,
   isInfinityRectangle,
   offsetPoint,
   rectContainsPoint,
@@ -15,16 +15,18 @@ import { reorderElement } from '../../commands/reorder-element-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
-import {
+import type {
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
   InteractionCanvasState,
-  strategyApplicationResult,
   StrategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import {
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
+} from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 
 export function isReorderAllowed(siblings: Array<ElementPath>): boolean {
   return siblings.every((sibling) => !isRootOfGeneratedElement(sibling))
@@ -53,9 +55,11 @@ export function applyReorderCommon(
     const selectedElements = targets
     const target = selectedElements[0]
 
-    const siblings = MetadataUtils.getSiblingsOrdered(canvasState.startingMetadata, target).map(
-      (element) => element.elementPath,
-    )
+    const siblings = MetadataUtils.getSiblingsOrdered(
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+      target,
+    ).map((element) => element.elementPath)
 
     if (!isReorderAllowed(siblings)) {
       return strategyApplicationResult([setCursorCommand(CSSCursor.NotPermitted)], {}, 'failure')

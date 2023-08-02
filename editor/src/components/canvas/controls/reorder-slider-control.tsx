@@ -1,8 +1,8 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { CanvasPoint } from '../../../core/shared/math-utils'
 import {
-  CanvasPoint,
   getRectCenter,
   mod,
   point,
@@ -11,7 +11,7 @@ import {
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
-import { arrayEquals } from '../../../core/shared/utils'
+import { arrayEqualsByValue } from '../../../core/shared/utils'
 import { Modifier } from '../../../utils/modifiers'
 import { when } from '../../../utils/react-conditionals'
 import { Icons, useColorTheme } from '../../../uuiui'
@@ -22,7 +22,7 @@ import CanvasActions from '../canvas-actions'
 import { createInteractionViaMouse, reorderSlider } from '../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../dom-lookup'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { findNewIndex } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
@@ -68,6 +68,8 @@ export const ReorderSliderControl = controlForStrategyMemoized(
         if (target != null) {
           const siblingPaths = MetadataUtils.getSiblingsOrdered(
             store.editor.canvas.interactionSession?.latestMetadata ?? store.editor.jsxMetadata,
+            store.editor.canvas.interactionSession?.latestElementPathTree ??
+              store.editor.elementPathTree,
             target,
           ).map((sibling) => sibling.elementPath)
           const targetIndex = siblingPaths.findIndex((sibling) => EP.pathsEqual(sibling, target))
@@ -75,8 +77,9 @@ export const ReorderSliderControl = controlForStrategyMemoized(
             MetadataUtils.getFrameInCanvasCoords(target, store.editor.jsxMetadata) ?? zeroCanvasRect
 
           if (isDragging) {
-            const startingSiblingsMetadata = MetadataUtils.getSiblingsUnordered(
+            const startingSiblingsMetadata = MetadataUtils.getSiblingsOrdered(
               store.strategyState.startingMetadata,
+              store.strategyState.startingElementPathTree,
               target,
             ).map((sibling) => sibling.elementPath)
             return {
@@ -105,7 +108,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       },
       'ReorderSliderControl',
       (oldValue, newValue) =>
-        arrayEquals(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
+        arrayEqualsByValue(oldValue.siblings, newValue.siblings, EP.pathsEqual) &&
         oldValue.latestIndex === newValue.latestIndex &&
         oldValue.startingIndex === newValue.startingIndex &&
         rectanglesEqual(oldValue.startingFrame, newValue.startingFrame),

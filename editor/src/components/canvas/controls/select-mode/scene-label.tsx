@@ -2,17 +2,19 @@ import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { isFiniteRectangle, windowPoint } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import CanvasActions from '../../canvas-actions'
 import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { isSelectModeWithArea } from '../../../editor/editor-modes'
+import { getSubTree } from '../../../../core/shared/element-path-tree'
 
 interface SceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
@@ -52,6 +54,19 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
+  const sceneHasSingleChild = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const subTree = getSubTree(store.editor.elementPathTree, props.target)
+      if (subTree == null) {
+        return false
+      } else {
+        return subTree.children.length === 1
+      }
+    },
+    'SceneLabel sceneHasSingleChild',
+  )
+
   const labelSelectable = useEditorState(
     Substores.restOfEditor,
     (store) => !store.editor.keysPressed['z'],
@@ -63,6 +78,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
       MetadataUtils.getElementLabel(
         store.editor.allElementProps,
         props.target,
+        store.editor.elementPathTree,
         store.editor.jsxMetadata,
       ),
     'SceneLabel label',
@@ -91,6 +107,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
+  const storeRef = useRefEditorState((store) => {
+    return {
+      mode: store.editor.mode,
+    }
+  })
+
   const isSelected = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
@@ -103,8 +125,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   )
 
   const onMouseMove = React.useCallback(
-    (event: React.MouseEvent<HTMLDivElement>) => event.stopPropagation(),
-    [],
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      const isSelectingArea = isSelectModeWithArea(storeRef.current.mode)
+      if (!isSelectingArea) {
+        event.stopPropagation()
+      }
+    },
+    [storeRef],
   )
   const onMouseOver = React.useCallback(() => {
     if (!isHighlighted) {
@@ -183,7 +210,9 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: colorTheme.subduedForeground.value,
+            color: sceneHasSingleChild
+              ? colorTheme.componentPurple.value
+              : colorTheme.subduedForeground.value,
             position: 'absolute',
             fontWeight: 600,
             left: frame.x,

@@ -1,8 +1,9 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkFocusedPath", "checkSelectedPaths"] }] */
 /// <reference types="karma-viewport" />
 import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -11,8 +12,10 @@ import {
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import {
+  clearSelection,
   selectComponents,
   setCursorOverlay,
+  setFocusedElement,
   toggleSelectionLock,
 } from '../../../editor/actions/action-creators'
 import { CanvasControlsContainerID } from '../new-canvas-controls'
@@ -26,18 +29,20 @@ import {
   mouseUpAtPoint,
   pressKey,
 } from '../../event-helpers.test-utils'
-import { cmdModifier, shiftCmdModifier } from '../../../../utils/modifiers'
-import { setFeatureForBrowserTests } from '../../../../utils/utils.test-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { cmdModifier, emptyModifiers, shiftCmdModifier } from '../../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-template-utils.test-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../../utils/utils.test-utils'
 
 async function fireSingleClickEvents(
   target: HTMLElement,
   clientX: number,
   clientY: number,
+  modifiers: Modifiers = emptyModifiers,
 ): Promise<void> {
   await mouseMoveToPoint(target, { x: clientX, y: clientY })
-  await mouseClickAtPoint(target, { x: clientX, y: clientY })
+  await mouseClickAtPoint(target, { x: clientX, y: clientY }, { modifiers: modifiers })
 }
 
 function createDoubleClicker(
@@ -359,15 +364,68 @@ describe('Select Mode Clicking', () => {
     checkSelectedPaths(renderResult, [desiredPaths[1]])
   })
 
-  it('Single click and two double clicks will focus a generated Card', async () => {
+  it('Single click and three double clicks will focus a generated Card', async () => {
+    // prettier-ignore
+    const desiredPaths = createConsecutivePaths(
+    'sb' +                 // Skipped as it's the storyboard
+    '/scene-CardList' +    // Skipped because we skip over Scenes
+    '/CardList-instance' + // Skipped because we skip component children of Scenes
+    ':CardList-Root' +     // Skipped because we skip over root elements
+    '/CardList-Col',      // <- Single click
+    '/8dc',               // <- First double click selects the expression item
+    '/CardList-Card~~~1', // <- Second *and* third double click, as the third is required to focus it
+  )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimb,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[2])
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+  })
+  it('Single click and five double clicks will focus a generated Card and select the Button inside', async () => {
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                 // Skipped as it's the storyboard
       '/scene-CardList' +    // Skipped because we skip over Scenes
       '/CardList-instance' + // Skipped because we skip component children of Scenes
       ':CardList-Root' +     // Skipped because we skip over root elements
-      '/CardList-Col',      // <- Single click
-      '/CardList-Card~~~1', // <- First *and* Second double click, as the Second is required to focus it
+      '/CardList-Col',       // <- Single click
+      '/8dc',               // <- First double click selects the expression item
+      '/CardList-Card~~~1',  // <- Second *and* third double click, as the third is required to focus it
+      ':Card-Root' +         // Skipped because we skip over root elements
+      '/Card-Row-Buttons',   // <- Fourth double click
+      '/Card-Button-3',      // <- Fifth double click
     )
 
     const renderResult = await renderTestEditorWithCode(
@@ -400,64 +458,135 @@ describe('Select Mode Clicking', () => {
     checkSelectedPaths(renderResult, [desiredPaths[1]])
 
     await doubleClick()
-    checkFocusedPath(renderResult, desiredPaths[1])
-    checkSelectedPaths(renderResult, [desiredPaths[1]])
-  })
-
-  it('Single click and four double clicks will focus a generated Card and select the Button inside', async () => {
-    // prettier-ignore
-    const desiredPaths = createConsecutivePaths(
-        'sb' +                 // Skipped as it's the storyboard
-        '/scene-CardList' +    // Skipped because we skip over Scenes
-        '/CardList-instance' + // Skipped because we skip component children of Scenes
-        ':CardList-Root' +     // Skipped because we skip over root elements
-        '/CardList-Col',       // <- Single click
-        '/CardList-Card~~~1',  // <- First *and* Second double click, as the Second is required to focus it
-        ':Card-Root' +         // Skipped because we skip over root elements
-        '/Card-Row-Buttons',   // <- Third double click
-        '/Card-Button-3',      // <- Fourth double click
-      )
-
-    const renderResult = await renderTestEditorWithCode(
-      TestProjectAlpineClimb,
-      'await-first-dom-report',
-    )
-
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
-    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
-
-    const doubleClick = createDoubleClicker(
-      canvasControlsLayer,
-      cardSceneRootBounds.left + 130,
-      cardSceneRootBounds.top + 220,
-    )
-
-    await fireSingleClickEvents(
-      canvasControlsLayer,
-      cardSceneRootBounds.left + 130,
-      cardSceneRootBounds.top + 220,
-    )
-
     checkFocusedPath(renderResult, null)
-    checkSelectedPaths(renderResult, [desiredPaths[0]])
-
-    await doubleClick()
-    checkFocusedPath(renderResult, null)
-    checkSelectedPaths(renderResult, [desiredPaths[1]])
-
-    await doubleClick()
-    checkFocusedPath(renderResult, desiredPaths[1])
-    checkSelectedPaths(renderResult, [desiredPaths[1]])
-
-    await doubleClick()
-    checkFocusedPath(renderResult, desiredPaths[1])
     checkSelectedPaths(renderResult, [desiredPaths[2]])
 
     await doubleClick()
-    checkFocusedPath(renderResult, desiredPaths[1])
+    checkFocusedPath(renderResult, desiredPaths[2])
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[2])
     checkSelectedPaths(renderResult, [desiredPaths[3]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[2])
+    checkSelectedPaths(renderResult, [desiredPaths[4]])
+  })
+
+  it('Cmd click to select Playground Root', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root', // <- Cmd click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectPlayground,
+      'await-first-dom-report',
+    )
+
+    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          renderResult.getEditorState().editor.lockedElements.simpleLock,
+          'selectable',
+        ),
+      ],
+      true,
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+
+  it('Cmd click to select Playground Root, then regular click keeps it selected', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root', // <- Cmd click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectPlayground,
+      'await-first-dom-report',
+    )
+
+    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          renderResult.getEditorState().editor.lockedElements.simpleLock,
+          'selectable',
+        ),
+      ],
+      true,
+    )
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      emptyModifiers,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+
+  it('The defaulted in simple locks are maintained across changes', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    expect(renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString)).toEqual(
+      ['sb/sc-app/app:app-root'],
+    )
+
+    await renderResult.dispatch([setFocusedElement(EP.fromString('sb/sbchild'))], true)
+
+    expect(renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString)).toEqual(
+      ['sb/sc-app/app:app-root', 'sb/sbchild:sbchild-root'],
+    )
+
+    // Remove the lock from one element.
+    await renderResult.dispatch(
+      [toggleSelectionLock([EP.fromString('sb/sc-app/app:app-root')], 'selectable')],
+      true,
+    )
+
+    expect(renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString)).toEqual(
+      ['sb/sbchild:sbchild-root'],
+    )
   })
 })
 
@@ -550,15 +679,16 @@ describe('Select Mode Double Clicking With Fragments', () => {
     checkSelectedPaths(renderResult, [desiredPaths[1]])
   })
 
-  it('Single click and two double clicks will focus a generated Card', async () => {
+  it('Single click and three double clicks will focus a generated Card', async () => {
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                  // Skipped as it's the storyboard
       '/scene-CardList' +     // Skipped because we skip over Scenes
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
-      ':38e' +                // Skipped because we skip over root elements
+      ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
-      '/CardList-Card~~~1',   // <- First *and* Second double click, as the Second is required to focus it
+      '/cb3',                 // <- First double click selects the expression item
+      '/CardList-Card~~~1',   // <- Second *and* Third double click, as the Third is required to focus it
     )
 
     const renderResult = await renderTestEditorWithCode(
@@ -591,25 +721,92 @@ describe('Select Mode Double Clicking With Fragments', () => {
     checkSelectedPaths(renderResult, [desiredPaths[1]])
 
     await doubleClick()
-    checkFocusedPath(renderResult, desiredPaths[1])
-    checkSelectedPaths(renderResult, [desiredPaths[1]])
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[2])
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
   })
-  it('Single click and four double clicks will focus a generated Card and select the Button inside', async () => {
+  it('Single click and five double clicks will focus a generated Card and select the Button inside', async () => {
     // prettier-ignore
     const desiredPaths = createConsecutivePaths(
       'sb' +                  // Skipped as it's the storyboard
       '/scene-CardList' +     // Skipped because we skip over Scenes
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
-      ':38e' +                // Skipped because we skip over root elements
+      ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
-      '/CardList-Card~~~1',   // <- First *and* Second double click, as the Second is required to focus it
+      '/cb3',                 // <- First double click selects the expression item
+      '/CardList-Card~~~1',   // <- Second *and* Third double click, as the Third is required to focus it
       ':Card-Root' +          // Skipped because we skip over root elements
-      '/Card-Row-Buttons',    // <- Third double click
-      '/Card-Button-3',       // <- Fourth double click
+      '/Card-Row-Buttons',    // <- Fourth double click
+      '/Card-Button-3',       // <- Fifth double click
     )
 
     const renderResult = await renderTestEditorWithCode(
       TestProjectAlpineClimbWithFragments,
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('generated-card-1')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[2])
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[2])
+    checkSelectedPaths(renderResult, [desiredPaths[3]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[2])
+    checkSelectedPaths(renderResult, [desiredPaths[4]])
+  })
+  // This test fails because there is a generated component there with a root fragment, which case is not supported
+  // See comments in function firstAncestorOrItselfWithValidElementPath
+  xit('Single click and four double clicks will focus a generated Card with a root fragment and select the Button inside', async () => {
+    // prettier-ignore
+    const desiredPaths = createConsecutivePaths(
+      'sb' +                  // Skipped as it's the storyboard
+      '/scene-CardList' +     // Skipped because we skip over Scenes
+      '/CardList-instance' +  // Skipped because we skip component children of Scenes
+      ':dbc' +                // Skipped because we skip over root elements
+      '/CardList-Col',        // <- Single click
+      '/CardList-Card~~~1',   // <- First *and* Second double click, as the Second is required to focus it
+      ':Card-Fragment-Root' +          // Skipped because we skip over root elements
+      '/Card-Root',           // <- Third double click
+      '/Card-Row-Buttons',    // <- Fourth double click
+      '/Card-Button-3',       // <- Fifth double clic
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithCardWithRootFragment,
       'await-first-dom-report',
     )
 
@@ -648,6 +845,103 @@ describe('Select Mode Double Clicking With Fragments', () => {
     await doubleClick()
     checkFocusedPath(renderResult, desiredPaths[1])
     checkSelectedPaths(renderResult, [desiredPaths[3]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, desiredPaths[1])
+    checkSelectedPaths(renderResult, [desiredPaths[4]])
+  })
+})
+
+describe('Select Mode Double Clicking With conditionals', () => {
+  it('Double click can dive into single conditional inside element with an expression in the active branch', async () => {
+    // prettier-ignore
+    const desiredPaths = createConsecutivePaths(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // Skipped because we skip component children of Scenes
+      ':Card-Root' +        // Skipped because we skip over root elements
+      '/Card-Row-Buttons',  // <- Single click
+      '/Card-Button-3',     // <- Double click
+      '/cond'               // <- Double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithConditional,
+      'await-first-dom-report',
+    )
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[2]])
+  })
+
+  it('Double click can not dive into conditional inside element when the conditional has siblings', async () => {
+    // prettier-ignore
+    const desiredPaths = createConsecutivePaths(
+      'sb' +                // Skipped as it's the storyboard
+      '/scene-2' +          // Skipped because we skip over Scenes
+      '/Card-instance' +    // Skipped because we skip component children of Scenes
+      ':Card-Root' +        // Skipped because we skip over root elements
+      '/Card-Row-Buttons',  // <- Single click
+      '/Card-Button-3',     // <- Double click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectAlpineClimbWithConditionalWithSiblings,
+      'await-first-dom-report',
+    )
+
+    const cardSceneRoot = renderResult.renderedDOM.getByTestId('card-scene')
+    const cardSceneRootBounds = cardSceneRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const doubleClick = createDoubleClicker(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSceneRootBounds.left + 130,
+      cardSceneRootBounds.top + 220,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+
+    await doubleClick()
+    checkFocusedPath(renderResult, null)
+    // can not dive deeper into the conditional because it has a sibling
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
   })
 })
 
@@ -743,6 +1037,386 @@ describe('Selection with locked elements', () => {
     await doubleClick()
     checkFocusedPath(renderResult, null)
     checkSelectedPaths(renderResult, [desiredPath])
+  })
+})
+
+describe('Storyboard auto-focusing', () => {
+  it('Scene with a single child will auto-focus the child', async () => {
+    // We expect the App component to be focused, meaning we can directly select the span within it
+    const desiredPath = EP.fromString('sb/sc-app/app:app-root/app-div/app-span')
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const appSpan = renderResult.renderedDOM.getByTestId('app-span')
+    const appSpanBounds = appSpan.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      appSpanBounds.left + 2,
+      appSpanBounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+
+  it('Scene with multiple children will not auto-focus those children', async () => {
+    // We expect neither of the Card components to be focused, meaning we can only directly select the instances
+    const desiredPaths = [EP.fromString('sb/sc-cards/card1'), EP.fromString('sb/sc-cards/card2')]
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan2Bounds.left + 2,
+      cardSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+  })
+
+  it('Scene with multiple generated children will not auto-focus those children', async () => {
+    // We expect neither of the Card components to be focused, meaning we can only directly select the instances
+    const desiredPaths = [
+      EP.fromString('sb/sc-generated/5f0/generated~~~1'),
+      EP.fromString('sb/sc-generated/5f0/generated~~~2'),
+    ]
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const generatedSpan1 = renderResult.renderedDOM.getByTestId('generated-span-1')
+    const generatedSpan1Bounds = generatedSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      generatedSpan1Bounds.left + 2,
+      generatedSpan1Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    const generatedSpan2 = renderResult.renderedDOM.getByTestId('generated-span-2')
+    const generatedSpan2Bounds = generatedSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      generatedSpan2Bounds.left + 2,
+      generatedSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+  })
+
+  it('A child of the storyboard is not auto-focused', async () => {
+    // We expect the SBChild component not to be focused, meaning we can only directly select the instance
+    const desiredPath = EP.fromString('sb/sbchild')
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const sbChildSpan = renderResult.renderedDOM.getByTestId('sbchild-span')
+    const sbChildSpanBounds = sbChildSpan.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      sbChildSpanBounds.left + 2,
+      sbChildSpanBounds.top + 2,
+      cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPath])
+  })
+})
+
+describe('Select mode focusing and un-focusing', () => {
+  it('Double clicking an unselected component will focus it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Check that double clicking focused the element
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+  })
+
+  it('Double clicking a selected component will focus it', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+      cmdModifier,
+    )
+
+    // Ensure that the selected element is neither auto-focused nor explicitly focused (so we can only select the instance)
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1')])
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Check that double clicking focused the element
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+  })
+
+  it('Clearing the selection or selecting a different element will not clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Select a different element
+    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan2Bounds.left + 2,
+      cardSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    // Check that a different element was selected without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card2')])
+
+    // Click the empty space on the canvas
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the selection was cleared without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [])
+  })
+
+  it('Clearing the selection and clicking the empty canvas space will clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Click the empty space on the canvas
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the selection was cleared without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [])
+
+    // Click the empty space on the canvas again
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the focused path has now been cleared
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [])
+  })
+
+  it('Pressing esc when nothing is selected will clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Click the empty space on the canvas
+    await fireSingleClickEvents(canvasControlsLayer, -10, -10)
+
+    // Check that the selection was cleared without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [])
+
+    // Press the escape key
+    await pressKey('Escape')
+
+    // Check that the focused path has now been cleared
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [])
+  })
+
+  it('Pressing esc when a different element is selected will not clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Select a different element
+    const cardSpan2 = renderResult.renderedDOM.getByTestId('card-span-2')
+    const cardSpan2Bounds = cardSpan2.getBoundingClientRect()
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      cardSpan2Bounds.left + 2,
+      cardSpan2Bounds.top + 2,
+      cmdModifier,
+    )
+
+    // Check that a different element was selected without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card2')])
+
+    // Press the escape key
+    await pressKey('Escape')
+
+    // Check that the selection was updated without clearing the focused path
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards')])
+  })
+
+  it('Pressing esc when a focused element is selected will clear the focused path', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectScene2Children,
+      'await-first-dom-report',
+    )
+
+    const cardSpan1 = renderResult.renderedDOM.getByTestId('card-span-1')
+    const cardSpan1Bounds = cardSpan1.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await createDoubleClicker(
+      canvasControlsLayer,
+      cardSpan1Bounds.left + 2,
+      cardSpan1Bounds.top + 2,
+    )()
+
+    // Ensure the component was selected and focused
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1:card1-root/card1-div')])
+
+    // Keep pressing the esc key until we have worked our way up the hierarchy to the focused path
+    await pressKey('Escape')
+    checkFocusedPath(renderResult, EP.fromString('sb/sc-cards/card1'))
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1')])
+
+    // Now pressing it again should clear the focused path without changing the selection
+    await pressKey('Escape')
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [EP.fromString('sb/sc-cards/card1')])
   })
 })
 
@@ -916,6 +1590,37 @@ describe('mouseup selection', () => {
     // Check nothing has changed in the project
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(MouseupTestProject)
   })
+  describe('overflown text', () => {
+    it('Clicking on overflown text selects the parent element', async () => {
+      // prettier-ignore
+      const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root' + // Skipped because we skip root element of root component of Scenes
+      '/pg-div'  // Single click
+    )
+
+      const renderResult = await renderTestEditorWithCode(
+        TestProjectOverflownText,
+        'await-first-dom-report',
+      )
+
+      const overflownText = renderResult.renderedDOM.getByTestId('pg-div')
+      const overflownTextBounds = overflownText.getBoundingClientRect()
+
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      // Clicking outside of bounds on the overflown text
+      await fireSingleClickEvents(
+        canvasControlsLayer,
+        overflownTextBounds.left + overflownTextBounds.width + 10,
+        overflownTextBounds.top + 10,
+      )
+
+      checkSelectedPaths(renderResult, [desiredPath])
+    })
+  })
 
   xit('clicking on the catchment area of a control but over another element does not change the selection', async () => {
     // FIXME for some reason the absolute resize controls don't capture the mousedown event here
@@ -989,7 +1694,7 @@ function checkWithKey<T>(key: string, actual: T, expected: T) {
   })
 }
 
-const TestProjectAlpineClimb = `
+const generateTestProjectAlpineClimb = (conditional: boolean, conditionalSiblings: boolean) => `
 import * as React from "react";
 import { Scene, Storyboard } from "utopia-api";
 import styled from "@emotion/styled";
@@ -1096,7 +1801,16 @@ export const Card = (props) => (
     <Row style={{ minHeight: 40, gap: 12 }} data-uid="Card-Row-Buttons">
       <Button data-uid="Card-Button-1">Hello</Button>
       <Button data-uid="Card-Button-2">Button</Button>
-      <Button data-uid="Card-Button-3">Button</Button>
+      <Button data-uid="Card-Button-3">${
+        conditional
+          ? `{
+        // @utopia/uid=cond 
+        true ? 'Button' : <div />
+      }
+        `
+          : 'Button'
+      }
+      ${conditionalSiblings ? '<div />' : ''}</Button>
     </Row>
   </div>
 );
@@ -1377,6 +2091,10 @@ export var storyboard = (
   </Storyboard>
 );
 `
+
+const TestProjectAlpineClimb = generateTestProjectAlpineClimb(false, false)
+const TestProjectAlpineClimbWithConditional = generateTestProjectAlpineClimb(true, false)
+const TestProjectAlpineClimbWithConditionalWithSiblings = generateTestProjectAlpineClimb(true, true)
 
 const TestProjectAlpineClimbWithFragments = `
 import * as React from "react";
@@ -1765,4 +2483,670 @@ export var storyboard = (
     </Scene>
   </Storyboard>
 );
+`
+
+const TestProjectAlpineClimbWithCardWithRootFragment = `
+import * as React from "react";
+import { Scene, Storyboard } from "utopia-api";
+import styled from "@emotion/styled";
+
+export const Col = (props) => (
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: 34,
+      padding: 12,
+      alignItems: "stretch",
+      backgroundColor: "yellow",
+    }}
+    data-uid="Col-Root"
+  >
+    {props.children}
+  </div>
+);
+
+export const LabelRow = (props) => (
+  <div
+    style={{
+      color: "white",
+      display: "flex",
+      alignItems: "center",
+      fontFamily: "sans-serif",
+      backdropFilter: "blur(6px) brightness(120%)",
+      paddingLeft: 12,
+      paddingRight: 12,
+      position: "absolute",
+      bottom: 0,
+      left: 0,
+      height: 34,
+      right: 0,
+    }}
+    data-uid="LabelRow-Root"
+  >
+    <div style={{ flex: "1 0 150px" }} data-uid="LabelRow-div">
+      Beautiful Hackney Street Arrrrt
+    </div>
+    <Button data-uid="LabelRow-Button">Hello</Button>
+  </div>
+);
+
+export const Button = styled.button({
+  minWidth: 40,
+  minHeight: 22,
+  boxShadow: "1px 1px 0px 1px black",
+  backgroundColor: "#00FFAA",
+  color: "black",
+});
+
+export const CardList = (props) => {
+  cards = [1, 2, 3, 4, 5];
+
+  return (
+    <>
+      <h2 data-uid="CardList-h2">List of available street art</h2>
+      <Col data-uid="CardList-Col">
+        {cards.map((card) => (
+          <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
+        ))}
+      </Col>
+    </>
+  );
+};
+
+export const ManualCardList = (props) => {
+  return (
+    <>
+      <h2 data-uid="ManualCardList-h2">List of available street art</h2>
+      <Col data-uid="ManualCardList-Col">
+        <Card data-uid="ManualCardList-Card-1" />
+        <Card data-uid="ManualCardList-Card-2" />
+      </Col>
+    </>
+  );
+};
+
+export const Card = (props) => (
+  <React.Fragment data-uid="Card-Fragment-Root">
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        width: 364,
+        height: 250,
+        backgroundColor: "hsl(0,0%,95%)",
+        boxShadow: "0px 0px 0px 1px black",
+      }}
+      data-testid={props.testid}
+      data-uid="Card-Root"
+    >
+      <Row
+        style={{ minHeight: 200, position: "relative", overflow: "hidden" }}
+        data-uid="Card-Row"
+      >
+        <img
+          src="https://www.hackneycitizen.co.uk/wp-content/uploads/nerone-1-620.jpg"
+          data-uid="Card-img"
+        />
+        <LabelRow data-uid="Card-LabelRow" />
+      </Row>
+      <Row style={{ minHeight: 40, gap: 12 }} data-uid="Card-Row-Buttons">
+        <Button data-uid="Card-Button-1">Hello</Button>
+        <Button data-uid="Card-Button-2">Button</Button>
+        <Button data-uid="Card-Button-3">Button</Button>
+      </Row>
+    </div>
+  </React.Fragment>
+);
+
+export const FlexRow = styled.div({
+  display: "flex",
+  alignItems: "center",
+});
+
+export const Row = styled(FlexRow)({});
+export const UIRow = styled.div({
+  minHeight: 34,
+  paddingLeft: 8,
+  paddingRight: 8,
+  display: "flex",
+  alignItems: "center",
+});
+
+export const UIListRow = styled(UIRow)({
+  height: 27,
+  minHeight: "initial",
+  "&:hover": {
+    color: "white",
+    background: "#007AFF",
+  },
+});
+export const UIListGridRow = styled(UIRow)({
+  height: 27,
+  minHeight: "initial",
+  display: "grid",
+  gridTemplateColumns: "28px 1fr",
+  minHeight: "initial",
+  "&:hover": {
+    color: "white",
+    background: "#007AFF",
+  },
+});
+
+export const UIContextMenuRow = styled(UIRow)({
+  height: 22,
+  borderRadius: 2,
+  minHeight: "initial",
+  display: "grid",
+  gridTemplateColumns: "1fr auto",
+  minHeight: "initial",
+  "&:hover": {
+    color: "white",
+    background: "#007AFF",
+  },
+});
+
+export const ContextMenu = (props) => {
+  return (
+    <div
+      style={{
+        borderRadius: 4,
+        padding: 4,
+        backgroundColor: "hsl(0,0%,95%)",
+        paddingTop: 4,
+        paddingBottom: 4,
+        width: 202,
+        fontFamily: "Inter",
+        fontSize: 11,
+        fontWeight: 400,
+        boxShadow:
+          "0px 2px 7px rgb(0, 0, 0, 0.12), 0px 0px 0px 1px rgb(0, 0, 0, 0.12)",
+      }}
+      data-uid="ContextMenu-Root"
+    >
+      <UIContextMenuRow data-uid="ContextMenu-Copy">
+        <span data-uid="918">Copy</span>
+        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="f49">
+          ⌘+C
+        </span>
+      </UIContextMenuRow>
+      <UIContextMenuRow data-uid="ContextMenu-Cut">
+        <span data-uid="a3e">Cut</span>
+        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="b34">
+          ⌘+X
+        </span>
+      </UIContextMenuRow>
+      <UIContextMenuRow data-uid="ContextMenu-Paste">
+        <span data-uid="09d">Paste</span>
+        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="706">
+          ⌘+V
+        </span>
+      </UIContextMenuRow>
+      <UIContextMenuRow data-uid="ContextMenu-">
+        <span data-uid="821">Paste</span>
+        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="46d">
+          ⌘+V
+        </span>
+      </UIContextMenuRow>
+      <hr
+        style={{
+          color: "yello",
+          background: "purple",
+          stroke: "grey",
+          backgroundColor: "/*rgb(128, 0, 128, 1)*/",
+          border: "0.5px solid rgb(255, 20, 20, 1)",
+          height: 1,
+        }}
+        data-uid="ContextMenu-hr"
+      />
+      <UIContextMenuRow data-uid="ContextMenu-Backward">
+        <span data-uid="ab9">Bring Backward</span>
+        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="c2b">
+          ⌘+V
+        </span>
+      </UIContextMenuRow>
+      <UIContextMenuRow data-uid="ContextMenu-Forward">
+        <span data-uid="cb2">Bring Forward</span>
+        <span style={{ color: "hsl(0,0%,60%)" }} data-uid="07c">
+          ⌘+V
+        </span>
+      </UIContextMenuRow>
+    </div>
+  );
+};
+
+export var App = (props) => {
+  return (
+    <div
+      style={{
+        padding: 20,
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#FFFFFF",
+        position: "relative",
+        fontFamily: "Inter",
+        fontSize: 11,
+        fontWeight: 400,
+        WebkitTextRendering: "subpixel-antialiased",
+      }}
+      data-uid="App-root"
+    >
+      <div
+        style={{
+          width: 270,
+          height: 215,
+          background: "hsl(0,0%,97%)",
+          backgroundColor: "rgb(247, 247, 247, 1)",
+          boxShadow:
+            "0px 2px 7px rgb(0, 0, 0, 0.12), 0px 0px 0px 1px rgb(0, 0, 0, 0.12)",
+          borderRadius: 3,
+        }}
+        data-uid="App-div"
+      >
+        <div
+          style={{
+            paddingLeft: 8,
+            paddingRight: 8,
+            fontFamily: "Inter",
+            fontSize: 11,
+            color: "hsl(0,0%,10%)",
+            display: "flex",
+            alignItems: "center",
+            height: 34,
+          }}
+          data-uid="App-div-div"
+        >
+          <span style={{ fontWeight: 600 }} data-uid="App-div-div-span">
+            Popup Menu
+          </span>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            paddingLeft: 8,
+            paddingRight: 8,
+          }}
+          data-uid="57e"
+        >
+          <UIListGridRow
+            style={{ gap: 8, borderRadius: 2, flexGrow: 1 }}
+            data-uid="App-Select"
+          >
+            <Row data-uid="681" />
+            <Row data-uid="04c">Select Elements</Row>
+          </UIListGridRow>
+          <UIListGridRow
+            style={{ gap: 8, borderRadius: 2, flexGrow: 1 }}
+            data-uid="App-Copy"
+          >
+            <div data-uid="2a2" />
+            <div data-uid="329">Copy</div>
+          </UIListGridRow>
+          <UIListGridRow
+            style={{ gap: 8, borderRadius: 2, flexGrow: 1 }}
+            data-uid="App-Pase"
+          >
+            <div data-uid="2ce" />
+            <div data-uid="1a3">Paste</div>
+          </UIListGridRow>
+          <UIListGridRow data-uid="App-Check">
+            <Row style={{ justifyContent: "center" }} data-uid="a1d">
+              ✓
+            </Row>
+            <Row data-uid="2d9">A little label</Row>
+          </UIListGridRow>
+          <UIListGridRow
+            style={{ gap: 8, borderRadius: 2, flexGrow: 1 }}
+            data-uid="App-Magic"
+          >
+            <div data-uid="765" />
+            <div data-uid="a20">Magic</div>
+          </UIListGridRow>
+        </div>
+      </div>
+    </div>
+  );
+};
+export var storyboard = (
+  <Storyboard data-uid="sb" >
+    <Scene
+      style={{ position: "absolute", left: 0, top: 0, width: 313, height: 261 }}
+      data-uid="scene-App"
+    >
+      <App data-uid="App-instance" />
+    </Scene>
+    <Scene
+      data-label="Scene 1"
+      style={{
+        position: "absolute",
+        padding: 20,
+        left: 0,
+        top: 299,
+        width: 280,
+        height: 196,
+      }}
+      data-uid="scene-1"
+    >
+      <ContextMenu data-uid="ContextMenu-instance" />
+    </Scene>
+    <Scene
+      data-label="Scene 2"
+      style={{
+        position: "absolute",
+        padding: 20,
+        left: 420,
+        top: -19,
+        width: 400,
+        height: 300,
+      }}
+      data-uid="scene-2"
+    >
+      <Card data-uid="Card-instance" testid="card-scene" />
+    </Scene>
+    <Scene
+      data-label="List of Cards"
+      style={{
+        position: "absolute",
+        padding: 20,
+        left: 420,
+        top: 350,
+        width: 500,
+        height: 400,
+      }}
+      data-uid="scene-CardList"
+    >
+      <CardList data-uid="CardList-instance" />
+    </Scene>
+    <Scene
+      data-label="Card component out of place for focus mode"
+      style={{
+        position: "absolute",
+        padding: 20,
+        left: 1060,
+        top: -31,
+        width: 500,
+        height: 400,
+      }}
+      data-uid="scene-ManualCardList"
+    >
+      <ManualCardList data-uid="ManualCardList-uid" />
+    </Scene>
+  </Storyboard>
+);
+`
+
+const TestProjectPlayground = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+      data-testid='pg-root'
+    >
+      <div
+        style={{
+          height: 100,
+          position: 'absolute',
+          left: 160.5,
+          top: 150,
+        }}
+        data-uid='pg-div'
+      >
+        <img
+          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+          alt='Utopia logo'
+          style={{ height: '100%' }}
+          data-uid='pg-img'
+        />
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 400,
+        height: 400,
+        position: 'absolute',
+        left: 10,
+        top: 10,
+      }}
+      data-uid='sc'
+    >
+      <Playground data-uid='pg' />
+    </Scene>
+  </Storyboard>
+)
+`
+
+const TestProjectScene2Children = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+const App = (props) => {
+  return (
+    <div style={props.style} data-uid='app-root'>
+      <div data-uid='app-div'>
+        <span data-uid='app-span' data-testid='app-span'>
+          App
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const Card1 = (props) => {
+  return (
+    <div style={props.style} data-uid='card1-root'>
+      <div data-uid='card1-div'>
+        <span
+          data-uid='card-span-1'
+          data-testid='card-span-1'
+        >
+          Card1
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const Card2 = (props) => {
+  return (
+    <div style={props.style} data-uid='card2-root'>
+      <div data-uid='card2-div'>
+        <span
+          data-uid='card-span-2'
+          data-testid='card-span-2'
+        >
+          Card2
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const SBChild = (props) => {
+  return (
+    <div style={props.style} data-uid='sbchild-root'>
+      <div data-uid='sbchild-div'>
+        <span
+          data-uid='sbchild-span'
+          data-testid='sbchild-span'
+        >
+          Storyboard Child
+        </span>
+      </div>
+    </div>
+  )
+}
+
+const GeneratedComponent = (props) => {
+  return (
+    <div style={props.style} data-uid='generated-root'>
+      <div data-uid='generated-div'>
+        <span
+          data-uid='generated-span'
+          data-testid={props.testid}
+        >
+          Generated
+        </span>
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 300,
+        height: 300,
+        position: 'absolute',
+        left: 10,
+        top: 10,
+      }}
+      data-uid='sc-cards'
+    >
+      <Card1
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 20,
+          top: 20,
+          width: 100,
+          height: 100,
+        }}
+        data-uid='card1'
+      />
+      <Card2
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 150,
+          top: 150,
+          width: 100,
+          height: 100,
+        }}
+        data-uid='card2'
+      />
+    </Scene>
+    <Scene
+      style={{
+        width: 300,
+        height: 300,
+        position: 'absolute',
+        left: 350,
+        top: 10,
+      }}
+      data-uid='sc-app'
+    >
+      <App
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 20,
+          top: 20,
+          width: 100,
+          height: 100,
+        }}
+        data-uid='app'
+      />
+    </Scene>
+    <Scene
+      style={{
+        width: 300,
+        height: 300,
+        position: 'absolute',
+        left: 10,
+        top: 350,
+      }}
+      data-uid='sc-generated'
+    >
+      {[1, 2, 3].map((i) => (
+        <GeneratedComponent
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 10 + (i - 1) * 85,
+            top: 10 + (i - 1) * 85,
+            width: 80,
+            height: 80,
+          }}
+          data-uid='generated'
+          testid={'generated-span-' + i}
+        />
+      ))}
+    </Scene>
+    <SBChild
+      style={{
+        position: 'absolute',
+        left: 350,
+        top: 350,
+        width: 100,
+        height: 100,
+      }}
+      data-uid='sbchild'
+    />
+  </Storyboard>
+)
+`
+
+const TestProjectOverflownText = `
+import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var Playground = () => {
+  return (
+    <div
+      style={{
+        height: '100%',
+        width: '100%',
+        contain: 'layout',
+      }}
+      data-uid='pg-root'
+      data-testid='pg-root'
+    >
+      <div
+        style={{
+          position: 'absolute',
+          height: 10,
+          width: 10,
+          left: 160.5,
+          top: 150,
+        }}
+        data-uid='pg-div'
+        data-testid='pg-div'
+      >
+        Hello
+      </div>
+    </div>
+  )
+}
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Scene
+      style={{
+        width: 400,
+        height: 400,
+        position: 'absolute',
+        left: 10,
+        top: 10,
+      }}
+      data-uid='sc'
+    >
+      <Playground data-uid='pg' />
+    </Scene>
+  </Storyboard>
+)
 `

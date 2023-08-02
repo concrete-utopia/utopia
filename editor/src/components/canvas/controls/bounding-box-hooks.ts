@@ -1,10 +1,11 @@
 import React from 'react'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { fastForEach } from '../../../core/shared/utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
-  CanvasRectangle,
   isFiniteRectangle,
+  zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import {
   Substores,
@@ -25,8 +26,9 @@ export function useBoundingBox<T = HTMLDivElement>(
   const controlRef = React.useRef<T>(null)
   const boundingBoxCallback = React.useCallback(
     (boundingBox: CanvasRectangle | null, scale: number) => {
-      if (boundingBox != null && controlRef.current != null) {
-        onChangeCallback(controlRef as NotNullRefObject<T>, boundingBox, scale)
+      const maybeZeroBoundingBox = zeroRectIfNullOrInfinity(boundingBox)
+      if (controlRef.current != null) {
+        onChangeCallback(controlRef as NotNullRefObject<T>, maybeZeroBoundingBox, scale)
       }
     },
     [onChangeCallback],

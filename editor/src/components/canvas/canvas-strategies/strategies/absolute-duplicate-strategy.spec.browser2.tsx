@@ -1,5 +1,5 @@
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
@@ -9,24 +9,25 @@ import {
 } from '../../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { FOR_TESTS_setNextGeneratedUid } from '../../../../core/model/element-template-utils.test-utils'
-import { offsetPoint, windowPoint, WindowPoint } from '../../../../core/shared/math-utils'
-import { altModifier, cmdModifier, Modifiers } from '../../../../utils/modifiers'
+import type { WindowPoint } from '../../../../core/shared/math-utils'
+import { offsetPoint, windowPoint } from '../../../../core/shared/math-utils'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { altModifier, cmdModifier } from '../../../../utils/modifiers'
 import { mouseClickAtPoint, mouseDragFromPointToPoint } from '../../event-helpers.test-utils'
 import {
   expectElementWithTestIdNotToBeRendered,
   selectComponentsForTest,
-  setFeatureForBrowserTests,
 } from '../../../../utils/utils.test-utils'
 import * as EP from '../../../../core/shared/element-path'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 import { NO_OP } from '../../../../core/shared/utils'
-import { AllContentAffectingTypes } from './group-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
-} from './group-like-helpers.test-utils'
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
+} from './fragment-like-helpers.test-utils'
 
 async function dragElement(
   renderResult: EditorRenderResult,
@@ -134,14 +135,14 @@ describe('Absolute Duplicate Strategy', () => {
     )
   })
 
-  describe('with content-affecting elements', () => {
-    AllContentAffectingTypes.forEach((type) => {
+  describe('with fragment-like elements', () => {
+    AllFragmentLikeTypes.forEach((type) => {
       // TODO: reenable this after we know why does it destroy the test runner
       it(`duplicates the selected absolute element when pressing alt, even if it is a ${type}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(
             projectWithFragment(
-              `${getOpeningGroupLikeTag(type, { stripTestId: true })}
+              `${getOpeningFragmentLikeTag(type, { stripTestId: true })}
         <div
           style={{
             backgroundColor: '#d089cc',
@@ -157,7 +158,7 @@ describe('Absolute Duplicate Strategy', () => {
         >
           second
         </div>
-        ${getClosingGroupLikeTag(type)}`,
+        ${getClosingFragmentLikeTag(type)}`,
             ),
           ),
           'await-first-dom-report',
@@ -174,7 +175,7 @@ describe('Absolute Duplicate Strategy', () => {
           y: targetElementBounds.y + 5,
         })
         const endPoint = offsetPoint(startPoint, dragDelta)
-        const target = EP.fromString(`sb/${GroupLikeElementUid}`)
+        const target = EP.fromString(`sb/${FragmentLikeElementUid}`)
 
         expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentOutlinesTestId([]))
         expectElementWithTestIdNotToBeRendered(renderResult, ImmediateParentBoundsTestId([]))
@@ -200,7 +201,7 @@ describe('Absolute Duplicate Strategy', () => {
         expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
           formatTestProjectCode(
             projectWithFragment(`
-              ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
+              ${getOpeningFragmentLikeTag(type, { stripTestId: true, stripUids: true })}
         <div
           style={{
             backgroundColor: '#d089cc',
@@ -215,8 +216,8 @@ describe('Absolute Duplicate Strategy', () => {
         >
           second
         </div>
-        ${getClosingGroupLikeTag(type)}
-        ${getOpeningGroupLikeTag(type, { stripTestId: true, stripUids: true })}
+        ${getClosingFragmentLikeTag(type)}
+        ${getOpeningFragmentLikeTag(type, { stripTestId: true, stripUids: true })}
         <div
           style={{
             backgroundColor: '#d089cc',
@@ -231,7 +232,7 @@ describe('Absolute Duplicate Strategy', () => {
         >
           second
         </div>
-        ${getClosingGroupLikeTag(type)}`),
+        ${getClosingFragmentLikeTag(type)}`),
           ),
         )
       })

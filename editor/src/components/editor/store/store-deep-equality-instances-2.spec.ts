@@ -1,10 +1,6 @@
-import {
+import type {
   ArbitraryJSBlock,
   ElementsWithin,
-  emptyComments,
-  JSXArbitraryBlock,
-  jsxAttributesSpread,
-  jsExpressionValue,
   JSXElement,
   JSXTextBlock,
   JSXFragment,
@@ -14,8 +10,14 @@ import {
   DestructuredArrayPart,
   Param,
   DestructuredArray,
-  BoundParam,
   UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
+import {
+  emptyComments,
+  JSExpression,
+  jsxAttributesSpread,
+  jsExpressionValue,
+  BoundParam,
   jsxElementName,
 } from '../../../core/shared/element-template'
 import {

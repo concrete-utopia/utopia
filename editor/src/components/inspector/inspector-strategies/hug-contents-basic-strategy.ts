@@ -1,18 +1,20 @@
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { CanvasCommand } from '../../canvas/commands/commands'
+import type { SetCssLengthProperty } from '../../canvas/commands/set-css-length-command'
 import {
-  SetCssLengthProperty,
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
 import { SetProperty, setProperty } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
-import { cssKeyword, cssUnitlessLength, FlexDirection } from '../common/css-utils'
+import type { FlexDirection } from '../common/css-utils'
+import { cssKeyword, cssUnitlessLength } from '../common/css-utils'
+import type { Axis } from '../inspector-common'
 import {
-  Axis,
   detectFillHugFixedState,
   hugContentsApplicableForContainer,
   hugContentsApplicableForText,
@@ -22,7 +24,8 @@ import {
   sizeToVisualDimensions,
   widthHeightFromAxis,
 } from '../inspector-common'
-import { InspectorStrategy } from './inspector-strategy'
+import type { InspectorStrategy } from './inspector-strategy'
+import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
@@ -43,6 +46,7 @@ export function setHugContentForAxis(
 function hugContentsSingleElement(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -57,8 +61,8 @@ function hugContentsSingleElement(
     ),
   ]
 
-  const chilren = MetadataUtils.getChildrenPathsUnordered(metadata, elementPath)
-  const transformChildrenToFixedCommands = chilren.flatMap((child) => {
+  const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
+  const transformChildrenToFixedCommands = children.flatMap((child) => {
     const state = detectFillHugFixedState(axis, metadata, child).fixedHugFill
     if (state?.type === 'fixed' || state?.type === 'hug') {
       return []
@@ -69,15 +73,15 @@ function hugContentsSingleElement(
     ]
   })
 
-  return [...basicCommands, ...transformChildrenToFixedCommands]
+  return [...basicCommands, ...transformChildrenToFixedCommands, queueGroupTrueUp(elementPath)]
 }
 
 export const hugContentsBasicStrategy = (axis: Axis): InspectorStrategy => ({
   name: 'Set to Hug',
-  strategy: (metadata, elementPaths) => {
+  strategy: (metadata, elementPaths, pathTrees) => {
     const elements = elementPaths.filter(
       (path) =>
-        hugContentsApplicableForContainer(metadata, path) ||
+        hugContentsApplicableForContainer(metadata, pathTrees, path) ||
         hugContentsApplicableForText(metadata, path),
     )
 
@@ -85,6 +89,6 @@ export const hugContentsBasicStrategy = (axis: Axis): InspectorStrategy => ({
       return null
     }
 
-    return elements.flatMap((path) => hugContentsSingleElement(axis, metadata, path))
+    return elements.flatMap((path) => hugContentsSingleElement(axis, metadata, pathTrees, path))
   },
 })

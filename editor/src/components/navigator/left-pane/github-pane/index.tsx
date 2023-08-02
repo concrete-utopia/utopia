@@ -35,6 +35,7 @@ import { User } from '../../../../uuiui-deps'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import {
+  fileChecksumsWithFileToFileChecksums,
   githubRepoFullName,
   isGithubCommitting,
   isGithubListingBranches,
@@ -328,7 +329,7 @@ const BranchBlock = () => {
                     : 'pointer',
                   opacity: isListingBranches && !loadingThisBranch ? 0.5 : 1,
                   '&:hover': {
-                    background: colorTheme.primarySubdued.value,
+                    background: colorTheme.primary.value,
                     color: colorTheme.white.value,
                     svg: { stroke: colorTheme.white.value },
                   },
@@ -615,10 +616,10 @@ const LocalChangesBlock = () => {
 
   const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
 
-  const assetChecksums = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubChecksums,
-    'Github checksums',
+  const branchOriginContentsChecksums = useEditorState(
+    Substores.derived,
+    (store) => store.derived.branchOriginContentsChecksums,
+    'Github branchOriginContentsChecksums',
   )
 
   const projectContents = useEditorState(
@@ -652,7 +653,10 @@ const LocalChangesBlock = () => {
       {
         branchName: cleanedCommitBranchName,
         commitMessage: commitMessage,
-        assetChecksums: assetChecksums ?? {},
+        branchOriginChecksums:
+          branchOriginContentsChecksums == null
+            ? {}
+            : fileChecksumsWithFileToFileChecksums(branchOriginContentsChecksums),
       },
     )
   }, [
@@ -660,7 +664,7 @@ const LocalChangesBlock = () => {
     repo,
     commitMessage,
     cleanedCommitBranchName,
-    assetChecksums,
+    branchOriginContentsChecksums,
     projectContents,
     projectId,
   ])
@@ -874,10 +878,10 @@ const BranchNotLoadedBlock = () => {
 
   const projectId = useEditorState(Substores.restOfEditor, (store) => store.editor.id, 'project id')
 
-  const assetChecksums = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubChecksums,
-    'Github checksums',
+  const branchOriginContentsChecksums = useEditorState(
+    Substores.derived,
+    (store) => store.derived.branchOriginContentsChecksums,
+    'Github branchOriginContentsChecksums',
   )
 
   const projectContents = useEditorState(
@@ -896,12 +900,23 @@ const BranchNotLoadedBlock = () => {
       persistentModelForProjectContents(projectContents),
       dispatch,
       {
-        assetChecksums: assetChecksums ?? {},
+        branchOriginChecksums:
+          branchOriginContentsChecksums == null
+            ? {}
+            : fileChecksumsWithFileToFileChecksums(branchOriginContentsChecksums),
         branchName: branchName,
         commitMessage: commitMessage ?? 'Committed automatically',
       },
     )
-  }, [dispatch, githubRepo, branchName, commitMessage, projectId, projectContents, assetChecksums])
+  }, [
+    dispatch,
+    githubRepo,
+    branchName,
+    commitMessage,
+    projectId,
+    projectContents,
+    branchOriginContentsChecksums,
+  ])
 
   type LoadFlow = 'loadFromBranch' | 'pushToBranch' | 'createBranch'
 

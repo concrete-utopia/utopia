@@ -1,16 +1,15 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Keyboard, KeyCharacter } from '../../../../utils/keyboard'
+import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
-  CanvasStrategy,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   CanvasRectangle,
   canvasRectangle,
-  CanvasVector,
   offsetPoint,
   offsetRect,
   scaleVector,
@@ -23,7 +22,7 @@ import {
 } from './shared-move-strategies-helpers'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import {
   accumulatePresses,
   getMovementDeltaFromKey,
@@ -31,18 +30,18 @@ import {
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
-import { pushIntendedBounds } from '../../commands/push-intended-bounds-command'
-import { CanvasFrameAndTarget } from '../../canvas-types'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
-import { InteractionSession } from '../interaction-state'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { retargetStrategyToChildrenOfContentAffectingElements } from './group-like-helpers'
+import type { InteractionSession } from '../interaction-state'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 
 export function keyboardAbsoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = retargetStrategyToChildrenOfContentAffectingElements(canvasState)
+  const selectedElements = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
   if (selectedElements.length === 0) {
     return null
   }
@@ -92,7 +91,7 @@ export function keyboardAbsoluteMoveStrategy(
         const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
-        commands.push(pushIntendedBounds(intendedBounds))
+        commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
         commands.push(setElementsToRerenderCommand(selectedElements))
         return strategyApplicationResult(commands)
       } else {

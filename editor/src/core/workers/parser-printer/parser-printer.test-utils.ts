@@ -1,100 +1,110 @@
 import * as Babel from '@babel/standalone'
-import * as BabelTraverse from '@babel/traverse'
+import type * as BabelTraverse from '@babel/traverse'
 import * as BabelTypes from '@babel/types'
 import ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import * as FastCheck from 'fast-check'
-import { Arbitrary } from 'fast-check'
-import { MapLike } from 'typescript'
+import type { Arbitrary } from 'fast-check'
+import type { MapLike } from 'typescript'
 import * as PP from '../../shared/property-path'
-import {
+import type {
   ArbitraryJSBlock,
-  arbitraryJSBlock,
-  clearTopLevelElementUniqueIDs,
-  isJSExpressionOtherJavaScript,
-  isUtopiaJSXComponent,
-  JSXArbitraryBlock,
-  jsxArbitraryBlock,
   JSXArrayElement,
-  jsxArraySpread,
   JSXArraySpread,
-  jsxArrayValue,
   JSXArrayValue,
   JSExpression,
   JSExpressionFunctionCall,
-  jsExpressionFunctionCall,
   JSExpressionNestedArray,
-  jsExpressionNestedArray,
   JSExpressionNestedObject,
-  jsExpressionNestedObject,
   JSExpressionOtherJavaScript,
-  jsExpressionOtherJavaScript,
   JSXAttributes,
   JSExpressionValue,
-  jsExpressionValue,
   JSXElement,
-  jsxElement,
   JSXElementChild,
   JSXElementName,
-  jsxElementName,
   JSXProperty,
   JSXPropertyAssignment,
-  jsxPropertyAssignment,
-  jsxSpreadAssignment,
   JSXSpreadAssignment,
-  jsxTextBlock,
   JSXTextBlock,
   TopLevelElement,
   UtopiaJSXComponent,
-  utopiaJSXComponent,
-  defaultPropsParam,
   SingleLineComment,
   MultiLineComment,
   Comment,
+  FunctionDeclarationSyntax,
+  BlockOrExpression,
+  ImportStatement,
+  ParsedComments,
+  JSXConditionalExpression,
+  JSXFragment,
+  ElementsWithin,
+} from '../../shared/element-template'
+import {
+  arbitraryJSBlock,
+  clearTopLevelElementUniqueIDs,
+  isJSExpressionMapOrOtherJavaScript,
+  isUtopiaJSXComponent,
+  jsExpression,
+  jsxArraySpread,
+  jsxArrayValue,
+  jsExpressionFunctionCall,
+  jsExpressionNestedArray,
+  jsExpressionNestedObject,
+  jsExpressionOtherJavaScript,
+  jsExpressionValue,
+  jsxElement,
+  jsxElementName,
+  jsxPropertyAssignment,
+  jsxSpreadAssignment,
+  jsxTextBlock,
+  utopiaJSXComponent,
+  defaultPropsParam,
   walkElement,
   getJSXElementNameAsString,
   isJSXElement,
-  FunctionDeclarationSyntax,
-  BlockOrExpression,
   jsxAttributesFromMap,
-  ImportStatement,
   importStatement,
   emptyComments,
-  ParsedComments,
   parsedComments,
   isJSXConditionalExpression,
-  JSXConditionalExpression,
   jsxConditionalExpression,
-  JSXFragment,
   jsxFragment,
+  simplifyAttributeIfPossible,
+  simplifyAttributesIfPossible,
+  isJSXFragment,
+  jsxAttributesEntry,
 } from '../../shared/element-template'
 import { addImport } from '../common/project-file-utils'
-import { ErrorMessage } from '../../shared/error-messages'
-import {
+import type { ErrorMessage } from '../../shared/error-messages'
+import type {
   Imports,
   ParsedTextFile,
   ParseSuccess,
   PropertyPath,
+  ExportsDetail,
+  ExportDetail,
+  StaticElementPathPart,
+  ProjectFile,
+  ExportVariables,
+} from '../../shared/project-file-types'
+import {
   importAlias,
   foldParsedTextFile,
   mapParsedTextFile,
   forEachParseSuccess,
-  ExportsDetail,
-  ExportDetail,
   EmptyExportsDetail,
-  StaticElementPathPart,
   isParseSuccess,
   isTextFile,
-  ProjectFile,
-  ExportVariables,
   exportVariable,
   exportVariables,
 } from '../../shared/project-file-types'
 import { lintAndParse, printCode, printCodeOptions } from './parser-printer'
-import { getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
-import { fastForEach } from '../../shared/utils'
+import { atoz, getUtopiaID, getUtopiaIDFromJSXElement } from '../../shared/uid-utils'
+import { assertNever, fastForEach } from '../../shared/utils'
 import { addUniquely, flatMapArray } from '../../shared/array-utils'
 import { optionalMap } from '../../shared/optional-utils'
 import { emptySet } from '../../shared/set-utils'
+import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
+import { objectMap } from '../../shared/object-utils'
 
 export const singleLineCommentArbitrary: Arbitrary<SingleLineComment> =
   lowercaseStringArbitrary().map((text) => {
@@ -189,15 +199,18 @@ const JavaScriptReservedKeywords: Array<string> = [
   'undefined',
 ]
 
-export function testParseCode(contents: string): ParsedTextFile {
+export function testParseCode(
+  contents: string,
+  alreadyExistingUIDs: Set<string> = emptySet(),
+): ParsedTextFile {
   const filename = 'code.tsx'
-  const result = lintAndParse(filename, contents, null, emptySet())
+  const result = lintAndParse(filename, contents, null, alreadyExistingUIDs, 'trim-bounds')
   // Ensure that elements have valid unique IDs if the parse is successful.
   forEachParseSuccess((success) => {
     let uids: Array<string> = []
     fastForEach(success.topLevelElements, (topLevelElement) => {
       if (isUtopiaJSXComponent(topLevelElement)) {
-        ensureElementsHaveUID(topLevelElement.rootElement, uids)
+        ensureElementsHaveUID(topLevelElement.rootElement, uids, () => true, 'walk-attributes')
         ensureArbitraryJSXBlockCodeHasUIDs(topLevelElement.rootElement)
       }
     })
@@ -284,6 +297,102 @@ export function clearParseResultUniqueIDsAndEmptyBlocks(
       combinedTopLevelArbitraryBlock: combinedTopLevelArbitraryBlock,
     }
   }, parseResult)
+}
+
+export function simplifyJSXElementAttributes(element: JSXElement): JSXElement {
+  const updatedAttributes = simplifyAttributesIfPossible(element.props)
+  const updatedChildren = element.children.map(simplifyJSXElementChildAttributes)
+  return {
+    ...element,
+    props: updatedAttributes,
+    children: updatedChildren,
+  }
+}
+
+export function simplifyJSXElementChildAttributes(element: JSXElementChild): JSXElementChild {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return simplifyJSXElementAttributes(element)
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return simplifyAttributeIfPossible(element)
+    case 'JSX_FRAGMENT':
+      const updatedChildren = element.children.map(simplifyJSXElementChildAttributes)
+      return {
+        ...element,
+        children: updatedChildren,
+      }
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      const updatedCondition = simplifyAttributeIfPossible(element.condition)
+      const updatedWhenTrue = simplifyJSXElementChildAttributes(element.whenTrue)
+      const updatedWhenFalse = simplifyJSXElementChildAttributes(element.whenFalse)
+      return {
+        ...element,
+        condition: updatedCondition,
+        whenTrue: updatedWhenTrue,
+        whenFalse: updatedWhenFalse,
+      }
+    case 'JSX_TEXT_BLOCK':
+      return element
+    default:
+      assertNever(element)
+  }
+}
+
+export function simplifyElementsWithinAttributes(elementsWithin: ElementsWithin): ElementsWithin {
+  return objectMap((element) => simplifyJSXElementAttributes(element), elementsWithin)
+}
+
+export function simplifyArbitraryJSBlockAttributes(block: ArbitraryJSBlock): ArbitraryJSBlock {
+  const updatedElementsWithin = simplifyElementsWithinAttributes(block.elementsWithin)
+  return {
+    ...block,
+    elementsWithin: updatedElementsWithin,
+  }
+}
+
+export function simplifyTopLevelElementAttributes(
+  topLevelElement: TopLevelElement,
+): TopLevelElement {
+  switch (topLevelElement.type) {
+    case 'UTOPIA_JSX_COMPONENT':
+      const updatedRootElement = simplifyJSXElementChildAttributes(topLevelElement.rootElement)
+      const updatedArbitraryBlock = optionalMap(
+        simplifyArbitraryJSBlockAttributes,
+        topLevelElement.arbitraryJSBlock,
+      )
+      return {
+        ...topLevelElement,
+        rootElement: updatedRootElement,
+        arbitraryJSBlock: updatedArbitraryBlock,
+      }
+    case 'ARBITRARY_JS_BLOCK':
+      return simplifyArbitraryJSBlockAttributes(topLevelElement)
+    case 'IMPORT_STATEMENT':
+    case 'UNPARSED_CODE':
+      return topLevelElement
+    default:
+      assertNever(topLevelElement)
+  }
+}
+
+export function simplifyParsedTextFileAttributes(parsedTextFile: ParsedTextFile): ParsedTextFile {
+  return mapParsedTextFile((success) => {
+    const updatedTopLevelElements = success.topLevelElements.map(simplifyTopLevelElementAttributes)
+    const updatedCombinedTopLevelArbitraryBlock = optionalMap(
+      simplifyArbitraryJSBlockAttributes,
+      success.combinedTopLevelArbitraryBlock,
+    )
+    return {
+      ...success,
+      topLevelElements: updatedTopLevelElements,
+      combinedTopLevelArbitraryBlock: updatedCombinedTopLevelArbitraryBlock,
+    }
+  }, parsedTextFile)
 }
 
 export const JustImportView: Imports = {
@@ -393,6 +502,16 @@ export function lowercaseStringArbitrary(): Arbitrary<string> {
   })
 }
 
+export function uidArbitrary(): Arbitrary<string> {
+  return FastCheck.tuple(
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+    FastCheck.constantFrom(...atoz.slice(0, 10)),
+  ).map(([first, second, third]) => {
+    return `${first}${second}${third}`
+  })
+}
+
 export function propertyPathPartsArbitrary(): Arbitrary<Array<string | number>> {
   return FastCheck.array(
     FastCheck.oneof<string | number>(lowercaseStringArbitrary(), FastCheck.nat()),
@@ -423,13 +542,15 @@ export function jsxElementNameArbitrary(): Arbitrary<JSXElementName> {
 }
 
 export function jsxTextBlockArbitrary(): Arbitrary<JSXTextBlock> {
-  return FastCheck.base64String().map((text) => {
-    return jsxTextBlock(text)
+  return FastCheck.tuple(FastCheck.base64String(), uidArbitrary()).map(([text, uid]) => {
+    return jsxTextBlock(text, uid)
   })
 }
 
-export function jsxArbitraryBlockArbitrary(): Arbitrary<JSXArbitraryBlock> {
-  return FastCheck.constant(jsxArbitraryBlock('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}))
+export function jsxArbitraryBlockArbitrary(): Arbitrary<JSExpression> {
+  return uidArbitrary().chain((uid) =>
+    FastCheck.constant(jsExpression('1 + 2', '1 + 2;', 'return 1 + 2;', [], null, {}, uid)),
+  )
 }
 
 export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> {
@@ -448,19 +569,23 @@ export function jsxAttributeValueArbitrary(): Arbitrary<JSExpressionValue<any>> 
     }
   }
   const valueArbitrary = FastCheck.jsonObject(2).filter(checkValue)
-  return FastCheck.tuple(valueArbitrary, arbitraryMultiLineComments()).map(([value, comments]) =>
-    jsExpressionValue(value, comments),
+  return FastCheck.tuple(valueArbitrary, arbitraryMultiLineComments(), uidArbitrary()).map(
+    ([value, comments, uid]) => jsExpressionValue(value, comments, uid),
   )
 }
 
 export function jsxAttributeOtherJavaScriptArbitrary(): Arbitrary<JSExpressionOtherJavaScript> {
-  return FastCheck.constant(jsExpressionOtherJavaScript('1 + 2', '1 + 2', [], null, {}))
+  return uidArbitrary().chain((uid) =>
+    FastCheck.constant(jsExpressionOtherJavaScript('1 + 2', '1 + 2', [], null, {}, uid)),
+  )
 }
 
 export function jsxArrayValueArbitrary(depth: number): Arbitrary<JSXArrayValue> {
-  return FastCheck.tuple(jsxAttributeArbitrary(depth), arbitraryMultiLineComments()).map(
-    ([array, comments]) => jsxArrayValue(array, comments),
-  )
+  return FastCheck.tuple(
+    jsxAttributeArbitrary(depth),
+    arbitraryMultiLineComments(),
+    uidArbitrary(),
+  ).map(([array, comments]) => jsxArrayValue(array, comments))
 }
 
 export function jsxArraySpreadArbitrary(depth: number): Arbitrary<JSXArraySpread> {
@@ -482,7 +607,8 @@ export function jsxAttributeNestedArrayArbitrary(
   return FastCheck.tuple(
     FastCheck.array(jsxArrayElementArbitrary(depth - 1), 3),
     arbitraryMultiLineComments(),
-  ).map(([array, comments]) => jsExpressionNestedArray(array, comments))
+    uidArbitrary(),
+  ).map(([array, comments, uid]) => jsExpressionNestedArray(array, comments, uid))
 }
 
 export function jsxPropertyAssignmentArbitrary(depth: number): Arbitrary<JSXPropertyAssignment> {
@@ -512,7 +638,8 @@ export function jsxAttributeNestedObjectArbitrary(
   return FastCheck.tuple(
     FastCheck.array(jsxPropertyArbitrary(depth - 1), 3),
     arbitraryMultiLineComments(),
-  ).map(([values, comments]) => jsExpressionNestedObject(values, comments))
+    uidArbitrary(),
+  ).map(([values, comments, uid]) => jsExpressionNestedObject(values, comments, uid))
 }
 
 export function jsxAttributeFunctionCallArbitrary(
@@ -521,8 +648,9 @@ export function jsxAttributeFunctionCallArbitrary(
   return FastCheck.tuple(
     lowercaseStringArbitrary(),
     FastCheck.array(jsxAttributeArbitrary(depth - 1), 3),
-  ).map(([functionName, functionArguments]) => {
-    return jsExpressionFunctionCall(functionName, functionArguments)
+    uidArbitrary(),
+  ).map(([functionName, functionArguments, uid]) => {
+    return jsExpressionFunctionCall(functionName, functionArguments, uid)
   })
 }
 
@@ -560,15 +688,28 @@ export function flatObjectArbitrary<V>(
 }
 
 export function jsxAttributesArbitrary(): Arbitrary<JSXAttributes> {
-  return flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3)).map(
-    jsxAttributesFromMap,
-  )
+  return FastCheck.tuple(
+    flatObjectArbitrary(lowercaseStringArbitrary(), jsxAttributeArbitrary(3)).map(
+      jsxAttributesFromMap,
+    ),
+    uidArbitrary(),
+    uidArbitrary(),
+  ).map(([baseAttributes, dataUID, dataUIDValueUID]) => {
+    return [
+      ...baseAttributes,
+      jsxAttributesEntry(
+        UTOPIA_UID_KEY,
+        jsExpressionValue(dataUID, emptyComments, dataUIDValueUID),
+        emptyComments,
+      ),
+    ]
+  })
 }
 
 export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
   return FastCheck.tuple(
     jsxElementNameArbitrary(),
-    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    uidArbitrary(),
     jsxAttributesArbitrary(),
     FastCheck.array(jsxElementChildArbitrary(depth - 1), 3),
   ).map(([elementName, elementUID, elementAttributes, elementChildren]) => {
@@ -578,7 +719,7 @@ export function jsxElementArbitrary(depth: number): Arbitrary<JSXElement> {
 
 export function jsxFragmentArbitrary(depth: number): Arbitrary<JSXFragment> {
   return FastCheck.tuple(
-    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    uidArbitrary(),
     FastCheck.array(jsxElementChildArbitrary(depth - 1), 3),
     FastCheck.boolean(),
   ).map(([uid, children, longForm]) => {
@@ -590,7 +731,7 @@ export function jsxConditionalExpressionArbitrary(
   depth: number,
 ): Arbitrary<JSXConditionalExpression> {
   return FastCheck.tuple(
-    lowercaseStringArbitrary().filter((str) => !JavaScriptReservedKeywords.includes(str)),
+    uidArbitrary(),
     FastCheck.oneof(FastCheck.constant('1 === 2'), FastCheck.constant('1 === 1')),
     jsxAttributeArbitrary(3),
     jsxElementChildArbitrary(depth - 1).filter((c) => c.type !== 'JSX_TEXT_BLOCK'),
@@ -628,7 +769,10 @@ export function jsxElementChildArbitrary(depth: number): Arbitrary<JSXElementChi
 }
 
 export function arbitraryJSBlockArbitrary(): Arbitrary<ArbitraryJSBlock> {
-  return FastCheck.constant(arbitraryJSBlock('1 + 2', '1 + 2', [], [], null, {}))
+  return FastCheck.oneof(
+    FastCheck.constant(arbitraryJSBlock('1 + 2;', '1 + 2', [], [], null, {})),
+    FastCheck.constant(arbitraryJSBlock(' \n ', ' \n ', [], [], null, {})),
+  )
 }
 
 export function arbitraryComments(): Arbitrary<ParsedComments> {
@@ -668,8 +812,8 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     arbitraryDeclarationSyntax(),
     arbitraryBlockOrExpression(),
     jsxElementArbitrary(3),
-    arbitraryJSBlockArbitrary(),
-    arbitraryComments(),
+    FastCheck.oneof<ArbitraryJSBlock | null>(FastCheck.constant(null), arbitraryJSBlockArbitrary()),
+    arbitraryMultiLineComments(),
   )
     .map(
       ([
@@ -698,9 +842,17 @@ export function utopiaJSXComponentArbitrary(): Arbitrary<UtopiaJSXComponent> {
     .filter((component) => {
       // Prevent creating a component that depends on itself.
       let elementNames: Array<string> = []
-      walkElements(component.rootElement, (elem) => {
-        elementNames.push(elem.name.baseVariable)
-      })
+      walkElements(
+        component.rootElement,
+        'do-not-include-data-uid-attribute',
+        (elem) => {
+          if (isJSXElement(elem)) {
+            elementNames.push(elem.name.baseVariable)
+          }
+        },
+        () => true,
+        'walk-attributes',
+      )
       return !elementNames.some((elementName) => elementName === component.name)
     })
 }
@@ -730,49 +882,139 @@ export function exportsDetailArbitrary(possibleNames: Array<string>): Arbitrary<
   }
 }
 
+type IncludeDataUIDAttribute = 'include-data-uid-attribute' | 'do-not-include-data-uid-attribute'
+type ShouldWalkAttributes = 'walk-attributes' | 'do-not-walk-attributes'
+
+function walkElementsWithin(
+  elementsWithin: ElementsWithin,
+  includeDataUIDAttribute: IncludeDataUIDAttribute,
+  walkWith: (elem: JSXElementChild) => void,
+  shouldWalkElement: (elem: JSXElementChild) => boolean,
+  shouldWalkAttributes: ShouldWalkAttributes,
+): void {
+  fastForEach(Object.keys(elementsWithin), (elementWithinKey) => {
+    const innerElement = elementsWithin[elementWithinKey]
+    walkElements(
+      innerElement,
+      includeDataUIDAttribute,
+      walkWith,
+      shouldWalkElement,
+      shouldWalkAttributes,
+    )
+  })
+}
+
 function walkElements(
   jsxElementChild: JSXElementChild,
-  walkWith: (elem: JSXElement) => void,
+  includeDataUIDAttribute: IncludeDataUIDAttribute,
+  walkWith: (elem: JSXElementChild) => void,
+  shouldWalkElement: (elem: JSXElementChild) => boolean,
+  shouldWalkAttributes: ShouldWalkAttributes,
 ): void {
+  if (!shouldWalkElement(jsxElementChild)) {
+    return
+  }
+
+  walkWith(jsxElementChild)
   switch (jsxElementChild.type) {
     case 'JSX_ELEMENT':
-      walkWith(jsxElementChild)
+      if (shouldWalkAttributes === 'walk-attributes') {
+        walkJSXAttributes(
+          jsxElementChild.props,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+        )
+      }
       fastForEach(jsxElementChild.children, (child) => {
-        walkElements(child, walkWith)
+        walkElements(
+          child,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'JSX_TEXT_BLOCK':
       break
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      fastForEach(Object.keys(jsxElementChild.elementsWithin), (elementWithinKey) => {
-        const innerElement = jsxElementChild.elementsWithin[elementWithinKey]
-        walkElements(innerElement, walkWith)
-      })
+      walkElementsWithin(
+        jsxElementChild.elementsWithin,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
       break
     case 'JSX_FRAGMENT':
       fastForEach(jsxElementChild.children, (child) => {
-        walkElements(child, walkWith)
+        walkElements(
+          child,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      walkElements(jsxElementChild.whenTrue, walkWith)
-      walkElements(jsxElementChild.whenFalse, walkWith)
+      walkElements(
+        jsxElementChild.condition,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      walkElements(
+        jsxElementChild.whenTrue,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
+      walkElements(
+        jsxElementChild.whenFalse,
+        includeDataUIDAttribute,
+        walkWith,
+        shouldWalkElement,
+        shouldWalkAttributes,
+      )
       break
     case 'ATTRIBUTE_VALUE':
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       fastForEach(jsxElementChild.content, (contentElement) => {
-        walkElements(contentElement.value, walkWith)
+        walkElements(
+          contentElement.value,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'ATTRIBUTE_NESTED_OBJECT':
       fastForEach(jsxElementChild.content, (contentElement) => {
-        walkElements(contentElement.value, walkWith)
+        walkElements(
+          contentElement.value,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     case 'ATTRIBUTE_FUNCTION_CALL':
       fastForEach(jsxElementChild.parameters, (param) => {
-        walkElements(param, walkWith)
+        walkElements(
+          param,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          shouldWalkAttributes,
+        )
       })
       break
     default:
@@ -781,75 +1023,125 @@ function walkElements(
   }
 }
 
-function walkAllJSXElementChilds(
-  jsxElementChild: JSXElementChild,
+function walkJSXAttributes(
+  jsxAttributes: JSXAttributes,
+  includeDataUIDAttribute: IncludeDataUIDAttribute,
   walkWith: (elem: JSXElementChild) => void,
+  shouldWalkElement: (elem: JSXElementChild) => boolean,
 ): void {
-  walkWith(jsxElementChild)
-  switch (jsxElementChild.type) {
-    case 'JSX_ELEMENT':
-      fastForEach(jsxElementChild.children, (child) => {
-        walkAllJSXElementChilds(child, walkWith)
-      })
-      break
-    case 'JSX_TEXT_BLOCK':
-      break
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      fastForEach(Object.keys(jsxElementChild.elementsWithin), (elementWithinKey) => {
-        const innerElement = jsxElementChild.elementsWithin[elementWithinKey]
-        walkAllJSXElementChilds(innerElement, walkWith)
-      })
-      break
-    case 'JSX_FRAGMENT':
-      fastForEach(jsxElementChild.children, (child) => {
-        walkAllJSXElementChilds(child, walkWith)
-      })
-      break
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      walkAllJSXElementChilds(jsxElementChild.whenTrue, walkWith)
-      walkAllJSXElementChilds(jsxElementChild.whenFalse, walkWith)
-      break
-    case 'ATTRIBUTE_VALUE':
-      break
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      fastForEach(jsxElementChild.content, (contentElement) => {
-        walkAllJSXElementChilds(contentElement.value, walkWith)
-      })
-      break
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      fastForEach(jsxElementChild.content, (contentElement) => {
-        walkAllJSXElementChilds(contentElement.value, walkWith)
-      })
-      break
-    case 'ATTRIBUTE_FUNCTION_CALL':
-      fastForEach(jsxElementChild.parameters, (param) => {
-        walkAllJSXElementChilds(param, walkWith)
-      })
-      break
-    default:
-      const _exhaustiveCheck: never = jsxElementChild
-      throw new Error(`Unhandled type ${JSON.stringify(jsxElementChild)}`)
+  for (const attributeEntry of jsxAttributes) {
+    switch (attributeEntry.type) {
+      case 'JSX_ATTRIBUTES_ENTRY':
+        const isDataUID = attributeEntry.key === UTOPIA_UID_KEY
+        if (!isDataUID || includeDataUIDAttribute === 'include-data-uid-attribute') {
+          walkElements(
+            attributeEntry.value,
+            includeDataUIDAttribute,
+            walkWith,
+            shouldWalkElement,
+            'walk-attributes',
+          )
+        }
+        break
+      case 'JSX_ATTRIBUTES_SPREAD':
+        walkElements(
+          attributeEntry.spreadValue,
+          includeDataUIDAttribute,
+          walkWith,
+          shouldWalkElement,
+          'walk-attributes',
+        )
+        break
+      default:
+        assertNever(attributeEntry)
+    }
   }
 }
 
 function getAllBaseVariables(jsxElementChild: JSXElementChild): Array<string> {
   let result: Array<string> = []
-  walkElements(jsxElementChild, (element) => {
-    result = addUniquely(result, element.name.baseVariable)
-  })
+  walkElements(
+    jsxElementChild,
+    'do-not-include-data-uid-attribute',
+    (element) => {
+      if (isJSXElement(element)) {
+        result = addUniquely(result, element.name.baseVariable)
+      }
+    },
+    () => true,
+    'walk-attributes',
+  )
   return result
 }
 
-export function ensureElementsHaveUID(jsxElementChild: JSXElementChild, uids: Array<string>): void {
-  walkElements(jsxElementChild, (element) => {
+function checkUID(
+  uid: string,
+  valueHoldingUID: JSXElementChild | ArbitraryJSBlock,
+  uids: Array<string>,
+): void {
+  if (uid === '') {
+    throw new Error(`Blank UID in in ${JSON.stringify(valueHoldingUID)}`)
+  } else if (uids.includes(uid)) {
+    throw new Error(`UID ${uid} is duplicated in ${JSON.stringify(valueHoldingUID)}`)
+  } else {
+    uids.push(uid)
+  }
+}
+
+function walkWantedElementsOnly(element: JSXElementChild, uids: Array<string>): void {
+  if (
+    isJSXElement(element) ||
+    isJSXFragment(element) ||
+    isJSXConditionalExpression(element) ||
+    isJSExpressionMapOrOtherJavaScript(element)
+  ) {
     // Relies on this function blowing out for anything that doesn't have a valid one.
     const uid = getUtopiaIDFromJSXElement(element)
-    if (uids.includes(uid)) {
-      throw new Error(`UID ${uid} is duplicated in ${JSON.stringify(element)}`)
-    } else {
-      uids.push(uid)
-    }
-  })
+    checkUID(uid, element, uids)
+  }
+}
+
+export function isWantedElement(element: JSXElementChild): boolean {
+  return (
+    isJSXElement(element) ||
+    isJSXFragment(element) ||
+    isJSXConditionalExpression(element) ||
+    isJSExpressionMapOrOtherJavaScript(element)
+  )
+}
+
+export function ensureArbitraryBlocksHaveUID(
+  arbitraryBlock: ArbitraryJSBlock,
+  uids: Array<string>,
+  shouldWalkElement: (element: JSXElementChild) => boolean,
+  shouldWalkAttributes: ShouldWalkAttributes,
+): void {
+  walkElementsWithin(
+    arbitraryBlock.elementsWithin,
+    'do-not-include-data-uid-attribute',
+    (element) => {
+      walkWantedElementsOnly(element, uids)
+    },
+    shouldWalkElement,
+    shouldWalkAttributes,
+  )
+}
+
+export function ensureElementsHaveUID(
+  jsxElementChild: JSXElementChild,
+  uids: Array<string>,
+  shouldWalkElement: (element: JSXElementChild) => boolean = () => true,
+  shouldWalkAttributes: ShouldWalkAttributes = 'walk-attributes',
+): void {
+  walkElements(
+    jsxElementChild,
+    'do-not-include-data-uid-attribute',
+    (element) => {
+      walkWantedElementsOnly(element, uids)
+    },
+    shouldWalkElement,
+    shouldWalkAttributes,
+  )
 }
 
 function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
@@ -886,25 +1178,28 @@ function babelCheckForDataUID(): { visitor: BabelTraverse.Visitor } {
 }
 
 export function ensureArbitraryJSXBlockCodeHasUIDs(jsxElementChild: JSXElementChild): void {
-  walkAllJSXElementChilds(jsxElementChild, (element) => {
-    if (isJSExpressionOtherJavaScript(element)) {
-      const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
+  walkElements(
+    jsxElementChild,
+    'do-not-include-data-uid-attribute',
+    (element) => {
+      if (isJSExpressionMapOrOtherJavaScript(element)) {
+        const plugins: Array<any> = [ReactSyntaxPlugin, babelCheckForDataUID]
 
-      Babel.transform(element.javascript, {
-        presets: [],
-        plugins: plugins,
-        sourceType: 'script',
-      })
-    }
-  })
+        Babel.transform(element.javascript, {
+          presets: [],
+          plugins: plugins,
+          sourceType: 'script',
+        })
+      }
+    },
+    () => true,
+    'walk-attributes',
+  )
 }
 
-export interface PrintableProjectContent {
-  imports: Imports
-  topLevelElements: Array<TopLevelElement>
-  projectContainedOldSceneMetadata: boolean
-  jsxFactoryFunction: string | null
-  exportsDetail: ExportsDetail
+export interface ArbitraryProject {
+  code: string
+  parsed: ParsedTextFile
 }
 
 function getTopLevelElementVariableNames(topLevelElement: TopLevelElement): Array<string> {
@@ -930,7 +1225,7 @@ function areTopLevelElementsValid(topLevelElements: Array<TopLevelElement>): boo
   return variableNames.length === new Set(variableNames).size
 }
 
-export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectContent> {
+export function printedProjectContentArbitrary(stripUIDs: boolean): Arbitrary<ArbitraryProject> {
   return FastCheck.tuple(
     FastCheck.array(topLevelElementArbitrary(), 3).filter(areTopLevelElementsValid),
     FastCheck.option(lowercaseStringArbitrary()),
@@ -980,13 +1275,19 @@ export function printableProjectContentArbitrary(): Arbitrary<PrintableProjectCo
           return addImport('code.jsx', 'testlib', baseVariable, [], null, workingImports)
         }
       }, JustImportViewAndReact)
-      return {
-        imports: imports,
-        topLevelElements: topLevelElements,
-        projectContainedOldSceneMetadata: projectContainedOldSceneMetadata,
-        jsxFactoryFunction: jsxFactoryFunction,
-        exportsDetail: detailOfExports,
-      }
+
+      const code = printCode(
+        '/index.js',
+        printCodeOptions(false, true, false, stripUIDs, true),
+        imports,
+        topLevelElements,
+        jsxFactoryFunction,
+        detailOfExports,
+      )
+
+      const parsed = testParseCode(code)
+
+      return { code: code, parsed: parsed }
     })
   })
 }
@@ -1011,7 +1312,7 @@ export function elementsStructure(topLevelElements: Array<TopLevelElement>): str
           innerElementResult += ` - ${getJSXElementNameAsString(innerElement.name)} - ${getUtopiaID(
             innerElement,
           )}`
-        } else if (isJSXConditionalExpression(innerElement)) {
+        } else {
           innerElementResult += ` - ${getUtopiaID(innerElement)}`
         }
         structureResults.push(innerElementResult)

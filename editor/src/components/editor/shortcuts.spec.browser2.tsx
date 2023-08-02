@@ -1,6 +1,7 @@
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
-import { canvasRectangle, CanvasRectangle } from '../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../core/shared/math-utils'
+import { canvasRectangle } from '../../core/shared/math-utils'
 import { altCmdModifier, cmdModifier, ctrlModifier, shiftModifier } from '../../utils/modifiers'
 import {
   expectNoAction,
@@ -10,12 +11,13 @@ import {
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { keyDown, mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
+  makeTestProjectCodeWithSnippetWithoutUIDs,
   renderTestEditorWithCode,
   TestAppUID,
   TestSceneUID,
@@ -149,7 +151,7 @@ describe('shortcuts', () => {
 
     it('pressing x when a fragment is selected does nothing', async () => {
       const editor = await renderTestEditorWithCode(
-        projectWithContentAffectingElements,
+        projectWithFragmentLikeElements,
         'await-first-dom-report',
       )
 
@@ -160,81 +162,7 @@ describe('shortcuts', () => {
       })
     })
 
-    it('pressing x when an unsized simple div is selected sizes it to wrap its children', async () => {
-      const editor = await renderTestEditorWithCode(
-        projectWithContentAffectingElements,
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [EP.fromString('sb/group')])
-
-      await expectSingleUndo2Saves(editor, async () => {
-        await pressKey('x')
-      })
-
-      const groupContainer = editor.renderedDOM.getByTestId('group')
-      expect(groupContainer.style.width).toEqual('207px')
-      expect(groupContainer.style.height).toEqual('311px')
-    })
-
-    it('pressing x converts a sizeless div into a absolutely positioned container, sized to the AABB if its children', async () => {
-      const editor = await renderTestEditorWithCode(
-        `
-      import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div data-uid='group' data-testid='group'>
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          position: 'absolute',
-          left: 232,
-          top: 305,
-          width: 363,
-          height: 167,
-        }}
-        data-uid='515'
-        data-testid='c1'
-      />
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          position: 'absolute',
-          left: 316,
-          top: 504,
-          width: 163,
-          height: 98,
-        }}
-        data-uid='df9'
-        data-testid='c2'
-      />
-    </div>
-  </Storyboard>
-)
-`,
-        'await-first-dom-report',
-      )
-
-      await selectComponentsForTest(editor, [EP.fromString('sb/group')])
-
-      await expectSingleUndo2Saves(editor, async () => {
-        await pressKey('x')
-      })
-
-      expectBoundsToEqual(
-        editor,
-        'group',
-        canvasRectangle({ x: 232, y: 305, width: 363, height: 297 }),
-      )
-
-      expectBoundsToEqual(editor, 'c1', canvasRectangle({ x: 0, y: 0, width: 363, height: 167 }))
-
-      expectBoundsToEqual(editor, 'c2', canvasRectangle({ x: 84, y: 199, width: 163, height: 98 }))
-    })
-
-    it('pressing x on an absolute positioned container with only absolute children converts it back into a sizeless div', async () => {
+    it('pressing x on an absolute positioned container with only absolute children converts it to a static div', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div
@@ -295,199 +223,24 @@ export var storyboard = (
         await pressKey('x')
       })
 
-      expectElementToBeSizelessDiv(editor, 'container')
+      const div = editor.renderedDOM.getByTestId('container')
+      expect(div.style.position).toEqual('')
+      expect(div.style.top).toEqual('')
+      expect(div.style.bottom).toEqual('')
+      expect(div.style.left).toEqual('')
+      expect(div.style.right).toEqual('')
 
       expectBoundsToEqual(
         editor,
         'child1',
-        canvasRectangle({ x: 227, y: 83, width: 77, height: 35 }),
+        canvasRectangle({ x: 65, y: 34, width: 77, height: 35 }),
       )
 
       expectBoundsToEqual(
         editor,
         'child2',
-        canvasRectangle({ x: 348, y: 83, width: 94, height: 55 }),
+        canvasRectangle({ x: 186, y: 34, width: 94, height: 55 }),
       )
-    })
-
-    describe('pressing x in nested groups only affects the selected group and its absolutely positoned children', () => {
-      it('converting the outermost group doesnt convert the intermediate groups', async () => {
-        const editor = await renderTestEditorWithCode(
-          projectWithNestedGroups,
-          'await-first-dom-report',
-        )
-        await selectComponentsForTest(editor, [EP.fromString('sb/outermost-group')])
-
-        await expectSingleUndo2Saves(editor, async () => {
-          await pressKey('x')
-        })
-
-        expectBoundsToEqual(
-          editor,
-          'outermost-group',
-          canvasRectangle({ x: 232, y: 305, width: 924, height: 309 }),
-        )
-
-        expectElementToBeSizelessDiv(editor, 'middle-group')
-        expectElementToBeSizelessDiv(editor, 'group')
-
-        expectBoundsToEqual(
-          editor,
-          'group-child-1',
-          canvasRectangle({
-            x: 0,
-            y: 0,
-            width: 363,
-            height: 167,
-          }),
-        )
-
-        expectBoundsToEqual(
-          editor,
-          'group-child-2',
-          canvasRectangle({
-            x: 84,
-            y: 199,
-            width: 163,
-            height: 98,
-          }),
-        )
-
-        expectBoundsToEqual(
-          editor,
-          'outermost-group-child',
-          canvasRectangle({
-            x: 537,
-            y: 64,
-            width: 387,
-            height: 245,
-          }),
-        )
-      })
-
-      it('converting a nested group doesnt convert the enclosing groups', async () => {
-        const editor = await renderTestEditorWithCode(
-          projectWithNestedGroups,
-          'await-first-dom-report',
-        )
-        await selectComponentsForTest(editor, [
-          EP.fromString('sb/outermost-group/middle-group/group'),
-        ])
-
-        await expectSingleUndo2Saves(editor, async () => {
-          await pressKey('x')
-        })
-
-        expectBoundsToEqual(
-          editor,
-          'group',
-          canvasRectangle({ x: 232, y: 305, width: 363, height: 297 }),
-        )
-
-        expectBoundsToEqual(
-          editor,
-          'group-child-1',
-          canvasRectangle({
-            x: 0,
-            y: 0,
-            width: 363,
-            height: 167,
-          }),
-        )
-
-        expectBoundsToEqual(
-          editor,
-          'group-child-2',
-          canvasRectangle({
-            x: 84,
-            y: 199,
-            width: 163,
-            height: 98,
-          }),
-        )
-
-        expectElementToBeSizelessDiv(editor, 'middle-group')
-        expectElementToBeSizelessDiv(editor, 'outermost-group')
-      })
-
-      it('converting back to group with nested groups', async () => {
-        const editor = await renderTestEditorWithCode(
-          makeTestProjectCodeWithSnippet(`
-          <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          position: 'absolute',
-          left: 646,
-          top: 72,
-          width: 605,
-          height: 190,
-        }}
-        data-uid='wrapper'
-      >
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 162,
-            top: 49,
-            width: 358,
-            height: 100,
-          }}
-          data-uid='container'
-          data-testid='container'
-        >
-        <div data-testid='nested-group'>
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 65,
-              top: 34,
-              width: 77,
-              height: 35,
-            }}
-            data-testid='child1'
-          />
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 186,
-              top: 34,
-              width: 94,
-              height: 55,
-            }}
-            data-testid='child2'
-          />
-        </div>
-        </div>
-       </div>`),
-          'await-first-dom-report',
-        )
-
-        await selectComponentsForTest(editor, [
-          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:wrapper/container`),
-        ])
-
-        await expectSingleUndo2Saves(editor, async () => {
-          await pressKey('x')
-        })
-
-        expectElementToBeSizelessDiv(editor, 'container')
-        expectElementToBeSizelessDiv(editor, 'nested-group')
-
-        expectBoundsToEqual(
-          editor,
-          'child1',
-          canvasRectangle({ x: 227, y: 83, width: 77, height: 35 }),
-        )
-
-        expectBoundsToEqual(
-          editor,
-          'child2',
-          canvasRectangle({ x: 348, y: 83, width: 94, height: 55 }),
-        )
-      })
     })
   })
 
@@ -538,6 +291,142 @@ export var storyboard = (
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
         `${StoryBoardId}/${ParentId}`,
       ])
+    })
+  })
+
+  describe('duplicate', () => {
+    it('duplicate element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='container'>
+        <span data-uid='text'>Hello there</span>
+      </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
+      ])
+
+      await expectSingleUndo2Saves(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='container'>
+        <span data-uid='text'>Hello there</span>
+        <span data-uid='tex'>Hello there</span>
+      </div>`),
+      )
+    })
+
+    it('duplicate element in true branch of a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                <span data-uid='text'>Hello there</span>
+               ) : 'Test' 
+             }
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/conditional/text`,
+        ),
+      ])
+
+      await expectSingleUndo2Saves(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                <React.Fragment>
+                  <span data-uid='tex'>Hello there</span>
+                  <span data-uid='text'>Hello there</span>
+                </React.Fragment>
+               ) : 'Test' 
+             }
+           </div>`,
+        ),
+      )
+    })
+
+    it('duplicate element in false branch of a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                'Test'
+               ) : <span data-uid='text'>Hello there</span>
+             }
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/conditional/text`,
+        ),
+      ])
+
+      await expectSingleUndo2Saves(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                'Test'
+               ) : <React.Fragment>
+               <span data-uid='tex'>Hello there</span>
+               <span data-uid='text'>Hello there</span>
+             </React.Fragment>
+             }
+           </div>`,
+        ),
+      )
+    })
+
+    it('duplicate slot in a conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+             {
+               // @utopia/uid=conditional
+               [].length === 0 ? (
+                null
+               ) : <span data-uid='text'>Hello there</span>
+             }
+           </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const initialUiCode = getPrintedUiJsCode(editor.getEditorState())
+
+      const slot = editor.renderedDOM.getByText('Empty')
+      await mouseClickAtPoint(slot, { x: 5, y: 5 })
+
+      expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/a25',
+      ])
+
+      await expectNoAction(editor, () => pressKey('d', { modifiers: cmdModifier }))
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialUiCode)
     })
   })
 })
@@ -632,7 +521,7 @@ export var storyboard = (
 )
 `
 
-const projectWithContentAffectingElements = `import * as React from 'react'
+const projectWithFragmentLikeElements = `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
@@ -1268,8 +1157,8 @@ describe('group selection', () => {
     })
   })
 
-  describe('grouping in fragment', () => {
-    it('wraps selected elements in a fragment', async () => {
+  describe('CMD + G to Group', () => {
+    it('wraps selected elements in a Group', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `<div style={{ ...props.style }} data-uid='container'>
@@ -1309,39 +1198,37 @@ describe('group selection', () => {
         pressKey('g', { modifiers: cmdModifier }),
       )
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<div style={{ ...props.style }} data-uid='container'>
-          <React.Fragment>
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }}>
+          <Group style={{ position: 'absolute', left: 62, top: 60, width: 137, height: 91 }}>
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 62,
-                top: 60,
+                left: 0,
+                top: 0,
                 width: 75,
                 height: 91,
               }}
-              data-uid='aaa'
             />
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
-                left: 151,
-                top: 86,
+                left: 89,
+                top: 26,
                 width: 48,
                 height: 48,
               }}
-              data-uid='bbb'
             />
-          </React.Fragment>
+          </Group>
         </div>`,
         ),
       )
     })
 
-    it('if react is not imported, it is added to the imports after the fragment has been inserted', async () => {
+    it('if Group is not imported, it is added to the imports after the Group has been inserted', async () => {
       const editor = await renderTestEditorWithCode(
         `import { Scene, Storyboard } from 'utopia-api'
       import { App } from '/src/app.js'
@@ -1381,40 +1268,76 @@ describe('group selection', () => {
       await expectSingleUndo2Saves(editor, async () => pressKey('g', { modifiers: cmdModifier }))
 
       // note the added `import * as React`
-      expect(getPrintedUiJsCode(editor.getEditorState()))
+      expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
         .toEqual(`import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
-import * as React from 'react'
+import { Group } from 'utopia-api'
 
 export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <React.Fragment>
+  <Storyboard>
+    <Group
+      style={{
+        position: 'absolute',
+        left: -114,
+        top: 498,
+        width: 180,
+        height: 317,
+      }}
+    >
       <div
         style={{
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: -114,
-          top: 498,
+          left: 0,
+          top: 0,
           width: 35,
           height: 197,
         }}
-        data-uid='aaa'
       />
       <div
         style={{
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: -31,
-          top: 568,
+          left: 83,
+          top: 70,
           width: 97,
           height: 247,
         }}
-        data-uid='bbb'
       />
-    </React.Fragment>
+    </Group>
   </Storyboard>
 )
 `)
+    })
+
+    it('cannot wrap empty groups', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa'>
+            <Group data-uid='group' />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/group`),
+      ])
+
+      await pressKey('g', { modifiers: cmdModifier })
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+          <div>
+            <Group />
+          </div>
+        `),
+      )
+      expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        'Empty Groups cannot be wrapped into Groups',
+      )
     })
   })
 })

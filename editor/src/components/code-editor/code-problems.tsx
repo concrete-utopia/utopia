@@ -2,16 +2,13 @@
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
 import { Console } from 'console-feed'
-import { Resizable, ResizeCallback } from 're-resizable'
+import type { ResizeCallback } from 're-resizable'
+import { Resizable } from 're-resizable'
 import React from 'react'
-import {
-  ErrorMessage,
-  ErrorMessageSeverity,
-  messageIsFatalOrError,
-  messageIsWarning,
-} from '../../core/shared/error-messages'
-import { ConsoleLog } from '../editor/store/editor-state'
-import { CursorPosition } from './code-editor-utils'
+import type { ErrorMessage, ErrorMessageSeverity } from '../../core/shared/error-messages'
+import { messageIsFatalOrError, messageIsWarning } from '../../core/shared/error-messages'
+import type { ConsoleLog } from '../editor/store/editor-state'
+import type { CursorPosition } from './code-editor-utils'
 import { clampValue } from '../../core/shared/math-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { VariableSizeList as List } from 'react-window'
@@ -101,7 +98,7 @@ function getTabStyleForErrors(
   errorMessages: Array<ErrorMessage>,
   colorTheme: any,
 ): { backgroundColor: string } {
-  const errorStyle = { backgroundColor: colorTheme.errorBgSolid.value }
+  const errorStyle = { backgroundColor: colorTheme.error.value }
   const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
   const defaultStyle = { backgroundColor: colorTheme.subtleBackground.value }
 
@@ -120,7 +117,7 @@ function getTabStyleForLogs(
   canvasConsoleLogs: Array<ConsoleLog>,
   colorTheme: any,
 ): { backgroundColor: string } {
-  const errorStyle = { backgroundColor: colorTheme.errorBgSolid.value }
+  const errorStyle = { backgroundColor: colorTheme.error.value }
   const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
   const defaultStyle = { backgroundColor: 'grey' }
 

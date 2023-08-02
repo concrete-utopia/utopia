@@ -1,5 +1,6 @@
 /* eslint-disable jest/expect-expect */
-import { act, fireEvent, RenderResult, screen } from '@testing-library/react'
+import type { RenderResult } from '@testing-library/react'
+import { act, fireEvent, screen } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
@@ -9,20 +10,18 @@ import {
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { ElementPath, ProjectContents } from '../../../core/shared/project-file-types'
 import {
-  ElementPath,
-  ProjectContents,
   RevisionsState,
   textFile,
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
-import { setFeatureEnabled } from '../../../utils/feature-switches'
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
+import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   makeTestProjectCodeWithSnippetStyledComponents,
@@ -33,12 +32,8 @@ import {
   TestSceneUID,
 } from '../../canvas/ui-jsx.test-utils'
 import { createCodeFile } from '../../custom-code/code-file.test-utils'
-import { EditorAction } from '../../editor/action-types'
-import {
-  selectComponents,
-  sendLinterRequestMessage,
-  updateFromCodeEditor,
-} from '../../editor/actions/action-creators'
+import type { EditorAction } from '../../editor/action-types'
+import { selectComponents } from '../../editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../../editor/store/editor-state'
 import {
   ConditionalOverrideControlToggleTestId,
@@ -52,6 +47,15 @@ import {
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
+import { pressKey } from '../../canvas/event-helpers.test-utils'
+import {
+  sendLinterRequestMessage,
+  updateFromCodeEditor,
+} from '../../editor/actions/actions-from-vscode'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
+
 async function getControl(
   controlTestId: string,
   renderedDOM: RenderResult,
@@ -129,6 +133,19 @@ async function clickButtonAndSelectTarget(
   })
 
   await renderResult.getDispatchFollowUpActionsFinished()
+}
+
+async function pressKeyTimes(
+  target: HTMLElement,
+  renderResult: EditorRenderResult,
+  keys: string[],
+) {
+  return act(async () => {
+    target.focus()
+    await Promise.all(keys.map((key) => pressKey(key, { targetElement: target })))
+    target.blur()
+    await renderResult.getDispatchFollowUpActionsFinished()
+  })
 }
 
 describe('inspector tests with real metadata', () => {
@@ -386,6 +403,11 @@ describe('inspector tests with real metadata', () => {
       rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"multiselect-identical-unset"`,
     )
+
+    // Ensure that changing a value during multiselect doesn't cause duplicate UIDs
+    await setControlValue('position-top-number-input', '10', renderResult.renderedDOM)
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(renderResult.getActionsCausingDuplicateUIDs().length).toEqual(0)
   })
   it('TLBR layout controls', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -442,13 +464,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"335"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
@@ -791,13 +813,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(topControl.value, `"0"`)
@@ -1103,13 +1125,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"88"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(topControl.value, `"220"`)
@@ -1202,13 +1224,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"130"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(topControl.value, `"33"`)
@@ -1246,7 +1268,7 @@ describe('inspector tests with real metadata', () => {
       Prettier.format(
         `
       import * as React from 'react'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, Group } from 'utopia-api'
 
       export var App = (props) => {
         return (
@@ -1437,14 +1459,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(earlyWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(earlyHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(earlyPaddingLeftControl.value, `"16"`)
@@ -1495,14 +1517,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
@@ -1586,13 +1608,13 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
@@ -1613,12 +1635,180 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
   })
+  it('CSS number input arrow increment', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippetStyledComponents(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            css={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'auto',
+              left: 'auto',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              paddingRight: 0,
+              borderRadius: 0,
+              opacity: 1,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toBe('0')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp'])
+    expect(widthControl.value).toBe('1')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp', 'ArrowUp', 'ArrowUp'])
+    expect(widthControl.value).toBe('4')
+
+    await pressKeyTimes(widthControl, renderResult, [
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowDown',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowDown',
+    ])
+    expect(widthControl.value).toBe('2')
+  })
+  it('CSS number enter and arrow increment', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippetStyledComponents(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            css={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'auto',
+              left: 'auto',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              paddingRight: 0,
+              borderRadius: 0,
+              opacity: 1,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toBe('0')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp'])
+    expect(widthControl.value).toBe('1')
+
+    await setControlValue('hug-fixed-fill-width', '100', renderResult.renderedDOM)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(widthControl.value).toBe('100')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp', 'ArrowUp', 'ArrowUp'])
+    expect(widthControl.value).toBe('103')
+  })
+  it('CSS number with incorrect data', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippetStyledComponents(`
+        <div
+          style={{ ...props.style, position: 'absolute', backgroundColor: '#FFFFFF' }}
+          data-uid={'aaa'}
+        >
+          <div
+            css={{
+              position: 'absolute',
+              backgroundColor: '#DDDDDD',
+              top: 'auto',
+              left: 'auto',
+              width: 'auto',
+              height: 'auto',
+              padding: 0,
+              paddingRight: 0,
+              borderRadius: 0,
+              opacity: 1,
+            }}
+            data-uid={'bbb'}
+          ></div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch(
+        [selectComponents([EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])], false)],
+        false,
+      )
+      await dispatchDone
+    })
+
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'hug-fixed-fill-width',
+    )) as HTMLInputElement
+
+    expect(widthControl.value).toBe('0')
+
+    await pressKeyTimes(widthControl, renderResult, ['ArrowUp', 'ArrowUp'])
+    expect(widthControl.value).toBe('2')
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    await act(async () => {
+      widthControl.focus()
+      document.execCommand('insertText', false, 'wrong')
+
+      fireEvent.blur(widthControl)
+      await renderResult.getDispatchFollowUpActionsFinished()
+    })
+
+    expect(widthControl.value).toBe('2')
+  })
+
   it('Style is using css className', async () => {
     const renderResult = await renderTestEditorWithCode(
       Prettier.format(
         `
       import * as React from 'react'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, Group } from 'utopia-api'
 
       export var App = (props) => {
         return (
@@ -1694,14 +1884,14 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"250px"`)
     matchInlineSnapshotBrowser(heightControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected-fromcss"`,
+      `"disabled"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
@@ -1730,7 +1920,7 @@ describe('inspector tests with real metadata', () => {
       Prettier.format(
         `
       import * as React from 'react'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, Group } from 'utopia-api'
 
       export var App = (props) => {
         return (
@@ -1852,7 +2042,7 @@ describe('inspector tests with real metadata', () => {
       Prettier.format(
         `
       import * as React from 'react'
-      import { Scene, Storyboard, View } from 'utopia-api'
+      import { Scene, Storyboard, View, Group } from 'utopia-api'
 
       export var App = (props) => {
         return (
@@ -2160,7 +2350,7 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(heightControl.value, `"130"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"disabled"`,
     )
   })
   it('Shows multifile selected element properties', async () => {
@@ -2929,6 +3119,53 @@ describe('inspector tests with real metadata', () => {
       )
       expect((expressionElement as HTMLInputElement).value).toEqual('40 + 2 < 42')
     })
+    it('changing the expression disables override', async () => {
+      const startSnippet = `
+      <div data-uid='aaa'>
+        {
+          // @utopia/uid=conditional
+          // @utopia/conditional=true
+          [].length > 0 ? (
+            <div data-uid='bbb' data-testid='bbb'>foo</div>
+          ) : (
+            <div data-uid='ccc' data-testid='ccc'>bar</div>
+          )}
+      </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(startSnippet),
+        'await-first-dom-report',
+      )
+
+      expect(renderResult.renderedDOM.getByTestId('bbb')).not.toBeNull()
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional'])
+
+      await act(async () => {
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+      })
+
+      await setControlValue(
+        ConditionalsControlSectionExpressionTestId,
+        '40 + 2 < 42',
+        renderResult.renderedDOM,
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa'>
+          {
+            // @utopia/uid=conditional
+              40 + 2 < 42 ? (
+              <div data-uid='bbb' data-testid='bbb'>foo</div>
+            ) : (
+              <div data-uid='ccc' data-testid='ccc'>bar</div>
+            )}
+        </div>
+        `),
+      )
+    })
     it('shows the branches in the inspector', async () => {
       const startSnippet = `
       <div data-uid='aaa'>
@@ -2962,6 +3199,167 @@ describe('inspector tests with real metadata', () => {
 
       expect(branchElementTrue.innerText).toEqual('div')
       expect(branchElementFalse.innerText).toEqual('h1')
+    })
+  })
+
+  describe('groups', () => {
+    function expectGroupToast(renderResult: EditorRenderResult, state: InvalidGroupState) {
+      const editorState = renderResult.getEditorState().editor
+      expect(editorState.toasts.length).toBe(1)
+      expect(editorState.toasts[0].level).toBe('ERROR')
+      expect(editorState.toasts[0].message).toBe(invalidGroupStateToString(state))
+    }
+    it('ignores removing pins from a group child', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippetStyledComponents(`
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  bottom: 20,
+                  left: 30,
+                  right: 40,
+                }}
+              />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        await dispatchDone
+      })
+
+      const leftControl = (await renderResult.renderedDOM.findByTestId(
+        'position-left-number-input',
+      )) as HTMLInputElement
+
+      expect(leftControl.value).toBe('30')
+
+      const elementFrame = getFrame(targetPath, renderResult)
+
+      await setControlValue('position-left-number-input', '', renderResult.renderedDOM)
+
+      expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+      expectGroupToast(renderResult, 'child-has-missing-pins')
+    })
+    it('ignores setting percentage pins on a group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippetStyledComponents(`
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+              }}
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  bottom: 20,
+                  left: 30,
+                  right: 40,
+                }}
+              />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group'])
+
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        await dispatchDone
+      })
+
+      const leftControl = (await renderResult.renderedDOM.findByTestId(
+        'position-left-number-input',
+      )) as HTMLInputElement
+
+      expect(leftControl.value).toBe('10')
+
+      const elementFrame = getFrame(targetPath, renderResult)
+
+      await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
+
+      expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+      expectGroupToast(renderResult, 'group-has-percentage-pins')
+    })
+    it('ignores settings percentage pins on a group child if the parent has no explicit width and height', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippetStyledComponents(`
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+              style={{
+                position: 'absolute',
+                left: 10,
+                top: 10,
+                width: 100,
+              }}
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 10,
+                  bottom: 20,
+                  left: 30,
+                  right: 40,
+                }}
+              />
+            </Group>
+          </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+      await act(async () => {
+        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+        await renderResult.dispatch([selectComponents([targetPath], false)], false)
+        await dispatchDone
+      })
+
+      const leftControl = (await renderResult.renderedDOM.findByTestId(
+        'position-left-number-input',
+      )) as HTMLInputElement
+
+      expect(leftControl.value).toBe('30')
+
+      const elementFrame = getFrame(targetPath, renderResult)
+
+      await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
+
+      expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
+      expectGroupToast(renderResult, 'child-has-percentage-pins-without-group-size')
     })
   })
 })
@@ -3143,6 +3541,12 @@ describe('Undo behavior in inspector', () => {
       fireEvent.keyUp(opacityControl, { key: 'z', keyCode: 90, metaKey: true })
     })
 
+    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([]) // selection is reset to the previous selection (no elements selected)
+
+    await act(async () => {
+      await renderResult.dispatch([selectComponents([targetPath], false)], false)
+    })
+
     // the control's value should now be undone
     matchInlineSnapshotBrowser(
       ((await renderResult.renderedDOM.findByTestId('opacity-number-input')) as HTMLInputElement)
@@ -3210,3 +3614,10 @@ export var storyboard = (
   </Storyboard>
 )
 `
+
+function getFrame(targetPath: ElementPath, renderResult: EditorRenderResult) {
+  return MetadataUtils.getFrameInCanvasCoords(
+    targetPath,
+    renderResult.getEditorState().editor.jsxMetadata,
+  )
+}

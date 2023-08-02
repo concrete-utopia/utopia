@@ -3,8 +3,8 @@ import { useContextSelector } from 'use-context-selector'
 import { flatMapArray, last, mapArrayToDictionary } from '../../../core/shared/array-utils'
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import { objectMap } from '../../../core/shared/object-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { arrayEquals, NO_OP } from '../../../core/shared/utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import { arrayEqualsByReference, NO_OP } from '../../../core/shared/utils'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import {
   setProp_UNSAFE,
@@ -13,18 +13,15 @@ import {
 } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { useEditorState } from '../../editor/store/store-hook'
+import type { PropertyStatus } from './control-status'
+import { getControlStatusFromPropertyStatus, getControlStyles } from './control-status'
+import type { ParsedProperties, ParsedPropertiesKeys } from './css-utils'
+import { printCSSValue } from './css-utils'
+import type { ReadonlyRef } from './inspector-utils'
+import type { InspectorInfo, PathMappingFn } from './property-path-hooks'
 import {
-  getControlStatusFromPropertyStatus,
-  getControlStyles,
-  PropertyStatus,
-} from './control-status'
-import { ParsedProperties, ParsedPropertiesKeys, printCSSValue } from './css-utils'
-import { ReadonlyRef } from './inspector-utils'
-import {
-  InspectorInfo,
   InspectorPropsContext,
   ParsedValues,
-  PathMappingFn,
   useGetOrderedPropertyKeys,
   useInspectorContext,
   useInspectorInfo,
@@ -43,7 +40,7 @@ function getShadowedLonghandShorthandValue<
   orderedPropKeys: (LonghandKey | ShorthandKey)[][], // multiselect
 ): { value: ParsedProperties[LonghandKey]; propertyStatus: PropertyStatus } {
   const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
-    return arrayEquals(propKeys, orderedPropKeys[0])
+    return arrayEqualsByReference(propKeys, orderedPropKeys[0])
   })
 
   const propKeys = orderedPropKeys[0] ?? []
@@ -157,7 +154,7 @@ export function useInspectorInfoLonghandShorthand<
       transient?: boolean | undefined,
     ) => {
       const allPropKeysEqual = orderedPropKeys.every((propKeys) => {
-        return arrayEquals(propKeys, orderedPropKeys[0])
+        return arrayEqualsByReference(propKeys, orderedPropKeys[0])
       })
       if (!allPropKeysEqual) {
         // we do nothing for now. we cannot ensure that we can make a sensible update and surface it on the UI as well
@@ -234,7 +231,7 @@ export function useInspectorInfoLonghandShorthand<
   const longhandResultsWithUnset = objectMap((longhandResult, longhandToUnset) => {
     const onUnsetValues = () => {
       const allPropKeysEqual = allOrderedPropKeys.every((propKeys) => {
-        return arrayEquals(propKeys, allOrderedPropKeys[0])
+        return arrayEqualsByReference(propKeys, allOrderedPropKeys[0])
       })
       if (!allPropKeysEqual) {
         // we do nothing for now. we cannot ensure that we can make a sensible update and surface it on the UI as well

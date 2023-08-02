@@ -1,55 +1,85 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementAtPathHasMatchingUID*", "expectElementFoundNull"] }] */
 
-import {
-  jsExpressionValue,
-  isJSXAttributeValue,
-  jsExpressionFunctionCall,
-  UtopiaJSXComponent,
-  JSXElement,
-  jsxElement,
-  utopiaJSXComponent,
-  defaultPropsParam,
-  jsxAttributesFromMap,
-  getJSXAttribute,
-  isJSXElement,
-  emptyComments,
-  isJSXConditionalExpression,
-} from '../shared/element-template'
-import {
-  componentHonoursPropsPosition,
-  componentHonoursPropsSize,
-  componentUsesProperty,
-  findJSXElementChildAtPath,
-  guaranteeUniqueUids,
-  rearrangeJsxChildren,
-  removeJSXElementChild,
-} from './element-template-utils'
-import Utils from '../../utils/utils'
-import { BakedInStoryboardUID } from './scene-utils'
-import { testStaticElementPath } from '../shared/element-path.test-utils'
-import { getComponentFromCode } from './element-template.test-utils'
-import {
-  createTestProjectWithCode,
-  getParseSuccessForStoryboardCode,
-} from '../../sample-projects/sample-project-utils.test-utils'
+import { getContentsTreeFileFromString } from '../../components/assets'
 import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromParseSuccess,
 } from '../../components/canvas/ui-jsx.test-utils'
 import {
-  modifyParseSuccessWithSimple,
   StoryboardFilePath,
+  modifyParseSuccessWithSimple,
 } from '../../components/editor/store/editor-state'
-import { ElementPath, ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  replaceWithSingleElement,
+  wrapInFragmentAndAppendElements,
+} from '../../components/editor/store/insertion-path'
+import {
+  createTestProjectWithCode,
+  getParseSuccessForStoryboardCode,
+} from '../../sample-projects/sample-project-utils.test-utils'
+import Utils, { absolute, after, before } from '../../utils/utils'
+import * as EP from '../shared/element-path'
 import {
   dynamicPathToStaticPath,
   fromString,
   fromStringStatic,
   toUid,
 } from '../shared/element-path'
-import { getComponentsFromTopLevelElements } from './project-file-utils'
-import { setFeatureForUnitTests } from '../../utils/utils.test-utils'
+import { testStaticElementPath } from '../shared/element-path.test-utils'
+import type {
+  JSXConditionalExpression,
+  JSXElement,
+  JSXTextBlock,
+  UtopiaJSXComponent,
+  JSXElementChild,
+} from '../shared/element-template'
+import {
+  defaultPropsParam,
+  emptyComments,
+  getJSXAttribute,
+  isJSExpressionMapOrOtherJavaScript,
+  isJSXAttributeValue,
+  isJSXConditionalExpression,
+  isJSXElement,
+  isJSXElementLike,
+  jsExpressionFunctionCall,
+  jsExpressionValue,
+  jsxAttributesFromMap,
+  jsxElement,
+  jsxTextBlock,
+  utopiaJSXComponent,
+  JSXAttributes,
+} from '../shared/element-template'
+import {
+  fromArrayIndex,
+  fromField,
+  fromObjectField,
+  fromTypeGuard,
+} from '../shared/optics/optic-creators'
+import { unsafeGet } from '../shared/optics/optic-utilities'
+import { Optic } from '../shared/optics/optics'
+import type { ParseSuccess, StaticElementPath } from '../shared/project-file-types'
+import { emptySet } from '../shared/set-utils'
 import { getUtopiaID } from '../shared/uid-utils'
+import { MetadataUtils } from './element-metadata-utils'
+import {
+  componentHonoursPropsPosition,
+  componentHonoursPropsSize,
+  componentUsesProperty,
+  findJSXElementChildAtPath,
+  guaranteeUniqueUids,
+  insertJSXElementChildren,
+  rearrangeJsxChildren,
+  removeJSXElementChild,
+  transformJSXComponentAtPath,
+} from './element-template-utils'
+import { FOR_TESTS_setNextGeneratedUids } from './element-template-utils.test-utils'
+import { FOR_TESTS_setNextGeneratedUid } from './element-template-utils.test-utils'
+import { getComponentFromCode } from './element-template.test-utils'
+import { getComponentsFromTopLevelElements } from './project-file-utils'
+import { BakedInStoryboardUID } from './scene-utils'
 
 describe('guaranteeUniqueUids', () => {
   it('if two siblings have the same ID, one will be replaced', () => {
@@ -67,12 +97,18 @@ describe('guaranteeUniqueUids', () => {
         [],
       ),
     ]
-    const fixedElements = guaranteeUniqueUids(exampleElements, [])
+    const fixedElements = guaranteeUniqueUids(exampleElements, emptySet())
 
-    const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
+    const child0PropsOptic = fromArrayIndex<JSXElementChild>(0)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
+    const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
-    const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
+    expect(child0UID).toEqual(jsExpressionValue('aab', emptyComments, 'aac'))
+    const child1PropsOptic = fromArrayIndex<JSXElementChild>(1)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
+    const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
     expect(child1UID).not.toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
   })
@@ -82,25 +118,31 @@ describe('guaranteeUniqueUids', () => {
       jsxElement(
         'View',
         'aaa',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'aaa') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aaa', emptyComments, 'axa') }),
         [],
       ),
       jsxElement(
         'View',
         'aab',
-        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'aab') }),
+        jsxAttributesFromMap({ 'data-uid': jsExpressionValue('aab', emptyComments, 'axb') }),
         [],
       ),
     ]
-    const existingIDs = ['aab', 'bbb']
-    const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
 
-    const child0Props = Utils.pathOr([], [0, 'props'], fixedElements)
+    const existingIDs = new Set(['aab', 'bbb'])
+    const fixedElements = guaranteeUniqueUids(exampleElements, existingIDs)
+    const child0PropsOptic = fromArrayIndex<JSXElementChild>(0)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
+    const child0Props = unsafeGet(child0PropsOptic, fixedElements.value)
     const child0UID = getJSXAttribute(child0Props, 'data-uid')
-    const child1Props = Utils.pathOr([], [1, 'props'], fixedElements)
+    const child1PropsOptic = fromArrayIndex<JSXElementChild>(1)
+      .compose(fromTypeGuard(isJSXElement))
+      .compose(fromField('props'))
+    const child1Props = unsafeGet(child1PropsOptic, fixedElements.value)
     const child1UID = getJSXAttribute(child1Props, 'data-uid')
-    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'aaa'))
-    expect(child1UID).not.toEqual(jsExpressionValue('aab', emptyComments, 'aab'))
+    expect(child0UID).toEqual(jsExpressionValue('aaa', emptyComments, 'axa'))
+    expect(child1UID).toEqual(jsExpressionValue('aac', emptyComments, 'aad'))
   })
 
   it('if the uid prop is not a simple value, replace it with a simple value', () => {
@@ -110,8 +152,8 @@ describe('guaranteeUniqueUids', () => {
       jsxAttributesFromMap({ 'data-uid': jsExpressionFunctionCall('someFunction', []) }),
       [],
     )
-    const fixedElements = guaranteeUniqueUids([exampleElement], [])
-    const fixedElement = fixedElements[0]
+    const fixedElements = guaranteeUniqueUids([exampleElement], emptySet())
+    const fixedElement = fixedElements.value[0]
     const fixedElementProps = Utils.pathOr([], ['props'], fixedElement)
     const fixedElementUIDProp = getJSXAttribute(fixedElementProps, 'data-uid')
     if (fixedElementUIDProp == null) {
@@ -484,12 +526,36 @@ export const TestComponent = (props) => {
     const result = componentHonoursPropsPosition(component)
     expect(result).toEqual(true)
   })
+  it('returns true for a component that assigns props.style to style directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={props.style}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
   it('returns true for a component that spreads style into the props with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
 export const TestComponent = ({style}) => {
   return <div style={{position: 'absolute', ...style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsPosition(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that assigns to style directly with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={style}>The Best Test Component</div>
 }
     `,
     )
@@ -571,12 +637,36 @@ export const TestComponent = (props) => {
     const result = componentHonoursPropsSize(component)
     expect(result).toEqual(true)
   })
+  it('returns true for a component that assigns props.style to style directly', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = (props) => {
+  return <div style={props.style}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(true)
+  })
   it('returns true for a component that spreads style into the props with destructuring', () => {
     const component = getComponentFromCode(
       'TestComponent',
       `
 export const TestComponent = ({style}) => {
   return <div style={{position: 'absolute', ...style}}>The Best Test Component</div>
+}
+    `,
+    )
+    const result = componentHonoursPropsSize(component)
+    expect(result).toEqual(true)
+  })
+  it('returns true for a component that assigns to style directly with destructuring', () => {
+    const component = getComponentFromCode(
+      'TestComponent',
+      `
+export const TestComponent = ({style}) => {
+  return <div style={style}>The Best Test Component</div>
 }
     `,
     )
@@ -955,6 +1045,37 @@ describe('findJSXElementChildAtPath', () => {
     ])
   })
 
+  it('conditional expressions with one branch that are JSXAttribute', () => {
+    const projectFile = getParseSuccessForStoryboardCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ ...props.style }} data-uid='aaa'>
+          <div data-uid='parent' >
+            <div data-uid='child-d' />
+            {
+              // @utopia/uid=conditional-1
+              true ? 
+              (
+                "hello"
+              ) : (
+                <span data-uid='false'>"world"</span>
+              )
+            }
+            <div data-uid='child-b' />
+            <div data-uid='child-a' />
+          </div>
+        </div>
+      `),
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(projectFile, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/false',
+    ])
+  })
+
   it('conditional expressions with branches that are JSXAttribute', () => {
     const projectFile = getParseSuccessForStoryboardCode(
       makeTestProjectCodeWithSnippet(`
@@ -980,9 +1101,7 @@ describe('findJSXElementChildAtPath', () => {
     expectElementAtPathHasMatchingUIDForPaths(projectFile, [
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/409',
-      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/831',
+      // conditionals with only text are not parsed as conditional expressions anymore, rather they are treated as expressions embedded in the text content of their parent
     ])
   })
 
@@ -1018,5 +1137,817 @@ describe('findJSXElementChildAtPath', () => {
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root',
       'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/conditional-1/ternary-false-root/ternary-false-child',
     ])
+  })
+})
+
+describe('insertJSXElementChildren', () => {
+  function createTestComponentsForSnippet(snippet: string) {
+    const projectContents = createTestProjectWithCode(
+      makeTestProjectCodeWithSnippet(snippet),
+    ).projectContents
+
+    const file = getContentsTreeFileFromString(projectContents, StoryboardFilePath)
+
+    if (file?.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
+      throw new Error('failed parsing the test project file')
+    }
+
+    const components = getComponentsFromTopLevelElements(file.lastParseSuccess.topLevelElements)
+
+    return { components, projectContents }
+  }
+
+  function findElement(components: Array<UtopiaJSXComponent>, pathString: string) {
+    const path = fromStringStatic(pathString)
+    const foundElement = findJSXElementChildAtPath(
+      getComponentsFromTopLevelElements(components),
+      path,
+    )
+    return foundElement
+  }
+
+  function expectElementAtPathHasMatchingUID(
+    components: Array<UtopiaJSXComponent>,
+    pathString: string,
+  ) {
+    const foundElement = findElement(components, pathString)
+    expect(foundElement).not.toBeNull()
+    expect(getUtopiaID(foundElement!)).toEqual(toUid(fromStringStatic(pathString)))
+  }
+
+  function expectElementAtPathHasMatchingUIDForPaths(
+    components: Array<UtopiaJSXComponent>,
+    paths: Array<string>,
+  ) {
+    paths.forEach((path) => expectElementAtPathHasMatchingUID(components, path))
+  }
+
+  function expectIndexInParent(
+    components: Array<UtopiaJSXComponent>,
+    pathString: string,
+    expectedIndex: number,
+  ) {
+    const path = EP.fromString(pathString)
+    const parentPathString = EP.toString(EP.parentPath(path))
+    const foundParent = findElement(components, parentPathString)
+    if (foundParent == null || !isJSXElementLike(foundParent)) {
+      throw new Error(`parent found at ${parentPathString} is not JsxElementLike`)
+    }
+    const childUid = EP.toUid(path)
+    const foundChildIndex = foundParent.children.findIndex((child) => child.uid === childUid)
+
+    expect(foundChildIndex).toBe(expectedIndex)
+  }
+  it('inserts simple elements as children', () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChildren(
+      childInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a'),
+      ),
+      [jsxElement('div', 'hello1', [], []), jsxElement('div', 'hello2', [], [])],
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a/hello1', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a/hello2', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
+  it('inserts simple elements as children with index position', () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c' />
+          <div data-uid='grandchild-d' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChildren(
+      childInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+      ),
+      [jsxElement('div', 'hello1', [], []), jsxElement('div', 'hello2', [], [])],
+      components,
+      absolute(1),
+    )
+
+    expectIndexInParent(
+      withInsertedElement.components,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello1',
+      1,
+    )
+    expectIndexInParent(
+      withInsertedElement.components,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello2',
+      2,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello1', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello2', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-d',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
+  it('inserts simple elements as last with index position pointing to larger index than possible', () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c-1' />
+          <div data-uid='grandchild-c-2' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChildren(
+      childInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+      ),
+      [jsxElement('div', 'hello1', [], []), jsxElement('div', 'hello2', [], [])],
+      components,
+      after(15), // this means it should come after element index 15, but the array is only 2 long. the resulting index will be 2 (zero based)
+    )
+
+    expectIndexInParent(
+      withInsertedElement.components,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello1',
+      2,
+    )
+    expectIndexInParent(
+      withInsertedElement.components,
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello2',
+      3,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c-1',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/grandchild-c-2',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello1', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello2', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
+  it('array insertion throws error if trying to insert into a conditional expression', () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ?
+          (
+            "hello"
+          ) : (
+            <span>"world"</span>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    expect(() =>
+      insertJSXElementChildren(
+        childInsertionPath(
+          EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        ),
+        [jsxElement('div', 'hello', [], [])],
+        components,
+        null,
+      ),
+    ).toThrow()
+  })
+
+  it('conditional clause insertion throws error if the parent is not a conditional expression', () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c' />
+      </div>
+    </div>
+    `)
+
+    expect(() =>
+      insertJSXElementChildren(
+        conditionalClauseInsertionPath(
+          EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a'),
+          'true-case',
+          replaceWithSingleElement(),
+        ),
+        [jsxElement('div', 'hello', [], [])],
+        components,
+        null,
+      ),
+    ).toThrow()
+  })
+
+  it("inserting a single element into the conditional's true branch is working with replace behavior when branch is empty", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ?
+          (
+            null
+          ) : (
+            <span>"world"</span>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChildren(
+      conditionalClauseInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        'true-case',
+        replaceWithSingleElement(),
+      ),
+      [jsxElement('div', 'hello1', [], [])],
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/hello1', // <- the inserted element!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+  it("inserting multiple elements into the conditional's true branch throws error", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ?
+          (
+            null
+          ) : (
+            <span>"world"</span>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    FOR_TESTS_setNextGeneratedUid('fragment')
+    expect(() =>
+      insertJSXElementChildren(
+        conditionalClauseInsertionPath(
+          EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+          'true-case',
+          replaceWithSingleElement(),
+        ),
+        [jsxElement('div', 'hello1', [], []), jsxElement('div', 'hello2', [], [])],
+        components,
+        null,
+      ),
+    ).toThrow()
+  })
+
+  it("inserting an element into the conditional's true branch is working with wrap into fragment behavior", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ?
+          (
+            "hello"
+          ) : (
+            <div>"world"</div>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChildren(
+      conditionalClauseInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        'true-case',
+        wrapInFragmentAndAppendElements('wrapper-fragment'),
+      ),
+      [jsxElement('div', 'hello2', [], [])],
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/', // <- the new fragment!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/409', // <- the original hello!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/hello2', // <- the inserted hello!
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+
+  it("inserting multiple elements into the conditional's false branch with replace behavior throws", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ?
+          (
+            "hello"
+          ) : (
+            <span>"world-will be deleted"</span>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    expect(() =>
+      insertJSXElementChildren(
+        conditionalClauseInsertionPath(
+          EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+          'false-case',
+          replaceWithSingleElement(),
+        ),
+        [jsxElement('div', 'hello1', [], []), jsxElement('div', 'hello2', [], [])],
+        components,
+        null,
+      ),
+    ).toThrow()
+  })
+
+  it("inserting into the conditional's false branch with an existing fragment", () => {
+    const { components, projectContents } = createTestComponentsForSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div data-uid='parent' >
+          <div data-uid='child-a' />
+          <div data-uid='child-b' />
+        {
+          // @utopia/uid=child-c
+          true ?
+          (
+            null
+          ) : (
+            <React.Fragment data-uid='fragment'>
+              <span data-uid='child-e'>hello in a fragment</span>
+            </React.Fragment>
+          )
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const withInsertedElement = insertJSXElementChildren(
+      conditionalClauseInsertionPath(
+        EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c'),
+        'false-case',
+        wrapInFragmentAndAppendElements('wrapper-fragment'),
+      ),
+      [jsxElement('div', 'hello1', [], []), jsxElement('div', 'hello2', [], [])],
+      components,
+      null,
+    )
+
+    expectElementAtPathHasMatchingUIDForPaths(withInsertedElement.components, [
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-a',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c',
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/fragment/child-e', // the original fragment is wrapped into a new wrapper
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/hello1', // <- the inserted element! (wrapped into a new wrapper)
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-c/wrapper-fragment/hello2', // <- the inserted element! (wrapped into a new wrapper)
+      'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-d',
+    ])
+  })
+})
+
+describe('transformJSXComponentAtPath', () => {
+  function findElement(components: Array<UtopiaJSXComponent>, pathString: string) {
+    const path = fromStringStatic(pathString)
+    const foundElement = findJSXElementChildAtPath(
+      getComponentsFromTopLevelElements(components),
+      path,
+    )
+    return foundElement
+  }
+
+  function createTestComponentsForSnippet(snippet: string) {
+    const projectContents = createTestProjectWithCode(
+      makeTestProjectCodeWithSnippet(snippet),
+    ).projectContents
+
+    // console.log(JSON.stringify(projectContents))
+
+    const file = getContentsTreeFileFromString(projectContents, StoryboardFilePath)
+
+    if (file?.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
+      throw new Error('failed parsing the test project file')
+    }
+
+    return getComponentsFromTopLevelElements(file.lastParseSuccess.topLevelElements)
+  }
+
+  it('throws exception on missing child of jsx element', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  // TODO activate this after removing absolutely stupid way of falling back to the conditional when the branch doesn't exist
+  xit('throws exception on missing branch of conditional', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  it('throws exception on missing elementsWithin of expression', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {(() => { return <div data-uid='eee' /> })()}
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/2f2/xxx'
+
+    expect(() =>
+      transformJSXComponentAtPath(
+        components,
+        EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+        (element) => {
+          if (isJSXElement(element)) {
+            return {
+              ...element,
+              children: [jsxTextBlock('hello')],
+            }
+          }
+          return element
+        },
+      ),
+    ).toThrow()
+  })
+  it('updates a jsx element with jsx element parent', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        <div data-uid='child-c'>
+          <div data-uid='grandchild-c' />
+        </div>
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/child-b'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
+  })
+  it('updates a conditional expression with jsx element parent', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXConditionalExpression(element)) {
+          return {
+            ...element,
+            whenFalse: jsxTextBlock('hello'),
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXConditionalExpression
+    expect(updatedElement.whenFalse.type).toEqual('JSX_TEXT_BLOCK')
+  })
+  it('updates a jsx element inside a conditional true branch', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/eee'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
+  })
+  it('updates an element inside a conditional false branch', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? <div data-uid='eee' /> : null
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/eee'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+    const updatedElement = findElement(updatedComponents, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
+  })
+  it('updates an attribute value expression in a conditional true branch', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {
+          // @utopia/uid=cond
+          true ? 'hello' : <div/>
+        }
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/cond/409'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXAttributeValue(element)) {
+          return {
+            ...element,
+            value: 'hello2',
+          }
+        }
+        return element
+      },
+    )
+
+    const updatedElement = findElement(updatedComponents, pathToModify)
+    expect((updatedElement as any).type).toEqual('ATTRIBUTE_VALUE')
+    expect((updatedElement as any).value).toEqual('hello2')
+  })
+  it('updates other javascript expression', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {(() => { return 'hello' })()}
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/203'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSExpressionMapOrOtherJavaScript(element)) {
+          return {
+            ...element,
+            javascript: "(() => { return 'hello2' })()",
+          }
+        }
+        return element
+      },
+    )
+
+    const updatedElement = findElement(updatedComponents, pathToModify)
+    expect((updatedElement as any).type).toEqual('ATTRIBUTE_OTHER_JAVASCRIPT')
+    expect((updatedElement as any).javascript).toEqual("(() => { return 'hello2' })()")
+  })
+  // enable it after findJSXElementPath is fixed too
+  xit('updates elementsWithin of other javascript expression', () => {
+    const components = createTestComponentsForSnippet(`
+    <div style={{ ...props.style }} data-uid='aaa'>
+      <div data-uid='parent' >
+        <div data-uid='child-a' />
+        <div data-uid='child-b' />
+        {(() => { return <div data-uid='eee' /> })()}
+        <div data-uid='child-d' />
+      </div>
+    </div>
+    `)
+
+    const pathToModify = 'utopia-storyboard-uid/scene-aaa/app-entity:aaa/parent/2f2/eee'
+
+    const updatedComponents = transformJSXComponentAtPath(
+      components,
+      EP.dynamicPathToStaticPath(EP.fromString(pathToModify)),
+      (element) => {
+        if (isJSXElement(element)) {
+          return {
+            ...element,
+            children: [jsxTextBlock('hello')],
+          }
+        }
+        return element
+      },
+    )
+
+    const updatedElement = findElement(components, pathToModify) as JSXElement
+    expect(updatedElement.children).toHaveLength(1)
+    expect(updatedElement.children[0].type).toEqual('JSX_TEXT_BLOCK')
+    expect((updatedElement.children[0] as JSXTextBlock).text).toEqual('hello')
   })
 })

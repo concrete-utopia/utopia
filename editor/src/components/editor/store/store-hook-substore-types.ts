@@ -1,6 +1,6 @@
 import { uniq } from '../../../core/shared/array-utils'
 import { omit, pick } from '../../../core/shared/object-utils'
-import { EditorDispatch } from '../action-types'
+import type { EditorDispatch } from '../action-types'
 import type {
   DerivedState,
   EditorState,
@@ -45,6 +45,7 @@ export const metadataSubstateKeys = [
   'spyMetadata',
   'domMetadata',
   'jsxMetadata',
+  'elementPathTree',
   'allElementProps',
 ] as const
 const emptyMetadataSubstate = {
@@ -123,13 +124,7 @@ export interface ThemeSubstate {
 }
 
 // GithubSubstate
-export const githubSubstateKeys = [
-  'githubSettings',
-  'githubOperations',
-  'githubChecksums',
-  'githubData',
-  'assetChecksums',
-] as const
+export const githubSubstateKeys = ['githubSettings', 'githubOperations', 'githubData'] as const
 export const emptyGithubSubstate = {
   editor: pick(githubSubstateKeys, EmptyEditorStateForKeysOnly),
 } as const
@@ -166,6 +161,10 @@ export type CanvasAndMetadataSubstate = {
 
 export type NavigatorSubstate = {
   editor: Pick<EditorState, 'navigator'>
+}
+
+export type PostActionInteractionSessionSubstate = {
+  postActionInteractionSession: EditorStoreShared['postActionInteractionSession']
 }
 
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =

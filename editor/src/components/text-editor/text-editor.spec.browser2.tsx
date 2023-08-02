@@ -1,5 +1,12 @@
-import { expectSingleUndo2Saves, expectSingleUndoNSaves, wait } from '../../utils/utils.test-utils'
-import { altCmdModifier, cmdModifier, Modifiers, shiftCmdModifier } from '../../utils/modifiers'
+import * as EP from '../../core/shared/element-path'
+import {
+  expectSingleUndo2Saves,
+  expectSingleUndoNSaves,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
+} from '../../utils/utils.test-utils'
+import type { Modifiers } from '../../utils/modifiers'
+import { altCmdModifier, cmdModifier, shiftCmdModifier } from '../../utils/modifiers'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import {
   mouseClickAtPoint,
@@ -7,14 +14,15 @@ import {
   mouseDragFromPointToPoint,
   pressKey,
 } from '../canvas/event-helpers.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
-  EditorRenderResult,
   formatTestProjectCode,
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
 import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
+import { selectComponents } from '../editor/actions/action-creators'
 
 describe('Use the text editor', () => {
   it('Click to edit text', async () => {
@@ -803,19 +811,82 @@ describe('Use the text editor', () => {
     })
   })
   describe('inline expressions', () => {
-    it('handles expressions', async () => {
-      const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
+    const tests = [
+      {
+        label: 'handles expressions',
+        writtenText: 'the answer is {41 + 1}',
+        codeResult: 'the answer is {41 + 1}',
+        renderedText: 'the answer is 42',
+      },
+      {
+        label: 'handles conditionals',
+        writtenText: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
+        codeResult: 'The user name is {1 === 1 ? "Bob" : "Sam"}',
+        renderedText: 'The user name is Bob',
+      },
+      {
+        label: 'htmlencodes angular brackets in text parts',
+        writtenText: 'The <username> is {1 === 1 ? "Bob" : "Sam"}',
+        codeResult: 'The &lt;username&gt; is {1 === 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob',
+      },
+      {
+        label: 'does not htmlencode angular brackets in js parts',
+        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
+        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam"}',
+        renderedText: 'The username is Bob',
+      },
+      {
+        label: 'handles angular brackets in text and js parts both',
+        writtenText: 'The <username> is {1 >= 1 ? "Bob" : "Sam"}',
+        codeResult: 'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob',
+      },
+      {
+        label: 'handles angular brackets in multiple text and js parts',
+        writtenText:
+          'The <username> is {1 >= 1 ? "Bob" : "Sam"} The <username> is {1 < 1 ? "Bob" : "Sam"}',
+        codeResult:
+          'The &lt;username&gt; is {1 >= 1 ? "Bob" : "Sam"} The &lt;username&gt; is {1 < 1 ? "Bob" : "Sam"}',
+        renderedText: 'The <username> is Bob The <username> is Sam',
+      },
+      {
+        label: 'ignores closing curly bracket when inside quotation marks',
+        writtenText: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
+        codeResult: 'The username is {1 >= 1 ? "Bob" : "Sam}" + ">"}',
+        renderedText: 'The username is Bob',
+      },
+      {
+        label: 'handles expressions with formatted strings inside',
+        // eslint-disable-next-line no-template-curly-in-string
+        writtenText: 'The username is {1 >= 1 ? `${"Bob"}` : "Sam"}',
+        // eslint-disable-next-line no-template-curly-in-string
+        codeResult: 'The username is {1 >= 1 ? `${"Bob"}` : "Sam"}',
+        renderedText: 'The username is Bob',
+      },
+      {
+        label: 'handles nulls',
+        // eslint-disable-next-line no-template-curly-in-string
+        writtenText: 'The username is {1 >= 1 ? null : null}',
+        // eslint-disable-next-line no-template-curly-in-string
+        codeResult: 'The username is {1 >= 1 ? null : null}',
+        renderedText: 'The username is',
+      },
+    ]
+    tests.forEach((t) => {
+      it(`${t.label}`, async () => {
+        const editor = await renderTestEditorWithCode(projectWithoutText, 'await-first-dom-report')
 
-      await enterTextEditMode(editor)
-      typeText('the answer is {41 + 1}')
-      await closeTextEditor()
+        await enterTextEditMode(editor)
+        typeText(t.writtenText)
+        await closeTextEditor()
 
-      await editor.getDispatchFollowUpActionsFinished()
-      await wait(50)
+        await editor.getDispatchFollowUpActionsFinished()
+        await wait(50)
 
-      expect(editor.getEditorState().editor.mode.type).toEqual('select')
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        formatTestProjectCode(`
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
               import * as React from 'react'
               import { Storyboard } from 'utopia-api'
 
@@ -834,13 +905,633 @@ describe('Use the text editor', () => {
                     }}
                     data-uid='39e'
                   >
-                    ${textSpan('the answer is {41 + 1}')}
+                    ${textSpan(t.codeResult)}
                   </div>
                 </Storyboard>
               )`),
-      )
-      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('the answer is 42')
+        )
+        expect(editor.renderedDOM.getByTestId('div').innerText).toEqual(t.renderedText)
+      })
     })
+  })
+  describe('conditional clauses', () => {
+    it('editing the true clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hi' : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the active true clause from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hi' : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the active true clause with null inside from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? null : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hi' : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the full conditional from the selected conditional (to a non-conditional)', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : 'utopia'
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(projectWithSnippet('hi'))
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the full conditional from the selected conditional (keeping it a conditional)', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : 'utopia'
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText(`{
+        // @utopia/uid=cond
+        true ? 'hi' : 'utopia'
+      }`)
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hi' : 'utopia'
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing is not allowed with siblings', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? 'hello' : <div data-uid='33d' />
+        }<div />`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('editing the false clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : 'hello'
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/409')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : 'hi'
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing the active false clause from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : 'hello'
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('hi')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : 'hi'
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('hi')
+    })
+    it('editing expression in the true clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar1 : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar2 : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing expression in the true clause is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? (() => <div>hello</div>)() : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('editing a map expression in the true clause is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? [0,1,2].map(() => <div>hello</div>) : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/6b9')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+      expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
+      expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
+        'sb/39e/cond/6b9/33d~~~1',
+      )
+    })
+    it('editing expression in the active true clause from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar1 : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar2 : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing a map expression in the active true clause from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? [0,1,2].map(() => 'hello') : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? myvar2 : <div data-uid='33d' />
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing expression in the active true clause from the selected conditional is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? (() => <div>hello</div>)() : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('editing a map expression in the active true clause from the selected conditional is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          true ? [0,1,2].map(() => <div>hello</div>) : <div data-uid='33d' />
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('editing expression in the false clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar1
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar2
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing a map expression in the false clause', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : [0,1,2].map(() => 'hello')
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/089')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar2
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+
+    it('editing expression in the false clause is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : [0,1,2].map(() => <div>hello</div>)
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/089')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('editing a map expression in the false clause is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : (() => <div>hello</div>)()
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('editing expression in the false clause from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar1
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar2
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing a map expression in the false clause from the selected conditional', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : [0,1,2].map(() => 'hello')
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      await editor.getDispatchFollowUpActionsFinished()
+
+      typeText('{myvar2}')
+      await closeTextEditor()
+
+      await editor.getDispatchFollowUpActionsFinished()
+      await wait(50)
+
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : myvar2
+        }`),
+      )
+      expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
+    })
+    it('editing expression in the false clause from the selected conditional is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : (() => <div>hello</div>)()
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+    it('editing a map expression in the false clause from the selected conditional is not allowed when the expression returns elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectWithSnippet(`{
+          // @utopia/uid=cond
+          false ? <div data-uid='33d' /> : [0,1,2].map(() => <div>hello</div>)
+        }`),
+        'await-first-dom-report',
+      )
+
+      await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond')], false)], true)
+      await pressKey('enter')
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
+  })
+  it('editing expression (in the true clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? myvar1 : <div data-uid='33d' />
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? 'this is just a string' : <div data-uid='33d' />
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+  })
+  it('editing a map expression (in the true clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? [0,1,2].map(() => 'hello') : <div data-uid='33d' />
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/089')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        true ? 'this is just a string' : <div data-uid='33d' />
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+  })
+  it('editing expression (in the false clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : myvar1
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/536')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : 'this is just a string'
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+  })
+  it('editing a map expression (in the false clause) and deleting curly braces converts it to string literal', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : [0,1,2].map(() => 'hello')
+      }`),
+      'await-first-dom-report',
+    )
+
+    await editor.dispatch([selectComponents([EP.fromString('sb/39e/cond/089')], false)], true)
+    await pressKey('enter')
+    await editor.getDispatchFollowUpActionsFinished()
+
+    typeText('this is just a string')
+    await closeTextEditor()
+
+    await editor.getDispatchFollowUpActionsFinished()
+    await wait(50)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      projectWithSnippet(`{
+        // @utopia/uid=cond
+        false ? <div data-uid='33d' /> : 'this is just a string'
+      }`),
+    )
+    expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
   })
 })
 
@@ -1014,6 +1705,55 @@ async function closeTextEditor() {
   await wait(0) // this is needed so we wait until the dispatch call is launched in a settimeout when the text editor unmounts
 }
 
+const projectWithoutText = formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    />
+  </Storyboard>
+)
+`)
+
+function projectWithSnippet(snippet: string) {
+  return formatTestProjectCode(`import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+const myvar1 = 'content of myvar1'
+const myvar2 = 'content of myvar2'
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      data-testid='div'
+      style={{
+        backgroundColor: '#0091FFAA',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        width: 288,
+        height: 362,
+      }}
+      data-uid='39e'
+    >
+      ${snippet}
+    </div>
+  </Storyboard>
+)
+`)
+}
+
 const projectWithText = formatTestProjectCode(`import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
@@ -1034,28 +1774,6 @@ export var storyboard = (
     >
       Hello
     </div>
-  </Storyboard>
-)
-`)
-
-const projectWithoutText = formatTestProjectCode(`import * as React from 'react'
-import { Storyboard } from 'utopia-api'
-
-
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div
-      data-testid='div'
-      style={{
-        backgroundColor: '#0091FFAA',
-        position: 'absolute',
-        left: 0,
-        top: 0,
-        width: 288,
-        height: 362,
-      }}
-      data-uid='39e'
-    />
   </Storyboard>
 )
 `)

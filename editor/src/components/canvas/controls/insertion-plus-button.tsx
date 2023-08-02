@@ -1,16 +1,17 @@
 import React from 'react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { CanvasRectangle, isInfinityRectangle } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
-import { IndexPosition } from '../../../utils/utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { IndexPosition } from '../../../utils/utils'
 import { useColorTheme } from '../../../uuiui/styles/theme'
 import { openFloatingInsertMenu } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
+import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-  SiblingPosition,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
@@ -46,6 +47,12 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       'InsertionControls jsxMetadata',
     )
 
+    const pathTrees = useEditorState(
+      Substores.metadata,
+      (store) => store.editor.elementPathTree,
+      'InsertionControls pathTrees',
+    )
+
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
@@ -70,13 +77,13 @@ export const InsertionControls: React.FunctionComponent = React.memo(
       return null
     }
 
-    if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, parentPath) !== 'flex') {
+    if (MetadataUtils.findLayoutSystemForChildren(jsxMetadata, pathTrees, parentPath) !== 'flex') {
       return null
     }
 
     const { direction, forwardOrReverse } = MetadataUtils.getSimpleFlexDirection(parentElement)
 
-    const children = MetadataUtils.getChildrenUnordered(jsxMetadata, parentPath)
+    const children = MetadataUtils.getChildrenOrdered(jsxMetadata, pathTrees, parentPath)
     let controlProps: ButtonControlProps[] = []
 
     const siblingPositions: Array<SiblingPosition> = siblingAndPseudoPositions(

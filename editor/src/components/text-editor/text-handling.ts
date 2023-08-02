@@ -1,18 +1,19 @@
-import { ElementPath, RevisionsState } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import type { EditorState } from '../editor/store/editor-state'
 import {
-  EditorState,
   getElementFromProjectContents,
   modifyUnderlyingTargetElement,
 } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
+import type {
+  JSExpression,
+  JSXAttributes,
+  JSXElementChild,
+} from '../../core/shared/element-template'
 import {
   getJSXElementNameAsString,
   isJSXElement,
   isJSXTextBlock,
-  JSExpression,
-  JSXAttributes,
-  JSXElement,
-  JSXElementChild,
   jsxTextBlock,
   isJSXAttributesEntry,
   isJSXConditionalExpression,
@@ -98,7 +99,10 @@ function arePropsCompatible(
     if (isJSXAttributesEntry(targetAttribute)) {
       if (targetAttribute.key === 'style') {
         targetStyleProp = targetAttribute.value
-      } else if (targetAttribute.key.startsWith('data-')) {
+      } else if (
+        typeof targetAttribute.key === 'string' &&
+        targetAttribute.key.startsWith('data-')
+      ) {
         // Ignore this case.
       } else {
         return false
@@ -109,7 +113,10 @@ function arePropsCompatible(
     if (isJSXAttributesEntry(toCheckAttribute)) {
       if (toCheckAttribute.key === 'style') {
         toCheckStyleProp = toCheckAttribute.value
-      } else if (toCheckAttribute.key.startsWith('data-')) {
+      } else if (
+        typeof toCheckAttribute.key === 'string' &&
+        toCheckAttribute.key.startsWith('data-')
+      ) {
         // Ignore this case.
       } else {
         return false
@@ -243,10 +250,6 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
             }
           },
           (parseSuccess) => parseSuccess,
-          // FIXME: This needs to be here because the callsite of
-          // this function also passes this in another call to
-          // `modifyUnderlyingTarget`.
-          RevisionsState.ParsedAheadNeedsReparsing,
         )
       }
     }

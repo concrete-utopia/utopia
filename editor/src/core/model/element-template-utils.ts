@@ -1,29 +1,40 @@
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import {
   getContentsTreeFileFromString,
-  ProjectContentTreeRoot,
   walkContentsTreeForParseSuccess,
 } from '../../components/assets'
-import Utils, { IndexPosition } from '../../utils/utils'
-import {
+import type { IndexPosition } from '../../utils/utils'
+import Utils, {
+  addElementsToArrayAtIndexPosition,
+  addToArrayAtIndexPosition,
+  front,
+} from '../../utils/utils'
+import type {
   ElementsWithin,
-  isJSExpressionOtherJavaScript,
-  isJSXAttributeValue,
-  isJSXElement,
-  isJSXTextBlock,
-  isUtopiaJSXComponent,
   JSXElement,
   JSXElementChild,
   JSXTextBlock,
   TopLevelElement,
   UtopiaJSXComponent,
-  isJSXFragment,
-  getJSXAttribute,
   Param,
   JSXAttributes,
   JSXAttributesPart,
   JSExpression,
   JSXArrayElement,
   JSXProperty,
+  JSXFragment,
+  ElementInstanceMetadataMap,
+  JSExpressionOtherJavaScript,
+  JSExpressionMapOrOtherJavascript,
+} from '../shared/element-template'
+import {
+  isJSExpressionMapOrOtherJavaScript,
+  isJSXAttributeValue,
+  isJSXElement,
+  isJSXTextBlock,
+  isUtopiaJSXComponent,
+  isJSXFragment,
+  getJSXAttribute,
   isSpreadAssignment,
   modifiableAttributeIsAttributeOtherJavaScript,
   jsxElementName,
@@ -35,17 +46,19 @@ import {
   isIntrinsicElement,
   jsxFragment,
   JSXConditionalExpression,
+  isJSExpression,
+  ArbitraryJSBlock,
 } from '../shared/element-template'
-import {
-  isParseSuccess,
-  isTextFile,
+import type {
   StaticElementPathPart,
   StaticElementPath,
   ElementPath,
   Imports,
 } from '../shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
+import type { UIDMappings, WithUIDMappings } from '../shared/uid-utils'
 import {
   fixUtopiaElement,
   generateMockNextGeneratedUID,
@@ -54,80 +67,31 @@ import {
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
 import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
+import type { GetJSXAttributeResult } from '../shared/jsx-attributes'
+import { getJSXAttributesAtPath } from '../shared/jsx-attributes'
+import { forceNotNull } from '../shared/optional-utils'
 import { getStoryboardElementPath } from './scene-utils'
-import { getJSXAttributeAtPath, GetJSXAttributeResult } from '../shared/jsx-attributes'
-import { forceNotNull, optionalMap } from '../shared/optional-utils'
 import {
-  ConditionalCase,
   conditionalWhenFalseOptic,
   conditionalWhenTrueOptic,
   getConditionalClausePath,
-  maybeBranchConditionalCase,
+  isTextEditableConditional,
 } from './conditionals'
 import { modify } from '../shared/optics/optic-utilities'
+import type { InsertionPath } from '../../components/editor/store/insertion-path'
 import {
-  childInsertionPath,
-  getElementPathFromInsertionPath,
-  InsertionPath,
+  isChildInsertionPath,
   isConditionalClauseInsertionPath,
 } from '../../components/editor/store/insertion-path'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-utils'
 import { isNullJSXAttributeValue } from '../shared/element-template'
-
-function getAllUniqueUidsInner(
-  projectContents: ProjectContentTreeRoot,
-  throwErrorWithSuspiciousActions?: string,
-): Array<string> {
-  let uniqueIDs: Set<string> = Utils.emptySet()
-
-  function extractUid(element: JSXElementChild): void {
-    if (isJSXElement(element)) {
-      fastForEach(element.children, extractUid)
-      const uidProp = getJSXAttribute(element.props, 'data-uid')
-      if (uidProp != null && isJSXAttributeValue(uidProp)) {
-        const uid = uidProp.value
-        if (throwErrorWithSuspiciousActions != null) {
-          if (uniqueIDs.has(uid)) {
-            throw new Error(
-              `Found duplicate UID: '${uid}'. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
-            )
-          }
-        }
-        uniqueIDs.add(uid)
-      } else {
-        if (throwErrorWithSuspiciousActions != null) {
-          throw new Error(
-            `Found JSXElement with missing UID. Suspicious action(s): ${throwErrorWithSuspiciousActions}`,
-          )
-        }
-      }
-    } else if (isJSXFragment(element)) {
-      fastForEach(element.children, extractUid)
-      uniqueIDs.add(element.uid)
-    } else if (isJSXConditionalExpression(element)) {
-      uniqueIDs.add(element.uid)
-      extractUid(element.whenTrue)
-      extractUid(element.whenFalse)
-    }
-  }
-
-  walkContentsTreeForParseSuccess(projectContents, (fullPath, parseSuccess) => {
-    fastForEach(parseSuccess.topLevelElements, (tle) => {
-      if (isUtopiaJSXComponent(tle)) {
-        extractUid(tle.rootElement)
-      }
-    })
-  })
-
-  return Array.from(uniqueIDs)
-}
-
-export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
+import { getAllUniqueUids } from './get-unique-ids'
+import type { ElementPathTrees } from '../shared/element-path-tree'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDS = getAllUniqueUids(projectContents)
+    const existingUIDS = getAllUniqueUids(projectContents).allIDs
     return generateUID(existingUIDS)
   } else {
     return mockUID
@@ -140,7 +104,7 @@ export function generateUidWithExistingComponentsAndExtraUids(
 ): string {
   const mockUID = generateMockNextGeneratedUID()
   if (mockUID == null) {
-    const existingUIDSFromProject = getAllUniqueUids(projectContents)
+    const existingUIDSFromProject = getAllUniqueUids(projectContents).allIDs
     return generateUID([...existingUIDSFromProject, ...additionalUids])
   } else {
     return mockUID
@@ -149,9 +113,19 @@ export function generateUidWithExistingComponentsAndExtraUids(
 
 export function guaranteeUniqueUids(
   elements: Array<JSXElementChild>,
-  existingIDs: Array<string>,
-): Array<JSXElementChild> {
-  return elements.map((element) => fixUtopiaElement(element, existingIDs))
+  existingIDsMutable: Set<string>,
+): WithUIDMappings<Array<JSXElementChild>> {
+  let mappings: UIDMappings = []
+  let value: Array<JSXElementChild> = []
+  for (const element of elements) {
+    const fixElementWithMappings = fixUtopiaElement(element, existingIDsMutable)
+    mappings.push(...fixElementWithMappings.mappings)
+    value.push(fixElementWithMappings.value)
+  }
+  return {
+    mappings: mappings,
+    value: value,
+  }
 }
 
 export function isSceneElement(
@@ -202,31 +176,29 @@ function transformAtPathOptionally(
     workingPath: string[],
   ): JSXElementChild | null {
     const [firstUIDOrIndex, ...tailPath] = workingPath
+    if (element.uid === firstUIDOrIndex && tailPath.length === 0) {
+      return transform(element)
+    }
     if (isJSXElementLike(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
-        // transform
-        if (tailPath.length === 0) {
-          return transform(element)
-        } else {
-          // we will want to transform one of our children
-          let childrenUpdated: boolean = false
-          const updatedChildren = element.children.map((child) => {
-            const possibleUpdate = findAndTransformAtPathInner(child, tailPath)
-            if (possibleUpdate != null) {
-              childrenUpdated = true
-            }
-            return Utils.defaultIfNull(child, possibleUpdate)
-          })
-          if (childrenUpdated) {
-            return {
-              ...element,
-              children: updatedChildren,
-            }
+      if (element.uid === firstUIDOrIndex) {
+        // we will want to transform one of our children
+        let childrenUpdated: boolean = false
+        const updatedChildren = element.children.map((child) => {
+          const possibleUpdate = findAndTransformAtPathInner(child, tailPath)
+          if (possibleUpdate != null) {
+            childrenUpdated = true
+          }
+          return Utils.defaultIfNull(child, possibleUpdate)
+        })
+        if (childrenUpdated) {
+          return {
+            ...element,
+            children: updatedChildren,
           }
         }
       }
-    } else if (isJSExpressionOtherJavaScript(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
+    } else if (isJSExpressionMapOrOtherJavaScript(element)) {
+      if (element.uid === firstUIDOrIndex) {
         let childrenUpdated: boolean = false
         const updatedChildren = Object.values(element.elementsWithin).reduce(
           (acc, child): ElementsWithin => {
@@ -266,7 +238,7 @@ function transformAtPathOptionally(
         }
       }
     } else if (isJSXConditionalExpression(element)) {
-      if (getUtopiaID(element) === firstUIDOrIndex) {
+      if (element.uid === firstUIDOrIndex) {
         const updatedWhenTrue = findAndTransformAtPathInner(element.whenTrue, tailPath)
         const updatedWhenFalse = findAndTransformAtPathInner(element.whenFalse, tailPath)
         if (updatedWhenTrue != null) {
@@ -281,9 +253,10 @@ function transformAtPathOptionally(
             whenFalse: updatedWhenFalse,
           }
         }
+        // TODO: remove this! We should not fall back to the conditional
         return transform(element) // if no branch matches, transform the conditional itself
       }
-      if (getUtopiaID(element.whenTrue) === firstUIDOrIndex) {
+      if (element.whenTrue.uid === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenTrue, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -292,7 +265,7 @@ function transformAtPathOptionally(
           }
         }
       }
-      if (getUtopiaID(element.whenFalse) === firstUIDOrIndex) {
+      if (element.whenFalse.uid === firstUIDOrIndex) {
         const updated = findAndTransformAtPathInner(element.whenFalse, workingPath)
         if (updated != null && isJSXElement(updated)) {
           return {
@@ -335,7 +308,7 @@ export function findJSXElementChildAtPath(
     workingPath: Array<string>,
   ): JSXElementChild | null {
     const firstUIDOrIndex = workingPath[0]
-    if (isJSExpressionOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
+    if (isJSExpressionMapOrOtherJavaScript(element) && firstUIDOrIndex in element.elementsWithin) {
       const elementWithin = element.elementsWithin[firstUIDOrIndex]
       const withinResult = findAtPathInner(elementWithin, workingPath)
       if (withinResult != null) {
@@ -358,7 +331,11 @@ export function findJSXElementChildAtPath(
         // this is the element we want
         return element
       } else {
-        if (isJSXElementLike(element)) {
+        if (isJSExpressionMapOrOtherJavaScript(element)) {
+          // We've found the expression that this element lives inside, so on the next call we
+          // should find it in elementsWithin
+          return findAtPathInner(element, tailPath)
+        } else if (isJSXElementLike(element)) {
           // we will want to delve into the children
           const children = element.children
           for (const child of children) {
@@ -434,7 +411,7 @@ export function rearrangeJsxChildren(
 
 export function removeJSXElementChild(
   target: StaticElementPath,
-  rootElements: Array<UtopiaJSXComponent>,
+  components: Array<UtopiaJSXComponent>,
 ): Array<UtopiaJSXComponent> {
   const parentPath = EP.parentPath(target)
   const targetID = EP.toUid(target)
@@ -481,139 +458,176 @@ export function removeJSXElementChild(
   }
 
   const lastElementPathPart = EP.lastElementPathForPath(parentPath)
-  return lastElementPathPart == null
-    ? rootElements
-    : transformAtPathOptionally(
-        rootElements,
-        lastElementPathPart,
-        (parentElement: JSXElementChild) => {
-          return removeRelevantChild(parentElement, true)
-        },
-      ).elements
+  if (lastElementPathPart == null) {
+    // This implies that `parentPath` is empty and as such `target` is a single UID path...
+    return components.map((component) => {
+      // ...As such we're targeting a root element of one of these components.
+      if (component.rootElement.uid === targetID) {
+        return {
+          ...component,
+          rootElement: jsExpressionValue(null, emptyComments, component.rootElement.uid),
+        }
+      } else {
+        return component
+      }
+    })
+  } else {
+    return transformAtPathOptionally(
+      components,
+      lastElementPathPart,
+      (parentElement: JSXElementChild) => {
+        return removeRelevantChild(parentElement, true)
+      },
+    ).elements
+  }
 }
 
 export interface InsertChildAndDetails {
   components: Array<UtopiaJSXComponent>
   insertionDetails: string | null
+  insertedChildrenPaths: Array<ElementPath>
   importsToAdd: Imports
 }
 
 export function insertChildAndDetails(
   components: Array<UtopiaJSXComponent>,
-  insertionDetails: string | null = null,
+  insertionDetails: string | null,
+  insertedChildrenPaths: Array<ElementPath>,
   importsToAdd: Imports = {},
 ): InsertChildAndDetails {
   return {
     components: components,
     insertionDetails: insertionDetails,
+    insertedChildrenPaths: insertedChildrenPaths,
     importsToAdd: importsToAdd,
   }
 }
 
-export function insertJSXElementChild(
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null,
-  targetParent: InsertionPath | null,
-  elementToInsert: JSXElementChild,
+export function insertJSXElementChildren(
+  targetParent: InsertionPath,
+  elementsToInsert: Array<JSXElementChild>,
   components: Array<UtopiaJSXComponent>,
   indexPosition: IndexPosition | null,
 ): InsertChildAndDetails {
-  const makeE = () => {
-    // TODO delete me
-    throw new Error('Should not attempt to create empty elements.')
-  }
+  const parentPath: StaticElementPath = targetParent.intendedParentPath
+  let importsToAdd: Imports = {}
+  let insertedChildrenPaths: Array<ElementPath> = []
+  const updatedComponents = transformJSXComponentAtPath(components, parentPath, (parentElement) => {
+    if (isChildInsertionPath(targetParent)) {
+      if (!isJSXElementLike(parentElement)) {
+        throw new Error("Target parent for child element insertion doesn't support children")
+      }
+      let updatedChildren: Array<JSXElementChild>
+      if (indexPosition == null) {
+        updatedChildren = [...parentElement.children, ...elementsToInsert]
+      } else {
+        updatedChildren = addElementsToArrayAtIndexPosition(
+          elementsToInsert,
+          parentElement.children,
+          indexPosition,
+        )
+      }
 
-  function getConditionalCase(
-    conditional: JSXConditionalExpression,
-    parentPath: ElementPath,
-    target: InsertionPath,
-  ) {
-    if (isConditionalClauseInsertionPath(target)) {
-      return target.clause
+      insertedChildrenPaths = elementsToInsert.map((child) =>
+        EP.appendToPath(parentPath, child.uid),
+      )
+
+      return {
+        ...parentElement,
+        children: updatedChildren,
+      }
+    } else if (isConditionalClauseInsertionPath(targetParent)) {
+      if (!isJSXConditionalExpression(parentElement)) {
+        throw new Error('Target parent for conditional insertion is not conditional expression')
+      }
+      // Determine which clause of the conditional we want to modify.
+      const conditionalCase = targetParent.clause
+      const toClauseOptic =
+        conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
+
+      return modify(
+        toClauseOptic,
+        (clauseValue) => {
+          const [elementToInsert, ...restOfElementsToInsert] = elementsToInsert
+
+          if (elementToInsert == null) {
+            throw new Error('Attempting to insert an empty array of elements')
+          }
+
+          if (
+            targetParent.insertBehavior.type === 'replace-with-single-element' &&
+            restOfElementsToInsert.length > 0
+          ) {
+            throw new Error('Conditional slots only support a single child')
+          }
+
+          if (
+            targetParent.insertBehavior.type === 'wrap-in-fragment-and-append-elements' &&
+            isNullJSXAttributeValue(clauseValue)
+          ) {
+            throw new Error('Attempting to wrap a `null` with a fragment')
+          }
+
+          const { insertBehavior } = targetParent
+          switch (insertBehavior.type) {
+            case 'replace-with-single-element':
+              insertedChildrenPaths = [
+                elementPathFromInsertionPath(targetParent, elementToInsert.uid),
+              ]
+              return elementToInsert
+            case 'replace-with-elements-wrapped-in-fragment':
+              insertedChildrenPaths = elementsToInsert.map((element) =>
+                elementPathFromInsertionPath(targetParent, element.uid),
+              )
+              return jsxFragment(insertBehavior.fragmentUID, elementsToInsert, true)
+
+            case 'wrap-in-fragment-and-append-elements':
+              insertedChildrenPaths = elementsToInsert.map((element) =>
+                elementPathFromInsertionPath(targetParent, element.uid),
+              )
+              return jsxFragment(
+                insertBehavior.fragmentUID,
+                [...elementsToInsert, clauseValue],
+                true,
+              )
+
+            default:
+              assertNever(insertBehavior)
+          }
+        },
+        parentElement,
+      )
+    } else {
+      assertNever(targetParent)
     }
+  })
+  return insertChildAndDetails(updatedComponents, null, insertedChildrenPaths, importsToAdd)
+}
 
-    // TODO this should be deleted and an invariant error should be thrown
-    return (
-      maybeBranchConditionalCase(
-        EP.parentPath(parentPath),
-        conditional,
-        target.intendedParentPath,
-      ) ?? 'true-case'
-    )
-  }
-
-  const targetParentIncludingStoryboardRoot =
-    targetParent ??
-    optionalMap(childInsertionPath, getStoryboardElementPath(projectContents, openFile))
-
-  if (targetParentIncludingStoryboardRoot == null) {
-    return insertChildAndDetails(components)
+export function elementPathFromInsertionPath(
+  insertionPath: InsertionPath,
+  elementUID: string,
+): ElementPath {
+  if (insertionPath.type === 'CHILD_INSERTION') {
+    return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
+  } else if (insertionPath.type === 'CONDITIONAL_CLAUSE_INSERTION') {
+    switch (insertionPath.insertBehavior.type) {
+      case 'replace-with-single-element':
+        return EP.appendToPath(insertionPath.intendedParentPath, elementUID)
+      case 'replace-with-elements-wrapped-in-fragment':
+      case 'wrap-in-fragment-and-append-elements':
+        return EP.appendToPath(
+          EP.appendToPath(
+            insertionPath.intendedParentPath,
+            insertionPath.insertBehavior.fragmentUID,
+          ),
+          elementUID,
+        )
+      default:
+        assertNever(insertionPath.insertBehavior)
+    }
   } else {
-    const parentPath = getElementPathFromInsertionPath(targetParentIncludingStoryboardRoot)
-    let details: string | null = null
-    let importsToAdd: Imports = {}
-    const updatedComponents = transformJSXComponentAtPath(
-      components,
-      parentPath,
-      (parentElement) => {
-        if (isJSXConditionalExpression(parentElement)) {
-          // Determine which clause of the conditional we want to modify.
-          const conditionalCase = getConditionalCase(
-            parentElement,
-            parentPath,
-            targetParentIncludingStoryboardRoot,
-          )
-          const toClauseOptic =
-            conditionalCase === 'true-case' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic
-          // Update the clause if it currently holds a null value.
-          return modify(
-            toClauseOptic,
-            (clauseValue) => {
-              if (isNullJSXAttributeValue(clauseValue)) {
-                return elementToInsert
-              } else if (isJSXFragment(clauseValue)) {
-                return parentElement
-              } else {
-                // for wrapping multiple elements
-                importsToAdd = {
-                  react: {
-                    importedAs: 'React',
-                    importedFromWithin: [],
-                    importedWithName: null,
-                  },
-                }
-                return jsxFragment(
-                  generateUidWithExistingComponents(projectContents),
-                  [elementToInsert, clauseValue],
-                  false,
-                )
-              }
-            },
-            parentElement,
-          )
-        } else if (isJSXElementLike(parentElement)) {
-          let updatedChildren: Array<JSXElementChild>
-          if (indexPosition == null) {
-            updatedChildren = parentElement.children.concat(elementToInsert)
-          } else {
-            updatedChildren = Utils.addToArrayWithFill(
-              elementToInsert,
-              parentElement.children,
-              indexPosition,
-              makeE,
-            )
-          }
-          return {
-            ...parentElement,
-            children: updatedChildren,
-          }
-        } else {
-          return parentElement
-        }
-      },
-    )
-
-    return insertChildAndDetails(updatedComponents, details, importsToAdd)
+    assertNever(insertionPath)
   }
 }
 
@@ -649,6 +663,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
     elements.length > 0 &&
     elements.every((element) => {
       switch (element.type) {
+        case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe if it is true for the current branch?
           return false // We can't possibly know at this point
@@ -679,6 +694,7 @@ function allElementsAndChildrenAreText(elements: Array<JSXElementChild>): boolea
 
 export function elementOnlyHasTextChildren(element: JSXElementChild): boolean {
   switch (element.type) {
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'JSX_CONDITIONAL_EXPRESSION': // TODO: maybe we the current branch only includes text children???
       return false // We can't possibly know at this point
@@ -741,10 +757,13 @@ export function componentHonoursPropsPosition(component: UtopiaJSXComponent): bo
   } else {
     const rootElement = component.rootElement
     if (isJSXElement(rootElement)) {
-      const leftStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'left'))
-      const topStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'top'))
-      const rightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'right'))
-      const bottomStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'bottom'))
+      const leftStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'left'))
+      const topStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'top'))
+      const rightStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'right'))
+      const bottomStyleAttr = getJSXAttributesAtPath(
+        rootElement.props,
+        PP.create('style', 'bottom'),
+      )
       return (
         ((propertyComesFromPropsStyle(component.param, leftStyleAttr, 'left') ||
           propertyComesFromPropsStyle(component.param, rightStyleAttr, 'right')) &&
@@ -764,8 +783,11 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   } else {
     const rootElement = component.rootElement
     if (isJSXElement(rootElement)) {
-      const widthStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'width'))
-      const heightStyleAttr = getJSXAttributeAtPath(rootElement.props, PP.create('style', 'height'))
+      const widthStyleAttr = getJSXAttributesAtPath(rootElement.props, PP.create('style', 'width'))
+      const heightStyleAttr = getJSXAttributesAtPath(
+        rootElement.props,
+        PP.create('style', 'height'),
+      )
       return (
         (propertyComesFromPropsStyle(component.param, widthStyleAttr, 'width') &&
           propertyComesFromPropsStyle(component.param, heightStyleAttr, 'height')) ||
@@ -777,19 +799,33 @@ export function componentHonoursPropsSize(component: UtopiaJSXComponent): boolea
   }
 }
 
-export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): boolean {
+function checkJSReferencesVariable(
+  jsExpression: JSExpressionMapOrOtherJavascript,
+  variableName: string,
+  variableUseToCheck: string,
+): boolean {
+  return (
+    jsExpression.definedElsewhere.includes(variableName) &&
+    jsExpression.transpiledJavascript.includes(variableUseToCheck)
+  )
+}
+
+function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttributes): boolean {
   const boundParam = propsParam.boundParam
   switch (boundParam.type) {
     case 'REGULAR_PARAM': {
-      const styleProp = getJSXAttributeAtPath(attributes, PP.create('style'))
+      const propsVariableName = boundParam.paramName
+      const stylePropPath = `${propsVariableName}.style`
+      const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
       const styleAttribute = styleProp.attribute
       switch (styleAttribute.type) {
         case 'ATTRIBUTE_NOT_FOUND':
           return false
         case 'ATTRIBUTE_VALUE':
           return false
+        case 'JSX_MAP_EXPRESSION':
         case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-          return false
+          return checkJSReferencesVariable(styleAttribute, propsVariableName, stylePropPath)
         case 'ATTRIBUTE_NESTED_ARRAY':
           return false
         case 'ATTRIBUTE_NESTED_OBJECT':
@@ -797,10 +833,7 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
             if (isSpreadAssignment(attributePart)) {
               const spreadPart = attributePart.value
               if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
-                return (
-                  spreadPart.definedElsewhere.includes(boundParam.paramName) &&
-                  spreadPart.transpiledJavascript.includes(`${boundParam.paramName}.style`)
-                )
+                return checkJSReferencesVariable(spreadPart, propsVariableName, stylePropPath)
               }
             }
             return false
@@ -824,15 +857,20 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
             // This is the aliased name or if there's no alias the field name.
             const propertyToLookFor = partBoundParam.paramName
 
-            const styleProp = getJSXAttributeAtPath(attributes, PP.create('style'))
+            const styleProp = getJSXAttributesAtPath(attributes, PP.create('style'))
             const styleAttribute = styleProp.attribute
             switch (styleAttribute.type) {
               case 'ATTRIBUTE_NOT_FOUND':
                 return false
               case 'ATTRIBUTE_VALUE':
                 return false
+              case 'JSX_MAP_EXPRESSION':
               case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-                return false
+                return checkJSReferencesVariable(
+                  styleAttribute,
+                  propertyToLookFor,
+                  propertyToLookFor,
+                )
               case 'ATTRIBUTE_NESTED_ARRAY':
                 return false
               case 'ATTRIBUTE_NESTED_OBJECT':
@@ -840,9 +878,10 @@ export function propsStyleIsSpreadInto(propsParam: Param, attributes: JSXAttribu
                   if (isSpreadAssignment(attributePart)) {
                     const spreadPart = attributePart.value
                     if (modifiableAttributeIsAttributeOtherJavaScript(spreadPart)) {
-                      return (
-                        spreadPart.definedElsewhere.includes(propertyToLookFor) &&
-                        spreadPart.transpiledJavascript.includes(propertyToLookFor)
+                      return checkJSReferencesVariable(
+                        spreadPart,
+                        propertyToLookFor,
+                        propertyToLookFor,
                       )
                     }
                   }
@@ -880,6 +919,7 @@ export function propertyComesFromPropsStyle(
       return false
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       const boundParam = propsParam.boundParam
       switch (boundParam.type) {
@@ -937,6 +977,7 @@ export function elementUsesProperty(
       })
       const fromAttributes = attributesUseProperty(element.props, propsParam, property)
       return fromChildren || fromAttributes
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(element.originalJavascript, propsParam, property)
     case 'JSX_TEXT_BLOCK':
@@ -1003,6 +1044,7 @@ export function attributeUsesProperty(
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return codeUsesProperty(attribute.javascript, propsParam, property)
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -1043,11 +1085,21 @@ export type ElementSupportsChildren =
   | 'supportsChildren'
   | 'hasOnlyTextChildren'
   | 'doesNotSupportChildren'
+  | 'conditionalWithText'
 
 export function elementChildSupportsChildrenAlsoText(
   element: JSXElementChild,
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
 ): ElementSupportsChildren | null {
+  if (isJSExpression(element)) {
+    return 'doesNotSupportChildren'
+  }
   if (isJSXConditionalExpression(element)) {
+    if (isTextEditableConditional(path, metadata, elementPathTree)) {
+      return 'conditionalWithText'
+    }
     return 'doesNotSupportChildren'
   }
   if (elementOnlyHasTextChildren(element)) {
@@ -1059,6 +1111,9 @@ export function elementChildSupportsChildrenAlsoText(
         return intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
           ? 'supportsChildren'
           : 'doesNotSupportChildren'
+      }
+      if (element.children.length > 0) {
+        return 'supportsChildren'
       }
     }
     // We don't know at this stage.

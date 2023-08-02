@@ -1,7 +1,7 @@
 import { LayoutSystem } from 'utopia-api/core' // TODO fixme this imports utopia-api
 import { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import type { LoginState } from '../../../common/user'
-import { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
+import type { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import type {
   JSExpression,
   JSXElement,
@@ -33,25 +33,21 @@ import type {
   ElementPath,
   ImageFile,
 } from '../../../core/shared/project-file-types'
-import { BuildType } from '../../../core/workers/common/worker-types'
+import type { BuildType } from '../../../core/workers/common/worker-types'
 import type { Key, KeysPressed } from '../../../utils/keyboard'
-import { IndexPosition } from '../../../utils/utils'
+import type { IndexPosition } from '../../../utils/utils'
 import type { CSSCursor } from '../../../uuiui-deps'
-import { ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import CanvasActions from '../../canvas/canvas-actions'
 import type { PinOrFlexFrameChange, SelectionLocked } from '../../canvas/canvas-types'
-import { CanvasCommand } from '../../canvas/commands/commands'
+import type { CanvasCommand } from '../../canvas/commands/commands'
 import type { EditorPane, EditorPanel } from '../../common/actions'
-import { Notice } from '../../common/notice'
+import type { Notice } from '../../common/notice'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
-import {
-  InsertableComponent,
-  StylePropOption,
-  WrapContentOption,
-} from '../../shared/project-components'
+import type { InsertableComponent, StylePropOption } from '../../shared/project-components'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -79,7 +75,6 @@ import type {
   InsertDroppedImage,
   InsertImageIntoUI,
   InsertJSXElement,
-  InsertScene,
   MoveSelectedBackward,
   MoveSelectedForward,
   MoveSelectedToBack,
@@ -87,7 +82,6 @@ import type {
   OpenCodeEditorFile,
   OpenPopup,
   OpenTextEditor,
-  PasteJSXElements,
   AddToast,
   RemoveToast,
   Redo,
@@ -106,7 +100,6 @@ import type {
   SaveImageSwitchMode,
   SelectAllSiblings,
   SelectComponents,
-  SendLinterRequestMessage,
   SendPreviewModel,
   SetAspectRatioLock,
   SetCanvasFrames,
@@ -115,7 +108,7 @@ import type {
   SetCodeEditorVisibility,
   SetCursorOverlay,
   SetFilebrowserRenamingTarget,
-  SetHighlightedView,
+  SetHighlightedViews,
   SetLeftMenuExpanded,
   SetLeftMenuTab,
   SetMainUIFile,
@@ -126,7 +119,6 @@ import type {
   SetProjectName,
   SetProjectDescription,
   SetProp,
-  SetPropWithElementPath,
   SetRightMenuExpanded,
   SetRightMenuTab,
   SetSafeMode,
@@ -138,7 +130,6 @@ import type {
   ShowModal,
   StartCheckpointTimer,
   SwitchEditorMode,
-  SwitchLayoutSystem,
   ToggleCanvasIsLive,
   ToggleCollapse,
   ToggleHidden,
@@ -150,7 +141,7 @@ import type {
   Undo,
   UnsetProperty,
   UnwrapElement,
-  UpdateChildText,
+  UpdateText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
   UpdateEditorMode,
@@ -165,19 +156,12 @@ import type {
   UpdatePreviewConnected,
   UpdatePropertyControlsInfo,
   UpdateThumbnailGenerated,
-  WrapInView,
-  UpdateFromCodeEditor,
-  MarkVSCodeBridgeReady,
-  SelectFromFileAndPosition,
-  SendCodeEditorInitialisation,
   CloseDesignerFile,
   SetFocusedElement,
   AddImports,
   ScrollToElement,
-  WorkerCodeUpdate,
   WorkerParsedUpdate,
   SetScrollAnimation,
-  UpdateConfigFromVSCode,
   SetFollowSelectionEnabled,
   SetLoginState,
   ResetCanvas,
@@ -195,12 +179,9 @@ import type {
   AddTailwindConfig,
   FocusClassNameInput,
   WrapInElement,
-  SetInspectorLayoutSectionHovered,
   DecrementResizeOptionsSelectedIndex,
   IncrementResizeOptionsSelectedIndex,
   SetResizeOptionsTargetOptions,
-  HideVSCodeLoadingScreen,
-  SetIndexedDBFailed,
   ForceParseFile,
   RemoveFromNodeModulesContents,
   RunEscapeHatch,
@@ -208,21 +189,18 @@ import type {
   ToggleSelectionLock,
   ElementPaste,
   SetGithubState,
-  SetProperty,
   UpdateProjectContents,
   UpdateGithubSettings,
   SetImageDragSessionState as SetDragSessionState,
   UpdateGithubOperations,
-  UpdateGithubChecksums,
   UpdateBranchContents,
   UpdateAgainstGithub,
   UpdateGithubData,
   RemoveFileConflict,
   SetRefreshingDependencies,
   SetUserConfiguration,
-  SetHoveredView,
+  SetHoveredViews,
   ClearHoveredViews,
-  SetAssetChecksum,
   ApplyCommandsAction,
   WorkerCodeAndParsedUpdate,
   UpdateColorSwatches,
@@ -232,8 +210,15 @@ import type {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
+  CutSelectionToClipboard,
+  ExecutePostActionMenuChoice,
+  StartPostActionSession,
+  ClearPostActionSession,
+  ScrollToElementBehaviour,
+  OpenCodeEditor,
 } from '../action-types'
-import { EditorModes, insertionSubject, InsertionSubjectWrapper, Mode } from '../editor-modes'
+import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
+import { EditorModes, insertionSubject } from '../editor-modes'
 import type {
   ImageDragSessionState,
   DuplicationState,
@@ -252,19 +237,16 @@ import type {
   UserConfiguration,
   ThemeSetting,
   ColorSwatch,
+  PostActionMenuData,
 } from '../store/editor-state'
-import { InsertionPath } from '../store/insertion-path'
+import type { InsertionPath } from '../store/insertion-path'
+import type { TextProp } from '../../text-editor/text-editor'
+import { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 
 export function clearSelection(): EditorAction {
   return {
     action: 'CLEAR_SELECTION',
-  }
-}
-
-export function insertScene(frame: CanvasRectangle): InsertScene {
-  return {
-    action: 'INSERT_SCENE',
-    frame: frame,
   }
 }
 
@@ -299,19 +281,6 @@ export function unsetProperty(element: ElementPath, property: PropertyPath): Uns
     action: 'UNSET_PROPERTY',
     element: element,
     property: property,
-  }
-}
-
-export function setProperty(
-  element: ElementPath,
-  property: PropertyPath,
-  value: JSExpression,
-): SetProperty {
-  return {
-    action: 'SET_PROPERTY',
-    element: element,
-    property: property,
-    value: value,
   }
 }
 
@@ -453,22 +422,15 @@ export function elementPaste(
   }
 }
 
-export function pasteJSXElements(
-  pasteInto: InsertionPath,
-  elements: Array<ElementPaste>,
-  targetOriginalContextMetadata: ElementInstanceMetadataMap,
-): PasteJSXElements {
-  return {
-    action: 'PASTE_JSX_ELEMENTS',
-    pasteInto: pasteInto,
-    elements: elements,
-    targetOriginalContextMetadata: targetOriginalContextMetadata,
-  }
-}
-
 export function copySelectionToClipboard(): CopySelectionToClipboard {
   return {
     action: 'COPY_SELECTION_TO_CLIPBOARD',
+  }
+}
+
+export function cutSelectionToClipboard(): CutSelectionToClipboard {
+  return {
+    action: 'CUT_SELECTION_TO_CLIPBOARD',
   }
 }
 
@@ -592,17 +554,31 @@ export function setRightMenuExpanded(expanded: boolean): SetRightMenuExpanded {
   }
 }
 
-export function setHighlightedView(target: ElementPath): SetHighlightedView {
+export function setHighlightedView(target: ElementPath): SetHighlightedViews {
   return {
-    action: 'SET_HIGHLIGHTED_VIEW',
-    target: target,
+    action: 'SET_HIGHLIGHTED_VIEWS',
+    targets: [target],
   }
 }
 
-export function setHoveredView(target: ElementPath): SetHoveredView {
+export function setHighlightedViews(targets: ElementPath[]): SetHighlightedViews {
   return {
-    action: 'SET_HOVERED_VIEW',
-    target: target,
+    action: 'SET_HIGHLIGHTED_VIEWS',
+    targets: targets,
+  }
+}
+
+export function setHoveredView(target: ElementPath): SetHoveredViews {
+  return {
+    action: 'SET_HOVERED_VIEWS',
+    targets: [target],
+  }
+}
+
+export function setHoveredViews(targets: ElementPath[]): SetHoveredViews {
+  return {
+    action: 'SET_HOVERED_VIEWS',
+    targets: targets,
   }
 }
 
@@ -741,16 +717,6 @@ export function resetPins(target: ElementPath): ResetPins {
   }
 }
 
-export function wrapInGroup(targets: Array<ElementPath>): WrapInView {
-  return wrapInView(targets, 'default-empty-div')
-  // FIXME: Make Groups Great Again.
-  //return {
-  //  action: 'WRAP_IN_VIEW',
-  //  targets: targets,
-  //  layoutSystem: LayoutSystem.Group,
-  //}
-}
-
 export function unwrapElement(target: ElementPath): UnwrapElement {
   return {
     action: 'UNWRAP_ELEMENT',
@@ -762,21 +728,6 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
   return {
     action: 'OPEN_FLOATING_INSERT_MENU',
     mode: mode,
-  }
-}
-
-export function wrapInView(
-  targets: Array<ElementPath>,
-  whatToWrapWith: { element: JSXElement; importsToAdd: Imports } | 'default-empty-div',
-  layoutSystem: SettableLayoutSystem = LayoutSystem.PinSystem,
-  newParentMainAxis: 'horizontal' | 'vertical' | null = null,
-): WrapInView {
-  return {
-    action: 'WRAP_IN_VIEW',
-    targets: targets,
-    layoutSystem: layoutSystem,
-    newParentMainAxis: newParentMainAxis,
-    whatToWrapWith: whatToWrapWith,
   }
 }
 
@@ -929,6 +880,12 @@ export function setCodeEditorVisibility(value: boolean): SetCodeEditorVisibility
   return {
     action: 'SET_CODE_EDITOR_VISIBILITY',
     value: value,
+  }
+}
+
+export function openCodeEditor(): OpenCodeEditor {
+  return {
+    action: 'OPEN_CODE_EDITOR',
   }
 }
 
@@ -1090,70 +1047,40 @@ export function removeFileConflict(path: string): RemoveFileConflict {
   }
 }
 
-export function workerCodeUpdate(
-  filePath: string,
-  code: string,
-  highlightBounds: HighlightBoundsForUids,
-  lastRevisedTime: number,
-): WorkerCodeUpdate {
-  return {
-    type: 'WORKER_CODE_UPDATE',
-    filePath: filePath,
-    code: code,
-    highlightBounds: highlightBounds,
-    lastRevisedTime: lastRevisedTime,
-  }
-}
-
 export function workerCodeAndParsedUpdate(
   filePath: string,
   code: string,
-  highlightBounds: HighlightBoundsForUids,
   parsed: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): WorkerCodeAndParsedUpdate {
   return {
     type: 'WORKER_CODE_AND_PARSED_UPDATE',
     filePath: filePath,
     code: code,
-    highlightBounds: highlightBounds,
     parsed: parsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
 export function workerParsedUpdate(
   filePath: string,
   parsed: ParsedTextFile,
-  lastRevisedTime: number,
+  versionNumber: number,
 ): WorkerParsedUpdate {
   return {
     type: 'WORKER_PARSED_UPDATE',
     filePath: filePath,
     parsed: parsed,
-    lastRevisedTime: lastRevisedTime,
+    versionNumber: versionNumber,
   }
 }
 
 export function updateFromWorker(
-  updates: Array<WorkerCodeUpdate | WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
+  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>,
 ): UpdateFromWorker {
   return {
     action: 'UPDATE_FROM_WORKER',
     updates: updates,
-  }
-}
-
-export function updateFromCodeEditor(
-  filePath: string,
-  savedContent: string,
-  unsavedContent: string | null,
-): UpdateFromCodeEditor {
-  return {
-    action: 'UPDATE_FROM_CODE_EDITOR',
-    filePath: filePath,
-    savedContent: savedContent,
-    unsavedContent: unsavedContent,
   }
 }
 
@@ -1207,20 +1134,6 @@ export function setProp_UNSAFE(
 ): SetProp {
   return {
     action: 'SET_PROP',
-    target: target,
-    propertyPath: propertyPath,
-    value: value,
-  }
-}
-
-/** WARNING: you probably don't want to use setProp, instead you should use a domain-specific action! */
-export function setPropWithElementPath_UNSAFE(
-  target: StaticElementPathPart,
-  propertyPath: PropertyPath,
-  value: JSExpression,
-): SetPropWithElementPath {
-  return {
-    action: 'SET_PROP_WITH_ELEMENT_PATH',
     target: target,
     propertyPath: propertyPath,
     value: value,
@@ -1293,17 +1206,6 @@ export function toggleProperty(
   }
 }
 
-export function switchLayoutSystem(
-  layoutSystem: SettableLayoutSystem,
-  propertyTarget: ReadonlyArray<string>,
-): SwitchLayoutSystem {
-  return {
-    action: 'SWITCH_LAYOUT_SYSTEM',
-    layoutSystem: layoutSystem,
-    propertyTarget: propertyTarget,
-  }
-}
-
 export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
   return {
     action: 'INSERT_IMAGE_INTO_UI',
@@ -1313,7 +1215,7 @@ export function insertImageIntoUI(imagePath: string): InsertImageIntoUI {
 
 export function updateJSXElementName(
   target: ElementPath,
-  elementName: JSXElementName,
+  elementName: { type: 'JSX_ELEMENT'; name: JSXElementName } | { type: 'JSX_FRAGMENT' },
   importsToAdd: Imports,
 ): UpdateJSXElementName {
   return {
@@ -1452,48 +1354,12 @@ export function addStoryboardFile(): AddStoryboardFile {
   }
 }
 
-export function sendLinterRequestMessage(
-  filePath: string,
-  content: string,
-): SendLinterRequestMessage {
+export function updateText(target: ElementPath, text: string, textProp: TextProp): UpdateText {
   return {
-    action: 'SEND_LINTER_REQUEST_MESSAGE',
-    filePath: filePath,
-    content: content,
-  }
-}
-
-export function updateChildText(target: ElementPath, text: string): UpdateChildText {
-  return {
-    action: 'UPDATE_CHILD_TEXT',
+    action: 'UPDATE_TEXT',
     target: target,
     text: text,
-  }
-}
-
-export function markVSCodeBridgeReady(ready: boolean): MarkVSCodeBridgeReady {
-  return {
-    action: 'MARK_VSCODE_BRIDGE_READY',
-    ready: ready,
-  }
-}
-
-export function selectFromFileAndPosition(
-  filePath: string,
-  line: number,
-  column: number,
-): SelectFromFileAndPosition {
-  return {
-    action: 'SELECT_FROM_FILE_AND_POSITION',
-    filePath: filePath,
-    line: line,
-    column: column,
-  }
-}
-
-export function sendCodeEditorInitialisation(): SendCodeEditorInitialisation {
-  return {
-    action: 'SEND_CODE_EDITOR_INITIALISATION',
+    textProp: textProp,
   }
 }
 
@@ -1508,12 +1374,12 @@ export function setFocusedElement(
 
 export function scrollToElement(
   focusedElementElementPath: ElementPath,
-  keepScrollPositionIfVisible: boolean,
+  behaviour: ScrollToElementBehaviour,
 ): ScrollToElement {
   return {
     action: 'SCROLL_TO_ELEMENT',
     target: focusedElementElementPath,
-    keepScrollPositionIfVisible: keepScrollPositionIfVisible,
+    behaviour: behaviour,
   }
 }
 
@@ -1528,13 +1394,6 @@ export function setFollowSelectionEnabled(value: boolean): SetFollowSelectionEna
   return {
     action: 'SET_FOLLOW_SELECTION_ENABLED',
     value: value,
-  }
-}
-
-export function updateConfigFromVSCode(config: UtopiaVSCodeConfig): UpdateConfigFromVSCode {
-  return {
-    action: 'UPDATE_CONFIG_FROM_VSCODE',
-    config: config,
   }
 }
 
@@ -1579,21 +1438,6 @@ export function setRefreshingDependencies(value: boolean): SetRefreshingDependen
   }
 }
 
-export function updateGithubChecksums(checksums: FileChecksums | null): UpdateGithubChecksums {
-  return {
-    action: 'UPDATE_GITHUB_CHECKSUMS',
-    checksums: checksums,
-  }
-}
-
-export function setAssetChecksum(filename: string, checksum: string | null): SetAssetChecksum {
-  return {
-    action: 'SET_ASSET_CHECKSUM',
-    filename: filename,
-    checksum: checksum,
-  }
-}
-
 export function resetCanvas(): ResetCanvas {
   return {
     action: 'RESET_CANVAS',
@@ -1634,18 +1478,16 @@ export function updateFormulaBarMode(value: 'css' | 'content'): UpdateFormulaBar
 }
 
 export function insertInsertable(
-  targetParent: ElementPath,
+  insertionPath: InsertionPath | null,
   toInsert: InsertableComponent,
   styleProps: StylePropOption,
-  wrapContent: WrapContentOption,
   indexPosition: IndexPosition | null,
 ): InsertInsertable {
   return {
     action: 'INSERT_INSERTABLE',
-    targetParent: targetParent,
+    insertionPath: insertionPath,
     toInsert: toInsert,
     styleProps: styleProps,
-    wrapContent: wrapContent,
     indexPosition: indexPosition,
   }
 }
@@ -1653,15 +1495,6 @@ export function insertInsertable(
 export function addTailwindConfig(): AddTailwindConfig {
   return {
     action: 'ADD_TAILWIND_CONFIG',
-  }
-}
-
-export function setInspectorLayoutSectionHovered(
-  hovered: boolean,
-): SetInspectorLayoutSectionHovered {
-  return {
-    action: 'SET_INSPECTOR_LAYOUT_SECTION_HOVERED',
-    hovered: hovered,
   }
 }
 
@@ -1685,18 +1518,6 @@ export function setResizeOptionsTargetOptions(
     action: 'SET_RESIZE_OPTIONS_TARGET_OPTIONS',
     propertyTargetOptions: propertyTargetOptions,
     index: index,
-  }
-}
-export function hideVSCodeLoadingScreen(): HideVSCodeLoadingScreen {
-  return {
-    action: 'HIDE_VSCODE_LOADING_SCREEN',
-  }
-}
-
-export function setIndexedDBFailed(indexedDBFailed: boolean): SetIndexedDBFailed {
-  return {
-    action: 'SET_INDEXED_DB_FAILED',
-    indexedDBFailed: indexedDBFailed,
   }
 }
 
@@ -1787,5 +1608,25 @@ export function switchConditionalBranches(target: ElementPath): SwitchConditiona
   return {
     action: 'SWITCH_CONDITIONAL_BRANCHES',
     target: target,
+  }
+}
+
+export function executePostActionMenuChoice(choice: PostActionChoice): ExecutePostActionMenuChoice {
+  return {
+    action: 'EXECUTE_POST_ACTION_MENU_CHOICE',
+    choice: choice,
+  }
+}
+
+export function startPostActionSession(data: PostActionMenuData): StartPostActionSession {
+  return {
+    action: 'START_POST_ACTION_SESSION',
+    data: data,
+  }
+}
+
+export function clearPostActionData(): ClearPostActionSession {
+  return {
+    action: 'CLEAR_POST_ACTION_SESSION',
   }
 }

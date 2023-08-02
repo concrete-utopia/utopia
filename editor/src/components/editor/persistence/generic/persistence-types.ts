@@ -18,6 +18,16 @@ export interface ProjectModelWithId<ModelType> {
   projectModel: ProjectModel<ModelType>
 }
 
+export interface PersistenceContext<ModelType> {
+  projectId?: string
+  project?: ProjectModel<ModelType>
+  rollbackProjectId?: string
+  rollbackProject?: ProjectModel<ModelType>
+  queuedSave?: ProjectModel<ModelType>
+  projectOwned: boolean
+  loggedIn: boolean
+}
+
 export interface ProjectLoadSuccess<ModelType> extends ProjectModelWithId<ModelType> {
   type: 'PROJECT_LOAD_SUCCESS'
 }

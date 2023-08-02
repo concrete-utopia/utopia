@@ -1,4 +1,4 @@
-import {
+import type {
   ProjectContents,
   ImageFile,
   ProjectFile,
@@ -6,21 +6,20 @@ import {
   TextFile,
   AssetFile,
   ParseSuccess,
-  isTextFile,
-  isParseSuccess,
-  isAssetFile,
 } from '../core/shared/project-file-types'
+import { isTextFile, isParseSuccess, isAssetFile } from '../core/shared/project-file-types'
 import { isDirectory, directory, isImageFile } from '../core/model/project-file-utils'
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
-import { fastForEach } from '../core/shared/utils'
-import { mapValues, objectMap, propOrNull } from '../core/shared/object-utils'
+import { assertNever, fastForEach } from '../core/shared/utils'
+import { mapValues, propOrNull } from '../core/shared/object-utils'
 import { emptySet } from '../core/shared/set-utils'
 import { sha1 } from 'sha.js'
-import { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
-import type { FileChecksums } from './editor/store/editor-state'
+import type { GithubFileChanges, TreeConflicts } from '../core/shared/github/helpers'
+import type { FileChecksumsWithFile } from './editor/store/editor-state'
 import { memoize } from '../core/shared/memoize'
-import { Optic, traversal } from '../core/shared/optics/optics'
+import type { Optic } from '../core/shared/optics/optics'
+import { traversal } from '../core/shared/optics/optics'
 
 export interface AssetFileWithFileName {
   fileName: string
@@ -44,9 +43,17 @@ export function getAllProjectAssetFiles(
   return allProjectAssets
 }
 
-function getSHA1Checksum(contents: string | Buffer): string {
+function getSHA1ChecksumInner(contents: string | Buffer): string {
   return new sha1().update(contents).digest('hex')
 }
+
+// Memoized because it can be called for the same piece of code more than once before the
+// checksum gets cached. For example in the canvas strategies and the regular dispatch flow, which don't share
+// those cached checksum objects.
+const getSHA1Checksum = memoize(getSHA1ChecksumInner, {
+  maxSize: 10,
+  equals: (first, second) => first === second,
+})
 
 export function inferGitBlobChecksum(buffer: Buffer): string {
   // This function returns the same SHA1 checksum string that git would return for the same contents.
@@ -58,55 +65,92 @@ export function inferGitBlobChecksum(buffer: Buffer): string {
   return getSHA1Checksum(wrapped)
 }
 
+export function checkFilesHaveSameContent(first: ProjectFile, second: ProjectFile): boolean {
+  switch (first.type) {
+    case 'DIRECTORY':
+      return first.type === second.type
+    case 'TEXT_FILE':
+      if (first.type === second.type) {
+        return first.fileContents.code === second.fileContents.code
+      } else {
+        return false
+      }
+    case 'IMAGE_FILE':
+    case 'ASSET_FILE':
+      if (first.type === second.type) {
+        if (first.gitBlobSha != null && second.gitBlobSha != null) {
+          return first.gitBlobSha === second.gitBlobSha
+        } else if (first.base64 != null && second.base64 != null) {
+          return first.base64 === second.base64
+        } else {
+          return false
+        }
+      } else {
+        return false
+      }
+    default:
+      assertNever(first)
+  }
+}
+
 export function getProjectContentsChecksums(
   tree: ProjectContentTreeRoot,
-  assetChecksums: FileChecksums,
-): FileChecksums {
-  const contents = treeToContents(tree)
-
-  const checksums: FileChecksums = {}
-  Object.keys(contents).forEach((filename) => {
-    const file = contents[filename]
-    if (file == null) {
-      return
-    }
-
-    switch (file.type) {
-      case 'TEXT_FILE':
-        checksums[filename] = getSHA1Checksum(file.fileContents.code)
-        break
-      case 'ASSET_FILE':
-      case 'IMAGE_FILE':
-        if (file.gitBlobSha != null) {
-          checksums[filename] = file.gitBlobSha
-        } else if (file.base64 != undefined) {
-          checksums[filename] = getSHA1Checksum(file.base64)
-        } else if (Object.keys(assetChecksums).includes(filename)) {
-          checksums[filename] = assetChecksums[filename]
+  previousChecksums: FileChecksumsWithFile,
+): FileChecksumsWithFile {
+  const updatedChecksums: FileChecksumsWithFile = {}
+  walkContentsTree(tree, (filename, file) => {
+    if (file.type !== 'DIRECTORY') {
+      let usedPreviousChecksum: boolean = false
+      if (filename in previousChecksums) {
+        const previousChecksum = previousChecksums[filename]
+        if (checkFilesHaveSameContent(previousChecksum.file, file)) {
+          updatedChecksums[filename] = previousChecksum
+          usedPreviousChecksum = true
         }
-        break
-      case 'DIRECTORY':
-        break
-      default:
-        const _exhaustiveCheck: never = file
-        throw new Error(`Invalid file type`)
+      }
+      if (!usedPreviousChecksum) {
+        switch (file.type) {
+          case 'TEXT_FILE':
+            updatedChecksums[filename] = {
+              file: file,
+              checksum: getSHA1Checksum(file.fileContents.code),
+            }
+            break
+          case 'ASSET_FILE':
+          case 'IMAGE_FILE':
+            if (file.gitBlobSha != null) {
+              updatedChecksums[filename] = {
+                file: file,
+                checksum: file.gitBlobSha,
+              }
+            } else if (file.base64 != undefined) {
+              updatedChecksums[filename] = {
+                file: file,
+                checksum: getSHA1Checksum(file.base64),
+              }
+            }
+            break
+          default:
+            assertNever(file)
+        }
+      }
     }
   })
 
-  return checksums
+  return updatedChecksums
 }
 
 export function deriveGithubFileChanges(
-  projectChecksums: FileChecksums,
-  githubChecksums: FileChecksums | null,
+  previousChecksums: FileChecksumsWithFile | null,
+  currentChecksums: FileChecksumsWithFile,
   treeConflicts: TreeConflicts,
 ): GithubFileChanges | null {
-  if (githubChecksums == null || Object.keys(githubChecksums).length === 0) {
+  if (previousChecksums == null || currentChecksums == null) {
     return null
   }
 
-  const projectFiles = new Set(Object.keys(projectChecksums))
-  const githubFiles = new Set(Object.keys(githubChecksums))
+  const previousFiles = new Set(Object.keys(previousChecksums))
+  const currentFiles = new Set(Object.keys(currentChecksums))
 
   let untracked: Array<string> = []
   let modified: Array<string> = []
@@ -114,20 +158,20 @@ export function deriveGithubFileChanges(
   const conflicted: Array<string> = Object.keys(treeConflicts)
   const conflictedSet = new Set(conflicted)
 
-  projectFiles.forEach((f) => {
+  previousFiles.forEach((f) => {
     if (!conflictedSet.has(f)) {
-      if (!githubFiles.has(f)) {
-        untracked.push(f)
-      } else if (githubChecksums[f] !== projectChecksums[f]) {
+      if (!currentFiles.has(f)) {
+        deleted.push(f)
+      } else if (currentChecksums[f].checksum !== previousChecksums[f].checksum) {
         modified.push(f)
       }
     }
   })
 
-  githubFiles.forEach((f) => {
+  currentFiles.forEach((f) => {
     if (!conflictedSet.has(f)) {
-      if (!projectFiles.has(f)) {
-        deleted.push(f)
+      if (!previousFiles.has(f)) {
+        untracked.push(f)
       }
     }
   })
@@ -331,7 +375,7 @@ export function walkContentsTree(
   })
 }
 
-interface PathAndFileEntry {
+export interface PathAndFileEntry {
   fullPath: string
   file: ProjectFile
 }

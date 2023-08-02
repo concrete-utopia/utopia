@@ -1,19 +1,20 @@
 import React from 'react'
 import { createSelector } from 'reselect'
 import { assertNever } from '../../core/shared/utils'
-import { ControlStatus, getControlStyles } from '../../uuiui-deps'
+import type { ControlStatus } from '../../uuiui-deps'
+import { getControlStyles } from '../../uuiui-deps'
 import { useSetHoveredControlsHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
-import {
-  SubduedPaddingControlProps,
-  SubduedPaddingControl,
-} from '../canvas/controls/select-mode/subdued-padding-control'
+import type { SubduedPaddingControlProps } from '../canvas/controls/select-mode/subdued-padding-control'
+import { SubduedPaddingControl } from '../canvas/controls/select-mode/subdued-padding-control'
 import { EdgePieces } from '../canvas/padding-utils'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { CanvasControlWithProps } from './common/inspector-atoms'
-import { OptionChainControl, OptionChainOption } from './controls/option-chain-control'
+import type { CanvasControlWithProps } from './common/inspector-atoms'
+import type { OptionChainOption } from './controls/option-chain-control'
+import { OptionChainControl } from './controls/option-chain-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
-import { detectPackedSpacedSetting, PackedSpaced } from './inspector-common'
+import type { PackedSpaced } from './inspector-common'
+import { detectPackedSpacedSetting } from './inspector-common'
 import {
   setSpacingModePackedStrategies,
   setSpacingModeSpaceBetweenStrategies,
@@ -48,6 +49,7 @@ const packedSpacedSelector = createSelector(
 export const SpacedPackedControl = React.memo(() => {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const dispatch = useDispatch()
@@ -62,6 +64,7 @@ export const SpacedPackedControl = React.memo(() => {
             dispatch,
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setSpacingModePackedStrategies,
           )
@@ -70,6 +73,7 @@ export const SpacedPackedControl = React.memo(() => {
             dispatch,
             metadataRef.current,
             selectedViewsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
             setSpacingModeSpaceBetweenStrategies,
           )
@@ -77,7 +81,7 @@ export const SpacedPackedControl = React.memo(() => {
           assertNever(value)
       }
     },
-    [allElementPropsRef, dispatch, metadataRef, selectedViewsRef],
+    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =

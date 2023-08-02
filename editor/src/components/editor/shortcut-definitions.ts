@@ -1,6 +1,7 @@
-import { Key, Keyboard } from '../../utils/keyboard'
+import type { Key } from '../../utils/keyboard'
+import { Keyboard } from '../../utils/keyboard'
+import type { ComplexMap } from '../../utils/map'
 import {
-  ComplexMap,
   emptyComplexMap,
   addToComplexMap,
   getKeysFromComplexMap,
@@ -78,6 +79,7 @@ export const TOGGLE_TEXT_BOLD = 'toggle-text-bold'
 export const TOGGLE_TEXT_ITALIC = 'toggle-text-italic'
 export const TOGGLE_TEXT_UNDERLINE = 'toggle-text-underline'
 export const TOGGLE_TEXT_STRIKE_THROUGH = 'toggle-text-strike-through'
+export const PASTE_TO_REPLACE = 'paste-to-replace'
 export const PASTE_STYLE_PROPERTIES = 'paste-style-properties'
 export const COPY_STYLE_PROPERTIES = 'copy-style-properties'
 
@@ -85,6 +87,7 @@ export const OPEN_EYEDROPPPER = 'open-eyedropper'
 export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
 export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
 export const RESIZE_TO_FIT = 'resize-to-fit'
+export const OPEN_INSERT_MENU = 'open-insert-menu'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -246,7 +249,9 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [REMOVE_ABSOLUTE_POSITIONING]: shortcut(`Strip absolute sizing props props`, key('x', [])),
   [COPY_STYLE_PROPERTIES]: shortcut('Copy style properties', key('c', ['alt', 'cmd'])),
   [PASTE_STYLE_PROPERTIES]: shortcut('Paste style properties', key('v', ['alt', 'cmd'])),
+  [PASTE_TO_REPLACE]: shortcut('Paste to replace', key('v', ['shift', 'cmd'])),
   [RESIZE_TO_FIT]: shortcut('Resize selected elements to fit', key('r', ['alt', 'cmd', 'shift'])),
+  [OPEN_INSERT_MENU]: shortcut('Open insert menu', key('k', ['cmd'])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

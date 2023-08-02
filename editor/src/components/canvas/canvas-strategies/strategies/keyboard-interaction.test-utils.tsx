@@ -1,30 +1,29 @@
 import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import { right } from '../../../../core/shared/either'
 import { elementPath } from '../../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
+import { jsxElement, jsxElementName } from '../../../../core/shared/element-template'
 import { canvasRectangle } from '../../../../core/shared/math-utils'
-import { KeyCharacter } from '../../../../utils/keyboard'
-import { Modifiers } from '../../../../utils/modifiers'
-import { EditorState } from '../../../editor/store/editor-state'
+import type { KeyCharacter } from '../../../../utils/keyboard'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { EditorState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   pickCanvasStateFromEditorState,
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
-import {
+import type {
   CanvasStrategy,
   CustomStrategyState,
-  defaultCustomStrategyState,
   InteractionCanvasState,
 } from '../canvas-strategy-types'
-import {
-  createInteractionViaKeyboard,
-  InteractionSession,
-  StrategyState,
-} from '../interaction-state'
+import { defaultCustomStrategyState } from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
+import { createInteractionViaKeyboard, StrategyState } from '../interaction-state'
 
 export function pressKeys(
   editorState: EditorState,
@@ -42,6 +41,7 @@ export function pressKeys(
         ['scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
       ]),
+      element: right(jsxElement(jsxElementName('View', []), 'bbb', [], [])),
       specialSizeMeasurements: {
         position: 'absolute',
         immediateParentBounds: canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
@@ -58,6 +58,7 @@ export function pressKeys(
     ),
     latestMetadata: metadata,
     latestAllElementProps: null as any,
+    latestElementPathTree: null as any,
   }
 
   const strategy = strategyFactoryFunction(

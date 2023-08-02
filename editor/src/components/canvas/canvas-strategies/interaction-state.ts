@@ -1,30 +1,28 @@
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { last } from '../../../core/shared/array-utils'
-import { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { CanvasPoint, CanvasVector } from '../../../core/shared/math-utils'
 import {
-  CanvasPoint,
-  CanvasVector,
   magnitude,
   offsetPoint,
   pointDifference,
   roundPointTo,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { assertNever } from '../../../core/shared/utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { KeyCharacter } from '../../../utils/keyboard'
-import { Modifiers } from '../../../utils/modifiers'
-import { AllElementProps } from '../../editor/store/editor-state'
-import { BorderRadiusCorner } from '../border-radius-control-utils'
-import { EdgePiece, EdgePosition } from '../canvas-types'
+import type { KeyCharacter } from '../../../utils/keyboard'
+import type { Modifiers } from '../../../utils/modifiers'
+import type { AllElementProps } from '../../editor/store/editor-state'
+import type { BorderRadiusCorner } from '../border-radius-control-utils'
+import type { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
-import { CanvasCommand } from '../commands/commands'
-import { ApplicableStrategy } from './canvas-strategies'
-import {
-  CanvasStrategyId,
-  CustomStrategyState,
-  defaultCustomStrategyState,
-} from './canvas-strategy-types'
+import type { CanvasCommand } from '../commands/commands'
+import type { ApplicableStrategy } from './canvas-strategies'
+import type { CanvasStrategyId, CustomStrategyState } from './canvas-strategy-types'
+import { defaultCustomStrategyState } from './canvas-strategy-types'
+import { ElementPasteWithMetadata } from '../../../utils/clipboard'
 
 export type ZeroDragPermitted = 'zero-drag-permitted' | 'zero-drag-not-permitted'
 
@@ -35,7 +33,6 @@ export interface DragInteractionData {
   prevDrag: CanvasVector | null
   originalDragStart: CanvasPoint
   modifiers: Modifiers
-  globalTime: number
   hasMouseMoved: boolean
   _accumulatedMovement: CanvasVector
   spacePressed: boolean
@@ -94,6 +91,7 @@ export interface InteractionSession {
   lastInteractionTime: number
   latestMetadata: ElementInstanceMetadataMap
   latestAllElementProps: AllElementProps
+  latestElementPathTree: ElementPathTrees
 
   // To track if the user selected a strategy
   userPreferredStrategy: CanvasStrategyId | null
@@ -114,6 +112,7 @@ export function interactionSession(
   allElementProps: AllElementProps,
   updatedTargetPaths: UpdatedPathMap,
   aspectRatioLock: number | null,
+  elementPathTree: ElementPathTrees,
 ): InteractionSession {
   return {
     interactionData: interactionData,
@@ -125,12 +124,13 @@ export function interactionSession(
     latestAllElementProps: allElementProps,
     updatedTargetPaths: updatedTargetPaths,
     aspectRatioLock: aspectRatioLock,
+    latestElementPathTree: elementPathTree,
   }
 }
 
 export type InteractionSessionWithoutMetadata = Omit<
   InteractionSession,
-  'latestMetadata' | 'latestAllElementProps'
+  'latestMetadata' | 'latestAllElementProps' | 'latestElementPathTree'
 >
 
 export interface CommandDescription {
@@ -151,6 +151,7 @@ export interface StrategyState {
 
   startingMetadata: ElementInstanceMetadataMap // TODO delete me!
   startingAllElementProps: AllElementProps // TODO delete me!!!!
+  startingElementPathTree: ElementPathTrees // TODO delete me!!!!
 
   customStrategyState: CustomStrategyState
 }
@@ -158,6 +159,7 @@ export interface StrategyState {
 export function createEmptyStrategyState(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
 ): StrategyState {
   return {
     currentStrategy: null,
@@ -169,6 +171,7 @@ export function createEmptyStrategyState(
     startingMetadata: metadata,
     customStrategyState: defaultCustomStrategyState(),
     startingAllElementProps: allElementProps,
+    startingElementPathTree: elementPathTree,
   }
 }
 
@@ -186,7 +189,6 @@ export function createInteractionViaMouse(
       prevDrag: null,
       originalDragStart: mouseDownPoint,
       modifiers: modifiers,
-      globalTime: Date.now(),
       hasMouseMoved: false,
       _accumulatedMovement: zeroCanvasPoint,
       spacePressed: false,
@@ -247,7 +249,6 @@ export function updateInteractionViaDragDelta(
         prevDrag: currentState.interactionData.drag,
         originalDragStart: currentState.interactionData.originalDragStart,
         modifiers: modifiers,
-        globalTime: Date.now(),
         hasMouseMoved: true,
         _accumulatedMovement: accumulatedMovement,
         spacePressed: currentState.interactionData.spacePressed,
@@ -321,7 +322,6 @@ function updateInteractionDataViaMouse(
             prevDrag: currentData.drag,
             originalDragStart: currentData.originalDragStart,
             modifiers: modifiers,
-            globalTime: Date.now(),
             hasMouseMoved: true,
             _accumulatedMovement: currentData._accumulatedMovement,
             spacePressed: currentData.spacePressed,
@@ -335,7 +335,6 @@ function updateInteractionDataViaMouse(
             prevDrag: null,
             originalDragStart: mousePoint,
             modifiers: modifiers,
-            globalTime: Date.now(),
             hasMouseMoved: false,
             _accumulatedMovement: zeroCanvasPoint,
             spacePressed: false,
@@ -427,7 +426,6 @@ export function updateInteractionViaKeyboard(
           prevDrag: currentState.interactionData.prevDrag,
           originalDragStart: currentState.interactionData.originalDragStart,
           modifiers: modifiers,
-          globalTime: Date.now(),
           hasMouseMoved: currentState.interactionData.hasMouseMoved,
           _accumulatedMovement: currentState.interactionData._accumulatedMovement,
           spacePressed: isSpacePressed,

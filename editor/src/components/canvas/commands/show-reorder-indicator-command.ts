@@ -1,19 +1,19 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { findLastIndex, reverse } from '../../../core/shared/array-utils'
+import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   canvasRectangle,
-  CanvasRectangle,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { singleAxisAutoLayoutContainerDirections } from '../canvas-strategies/strategies/flow-reorder-helpers'
+import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import {
   getSiblingMidPointPosition,
   siblingAndPseudoPositions,
-  SiblingPosition,
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -45,6 +45,7 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   const staticContainerDirection = singleAxisAutoLayoutContainerDirections(
     command.target,
     editor.jsxMetadata,
+    editor.elementPathTree,
   )
 
   if (staticContainerDirection === 'non-single-axis-autolayout') {
@@ -62,9 +63,11 @@ export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
     'Should have a valid flex orientation.',
     staticContainerDirection.forwardOrReverse,
   )
-  const siblings = MetadataUtils.getChildrenUnordered(editor.jsxMetadata, command.target).map(
-    (sibling) => sibling.elementPath,
-  )
+  const siblings = MetadataUtils.getChildrenOrdered(
+    editor.jsxMetadata,
+    editor.elementPathTree,
+    command.target,
+  ).map((sibling) => sibling.elementPath)
 
   if (siblings.length === 0) {
     return {

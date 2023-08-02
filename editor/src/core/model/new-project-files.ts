@@ -1,8 +1,8 @@
+import type { TextFile } from '../shared/project-file-types'
 import {
   codeFile,
   RevisionsState,
   textFile,
-  TextFile,
   textFileContents,
   unparsed,
 } from '../shared/project-file-types'
@@ -22,17 +22,12 @@ export function appJSFile(): TextFile {
     textFileContents(sampleAppJSCode, unparsed, RevisionsState.CodeAhead),
     null,
     null,
-    Date.now(),
+    0,
   )
 }
 
 export function getDefaultUIJsFile(): TextFile {
-  return textFile(
-    textFileContents(sampleCode, unparsed, RevisionsState.CodeAhead),
-    null,
-    null,
-    Date.now(),
-  )
+  return textFile(textFileContents(sampleCode, unparsed, RevisionsState.CodeAhead), null, null, 0)
 }
 
 export const sampleCode = `

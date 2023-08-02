@@ -48,7 +48,8 @@ const permanentRegister = function proxyConsole(type: string, callback: ConsoleP
         try {
           const message = arguments[0]
           if (typeof message === 'string' && reactFrameStack.length > 0) {
-            callback(message, reactFrameStack[reactFrameStack.length - 1])
+            // `reactFrameStack` entry must exist because of length check.
+            callback(message, reactFrameStack[reactFrameStack.length - 1]!)
           }
         } catch (err) {
           // Warnings must never crash. Rethrow with a clean stack.

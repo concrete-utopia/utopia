@@ -4,24 +4,26 @@ import type {
   StaticElementPathPart,
   ElementPath,
 } from './project-file-types'
-import {
+import type {
   CanvasRectangle,
-  LocalRectangle,
   LocalPoint,
-  zeroCanvasRect,
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
 } from './math-utils'
-import { Either, isRight } from './either'
+import { LocalRectangle, zeroCanvasRect } from './math-utils'
+import type { Either } from './either'
+import { isRight } from './either'
 import { v4 as UUID } from 'uuid'
-import { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
+import type { RawSourceMap } from '../workers/ts/ts-typings/RawSourceMap'
 import * as PP from './property-path'
-import { Sides, sides, LayoutSystem } from 'utopia-api/core'
+import type { Sides, LayoutSystem } from 'utopia-api/core'
+import { sides } from 'utopia-api/core'
 import { assertNever, fastForEach, unknownObjectProperty } from './utils'
 import { addAllUniquely, mapDropNulls, reverse } from './array-utils'
 import { objectMap } from './object-utils'
-import { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
-import { ModifiableAttribute, jsxSimpleAttributeToValue } from './jsx-attributes'
+import type { CSSPosition, FlexDirection } from '../../components/inspector/common/css-utils'
+import type { ModifiableAttribute } from './jsx-attributes'
+import { jsxSimpleAttributeToValue } from './jsx-attributes'
 import * as EP from './element-path'
 import { firstLetterIsLowerCase } from './string-utils'
 import { intrinsicHTMLElementNamesAsStrings } from './dom-utils'
@@ -170,7 +172,7 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
-export interface JSExpressionOtherJavaScript {
+export type JSExpressionOtherJavaScript = {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   originalJavascript: string
   javascript: string
@@ -178,8 +180,7 @@ export interface JSExpressionOtherJavaScript {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-  elementsWithin: ElementsWithin
-}
+} & WithElementsWithin
 
 export function jsExpressionOtherJavaScript(
   javascript: string,
@@ -192,6 +193,37 @@ export function jsExpressionOtherJavaScript(
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     originalJavascript: javascript,
+    javascript: javascript,
+    transpiledJavascript: transpiledJavascript,
+    definedElsewhere: definedElsewhere,
+    sourceMap: sourceMap,
+    uid: uid,
+    elementsWithin: elementsWithin,
+  }
+}
+
+export type JSXMapExpression = {
+  type: 'JSX_MAP_EXPRESSION'
+  originalJavascript: string
+  javascript: string
+  transpiledJavascript: string
+  definedElsewhere: Array<string>
+  sourceMap: RawSourceMap | null
+  uid: string
+} & WithElementsWithin
+
+export function jsxMapExpression(
+  originalJavascript: string,
+  javascript: string,
+  transpiledJavascript: string,
+  definedElsewhere: Array<string>,
+  sourceMap: RawSourceMap | null,
+  elementsWithin: ElementsWithin,
+  uid: string = UUID(),
+): JSXMapExpression {
+  return {
+    type: 'JSX_MAP_EXPRESSION',
+    originalJavascript: originalJavascript,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
@@ -219,13 +251,13 @@ export function jsxSpreadAssignment(
 
 export interface JSXPropertyAssignment extends WithComments {
   type: 'PROPERTY_ASSIGNMENT'
-  key: string
+  key: string | number
   value: JSExpression
   keyComments: ParsedComments
 }
 
 export function jsxPropertyAssignment(
-  key: string,
+  key: string | number,
   value: JSExpression,
   comments: ParsedComments,
   keyComments: ParsedComments,
@@ -373,10 +405,13 @@ export type JSExpression =
   | JSExpressionNestedArray
   | JSExpressionNestedObject
   | JSExpressionFunctionCall
+  | JSXMapExpression
+
+export type JSExpressionMapOrOtherJavascript = JSExpressionOtherJavaScript | JSXMapExpression
 
 export function clearJSExpressionOtherJavaScriptUniqueIDs(
-  attribute: JSExpressionOtherJavaScript,
-): JSExpressionOtherJavaScript {
+  attribute: JSExpressionMapOrOtherJavascript,
+): JSExpressionMapOrOtherJavascript {
   const updatedElementsWithin = objectMap(clearJSXElementUniqueIDs, attribute.elementsWithin)
   return {
     ...attribute,
@@ -409,6 +444,7 @@ export function simplifyAttributesIfPossible(attributes: JSXAttributes): JSXAttr
 export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpression {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_FUNCTION_CALL':
       return attribute
@@ -440,9 +476,9 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
         }
       }
       if (isSimpleArray) {
-        return jsExpressionValue(simpleArray, attribute.comments)
+        return jsExpressionValue(simpleArray, attribute.comments, attribute.uid)
       } else {
-        return jsExpressionNestedArray(notSoSimpleArray, attribute.comments)
+        return jsExpressionNestedArray(notSoSimpleArray, attribute.comments, attribute.uid)
       }
     case 'ATTRIBUTE_NESTED_OBJECT':
       let simpleObject: MapLike<unknown> = {}
@@ -487,9 +523,9 @@ export function simplifyAttributeIfPossible(attribute: JSExpression): JSExpressi
         }
       }
       if (isSimpleObject) {
-        return jsExpressionValue(simpleObject, attribute.comments)
+        return jsExpressionValue(simpleObject, attribute.comments, attribute.uid)
       } else {
-        return jsExpressionNestedObject(notSoSimpleObject, attribute.comments)
+        return jsExpressionNestedObject(notSoSimpleObject, attribute.comments, attribute.uid)
       }
     default:
       const _exhaustiveCheck: never = attribute
@@ -501,6 +537,7 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return jsExpressionValue(attribute.value, attribute.comments, '')
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSExpressionOtherJavaScriptUniqueIDs(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -553,8 +590,8 @@ export function clearExpressionUniqueIDs(attribute: JSExpression): JSExpression 
 }
 
 export function clearJSXAttributeOtherJavaScriptSourceMaps(
-  attribute: JSExpressionOtherJavaScript,
-): JSExpressionOtherJavaScript {
+  attribute: JSExpressionMapOrOtherJavascript,
+): JSExpressionMapOrOtherJavascript {
   return {
     ...attribute,
     sourceMap: null,
@@ -565,6 +602,7 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return attribute
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearJSXAttributeOtherJavaScriptSourceMaps(attribute)
     case 'ATTRIBUTE_NESTED_ARRAY':
@@ -581,11 +619,13 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
       return jsExpressionFunctionCall(
         attribute.functionName,
         attribute.parameters.map(clearAttributeSourceMaps),
+        attribute.uid,
       )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return jsExpressionNestedObject(
@@ -606,6 +646,7 @@ export function clearAttributeSourceMaps(attribute: JSExpression): JSExpression 
           }
         }),
         emptyComments,
+        attribute.uid,
       )
     default:
       const _exhaustiveCheck: never = attribute
@@ -667,9 +708,7 @@ export function modifiableAttributeIsAttributeNotFound(
   return unknownObjectProperty(attribute, 'type') === 'ATTRIBUTE_NOT_FOUND'
 }
 
-export function isRegularJSXAttribute(
-  attribute: JSExpression | PartOfJSXAttributeValue | JSXAttributeNotFound,
-): attribute is JSExpression {
+export function isRegularJSXAttribute(attribute: ModifiableAttribute): attribute is JSExpression {
   return (
     attribute != null &&
     !modifiableAttributeIsPartOfAttributeValue(attribute) &&
@@ -679,12 +718,12 @@ export function isRegularJSXAttribute(
 
 export interface JSXAttributesEntry extends WithComments {
   type: 'JSX_ATTRIBUTES_ENTRY'
-  key: string
+  key: string | number
   value: JSExpression
 }
 
 export function jsxAttributesEntry(
-  key: string,
+  key: string | number,
   value: JSExpression,
   comments: ParsedComments,
 ): JSXAttributesEntry {
@@ -734,8 +773,12 @@ export function jsxAttributesFromMap(map: MapLike<JSExpression>): Array<JSXAttri
   })
 }
 
-export function getJSXAttribute(attributes: JSXAttributes, key: string): JSExpression | null {
-  for (const attrPart of reverse(attributes)) {
+export function getJSXAttribute(
+  attributes: JSXAttributes,
+  key: string | number,
+): JSExpression | null {
+  for (let index = attributes.length - 1; index >= 0; index--) {
+    const attrPart = attributes[index]
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         if (attrPart.key === key) {
@@ -757,7 +800,7 @@ export function getJSXAttributeForced(attributes: JSXAttributes, key: string): M
   return forceNotNull('Should not be null.', getJSXAttribute(attributes, key))
 }
 
-export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXAttributes {
+export function deleteJSXAttribute(attributes: JSXAttributes, key: string | number): JSXAttributes {
   let newAttributes: JSXAttributes = []
   for (const attrPart of attributes) {
     switch (attrPart.type) {
@@ -779,18 +822,17 @@ export function deleteJSXAttribute(attributes: JSXAttributes, key: string): JSXA
 
 export function setJSXAttributesAttribute(
   attributes: JSXAttributes,
-  key: string,
+  key: string | number,
   value: JSExpression,
 ): JSXAttributes {
   let updatedExistingField: boolean = false
-  const simplifiedValue = simplifyAttributeIfPossible(value)
   let result: JSXAttributes = []
 
   for (const attrPart of attributes) {
     switch (attrPart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
         if (attrPart.key === key) {
-          result.push(jsxAttributesEntry(key, simplifiedValue, attrPart.comments))
+          result.push(jsxAttributesEntry(key, value, attrPart.comments))
           updatedExistingField = true
         } else {
           result.push(attrPart)
@@ -806,17 +848,22 @@ export function setJSXAttributesAttribute(
   }
 
   if (!updatedExistingField) {
-    result.push(jsxAttributesEntry(key, simplifiedValue, emptyComments))
+    result.push(jsxAttributesEntry(key, value, emptyComments))
   }
   return result
 }
+
+const AllowedExternalReferences = ['React', 'utopiaCanvasJSXLookup']
 
 export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
       return false
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return attribute.definedElsewhere.length > 0
+      return (
+        attribute.definedElsewhere.filter((r) => !AllowedExternalReferences.includes(r)).length > 0
+      )
     case 'ATTRIBUTE_NESTED_OBJECT':
       return attribute.content.some((subAttr) => {
         return attributeReferencesElsewhere(subAttr.value)
@@ -826,9 +873,7 @@ export function attributeReferencesElsewhere(attribute: JSExpression): boolean {
         return attributeReferencesElsewhere(subAttr.value)
       })
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return attribute.parameters.some((parameter) => {
-        return attributeReferencesElsewhere(parameter)
-      })
+      return true
     default:
       const _exhaustiveCheck: never = attribute
       throw new Error(`Unhandled attribute type ${JSON.stringify(attribute)}`)
@@ -850,33 +895,75 @@ export function jsxAttributesPartReferencesElsewhere(attrPart: JSXAttributesPart
 export function elementReferencesElsewhere(element: JSXElementChild): boolean {
   switch (element.type) {
     case 'JSX_ELEMENT':
-      return element.props.some(jsxAttributesPartReferencesElsewhere)
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return element.definedElsewhere.length > 0
+      return (
+        element.props.some(jsxAttributesPartReferencesElsewhere) ||
+        element.children.some(elementReferencesElsewhere)
+      )
     case 'JSX_TEXT_BLOCK':
       return false
     case 'JSX_FRAGMENT':
       return element.children.some(elementReferencesElsewhere)
     case 'JSX_CONDITIONAL_EXPRESSION':
       return (
+        elementReferencesElsewhere(element.condition) ||
         elementReferencesElsewhere(element.whenTrue) ||
         elementReferencesElsewhere(element.whenFalse)
       )
-    case 'ATTRIBUTE_VALUE':
-      return false
-    case 'ATTRIBUTE_NESTED_ARRAY':
-      return element.content.some((contentPart) => {
-        return elementReferencesElsewhere(contentPart.value)
-      })
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      return element.content.some((contentPart) => {
-        return elementReferencesElsewhere(contentPart.value)
-      })
-    case 'ATTRIBUTE_FUNCTION_CALL':
-      return element.parameters.some(elementReferencesElsewhere)
     default:
-      const _exhaustiveCheck: never = element
-      throw new Error(`Unhandled element type ${JSON.stringify(element)}`)
+      return attributeReferencesElsewhere(element)
+  }
+}
+
+export function getElementReferencesElsewherePathsFromProps(
+  element: JSXElementChild,
+  pathSoFar: PropertyPath,
+): PropertyPath[] {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+      return element.props.flatMap((prop) =>
+        prop.type === 'JSX_ATTRIBUTES_SPREAD'
+          ? []
+          : getElementReferencesElsewherePathsFromProps(
+              prop.value,
+              PP.append(pathSoFar, PP.create(prop.key)),
+            ),
+      )
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      const spreads: JSXSpreadAssignment[] = []
+      const assigments: JSXPropertyAssignment[] = []
+      element.content.forEach((c) => {
+        switch (c.type) {
+          case 'PROPERTY_ASSIGNMENT':
+            assigments.push(c)
+            break
+          case 'SPREAD_ASSIGNMENT':
+            spreads.push(c)
+            break
+          default:
+            assertNever(c)
+        }
+      })
+      if (spreads.length > 0) {
+        return [pathSoFar] // if a spread assignment is present, overwrite the whole prop
+      }
+      return assigments.flatMap((assignment) =>
+        getElementReferencesElsewherePathsFromProps(
+          assignment.value,
+          PP.append(pathSoFar, PP.create(assignment.key)),
+        ),
+      )
+    case 'JSX_FRAGMENT':
+    case 'JSX_CONDITIONAL_EXPRESSION':
+    case 'JSX_TEXT_BLOCK':
+      return [] // no props present on these elements
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return [pathSoFar] // replace the property corresponding to these values
+    default:
+      assertNever(element)
   }
 }
 
@@ -910,17 +997,38 @@ export function getDefinedElsewhereFromAttributes(attributes: JSXAttributes): Ar
   }, [])
 }
 
+function getDefinedElsewhereFromElementChild(
+  working: Array<string>,
+  child: JSXElementChild,
+): Array<string> {
+  switch (child.type) {
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_MAP_EXPRESSION':
+      return addAllUniquely(working, child.definedElsewhere)
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      const withCondition = getDefinedElsewhereFromElementChild(working, child.condition)
+      const withWhenTrue = getDefinedElsewhereFromElementChild(withCondition, child.whenTrue)
+      return getDefinedElsewhereFromElementChild(withWhenTrue, child.whenFalse)
+    case 'JSX_ELEMENT':
+      return addAllUniquely(working, getDefinedElsewhereFromElement(child))
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return working
+    default:
+      assertNever(child)
+  }
+}
+
 export function getDefinedElsewhereFromElement(element: JSXElement): Array<string> {
   const fromAttributes = getDefinedElsewhereFromAttributes(element.props)
-  return element.children.reduce((working, child) => {
-    if (isJSExpressionOtherJavaScript(child)) {
-      return addAllUniquely(working, child.definedElsewhere)
-    } else if (isJSXElement(child)) {
-      return addAllUniquely(working, getDefinedElsewhereFromElement(child))
-    } else {
-      return working
-    }
-  }, fromAttributes)
+  return element.children.reduce(
+    (working, child) => getDefinedElsewhereFromElementChild(working, child),
+    fromAttributes,
+  )
 }
 
 export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttributes {
@@ -995,6 +1103,10 @@ export function isIntrinsicElementFromString(name: string): boolean {
 
 export function isIntrinsicElement(name: JSXElementName): boolean {
   return PP.depth(name.propertyPath) === 0 && isIntrinsicElementFromString(name.baseVariable)
+}
+
+export function isSVGElement(name: JSXElementName): boolean {
+  return PP.depth(name.propertyPath) === 0 && name.baseVariable === 'svg'
 }
 
 export function isIntrinsicHTMLElementString(name: string): boolean {
@@ -1075,16 +1187,23 @@ export function clearJSXFragmentWithoutUIDUniqueIDs(
 
 export type ElementsWithin = { [uid: string]: JSXElement }
 
-export type JSXArbitraryBlock = JSExpression
+export interface WithElementsWithin {
+  elementsWithin: ElementsWithin
+}
 
-export function jsxArbitraryBlock(
+export function hasElementsWithin(e: unknown): e is WithElementsWithin {
+  return (e as WithElementsWithin).elementsWithin != null
+}
+
+export function jsExpression(
   originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
-): JSXArbitraryBlock {
+  uid: string = UUID(),
+): JSExpression {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
     originalJavascript: originalJavascript,
@@ -1092,7 +1211,7 @@ export function jsxArbitraryBlock(
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uid: UUID(),
+    uid: uid,
     elementsWithin: elementsWithin,
   }
 }
@@ -1103,11 +1222,11 @@ export interface JSXTextBlock {
   uid: string
 }
 
-export function jsxTextBlock(text: string): JSXTextBlock {
+export function jsxTextBlock(text: string, uid: string = UUID()): JSXTextBlock {
   return {
     type: 'JSX_TEXT_BLOCK',
     text: text,
-    uid: UUID(),
+    uid: uid,
   }
 }
 
@@ -1200,7 +1319,7 @@ export function jsxConditionalExpression(
 
 export type JSXElementChild =
   | JSXElement
-  | JSXArbitraryBlock
+  | JSExpression
   | JSXTextBlock
   | JSXFragment
   | JSXConditionalExpression
@@ -1237,7 +1356,17 @@ export function isJSExpressionOtherJavaScript(
   return element.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
-export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArbitraryBlock {
+export function isJSXMapExpression(element: JSXElementChild) {
+  return element.type === 'JSX_MAP_EXPRESSION'
+}
+
+export function isJSExpressionMapOrOtherJavaScript(
+  element: JSXElementChild,
+): element is JSExpressionMapOrOtherJavascript {
+  return isJSExpressionOtherJavaScript(element) || isJSXMapExpression(element)
+}
+
+export function isJSExpression(element: JSXElementChild): element is JSExpression {
   switch (element.type) {
     case 'JSX_ELEMENT':
     case 'JSX_TEXT_BLOCK':
@@ -1245,6 +1374,7 @@ export function isJSXArbitraryBlock(element: JSXElementChild): element is JSXArb
     case 'JSX_CONDITIONAL_EXPRESSION':
       return false
     case 'ATTRIBUTE_VALUE':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
@@ -1271,13 +1401,6 @@ export function isJSXConditionalExpression(
 
 export function isJSXElementLike(element: JSXElementChild): element is JSXElementLike {
   return isJSXElement(element) || isJSXFragment(element)
-}
-
-type UtopiaElement = JSXElement | JSXFragment | JSXConditionalExpression
-
-// A utopia element can be either a HTML DOM element or a React-only exotic element (ie the Fragment) or a Utopia-only element, aka Elefant (ie the Conditional Expression)
-export function isUtopiaElement(element: JSXElementChild): element is UtopiaElement {
-  return isJSXElementLike(element) || isJSXConditionalExpression(element)
 }
 
 interface ElementWithUid {
@@ -1338,6 +1461,7 @@ export function clearJSXElementChildUniqueIDs(element: JSXElementChild): JSXElem
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       return clearExpressionUniqueIDs(element)
     default:
@@ -1357,6 +1481,16 @@ export function jsxElement(
     uid: uid,
     props: props,
     children: children,
+  }
+}
+
+export function jsxElementFromJSXElementWithoutUID(
+  element: JSXElementWithoutUID,
+  uid: string,
+): JSXElement {
+  return {
+    ...element,
+    uid: uid,
   }
 }
 
@@ -1449,6 +1583,7 @@ export function arbitraryJSBlock(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  uid: string = UUID(),
 ): ArbitraryJSBlock {
   return {
     type: 'ARBITRARY_JS_BLOCK',
@@ -1457,7 +1592,7 @@ export function arbitraryJSBlock(
     definedWithin: definedWithin,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
-    uid: UUID(),
+    uid: uid,
     elementsWithin: elementsWithin,
   }
 }
@@ -1489,12 +1624,12 @@ export function unparsedCode(rawCode: string): UnparsedCode {
 export interface RegularParam {
   type: 'REGULAR_PARAM'
   paramName: string
-  defaultExpression: JSExpressionOtherJavaScript | null
+  defaultExpression: JSExpressionMapOrOtherJavascript | null
 }
 
 export function regularParam(
   paramName: string,
-  defaultExpression: JSExpressionOtherJavaScript | null,
+  defaultExpression: JSExpressionMapOrOtherJavascript | null,
 ): RegularParam {
   return {
     type: 'REGULAR_PARAM',
@@ -1506,13 +1641,13 @@ export function regularParam(
 export interface DestructuredParamPart {
   propertyName: string | undefined
   param: Param
-  defaultExpression: JSExpressionOtherJavaScript | null
+  defaultExpression: JSExpressionMapOrOtherJavascript | null
 }
 
 export function destructuredParamPart(
   propertyName: string | undefined,
   param: Param,
-  defaultExpression: JSExpressionOtherJavaScript | null,
+  defaultExpression: JSExpressionMapOrOtherJavascript | null,
 ): DestructuredParamPart {
   return {
     propertyName: propertyName,
@@ -1644,7 +1779,7 @@ export interface UtopiaJSXComponent {
   returnStatementComments: ParsedComments
 }
 
-export interface ArbitraryJSBlock {
+export type ArbitraryJSBlock = {
   type: 'ARBITRARY_JS_BLOCK'
   javascript: string
   transpiledJavascript: string
@@ -1652,8 +1787,7 @@ export interface ArbitraryJSBlock {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-  elementsWithin: ElementsWithin
-}
+} & WithElementsWithin
 
 export interface ImportStatement {
   type: 'IMPORT_STATEMENT'
@@ -1843,7 +1977,8 @@ export function createNotImported(path: string, variableName: string): ImportInf
   return sameFileOrigin(path, variableName)
 }
 
-export type ConditionValue = boolean | 'not-a-conditional'
+export type ActiveAndDefaultConditionValues = { active: boolean; default: boolean }
+export type ConditionValue = ActiveAndDefaultConditionValues | 'not-a-conditional'
 
 export interface ElementInstanceMetadata {
   elementPath: ElementPath
@@ -1858,6 +1993,7 @@ export interface ElementInstanceMetadata {
   label: string | null
   importInfo: ImportInfo | null
   conditionValue: ConditionValue
+  textContent: string | null
 }
 
 export function elementInstanceMetadata(
@@ -1873,6 +2009,7 @@ export function elementInstanceMetadata(
   label: string | null,
   importInfo: ImportInfo | null,
   conditionValue: ConditionValue,
+  textContent: string | null,
 ): ElementInstanceMetadata {
   return {
     elementPath: elementPath,
@@ -1887,6 +2024,7 @@ export function elementInstanceMetadata(
     label: label,
     importInfo: importInfo,
     conditionValue: conditionValue,
+    textContent: textContent,
   }
 }
 
@@ -1898,6 +2036,7 @@ export interface SpecialSizeMeasurements {
   offset: LocalPoint
   coordinateSystemBounds: CanvasRectangle | null
   immediateParentBounds: CanvasRectangle | null
+  globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null
   immediateParentProvidesLayout: boolean
   closestOffsetParentPath: ElementPath
   usesParentBounds: boolean
@@ -1939,6 +2078,7 @@ export function specialSizeMeasurements(
   offset: LocalPoint,
   coordinateSystemBounds: CanvasRectangle | null,
   immediateParentBounds: CanvasRectangle | null,
+  globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null,
   immediateParentProvidesLayout: boolean,
   closestOffsetParentPath: ElementPath,
   usesParentBounds: boolean,
@@ -1980,6 +2120,7 @@ export function specialSizeMeasurements(
     coordinateSystemBounds,
     immediateParentBounds,
     immediateParentProvidesLayout,
+    globalFrameWithTextContent: globalFrameWithTextContent,
     closestOffsetParentPath,
     usesParentBounds,
     parentLayoutSystem,
@@ -2024,6 +2165,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   } as LocalPoint,
   null,
   zeroCanvasRect,
+  null,
   true,
   EP.emptyElementPath,
   false,
@@ -2062,7 +2204,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
 )
 
 export const emptyComputedStyle: ComputedStyle = {}
-export const emptyAttributeMetadatada: StyleAttributeMetadata = {}
+export const emptyAttributeMetadata: StyleAttributeMetadata = {}
 
 export type ElementsByUID = { [uid: string]: JSXElement }
 
@@ -2088,6 +2230,7 @@ export function walkElement(
     case 'JSX_TEXT_BLOCK':
       forEach(element, parentPath, depth)
       break
+    case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       forEach(element, parentPath, depth)
       fastForEach(Object.keys(element.elementsWithin), (childKey) =>

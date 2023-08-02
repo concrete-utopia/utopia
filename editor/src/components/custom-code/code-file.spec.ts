@@ -7,17 +7,16 @@ import {
   normalisePathToUnderlyingTarget,
   normalisePathUnableToProceed,
 } from './code-file'
+import type { EmitFileResult, FileVersion } from '../../core/workers/ts/ts-worker'
 import {
-  EmitFileResult,
   DefaultLanguageServiceCompilerOptions,
   configureLanguageService,
   emitFile,
-  FileVersion,
   writeFileForTests,
   initBrowserFS,
 } from '../../core/workers/ts/ts-worker'
 import { NO_OP, fastForEach } from '../../core/shared/utils'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { objectMap } from '../../core/shared/object-utils'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
@@ -26,15 +25,15 @@ import {
   getTextFileByPath,
   SampleNodeModules,
 } from './code-file.test-utils'
+import type { NodeModules } from '../../core/shared/project-file-types'
 import {
-  NodeModules,
   RevisionsState,
   textFile,
   textFileContents,
   unparsed,
 } from '../../core/shared/project-file-types'
 import { addFileToProjectContents } from '../assets'
-import { ExportsInfo, MultiFileBuildResult } from '../../core/workers/common/worker-types'
+import type { ExportsInfo, MultiFileBuildResult } from '../../core/workers/common/worker-types'
 import { createBuiltInDependenciesList } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 function transpileCode(

@@ -2,11 +2,11 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 import { right } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
-  jsxElement,
 } from '../../../core/shared/element-template'
+import { jsxElement } from '../../../core/shared/element-template'
 import { canvasPoint } from '../../../core/shared/math-utils'
 import { NO_OP } from '../../../core/shared/utils'
 import {
@@ -17,22 +17,22 @@ import {
 import { UtopiaTsWorkersImplementation } from '../../../core/workers/workers'
 import { emptyModifiers } from '../../../utils/modifiers'
 import CanvasActions from '../../canvas/canvas-actions'
-import {
-  MetaCanvasStrategy,
-  RegisteredCanvasStrategies,
-} from '../../canvas/canvas-strategies/canvas-strategies'
-import {
+import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
+import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
+import type {
   InteractionCanvasState,
-  strategyApplicationResult,
   StrategyApplicationResult,
 } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import { strategyApplicationResult } from '../../canvas/canvas-strategies/canvas-strategy-types'
+import type {
+  InteractionSession,
+  InteractionSessionWithoutMetadata,
+} from '../../canvas/canvas-strategies/interaction-state'
 import {
   boundingArea,
   createEmptyStrategyState,
   createInteractionViaKeyboard,
   createInteractionViaMouse,
-  InteractionSession,
-  InteractionSessionWithoutMetadata,
   updateInteractionViaMouse,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { runCanvasCommand } from '../../canvas/commands/commands'
@@ -49,7 +49,7 @@ import { EditorDispatch, notLoggedIn } from '../action-types'
 import { saveDOMReport, selectComponents, toggleProperty } from '../actions/action-creators'
 import * as History from '../history'
 import { DummyPersistenceMachine } from '../persistence/persistence.test-utils'
-import { DispatchResult, editorDispatch } from './dispatch'
+import type { DispatchResult } from './dispatch'
 import {
   handleStrategies,
   interactionCancel,
@@ -57,15 +57,8 @@ import {
   interactionStart,
   interactionUpdate,
 } from './dispatch-strategies'
-import { createEditorState, deriveState, EditorStoreFull } from './editor-state'
-
-beforeAll(() => {
-  return jest.spyOn(Date, 'now').mockReturnValue(new Date(1000).getTime())
-})
-
-afterAll(() => {
-  return jest.clearAllMocks()
-})
+import type { EditorStoreFull } from './editor-state'
+import { createEditorState, deriveState } from './editor-state'
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
@@ -77,6 +70,7 @@ function createEditorStore(
       ...interactionSession,
       latestMetadata: {},
       latestAllElementProps: {},
+      latestElementPathTree: {},
     }
   }
 
@@ -90,7 +84,7 @@ function createEditorStore(
     patchedEditor: emptyEditorState,
     unpatchedDerived: derivedState,
     patchedDerived: derivedState,
-    strategyState: createEmptyStrategyState({}, {}),
+    strategyState: createEmptyStrategyState({}, {}, {}),
     history: history,
     userState: {
       loginState: notLoggedIn,
@@ -108,6 +102,7 @@ function createEditorStore(
     persistence: DummyPersistenceMachine,
     saveCountThisSession: 0,
     builtInDependencies: createBuiltInDependenciesList(null),
+    postActionInteractionSession: null,
   }
 
   return initialEditorStore
@@ -178,12 +173,14 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -202,7 +199,6 @@ describe('interactionStart', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": 1000,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -236,12 +232,14 @@ describe('interactionStart', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -310,6 +308,7 @@ describe('interactionUpdate', () => {
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -327,6 +326,7 @@ describe('interactionUpdate', () => {
           },
         ],
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -348,7 +348,6 @@ describe('interactionUpdate', () => {
           "x": 100,
           "y": 200,
         },
-        "globalTime": 1000,
         "hasMouseMoved": true,
         "modifiers": Object {
           "alt": false,
@@ -383,12 +382,14 @@ describe('interactionUpdate', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -451,6 +452,7 @@ describe('interactionHardReset', () => {
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -468,6 +470,7 @@ describe('interactionHardReset', () => {
           },
         ],
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -489,7 +492,6 @@ describe('interactionHardReset', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": 1000,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -526,12 +528,14 @@ describe('interactionHardReset', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -608,6 +612,7 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyFitness": 10,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
@@ -625,6 +630,7 @@ describe('interactionUpdate with user changed strategy', () => {
           },
         ],
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -646,7 +652,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 110,
           "y": 210,
         },
-        "globalTime": 1000,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -684,12 +689,14 @@ describe('interactionUpdate with user changed strategy', () => {
         "currentStrategyFitness": 0,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
+          "elementsToRerender": Array [],
           "escapeHatchActivated": false,
           "lastReorderIdx": null,
           "strategyGeneratedUidsCache": Object {},
         },
         "sortedApplicableStrategies": null,
         "startingAllElementProps": Object {},
+        "startingElementPathTree": Object {},
         "startingMetadata": Object {},
         "status": "success",
       }
@@ -796,13 +803,13 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
 
   it('InteractionSession.metadata is the latest metadata', async () => {
     const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div data-uid="aaa" style={{}}>hello!</div>`),
+      makeTestProjectCodeWithSnippet(`<div data-uid="element-of-interest" style={{}}>hello!</div>`),
       'await-first-dom-report',
     )
 
     const targetElement = EP.elementPath([
       [BakedInStoryboardUID, TestSceneUID, TestAppUID],
-      ['aaa'],
+      ['element-of-interest'],
     ])
 
     await renderResult.dispatch([selectComponents([targetElement], false)], true)

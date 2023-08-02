@@ -1,16 +1,17 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
-  ElementInstanceMetadataMap,
   isIntrinsicElement,
   isJSXElement,
   jsxElementName,
   jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
 import { optionalMap } from '../../../../core/shared/optional-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { CSSCursor, EdgePiece, isHorizontalEdgePiece, oppositeEdgePiece } from '../../canvas-types'
+import type { EdgePiece } from '../../canvas-types'
+import { CSSCursor, isHorizontalEdgePiece, oppositeEdgePiece } from '../../canvas-types'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -18,63 +19,63 @@ import { setProperty } from '../../commands/set-property-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import { isZeroSizedElement } from '../../controls/outline-utils'
 import { PaddingResizeControl } from '../../controls/select-mode/padding-resize-control'
+import type { FloatingIndicatorProps } from '../../controls/select-mode/floating-number-indicator'
+import { FloatingIndicator } from '../../controls/select-mode/floating-number-indicator'
+import type { CSSPaddingKey, CSSPaddingMappedValues, PaddingAdjustMode } from '../../padding-utils'
 import {
-  FloatingIndicator,
-  FloatingIndicatorProps,
-} from '../../controls/select-mode/floating-number-indicator'
-import {
-  CSSPaddingKey,
-  CSSPaddingMappedValues,
   deltaFromEdge,
   getSizeUpdateCommandsForNewPadding,
   maybeFullPadding,
   offsetPaddingByEdge,
   paddingAdjustMode,
-  PaddingAdjustMode,
   paddingForEdgeSimplePadding,
   paddingPropForEdge,
   paddingToPaddingString,
   printCssNumberWithDefaultUnit,
   simplePaddingFromMetadata,
 } from '../../padding-utils'
-import { CanvasStrategyFactory, onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { CanvasStrategyFactory } from '../canvas-strategies'
+import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
+import type { CanvasPoint, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  CanvasPoint,
   canvasVector,
-  CanvasVector,
   isInfinityRectangle,
   roundTo,
   zeroRectIfNullOrInfinity,
 } from '../../../../core/shared/math-utils'
-import {
+import type {
   AdjustPrecision,
-  canShowCanvasPropControl,
   CSSNumberWithRenderedValue,
+} from '../../controls/select-mode/controls-common'
+import {
+  canShowCanvasPropControl,
   indicatorMessage,
   offsetMeasurementByDelta,
   shouldShowControls,
   unitlessCSSNumberWithRenderedValue,
 } from '../../controls/select-mode/controls-common'
-import { CanvasCommand } from '../../commands/commands'
+import type { CanvasCommand } from '../../commands/commands'
 import { foldEither } from '../../../../core/shared/either'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
-import { Modifiers } from '../../../../utils/modifiers'
-import { Axis, detectFillHugFixedState } from '../../../inspector/inspector-common'
+import type { Modifiers } from '../../../../utils/modifiers'
+import type { Axis } from '../../../inspector/inspector-common'
+import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
+  AdjustCssLengthProperties,
+  adjustCssLengthProperties,
 } from '../../commands/adjust-css-length-command'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 const StylePaddingProp = stylePropPathMappingFn('padding', styleStringInArray)
 const IndividualPaddingProps: Array<CSSPaddingKey> = [
@@ -98,24 +99,24 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     return null
   }
 
-  const element = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    selectedElements[0],
-  )
-  if (element == null) {
-    return null
-  }
-
   const canShowPadding = canShowCanvasPropControl(
     canvasState.projectContents,
-    element,
+    selectedElements[0],
     canvasState.scale,
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
   ).has('padding')
   if (!canShowPadding) {
     return null
   }
 
-  if (!supportsPaddingControls(canvasState.startingMetadata, selectedElements[0])) {
+  if (
+    !supportsPaddingControls(
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+      selectedElements[0],
+    )
+  ) {
     return null
   }
 
@@ -227,15 +228,16 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         canvasState.startingMetadata,
       )
 
-      const adjustSizeCommands = getSizeUpdateCommandsForNewPadding(
+      const adjustSizeCommand = getSizeUpdateCommandsForNewPadding(
         combinedXPadding,
         combinedYPadding,
         targetFrame,
         filteredSelectedElements,
         canvasState.startingMetadata,
+        canvasState.startingElementPathTree,
       )
 
-      basicCommands.push(...adjustSizeCommands)
+      basicCommands.push(adjustSizeCommand)
 
       // "tearing off" padding
       if (newPaddingEdge.renderedValuePx < PaddingTearThreshold) {
@@ -305,7 +307,11 @@ function pickCursorFromEdge(edgePiece: EdgePiece): CSSCursor {
   }
 }
 
-function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+function supportsPaddingControls(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  path: ElementPath,
+): boolean {
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (element == null) {
     return false
@@ -347,8 +353,9 @@ function supportsPaddingControls(metadata: ElementInstanceMetadataMap, path: Ele
     return true
   }
 
-  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildrenUnordered(
+  const childrenNotPositionedAbsoluteOrSticky = MetadataUtils.getChildrenOrdered(
     metadata,
+    pathTrees,
     path,
   ).filter(
     (child) =>

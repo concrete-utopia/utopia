@@ -1,23 +1,25 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
+import type {
   JSXElementName,
   ElementInstanceMetadataMap,
   ElementInstanceMetadata,
 } from '../../../core/shared/element-template'
-import { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { IcnProps } from '../../../uuiui'
+import type { IcnProps } from '../../../uuiui'
 import { createComponentOrElementIconProps } from '../../navigator/layout-element-icons'
 import {
   NameAndIconResultArrayKeepDeepEquality,
   NameAndIconResultKeepDeepEquality,
 } from '../../../utils/deep-equality-instances'
 import { createSelector } from 'reselect'
-import { AllElementProps, EditorStorePatched } from '../../editor/store/editor-state'
+import type { AllElementProps } from '../../editor/store/editor-state'
+import type { EditorStorePatched } from '../../editor/store/editor-state'
 import React from 'react'
 import { objectValues } from '../../../core/shared/object-utils'
 import { eitherToMaybe } from '../../../core/shared/either'
-import { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export interface NameAndIconResult {
   path: ElementPath
@@ -33,10 +35,18 @@ export function useMetadata(): ElementInstanceMetadataMap {
 const namesAndIconsAllPathsResultSelector = createSelector(
   (store: MetadataSubstate) => store.editor.jsxMetadata,
   (store: MetadataSubstate) => store.editor.allElementProps,
-  (metadata, allElementProps) => {
+  (store: MetadataSubstate) => store.editor.elementPathTree,
+  (store: EditorStorePatched) => store.derived.autoFocusedPaths,
+  (metadata, allElementProps, pathTrees, autoFocusedPaths) => {
     let result: Array<NameAndIconResult> = []
     for (const metadataElement of objectValues(metadata)) {
-      const nameAndIconResult = getNameAndIconResult(metadata, allElementProps, metadataElement)
+      const nameAndIconResult = getNameAndIconResult(
+        metadata,
+        allElementProps,
+        metadataElement,
+        pathTrees,
+        autoFocusedPaths,
+      )
       result.push(nameAndIconResult)
     }
     return result
@@ -46,7 +56,7 @@ const namesAndIconsAllPathsResultSelector = createSelector(
 export function useNamesAndIconsAllPaths(): NameAndIconResult[] {
   const selector = React.useMemo(() => namesAndIconsAllPathsResultSelector, [])
   return useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     selector,
     'useNamesAndIconsAllPaths',
     (oldResult, newResult) => {
@@ -59,6 +69,8 @@ function getNameAndIconResult(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementInstanceMetadata: ElementInstanceMetadata,
+  pathTrees: ElementPathTrees,
+  autoFocusedPaths: Array<ElementPath>,
 ): NameAndIconResult {
   const elementName = MetadataUtils.getJSXElementName(
     eitherToMaybe(elementInstanceMetadata.element),
@@ -69,8 +81,16 @@ function getNameAndIconResult(
     label: MetadataUtils.getElementLabelFromMetadata(
       metadata,
       allElementProps,
+      pathTrees,
       elementInstanceMetadata,
     ),
-    iconProps: createComponentOrElementIconProps(elementInstanceMetadata),
+    iconProps: createComponentOrElementIconProps(
+      elementInstanceMetadata.elementPath,
+      metadata,
+      pathTrees,
+      autoFocusedPaths,
+      null,
+      allElementProps,
+    ),
   }
 }

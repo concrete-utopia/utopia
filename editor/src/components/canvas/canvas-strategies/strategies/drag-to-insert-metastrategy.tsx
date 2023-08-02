@@ -1,64 +1,57 @@
-import { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { LayoutHelpers } from '../../../../core/layout/layout-helpers'
 import {
   createFakeMetadataForElement,
-  MetadataUtils,
+  getRootPath,
 } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import { elementPath } from '../../../../core/shared/element-path'
-import {
-  ElementInstanceMetadataMap,
-  getJSXElementNameLastPart,
-} from '../../../../core/shared/element-template'
-import {
-  CanvasRectangle,
-  canvasRectangle,
-  offsetPoint,
-  zeroCanvasPoint,
-} from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import { canvasRectangle, offsetPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor, Utils } from '../../../../uuiui-deps'
-import { InsertionSubject, InsertionSubjectWrapper } from '../../../editor/editor-modes'
-import { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import type { InsertionSubject } from '../../../editor/editor-modes'
+import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
-import {
-  InsertElementInsertionSubject,
-  insertElementInsertionSubject,
-} from '../../commands/insert-element-insertion-subject'
+import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
+import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
 import { FlexReparentTargetIndicator } from '../../controls/select-mode/flex-reparent-target-indicator'
+import type { CanvasStrategyFactory, MetaCanvasStrategy } from '../canvas-strategies'
 import {
-  CanvasStrategyFactory,
   getWrapperWithGeneratedUid,
-  MetaCanvasStrategy,
   pickCanvasStateFromEditorStateWithMetadata,
 } from '../canvas-strategies'
-import {
+import type {
   CanvasStrategy,
-  controlWithProps,
   CustomStrategyState,
-  emptyStrategyApplicationResult,
-  getInsertionSubjectsFromInteractionTarget,
   InteractionCanvasState,
   InteractionLifecycle,
+} from '../canvas-strategy-types'
+import {
+  controlWithProps,
+  emptyStrategyApplicationResult,
+  getInsertionSubjectsFromInteractionTarget,
   strategyApplicationResult,
   targetPaths,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import { getApplicableReparentFactories } from './reparent-metastrategy'
-import { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
+import type { ReparentStrategy } from './reparent-helpers/reparent-strategy-helpers'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import {
   DragOutlineControl,
   dragTargetsFrame,
 } from '../../controls/select-mode/drag-outline-control'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { wrapInContainerCommand } from '../../commands/wrap-in-container-command'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
+import { childInsertionPath } from '../../../editor/store/insertion-path'
 
 export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
   canvasState: InteractionCanvasState,
@@ -93,6 +86,7 @@ export const dragToInsertMetaStrategy: MetaCanvasStrategy = (
     interactionData.modifiers.cmd,
     true,
     'allow-smaller-parent',
+    customStrategyState,
   )
 
   return mapDropNulls((result): CanvasStrategy | null => {
@@ -135,7 +129,7 @@ function dragToInsertStrategyFactory(
   reparentStrategyToUse: CanvasStrategyFactory,
   name: string,
   fitness: number,
-  targetParent: ElementPath,
+  targetParent: InsertionPath,
 ): CanvasStrategy | null {
   if (canvasState.interactionTarget.type !== 'INSERTION_SUBJECTS') {
     return null
@@ -173,13 +167,13 @@ function dragToInsertStrategyFactory(
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,
-        props: { targetParent: targetParent },
+        props: { targetParent: targetParent.intendedParentPath },
         key: 'parent-outlines-control',
         show: 'visible-only-while-active',
       }),
       controlWithProps({
         control: ParentBounds,
-        props: { targetParent: targetParent },
+        props: { targetParent: targetParent.intendedParentPath },
         key: 'parent-bounds-control',
         show: 'visible-only-while-active',
       }),
@@ -202,6 +196,7 @@ function dragToInsertStrategyFactory(
         ? fitness
         : 0,
     apply: (strategyLifecycle) => {
+      const rootPath = getRootPath(canvasState.startingMetadata)
       if (
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.interactionData.drag != null
@@ -214,7 +209,10 @@ function dragToInsertStrategyFactory(
           )
         } else {
           const insertionCommandsWithFrames = insertionSubjectsWithFrames.flatMap((s) => {
-            return getInsertionCommandsWithFrames(s.subject, s.frame)
+            if (rootPath == null) {
+              throw new Error('Missing root path for drag interaction')
+            }
+            return getInsertionCommandsWithFrames(rootPath, s.subject, s.frame)
           })
 
           const maybeWrapperWithUid = getWrapperWithGeneratedUid(
@@ -239,7 +237,7 @@ function dragToInsertStrategyFactory(
             },
           )
 
-          const newPath = EP.appendToPath(targetParent, insertionSubjects[0].uid)
+          const newPath = EP.appendToPath(targetParent.intendedParentPath, insertionSubjects[0].uid)
 
           const optionalWrappingCommand =
             maybeWrapperWithUid != null
@@ -285,6 +283,7 @@ function dragToInsertStrategyFactory(
 }
 
 function getInsertionCommandsWithFrames(
+  storyboardPath: ElementPath,
   subject: InsertionSubject,
   frame: CanvasRectangle,
 ): Array<{ command: InsertElementInsertionSubject; frame: CanvasRectangle }> {
@@ -298,9 +297,11 @@ function getInsertionCommandsWithFrames(
     },
   }
 
+  const insertionPath = childInsertionPath(storyboardPath)
+
   return [
     {
-      command: insertElementInsertionSubject('always', updatedInsertionSubject),
+      command: insertElementInsertionSubject('always', updatedInsertionSubject, insertionPath),
       frame: frame,
     },
   ]
@@ -343,8 +344,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
   }>,
   strategyLifeCycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
-  const storyboard = MetadataUtils.getStoryboardMetadata(editorState.jsxMetadata)
-  const rootPath = storyboard != null ? storyboard.elementPath : elementPath([])
+  const rootPath = getRootPath(editorState.jsxMetadata)
+  if (rootPath == null) {
+    throw new Error('Missing root path when running drag strategy')
+  }
 
   const patchedMetadata: ElementInstanceMetadataMap = insertionCommandsWithFrames.reduce(
     (
@@ -369,6 +372,10 @@ function runTargetStrategiesForFreshlyInsertedElement(
     editorState.jsxMetadata,
   )
 
+  // IMPORTANT! This canvas state is using an elementPathTree that does not include the newly inserted
+  // element as the canvas state's startingElementPathTree. As it happens, this is fine right now,
+  // because that element is inserted to the storyboard before reparenting to the correct location,
+  // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
     builtInDependencies,

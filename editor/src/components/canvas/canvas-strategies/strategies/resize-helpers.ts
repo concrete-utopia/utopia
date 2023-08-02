@@ -1,20 +1,22 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { stripNulls } from '../../../../core/shared/array-utils'
 import { defaultEither, isRight, mapEither } from '../../../../core/shared/either'
-import {
+import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import {
   getJSXAttribute,
   jsxElementName,
   jsxElementNameEquals,
 } from '../../../../core/shared/element-template'
+import type { CanvasPoint, CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  CanvasPoint,
   canvasRectangle,
-  CanvasRectangle,
   distance,
   defaultIfNaN,
   offsetPoint,
@@ -22,18 +24,19 @@ import {
   rectFromTwoPoints,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { Modifiers } from '../../../../utils/modifiers'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { Modifiers } from '../../../../utils/modifiers'
 import { AspectRatioLockedProp } from '../../../aspect-ratio'
-import { CSSCursor, EdgePosition } from '../../canvas-types'
+import type { EdgePosition } from '../../canvas-types'
+import { CSSCursor } from '../../canvas-types'
 import {
   isEdgePositionAHorizontalEdge,
   isEdgePositionAVerticalEdge,
   isEdgePositionOnSide,
   pickPointOnRect,
 } from '../../canvas-utils'
-import { InteractionCanvasState } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionCanvasState } from '../canvas-strategy-types'
+import type { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
@@ -42,11 +45,36 @@ export const allPins: Array<AbsolutePin> = ['top', 'left', 'width', 'height', 'b
 export const horizontalPins: Array<AbsolutePin> = ['left', 'width', 'right']
 export const verticalPins: Array<AbsolutePin> = ['top', 'height', 'bottom']
 
+export function isHorizontalPin(pin: AbsolutePin): boolean {
+  return horizontalPins.includes(pin)
+}
+
 export function hasAtLeastTwoPinsPerSide(props: { [key: string]: any }): boolean {
   return (
     horizontalPins.filter((pin) => props.style?.[pin] != null).length >= 2 &&
     verticalPins.filter((pin) => props.style?.[pin] != null).length >= 2
   )
+}
+
+export function onlyEnsureOffsetPinsExist(
+  props: PropsOrJSXAttributes,
+  edgePosition: EdgePosition,
+): Array<AbsolutePin> {
+  const existingHorizontalPins = horizontalPins.filter((p) => {
+    const prop = getLayoutProperty(p, props, styleStringInArray)
+    return isRight(prop) && prop.value != null
+  })
+  const existingVerticalPins = verticalPins.filter((p) => {
+    const prop = getLayoutProperty(p, props, styleStringInArray)
+    return isRight(prop) && prop.value != null
+  })
+  if (existingHorizontalPins.length === 0) {
+    existingHorizontalPins.push('left')
+  }
+  if (existingVerticalPins.length === 0) {
+    existingVerticalPins.push('top')
+  }
+  return [...existingHorizontalPins, ...existingVerticalPins]
 }
 
 export function ensureAtLeastTwoPinsForEdgePosition(

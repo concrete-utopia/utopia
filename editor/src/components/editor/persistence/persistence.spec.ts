@@ -1,26 +1,24 @@
-import { PersistentModel, StoryboardFilePath } from '../store/editor-state'
+import type { PersistentModel } from '../store/editor-state'
+import { StoryboardFilePath } from '../store/editor-state'
 import { fastForEach, NO_OP } from '../../../core/shared/utils'
 import { createPersistentModel, delay } from '../../../utils/utils.test-utils'
 import { generateUID } from '../../../core/shared/uid-utils'
-import {
-  AssetFile,
-  isAssetFile,
-  ProjectFile,
-  TextFile,
-} from '../../../core/shared/project-file-types'
-import { AssetToSave, SaveProjectResponse, LoadProjectResponse } from '../server'
+import type { AssetFile, TextFile } from '../../../core/shared/project-file-types'
+import { isAssetFile, ProjectFile } from '../../../core/shared/project-file-types'
+import type { AssetToSave, SaveProjectResponse, LoadProjectResponse } from '../server'
 import { localProjectKey } from '../../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
-import {
-  addFileToProjectContents,
-  AssetFileWithFileName,
-  getContentsTreeFileFromString,
-} from '../../assets'
+import type { AssetFileWithFileName } from '../../assets'
+import { addFileToProjectContents, getContentsTreeFileFromString } from '../../assets'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assetFile } from '../../../core/model/project-file-utils'
-import { loggedInUser, notLoggedIn } from '../../../common/user'
-import { EditorAction, EditorDispatch } from '../action-types'
-import { LocalProject } from './generic/persistence-types'
+import type {
+  EditorAction,
+  EditorDispatch,
+  SetForkedFromProjectID,
+  SetProjectName,
+} from '../action-types'
+import type { LocalProject, PersistenceContext } from './generic/persistence-types'
 import { PersistenceMachine } from './persistence'
 import { PersistenceBackend } from './persistence-backend'
 
@@ -28,6 +26,7 @@ let mockSaveLog: { [key: string]: Array<PersistentModel> } = {}
 let mockDownloadedAssetsLog: { [projectId: string]: Array<string> } = {}
 let mockUploadedAssetsLog: { [projectId: string]: Array<string> } = {}
 let mockProjectsToError: Set<string> = new Set<string>()
+let mockUnownedProjects: Set<string> = new Set<string>()
 
 let allProjectIds: Array<string> = []
 let serverProjects: { [key: string]: PersistentModel } = {}
@@ -44,8 +43,11 @@ const SecondRevision = updateModel(FirstRevision)
 const ThirdRevision = updateModel(SecondRevision)
 const FourthRevision = updateModel(ThirdRevision)
 
+let forcedNextProjectId: string | null = null
+
 function mockRandomProjectID(): string {
-  const newId = generateUID(allProjectIds)
+  const newId = forcedNextProjectId == null ? generateUID(allProjectIds) : forcedNextProjectId
+  forcedNextProjectId = null
   allProjectIds.push(newId)
   return newId
 }
@@ -57,7 +59,7 @@ function updateModel(model: PersistentModel): PersistentModel {
   )
   const updatedFile = {
     ...oldFile,
-    lastRevisedTime: Date.now(),
+    versionNumber: (oldFile as TextFile).versionNumber + 1,
   }
   return {
     ...model,
@@ -128,7 +130,7 @@ jest.mock('../server', () => ({
         type: 'ProjectLoaded',
         id: projectId,
         ownerId: 'Owner',
-        title: 'Project Name',
+        title: ProjectName,
         createdAt: '',
         modifiedAt: '',
         content: project,
@@ -146,7 +148,7 @@ jest.mock('../actions/actions', () => ({
 
 jest.mock('../../../common/server', () => ({
   checkProjectOwnership: async (projectId: string) => ({
-    isOwner: true,
+    isOwner: !mockUnownedProjects.has(projectId),
   }),
 }))
 jest.setTimeout(10000)
@@ -173,6 +175,7 @@ function setupTest(saveThrottle: number = 0) {
     dispatchedActions: [] as Array<EditorAction>,
     projectNotFound: false,
     createdOrLoadedProject: undefined as PersistentModel | undefined,
+    latestContext: { projectOwned: false, loggedIn: false } as PersistenceContext<PersistentModel>,
   }
   const testDispatch: EditorDispatch = (actions: ReadonlyArray<EditorAction>) => {
     capturedData.dispatchedActions.push(...actions)
@@ -190,12 +193,17 @@ function setupTest(saveThrottle: number = 0) {
     _projectName: string,
     createdOrLoadedProject: PersistentModel,
   ) => (capturedData.createdOrLoadedProject = createdOrLoadedProject)
+  const onContextChange = (
+    newContext: PersistenceContext<PersistentModel>,
+    _oldContext: PersistenceContext<PersistentModel> | undefined,
+  ) => (capturedData.latestContext = newContext)
 
   const testMachine = new PersistenceMachine(
     PersistenceBackend,
     testDispatch,
     onProjectNotFound,
     onCreatedOrLoadedProject,
+    onContextChange,
     saveThrottle,
   )
   return {
@@ -287,6 +295,120 @@ describe('Saving', () => {
       ThirdRevision,
       FourthRevision,
     ])
+  })
+
+  it('Forks the project when not the owner', async () => {
+    const { capturedData, testMachine } = setupTest(10000)
+
+    testMachine.login()
+    await delay(20)
+
+    const startProjectId = mockRandomProjectID()
+    serverProjects[startProjectId] = BaseModel
+    mockUnownedProjects.add(startProjectId)
+
+    testMachine.load(startProjectId)
+    await delay(20)
+
+    expect(capturedData.projectNotFound).toBeFalsy()
+    expect(capturedData.createdOrLoadedProject).toEqual(BaseModel)
+
+    testMachine.save(ProjectName, FirstRevision, 'force')
+    await delay(20)
+    testMachine.stop()
+
+    const forkedProjectId = capturedData.newProjectId!
+    expect(forkedProjectId).not.toEqual(startProjectId)
+    expect(mockSaveLog[forkedProjectId]).toEqual([FirstRevision])
+    expect(
+      capturedData.dispatchedActions.some(
+        (action) => action.action === 'SET_FORKED_FROM_PROJECT_ID' && action.id === startProjectId,
+      ),
+    ).toBeTruthy()
+  })
+
+  it('Forks the project when not the owner, rolling back on a failed save', async () => {
+    const { capturedData, testMachine } = setupTest(10000)
+
+    testMachine.login()
+    await delay(20)
+
+    const startProjectId = mockRandomProjectID()
+    serverProjects[startProjectId] = BaseModel
+    mockUnownedProjects.add(startProjectId)
+
+    testMachine.load(startProjectId)
+    await delay(20)
+
+    const dispatchedActionsBeforeForkCount = capturedData.dispatchedActions.length
+
+    expect(capturedData.projectNotFound).toBeFalsy()
+    expect(capturedData.createdOrLoadedProject).toEqual(BaseModel)
+
+    // Check that the rollback values have been set
+    expect(capturedData.latestContext.rollbackProjectId).toEqual(startProjectId)
+    expect(capturedData.latestContext.rollbackProject).toEqual({
+      name: ProjectName,
+      content: BaseModel,
+    })
+
+    // Deliberately fail to fork the project
+    const forkFailureProjectID = 'ForkFailureProject'
+    forcedNextProjectId = forkFailureProjectID
+    mockProjectsToError.add(forcedNextProjectId)
+
+    testMachine.save(ProjectName, FirstRevision, 'force')
+    await delay(20)
+
+    // Check that the fork failed and only a toast was dispatched
+    expect(capturedData.newProjectId).toBeUndefined()
+    expect(mockSaveLog[startProjectId]).toBeUndefined()
+    expect(mockSaveLog[forkFailureProjectID]).toBeUndefined()
+    expect(capturedData.dispatchedActions.length - dispatchedActionsBeforeForkCount).toEqual(1)
+    expect(capturedData.dispatchedActions.at(-1)!.action).toEqual('ADD_TOAST')
+
+    // Check that the rollback values were applied and unchanged
+    expect(capturedData.latestContext.projectId).toEqual(startProjectId)
+    expect(capturedData.latestContext.project).toEqual({
+      name: ProjectName,
+      content: BaseModel,
+    })
+    expect(capturedData.latestContext.rollbackProjectId).toEqual(startProjectId)
+    expect(capturedData.latestContext.rollbackProject).toEqual({
+      name: ProjectName,
+      content: BaseModel,
+    })
+
+    // Now successfully fork the project
+    const forkSuccessProjectID = 'ForkSuccessProject'
+    forcedNextProjectId = forkSuccessProjectID
+
+    testMachine.save(ProjectName, SecondRevision, 'force')
+    await delay(20)
+    testMachine.stop()
+
+    const forkedFromActions = capturedData.dispatchedActions.filter(
+      (action) => action.action === 'SET_FORKED_FROM_PROJECT_ID',
+    )
+    const setNameActions = capturedData.dispatchedActions.filter(
+      (action) => action.action === 'SET_PROJECT_NAME',
+    )
+
+    // Ensure that it was forked with the correct project model, project ID, and that the name was updated only once
+    const forkedProjectName = `${ProjectName} (forked)`
+    expect(capturedData.newProjectId).toEqual(forkSuccessProjectID)
+    expect(mockSaveLog[forkSuccessProjectID]).toEqual([SecondRevision])
+    expect(forkedFromActions.length).toBe(1)
+    expect((forkedFromActions[0] as SetForkedFromProjectID).id).toEqual(startProjectId)
+    expect(setNameActions.length).toBe(1)
+    expect((setNameActions[0] as SetProjectName).name).toEqual(forkedProjectName)
+
+    // Check that the rollback values were updated
+    expect(capturedData.latestContext.rollbackProjectId).toEqual(forkSuccessProjectID)
+    expect(capturedData.latestContext.rollbackProject).toEqual({
+      name: forkedProjectName,
+      content: SecondRevision,
+    })
   })
 })
 
@@ -439,7 +561,7 @@ describe('Forking a project', () => {
     expect(capturedData.newProjectId).toBeDefined()
     const startProjectId = capturedData.newProjectId!
 
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProject)
     await delay(20)
     testMachine.stop()
 
@@ -470,7 +592,7 @@ describe('Forking a project', () => {
 
     testMachine.logout()
     await delay(20)
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProject)
     await delay(20)
     testMachine.stop()
 
@@ -508,7 +630,7 @@ describe('Forking a project', () => {
     const startProjectId = capturedData.newProjectId!
 
     await delay(20)
-    testMachine.fork()
+    testMachine.fork(ProjectName, startProjectIncludingBase64)
     await delay(20)
     testMachine.stop()
 

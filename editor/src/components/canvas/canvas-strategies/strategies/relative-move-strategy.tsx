@@ -1,18 +1,19 @@
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { MetadataUtils, PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { foldEither, isLeft, right } from '../../../../core/shared/either'
-import { ElementInstanceMetadata, isJSXElement } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import { isJSXElement } from '../../../../core/shared/element-template'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
+import type { InteractionCanvasState, MoveStrategy } from '../canvas-strategy-types'
 import {
   CanvasStrategy,
   controlWithProps,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
-  InteractionCanvasState,
-  MoveStrategy,
 } from '../canvas-strategy-types'
-import { InteractionSession } from '../interaction-state'
+import type { InteractionSession } from '../interaction-state'
 import {
   applyMoveCommon,
   getAdjustMoveCommands,
@@ -24,7 +25,7 @@ export function relativeMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO eventually make this handle contentAffecting elements
+  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget) // TODO eventually make this handle fragmentLike elements
   if (selectedElements.length === 0) {
     return null
   }

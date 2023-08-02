@@ -1,27 +1,27 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
-  CanvasVector,
   isInfinityRectangle,
   nullIfInfinity,
   windowPoint,
 } from '../../../../core/shared/math-utils'
-import { ElementPath } from '../../../../core/shared/project-file-types'
-import { NO_OP } from '../../../../core/shared/utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import { assertNever, NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme } from '../../../../uuiui'
-import { EditorDispatch } from '../../../editor/action-types'
+import type { EditorDispatch } from '../../../editor/action-types'
 import { applyCommandsAction } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { getMetadata } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
+import type { FixedHugFill } from '../../../inspector/inspector-common'
 import {
   detectFillHugFixedState,
-  FixedHugFill,
   invert,
   resizeToFitCommands,
 } from '../../../inspector/inspector-common'
@@ -30,7 +30,8 @@ import { executeFirstApplicableStrategy } from '../../../inspector/inspector-str
 import CanvasActions from '../../canvas-actions'
 import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strategy-types'
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
-import { CSSCursor, EdgePosition } from '../../canvas-types'
+import type { EdgePosition } from '../../canvas-types'
+import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
@@ -230,6 +231,7 @@ const ResizePoint = React.memo(
 
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
     const onEdgeDblClick = React.useCallback(() => {
@@ -238,11 +240,12 @@ const ResizePoint = React.memo(
           resizeToFitCommands(
             metadataRef.current,
             selectedElementsRef.current,
+            elementPathTreeRef.current,
             allElementPropsRef.current,
           ),
         ),
       ])
-    }, [allElementPropsRef, dispatch, metadataRef, selectedElementsRef])
+    }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedElementsRef])
 
     return (
       <div
@@ -266,7 +269,7 @@ const ResizePoint = React.memo(
             borderStyle: 'none',
             borderColor: 'transparent',
             boxShadow: `${colorTheme.canvasControlsSizeBoxShadowColor50.value} 0px 0px
-              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor21.value} 0px ${
+              ${1 / scale}px, ${colorTheme.canvasControlsSizeBoxShadowColor20.value} 0px ${
               1 / scale
             }px ${2 / scale}px ${1 / scale}px`,
           }}
@@ -291,6 +294,7 @@ const ResizePoint = React.memo(
     )
   }),
 )
+ResizePoint.displayName = 'ResizePoint'
 
 interface ResizeEdgeProps {
   cursor: CSSCursor
@@ -310,6 +314,7 @@ const ResizeEdge = React.memo(
     const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
+    const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
@@ -334,10 +339,18 @@ const ResizeEdge = React.memo(
         dispatch,
         metadataRef.current,
         selectedElementsRef.current,
+        elementPathTreeRef.current,
         allElementPropsRef.current,
         setPropHugStrategies(invert(props.direction)),
       )
-    }, [allElementPropsRef, dispatch, metadataRef, props.direction, selectedElementsRef])
+    }, [
+      allElementPropsRef,
+      dispatch,
+      metadataRef,
+      props.direction,
+      elementPathTreeRef,
+      selectedElementsRef,
+    ])
 
     return (
       <div
@@ -361,10 +374,15 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
   switch (state) {
     case 'fill':
       return 'Fill'
-    case 'fixed':
-      return `${actualSize}`
     case 'hug':
+    case 'hug-group':
       return 'Hug'
+    case 'fixed':
+    case 'detected':
+    case 'computed':
+      return `${actualSize}`
+    default:
+      assertNever(state)
   }
 }
 
@@ -458,7 +476,7 @@ const SizeLabel = React.memo(
               padding: `${PaddingV}px ${PaddingH / scale}px`,
               borderRadius: BorderRadius / scale,
               color: colorTheme.white.value,
-              backgroundColor: colorTheme.secondaryBlue.value,
+              backgroundColor: colorTheme.primary.value,
               fontSize: FontSize / scale,
               height: ExplicitHeightHacked / scale,
             }}
@@ -470,6 +488,7 @@ const SizeLabel = React.memo(
     )
   }),
 )
+SizeLabel.displayName = 'SizeLabel'
 
 function startResizeInteraction(
   event: React.MouseEvent<HTMLDivElement>,

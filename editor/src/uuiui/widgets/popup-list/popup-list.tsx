@@ -5,9 +5,7 @@ import styled from '@emotion/styled'
 import useInterval from '@use-it/interval'
 import React from 'react'
 import * as ReactDOM from 'react-dom'
-import Select, {
-  components,
-  createFilter,
+import type {
   InputProps,
   MenuListComponentProps,
   OptionProps,
@@ -15,14 +13,17 @@ import Select, {
   SingleValueProps,
   ValueType,
 } from 'react-select'
-import { IndicatorProps } from 'react-select/src/components/indicators'
-import { MenuPortalProps } from 'react-select/src/components/Menu'
-import { styleFn } from 'react-select/src/styles'
-import { Icn, IcnProps, IcnSpacer } from '../../icn'
+import Select, { components, createFilter } from 'react-select'
+import type { IndicatorProps } from 'react-select/src/components/indicators'
+import type { MenuPortalProps } from 'react-select/src/components/Menu'
+import type { styleFn } from 'react-select/src/styles'
+import type { IcnProps } from '../../icn'
+import { Icn, IcnSpacer } from '../../icn'
 import { colorTheme, UtopiaStyles, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
 import { isOptionType } from '../../../utils/utils'
-import { CommonUtils, ControlStyles, getControlStyles, SelectOption } from '../../../uuiui-deps'
+import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
+import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { Icons, SmallerIcons } from '../../../uuiui/icons'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'

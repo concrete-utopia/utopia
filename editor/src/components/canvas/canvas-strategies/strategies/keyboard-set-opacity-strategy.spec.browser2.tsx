@@ -1,17 +1,16 @@
 import * as EP from '../../../../core/shared/element-path'
-import {
-  selectComponentsForTest,
-  setFeatureForBrowserTests,
-} from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../../event-helpers.test-utils'
-import { EditorRenderResult, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { AllContentAffectingTypes, ContentAffectingType } from './group-like-helpers'
+import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import type { FragmentLikeType } from './fragment-like-helpers'
+import { AllFragmentLikeTypes } from './fragment-like-helpers'
 import {
-  getClosingGroupLikeTag,
-  getOpeningGroupLikeTag,
-  GroupLikeElementUid,
-} from './group-like-helpers.test-utils'
+  getClosingFragmentLikeTag,
+  getOpeningFragmentLikeTag,
+  FragmentLikeElementUid,
+} from './fragment-like-helpers.test-utils'
 
 describe('adjust opacity with the keyboard', () => {
   describe('no opacity specified', () => {
@@ -115,13 +114,13 @@ describe('adjust opacity with the keyboard', () => {
   })
 
   describe('retargets to group children', () => {
-    AllContentAffectingTypes.forEach((type) => {
+    AllFragmentLikeTypes.forEach((type) => {
       it(`applies opacity to ${type}`, async () => {
         const editor = await renderTestEditorWithCode(
           projectWithGroup(type),
           'await-first-dom-report',
         )
-        await selectComponentsForTest(editor, [EP.fromString(`sb/${GroupLikeElementUid}`)])
+        await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await pressKey('3')
         await pressKey('0')
@@ -174,12 +173,12 @@ export var storyboard = (
 )
 `
 
-const projectWithGroup = (type: ContentAffectingType) => `import * as React from 'react'
+const projectWithGroup = (type: FragmentLikeType) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (
   <Storyboard data-uid='sb'>
-    ${getOpeningGroupLikeTag(type)}
+    ${getOpeningFragmentLikeTag(type)}
       <div
         style={{
           backgroundColor: '#aaaaaa33',
@@ -208,7 +207,7 @@ export var storyboard = (
       >
         whaddup
       </div>
-    ${getClosingGroupLikeTag(type)}
+    ${getClosingFragmentLikeTag(type)}
   </Storyboard>
 )
 `

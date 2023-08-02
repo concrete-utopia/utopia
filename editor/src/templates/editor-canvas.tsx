@@ -12,54 +12,41 @@ import {
   updateInteractionViaDragDelta,
   updateInteractionViaMouse,
 } from '../components/canvas/canvas-strategies/interaction-state'
-import {
+import type {
   CanvasAction,
   CanvasModel,
   CanvasMouseEvent,
   CanvasPositions,
   ControlOrHigherOrderControl,
-  CSSCursor,
-  DragState,
-  DuplicateNewUID,
-  ResizeDragStatePropertyChange,
   SvgFragmentControl,
-  updateMoveDragState,
-  updateResizeDragState,
 } from '../components/canvas/canvas-types'
-import {
-  anyDragStarted,
-  clearDragState,
-  createDuplicationNewUIDsFromEditorState,
-  createOrUpdateDragState,
-  dragExceededThreshold,
-  getCanvasOffset,
-  getDragStateDrag,
-  getDragStatePositions,
-  getDragStateStart,
-} from '../components/canvas/canvas-utils'
+import { CSSCursor } from '../components/canvas/canvas-types'
+import { getCanvasOffset } from '../components/canvas/canvas-utils'
 import { NewCanvasControls } from '../components/canvas/controls/new-canvas-controls'
 import { setFocus } from '../components/common/actions/index'
-import { EditorAction, EditorDispatch } from '../components/editor/action-types'
+import type { EditorAction, EditorDispatch } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
-import {
-  cancelInsertModeActions,
-  HandleInteractionSession,
-} from '../components/editor/actions/meta-actions'
-import { EditorModes, isLiveMode, Mode } from '../components/editor/editor-modes'
+import type { HandleInteractionSession } from '../components/editor/actions/meta-actions'
+import { cancelInsertModeActions } from '../components/editor/actions/meta-actions'
+import type { Mode } from '../components/editor/editor-modes'
+import { EditorModes, isLiveMode } from '../components/editor/editor-modes'
 import { saveAssets } from '../components/editor/server'
-import {
-  BaseSnappingThreshold,
+import type {
   CanvasCursor,
   DerivedState,
-  draggingFromFS,
   EditorState,
+  UserState,
+} from '../components/editor/store/editor-state'
+import {
+  BaseSnappingThreshold,
+  draggingFromFS,
   editorStateCanvasControls,
   emptyDragToMoveIndicatorFlags,
   isOpenFileUiJs,
   notDragging,
-  UserState,
 } from '../components/editor/store/editor-state'
-import { createJsxImage, JSXImageOptions } from '../components/images'
+import type { JSXImageOptions } from '../components/images'
+import { createJsxImage } from '../components/images'
 import {
   didWeHandleMouseMoveForThisFrame,
   didWeHandleWheelForThisFrame,
@@ -67,14 +54,13 @@ import {
   mouseWheelHandled,
   resetMouseStatus,
 } from '../components/mouse-move'
-import { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
+import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 import { last, reverse } from '../core/shared/array-utils'
 import * as EP from '../core/shared/element-path'
-import { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import {
-  canvasPoint,
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import type {
   CanvasPoint,
   CanvasRectangle,
   CanvasVector,
@@ -84,24 +70,33 @@ import {
   Size,
   WindowPoint,
   WindowRectangle,
-  zeroCanvasPoint,
 } from '../core/shared/math-utils'
-import { ElementPath } from '../core/shared/project-file-types'
+import {
+  canvasPoint,
+  windowRectangle,
+  zeroCanvasPoint,
+  zeroCanvasRect,
+} from '../core/shared/math-utils'
+import type { ElementPath } from '../core/shared/project-file-types'
 import { getActionsForClipboardItems, Clipboard } from '../utils/clipboard'
 import {
   CanvasMousePositionRaw,
   CanvasMousePositionRounded,
   updateGlobalPositions,
 } from '../utils/global-positions'
-import Keyboard, { KeyCharacter, KeysPressed } from '../utils/keyboard'
+import type { KeysPressed } from '../utils/keyboard'
+import Keyboard, { KeyCharacter } from '../utils/keyboard'
 import { emptyModifiers, Modifier } from '../utils/modifiers'
-import { MouseButtonsPressed } from '../utils/mouse'
+import type { MouseButtonsPressed } from '../utils/mouse'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import { UtopiaStyles } from '../uuiui'
 import { DropHandlers } from './image-drop'
 import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
+import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
+import { isFeatureEnabled } from '../utils/feature-switches'
+const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
 
@@ -157,13 +152,6 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
   }
 }
 
-function isDragging(editorState: EditorState): boolean {
-  return (
-    editorState.canvas.dragState != null &&
-    getDragStateStart(editorState.canvas.dragState, editorState.canvas.resizeOptions) != null
-  )
-}
-
 function roundPointForScale<C extends CoordinateMarker>(point: Point<C>, scale: number): Point<C> {
   return scale <= 1 ? Utils.roundPointTo(point, 0) : Utils.roundPointToNearestHalf(point)
 }
@@ -177,9 +165,9 @@ function handleCanvasEvent(
     return []
   }
 
-  let optionalDragStateAction: Array<EditorAction> = []
+  let optionalInteractionSessionAction: Array<EditorAction> = []
   if ('interactionSession' in event && event.interactionSession != null) {
-    optionalDragStateAction = [
+    optionalInteractionSessionAction = [
       model.editorState.canvas.interactionSession != null
         ? CanvasActions.updateInteractionSession(event.interactionSession)
         : CanvasActions.createInteractionSession(event.interactionSession),
@@ -198,7 +186,7 @@ function handleCanvasEvent(
       const shouldApplyChanges: HandleInteractionSession =
         !isInsideCanvas && boundingAreaActive ? 'do-not-apply-changes' : 'apply-changes'
 
-      optionalDragStateAction = cancelInsertModeActions(shouldApplyChanges)
+      optionalInteractionSessionAction = cancelInsertModeActions(shouldApplyChanges)
     } else if (event.event === 'MOUSE_DOWN') {
       if (model.editorState.canvas.interactionSession == null) {
         // This code path should absolutely not be live, because there should always be an
@@ -212,7 +200,7 @@ function handleCanvasEvent(
         model.editorState.canvas.interactionSession.interactionData.type === 'DRAG' ||
         model.editorState.canvas.interactionSession.interactionData.type === 'HOVER'
       ) {
-        optionalDragStateAction = [
+        optionalInteractionSessionAction = [
           CanvasActions.updateInteractionSession(
             updateInteractionViaMouse(
               model.editorState.canvas.interactionSession,
@@ -231,24 +219,11 @@ function handleCanvasEvent(
   } else if (!(insertMode && isOpenFileUiJs(model.editorState))) {
     switch (event.event) {
       case 'DRAG':
-        if (event.dragState != null) {
-          optionalDragStateAction = [CanvasActions.createDragState(event.dragState)]
-        }
         break
 
       case 'MOUSE_UP':
-        if (model.dragState != null) {
-          optionalDragStateAction = [
-            CanvasActions.clearDragState(
-              getDragStateDrag(
-                model.editorState.canvas.dragState,
-                model.editorState.canvas.resizeOptions,
-              ) != null,
-            ),
-          ]
-        }
         if (model.editorState.canvas.interactionSession?.interactionData.type === 'DRAG') {
-          optionalDragStateAction = [CanvasActions.clearInteractionSession(true)]
+          optionalInteractionSessionAction = [CanvasActions.clearInteractionSession(true)]
         }
         break
 
@@ -286,7 +261,7 @@ function handleCanvasEvent(
 
   return [
     ...optionalControlIdClearAction,
-    ...optionalDragStateAction,
+    ...optionalInteractionSessionAction,
     ...optionalRedrawControlsAction,
   ]
 }
@@ -323,7 +298,7 @@ function on(
       return []
     }
   } else if (canvas.keysPressed['z']) {
-    if (event.event === 'MOUSE_UP' && !isDragging(canvas.editorState)) {
+    if (event.event === 'MOUSE_UP') {
       let scale: number
       if (canvas.keysPressed['alt']) {
         scale = Utils.decreaseScale(canvas.scale)
@@ -352,37 +327,11 @@ function on(
     } else {
       return [CanvasActions.scrollCanvas(event.delta as any as CanvasVector)]
     }
-  } else if (
-    isDragging(canvas.editorState) &&
-    event.event === 'DRAG' &&
-    canvasBounds != null &&
-    canvas.mode.type === 'select'
-  ) {
-    const scrollBump = 5 * (1 / canvas.scale)
-    let scrollX: number = 0
-    let scrollY: number = 0
-    const scaledCanvasBounds = Utils.scaleRect(canvasBounds, 1 / canvas.scale)
-    const offsetCanvasPosition = Utils.offsetPoint(event.canvasPositionRounded, canvas.canvasOffset)
-    if (offsetCanvasPosition.x < 0) {
-      scrollX = -scrollBump
-    } else if (offsetCanvasPosition.x > scaledCanvasBounds.width) {
-      scrollX = scrollBump
-    }
-    if (offsetCanvasPosition.y < 0) {
-      scrollY = -scrollBump
-    } else if (offsetCanvasPosition.y > scaledCanvasBounds.height) {
-      scrollY = scrollBump
-    }
-    if (scrollX !== 0 || scrollY !== 0) {
-      const scrollDelta = { x: scrollX, y: scrollY } as CanvasVector
-      additionalEvents.push(CanvasActions.scrollCanvas(scrollDelta))
-    }
   }
   // Handle all other cases via the plugins.
   return additionalEvents
 }
 
-let interactionSessionTimerHandle: any = undefined
 export function runLocalCanvasAction(
   dispatch: EditorDispatch,
   model: EditorState,
@@ -415,10 +364,6 @@ export function runLocalCanvasAction(
           roundedCanvasOffset: Utils.roundPointTo(action.position, 0),
         },
       }
-    case 'CLEAR_DRAG_STATE':
-      return clearDragState(model, derivedState, action.applyChanges)
-    case 'CREATE_DRAG_STATE':
-      return createOrUpdateDragState(dispatch, model, action)
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
       return update(model, {
         canvas: {
@@ -457,15 +402,11 @@ export function runLocalCanvasAction(
       }
     }
     case 'CREATE_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
-      if (action.interactionSession.interactionData.type === 'DRAG') {
-        interactionSessionTimerHandle = setInterval(() => {
-          dispatch([CanvasActions.updateDragInteractionData({ globalTime: Date.now() })])
-        }, 200)
-      }
       const metadata = model.canvas.interactionSession?.latestMetadata ?? model.jsxMetadata
       const allElementProps =
         model.canvas.interactionSession?.latestAllElementProps ?? model.allElementProps
+      const elementPathTree =
+        model.canvas.interactionSession?.latestElementPathTree ?? model.elementPathTree
 
       return {
         ...model,
@@ -475,11 +416,11 @@ export function runLocalCanvasAction(
             ...action.interactionSession,
             latestMetadata: metadata,
             latestAllElementProps: allElementProps,
+            latestElementPathTree: elementPathTree,
           },
         },
       }
     case 'CLEAR_INTERACTION_SESSION':
-      clearInterval(interactionSessionTimerHandle)
       const interactionWasInProgress = interactionInProgress(model.canvas.interactionSession)
       return {
         ...model,
@@ -559,7 +500,6 @@ export function runLocalCanvasAction(
 }
 
 export interface ControlDependencies {
-  dragState: DragState | null
   mode: Mode
   keysPressed: KeysPressed
   mouseButtonsPressed: MouseButtonsPressed
@@ -583,7 +523,6 @@ export function collectControlsDependencies(
 ): ControlDependencies {
   const { editor, derived } = dependencies
   return {
-    dragState: editor.canvas.dragState,
     mode: editor.mode,
     keysPressed: editor.keysPressed,
     mouseButtonsPressed: editor.mouseButtonsPressed,
@@ -725,11 +664,15 @@ interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
   userState: UserState
+  builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch
+  updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
+  navigatorWidth: number
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {
   canvasWrapperRef: HTMLElement | null = null
+  resizeObserver: ResizeObserver | null = null
   constructor(props: EditorCanvasProps) {
     super(props)
     this.setupWindowListeners()
@@ -776,12 +719,28 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       this.canvasWrapperRef.addEventListener('wheel', this.suppressBrowserNavigation, {
         passive: false,
       })
+      this.resizeObserver = new ResizeObserver((entries: Array<ResizeObserverEntry>) => {
+        if (entries.length === 0) {
+          return
+        } else {
+          const size = {
+            width: entries[0].contentRect.width,
+            height: entries[0].contentRect.height,
+          }
+          this.props.updateCanvasSize(size)
+        }
+      })
+      this.resizeObserver!.observe(this.canvasWrapperRef)
+      this.props.updateCanvasSize(this.canvasWrapperRef.getBoundingClientRect())
     }
   }
 
   componentWillUnmount() {
     if (this.canvasWrapperRef != null) {
       this.canvasWrapperRef.removeEventListener('wheel', this.suppressBrowserNavigation)
+      if (this.resizeObserver != null) {
+        this.resizeObserver.unobserve(this.canvasWrapperRef)
+      }
     }
     this.removeEventListeners()
   }
@@ -827,12 +786,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       canvasBounds = null
     } else {
       const canvasBoundingRect = this.canvasWrapperRef.getBoundingClientRect()
-      canvasBounds = {
+      canvasBounds = windowRectangle({
         x: canvasBoundingRect.left,
         y: canvasBoundingRect.top,
         width: canvasBoundingRect.width,
         height: canvasBoundingRect.height,
-      } as WindowRectangle
+      })
     }
 
     let actions: Array<EditorAction> = []
@@ -870,11 +829,9 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     )
 
     const modeOverrideCursor = this.getModeSpecificCursor()
-    const dragStateCursor = null // FIXME: dragState == null ? null : dragState.cursor
 
     const cursor =
       modeOverrideCursor ??
-      dragStateCursor ??
       cursorForKeysPressed(this.props.model.keysPressed, this.props.model.mouseButtonsPressed) ??
       cursorForHoveredControl(this.props.model.controls, CanvasMousePositionRaw) ??
       getNewCanvasControlsCursor(this.props.editor.cursorStack) ??
@@ -1083,12 +1040,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
       React.createElement(CanvasComponentEntry, {}),
       canvasControls,
       React.createElement(CursorComponent, {}),
-      <EditorCommon
-        mouseDown={this.handleMouseDown}
-        mouseUp={this.handleMouseUp}
-        keyDown={this.handleKeyDown}
-        keyUp={this.handleKeyUp}
-      />,
+      <EditorCommon mouseDown={this.handleMouseDown} mouseUp={this.handleMouseUp} />,
     )
   }
 
@@ -1125,151 +1077,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     })
   }
 
-  applyDragStateKeyboardEvent(
-    event: KeyboardEvent,
-    key: KeyCharacter,
-    pressed: boolean,
-  ): Array<EditorAction> {
-    const dragState = this.props.editor.canvas.dragState
-    const dispatch = this.props.dispatch
-    function getDragStateUpdate(updateFn: DragState): Array<EditorAction> {
-      return [CanvasActions.createDragState(updateFn)]
-    }
-    // TODO insert update functions for canvas interaction session
-    if (dragState != null) {
-      switch (dragState.type) {
-        case 'MOVE_DRAG_STATE':
-          switch (key) {
-            case 'shift':
-              return getDragStateUpdate(
-                updateMoveDragState(
-                  dragState,
-                  undefined,
-                  undefined,
-                  undefined,
-                  pressed,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                ),
-              )
-            case 'cmd':
-              return getDragStateUpdate(
-                updateMoveDragState(
-                  dragState,
-                  undefined,
-                  undefined,
-                  !pressed,
-                  undefined,
-                  undefined,
-                  pressed,
-                  undefined,
-                  undefined,
-                ),
-              )
-            case 'alt':
-              let duplicateNewUIDs: Array<DuplicateNewUID> | null = null
-              if (pressed) {
-                duplicateNewUIDs = createDuplicationNewUIDsFromEditorState(this.props.editor)
-              }
-              return getDragStateUpdate(
-                updateMoveDragState(
-                  dragState,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                  pressed,
-                  undefined,
-                  duplicateNewUIDs,
-                  undefined,
-                ),
-              )
-            default:
-              break
-          }
-          break
-        case 'RESIZE_DRAG_STATE': {
-          const resizeOptions = this.props.editor.canvas.resizeOptions
-          const dragPositions = getDragStatePositions(dragState, resizeOptions)
-          const targetProperty =
-            resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-          const propertyChange: ResizeDragStatePropertyChange | undefined =
-            dragState.properties.find((prop) => {
-              return prop.targetProperty === targetProperty
-            })
-          const keepAspectRatio =
-            (key === 'shift' ? pressed : propertyChange?.keepAspectRatio) ||
-            this.getElementAspectRatioLocked()
-          const centerBasedResize =
-            key === 'alt' ? pressed : propertyChange?.centerBasedResize ?? false
-          const enableSnapping = key === 'cmd' ? !pressed : propertyChange?.enableSnapping ?? false
-          const dragStart = dragPositions?.start ?? CanvasMousePositionRaw
-          let exceededThreshold: boolean = dragPositions?.drag != null
-          if (!exceededThreshold) {
-            exceededThreshold =
-              CanvasMousePositionRounded != null &&
-              dragStart != null &&
-              dragExceededThreshold(CanvasMousePositionRounded, dragStart)
-          }
-
-          if (dragStart != null && exceededThreshold) {
-            switch (key) {
-              case 'shift':
-              case 'alt':
-              case 'cmd':
-                return getDragStateUpdate(
-                  updateResizeDragState(
-                    dragState,
-                    dragStart,
-                    dragPositions?.drag ?? null,
-                    targetProperty,
-                    enableSnapping,
-                    centerBasedResize,
-                    keepAspectRatio,
-                  ),
-                )
-              default:
-                break
-            }
-            break
-          }
-          break
-        }
-        case 'INSERT_DRAG_STATE':
-          break
-        default:
-          const _exhaustiveCheck: never = dragState
-          break
-      }
-    }
-    return []
-  }
-
-  handleKeyDown = (event: KeyboardEvent) => {
-    if (event.repeat) {
-      return []
-    } else {
-      return this.applyDragStateKeyboardEvent(
-        event,
-        Keyboard.keyCharacterForCode(event.keyCode),
-        true,
-      )
-    }
-  }
-  handleKeyUp = (event: KeyboardEvent) => {
-    if (event.repeat) {
-      return []
-    } else {
-      return this.applyDragStateKeyboardEvent(
-        event,
-        Keyboard.keyCharacterForCode(event.keyCode),
-        false,
-      )
-    }
-  }
-
   handleMouseDown = (event: MouseEvent) => {
     // TODO RJB 2018 Create new events for right mouse button events
     let actions: Array<EditorAction> = []
@@ -1304,25 +1111,12 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         document.exitPointerLock()
       }
       const canvasPositions = this.getPosition(event)
-      if (isDragging(this.props.editor)) {
-        actions.push(
-          ...this.handleEvent({
-            ...canvasPositions,
-            event: 'DRAG_END',
-            modifiers: Modifier.modifiersForEvent(event),
-            dragState: this.props.model.dragState,
-            cursor: null,
-            nativeEvent: event,
-          }),
-        )
-      }
 
       actions.push(
         ...this.handleEvent({
           ...canvasPositions,
           event: 'MOUSE_UP',
           modifiers: Modifier.modifiersForEvent(event),
-          dragState: this.props.model.dragState,
           cursor: null,
           nativeEvent: event,
         }),
@@ -1353,15 +1147,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }),
         )
       } else {
-        const dragState = this.props.model.dragState
-        const resizeOptions = this.props.editor.canvas.resizeOptions
-        const dragPositions = getDragStatePositions(dragState, resizeOptions)
         // Check and mark mouse move handling.
         if (didWeHandleMouseMoveForThisFrame) {
           return
         }
         mouseMoveHandled()
-        const dragStarted = anyDragStarted(dragState)
         if (
           this.props.editor.canvas.interactionSession != null &&
           this.props.editor.canvas.interactionSession.interactionData.type === 'HOVER'
@@ -1426,7 +1216,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               }),
             )
           }
-        } else if (dragState == null || !dragStarted) {
+        } else {
           actions.push(
             ...this.handleEvent({
               ...canvasPositions,
@@ -1435,84 +1225,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               cursor: null,
               nativeEvent: event,
               interactionSession: null,
-            }),
-          )
-        } else {
-          const newDrag = roundPointForScale(
-            Utils.offsetPoint(
-              canvasPositions.canvasPositionRounded,
-              dragPositions == null ? zeroCanvasPoint : Utils.negate(dragPositions.start),
-            ),
-            this.props.model.scale,
-          )
-          let exceededThreshold: boolean = dragPositions?.drag != null
-          if (!exceededThreshold && dragPositions != null) {
-            exceededThreshold = dragExceededThreshold(
-              canvasPositions.canvasPositionRounded,
-              dragPositions.start,
-            )
-          }
-
-          let newDragState: DragState | null = null
-          switch (dragState.type) {
-            case 'MOVE_DRAG_STATE': {
-              const enableSnapping = !event.metaKey
-              const constrainAxis = event.shiftKey
-              const duplicate = event.altKey
-              const reparent = event.metaKey
-              newDragState = updateMoveDragState(
-                dragState,
-                exceededThreshold ? newDrag : undefined,
-                exceededThreshold ? dragState.drag : undefined,
-                enableSnapping,
-                constrainAxis,
-                duplicate,
-                reparent,
-                undefined,
-                canvasPositions.canvasPositionRounded,
-              )
-              break
-            }
-            case 'RESIZE_DRAG_STATE': {
-              const start: CanvasPoint = dragPositions?.start ?? canvasPositions.canvasPositionRaw
-              const elementAspectRatioLocked = this.getElementAspectRatioLocked()
-              const keepAspectRatio = event.shiftKey || elementAspectRatioLocked
-              const centerBasedResize = event.altKey
-              const enableSnapping = !event.metaKey
-
-              if (!exceededThreshold) {
-                exceededThreshold = dragExceededThreshold(
-                  canvasPositions.canvasPositionRounded,
-                  start,
-                )
-              }
-              const targetProperty =
-                resizeOptions.propertyTargetOptions[resizeOptions.propertyTargetSelectedIndex]
-              newDragState = updateResizeDragState(
-                dragState,
-                start,
-                exceededThreshold ? newDrag : null,
-                targetProperty,
-                enableSnapping,
-                centerBasedResize,
-                keepAspectRatio,
-              )
-              break
-            }
-            case 'INSERT_DRAG_STATE':
-              break
-            default:
-              const _exhaustiveCheck: never = dragState
-              break
-          }
-          actions.push(
-            ...this.handleEvent({
-              ...canvasPositions,
-              event: 'DRAG',
-              modifiers: Modifier.modifiersForEvent(event),
-              cursor: null, // FIXME: newDragState.cursor,
-              dragState: newDragState,
-              nativeEvent: event,
             }),
           )
         }
@@ -1592,19 +1304,28 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // on macOS it seems like alt prevents the 'paste' event from being ever fired, so this is dead code here
         // needs testing if it's any help for other platforms
       } else {
+        const canvasWrapperRect = this.canvasWrapperRef?.getBoundingClientRect() ?? zeroCanvasRect
+        const canvasViewportCenter = canvasPoint({
+          x:
+            -editor.canvas.roundedCanvasOffset.x +
+            canvasWrapperRect.width / editor.canvas.scale / 2,
+          y:
+            -editor.canvas.roundedCanvasOffset.y +
+            canvasWrapperRect.height / editor.canvas.scale / 2,
+        })
         void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
-            editor.projectContents,
-            editor.nodeModules.files,
-            editor.canvas.openFile?.filename ?? null,
+            editor,
+            this.props.builtinDependencies,
+            canvasViewportCenter,
             result.utopiaData,
             result.files,
-            selectedViews,
-            editor.pasteTargetsToIgnore,
-            editor.jsxMetadata,
             this.props.model.scale,
           )
-          this.props.dispatch(actions, 'everyone')
+
+          if (actions.length > 0) {
+            this.props.dispatch(actions, 'everyone')
+          }
         })
       }
     }

@@ -1,5 +1,6 @@
 import * as OPI from 'object-path-immutable'
-import { FlexLength, sides, Sides } from 'utopia-api/core'
+import type { FlexLength, Sides } from 'utopia-api/core'
+import { sides } from 'utopia-api/core'
 import { getReorderDirection } from '../../components/canvas/controls/select-mode/yoga-utils'
 import { getImageSize, scaleImageDimensions } from '../../components/images'
 import Utils from '../../utils/utils'
@@ -11,15 +12,16 @@ import {
   uniqBy,
   mapAndFilter,
   allElemsEqual,
+  pluck,
 } from '../shared/array-utils'
 import {
   intrinsicHTMLElementNamesThatSupportChildren,
   TextElements,
   VoidElementsToFilter,
 } from '../shared/dom-utils'
+import type { Either } from '../shared/either'
 import {
   alternativeEither,
-  Either,
   eitherToMaybe,
   flatMapEither,
   foldEither,
@@ -27,22 +29,29 @@ import {
   isRight,
   right,
   maybeEitherToMaybe,
+  isLeft,
 } from '../shared/either'
-import {
+import type {
   ElementInstanceMetadata,
   ElementsByUID,
-  getJSXElementNameLastPart,
-  isJSExpressionOtherJavaScript,
-  isJSXElement,
-  isJSXTextBlock,
   JSXAttributes,
   JSXElement,
   JSXElementChild,
   UtopiaJSXComponent,
   JSXElementName,
+  ElementInstanceMetadataMap,
+  DetectedLayoutSystem,
+  JSXConditionalExpression,
+  ConditionValue,
+  JSXElementLike,
+} from '../shared/element-template'
+import {
+  getJSXElementNameLastPart,
+  isJSExpressionMapOrOtherJavaScript,
+  isJSXElement,
+  isJSXTextBlock,
   getJSXElementNameAsString,
   isIntrinsicElement,
-  ElementInstanceMetadataMap,
   isIntrinsicHTMLElement,
   emptySpecialSizeMeasurements,
   elementInstanceMetadata,
@@ -50,45 +59,51 @@ import {
   isJSXFragment,
   isJSXConditionalExpression,
   emptyComputedStyle,
-  emptyAttributeMetadatada,
-  DetectedLayoutSystem,
-  JSXConditionalExpression,
-  ConditionValue,
+  emptyAttributeMetadata,
   isJSXElementLike,
-  JSXElementLike,
+  isJSExpression,
+  hasElementsWithin,
+  isJSExpressionOtherJavaScript,
+  isJSXMapExpression,
 } from '../shared/element-template'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../shared/jsx-attributes'
-import {
-  boundingRectangleArray,
+import type {
   CanvasRectangle,
-  canvasRectangleToLocalRectangle,
-  getLocalRectangleInNewParentContext,
-  infinityCanvasRectangle,
-  infinityLocalRectangle,
-  isInfinityRectangle,
-  isFiniteRectangle,
-  localRectangle,
   LocalRectangle,
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
   Size,
+  Rectangle,
+  InfinityRectangle,
+  CoordinateMarker,
+} from '../shared/math-utils'
+import {
+  boundingRectangleArray,
+  canvasRectangleToLocalRectangle,
+  getLocalRectangleInNewParentContext,
+  infinityCanvasRectangle,
+  isInfinityRectangle,
+  isFiniteRectangle,
+  localRectangle,
   zeroCanvasRect,
   zeroRectIfNullOrInfinity,
   nullIfInfinity,
+  infinityRectangle,
+  infinityLocalRectangle,
 } from '../shared/math-utils'
 import { optionalMap } from '../shared/optional-utils'
-import { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
+import type { Imports, PropertyPath, ElementPath, NodeModules } from '../shared/project-file-types'
 import * as PP from '../shared/property-path'
 import * as EP from '../shared/element-path'
+import type { ElementSupportsChildren } from './element-template-utils'
 import {
   componentHonoursPropsPosition,
   componentHonoursPropsSize,
   componentUsesProperty,
   findJSXElementChildAtPath,
-  ElementSupportsChildren,
   elementChildSupportsChildrenAlsoText,
 } from './element-template-utils'
 import {
@@ -101,38 +116,47 @@ import {
   isGivenUtopiaElementFromMetadata,
 } from './project-file-utils'
 import { fastForEach } from '../shared/utils'
-import { objectValues, omit } from '../shared/object-utils'
+import { mapValues, objectValues, omit } from '../shared/object-utils'
 import { UTOPIA_LABEL_KEY } from './utopia-constants'
-import {
+import type {
   AllElementProps,
   LockedElements,
+  NavigatorEntry,
+} from '../../components/editor/store/editor-state'
+import {
+  isRegularNavigatorEntry,
   withUnderlyingTarget,
 } from '../../components/editor/store/editor-state'
-import { ProjectContentTreeRoot } from '../../components/assets'
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import { memoize } from '../shared/memoize'
-import {
-  buildTree,
-  ElementPathTree,
-  ElementPathTreeRoot,
-  getSubTree,
-  reorderTree,
-} from '../shared/element-path-tree'
+import type { ElementPathTree, ElementPathTrees } from '../shared/element-path-tree'
+import { buildTree, getSubTree, getCanvasRoots, elementPathTree } from '../shared/element-path-tree'
 import { findUnderlyingTargetComponentImplementationFromImportInfo } from '../../components/custom-code/code-file'
-import {
+import type {
   Direction,
   FlexDirection,
   ForwardOrReverse,
   SimpleFlexDirection,
 } from '../../components/inspector/common/css-utils'
-import { getConditionalClausePath, reorderConditionalChildPathTrees } from './conditionals'
+import {
+  findFirstNonConditionalAncestor,
+  getConditionalActiveCase,
+  getConditionalClausePath,
+  isTextEditableConditional,
+  maybeConditionalActiveBranch,
+  maybeConditionalExpression,
+  reorderConditionalChildPathTrees,
+} from './conditionals'
 import { getUtopiaID } from '../shared/uid-utils'
+import type { InsertionPath } from '../../components/editor/store/insertion-path'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
-  InsertionPath,
   isChildInsertionPath,
+  replaceWithSingleElement,
 } from '../../components/editor/store/insertion-path'
-import { getElementContentAffectingType } from '../../components/canvas/canvas-strategies/strategies/group-like-helpers'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
 
 const ObjectPathImmutable: any = OPI
 
@@ -185,8 +209,29 @@ export const MetadataUtils = {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
   },
-  getIndexInParent(metadata: ElementInstanceMetadataMap, target: ElementPath): number {
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, target)
+  isSceneWithOneChild(
+    jsxMetadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return (
+      MetadataUtils.isProbablyScene(jsxMetadata, path) &&
+      MetadataUtils.getChildrenPathsOrdered(jsxMetadata, pathTree, path).length === 1
+    )
+  },
+  parentIsSceneWithOneChild(
+    jsxMetadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return MetadataUtils.isSceneWithOneChild(jsxMetadata, pathTree, EP.parentPath(path))
+  },
+  getIndexInParent(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    target: ElementPath,
+  ): number {
+    const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTree, target)
     return siblings.findIndex((child) => {
       return getUtopiaID(child) === EP.toUid(target)
     })
@@ -203,6 +248,7 @@ export const MetadataUtils = {
   },
   getSiblingsOrdered(
     metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
     if (target == null) {
@@ -211,39 +257,17 @@ export const MetadataUtils = {
 
     const parentPath = EP.parentPath(target)
     const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPathsOrdered(metadata, parentPath)
-      : MetadataUtils.getChildrenPathsOrdered(metadata, parentPath)
+      ? MetadataUtils.getRootViewPathsOrdered(metadata, pathTree, parentPath)
+      : MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, parentPath)
     const siblingPaths = siblingPathsOrNull ?? []
     return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
-  },
-  getSiblingsUnordered(
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath | null,
-  ): ElementInstanceMetadata[] {
-    if (target == null) {
-      return []
-    }
-
-    const parentPath = EP.parentPath(target)
-    const siblingPathsOrNull = EP.isRootElementOfInstance(target)
-      ? MetadataUtils.getRootViewPathsUnordered(metadata, parentPath)
-      : MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
-    const siblingPaths = siblingPathsOrNull ?? []
-    return MetadataUtils.findElementsByElementPath(metadata, siblingPaths)
-  },
-  getSiblingsParticipatingInAutolayoutUnordered(
-    metadata: ElementInstanceMetadataMap,
-    target: ElementPath | null,
-  ): ElementInstanceMetadata[] {
-    return MetadataUtils.getSiblingsUnordered(metadata, target).filter(
-      MetadataUtils.elementParticipatesInAutoLayout,
-    )
   },
   getSiblingsParticipatingInAutolayoutOrdered(
     metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath | null,
   ): ElementInstanceMetadata[] {
-    return MetadataUtils.getSiblingsOrdered(metadata, target).filter(
+    return MetadataUtils.getSiblingsOrdered(metadata, pathTree, target).filter(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
@@ -323,14 +347,19 @@ export const MetadataUtils = {
   },
   getOrderedChildrenParticipatingInAutoLayout(
     elements: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    return MetadataUtils.getChildrenOrdered(elements, target).filter(
+    return MetadataUtils.getChildrenOrdered(elements, pathTree, target).filter(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
-  hasStaticChildren(elements: ElementInstanceMetadataMap, target: ElementPath): boolean {
-    return MetadataUtils.getChildrenUnordered(elements, target).some(
+  hasStaticChildren(
+    elements: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    target: ElementPath,
+  ): boolean {
+    return MetadataUtils.getChildrenOrdered(elements, pathTree, target).some(
       MetadataUtils.elementParticipatesInAutoLayout,
     )
   },
@@ -373,12 +402,39 @@ export const MetadataUtils = {
     const isTextElement = foldEither(
       (elementString) => TextElements.includes(elementString),
       (elementInstance) =>
-        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable),
+        isJSXElement(elementInstance) && TextElements.includes(elementInstance.name.baseVariable), // TODO this should include a check to make sure the element is a leaf
       element.element,
     )
     {
       return isTextElement
     }
+  },
+  isGeneratedTextFromMetadata(
+    target: ElementPath,
+    pathTree: ElementPathTrees,
+    metadata: ElementInstanceMetadataMap,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      return false
+    }
+    if (isLeft(element.element)) {
+      return false
+    }
+    if (!isJSXElementLike(element.element.value)) {
+      return false
+    }
+    const jsxElement = element.element.value
+    // to mark something as text-like, we need to make sure it's a leaf in the metadata graph
+    const childrenElementsFromMetadata = MetadataUtils.getNonExpressionDescendants(
+      metadata,
+      pathTree,
+      target,
+    )
+    if (childrenElementsFromMetadata.length !== 0) {
+      return false
+    }
+    return !jsxElement.children.every((c) => isJSXElementLike(c) || isJSXTextBlock(c))
   },
   getYogaSizeProps(
     target: ElementPath,
@@ -532,22 +588,9 @@ export const MetadataUtils = {
       ...PP.getElements(property),
     ])
   },
-  getRootViewPathsUnordered(
-    elements: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): Array<ElementPath> {
-    const possibleRootElementsOfTarget = mapDropNulls((elementPathString) => {
-      const elementPath = EP.fromString(elementPathString)
-      if (EP.isRootElementOf(elementPath, target)) {
-        return elementPath
-      } else {
-        return null
-      }
-    }, Object.keys(elements))
-    return possibleRootElementsOfTarget
-  },
   getRootViewPathsOrdered(
     elements: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
     const possibleRootElementsOfTarget = mapDropNulls((elementPath) => {
@@ -556,8 +599,16 @@ export const MetadataUtils = {
       } else {
         return null
       }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    }, MetadataUtils.createOrderedElementPathsFromElements(elements, pathTree, [], []).navigatorTargets)
     return possibleRootElementsOfTarget
+  },
+  getRootViewsOrdered(
+    elements: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    const paths = MetadataUtils.getRootViewPathsOrdered(elements, pathTree, target)
+    return mapDropNulls((path) => elements[EP.toString(path)], paths)
   },
   getRootViewsUnordered(
     elements: ElementInstanceMetadataMap,
@@ -573,32 +624,19 @@ export const MetadataUtils = {
     }
     return result
   },
-  getChildrenPathsUnordered(
-    elements: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): Array<ElementPath> {
-    const possibleChildren = mapDropNulls((elementPathString) => {
-      const elementPath = EP.fromString(elementPathString)
-      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
-        return elementPath
-      } else {
-        return null
-      }
-    }, Object.keys(elements))
-    return possibleChildren
-  },
   getChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
-    const possibleChildren = mapDropNulls((elementPath) => {
-      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
-        return elementPath
-      } else {
-        return null
-      }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
-    return possibleChildren
+    const subTree = getSubTree(pathTree, target)
+    if (subTree == null) {
+      return []
+    } else {
+      return subTree.children
+        .map((child) => child.path)
+        .filter((path) => !EP.isRootElementOfInstance(path))
+    }
   },
   getChildrenUnordered(
     elements: ElementInstanceMetadataMap,
@@ -616,45 +654,35 @@ export const MetadataUtils = {
   },
   getChildrenOrdered(
     elements: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    return mapDropNulls((elementPath) => {
-      if (EP.isChildOf(elementPath, target) && !EP.isRootElementOfInstance(elementPath)) {
-        return MetadataUtils.findElementByElementPath(elements, elementPath)
-      } else {
-        return null
-      }
-    }, MetadataUtils.createOrderedElementPathsFromElements(elements, [], []).navigatorTargets)
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(elements, pathTree, target)
+    return mapDropNulls((childPath) => {
+      return MetadataUtils.findElementByElementPath(elements, childPath)
+    }, childrenPaths)
   },
-  getDescendantPathsUnordered(
+  getImmediateChildrenPathsOrdered(
     elements: ElementInstanceMetadataMap,
-    target: ElementPath,
-  ): Array<ElementPath> {
-    return mapAndFilter(
-      (element) => element.elementPath,
-      (path) => EP.isDescendantOf(path, target),
-      Object.values(elements),
-    )
-  },
-  getImmediateChildrenPathsUnordered(
-    elements: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementPath> {
     const element = MetadataUtils.findElementByElementPath(elements, target)
     if (element == null) {
       return []
     } else {
-      const rootPaths = MetadataUtils.getRootViewPathsUnordered(elements, target)
-      const childrenPaths = MetadataUtils.getChildrenPathsUnordered(elements, target)
+      const rootPaths = MetadataUtils.getRootViewPathsOrdered(elements, pathTree, target)
+      const childrenPaths = MetadataUtils.getChildrenPathsOrdered(elements, pathTree, target)
       return [...rootPaths, ...childrenPaths]
     }
   },
-  getImmediateChildrenUnordered(
+  getImmediateChildrenOrdered(
     metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath,
   ): Array<ElementInstanceMetadata> {
-    const roots = MetadataUtils.getRootViewsUnordered(metadata, target)
-    const children = MetadataUtils.getChildrenUnordered(metadata, target)
+    const roots = MetadataUtils.getRootViewsOrdered(metadata, pathTree, target)
+    const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
     return [...roots, ...children]
   },
   getStoryboardMetadata(metadata: ElementInstanceMetadataMap): ElementInstanceMetadata | null {
@@ -666,13 +694,23 @@ export const MetadataUtils = {
     }
     return null
   },
-  getAllStoryboardChildrenPathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
+  getAllStoryboardChildrenPathsOrdered(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+  ): ElementPath[] {
     const storyboardMetadata = MetadataUtils.getStoryboardMetadata(metadata)
     return storyboardMetadata == null
       ? []
-      : MetadataUtils.getImmediateChildrenPathsUnordered(metadata, storyboardMetadata.elementPath)
+      : MetadataUtils.getImmediateChildrenPathsOrdered(
+          metadata,
+          pathTree,
+          storyboardMetadata.elementPath,
+        )
   },
-  getAllCanvasSelectablePathsUnordered(metadata: ElementInstanceMetadataMap): ElementPath[] {
+  getAllCanvasSelectablePathsOrdered(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+  ): ElementPath[] {
     // 1) Get the storyboard children
     const allPaths = objectValues(metadata).map((m) => m.elementPath)
     const storyboardChildren = allPaths.filter(EP.isStoryboardChild)
@@ -680,7 +718,7 @@ export const MetadataUtils = {
     // 2) Skip over any Scenes with children at this level
     const withScenesSkipped = flatMapArray((path) => {
       if (MetadataUtils.targetIsScene(metadata, path)) {
-        const sceneChildren = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+        const sceneChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path)
         return sceneChildren.length > 0 ? sceneChildren : [path]
       } else {
         return [path]
@@ -694,10 +732,10 @@ export const MetadataUtils = {
       if (rootPath == null) {
         return [path]
       } else {
-        const componentChildren = MetadataUtils.getChildrenPathsUnordered(metadata, path)
+        const componentChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path)
 
         // 4) Replace any root paths with their children
-        const rootPathChildren = MetadataUtils.getChildrenPathsUnordered(metadata, rootPath)
+        const rootPathChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, rootPath)
         const rootPathOrRootChildren = rootPathChildren.length > 0 ? rootPathChildren : [rootPath]
         return [...rootPathOrRootChildren, ...componentChildren]
       }
@@ -706,22 +744,22 @@ export const MetadataUtils = {
     return withComponentInstancesReplaced
   },
   getAllPaths: memoize(
-    (metadata: ElementInstanceMetadataMap): ElementPath[] => {
-      // Note: This will not necessarily be representative of the structured ordering in
-      // the code that produced these elements.
-      const paths = objectValues(metadata).map((m) => m.elementPath)
-      const projectTree = buildTree(paths)
+    (metadata: ElementInstanceMetadataMap, pathTree: ElementPathTrees): ElementPath[] => {
+      const projectTree = pathTree
 
       // This function needs to explicitly return the paths in a depth first manner
       let result: Array<ElementPath> = []
       function recurseElement(tree: ElementPathTree): void {
         result.push(tree.path)
-        fastForEach(tree.children, (childTree) => {
+        fastForEach(Object.values(tree.children), (childTree) => {
           recurseElement(childTree)
         })
       }
 
-      const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
+      const storyboardChildren = MetadataUtils.getAllStoryboardChildrenPathsOrdered(
+        metadata,
+        pathTree,
+      )
       fastForEach(storyboardChildren, (childPath) => {
         const subTree = getSubTree(projectTree, childPath)
         if (subTree != null) {
@@ -737,34 +775,41 @@ export const MetadataUtils = {
   ),
   getAllPathsIncludingUnfurledFocusedComponents(
     metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
   ): ElementPath[] {
-    // Note: This will not necessarily be representative of the structured ordering in
-    // the code that produced these elements.
-    const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath))
+    const projectTree = pathTree
     // This function needs to explicitly return the paths in a depth first manner
     let result: Array<ElementPath> = []
     function recurseElement(tree: ElementPathTree | null): void {
       if (tree != null) {
         result.push(tree.path)
 
-        fastForEach(tree.children, (childTree) => {
+        fastForEach(Object.values(tree.children), (childTree) => {
           recurseElement(childTree)
         })
       }
     }
 
-    const rootInstances = this.getAllStoryboardChildrenPathsUnordered(metadata)
+    const rootInstances = this.getAllStoryboardChildrenPathsOrdered(metadata, pathTree)
 
     fastForEach(rootInstances, (rootInstance) => {
       const element = MetadataUtils.findElementByElementPath(metadata, rootInstance)
       if (element != null) {
         result.push(rootInstance)
-        const rootElements = MetadataUtils.getRootViewPathsUnordered(metadata, element.elementPath)
+        const rootElements = MetadataUtils.getRootViewPathsOrdered(
+          metadata,
+          pathTree,
+          element.elementPath,
+        )
         fastForEach(rootElements, (rootPath) => {
           const subTree = getSubTree(projectTree, rootPath)
           recurseElement(subTree)
         })
-        const children = MetadataUtils.getChildrenPathsUnordered(metadata, element.elementPath)
+        const children = MetadataUtils.getChildrenPathsOrdered(
+          metadata,
+          pathTree,
+          element.elementPath,
+        )
         fastForEach(children, (child) => {
           const subTree = getSubTree(projectTree, child)
           recurseElement(subTree)
@@ -798,6 +843,9 @@ export const MetadataUtils = {
   isViewAgainstImports(instance: ElementInstanceMetadata | null): boolean {
     return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'View')
   },
+  isGroupAgainstImports(instance: ElementInstanceMetadata | null): boolean {
+    return instance != null && MetadataUtils.isGivenUtopiaAPIElementFromImports(instance, 'Group')
+  },
   isImg(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'img')
   },
@@ -823,16 +871,25 @@ export const MetadataUtils = {
   },
   targetElementSupportsChildren(
     projectContents: ProjectContentTreeRoot,
-    instance: ElementInstanceMetadata,
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
   ): boolean {
     return (
-      this.targetElementSupportsChildrenAlsoText(projectContents, instance) === 'supportsChildren'
+      this.targetElementSupportsChildrenAlsoText(projectContents, path, metadata, pathTree) ===
+      'supportsChildren'
     )
   },
   targetElementSupportsChildrenAlsoText(
     projectContents: ProjectContentTreeRoot,
-    instance: ElementInstanceMetadata,
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
   ): ElementSupportsChildren {
+    const instance = MetadataUtils.findElementByElementPath(metadata, path)
+    if (instance == null) {
+      return 'doesNotSupportChildren'
+    }
     return foldEither(
       (elementString) => {
         return intrinsicHTMLElementNamesThatSupportChildren.includes(elementString)
@@ -840,7 +897,12 @@ export const MetadataUtils = {
           : 'doesNotSupportChildren'
       },
       (element) => {
-        const elementResult = elementChildSupportsChildrenAlsoText(element)
+        const elementResult = elementChildSupportsChildrenAlsoText(
+          element,
+          path,
+          metadata,
+          pathTree,
+        )
         if (elementResult != null) {
           return elementResult
         } else if (isUtopiaAPIComponentFromMetadata(instance)) {
@@ -865,15 +927,19 @@ export const MetadataUtils = {
     nodeModules: NodeModules,
     openFile: string | null | undefined,
     target: ElementPath | null,
+    pathTree: ElementPathTrees,
   ): boolean {
+    const targetSupportsChildrenValue = this.targetSupportsChildrenAlsoText(
+      projectContents,
+      metadata,
+      nodeModules,
+      openFile,
+      target,
+      pathTree,
+    )
     return (
-      this.targetSupportsChildrenAlsoText(
-        projectContents,
-        metadata,
-        nodeModules,
-        openFile,
-        target,
-      ) !== 'doesNotSupportChildren'
+      targetSupportsChildrenValue !== 'doesNotSupportChildren' &&
+      targetSupportsChildrenValue !== 'conditionalWithText'
     )
   },
   targetSupportsChildrenAlsoText(
@@ -882,6 +948,7 @@ export const MetadataUtils = {
     nodeModules: NodeModules,
     openFile: string | null | undefined,
     target: ElementPath | null,
+    pathTree: ElementPathTrees,
   ): ElementSupportsChildren {
     if (target == null) {
       // Assumed to be reparenting to the canvas root.
@@ -896,11 +963,19 @@ export const MetadataUtils = {
           openFile,
           'doesNotSupportChildren',
           (_, element) => {
-            return elementChildSupportsChildrenAlsoText(element) ?? 'doesNotSupportChildren'
+            return (
+              elementChildSupportsChildrenAlsoText(element, target, metadata, pathTree) ??
+              'doesNotSupportChildren'
+            )
           },
         )
       } else {
-        return MetadataUtils.targetElementSupportsChildrenAlsoText(projectContents, instance)
+        return MetadataUtils.targetElementSupportsChildrenAlsoText(
+          projectContents,
+          target,
+          metadata,
+          pathTree,
+        )
       }
     }
   },
@@ -930,17 +1005,22 @@ export const MetadataUtils = {
   ): boolean {
     if (metadata == null) {
       return false
+    }
+    if (
+      isLeft(metadata.element) ||
+      (isRight(metadata.element) && !isJSXElement(metadata.element.value))
+    ) {
+      return false
+    }
+    const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
+      projectContents,
+      metadata.importInfo,
+    )
+    if (underlyingComponent == null) {
+      // Could be an external third party component, assuming true for now.
+      return true
     } else {
-      const underlyingComponent = findUnderlyingTargetComponentImplementationFromImportInfo(
-        projectContents,
-        metadata.importInfo,
-      )
-      if (underlyingComponent == null) {
-        // Could be an external third party component, assuming true for now.
-        return true
-      } else {
-        return componentHonoursPropsSize(underlyingComponent)
-      }
+      return componentHonoursPropsSize(underlyingComponent)
     }
   },
   targetHonoursPropsPosition(
@@ -962,11 +1042,40 @@ export const MetadataUtils = {
       }
     }
   },
-  targetTextEditable(metadata: ElementInstanceMetadataMap, target: ElementPath | null): boolean {
+  targetTextEditable(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    target: ElementPath | null,
+  ): boolean {
     if (target == null) {
       return false
     }
-    const children = MetadataUtils.getChildrenUnordered(metadata, target)
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null) {
+      // this case is necessary for expressions in conditional branches
+      // these do not have metadata, but we still want them to be text editable
+      return isTextEditableConditional(EP.parentPath(target), metadata, pathTree)
+    }
+    if (isLeft(element.element)) {
+      return false
+    }
+
+    if (treatElementAsGroupLikeFromMetadata(element)) {
+      return false
+    }
+
+    const elementValue = element.element.value
+    if (
+      isJSXElement(elementValue) &&
+      isIntrinsicHTMLElement(elementValue.name) &&
+      !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
+    ) {
+      return false
+    }
+    if (isJSXConditionalExpression(elementValue)) {
+      return isTextEditableConditional(target, metadata, pathTree)
+    }
+    const children = MetadataUtils.getNonExpressionDescendants(metadata, pathTree, target)
     const hasNonEditableChildren = children
       .map((c) =>
         foldEither(
@@ -976,13 +1085,20 @@ export const MetadataUtils = {
         ),
       )
       .some((e) => e !== 'br')
-    return children.length === 0 || !hasNonEditableChildren
+    return (
+      !MetadataUtils.isElementGenerated(target) &&
+      (children.length === 0 || !hasNonEditableChildren)
+    )
   },
   targetTextEditableAndHasText(
     metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     target: ElementPath | null,
   ): boolean {
-    if (!MetadataUtils.targetTextEditable(metadata, target)) {
+    if (target == null) {
+      return false
+    }
+    if (!MetadataUtils.targetTextEditable(metadata, pathTree, target)) {
       return false
     }
 
@@ -991,12 +1107,19 @@ export const MetadataUtils = {
       return false
     }
 
-    if (isRight(element.element) && isJSXElement(element.element.value)) {
+    if (isRight(element.element)) {
       const elementValue = element.element.value
-      return (
-        elementValue.children.length >= 1 &&
-        elementValue.children.some((c) => isJSXTextBlock(c) || isJSExpressionOtherJavaScript(c))
-      )
+      if (isJSXElement(elementValue)) {
+        return (
+          elementValue.children.length >= 1 &&
+          elementValue.children.some(
+            (c) => isJSXTextBlock(c) || isJSExpressionMapOrOtherJavaScript(c),
+          )
+        )
+      }
+      if (isJSXConditionalExpression(elementValue)) {
+        return isTextEditableConditional(target, metadata, pathTree)
+      }
     }
     return false
   },
@@ -1006,7 +1129,7 @@ export const MetadataUtils = {
         const childElement = element.element.value.children[0]
         if (isJSXTextBlock(childElement)) {
           return childElement.text
-        } else if (isJSExpressionOtherJavaScript(childElement)) {
+        } else if (isJSExpressionMapOrOtherJavaScript(childElement)) {
           return `{${childElement.originalJavascript}}`
         }
       } else if (element.element.value.children.length === 0) {
@@ -1051,15 +1174,6 @@ export const MetadataUtils = {
       return null
     }
   },
-  getAllChildrenIncludingUnfurledFocusedComponentsUnordered(
-    path: ElementPath,
-    metadata: ElementInstanceMetadataMap,
-  ): { children: Array<ElementPath>; unfurledComponents: Array<ElementPath> } {
-    return {
-      children: MetadataUtils.getChildrenPathsUnordered(metadata, path),
-      unfurledComponents: MetadataUtils.getRootViewPathsUnordered(metadata, path),
-    }
-  },
   getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
     path: ElementPath,
     metadata: ElementInstanceMetadataMap,
@@ -1075,19 +1189,14 @@ export const MetadataUtils = {
   createOrderedElementPathsFromElements: memoize(
     (
       metadata: ElementInstanceMetadataMap,
+      pathTree: ElementPathTrees,
       collapsedViews: Array<ElementPath>,
       hiddenInNavigator: Array<ElementPath>,
     ): {
       navigatorTargets: Array<ElementPath>
       visibleNavigatorTargets: Array<ElementPath>
     } => {
-      // Note: This will not necessarily be representative of the structured ordering in
-      // the code that produced these elements.
-      const projectTree = buildTree(objectValues(metadata).map((m) => m.elementPath)).map(
-        (subTree) => {
-          return reorderTree(subTree, metadata)
-        },
-      )
+      const projectTree = pathTree
 
       // This function exists separately from getAllPaths because the Navigator handles collapsed views
       let navigatorTargets: Array<ElementPath> = []
@@ -1097,12 +1206,11 @@ export const MetadataUtils = {
         if (subTree != null) {
           const path = subTree.path
           const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
-          const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
           navigatorTargets.push(path)
           if (
             !collapsedAncestor &&
             !isHiddenInNavigator &&
-            !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata)
+            !MetadataUtils.isElementTypeHiddenInNavigator(path, metadata, pathTree)
           ) {
             visibleNavigatorTargets.push(path)
           }
@@ -1112,30 +1220,7 @@ export const MetadataUtils = {
 
           let unfurledComponents: Array<ElementPathTree> = []
 
-          let subTreeChildren: ElementPathTreeRoot = subTree.children
-          // For a conditional, we want to ensure that the whenTrue case comes before the whenFalse
-          // case for consistent ordering.
-          if (isConditional) {
-            const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
-            if (
-              elementMetadata != null &&
-              isRight(elementMetadata.element) &&
-              isJSXConditionalExpression(elementMetadata.element.value)
-            ) {
-              const jsxConditionalElement: JSXConditionalExpression = elementMetadata.element.value
-              subTreeChildren = reorderConditionalChildPathTrees(
-                jsxConditionalElement,
-                path,
-                subTreeChildren,
-              )
-            } else {
-              throw new Error(
-                `Unexpected non-conditional expression retrieved at ${EP.toString(path)}`,
-              )
-            }
-          }
-
-          fastForEach(subTreeChildren, (child) => {
+          fastForEach(Object.values(subTree.children), (child) => {
             if (EP.isRootElementOfInstance(child.path)) {
               unfurledComponents.push(child)
             } else {
@@ -1149,9 +1234,9 @@ export const MetadataUtils = {
         }
       }
 
-      const canvasRoots = MetadataUtils.getAllStoryboardChildrenPathsUnordered(metadata)
-      fastForEach(canvasRoots, (childElement) => {
-        const subTree = getSubTree(projectTree, childElement)
+      const canvasRoots = getCanvasRoots(projectTree)
+      fastForEach(canvasRoots, (canvasRoot) => {
+        const subTree = getSubTree(projectTree, canvasRoot.path)
 
         walkAndAddKeys(subTree, false)
       })
@@ -1165,14 +1250,30 @@ export const MetadataUtils = {
       maxSize: 1,
     },
   ),
-  isElementTypeHiddenInNavigator(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+  isElementTypeHiddenInNavigator(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+  ): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     if (element == null) {
       return false
     } else {
       return foldEither(
         (l) => VoidElementsToFilter.includes(l),
-        (r) => (isJSXElement(r) ? VoidElementsToFilter.includes(r.name.baseVariable) : false),
+        (r) => {
+          if (isJSXElement(r)) {
+            return VoidElementsToFilter.includes(r.name.baseVariable)
+          }
+          if (
+            isJSExpressionMapOrOtherJavaScript(r) &&
+            !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
+          ) {
+            const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
+            return children.length == 0
+          }
+          return false
+        },
         element.element,
       )
     }
@@ -1203,6 +1304,13 @@ export const MetadataUtils = {
   ): MaybeInfinityCanvasRectangle | null {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     return Utils.optionalMap((e) => e.globalFrame, element)
+  },
+  getFrameWithContentInCanvasCoords(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+  ): MaybeInfinityCanvasRectangle | null {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return Utils.optionalMap((e) => e.specialSizeMeasurements.globalFrameWithTextContent, element)
   },
   getFrameOrZeroRectInCanvasCoords(
     path: ElementPath,
@@ -1266,11 +1374,9 @@ export const MetadataUtils = {
   getGlobalContentBoxForChildren: function (
     parent: ElementInstanceMetadata,
   ): CanvasRectangle | null {
-    if (
-      parent.specialSizeMeasurements.globalContentBoxForChildren != null &&
-      isFiniteRectangle(parent.specialSizeMeasurements.globalContentBoxForChildren)
-    ) {
-      return parent.specialSizeMeasurements.globalContentBoxForChildren
+    if (parent.specialSizeMeasurements.globalContentBoxForChildren != null) {
+      // TODO why is the globalContentBoxForChildren for the canvas root an infinity rectangle that then needs to be converted to zero rect? shouldn't we store a zero rect by default?
+      return zeroRectIfNullOrInfinity(parent.specialSizeMeasurements.globalContentBoxForChildren)
     }
 
     if (EP.isStoryboardPath(parent.elementPath)) {
@@ -1306,20 +1412,10 @@ export const MetadataUtils = {
   getElementLabelFromMetadata(
     metadata: ElementInstanceMetadataMap,
     allElementProps: AllElementProps,
+    pathTree: ElementPathTrees,
     element: ElementInstanceMetadata,
     staticName: JSXElementName | null = null,
   ): string {
-    const elementContentAffectingType = getElementContentAffectingType(
-      metadata,
-      allElementProps,
-      element.elementPath,
-    )
-
-    const isElementGroup =
-      elementContentAffectingType != null &&
-      elementContentAffectingType !== 'fragment' &&
-      elementContentAffectingType !== 'conditional'
-
     const sceneLabel = element.label // KILLME?
     const dataLabelProp = MetadataUtils.getElementLabelFromProps(
       allElementProps,
@@ -1329,8 +1425,6 @@ export const MetadataUtils = {
       return dataLabelProp
     } else if (sceneLabel != null) {
       return sceneLabel
-    } else if (isElementGroup) {
-      return 'Group'
     } else {
       const possibleName: string = foldEither(
         (tagName) => {
@@ -1341,15 +1435,27 @@ export const MetadataUtils = {
           switch (jsxElement.type) {
             case 'JSX_ELEMENT':
               const lastNamePart = getJSXElementNameLastPart(jsxElement.name)
-              // Check for certain elements and check if they have text content within them.
-              if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
-                const firstChild = jsxElement.children[0]
-                if (firstChild != null) {
-                  if (isJSXTextBlock(firstChild)) {
-                    return firstChild.text
+              // Check for certain elements and check if they have text content within them. Only show the text content if they don't have children elements
+              const numberOfChildrenElements = MetadataUtils.getNonExpressionDescendants(
+                metadata,
+                pathTree,
+                element.elementPath,
+              ).length
+              if (numberOfChildrenElements === 0) {
+                if (ElementsToDrillIntoForTextContent.includes(lastNamePart)) {
+                  if (element.textContent != null && element.textContent !== '') {
+                    return element.textContent
                   }
-                  if (isJSExpressionOtherJavaScript(firstChild)) {
-                    return `{${firstChild.originalJavascript}}`
+
+                  // fall back to the old way of showing text content – this can probably be deleted now
+                  const firstChild = jsxElement.children[0]
+                  if (firstChild != null) {
+                    if (isJSXTextBlock(firstChild)) {
+                      return firstChild.text
+                    }
+                    if (isJSExpressionOtherJavaScript(firstChild)) {
+                      return `{${firstChild.originalJavascript}}`
+                    }
                   }
                 }
               }
@@ -1372,8 +1478,10 @@ export const MetadataUtils = {
               return lastNamePart
             case 'JSX_TEXT_BLOCK':
               return '(text)'
+            case 'JSX_MAP_EXPRESSION':
+              return 'Map'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-              return '(code)'
+              return jsxElement.originalJavascript
             case 'JSX_FRAGMENT':
               return 'Fragment'
             case 'JSX_CONDITIONAL_EXPRESSION':
@@ -1409,6 +1517,7 @@ export const MetadataUtils = {
   getElementLabel(
     allElementProps: AllElementProps,
     path: ElementPath,
+    pathTree: ElementPathTrees,
     metadata: ElementInstanceMetadataMap,
     staticName: JSXElementName | null = null,
   ): string {
@@ -1417,6 +1526,7 @@ export const MetadataUtils = {
       return MetadataUtils.getElementLabelFromMetadata(
         metadata,
         allElementProps,
+        pathTree,
         element,
         staticName,
       )
@@ -1429,16 +1539,21 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
     path: ElementPath,
   ): JSXElement | null {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
+    return MetadataUtils.getJSXElementFromElementInstanceMetadata(
+      MetadataUtils.findElementByElementPath(metadata, path),
+    )
+  },
+  getJSXElementFromElementInstanceMetadata(
+    element: ElementInstanceMetadata | null,
+  ): JSXElement | null {
     if (element == null) {
       return null
-    } else {
-      return foldEither(
-        (_) => null,
-        (e) => (isJSXElement(e) ? e : null),
-        element.element,
-      )
     }
+    return foldEither(
+      (_) => null,
+      (e) => (isJSXElement(e) ? e : null),
+      element.element,
+    )
   },
   getJSXElementName(jsxElement: JSXElementChild | null): JSXElementName | null {
     if (jsxElement != null) {
@@ -1493,10 +1608,7 @@ export const MetadataUtils = {
     elementsByUID: ElementsByUID,
     fromSpy: ElementInstanceMetadataMap,
     fromDOM: ElementInstanceMetadataMap,
-    projectContents: ProjectContentTreeRoot,
-    nodeModules: NodeModules,
-    openFile: string | null | undefined,
-  ): ElementInstanceMetadataMap {
+  ): { mergedMetadata: ElementInstanceMetadataMap; elementPathTree: ElementPathTrees } {
     // This logic effectively puts everything from the spy first,
     // then anything missed out from the DOM right after it.
     // Ideally this would function like a VCS diff inserting runs of new elements
@@ -1537,13 +1649,7 @@ export const MetadataUtils = {
       }
     })
 
-    const spyOnlyElements = fillSpyOnlyMetadata(
-      fromSpy,
-      fromDOM,
-      projectContents,
-      nodeModules,
-      openFile,
-    )
+    const spyOnlyElements = fillSpyOnlyMetadata(fromSpy, fromDOM)
 
     workingElements = {
       ...workingElements,
@@ -1551,10 +1657,22 @@ export const MetadataUtils = {
     }
 
     const elementsInheritingFromAncestors = fillMissingDataFromAncestors(workingElements)
-    return {
+    const mergedMetadata: ElementInstanceMetadataMap = {
       ...workingElements,
       ...elementsInheritingFromAncestors,
     }
+
+    // Note: This will not necessarily be representative of the structured ordering in
+    // the code that produced these elements.
+    const pathTree = MetadataUtils.createElementPathTreeFromMetadata(mergedMetadata)
+
+    return {
+      mergedMetadata: mergedMetadata,
+      elementPathTree: pathTree,
+    }
+  },
+  createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
+    return buildTree(metadata)
   },
   removeElementMetadataChild(
     target: ElementPath,
@@ -1648,20 +1766,6 @@ export const MetadataUtils = {
           replacementString: EP.toString(replacement),
         }
       })
-
-    // TODO updateChildren should actually change the keys of the children in the metadata...
-    function updateChildren(children: ElementPath[]): ElementPath[] {
-      let childWasUpdated = false
-      const updatedChildren = children.map((child) => {
-        const replacementChild = allPathsWithReplacements.find((pathWithReplacement) =>
-          EP.pathsEqual(pathWithReplacement.path, child),
-        )
-        childWasUpdated = childWasUpdated && replacementChild != null
-        return replacementChild == null ? child : replacementChild.replacement
-      })
-
-      return childWasUpdated ? updatedChildren : children
-    }
 
     fastForEach(
       allPathsWithReplacements,
@@ -1762,7 +1866,32 @@ export const MetadataUtils = {
       return this.findNearestAncestorFlexDirectionChange(elementMap, parentPath)
     }
   },
-  isFocusableComponentFromMetadata(element: ElementInstanceMetadata | null): boolean {
+  isAutofocusable(
+    metadata: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
+    path: ElementPath,
+  ): boolean {
+    return (
+      EP.isStoryboardDescendant(path) &&
+      MetadataUtils.parentIsSceneWithOneChild(metadata, pathTrees, path)
+    )
+  },
+  isAutomaticOrManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    return (
+      EP.containsPath(path, autoFocusedPaths) ||
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
+    )
+  },
+  isManuallyFocusableComponent(
+    path: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, path)
     const isAnimatedComponent = isAnimatedElement(element)
     if (isAnimatedComponent) {
       return false
@@ -1774,6 +1903,10 @@ export const MetadataUtils = {
     if (element?.isEmotionOrStyledComponent) {
       return false
     }
+    const autoFocusable = EP.containsPath(path, autoFocusedPaths)
+    if (autoFocusable) {
+      return false
+    }
     const elementName = MetadataUtils.getJSXElementName(maybeEitherToMaybe(element?.element))
     const isComponent = elementName != null && !isIntrinsicElement(elementName)
     if (isComponent) {
@@ -1782,14 +1915,15 @@ export const MetadataUtils = {
       return false
     }
   },
-  isFocusableComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
-    const element = MetadataUtils.findElementByElementPath(metadata, path)
-    return MetadataUtils.isFocusableComponentFromMetadata(element)
-  },
-  isFocusableLeafComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+  isManuallyFocusableLeafComponent(
+    path: ElementPath,
+    pathTree: ElementPathTrees,
+    metadata: ElementInstanceMetadataMap,
+    autoFocusedPaths: Array<ElementPath>,
+  ): boolean {
     return (
-      MetadataUtils.getChildrenPathsUnordered(metadata, path).length === 0 &&
-      MetadataUtils.isFocusableComponent(path, metadata)
+      MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path).length === 0 &&
+      MetadataUtils.isManuallyFocusableComponent(path, metadata, autoFocusedPaths)
     )
   },
   isEmotionOrStyledComponent(path: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
@@ -1815,9 +1949,10 @@ export const MetadataUtils = {
   },
   collectParentsAndSiblings(
     componentMetadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     targets: Array<ElementPath>,
   ): Array<ElementPath> {
-    const allPaths = MetadataUtils.getAllPaths(componentMetadata)
+    const allPaths = MetadataUtils.getAllPaths(componentMetadata, pathTree)
     const result: Array<ElementPath> = []
     Utils.fastForEach(targets, (target) => {
       const parent = EP.parentPath(target)
@@ -1876,6 +2011,32 @@ export const MetadataUtils = {
       isJSXConditionalExpression(element.element.value)
     )
   },
+  isConditional(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isConditionalFromMetadata(element)
+  },
+  isExpressionOtherJavascriptFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null &&
+      isRight(element.element) &&
+      isJSExpressionMapOrOtherJavaScript(element.element.value)
+    )
+  },
+  isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+  },
+  isJSXMapExpressionFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element?.element != null &&
+      isRight(element.element) &&
+      isJSXMapExpression(element.element.value)
+    )
+  },
+  isJSXMapExpression(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    return MetadataUtils.isJSXMapExpressionFromMetadata(element)
+  },
   resolveReparentTargetParentToPath(
     metadata: ElementInstanceMetadataMap,
     reparentTargetParent: InsertionPath,
@@ -1929,9 +2090,10 @@ export const MetadataUtils = {
   },
   findLayoutSystemForChildren(
     metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     parentPath: ElementPath,
   ): DetectedLayoutSystem {
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, parentPath)
     const children = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       childrenPaths,
@@ -1954,9 +2116,10 @@ export const MetadataUtils = {
   },
   findFlexDirectionForChildren(
     metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
     parentPath: ElementPath,
   ): FlexDirection | null {
-    const childrenPaths = MetadataUtils.getChildrenPathsUnordered(metadata, parentPath)
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, parentPath)
 
     const fallbackFlexDirection =
       MetadataUtils.findElementByElementPath(metadata, parentPath)?.specialSizeMeasurements
@@ -1990,31 +2153,86 @@ export const MetadataUtils = {
       ) {
         const conditionalExpression: JSXConditionalExpression = parentElement.element.value
         if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case')
+          return conditionalClauseInsertionPath(
+            parentElement.elementPath,
+            'true-case',
+            replaceWithSingleElement(),
+          )
         } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case')
+          return conditionalClauseInsertionPath(
+            parentElement.elementPath,
+            'false-case',
+            replaceWithSingleElement(),
+          )
         }
       }
       return childInsertionPath(parentElement.elementPath)
     }
   },
+  canInsertElementsToTargetText(
+    target: ElementPath,
+    metadata: ElementInstanceMetadataMap,
+    elementsToInsert: Array<JSXElementName>,
+  ): boolean {
+    const targetElementName = MetadataUtils.getJSXElementNameFromMetadata(metadata, target)
+    const isTextElement =
+      targetElementName != null && TextElements.includes(targetElementName.baseVariable)
+    if (!isTextElement) {
+      return true
+    } else {
+      return elementsToInsert.every((elementName) => {
+        return TextElements.includes(elementName.baseVariable)
+      })
+    }
+  },
+  getNonExpressionDescendants(
+    metadata: ElementInstanceMetadataMap,
+    pathTree: ElementPathTrees,
+    target: ElementPath,
+  ): Array<ElementInstanceMetadata> {
+    const childrenInMetadata = MetadataUtils.getChildrenOrdered(metadata, pathTree, target)
+
+    return childrenInMetadata.flatMap((c) =>
+      getNonExpressionDescendantsInner(metadata, pathTree, c),
+    )
+  },
+  getJsxElementChildFromMetadata(
+    metadata: ElementInstanceMetadataMap,
+    target: ElementPath,
+  ): JSXElementChild {
+    const element = MetadataUtils.findElementByElementPath(metadata, target)
+    if (element == null || isLeft(element.element)) {
+      throw new Error(
+        `invariant violation: JSXElementChild for ${EP.toString(target)} was not found in metadata`,
+      )
+    }
+    return element.element.value
+  },
+}
+
+function getNonExpressionDescendantsInner(
+  metadata: ElementInstanceMetadataMap,
+  pathTree: ElementPathTrees,
+  element: ElementInstanceMetadata,
+): Array<ElementInstanceMetadata> {
+  if (isRight(element.element) && isJSExpression(element.element.value)) {
+    const expressionChildren = MetadataUtils.getChildrenOrdered(
+      metadata,
+      pathTree,
+      element.elementPath,
+    )
+    return expressionChildren.flatMap((exprChild) =>
+      getNonExpressionDescendantsInner(metadata, pathTree, exprChild),
+    )
+  }
+  return [element]
 }
 
 function fillSpyOnlyMetadata(
   fromSpy: ElementInstanceMetadataMap,
   fromDOM: ElementInstanceMetadataMap,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
 ): ElementInstanceMetadataMap {
   const childrenInDomCache: { [pathStr: string]: Array<ElementInstanceMetadata> } = {}
-
-  const conditionalsWithDefaultMetadata = findConditionalsAndCreateMetadata(
-    Array.from(new Set([...Object.keys(fromDOM), ...Object.keys(fromSpy)])),
-    projectContents,
-    nodeModules,
-    openFile,
-  )
 
   const findChildrenInDomRecursively = (pathStr: string): Array<ElementInstanceMetadata> => {
     const existing = childrenInDomCache[pathStr]
@@ -2023,16 +2241,12 @@ function fillSpyOnlyMetadata(
       return existing
     }
 
-    const fromSpyAndConditionals = {
-      ...conditionalsWithDefaultMetadata,
-      ...fromSpy,
-    }
-    const spyElem = fromSpyAndConditionals[pathStr]
+    const spyElem = fromSpy[pathStr]
 
     const { children: childrenFromSpy, unfurledComponents: unfurledComponentsFromSpy } =
       MetadataUtils.getAllChildrenElementsIncludingUnfurledFocusedComponentsUnordered(
         spyElem.elementPath,
-        fromSpyAndConditionals,
+        fromSpy,
       )
     const childrenAndUnfurledComponentsFromSpy = [...childrenFromSpy, ...unfurledComponentsFromSpy]
 
@@ -2067,23 +2281,7 @@ function fillSpyOnlyMetadata(
     return childrenAndUnfurledComponents
   }
 
-  const spyElementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
-
-  const elementsWithoutIntrinsicSize = Object.keys(fromSpy).filter((p) => {
-    const globalFrame = fromDOM[p]?.globalFrame
-    if (globalFrame == null) {
-      return true
-    }
-    if (isInfinityRectangle(globalFrame)) {
-      return false
-    }
-    return globalFrame.width === 0 || globalFrame.height === 0
-  })
-
-  const elementsWithoutDomMetadata = Array.from([
-    ...spyElementsWithoutDomMetadata,
-    ...Object.keys(conditionalsWithDefaultMetadata),
-  ])
+  const elementsWithoutDomMetadata = Object.keys(fromSpy).filter((p) => fromDOM[p] == null)
 
   const elementsWithoutParentData = Object.keys(fromSpy).filter((p) => {
     const parentLayoutSystem = fromDOM[p]?.specialSizeMeasurements.parentLayoutSystem
@@ -2094,8 +2292,6 @@ function fillSpyOnlyMetadata(
   // Sort and then reverse these, so that lower level elements (with longer paths) are handled ahead of their parents
   // and ancestors. This means that if there are a grandparent and parent which both lack global frames
   // then the parent is fixed ahead of the grandparent, which will be based on the parent.
-  elementsWithoutIntrinsicSize.sort()
-  elementsWithoutIntrinsicSize.reverse()
   elementsWithoutDomMetadata.sort()
   elementsWithoutDomMetadata.reverse()
   elementsWithoutParentData.sort()
@@ -2103,8 +2299,8 @@ function fillSpyOnlyMetadata(
 
   const workingElements: ElementInstanceMetadataMap = {}
 
-  fastForEach([...elementsWithoutDomMetadata, ...elementsWithoutIntrinsicSize], (pathStr) => {
-    const spyElem = fromSpy[pathStr] ?? conditionalsWithDefaultMetadata[pathStr]
+  fastForEach(elementsWithoutDomMetadata, (pathStr) => {
+    const spyElem = fromSpy[pathStr]
 
     const children = findChildrenInDomRecursively(pathStr)
     if (children.length === 0) {
@@ -2121,24 +2317,49 @@ function fillSpyOnlyMetadata(
       }
     })
 
-    const childrenGlobalFrames = mapDropNulls((c) => c.globalFrame, childrenFromWorking)
-    const childrenNonInfinityGlobalFrames = childrenGlobalFrames.filter(isFiniteRectangle)
-    const childrenBoundingGlobalFrame =
-      childrenNonInfinityGlobalFrames.length === childrenGlobalFrames.length
-        ? boundingRectangleArray(childrenNonInfinityGlobalFrames)
-        : infinityCanvasRectangle
+    function getBoundingFrameFromChildren<C extends CoordinateMarker>(
+      childrenFrames: Array<Rectangle<C> | InfinityRectangle<C>>,
+    ) {
+      const childrenNonInfinityFrames = childrenFrames.filter(isFiniteRectangle)
+      const childrenBoundingFrame =
+        childrenNonInfinityFrames.length === childrenFrames.length
+          ? boundingRectangleArray(childrenNonInfinityFrames)
+          : (infinityRectangle as InfinityRectangle<C>)
 
-    const childrenLocalFrames = mapDropNulls((c) => c.localFrame, childrenFromWorking)
-    const childrenNonInfinityLocalFrames = childrenLocalFrames.filter(isFiniteRectangle)
-    const childrenBoundingLocalFrame =
-      childrenNonInfinityLocalFrames.length === childrenLocalFrames.length
-        ? boundingRectangleArray(childrenNonInfinityLocalFrames)
-        : infinityLocalRectangle
+      return childrenBoundingFrame
+    }
+
+    const childrenBoundingGlobalFrame = getBoundingFrameFromChildren(
+      mapDropNulls((c) => c.globalFrame, childrenFromWorking),
+    )
+
+    const childrenBoundingLocalFrame = getBoundingFrameFromChildren(
+      mapDropNulls((c) => c.localFrame, childrenFromWorking),
+    )
+
+    const childrenBoundingGlobalFrameWithTextContent = getBoundingFrameFromChildren(
+      mapDropNulls(
+        (c) => c.specialSizeMeasurements.globalFrameWithTextContent,
+        childrenFromWorking,
+      ),
+    )
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const globalContentBoxForChildrenFromDomOrParent =
+      fromDOM[pathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      workingElements[parentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren ??
+      null
 
     workingElements[pathStr] = {
       ...spyElem,
       globalFrame: childrenBoundingGlobalFrame,
       localFrame: childrenBoundingLocalFrame,
+      specialSizeMeasurements: {
+        ...spyElem.specialSizeMeasurements,
+        globalContentBoxForChildren: globalContentBoxForChildrenFromDomOrParent,
+        globalFrameWithTextContent: childrenBoundingGlobalFrameWithTextContent,
+      },
     }
   })
 
@@ -2176,6 +2397,7 @@ function fillSpyOnlyMetadata(
       ...sameThingFromWorkingElems,
       specialSizeMeasurements: {
         ...spyElem.specialSizeMeasurements,
+        ...sameThingFromWorkingElems.specialSizeMeasurements,
         parentLayoutSystem: allElemsEqual(parentLayoutSystemFromChildren)
           ? parentLayoutSystemFromChildren[0]
           : spyElem.specialSizeMeasurements.parentLayoutSystem,
@@ -2196,7 +2418,17 @@ function fillSpyOnlyMetadata(
 }
 
 function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
-  let workingElements: ElementInstanceMetadataMap = { ...mergedMetadata }
+  const metadataWithGlobalContentBox = fillGlobalContentBoxFromAncestors(mergedMetadata)
+  const metadataWithConditionaGlobalFrames = fillConditionalGlobalFrameFromAncestors(
+    metadataWithGlobalContentBox,
+  )
+  return metadataWithConditionaGlobalFrames
+}
+
+function fillGlobalContentBoxFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
 
   const elementsWithoutGlobalContentBox = Object.keys(workingElements).filter((p) => {
     return workingElements[p]?.specialSizeMeasurements.globalContentBoxForChildren == null
@@ -2221,55 +2453,127 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
       },
     }
   })
-
   return workingElements
 }
 
-function findConditionalsAndCreateMetadata(
-  paths: Array<string>,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
+// There is a case when conditionals should inherit their globalFrame from their parent:
+// - when a conditional has no siblings
+// - when the active branch is a js expression
+// - when that expression has no elementsWithin (so it is a leaf element in the hierarchy)
+// We also allow embedded conditionals where the deepest one has the correct active branch and
+// none of the conditionals have siblings.
+// Why is this useful? Because these expressions don't have globalFrame, so their conditional parent do not have
+// a globalFrame neither. But when these conditionals only contain text expressions, and they don't have siblings,
+// it make sense to treat the whole parent element of the conditional as a container for the text expression itself.
+// Example: In the case `<div>Hello</div>`, we treat the whole div as text, we do not differentiate between the size of
+// Hello and the size of the div.
+// When we have the element `<div>{true ? 'Hello' : <div />}</div>`, the conditional appears between the <div> parent and
+// the Hello text, but we still want to be able to select and text edit the text content.
+// Maybe in the future we will treat text expressions as elefants, and they will have a measured size, but until then this is
+// a good compromise to give these conditionals/expressions selectability and editability on the canvas.
+function fillConditionalGlobalFrameFromAncestors(
+  metadata: ElementInstanceMetadataMap,
 ): ElementInstanceMetadataMap {
-  const allAncestors = paths
-    .flatMap((p) => EP.getAncestors(EP.fromString(p)))
-    .filter((p) => p.parts.length > 0)
-    .map(EP.toString)
+  const workingElements = { ...metadata }
 
-  const missingAncestors = allAncestors.filter((a) => paths.indexOf(a) == -1)
+  const conditionalsWithNoSiblingsAndExpressionActiveBranch = Object.keys(workingElements).filter(
+    (p) => {
+      const isConditionalsWithNoSiblingsAndExpressionActiveBranch = (
+        element: ElementInstanceMetadata,
+      ): boolean => {
+        const condElement =
+          isRight(element.element) && isJSXConditionalExpression(element.element.value)
+            ? element.element.value
+            : null
 
-  let workingConditionals: ElementInstanceMetadataMap = {}
-  missingAncestors.forEach((ancestor: string) => {
-    const path = EP.fromString(ancestor)
-    return withUnderlyingTarget(
-      path,
-      projectContents,
-      nodeModules,
-      openFile,
-      null,
-      (_, element) => {
-        if (isJSXConditionalExpression(element)) {
-          // create a default metadata, we can finetune this if necessary
-          workingConditionals[ancestor] = elementInstanceMetadata(
-            path,
-            right(element),
-            null,
-            null,
-            false,
-            false,
-            emptySpecialSizeMeasurements,
-            emptyComputedStyle,
-            emptyAttributeMetadatada,
-            'Conditional',
-            null,
-            'not-a-conditional',
+        // filter out non-conditional elements
+        if (condElement == null || element.conditionValue === 'not-a-conditional') {
+          return false
+        }
+
+        const activeBranch = element.conditionValue.active
+          ? condElement.whenTrue
+          : condElement.whenFalse
+
+        // filter out elements where the active branch is not an expression or a conditional
+        if (!(isJSExpression(activeBranch) || isJSXConditionalExpression(activeBranch))) {
+          return false
+        }
+
+        const parentOfConditionalPath = EP.parentPath(element.elementPath)
+        const parentOfConditionalElement = workingElements[EP.toString(parentOfConditionalPath)]
+
+        // filter out elements which have siblings
+        if (
+          isRight(parentOfConditionalElement.element) &&
+          isJSXElementLike(parentOfConditionalElement.element.value) &&
+          parentOfConditionalElement.element.value.children.length !== 1
+        ) {
+          return false
+        }
+
+        // when the active branch is a conditional, call the same check recursively on the branch
+        if (isJSXConditionalExpression(activeBranch)) {
+          const activeBranchMetadata =
+            workingElements[
+              EP.toString(getConditionalClausePath(element.elementPath, activeBranch))
+            ]
+          return (
+            activeBranchMetadata != null &&
+            isConditionalsWithNoSiblingsAndExpressionActiveBranch(activeBranchMetadata)
           )
         }
+
+        // The only remaining question is whether the active branch an expression or not and whether it
+        // is leaf element in the hierarchy
+        return isJSExpression(activeBranch) && !hasElementsWithin(activeBranch)
+      }
+
+      return isConditionalsWithNoSiblingsAndExpressionActiveBranch(workingElements[p])
+    },
+  )
+
+  // sorted, so that parents are fixed first
+  conditionalsWithNoSiblingsAndExpressionActiveBranch.sort()
+
+  fastForEach(conditionalsWithNoSiblingsAndExpressionActiveBranch, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const condParentPathStr = EP.toString(EP.parentPath(elem.elementPath))
+
+    const condParentGlobalFrame = workingElements[condParentPathStr]?.globalFrame
+    const condParentGlobalContentBoxForChildren =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalContentBoxForChildren
+    const localFrameFromCondParent = (() => {
+      if (condParentGlobalFrame == null || condParentGlobalContentBoxForChildren == null) {
+        return null
+      }
+      if (
+        isInfinityRectangle(condParentGlobalFrame) ||
+        isInfinityRectangle(condParentGlobalContentBoxForChildren)
+      ) {
+        return infinityLocalRectangle
+      }
+      return canvasRectangleToLocalRectangle(
+        condParentGlobalFrame,
+        condParentGlobalContentBoxForChildren,
+      )
+    })()
+    const condParentglobalFrameWithTextContent =
+      workingElements[condParentPathStr]?.specialSizeMeasurements.globalFrameWithTextContent
+
+    workingElements[pathStr] = {
+      ...elem,
+      globalFrame: condParentGlobalFrame,
+      localFrame: localFrameFromCondParent,
+      specialSizeMeasurements: {
+        ...elem.specialSizeMeasurements,
+        globalFrameWithTextContent: condParentglobalFrameWithTextContent,
       },
-    )
+    }
   })
 
-  return workingConditionals
+  return workingElements
 }
 
 export function findElementAtPath(
@@ -2401,5 +2705,38 @@ export function createFakeMetadataForElement(
     null,
     null,
     'not-a-conditional',
+    null,
   )
+}
+
+export function getRootPath(startingMetadata: ElementInstanceMetadataMap): ElementPath | null {
+  const storyboard = MetadataUtils.getStoryboardMetadata(startingMetadata)
+  if (storyboard == null) {
+    return null
+  }
+  return storyboard.elementPath
+}
+
+export function getZIndexOrderedViewsWithoutDirectChildren(
+  targets: Array<ElementPath>,
+  navigatorTargets: Array<NavigatorEntry>, // TODO could this be instead the ElementPathTree?
+): Array<ElementPath> {
+  let targetsAndZIndex: Array<{ target: ElementPath; index: number }> = []
+  fastForEach(targets, (target) => {
+    const index = navigatorTargets.findIndex(
+      (entry) => isRegularNavigatorEntry(entry) && EP.pathsEqual(entry.elementPath, target),
+    )
+    targetsAndZIndex.push({ target: target, index: index })
+  })
+  targetsAndZIndex.sort((a, b) => a.index - b.index)
+  const orderedTargets = pluck(targetsAndZIndex, 'target')
+
+  // keep direct children from reparenting
+  let filteredTargets: Array<ElementPath> = []
+  fastForEach(orderedTargets, (target) => {
+    if (!orderedTargets.some((tp) => EP.pathsEqual(EP.parentPath(target), tp))) {
+      filteredTargets.push(target)
+    }
+  })
+  return filteredTargets
 }

@@ -1,7 +1,8 @@
-import { contentsToTree, ProjectContentTreeRoot } from '../components/assets'
+import type { ProjectContentTreeRoot } from '../components/assets'
+import { contentsToTree } from '../components/assets'
+import type { PersistentModel } from '../components/editor/store/editor-state'
 import {
   DefaultPackageJson,
-  PersistentModel,
   persistentModelForProjectContents,
   StoryboardFilePath,
 } from '../components/editor/store/editor-state'
@@ -12,11 +13,10 @@ import {
   getSamplePreviewHTMLFile,
 } from '../core/model/new-project-files'
 import { directory } from '../core/model/project-file-utils'
+import type { ProjectContents, TextFile } from '../core/shared/project-file-types'
 import {
   codeFile,
-  ProjectContents,
   RevisionsState,
-  TextFile,
   textFile,
   textFileContents,
   unparsed,
@@ -49,12 +49,7 @@ export function simpleDefaultProject(): PersistentModel {
 
 export function createComplexDefaultProjectContents(): ProjectContents {
   function createCodeFile(path: string, contents: string): TextFile {
-    return textFile(
-      textFileContents(contents, unparsed, RevisionsState.CodeAhead),
-      null,
-      null,
-      Date.now(),
-    )
+    return textFile(textFileContents(contents, unparsed, RevisionsState.CodeAhead), null, null, 0)
   }
 
   return {
@@ -127,7 +122,7 @@ export var App = (props) => {
 import { Spring } from 'non-existant-dummy-library'
 export var Card = (props) => {
   return <div data-uid='card-outer-div' style={{...props.style}}>
-    <div data-uid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />
+    <div data-uid='card-inner-div' data-testid='card-inner-div' style={{ position: 'absolute', left: 0, top: 0, width: 50, height: 50, backgroundColor: 'red' }} />
     <Spring data-uid='card-inner-spring' data-testid='spring' style={{ position: 'absolute', left: 100, top: 200, width: 50, height: 50, backgroundColor: 'blue' }} />
   </div>
 }`,
@@ -157,7 +152,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/index.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -174,7 +169,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/utils.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -191,11 +186,11 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/playground.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import { View } from 'utopia-api'\nimport '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n      }}\n      data-uid='a7b'\n    >\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n        data-uid='b15'\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n          data-uid='b0e'\n        />\n      </div>\n    </div>\n  )\n}\n",
+              code: "import * as React from 'react'\nimport { View } from 'utopia-api'\nimport '../public/globals.css'\n\nexport var Playground = () => {\n  return (\n    <div\n      style={{\n        height: '100%',\n        width: '100%',\n        contain: 'layout',\n      }}\n      data-uid='a7b'\n    >\n      <div\n        style={{\n          height: 150,\n          position: 'absolute',\n          left: 154,\n          top: 134,\n        }}\n        data-uid='b15'\n      >\n        <img\n          src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n          alt='Utopia logo'\n          style={{ height: '100%' }}\n          data-uid='b0e'\n        />\n      </div>\n    </div>\n  )\n}\n",
               parsed: {
                 type: 'UNPARSED',
               },
@@ -208,11 +203,11 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/src/app.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
-              code: "import '../public/globals.css'\nimport { FlexCol } from './utils'\n\nexport var App = () => {\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        background: 'white',\n\n        justifyContent: 'center',\n        alignItems: 'center',\n      }}\n    >\n      <img\n        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n        alt='Utopia logo'\n        style={{ height: '40%' }}\n      ></img>\n    </FlexCol>\n  )\n}\n",
+              code: "import * as React from 'react'\nimport '../public/globals.css'\nimport { FlexCol } from './utils'\n\nexport var App = () => {\n  return (\n    <FlexCol\n      style={{\n        width: '100%',\n        height: '100%',\n        background: 'white',\n\n        justifyContent: 'center',\n        alignItems: 'center',\n      }}\n    >\n      <img\n        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'\n        alt='Utopia logo'\n        style={{ height: '40%' }}\n      ></img>\n    </FlexCol>\n  )\n}\n",
               parsed: {
                 type: 'UNPARSED',
               },
@@ -234,7 +229,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/utopia/storyboard.js',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -262,7 +257,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
       fullPath: '/package.json',
       content: {
         type: 'TEXT_FILE',
-        lastRevisedTime: 0,
+        versionNumber: 0,
         lastParseSuccess: null,
         lastSavedContents: null,
         fileContents: {
@@ -285,7 +280,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/public/index.html',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {
@@ -302,7 +297,7 @@ function createBeachesProjectContents(): ProjectContentTreeRoot {
           fullPath: '/public/globals.css',
           content: {
             type: 'TEXT_FILE',
-            lastRevisedTime: 0,
+            versionNumber: 0,
             lastParseSuccess: null,
             lastSavedContents: null,
             fileContents: {

@@ -1,47 +1,64 @@
 import { styleStringInArray } from '../../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../../core/layout/getLayoutProperty'
-import {
-  framePointForPinnedProp,
-  LayoutPinnedProp,
-} from '../../../../../core/layout/layout-helpers-new'
+import type { LayoutPinnedProp } from '../../../../../core/layout/layout-helpers-new'
+import { framePointForPinnedProp } from '../../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { eitherToMaybe, isRight, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
-import { ElementInstanceMetadataMap, JSXElement } from '../../../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadataMap,
+  JSXElement,
+} from '../../../../../core/shared/element-template'
+import type { CanvasPoint } from '../../../../../core/shared/math-utils'
 import {
   canvasPoint,
+  CanvasVector,
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
 } from '../../../../../core/shared/math-utils'
-import { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
-import { ProjectContentTreeRoot } from '../../../../assets'
+import type { ProjectContentTreeRoot } from '../../../../assets'
 import {
   AllElementProps,
   getElementFromProjectContents,
 } from '../../../../editor/store/editor-state'
-import { CSSPosition, Direction, FlexDirection } from '../../../../inspector/common/css-utils'
+import type { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
+import { cssNumber } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
-import {
-  AdjustCssLengthProperty,
-  adjustCssLengthProperty,
-  CreateIfNotExistant,
+import type {
+  AdjustCssLengthProperties,
+  LengthPropertyToAdjust,
 } from '../../../commands/adjust-css-length-command'
-import { CanvasCommand } from '../../../commands/commands'
 import {
-  ConvertCssPercentToPx,
-  convertCssPercentToPx,
-} from '../../../commands/convert-css-percent-to-px-command'
+  adjustCssLengthProperties,
+  CreateIfNotExistant,
+  lengthPropertyToAdjust,
+} from '../../../commands/adjust-css-length-command'
+import type { CanvasCommand } from '../../../commands/commands'
+import type { ConvertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
+import { convertCssPercentToPx } from '../../../commands/convert-css-percent-to-px-command'
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import { setProperty } from '../../../commands/set-property-command'
 import {
   getOptionalCommandToConvertDisplayInlineBlock,
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
-import { ReparentStrategy } from './reparent-strategy-helpers'
+import type { ReparentStrategy } from './reparent-strategy-helpers'
+import {
+  convertRelativeSizingToVisualSize,
+  convertSizingToVisualSizeWhenPastingFromFlexToFlex,
+  runReparentPropertyStrategies,
+  setZIndexOnPastedElement,
+  stripPinsConvertToVisualSize,
+} from './reparent-property-strategies'
+import { assertNever } from '../../../../../core/shared/utils'
+import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
+import { setCssLengthProperty } from '../../../commands/set-css-length-command'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -57,7 +74,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
-): Array<AdjustCssLengthProperty | ConvertCssPercentToPx> {
+): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getElementFromProjectContents(
     target,
     projectContents,
@@ -69,7 +86,7 @@ export function getAbsoluteReparentPropertyChanges(
     EP.parentPath(target),
   )
   const newParentInstance = MetadataUtils.findElementByElementPath(
-    targetStartingMetadata,
+    newParentStartingMetadata,
     newParent,
   )
 
@@ -108,23 +125,6 @@ export function getAbsoluteReparentPropertyChanges(
     MetadataUtils.findElementByElementPath(newParentStartingMetadata, newParent)
       ?.specialSizeMeasurements.flexDirection ?? null
 
-  const createAdjustCssLengthProperty = (
-    pin: LayoutPinnedProp,
-    newValue: number,
-    parentDimension: number | undefined,
-    createIfNonExistant: CreateIfNotExistant,
-  ): AdjustCssLengthProperty => {
-    return adjustCssLengthProperty(
-      'always',
-      target,
-      stylePropPathMappingFn(pin, styleStringInArray),
-      newValue,
-      parentDimension,
-      newParentFlexDirection,
-      createIfNonExistant,
-    )
-  }
-
   const createConvertCssPercentToPx = (pin: LayoutPinnedProp): ConvertCssPercentToPx | null => {
     const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
     if (isRight(value) && value.value != null && value.value.unit === '%') {
@@ -150,39 +150,42 @@ export function getAbsoluteReparentPropertyChanges(
   const needsLeftPin = !hasPin('left') && !hasPin('right')
   const needsTopPin = !hasPin('top') && !hasPin('bottom')
 
-  const topLeftCommands = mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-      const needsPin = (pin === 'left' && needsLeftPin) || (pin === 'top' && needsTopPin)
-      return createAdjustCssLengthProperty(
-        pin,
+  let edgePropertiesToAdjust: Array<LengthPropertyToAdjust> = []
+
+  for (const pin of ['top', 'left'] as const) {
+    const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+    const needsPin = (pin === 'left' && needsLeftPin) || (pin === 'top' && needsTopPin)
+    edgePropertiesToAdjust.push(
+      lengthPropertyToAdjust(
+        stylePropPathMappingFn(pin, styleStringInArray),
         horizontal ? offsetTL.x : offsetTL.y,
         horizontal ? newParentFrame?.width : newParentFrame?.height,
         needsPin ? 'create-if-not-existing' : 'do-not-create-if-doesnt-exist',
-      )
-    },
-    ['top', 'left'] as const,
-  )
+      ),
+    )
+  }
 
-  const bottomRightCommands = mapDropNulls(
-    (pin) => {
-      const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
-      return createAdjustCssLengthProperty(
-        pin,
+  for (const pin of ['bottom', 'right'] as const) {
+    const horizontal = isHorizontalPoint(framePointForPinnedProp(pin))
+    edgePropertiesToAdjust.push(
+      lengthPropertyToAdjust(
+        stylePropPathMappingFn(pin, styleStringInArray),
         horizontal ? offsetBR.x : offsetBR.y,
         horizontal ? newParentFrame?.width : newParentFrame?.height,
         'do-not-create-if-doesnt-exist',
-      )
-    },
-    ['bottom', 'right'] as const,
-  )
+      ),
+    )
+  }
 
   const widthHeightCommands = mapDropNulls((pin) => createConvertCssPercentToPx(pin), [
     'width',
     'height',
   ] as const)
 
-  return [...topLeftCommands, ...bottomRightCommands, ...widthHeightCommands]
+  return [
+    adjustCssLengthProperties('always', target, newParentFlexDirection, edgePropertiesToAdjust),
+    ...widthHeightCommands,
+  ]
 }
 
 export function getStaticReparentPropertyChanges(
@@ -211,32 +214,90 @@ export function getStaticReparentPropertyChanges(
   ]
 }
 
+export function positionElementToCoordinatesCommands(
+  elementPath: ElementPath,
+  desiredTopLeft: CanvasPoint,
+): CanvasCommand[] {
+  return [
+    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'top'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.y, null) },
+      null,
+    ),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      PP.create('style', 'left'),
+      { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.x, null) },
+      null,
+    ),
+    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+  ]
+}
+
 export function getReparentPropertyChanges(
   reparentStrategy: ReparentStrategy,
+  originalElementPath: ElementPath,
   target: ElementPath,
   newParent: ElementPath,
-  targetStartingMetadata: ElementInstanceMetadataMap,
-  newParentStartingMetadata: ElementInstanceMetadataMap,
+  originalContextMetadata: ElementInstanceMetadataMap,
+  originalPathTrees: ElementPathTrees,
+  currentMetadata: ElementInstanceMetadataMap,
+  currentPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
 ): Array<CanvasCommand> {
+  const newPath = EP.appendToPath(newParent, EP.toUid(target))
   switch (reparentStrategy) {
-    case 'REPARENT_AS_ABSOLUTE':
-      return getAbsoluteReparentPropertyChanges(
+    case 'REPARENT_AS_ABSOLUTE': {
+      const basicCommads = getAbsoluteReparentPropertyChanges(
         target,
         newParent,
-        targetStartingMetadata,
-        newParentStartingMetadata,
+        originalContextMetadata,
+        currentMetadata,
         projectContents,
         openFile,
       )
-    case 'REPARENT_AS_STATIC':
-      const newPath = EP.appendToPath(newParent, EP.toUid(target))
+
+      const strategyCommands = runReparentPropertyStrategies([
+        stripPinsConvertToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
+        ),
+        convertRelativeSizingToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
+        ),
+        setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
+          originalTargetMetadata: originalContextMetadata,
+          currentMetadata: currentMetadata,
+          originalPathTrees: originalPathTrees,
+          currentPathTrees: currentPathTrees,
+        }),
+      ])
+
+      return [...basicCommads, ...strategyCommands]
+    }
+    case 'REPARENT_AS_STATIC': {
       const directions = singleAxisAutoLayoutContainerDirections(
         newParent,
-        newParentStartingMetadata,
+        currentMetadata,
+        currentPathTrees,
       )
 
       const convertDisplayInline =
@@ -244,11 +305,46 @@ export function getReparentPropertyChanges(
           ? 'do-not-convert'
           : directions.direction
 
-      return getStaticReparentPropertyChanges(
+      const basicCommads = getStaticReparentPropertyChanges(
         newPath,
         targetOriginalStylePosition,
         targetOriginalDisplayProp,
         convertDisplayInline,
       )
+      const strategyCommands = runReparentPropertyStrategies([
+        stripPinsConvertToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
+        ),
+        convertRelativeSizingToVisualSize(
+          { oldPath: originalElementPath, newPath: newPath },
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
+        ),
+        convertSizingToVisualSizeWhenPastingFromFlexToFlex(
+          { oldPath: originalElementPath, newPath: newPath },
+          newParent,
+          {
+            originalTargetMetadata: originalContextMetadata,
+            currentMetadata: currentMetadata,
+            originalPathTrees: originalPathTrees,
+            currentPathTrees: currentPathTrees,
+          },
+        ),
+      ])
+
+      return [...basicCommads, ...strategyCommands]
+    }
+    default:
+      assertNever(reparentStrategy)
   }
 }

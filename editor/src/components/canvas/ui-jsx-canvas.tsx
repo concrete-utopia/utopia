@@ -1,23 +1,22 @@
 import React from 'react'
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 // Inject the babel helpers into the global scope
 import '../../bundled-dependencies/babelHelpers'
 import * as EP from '../../core/shared/element-path'
-import {
+import type {
   ElementInstanceMetadataMap,
-  isUtopiaJSXComponent,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
+import { isUtopiaJSXComponent } from '../../core/shared/element-template'
+import type { Imports, ElementPath } from '../../core/shared/project-file-types'
 import {
-  Imports,
-  ElementPath,
   isParseSuccess,
   isTextFile,
   isReexportExportDetail,
   isExportDestructuredAssignment,
 } from '../../core/shared/project-file-types'
+import type { Either } from '../../core/shared/either'
 import {
-  Either,
   flatMapEither,
   foldEither,
   forEachRight,
@@ -26,23 +25,25 @@ import {
   right,
 } from '../../core/shared/either'
 import Utils from '../../utils/utils'
-import {
+import type {
   CurriedResolveFn,
   CurriedUtopiaRequireFn,
   PropertyControlsInfo,
 } from '../custom-code/code-file'
-import {
+import type {
   DerivedState,
   EditorState,
+  ConsoleLog,
+  CanvasBase64Blobs,
+  ElementsToRerender,
+  AllElementProps,
+} from '../editor/store/editor-state'
+import {
   getOpenUIJSFile,
   getOpenUIJSFileKey,
   UIFileBase64Blobs,
-  ConsoleLog,
   getIndexHtmlFileFromEditorState,
-  CanvasBase64Blobs,
   TransientFilesState,
-  ElementsToRerender,
-  AllElementProps,
 } from '../editor/store/editor-state'
 import { proxyConsole } from './console-proxy'
 import type { UpdateMutableCallback } from './dom-walker'
@@ -52,9 +53,9 @@ import { normalizeName } from '../custom-code/custom-code-utils'
 import { getGeneratedExternalLinkText } from '../../printer-parsers/html/external-resources-parser'
 import { Helmet } from 'react-helmet'
 import parse from 'html-react-parser'
-import { ComponentRendererComponent } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { ComponentRendererComponent } from './ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { MutableUtopiaCtxRefData } from './ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import {
-  MutableUtopiaCtxRefData,
   RerenderUtopiaCtxAtom,
   SceneLevelUtopiaCtxAtom,
   UtopiaProjectCtxAtom,
@@ -66,11 +67,12 @@ import {
 } from '../../utils/react-performance'
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
-import { ProjectContentTreeRoot, getContentsTreeFileFromString } from '../assets'
+import type { ProjectContentTreeRoot } from '../assets'
+import { getContentsTreeFileFromString } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
-import { getParseSuccessOrTransientForFilePath, getValidElementPaths } from './canvas-utils'
-import { arrayEquals, fastForEach, NO_OP } from '../../core/shared/utils'
+import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
+import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
 import {
   AlwaysFalse,
@@ -79,7 +81,7 @@ import {
 } from '../../core/shared/atom-with-pub-sub'
 import { omit } from '../../core/shared/object-utils'
 import { validateControlsToCheck } from './canvas-globals'
-import { EditorDispatch } from '../editor/action-types'
+import type { EditorDispatch } from '../editor/action-types'
 import {
   clearListOfEvaluatedFiles,
   getListOfEvaluatedFiles,
@@ -145,7 +147,6 @@ export interface UiJsxCanvasProps {
   linkTags: string
   focusedElementPath: ElementPath | null
   projectContents: ProjectContentTreeRoot
-  transientFilesState: TransientFilesState | null
   propertyControlsInfo: PropertyControlsInfo
   dispatch: EditorDispatch
   domWalkerAdditionalElementsToUpdate: Array<ElementPath>
@@ -177,10 +178,9 @@ export function pickUiJsxCanvasProps(
   if (uiFile == null || uiFilePath == null) {
     return null
   } else {
-    const { imports: imports_KILLME } = getParseSuccessOrTransientForFilePath(
+    const { imports: imports_KILLME } = getParseSuccessForFilePath(
       uiFilePath,
       editor.projectContents,
-      derived.transientState.filesState,
     )
 
     let linkTags = ''
@@ -222,7 +222,6 @@ export function pickUiJsxCanvasProps(
       linkTags: linkTags,
       focusedElementPath: editor.focusedElementPath,
       projectContents: editor.projectContents,
-      transientFilesState: derived.transientState.filesState,
       propertyControlsInfo: editor.propertyControlsInfo,
       dispatch: dispatch,
       domWalkerAdditionalElementsToUpdate: editor.canvas.domWalkerAdditionalElementsToUpdate,
@@ -263,7 +262,7 @@ function useClearSpyMetadataOnRemount(
 }
 
 function clearSpyCollectorInvalidPaths(
-  validPaths: Set<ElementPath>,
+  validPaths: Set<string>,
   spyCollectorContextRef: UiJsxCanvasContextData,
 ): void {
   const spyKeys = Object.keys(spyCollectorContextRef.current.spyValues.metadata)
@@ -271,7 +270,7 @@ function clearSpyCollectorInvalidPaths(
     const elementPath =
       spyCollectorContextRef.current.spyValues.metadata[elementPathString].elementPath
     const staticElementPath = EP.makeLastPartOfPathStatic(elementPath)
-    if (!validPaths.has(staticElementPath)) {
+    if (!validPaths.has(EP.toString(staticElementPath))) {
       // we found a path that is no longer valid. let's delete it from the spy accumulator!
       delete spyCollectorContextRef.current.spyValues.metadata[elementPathString]
     }
@@ -293,7 +292,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     linkTags,
     base64FileBlobs,
     projectContents,
-    transientFilesState,
     shouldIncludeCanvasRootInTheSpy,
     propertyControlsInfo,
     dispatch,
@@ -344,17 +342,16 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   shouldRerenderRef.current =
     ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
     elementsToRerenderRef.current === 'rerender-all-elements' || // TODO this means the first drag frame will still be slow, figure out a nicer way to immediately switch to true. probably this should live in a dedicated a function
-    !arrayEquals(ElementsToRerenderGLOBAL.current, elementsToRerenderRef.current, EP.pathsEqual) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
+    !arrayEqualsByValue(
+      ElementsToRerenderGLOBAL.current,
+      elementsToRerenderRef.current,
+      EP.pathsEqual,
+    ) // once we get here, we know that both `ElementsToRerenderGLOBAL.current` and `elementsToRerenderRef.current` are arrays
   elementsToRerenderRef.current = ElementsToRerenderGLOBAL.current
 
   const maybeOldProjectContents = React.useRef(projectContents)
   if (shouldRerenderRef.current) {
     maybeOldProjectContents.current = projectContents
-  }
-
-  const maybeOldTransientFileState = React.useRef(transientFilesState)
-  if (shouldRerenderRef.current) {
-    maybeOldTransientFileState.current = transientFilesState
   }
 
   const projectContentsForRequireFn = maybeOldProjectContents.current
@@ -377,7 +374,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
 
-  const transientFilesStateForCustomRequire = maybeOldTransientFileState.current
   const customRequire = React.useCallback(
     (importOrigin: string, toImport: string) => {
       if (resolvedFiles.current[importOrigin] == null) {
@@ -400,7 +396,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         mutableContextRef,
         topLevelComponentRendererComponents,
         uiFilePath,
-        transientFilesStateForCustomRequire,
         base64FileBlobs,
         hiddenInstances,
         displayNoneInstances,
@@ -426,7 +421,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       requireFn,
       resolve,
       projectContentsForRequireFn,
-      transientFilesStateForCustomRequire,
       uiFilePath,
       base64FileBlobs,
       hiddenInstances,
@@ -446,7 +440,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       topLevelComponentRendererComponents,
       projectContentsForRequireFn,
       uiFilePath, // this is the storyboard filepath
-      transientFilesStateForCustomRequire,
       base64FileBlobs,
       hiddenInstances,
       displayNoneInstances,
@@ -472,7 +465,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     projectContentsForRequireFn,
     props.shouldIncludeCanvasRootInTheSpy,
     editedText,
-    transientFilesStateForCustomRequire,
     uiFilePath,
     updateInvalidatedPaths,
   ])
@@ -497,7 +489,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     executionScope,
     projectContentsForRequireFn,
     uiFilePath,
-    transientFilesState,
     resolve,
   )
 
@@ -517,7 +508,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const utopiaProjectContextValue = useKeepShallowReferenceEquality({
     projectContents: props.projectContents,
-    transientFilesState: props.transientFilesState,
     openStoryboardFilePathKILLME: props.uiFilePath,
     resolve: resolve,
   })
@@ -569,7 +559,6 @@ function attemptToResolveParsedComponents(
     MapLike<MapLike<ComponentRendererComponent>>
   >,
   uiFilePath: string,
-  transientFilesState: TransientFilesState | null,
   base64FileBlobs: CanvasBase64Blobs,
   hiddenInstances: ElementPath[],
   displayNoneInstances: Array<ElementPath>,
@@ -605,7 +594,6 @@ function attemptToResolveParsedComponents(
           topLevelComponentRendererComponents,
           projectContents,
           uiFilePath,
-          transientFilesState,
           base64FileBlobs,
           hiddenInstances,
           displayNoneInstances,
@@ -744,12 +732,11 @@ function useGetStoryboardRoot(
   executionScope: MapLike<any>,
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
-  transientFilesState: TransientFilesState | null,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootElementPath: ElementPath
-  rootValidPathsSet: Set<ElementPath>
+  rootValidPathsSet: Set<string>
   rootValidPathsArray: Array<ElementPath>
   rootInstancePath: ElementPath
 } {
@@ -767,7 +754,6 @@ function useGetStoryboardRoot(
           EP.emptyElementPath,
           projectContents,
           uiFilePath,
-          transientFilesState,
           resolve,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(
@@ -775,7 +761,7 @@ function useGetStoryboardRoot(
   )
 
   const rootValidPathsArray = validPaths.map(EP.makeLastPartOfPathStatic)
-  const rootValidPathsSet = new Set(rootValidPathsArray)
+  const rootValidPathsSet = new Set(rootValidPathsArray.map(EP.toString))
 
   return {
     StoryboardRootComponent: StoryboardRootComponent,

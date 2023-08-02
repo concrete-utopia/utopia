@@ -1,4 +1,4 @@
-import { MapLike } from 'typescript'
+import type { MapLike } from 'typescript'
 import { is, shallowEqual } from './equality-utils'
 import { clamp } from './math-utils'
 import { fastForEach } from './utils'
@@ -327,7 +327,7 @@ export function immutablyUpdateArrayIndex<T>(
   return working
 }
 
-export function safeIndex<T>(array: Array<T>, index: number): T | undefined {
+export function safeIndex<T>(array: ReadonlyArray<T>, index: number): T | undefined {
   if (index in array) {
     return array[index]
   } else {
@@ -390,6 +390,11 @@ export function insert<T>(index: number, element: T, array: Array<T>): Array<T> 
   return [...array.slice(0, clampedIndex), element, ...array.slice(clampedIndex, array.length)]
 }
 
+export function insertMultiple<T>(index: number, element: Array<T>, array: Array<T>): Array<T> {
+  const clampedIndex = clamp(0, array.length, index)
+  return [...array.slice(0, clampedIndex), ...element, ...array.slice(clampedIndex, array.length)]
+}
+
 export function reverse<T>(array: Array<T>): Array<T> {
   let result = [...array]
   result.reverse()
@@ -432,4 +437,10 @@ export function strictEvery<T>(
   predicate: (t: T, index: number, array: T[]) => boolean,
 ): boolean {
   return ts.length > 0 && ts.every(predicate)
+}
+
+export function arrayAccumulate<T>(callback: (acc: Array<T>) => void): ReadonlyArray<T> {
+  const accumulator: Array<T> = []
+  callback(accumulator)
+  return accumulator
 }
