@@ -2960,7 +2960,14 @@ export const UPDATE_FNS = {
     const frameChanges: Array<PinOrFlexFrameChange> = [
       getFrameChange(action.element, canvasFrame, isParentFlex),
     ]
-    return setCanvasFramesInnerNew(editor, frameChanges, null)
+    const withFrameUpdated = setCanvasFramesInnerNew(editor, frameChanges, null)
+    return {
+      ...withFrameUpdated,
+      trueUpGroupsForElementAfterDomWalkerRuns: [
+        ...withFrameUpdated.trueUpGroupsForElementAfterDomWalkerRuns,
+        action.element,
+      ],
+    }
   },
   SET_NAVIGATOR_RENAMING_TARGET: (
     action: SetNavigatorRenamingTarget,
