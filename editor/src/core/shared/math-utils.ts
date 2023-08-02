@@ -1,4 +1,12 @@
-import { stripNulls } from './array-utils'
+import type { FramePoint } from 'utopia-api/core'
+import {
+  AllFramePoints,
+  HorizontalFramePoints,
+  VerticalFramePoints,
+  isHorizontalPoint,
+} from 'utopia-api/core'
+import type { FullFrame, SixPinsNoneTheRicher } from '../../components/frame'
+import { arrayAccumulate, stripNulls } from './array-utils'
 import type { Either } from './either'
 import { left, right, mapEither } from './either'
 
@@ -830,6 +838,59 @@ export function transformFrameUsingBoundingBox<C extends CoordinateMarker>(
     height: currentBoundingBox.height === 0 ? newBoundingBox.height : frame.height * scaleHeight,
   } as Rectangle<C>
   return offsetRect(updatedFrameInBoundingBox, newBoundingBox)
+}
+
+export function transformConstrainedLocalFullFrameUsingBoundingBox(
+  newBoundingBox: Size,
+  currentBoundingBox: Size,
+  currentFrame: SixPinsNoneTheRicher,
+  constrainedPoints: Array<keyof FullFrame>,
+): FullFrame {
+  // TODO verify that currentBoundingBox and currentFrame's dimensions match up
+
+  function sumConstrainedLengths(sum: number, framePoint: FramePoint) {
+    if (constrainedPoints.includes(framePoint)) {
+      return sum + currentFrame[framePoint]
+    }
+    return sum
+  }
+  // first we sum the lengths of all constrained frame points for each dimension
+  const horizontalConstrainedLength: number = HorizontalFramePoints.reduce(sumConstrainedLengths, 0)
+  const verticelConstrainedLength: number = VerticalFramePoints.reduce(sumConstrainedLengths, 0)
+
+  const updatedFrame: FullFrame = AllFramePoints.reduce(
+    (newFullFrame: Partial<FullFrame>, framePoint) => {
+      if (constrainedPoints.includes(framePoint)) {
+        // for Constrained Frame Points, we simply return the current value
+        newFullFrame[framePoint] = currentFrame[framePoint]
+        return newFullFrame
+      }
+
+      const constrainedLengthForDimension = isHorizontalPoint(framePoint)
+        ? horizontalConstrainedLength
+        : verticelConstrainedLength
+      const currentSizeForDimension = isHorizontalPoint(framePoint)
+        ? currentBoundingBox.width
+        : currentBoundingBox.height
+
+      const newSizeForDimension = isHorizontalPoint(framePoint)
+        ? newBoundingBox.width
+        : newBoundingBox.height
+
+      const currentFramePointLength = currentFrame[framePoint]
+
+      // for non-constrained Frame Points, we change them by calculating the ratio of the old bounding rectangle's non-constrained area vs the new bounding rectangle's non-constrained area
+      const updatedFramePointLength =
+        (currentFramePointLength * (newSizeForDimension - constrainedLengthForDimension)) /
+        (currentSizeForDimension - constrainedLengthForDimension)
+
+      newFullFrame[framePoint] = updatedFramePointLength
+      return newFullFrame
+    },
+    {},
+  ) as FullFrame
+
+  return updatedFrame
 }
 
 export function closestPointOnLine<C extends CoordinateMarker>(
