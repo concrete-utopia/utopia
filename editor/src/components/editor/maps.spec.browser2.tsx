@@ -73,6 +73,11 @@ describe('map count override', () => {
       countOverride: NaN,
       expectedCount: 4,
     },
+    {
+      length: 4,
+      countOverride: -1,
+      expectedCount: 0,
+    },
   ]
 
   testCases.forEach(({ length, countOverride, expectedCount }) =>
