@@ -1699,7 +1699,7 @@ export const UPDATE_FNS = {
       let parent: ElementPath = EP.parentPath(path)
       while (!EP.isStoryboardPath(parent)) {
         const children = MetadataUtils.getChildrenUnordered(metadata, parent)
-        const count = 1 + children.filter((c) => selected.includes(c.elementPath)).length
+        const count = 1 + children.filter((c) => EP.containsPath(c.elementPath, selected)).length
         if (!behavesLikeGroupOrFragmentForDeletion(metadata, parent) || children.length > count) {
           break
         }
@@ -1727,7 +1727,7 @@ export const UPDATE_FNS = {
               path,
             )
             const selectedSiblings = allSelectedPaths.filter((p) =>
-              siblings.includes(editor.jsxMetadata[EP.toString(p)]),
+              siblings.some((sibling) => EP.pathsEqual(sibling.elementPath, p)),
             )
 
             const parentPath = EP.parentPath(path)
@@ -1779,7 +1779,7 @@ export const UPDATE_FNS = {
                   editor.jsxMetadata,
                   editor.elementPathTree,
                   actualParent,
-                ).find((element) => !ignorePaths.includes(element.elementPath))
+                ).find((element) => !EP.containsPath(element.elementPath, ignorePaths))
                 if (target != null) {
                   return target.elementPath
                 }
@@ -1819,7 +1819,7 @@ export const UPDATE_FNS = {
           EP.pathsEqual,
         ).filter((path) => {
           // remove descendants of already-deleted elements during multiselect
-          return !bubbledUpDeletions.includes(path)
+          return !EP.containsPath(path, bubbledUpDeletions)
         })
 
         return {
