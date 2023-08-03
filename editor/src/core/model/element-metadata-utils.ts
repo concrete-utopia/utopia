@@ -414,7 +414,7 @@ export const MetadataUtils = {
     metadata: ElementInstanceMetadataMap,
   ): boolean {
     const element = MetadataUtils.findElementByElementPath(metadata, target)
-    if (element == null) {
+    if (element == null || element.textContent == null || element.textContent.length === 0) {
       return false
     }
     if (isLeft(element.element)) {
@@ -1269,7 +1269,24 @@ export const MetadataUtils = {
             !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
           ) {
             const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
-            return children.length == 0
+            // if the expression has children we have to show it in the navigator
+            if (children.length > 1) {
+              return false
+            }
+            const parentElement = MetadataUtils.findElementByElementPath(
+              metadata,
+              EP.parentPath(path),
+            )
+            // When the expression doesn't have children and the parent has text content, that
+            // means this is a text expression, which should not appear in the navigator.
+            // The generated text content itself will be the label of the parent.
+            if (parentElement?.textContent != null && parentElement?.textContent.length > 0) {
+              return true
+            }
+            // When the expression doesn't have children and the parent has no text content, then
+            // the expression does not generate neither elements nor text.
+            // In this case the expression doesn't generate anything, but we still want to show it in
+            // the navigator, mostly to make sure to map expressions with zero elements are visible.
           }
           return false
         },
