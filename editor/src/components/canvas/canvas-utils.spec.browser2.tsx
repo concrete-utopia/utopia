@@ -228,7 +228,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} data-uid='aaa'>
+        `<View style={ props.style } data-uid='aaa'>
         <View
           ${/** pins are magically created */ ''}
           style={{ backgroundColor: '#aaaaaa33', left: 20, top: 20, width: 100, height: 100 }}
