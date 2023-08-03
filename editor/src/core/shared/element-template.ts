@@ -1356,7 +1356,7 @@ export function isJSExpressionOtherJavaScript(
   return element.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
-export function isJSXMapExpression(element: JSXElementChild) {
+export function isJSXMapExpression(element: JSXElementChild): element is JSXMapExpression {
   return element.type === 'JSX_MAP_EXPRESSION'
 }
 

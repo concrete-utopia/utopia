@@ -1481,7 +1481,7 @@ export const MetadataUtils = {
             case 'JSX_MAP_EXPRESSION':
               return 'Map'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-              return jsxElement.originalJavascript
+              return 'Code'
             case 'JSX_FRAGMENT':
               return 'Fragment'
             case 'JSX_CONDITIONAL_EXPRESSION':
@@ -2019,7 +2019,7 @@ export const MetadataUtils = {
     return (
       element?.element != null &&
       isRight(element.element) &&
-      isJSExpressionMapOrOtherJavaScript(element.element.value)
+      isJSExpressionOtherJavaScript(element.element.value)
     )
   },
   isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {

@@ -18,6 +18,10 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { renameComponent } from '../actions'
 import { NavigatorItemTestId } from './navigator-item'
 
+export function itemLabelTestIdForEntry(navigatorEntry: NavigatorEntry): string {
+  return `${NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}-label`
+}
+
 interface ItemLabelProps {
   testId: string
   dispatch: EditorDispatch
@@ -200,7 +204,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       ) : (
         <div
           key='item-label'
-          data-testid={`${NavigatorItemTestId(varSafeNavigatorEntryToKey(target))}-label`}
+          data-testid={itemLabelTestIdForEntry(target)}
           style={{
             backgroundColor: 'transparent',
             paddingTop: 3,
