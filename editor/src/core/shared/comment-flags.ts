@@ -7,6 +7,8 @@ const UtopiaCommentFlagPrefix = '@utopia/'
 
 export type UtopiaCommentFlagTypeConditional = 'conditional'
 
+export type UtopiaCommentFlagTypeMap = 'map'
+
 export type UtopiaCommentFlagTypeUid = 'uid'
 
 export type UtopiaCommentFlagTypeGroup = 'group'
@@ -14,6 +16,11 @@ export type UtopiaCommentFlagTypeGroup = 'group'
 export type UtopiaCommentFlagConditional = {
   type: UtopiaCommentFlagTypeConditional
   value: boolean | null
+}
+
+export type UtopiaCommentFlagMap = {
+  type: UtopiaCommentFlagTypeMap
+  value: number | null
 }
 
 export type UtopiaCommentFlagUid = {
@@ -28,11 +35,13 @@ export type UtopiaCommentFlagGroup = {
 
 export type UtopiaCommentFlagType =
   | UtopiaCommentFlagTypeConditional
+  | UtopiaCommentFlagTypeMap
   | UtopiaCommentFlagTypeUid
   | UtopiaCommentFlagTypeGroup
 
 export type UtopiaCommentFlag =
   | UtopiaCommentFlagConditional
+  | UtopiaCommentFlagMap
   | UtopiaCommentFlagUid
   | UtopiaCommentFlagGroup
 
@@ -82,6 +91,14 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
     return null
   }
 
+  function parseIntOrNull(value: string): number | null {
+    const intValue = parseInt(value)
+    if (isFinite(intValue)) {
+      return intValue
+    }
+    return null
+  }
+
   const comment = commentString(c)
   const prefix = utopiaCommentFlagKey(type) + '='
 
@@ -102,6 +119,11 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
         return {
           type: 'group',
           value: parseBooleanOrNull(value),
+        }
+      case 'map':
+        return {
+          type: 'map',
+          value: parseIntOrNull(value),
         }
       default:
         assertNever(type)
