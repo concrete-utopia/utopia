@@ -26,7 +26,7 @@ describe('Conditonals JSX parser', () => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - div
-            JSX_CONDITIONAL_EXPRESSION - baf
+            JSX_CONDITIONAL_EXPRESSION - conditional
               JSX_ELEMENT - div - hello
                 JSX_TEXT_BLOCK - 9e1
               JSX_ELEMENT - div - world
@@ -63,8 +63,8 @@ describe('Conditonals JSX parser', () => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - div
-            JSX_CONDITIONAL_EXPRESSION - 21c
-              JSX_CONDITIONAL_EXPRESSION - 7cd
+            JSX_CONDITIONAL_EXPRESSION - conditional1
+              JSX_CONDITIONAL_EXPRESSION - conditional2
                 JSX_ELEMENT - div - middle
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard
@@ -100,8 +100,8 @@ describe('Conditonals JSX printer', () => {
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - App
           JSX_ELEMENT - div - div
-            JSX_CONDITIONAL_EXPRESSION - 21c
-              JSX_CONDITIONAL_EXPRESSION - 7cd
+            JSX_CONDITIONAL_EXPRESSION - conditional1
+              JSX_CONDITIONAL_EXPRESSION - conditional2
                 JSX_ELEMENT - div - middle
         UNPARSED_CODE
         UTOPIA_JSX_COMPONENT - storyboard

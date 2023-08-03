@@ -674,13 +674,6 @@ Object {
       "startLine": 6,
       "uid": "34a",
     },
-    "472": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "472",
-    },
     "4cf": Object {
       "endCol": 37,
       "endLine": 4,
@@ -701,6 +694,20 @@ Object {
       "startCol": 17,
       "startLine": 4,
       "uid": "56f",
+    },
+    "67f": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "67f",
+    },
+    "6c7": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "6c7",
     },
     "6e3": Object {
       "endCol": 53,
@@ -730,13 +737,6 @@ Object {
       "startLine": 6,
       "uid": "b93",
     },
-    "cc6": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "cc6",
-    },
     "fa9": Object {
       "endCol": 37,
       "endLine": 4,
@@ -760,13 +760,6 @@ Object {
       "startLine": 6,
       "uid": "020",
     },
-    "472": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 17,
-      "startLine": 6,
-      "uid": "472",
-    },
     "4cf": Object {
       "endCol": 37,
       "endLine": 4,
@@ -788,6 +781,20 @@ Object {
       "startLine": 4,
       "uid": "56f",
     },
+    "67f": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "67f",
+    },
+    "6c7": Object {
+      "endCol": 45,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "6c7",
+    },
     "74c": Object {
       "endCol": 45,
       "endLine": 4,
@@ -808,13 +815,6 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "b93",
-    },
-    "cc6": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "cc6",
     },
   },
   "imports": Object {
