@@ -893,7 +893,7 @@ function runJSExpression(
       return jsxAttributeToValue(filePath, block, requireResult, block)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope, limit)
+      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
     default:
       assertNever(block)
   }
