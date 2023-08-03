@@ -5,31 +5,15 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
+import type { CanvasRectangle, Size } from '../../../core/shared/math-utils'
 import {
-  localRectangle,
+  boundingRectangleArray,
+  nullIfInfinity,
+  rectangleDifference,
   roundFullFrameToNearestWhole,
-  roundRectangleToNearestWhole,
+  sizeFromRectangle,
   transformConstrainedLocalFullFrameUsingBoundingBox,
 } from '../../../core/shared/math-utils'
-import type { CanvasRectangle, LocalRectangle, Size } from '../../../core/shared/math-utils'
-import {
-  MaybeInfinityCanvasRectangle,
-  boundingRectangleArray,
-  canvasRectangle,
-  canvasVector,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  magnitude,
-  nullIfInfinity,
-  offsetRect,
-  rectangleDifference,
-  resizeCanvasRectangle,
-  size,
-  sizeFromRectangle,
-  transformFrameUsingBoundingBox,
-  vectorDifference,
-} from '../../../core/shared/math-utils'
-import { notNull } from '../../../core/shared/optics/optic-creators'
 import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
@@ -38,26 +22,22 @@ import type {
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
+import type { SixPinsNoneTheRicher } from '../../frame'
+import { getSixPinsFrame } from '../../frame'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import {
-  allowGroupTrueUp,
-  treatElementAsGroupLike,
-} from '../canvas-strategies/strategies/group-helpers'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
 } from '../canvas-strategies/strategies/fragment-like-helpers'
-import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
+import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
-import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
+import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
-import type { SixPinsNoneTheRicher } from '../../frame'
-import { getFullFrame, getSixPinsFrame } from '../../frame'
 
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
@@ -90,7 +70,14 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   const {
     updatedEditor: editorAfterResizingAncestors,
     intendedBounds: resizeAncestorsIntendedBounds,
-  } = getResizeAncestorGroupsCommands(editorAfterResizingGroupChildren, command)
+  } = getResizeAncestorGroupsCommands(
+    editorAfterResizingGroupChildren,
+    command,
+    commandRanBecauseOfQueuedTrueUp
+      ? 'do-not-create-if-doesnt-exist'
+      : // TODO this can be removed in a future PR, but for now matching the previous behavior
+        'create-if-not-existing',
+  )
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
   const editorPatch = { projectContents: { $set: editorAfterResizingAncestors.projectContents } }
@@ -255,6 +242,7 @@ function getUpdateResizedGroupChildrenCommands(
 function getResizeAncestorGroupsCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
+  addGroupSizeIfNonExistant: CreateIfNotExistant,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
   const targets: Array<CanvasFrameAndTarget> = [...command.value]
 
@@ -321,7 +309,12 @@ function getResizeAncestorGroupsCommands(
 
       if (currentGlobalFrame != null && updatedGlobalFrame != null) {
         commandsToRun.push(
-          ...setGroupPins(metadata, currentGlobalFrame, updatedGlobalFrame),
+          ...setGroupPins(
+            metadata,
+            currentGlobalFrame,
+            updatedGlobalFrame,
+            addGroupSizeIfNonExistant,
+          ),
           wildcardPatch('always', {
             jsxMetadata: { [pathStr]: { globalFrame: { $set: updatedGlobalFrame } } },
           }),
@@ -435,6 +428,7 @@ function setGroupPins(
   instance: ElementInstanceMetadata,
   currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
+  createSizeIfNonExistant: CreateIfNotExistant,
 ): Array<CanvasCommand> {
   // TODO retarget Fragments
   const result = [
@@ -480,6 +474,7 @@ function setGroupPins(
         instance.specialSizeMeasurements.coordinateSystemBounds?.width,
       ),
       instance.specialSizeMeasurements.parentFlexDirection,
+      createSizeIfNonExistant,
     ),
     setCssLengthProperty(
       'always',
@@ -490,6 +485,7 @@ function setGroupPins(
         instance.specialSizeMeasurements.coordinateSystemBounds?.height,
       ),
       instance.specialSizeMeasurements.parentFlexDirection,
+      createSizeIfNonExistant,
     ),
   ]
   return result
