@@ -1271,7 +1271,7 @@ export const MetadataUtils = {
           ) {
             const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)
             // if the expression has children we have to show it in the navigator
-            if (children.length > 1) {
+            if (children.length > 0) {
               return false
             }
             const parentElement = MetadataUtils.findElementByElementPath(
