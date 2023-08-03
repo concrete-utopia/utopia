@@ -1097,22 +1097,17 @@ function parseJSExpression(
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSExpression>> {
   // Remove the braces around the expression
-  const expressionFullText = TS.isJsxExpression(jsxExpression)
-    ? jsxExpression.getFullText(sourceFile).slice(1, -1)
-    : jsxExpression.getFullText(sourceFile)
-  const expressionAndText = TS.isJsxExpression(jsxExpression)
-    ? createExpressionAndText(
-        jsxExpression.expression,
-        expressionFullText,
-        jsxExpression.getFullStart() + 1,
-        jsxExpression.getEnd() + 2,
-      )
-    : createExpressionAndText(
-        jsxExpression,
-        expressionFullText,
-        jsxExpression.getFullStart(),
-        jsxExpression.getEnd(),
-      )
+  const expression =
+    TS.isJsxExpression(jsxExpression) && jsxExpression.expression != null
+      ? jsxExpression.expression
+      : jsxExpression
+  const expressionFullText = expression.getText(sourceFile)
+  const expressionAndText = createExpressionAndText(
+    expression,
+    expressionFullText,
+    expression.getFullStart(),
+    expression.getEnd(),
+  )
 
   const comments = getCommentsOnExpression(sourceText, jsxExpression)
 

@@ -468,9 +468,7 @@ function jsxElementToExpression(
           const { statement, sourceFile } = maybeExpressionStatement
           const lastToken = statement.getLastToken(sourceFile)
           const finalComments =
-            lastToken == null
-              ? emptyComments
-              : parsedComments([], getLeadingComments(element.javascript, lastToken))
+            lastToken == null ? [] : getLeadingComments(element.javascript, lastToken)
 
           const updatedStatement = updateJSXElementsWithin(
             statement.expression,
@@ -478,7 +476,13 @@ function jsxElementToExpression(
             imports,
             stripUIDs,
           )
-          addCommentsToNode(updatedStatement, finalComments)
+          const commentsFromElement = element.comments
+          const combinedComments = parsedComments(
+            commentsFromElement.leadingComments,
+            commentsFromElement.trailingComments.concat(finalComments),
+          )
+
+          addCommentsToNode(updatedStatement, combinedComments)
           rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
             TS.EmitHint.Unspecified,
             updatedStatement,
