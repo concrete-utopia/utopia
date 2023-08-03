@@ -1,9 +1,10 @@
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import { elementPathFromInsertionPath } from '../../../../core/model/element-template-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { foldEither } from '../../../../core/shared/either'
+import { foldEither, isRight } from '../../../../core/shared/either'
+import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
@@ -35,7 +36,7 @@ import {
 } from '../strategies/reparent-helpers/reparent-helpers'
 import { pathToReparent } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
-import type { ElementOrPathToInsert } from './post-action-paste'
+import type { ElementOrPathToInsert, OldPathToNewPathMapping } from './post-action-paste'
 import { staticReparentAndUpdatePosition } from './post-action-paste'
 
 function getNavigatorReparentCommands(
@@ -91,9 +92,26 @@ function getNavigatorReparentCommands(
       elementPath: path,
       pathToReparent: pathToReparent(path),
       intendedCoordinates: intendedCoordinates,
-      uid: EP.toUid(path),
+      newUID: EP.toUid(path),
     }
   })
+
+  const oldPathToNewPathMapping: OldPathToNewPathMapping = {}
+
+  for (const value of data.dragSources) {
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      value,
+    )
+
+    const pathAfterReparent = elementPathFromInsertionPath(newParentPath, EP.toUid(value))
+
+    for (const path of [value, ...childrenPaths]) {
+      oldPathToNewPathMapping[EP.toString(path)] =
+        EP.replaceIfAncestor(path, value, pathAfterReparent) ?? undefined
+    }
+  }
 
   return staticReparentAndUpdatePosition(
     { type: 'parent', parentPath: newParentPath },
@@ -117,9 +135,11 @@ function getNavigatorReparentCommands(
       canvasViewportCenter: data.canvasViewportCenter,
       reparentStrategy: null,
       insertionPosition: null,
+      originalAllElementProps: editor.allElementProps,
     },
     elementsToReparent,
     data.indexPosition,
+    oldPathToNewPathMapping,
   )
 }
 

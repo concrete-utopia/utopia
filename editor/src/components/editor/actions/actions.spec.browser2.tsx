@@ -605,14 +605,14 @@ describe('actions', () => {
       {
         name: 'a fragment',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{ height: 90 }}>
             <div data-uid='aaa'>
-                <div data-uid='bbb'>foo</div>
-                <div data-uid='ccc'>bar</div>
+                <div data-uid='bbb' style={{ height: 10 }}>foo</div>
+                <div data-uid='ccc' style={{ height: 10 }}>bar</div>
             </div>
             <>
-                <div data-uid='ddd'>hello</div>
-                <div data-uid='eee'>there</div>
+                <div data-uid='ddd' style={{ height: 10 }}>hello</div>
+                <div data-uid='eee' style={{ height: 10 }}>there</div>
             </>
         </div>
 		`,
@@ -628,18 +628,42 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
-		    <div data-uid='root'>
+		    <div data-uid='root' style={{ height: 90 }}>
             <div data-uid='aaa'>
-            <div data-uid='bbb'>foo</div>
-            <div data-uid='ccc'>bar</div>
-                <>
-                    <div data-uid='aad'>hello</div>
-                    <div data-uid='aah'>there</div>
-                </>
+            <div data-uid='bbb' style={{ height: 10 }}>
+              foo
+            </div>
+            <div data-uid='ccc' style={{ height: 10 }}>
+              bar
             </div>
             <>
-                <div data-uid='ddd'>hello</div>
-                <div data-uid='eee'>there</div>
+              <div
+                data-uid='aaf'
+                style={{
+                  height: 10,
+                  position: 'absolute',
+                  top: 20,
+                  left: 0,
+                }}
+              >
+                hello
+              </div>
+              <div
+                data-uid='aal'
+                style={{
+                  height: 10,
+                  position: 'absolute',
+                  top: 30,
+                  left: 0,
+                }}
+              >
+                there
+              </div>
+            </>
+            </div>
+            <>
+                <div data-uid='ddd' style={{ height: 10 }}>hello</div>
+                <div data-uid='eee' style={{ height: 10 }}>there</div>
             </>
         </div>
 		`,
@@ -680,17 +704,17 @@ describe('actions', () => {
       {
         name: 'a conditional',
         startingCode: `
-		<div data-uid='root'>
-            <div data-uid='aaa'>
-            <div data-uid='bbb'>foo</div>
-            <div data-uid='ccc'>bar</div>
+		<div data-uid='root' style={{ height: 90 }}>
+            <div data-uid='aaa' style={{ height: 50 }}>
+              <div data-uid='bbb'>foo</div>
+              <div data-uid='ccc'>bar</div>
             </div>
             {
                 // @utopia/uid=conditional
                 true ? (
-                    <div data-uid='ddd'>true</div>
+                    <div data-uid='ddd' style={{ height: 10 }}>true</div>
                 ): (
-                    <div data-uid='eee'>false</div>
+                    <div data-uid='eee' style={{ height: 10 }}>false</div>
                 )
             }
         </div>
@@ -707,25 +731,35 @@ describe('actions', () => {
         },
         pasteInto: childInsertionPath(EP.appendNewElementPath(TestScenePath, ['root', 'aaa'])),
         want: `
-		<div data-uid='root'>
-            <div data-uid='aaa'>
-            <div data-uid='bbb'>foo</div>
-            <div data-uid='ccc'>bar</div>
-                {
-                    // @utopia/uid=conditional
-                    true ? (
-                        <div data-uid='aae'>true</div>
-                    ): (
-                        <div data-uid='aai'>false</div>
-                    )
-                }
+		<div data-uid='root' style={{ height: 90 }}>
+            <div data-uid='aaa' style={{ height: 50 }}>
+              <div data-uid='bbb'>foo</div>
+              <div data-uid='ccc'>bar</div>
+              {
+                // @utopia/uid=conditional
+                true ? (
+                  <div
+                    data-uid='aag'
+                    style={{
+                      height: 10,
+                      position: 'absolute',
+                      top: 50,
+                      left: 0,
+                    }}
+                  >
+                    true
+                  </div>
+                ) : (
+                  <div data-uid='aam' style={{ height: 10 }}>false</div>
+                )
+              }
             </div>
             {
                 // @utopia/uid=conditional
                 true ? (
-                    <div data-uid='ddd'>true</div>
+                    <div data-uid='ddd' style={{ height: 10 }}>true</div>
                 ): (
-                    <div data-uid='eee'>false</div>
+                    <div data-uid='eee' style={{ height: 10 }}>false</div>
                 )
             }
         </div>
@@ -1101,7 +1135,7 @@ describe('actions', () => {
       {
         name: 'a fragment inside an empty conditional branch',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{lineHeight: '20px'}}>
             {
                 // @utopia/uid=conditional
                 true ? null : <div data-uid='aaa'>foo</div>
@@ -1128,13 +1162,31 @@ describe('actions', () => {
           replaceWithSingleElement(),
         ),
         want: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{lineHeight: '20px'}}>
             {
                 // @utopia/uid=conditional
                 true ? (
                     <>
-                    	<div data-uid='aad'>bar</div>
-                    	<div data-uid='aah'>baz</div>
+                    	<div
+                        data-uid='aad'
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                        }}
+                      >
+                        bar
+                      </div>
+                      <div
+                        data-uid='aah'
+                        style={{
+                          position: 'absolute',
+                          top: 20,
+                          left: 0,
+                        }}
+                      >
+                        baz
+                      </div>
                     </>
                 ) : <div data-uid='aaa'>foo</div>
             }
@@ -1148,7 +1200,7 @@ describe('actions', () => {
       {
         name: 'multiple fragments inside an empty conditional branch',
         startingCode: `
-        <div data-uid='root'>
+        <div data-uid='root' style={{lineHeight: '20px'}}>
             {
                 // @utopia/uid=conditional
                 true ? null : <div data-uid='aaa'>foo</div>
@@ -1185,19 +1237,55 @@ describe('actions', () => {
           replaceWithSingleElement(),
         ),
         want: `
-      <div data-uid='root'>
+      <div data-uid='root' style={{lineHeight: '20px'}}>
       {
         // @utopia/uid=conditional
         true ? (
           <React.Fragment>
             <>
-              <div data-uid='aad'>bar</div>
-              <div data-uid='aah'>baz</div>
-            </>
-            <>
-              <div data-uid='aam'>qux</div>
-              <div data-uid='aaq'>waldo</div>
-            </>
+              <div
+              data-uid='aad'
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+              }}
+            >
+              bar
+            </div>
+            <div
+              data-uid='aah'
+              style={{
+                position: 'absolute',
+                top: 20,
+                left: 0,
+              }}
+            >
+              baz
+            </div>
+          </>
+          <>
+            <div
+              data-uid='aam'
+              style={{
+                position: 'absolute',
+                top: 40,
+                left: 0,
+              }}
+            >
+              qux
+            </div>
+            <div
+              data-uid='aaq'
+              style={{
+                position: 'absolute',
+                top: 60,
+                left: 0,
+              }}
+            >
+              waldo
+            </div>
+          </>
           </React.Fragment>
         ) : <div data-uid='aaa'>foo</div>
       }
@@ -1905,8 +1993,8 @@ export var Playground = () => {
             style={{
               backgroundColor: '#aaaaaa33',
               position: 'absolute',
-              left: 37.5,
-              top: 64,
+              left: 48,
+              top: 81,
               width: 204,
               height: 67,
             }}
@@ -1916,8 +2004,8 @@ export var Playground = () => {
             style={{
               backgroundColor: '#aaaaaa33',
               position: 'absolute',
-              left: 37.5,
-              top: 148,
+              left: 48,
+              top: 165,
               width: 204,
               height: 54,
             }}
@@ -3652,6 +3740,314 @@ export var storyboard = (props) => {
       })
     })
 
+    describe('pasting fragments with children', () => {
+      const Child1TestId = 'child-1'
+      const Child2TestId = 'child-2'
+      const template = (innards: string) => `import * as React from 'react'
+      import { Scene, Storyboard } from 'utopia-api'
+      
+      const App = () => {
+        return (
+          ${innards} 
+        )
+      }
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <Scene
+            style={{
+              width: 311,
+              height: 313,
+              position: 'absolute',
+              left: 301,
+              top: 169,
+            }}
+            data-label='Playground'
+            data-uid='scene'
+          >
+            <App data-uid='app' />
+          </Scene>
+          <React.Fragment data-uid='fragment'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: -475,
+                top: 571,
+                width: 110,
+                height: 112,
+              }}
+              data-uid='738'
+              data-testid='${Child1TestId}'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: -294,
+                top: 571,
+                width: 100,
+                height: 112,
+              }}
+              data-uid='f49'
+              data-testid='${Child2TestId}'
+            />
+        </React.Fragment>
+        </Storyboard>
+      )
+      `
+
+      // only the props of the fragemnt's children are asserted in the following tests, since
+      // previous tests already establish that pasting an element into a container with children
+      // works as intended
+
+      it('paste into an absolute layout', async () => {
+        const editor = await renderTestEditorWithCode(
+          template(`
+          <div
+            data-uid='root'
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 47,
+                width: 311,
+                height: 189,
+              }}
+              data-uid='container'
+            />
+          </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+        await pressKey('x', { modifiers: cmdModifier })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/container')])
+
+        await runPaste(editor)
+
+        {
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child1TestId).style
+          expect({ position, top, left, width, height }).toEqual({
+            height: '112px',
+            left: '15px',
+            position: 'absolute',
+            top: '39px',
+            width: '110px',
+          })
+        }
+
+        {
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child2TestId).style
+          expect({ position, top, left, width, height }).toEqual({
+            height: '112px',
+            left: '196px',
+            position: 'absolute',
+            top: '39px',
+            width: '100px',
+          })
+        }
+      })
+
+      it('paste into a flex layout', async () => {
+        const editor = await renderTestEditorWithCode(
+          template(`
+          <div
+            data-uid='root'
+            style={{
+              width: '100%',
+              height: '100%',
+              position: 'relative',
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 47,
+                width: 311,
+                height: 189,
+                display: 'flex',
+                padding: 25,
+                gap: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              data-uid='container'
+            />
+          </div>
+        `),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/fragment')])
+        await pressKey('x', { modifiers: cmdModifier })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/container')])
+
+        await runPaste(editor)
+
+        {
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child1TestId).style
+          expect({ position, top, left, width, height }).toEqual({
+            height: '112px',
+            left: '',
+            position: '',
+            top: '',
+            width: '110px',
+          })
+        }
+
+        {
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child2TestId).style
+          expect({ position, top, left, width, height }).toEqual({
+            height: '112px',
+            left: '',
+            position: '',
+            top: '',
+            width: '100px',
+          })
+        }
+      })
+
+      it('elements with relative sizing and pins are converted to visual size, with pins removed', async () => {
+        const editor = await renderTestEditorWithCode(
+          `import * as React from 'react'
+        import { Scene, Storyboard } from 'utopia-api'
+        const App = () => {
+          return (
+            <div
+              data-uid='root'
+              style={{
+                width: '100%',
+                height: '100%',
+                position: 'relative',
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 47,
+                  width: 311,
+                  height: 189,
+                  padding: 25,
+                }}
+                data-uid='container'
+              />
+            </div>
+          )
+        }
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              style={{
+                width: 311,
+                height: 313,
+                position: 'absolute',
+                left: 301,
+                top: 169,
+              }}
+              data-label='Playground'
+              data-uid='scene'
+            >
+              <App data-uid='app' />
+            </Scene>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: -169,
+                top: 286,
+                width: 352,
+                height: 145,
+              }}
+              data-uid='outer'
+            >
+              <React.Fragment data-uid='fragment'>
+                <div
+                  style={{
+                    backgroundColor: '#ff487e',
+                    position: 'absolute',
+                    left: '11.42045454546%',
+                    right: 221,
+                    height: '33%',
+                    top: 48.5,
+                  }}
+                  data-uid='aaa'
+                  data-testid='${Child1TestId}'
+                />
+                <div
+                  style={{
+                    backgroundColor: '#42ddcf',
+                    width: '20%',
+                    position: 'absolute',
+                    top: 30,
+                    left: 188,
+                    bottom: '29%',
+                  }}
+                  data-uid='0bd'
+                  data-testid='${Child2TestId}'
+                />
+              </React.Fragment>
+            </div>
+          </Storyboard>
+        )
+        `,
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/outer/fragment')])
+        await pressKey('x', { modifiers: cmdModifier })
+        await editor.getDispatchFollowUpActionsFinished()
+
+        await selectComponentsForTest(editor, [EP.fromString('sb/scene/app:root/container')])
+
+        await runPaste(editor)
+
+        {
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child1TestId).style
+          expect({ position, top, left, width, height }).toEqual({
+            height: '48px',
+            left: '46px',
+            position: 'absolute',
+            top: '118.5px',
+            width: '91px',
+          })
+        }
+
+        {
+          const { position, top, left, width, height } =
+            editor.renderedDOM.getByTestId(Child2TestId).style
+          expect({ position, top, left, width, height }).toEqual({
+            height: '73px',
+            left: '194px',
+            position: 'absolute',
+            top: '100px',
+            width: '70.5px',
+          })
+        }
+      })
+    })
+
     describe('Paste to Replace', () => {
       const pasteToReplaceTestCases: Array<{
         name: string
@@ -4281,8 +4677,8 @@ export var storyboard = (
             position: 'absolute',
             width: 44,
             height: 33,
-            top: 100,
-            left: 100,
+            top: 404,
+            left: 698,
             backgroundColor: '#cee5ff',
           }}
           onClick={undefined}
@@ -4429,8 +4825,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 6,
-            top: 6,
+            left: 698,
+            top: 404,
             width: 44,
             height: 33,
           }}
@@ -4586,8 +4982,8 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 6,
-            top: 6,
+            left: 698,
+            top: 404,
             width: 44,
             height: 33,
           }}

@@ -1,7 +1,11 @@
 import type { EditorAction, ElementPaste } from '../components/editor/action-types'
 import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
-import type { EditorState, PastePostActionMenuData } from '../components/editor/store/editor-state'
+import type {
+  AllElementProps,
+  EditorState,
+  PastePostActionMenuData,
+} from '../components/editor/store/editor-state'
 import { getOpenUIJSFileKey, withUnderlyingTarget } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
@@ -68,6 +72,7 @@ export interface CopyData {
   copyDataWithPropsReplaced: ElementPasteWithMetadata | null
   copyDataWithPropsPreserved: ElementPasteWithMetadata
   targetOriginalContextElementPathTrees: ElementPathTrees
+  originalAllElementProps: AllElementProps
 }
 
 interface ParsedCopyData {
@@ -119,15 +124,13 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
 
 function getJSXElementPasteActions(
   editor: EditorState,
-  builtInDependencies: BuiltInDependencies,
   clipboardData: Array<CopyData>,
   canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
-  if (clipboardData.length === 0) {
+  const clipboardFirstEntry = clipboardData.at(0)
+  if (clipboardFirstEntry == null) {
     return []
   }
-  // Length check above proves this should exist.
-  const clipboardFirstEntry = clipboardData[0]!
 
   const copyDataToUse =
     clipboardFirstEntry.copyDataWithPropsReplaced != null
@@ -163,6 +166,7 @@ function getJSXElementPasteActions(
     dataWithPropsPreserved: clipboardFirstEntry.copyDataWithPropsPreserved,
     dataWithPropsReplaced: clipboardFirstEntry.copyDataWithPropsReplaced,
     targetOriginalPathTrees: clipboardFirstEntry.targetOriginalContextElementPathTrees,
+    originalAllElementProps: clipboardFirstEntry.originalAllElementProps,
     pasteTargetsToIgnore: editor.pasteTargetsToIgnore,
     canvasViewportCenter: canvasViewportCenter,
   }
@@ -256,14 +260,13 @@ function getFilePasteActions(
 
 export function getActionsForClipboardItems(
   editor: EditorState,
-  builtInDependencies: BuiltInDependencies,
   canvasViewportCenter: CanvasPoint,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
   canvasScale: number,
 ): Array<EditorAction> {
   return [
-    ...getJSXElementPasteActions(editor, builtInDependencies, clipboardData, canvasViewportCenter),
+    ...getJSXElementPasteActions(editor, clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
       editor.projectContents,
       editor.nodeModules.files,
@@ -373,12 +376,18 @@ export function createClipboardDataFromSelection(
     replaceJSXElementCopyData(copyDataWithPropsPreserved, editor.allElementProps)
       ?.copyDataReplaced ?? null
 
+  const strippedAllElementProps: AllElementProps = Object.entries(editor.allElementProps).reduce(
+    (acc: AllElementProps, [key, value]) => ({ ...acc, [key]: { style: value['style'] } }),
+    {},
+  )
+
   return {
     data: [
       {
         copyDataWithPropsPreserved: copyDataWithPropsPreserved,
         copyDataWithPropsReplaced: copyDataWithPropsReplaced,
         targetOriginalContextElementPathTrees: editor.elementPathTree,
+        originalAllElementProps: strippedAllElementProps,
       },
     ],
     imageFilenames: [],

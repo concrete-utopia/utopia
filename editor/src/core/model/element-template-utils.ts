@@ -54,6 +54,7 @@ import type {
   StaticElementPath,
   ElementPath,
   Imports,
+  ElementPathPart,
 } from '../shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
@@ -528,9 +529,10 @@ export function insertJSXElementChildren(
         )
       }
 
-      insertedChildrenPaths = elementsToInsert.map((child) =>
-        EP.appendToPath(parentPath, child.uid),
-      )
+      insertedChildrenPaths = elementsToInsert.flatMap((child) => {
+        const pathParts = pathPartsFromJSXElementChild(child, [])
+        return pathParts.map((part) => EP.appendPartToPath(parentPath, part))
+      })
 
       return {
         ...parentElement,
@@ -1118,5 +1120,37 @@ export function elementChildSupportsChildrenAlsoText(
     }
     // We don't know at this stage.
     return null
+  }
+}
+
+export function pathPartsFromJSXElementChild(
+  element: JSXElementChild,
+  currentParts: ElementPathPart,
+): Array<ElementPathPart> {
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return [
+        [...currentParts, element.uid],
+        ...element.children.flatMap((e) =>
+          pathPartsFromJSXElementChild(e, [...currentParts, element.uid]),
+        ),
+      ]
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return [
+        [...currentParts, element.uid],
+        ...pathPartsFromJSXElementChild(element.whenTrue, [...currentParts, element.uid]),
+        ...pathPartsFromJSXElementChild(element.whenFalse, [...currentParts, element.uid]),
+      ]
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_MAP_EXPRESSION':
+      return [currentParts]
+    default:
+      assertNever(element)
   }
 }

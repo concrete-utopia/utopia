@@ -4087,6 +4087,86 @@ describe('Navigator', () => {
         expect(element.style.width).toEqual('150px')
         expect(element.style.height).toEqual('543px')
       })
+      it('reparenting a fragment with child elements to flex updates children position and size', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(
+            flexLayoutSnippet(`
+            <React.Fragment data-uid='fragment'>
+              <div
+                style={{
+                  backgroundColor: '#35a853',
+                  contain: 'layout',
+                  width: '60%',
+                  height: '50%',
+                  position: 'absolute',
+                  left: 31,
+                  top: 21,
+                }}
+                data-uid='child1'
+                data-testid='child1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#35a853',
+                  contain: 'layout',
+                  width: 150,
+                  height: 100,
+                  position: 'absolute',
+                  bottom: 50,
+                  right: 40,
+                }}
+                data-uid='child2'
+                data-testid='child2'
+              />
+            </React.Fragment>`),
+          ),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/fragment`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex/aaa`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment', // <- fragment is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child1', // <- fragment child is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child2', // <- fragment child is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+        ])
+
+        const child1 = editor.renderedDOM.getByTestId('child1')
+
+        expect(child1.style.position).toEqual('')
+        expect(child1.style.top).toEqual('')
+        expect(child1.style.left).toEqual('')
+        expect(child1.style.bottom).toEqual('')
+        expect(child1.style.right).toEqual('')
+        expect(child1.style.width).toEqual('217px')
+        expect(child1.style.height).toEqual('117.5px')
+
+        const child2 = editor.renderedDOM.getByTestId('child2')
+
+        expect(child2.style.position).toEqual('')
+        expect(child2.style.top).toEqual('')
+        expect(child2.style.left).toEqual('')
+        expect(child2.style.bottom).toEqual('')
+        expect(child2.style.right).toEqual('')
+        expect(child2.style.width).toEqual('150px')
+        expect(child2.style.height).toEqual('100px')
+      })
     })
 
     describe('reparenting to absolute', () => {
@@ -4665,6 +4745,75 @@ describe('Navigator', () => {
             renderResult.getEditorState().editor.jsxMetadata,
           ),
         ).toEqual(originalFrame2)
+      })
+      it('reparenting a fragment with absolute children to an absolute container updates children position', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <React.Fragment data-uid='fragment'>
+            <div
+              style={{
+                width: '20%',
+                height: '15%',
+                position: 'absolute',
+                left: 31,
+                top: 21,
+              }}
+              data-uid='child1'
+              data-testid='child1'
+            />
+            <div
+              style={{
+                top: 10,
+                left: 10,
+                width: 50,
+                height: 60,
+                position: 'absolute',
+              }}
+              data-uid='child2'
+              data-testid='child2'
+            />
+          </React.Fragment>
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/fragment`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment/child1',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment/child2',
+        ])
+
+        const child1 = editor.renderedDOM.getByTestId('child1')
+        expect(child1.style.position).toEqual('absolute')
+        expect(child1.style.top).toEqual('84px')
+        expect(child1.style.left).toEqual('153px')
+        expect(child1.style.bottom).toEqual('')
+        expect(child1.style.right).toEqual('')
+        expect(child1.style.width).toEqual('80px')
+        expect(child1.style.height).toEqual('60px')
+
+        const child2 = editor.renderedDOM.getByTestId('child2')
+        expect(child2.style.position).toEqual('absolute')
+        expect(child2.style.top).toEqual('73px')
+        expect(child2.style.left).toEqual('132px')
+        expect(child2.style.bottom).toEqual('')
+        expect(child2.style.right).toEqual('')
+        expect(child2.style.width).toEqual('50px')
+        expect(child2.style.height).toEqual('60px')
       })
     })
   })
