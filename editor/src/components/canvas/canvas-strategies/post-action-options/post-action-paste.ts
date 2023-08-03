@@ -186,21 +186,13 @@ function pasteChoiceCommon(
         appendPathPart(pathAfterReparent, part),
       )
 
-      const mapping: OldPathToNewPathMapping = zip(
-        originalPaths,
-        pathsAfterUIDFix,
-        (oldPath, newPath) => ({ oldPath, newPath }),
-      ).reduce(
-        (accI: OldPathToNewPathMapping, { oldPath, newPath }) => ({
-          ...accI,
-          [EP.toString(oldPath)]: newPath,
-        }),
-        {},
-      )
+      const paths = zip(originalPaths, pathsAfterUIDFix, (oldPath, newPath) => ({
+        oldPath,
+        newPath,
+      }))
 
-      oldPathToNewPathMapping = {
-        ...oldPathToNewPathMapping,
-        ...mapping,
+      for (const { oldPath, newPath } of paths) {
+        oldPathToNewPathMapping[EP.toString(oldPath)] = newPath
       }
 
       return {

@@ -96,30 +96,22 @@ function getNavigatorReparentCommands(
     }
   })
 
-  const oldPathToNewPathMapping: OldPathToNewPathMapping = data.dragSources.reduce(
-    (acc: OldPathToNewPathMapping, value) => {
-      const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
-        editor.jsxMetadata,
-        editor.elementPathTree,
-        value,
-      )
+  const oldPathToNewPathMapping: OldPathToNewPathMapping = {}
 
-      const pathAfterReparent = elementPathFromInsertionPath(newParentPath, EP.toUid(value))
+  for (const value of data.dragSources) {
+    const childrenPaths = MetadataUtils.getChildrenPathsOrdered(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      value,
+    )
 
-      const mapping: OldPathToNewPathMapping = [value, ...childrenPaths].reduce(
-        (accI: OldPathToNewPathMapping, valI) => ({
-          ...accI,
-          [EP.toString(valI)]: EP.replaceIfAncestor(valI, value, pathAfterReparent) ?? undefined,
-        }),
-        {},
-      )
-      return {
-        ...acc,
-        ...mapping,
-      }
-    },
-    {},
-  )
+    const pathAfterReparent = elementPathFromInsertionPath(newParentPath, EP.toUid(value))
+
+    for (const path of [value, ...childrenPaths]) {
+      oldPathToNewPathMapping[EP.toString(path)] =
+        EP.replaceIfAncestor(path, value, pathAfterReparent) ?? undefined
+    }
+  }
 
   return staticReparentAndUpdatePosition(
     { type: 'parent', parentPath: newParentPath },
