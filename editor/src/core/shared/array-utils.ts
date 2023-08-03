@@ -444,3 +444,10 @@ export function arrayAccumulate<T>(callback: (acc: Array<T>) => void): ReadonlyA
   callback(accumulator)
   return accumulator
 }
+
+export function zip<A, B, C>(one: A[], other: B[], make: (a: A, b: B) => C): C[] {
+  const doZip = (oneInner: A[], otherInner: B[]) =>
+    oneInner.map((elem, idx) => make(elem, otherInner[idx]))
+
+  return one.length < other.length ? doZip(one, other) : doZip(one.slice(0, other.length), other)
+}

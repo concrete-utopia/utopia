@@ -7,6 +7,7 @@ import {
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
+  insertJSXElementChildren,
   transformJSXComponentAtPath,
 } from '../../../core/model/element-template-utils'
 import {
@@ -38,12 +39,12 @@ import type { IndexPosition } from '../../../utils/utils'
 import { absolute } from '../../../utils/utils'
 import type { EditorDispatch } from '../action-types'
 import type { EditorState } from '../store/editor-state'
-import { insertElementAtPath, modifyUnderlyingTargetElement } from '../store/editor-state'
+import { modifyUnderlyingTargetElement } from '../store/editor-state'
 import type { ConditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import {
   childInsertionPath,
-  getInsertionPathWithSlotBehavior,
   getElementPathFromInsertionPath,
+  getInsertionPath,
   isChildInsertionPath,
 } from '../store/insertion-path'
 import { deleteView } from './action-creators'
@@ -159,22 +160,24 @@ export function unwrapTextContainingConditional(
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
 
-      const insertionPath = getInsertionPathWithSlotBehavior(
+      const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+      const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,
         editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,
+        wrapperUID,
+        1,
       )
       if (insertionPath == null) {
         throw new Error('Invalid unwrap insertion path')
       }
 
-      const updatedComponents = insertElementAtPath(
-        editor.projectContents,
+      const updatedComponents = insertJSXElementChildren(
         insertionPath,
-        elementToInsert,
+        [elementToInsert],
         components,
         absolute(originalIndexPosition),
       )

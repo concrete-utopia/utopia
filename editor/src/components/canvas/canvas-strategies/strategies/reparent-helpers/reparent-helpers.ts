@@ -36,6 +36,7 @@ import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
+  replaceWithSingleElement,
 } from '../../../../editor/store/insertion-path'
 import { CSSCursor } from '../../../canvas-types'
 import { setCursorCommand } from '../../../commands/set-cursor-command'
@@ -77,11 +78,8 @@ import type { ElementPathTrees } from '../../../../../core/shared/element-path-t
 import type { CanvasCommand } from '../../../commands/commands'
 import type { ToReparent } from '../reparent-utils'
 import { getReparentOutcome } from '../reparent-utils'
-import {
-  getReparentPropertyChanges,
-  positionElementToCoordinatesCommands,
-} from './reparent-property-changes'
 import type { StaticReparentTarget } from './reparent-strategy-helpers'
+import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { treatElementAsFragmentLike } from '../fragment-like-helpers'
 import { optionalMap } from '../../../../../core/shared/optional-utils'
 import { setProperty } from '../../../commands/set-property-command'
@@ -331,7 +329,7 @@ export function getInsertionPathForReparentTarget(
   if (clause == null) {
     return childInsertionPath(newParent)
   }
-  return conditionalClauseInsertionPath(newParent, clause, 'replace')
+  return conditionalClauseInsertionPath(newParent, clause, replaceWithSingleElement())
 }
 
 function areElementsInstancesOfTheSameComponent(
@@ -405,9 +403,16 @@ export function absolutePositionForReparent(
   canvasViewportCenter: CanvasPoint | 'keep-visible-position',
 ): CanvasPoint {
   const boundingBox = boundingRectangleArray(
-    allElementPathsToReparent.map((path) =>
-      MetadataUtils.getFrameOrZeroRectInCanvasCoords(path, metadata.originalTargetMetadata),
-    ),
+    mapDropNulls((path) => {
+      const globalFrame = MetadataUtils.getFrameInCanvasCoords(
+        path,
+        metadata.originalTargetMetadata,
+      )
+      if (globalFrame == null || isInfinityRectangle(globalFrame)) {
+        return null
+      }
+      return globalFrame
+    }, allElementPathsToReparent),
   )
 
   // when pasting multiselected elements let's keep their relative position to each other

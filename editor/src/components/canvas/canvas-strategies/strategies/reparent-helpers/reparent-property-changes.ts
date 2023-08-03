@@ -15,6 +15,7 @@ import type { CanvasPoint } from '../../../../../core/shared/math-utils'
 import {
   canvasPoint,
   CanvasVector,
+  isInfinityRectangle,
   nullIfInfinity,
   pointDifference,
   roundPointToNearestHalf,
@@ -22,10 +23,8 @@ import {
 import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import type { ProjectContentTreeRoot } from '../../../../assets'
-import {
-  AllElementProps,
-  getElementFromProjectContents,
-} from '../../../../editor/store/editor-state'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
 import type { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { cssNumber } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
@@ -48,7 +47,9 @@ import {
   singleAxisAutoLayoutContainerDirections,
 } from '../flow-reorder-helpers'
 import type { ReparentStrategy } from './reparent-strategy-helpers'
+import type { ElementPathSnapshots, MetadataSnapshots } from './reparent-property-strategies'
 import {
+  convertFragmentLikeChildrenToVisualSize,
   convertRelativeSizingToVisualSize,
   convertSizingToVisualSizeWhenPastingFromFlexToFlex,
   runReparentPropertyStrategies,
@@ -59,6 +60,11 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
 import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../fragment-like-helpers'
+import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -215,27 +221,92 @@ export function getStaticReparentPropertyChanges(
 }
 
 export function positionElementToCoordinatesCommands(
-  elementPath: ElementPath,
+  elementToReparent: ElementPathSnapshots,
+  oldAllElementProps: AllElementProps,
+  metadata: MetadataSnapshots,
   desiredTopLeft: CanvasPoint,
+  pathLookup: OldPathToNewPathMapping,
 ): CanvasCommand[] {
-  return [
-    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+  const basicCommands = [
+    ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
     setCssLengthProperty(
       'always',
-      elementPath,
+      elementToReparent.newPath,
       PP.create('style', 'top'),
       { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.y, null) },
       null,
     ),
     setCssLengthProperty(
       'always',
-      elementPath,
+      elementToReparent.newPath,
       PP.create('style', 'left'),
       { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(desiredTopLeft.x, null) },
       null,
     ),
-    setProperty('always', elementPath, PP.create('style', 'position'), 'absolute'),
+    setProperty('always', elementToReparent.newPath, PP.create('style', 'position'), 'absolute'),
   ]
+
+  const elementIsFragmentLike = treatElementAsFragmentLike(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    elementToReparent.oldPath,
+  )
+
+  if (!elementIsFragmentLike) {
+    return basicCommands
+  }
+
+  const children = replaceFragmentLikePathsWithTheirChildrenRecursive(
+    metadata.originalTargetMetadata,
+    oldAllElementProps,
+    metadata.originalPathTrees,
+    [elementToReparent.oldPath],
+  )
+
+  const containerBounds = MetadataUtils.getFrameInCanvasCoords(
+    elementToReparent.oldPath,
+    metadata.originalTargetMetadata,
+  )
+
+  if (containerBounds == null || isInfinityRectangle(containerBounds)) {
+    return basicCommands
+  }
+
+  const childrenPositioningCommands = children.flatMap((child) => {
+    const childBounds = MetadataUtils.getFrameInCanvasCoords(child, metadata.originalTargetMetadata)
+    if (childBounds == null || isInfinityRectangle(childBounds)) {
+      return []
+    }
+    const adjustedTop = desiredTopLeft.y + childBounds.y - containerBounds.y
+    const adjustedLeft = desiredTopLeft.x + childBounds.x - containerBounds.x
+
+    const targetPath = pathLookup[EP.toString(child)]
+    if (targetPath == null) {
+      return basicCommands
+    }
+
+    return [
+      ...pruneFlexPropsCommands(flexChildProps, targetPath),
+      setProperty('always', targetPath, PP.create('style', 'position'), 'absolute'),
+      setCssLengthProperty(
+        'always',
+        targetPath,
+        PP.create('style', 'top'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedTop, null) },
+        null,
+      ),
+      setCssLengthProperty(
+        'always',
+        targetPath,
+        PP.create('style', 'left'),
+        { type: 'EXPLICIT_CSS_NUMBER', value: cssNumber(adjustedLeft, null) },
+        null,
+      ),
+    ]
+  })
+
+  return [...basicCommands, ...childrenPositioningCommands]
 }
 
 export function getReparentPropertyChanges(
@@ -251,8 +322,19 @@ export function getReparentPropertyChanges(
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
+  oldAllElementProps: AllElementProps,
+  childPathLookup: OldPathToNewPathMapping,
 ): Array<CanvasCommand> {
   const newPath = EP.appendToPath(newParent, EP.toUid(target))
+
+  const elementPathSnapshot = { oldPath: originalElementPath, newPath: newPath }
+  const metadataSnapshot = {
+    originalTargetMetadata: originalContextMetadata,
+    currentMetadata: currentMetadata,
+    originalPathTrees: originalPathTrees,
+    currentPathTrees: currentPathTrees,
+  }
+
   switch (reparentStrategy) {
     case 'REPARENT_AS_ABSOLUTE': {
       const basicCommads = getAbsoluteReparentPropertyChanges(
@@ -265,30 +347,20 @@ export function getReparentPropertyChanges(
       )
 
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
+        stripPinsConvertToVisualSize(elementPathSnapshot, metadataSnapshot),
+        convertRelativeSizingToVisualSize(elementPathSnapshot, metadataSnapshot),
+        setZIndexOnPastedElement(elementPathSnapshot, newParent, metadataSnapshot),
+        convertFragmentLikeChildrenToVisualSize(
+          elementPathSnapshot,
+          metadataSnapshot,
+          oldAllElementProps,
+          childPathLookup,
+          newParent,
+          reparentStrategy,
+          projectContents,
+          openFile,
+          [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
         ),
-        convertRelativeSizingToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
-        setZIndexOnPastedElement({ oldPath: originalElementPath, newPath: newPath }, newParent, {
-          originalTargetMetadata: originalContextMetadata,
-          currentMetadata: currentMetadata,
-          originalPathTrees: originalPathTrees,
-          currentPathTrees: currentPathTrees,
-        }),
       ])
 
       return [...basicCommads, ...strategyCommands]
@@ -311,34 +383,29 @@ export function getReparentPropertyChanges(
         targetOriginalDisplayProp,
         convertDisplayInline,
       )
+
       const strategyCommands = runReparentPropertyStrategies([
-        stripPinsConvertToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
-        convertRelativeSizingToVisualSize(
-          { oldPath: originalElementPath, newPath: newPath },
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
-        ),
+        stripPinsConvertToVisualSize(elementPathSnapshot, metadataSnapshot),
+        convertRelativeSizingToVisualSize(elementPathSnapshot, metadataSnapshot),
         convertSizingToVisualSizeWhenPastingFromFlexToFlex(
-          { oldPath: originalElementPath, newPath: newPath },
+          elementPathSnapshot,
+          metadataSnapshot,
           newParent,
-          {
-            originalTargetMetadata: originalContextMetadata,
-            currentMetadata: currentMetadata,
-            originalPathTrees: originalPathTrees,
-            currentPathTrees: currentPathTrees,
-          },
+        ),
+        convertFragmentLikeChildrenToVisualSize(
+          elementPathSnapshot,
+          metadataSnapshot,
+          oldAllElementProps,
+          childPathLookup,
+          newParent,
+          reparentStrategy,
+          projectContents,
+          openFile,
+          [
+            stripPinsConvertToVisualSize,
+            convertRelativeSizingToVisualSize,
+            convertSizingToVisualSizeWhenPastingFromFlexToFlex,
+          ],
         ),
       ])
 

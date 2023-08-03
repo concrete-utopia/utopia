@@ -21,7 +21,40 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
-export type ConditionalClauseInsertBehavior = 'replace' | 'wrap-with-fragment'
+interface ReplaceWithSingleElementBehaviour {
+  type: 'replace-with-single-element'
+}
+
+interface WrapInFragmentAndAppendElements {
+  type: 'wrap-in-fragment-and-append-elements'
+  fragmentUID: string
+}
+
+interface ReplaceWithElementsWrappedInFragmentBehaviour {
+  type: 'replace-with-elements-wrapped-in-fragment'
+  fragmentUID: string
+}
+
+export type ConditionalClauseInsertBehavior =
+  | ReplaceWithSingleElementBehaviour
+  | ReplaceWithElementsWrappedInFragmentBehaviour
+  | WrapInFragmentAndAppendElements
+
+export const replaceWithSingleElement = (): ReplaceWithSingleElementBehaviour => ({
+  type: 'replace-with-single-element',
+})
+
+export const wrapInFragmentAndAppendElements = (uid: string): WrapInFragmentAndAppendElements => ({
+  type: 'wrap-in-fragment-and-append-elements',
+  fragmentUID: uid,
+})
+
+export const replaceWithElementsWrappedInFragmentBehaviour = (
+  uid: string,
+): ReplaceWithElementsWrappedInFragmentBehaviour => ({
+  type: 'replace-with-elements-wrapped-in-fragment',
+  fragmentUID: uid,
+})
 
 export interface ChildInsertionPath {
   type: 'CHILD_INSERTION'
@@ -151,17 +184,17 @@ export function commonInsertionPathFromArray(
   }, workingArray[0])
 }
 
-export function getInsertionPathWithSlotBehavior(
+export function getInsertionPath(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  fragmentWrapperUID: string,
+  numberOfElementsToInsert: number,
 ): InsertionPath | null {
-  const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
-
-  return MetadataUtils.targetSupportsChildren(
+  const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     projectContents,
     metadata,
     nodeModules,
@@ -169,32 +202,28 @@ export function getInsertionPathWithSlotBehavior(
     target,
     elementPathTree,
   )
-    ? childInsertionPath(target)
-    : conditionalClause != null && isEmptyConditionalBranch(target, metadata)
-    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'replace')
-    : null
-}
 
-export function getInsertionPathWithWrapWithFragmentBehavior(
-  target: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
-  metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
-): InsertionPath | null {
+  if (targetSupportsChildren) {
+    return childInsertionPath(target)
+  }
+
   const conditionalClause = getConditionalCaseCorrespondingToBranchPath(target, metadata)
+  if (conditionalClause == null) {
+    return null
+  }
 
-  return MetadataUtils.targetSupportsChildren(
-    projectContents,
-    metadata,
-    nodeModules,
-    openFile,
-    target,
-    elementPathTree,
-  )
-    ? childInsertionPath(target)
-    : conditionalClause != null
-    ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, 'wrap-with-fragment')
-    : null
+  if (isEmptyConditionalBranch(target, metadata)) {
+    return numberOfElementsToInsert > 1
+      ? conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
+          type: 'replace-with-elements-wrapped-in-fragment',
+          fragmentUID: fragmentWrapperUID,
+        })
+      : conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
+          type: 'replace-with-single-element',
+        })
+  }
+  return conditionalClauseInsertionPath(EP.parentPath(target), conditionalClause, {
+    type: 'wrap-in-fragment-and-append-elements',
+    fragmentUID: fragmentWrapperUID,
+  })
 }

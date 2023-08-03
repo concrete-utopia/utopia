@@ -140,7 +140,7 @@ import type {
   TransientActions,
   Undo,
   UnsetProperty,
-  UnwrapElement,
+  UnwrapElements,
   UpdateText,
   UpdateCodeResultCache,
   UpdateDuplicationState,
@@ -717,10 +717,10 @@ export function resetPins(target: ElementPath): ResetPins {
   }
 }
 
-export function unwrapElement(target: ElementPath): UnwrapElement {
+export function unwrapElements(targets: ElementPath[]): UnwrapElements {
   return {
-    action: 'UNWRAP_ELEMENT',
-    target: target,
+    action: 'UNWRAP_ELEMENTS',
+    targets: targets,
   }
 }
 

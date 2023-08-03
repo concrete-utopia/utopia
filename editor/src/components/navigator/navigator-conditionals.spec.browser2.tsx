@@ -50,7 +50,10 @@ import {
   varSafeNavigatorEntryToKey,
 } from '../editor/store/editor-state'
 import type { InsertionPath } from '../editor/store/insertion-path'
-import { conditionalClauseInsertionPath } from '../editor/store/insertion-path'
+import {
+  conditionalClauseInsertionPath,
+  replaceWithSingleElement,
+} from '../editor/store/insertion-path'
 import { NavigatorItemTestId } from './navigator-item/navigator-item'
 import {
   DragItemTestId,
@@ -1491,7 +1494,7 @@ describe('conditionals in the navigator', () => {
           `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/conditional2`,
         ),
         'false-case',
-        'replace',
+        replaceWithSingleElement(),
       ),
       expectedToasts: [],
       expectedNavigatorStructure: `  regular-utopia-storyboard-uid/scene-aaa
@@ -1665,7 +1668,7 @@ describe('conditionals in the navigator', () => {
         `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/ba9-label`,
       )
 
-      expect(exprLabel.innerText).toEqual('(() => <div>HELLO!</div>)()')
+      expect(exprLabel.innerText).toEqual('CODE')
 
       const generatedElementLabel = await screen.findByTestId(
         `NavigatorItemTestId-regular_utopia_storyboard_uid/scene_aaa/app_entity:aaa/conditional/ba9/33d~~~1-label`,

@@ -1308,7 +1308,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         const canvasViewportCenter = canvasPoint({
           x:
             -editor.canvas.roundedCanvasOffset.x +
-            (canvasWrapperRect.width + this.props.navigatorWidth) / editor.canvas.scale / 2,
+            canvasWrapperRect.width / editor.canvas.scale / 2,
           y:
             -editor.canvas.roundedCanvasOffset.y +
             canvasWrapperRect.height / editor.canvas.scale / 2,
@@ -1316,7 +1316,6 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor,
-            this.props.builtinDependencies,
             canvasViewportCenter,
             result.utopiaData,
             result.files,

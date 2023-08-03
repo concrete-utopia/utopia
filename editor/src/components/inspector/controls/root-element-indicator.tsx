@@ -1,17 +1,16 @@
 import React from 'react'
-import { Substores, useEditorState } from '../../editor/store/store-hook'
-import * as EP from '../../../core/shared/element-path'
-import { UtopiaStyles } from '../../../uuiui'
+import { FlexRow, UtopiaStyles, colorTheme } from '../../../uuiui'
 
 export const RootElementIndicator = () => {
-  const rootElementIsSelected = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews.some(EP.isRootElementOfInstance),
-    'RootElementIndicator aRootElementIsSelected',
-  )
-
-  if (rootElementIsSelected) {
-    return (
+  return (
+    <FlexRow
+      style={{
+        justifyContent: 'center',
+        alignItems: 'center',
+        outline: `1px solid ${colorTheme.bg4.value}`,
+        background: colorTheme.inspectorBackground.value,
+      }}
+    >
       <div
         key={'root-element-indicator'}
         style={{
@@ -19,12 +18,11 @@ export const RootElementIndicator = () => {
           borderRadius: 6,
           padding: 5,
           margin: 7,
+          flex: 1,
         }}
       >
         <span>A Root Element Is Selected!</span>
       </div>
-    )
-  } else {
-    return null
-  }
+    </FlexRow>
+  )
 }

@@ -12,7 +12,6 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
-  insertElementAtPath,
   removeElementAtPath,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -25,8 +24,12 @@ import { assertNever } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { getIndexInParent } from '../../../core/model/element-template-utils'
-import { getInsertionPathWithSlotBehavior } from '../../editor/store/insertion-path'
+import {
+  generateUidWithExistingComponents,
+  getIndexInParent,
+  insertJSXElementChildren,
+} from '../../../core/model/element-template-utils'
+import { getInsertionPath } from '../../editor/store/insertion-path'
 import { jsxTextBlock } from '../../../core/shared/element-template'
 import type { CSSProperties } from 'react'
 import type { Property } from 'csstype'
@@ -88,22 +91,24 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       // Insert the wrapper at the initial index
       const targetParent = EP.parentPath(command.target)
 
-      const insertionPath = getInsertionPathWithSlotBehavior(
+      const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
+      const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,
         editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,
+        wrapperUID,
+        1,
       )
       if (insertionPath == null) {
         return // maybe this should throw instead?
       }
 
-      const insertionResult = insertElementAtPath(
-        editor.projectContents,
+      const insertionResult = insertJSXElementChildren(
         insertionPath,
-        wrapper,
+        [wrapper],
         withElementRemoved,
         index,
       )

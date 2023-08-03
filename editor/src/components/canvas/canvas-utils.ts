@@ -46,7 +46,8 @@ import {
   guaranteeUniqueUids,
   isSceneElement,
   getIndexInParent,
-  insertJSXElementChild,
+  generateUidWithExistingComponents,
+  insertJSXElementChildren,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -121,7 +122,6 @@ import {
   TransientFileState,
   ResizeOptions,
   isSyntheticNavigatorEntry,
-  insertElementAtPath,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -172,7 +172,8 @@ import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getInsertionPathWithSlotBehavior,
+  getInsertionPath,
+  wrapInFragmentAndAppendElements,
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
@@ -1423,23 +1424,27 @@ export function moveTemplate(
                     updatedUtopiaComponents,
                   )
 
-                  const insertionPath = getInsertionPathWithSlotBehavior(
+                  const wrapperUID = generateUidWithExistingComponents(
+                    workingEditorState.projectContents,
+                  )
+                  const insertionPath = getInsertionPath(
                     newParentPath,
                     workingEditorState.projectContents,
                     workingEditorState.nodeModules.files,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
+                    wrapperUID,
+                    1,
                   )
 
                   if (insertionPath == null) {
                     return workingSuccess
                   }
 
-                  const insertResult = insertJSXElementChild(
-                    workingEditorState.projectContents,
+                  const insertResult = insertJSXElementChildren(
                     insertionPath,
-                    updatedUnderlyingElement,
+                    [updatedUnderlyingElement],
                     updatedUtopiaComponents,
                     indexPosition,
                   )
@@ -1788,19 +1793,20 @@ export function duplicate(
               return success
             }
 
+            const wrapperUID = generateUidWithExistingComponents(workingEditorState.projectContents)
+
             const insertionPath =
               conditionalCase != null
                 ? conditionalClauseInsertionPath(
                     EP.parentPath(path),
                     conditionalCase,
-                    'wrap-with-fragment',
+                    wrapInFragmentAndAppendElements(wrapperUID),
                   )
                 : childInsertionPath(EP.parentPath(newPath))
 
-            const insertResult = insertElementAtPath(
-              editor.projectContents,
+            const insertResult = insertJSXElementChildren(
               insertionPath,
-              newElement,
+              [newElement],
               utopiaComponents,
               position(),
             )
@@ -1871,10 +1877,9 @@ export function reorderComponent(
       indexOfRemovedElement,
     )
 
-    workingComponents = insertElementAtPath(
-      projectContents,
+    workingComponents = insertJSXElementChildren(
       childInsertionPath(parentPath),
-      jsxElement,
+      [jsxElement],
       workingComponents,
       adjustedIndexPosition,
     ).components
