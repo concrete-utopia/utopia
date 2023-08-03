@@ -381,6 +381,7 @@ import type {
   NavigatorEntry,
   TrueUpTarget,
 } from '../store/editor-state'
+import { trueUpChildrenOfElementChanged } from '../store/editor-state'
 import { AllElementProps, trueUpElementChanged } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -598,6 +599,7 @@ import {
 import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
+import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4965,8 +4967,11 @@ export const UPDATE_FNS = {
                 action.toInsert.element.whenTrue != null ||
                 action.toInsert.element.whenFalse != null
               ) {
-                // this needs updating when we support inserting conditionals with non-empty clause
-                throw new Error('unhandled conditional insert into group')
+                groupCommands.push(
+                  queueGroupTrueUp(
+                    trueUpChildrenOfElementChanged(action.insertionPath.intendedParentPath),
+                  ),
+                )
               }
               break
             case 'JSX_FRAGMENT':
