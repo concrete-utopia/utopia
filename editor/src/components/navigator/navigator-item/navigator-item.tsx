@@ -537,7 +537,7 @@ export const NavigatorItem: React.FunctionComponent<
       }
       return 'none'
     },
-    'NavigatorRowLabel codeItemType',
+    'NavigatorItem codeItemType',
   )
 
   const isConditional = codeItemType === 'conditional'
