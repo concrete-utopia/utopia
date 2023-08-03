@@ -871,7 +871,7 @@ export function transformConstrainedLocalFullFrameUsingBoundingBox(
 
   const updatedFrame: FullFrame = AllFramePoints.reduce(
     (newFullFrame: Partial<FullFrame>, framePoint) => {
-      if (constrainedPoints.includes(framePoint)) {
+      if (constrainedPoints.includes(framePoint) || currentFrame[framePoint] === 0) {
         // for Constrained Frame Points, we simply return the current value
         newFullFrame[framePoint] = currentFrame[framePoint]
         return newFullFrame
