@@ -1327,6 +1327,34 @@ export interface PostActionMenuSession {
   postActionMenuData: PostActionMenuData
 }
 
+export interface TrueUpElementChanged {
+  type: 'TRUE_UP_ELEMENT_CHANGED'
+  target: ElementPath
+}
+
+export function trueUpElementChanged(target: ElementPath): TrueUpElementChanged {
+  return {
+    type: 'TRUE_UP_ELEMENT_CHANGED',
+    target: target,
+  }
+}
+
+export interface TrueUpChildrenOfElementChanged {
+  type: 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED'
+  targetParent: ElementPath
+}
+
+export function trueUpChildrenOfElementChanged(
+  targetParent: ElementPath,
+): TrueUpChildrenOfElementChanged {
+  return {
+    type: 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED',
+    targetParent: targetParent,
+  }
+}
+
+export type TrueUpTarget = TrueUpElementChanged | TrueUpChildrenOfElementChanged
+
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1337,7 +1365,7 @@ export interface EditorState {
   projectDescription: string
   projectVersion: number
   isLoaded: boolean
-  trueUpGroupsForElementAfterDomWalkerRuns: Array<ElementPath>
+  trueUpGroupsForElementAfterDomWalkerRuns: Array<TrueUpTarget>
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
@@ -1415,7 +1443,7 @@ export function editorState(
   projectDescription: string,
   projectVersion: number,
   isLoaded: boolean,
-  trueUpGroupsForElementAfterDomWalkerRuns: Array<ElementPath>,
+  trueUpGroupsForElementAfterDomWalkerRuns: Array<TrueUpTarget>,
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
