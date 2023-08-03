@@ -2616,8 +2616,11 @@ export function parseOutJSXElements(
       : expression.whenFalse
     const whenFalseBlock = parseClause(innerWhenFalse)
 
-    // We need to create the UID here before parsing expression.condition, because we
-    // might be stealing one specified in the comment attached to the expression.condition
+    // We use the leadingComments of expression.condition to provide overrides for the conditional
+    // as a whole, meaning that we can't therefore provide overrides specifically for only the
+    // expression.condition part in the same way as we do with other JS Expressions. Because of this,
+    // we need to create the UID here before parsing expression.condition, incase we are stealing
+    // an overridden one specified in the comment attached to the expression.condition
     const originalConditionString = expression.condition.getText(sourceFile).trim() // getText does not include comments
     const { uid: conditionalUID } = makeNewUIDFromOriginatingElement(
       sourceFile,
