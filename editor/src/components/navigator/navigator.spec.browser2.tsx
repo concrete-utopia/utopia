@@ -725,6 +725,13 @@ export var storyboard = (
           <div />
         )
       }</div>
+
+      <div data-uid='zero-length-map-wrapper'>
+        {[].map(() => (
+          <div>will not render</div>
+        ))}
+      </div>
+
     </div>
   </Storyboard>
 )
@@ -5190,6 +5197,8 @@ describe('Navigator row order', () => {
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
+        'regular-sb/group/zero-length-map-wrapper',
+        'regular-sb/group/zero-length-map-wrapper/f28',
       ],
     )
     expect(
@@ -5227,6 +5236,8 @@ describe('Navigator row order', () => {
       'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
+      'regular-sb/group/zero-length-map-wrapper',
+      'regular-sb/group/zero-length-map-wrapper/f28',
     ])
   })
 
