@@ -85,7 +85,7 @@ export function createLookupRender(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
-  renderLimit?: number,
+  renderLimit: number | null,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
@@ -210,6 +210,7 @@ export function renderCoreElement(
             code,
             highlightBounds,
             editedText,
+            null,
           )
         : NoOpLookupRender
 
@@ -327,7 +328,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
-        mapCountOverride ?? undefined,
+        mapCountOverride,
       )
 
       const blockScope = {
