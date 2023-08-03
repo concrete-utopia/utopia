@@ -143,7 +143,12 @@ describe('Text edit mode', () => {
       const editor = await renderTestEditorWithCode(
         project(`{
           // @utopia/uid=cond
-          true ? (() => <div>hello</div>)() : <div />
+          true ? (
+            // @utopia/uid=expr
+            (() => <div>hello</div>)()
+          ) : (
+            <div />
+          )
         }`),
         'await-first-dom-report',
       )
@@ -155,7 +160,7 @@ describe('Text edit mode', () => {
       expect(editor.getEditorState().editor.mode.type).toEqual('select')
       expect(editor.getEditorState().editor.selectedViews).toHaveLength(1)
       expect(EP.toString(editor.getEditorState().editor.selectedViews[0])).toEqual(
-        'sb/39e/cond/ff4',
+        'sb/39e/cond/expr',
       )
     })
     it('Entering text edit mode with double click on selected multiline text editable element', async () => {

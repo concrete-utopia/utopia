@@ -371,9 +371,9 @@ describe('Select Mode Clicking', () => {
     '/scene-CardList' +    // Skipped because we skip over Scenes
     '/CardList-instance' + // Skipped because we skip component children of Scenes
     ':CardList-Root' +     // Skipped because we skip over root elements
-    '/CardList-Col',      // <- Single click
-    '/8dc',               // <- First double click selects the expression item
-    '/CardList-Card~~~1', // <- Second *and* third double click, as the third is required to focus it
+    '/CardList-Col',       // <- Single click
+    '/cardlist-expr',      // <- First double click selects the expression item
+    '/CardList-Card~~~1',  // <- Second *and* third double click, as the third is required to focus it
   )
 
     const renderResult = await renderTestEditorWithCode(
@@ -421,7 +421,7 @@ describe('Select Mode Clicking', () => {
       '/CardList-instance' + // Skipped because we skip component children of Scenes
       ':CardList-Root' +     // Skipped because we skip over root elements
       '/CardList-Col',       // <- Single click
-      '/8dc',               // <- First double click selects the expression item
+      '/cardlist-expr',      // <- First double click selects the expression item
       '/CardList-Card~~~1',  // <- Second *and* third double click, as the third is required to focus it
       ':Card-Root' +         // Skipped because we skip over root elements
       '/Card-Row-Buttons',   // <- Fourth double click
@@ -687,7 +687,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
       ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
-      '/cb3',                 // <- First double click selects the expression item
+      '/cardlist-expr',       // <- First double click selects the expression item
       '/CardList-Card~~~1',   // <- Second *and* Third double click, as the Third is required to focus it
     )
 
@@ -736,7 +736,7 @@ describe('Select Mode Double Clicking With Fragments', () => {
       '/CardList-instance' +  // Skipped because we skip component children of Scenes
       ':dbc' +                // Skipped because we skip over root elements
       '/CardList-Col',        // <- Single click
-      '/cb3',                 // <- First double click selects the expression item
+      '/cardlist-expr',       // <- First double click selects the expression item
       '/CardList-Card~~~1',   // <- Second *and* Third double click, as the Third is required to focus it
       ':Card-Root' +          // Skipped because we skip over root elements
       '/Card-Row-Buttons',    // <- Fourth double click
@@ -1755,9 +1755,12 @@ export const CardList = (props) => {
     <div data-uid="CardList-Root">
       <h2 data-uid="CardList-h2">List of available street art</h2>
       <Col data-uid="CardList-Col">
-        {cards.map((card) => (
-          <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
-        ))}
+        {
+          // @utopia/uid=cardlist-expr
+          cards.map((card) => (
+            <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
+          ))
+        }
       </Col>
     </div>
   );
@@ -2157,9 +2160,12 @@ export const CardList = (props) => {
     <>
       <h2 data-uid="CardList-h2">List of available street art</h2>
       <Col data-uid="CardList-Col">
-        {cards.map((card) => (
-          <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
-        ))}
+        {
+          // @utopia/uid=cardlist-expr
+          cards.map((card) => (
+            <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
+          ))
+        }
       </Col>
     </>
   );
@@ -2546,9 +2552,12 @@ export const CardList = (props) => {
     <>
       <h2 data-uid="CardList-h2">List of available street art</h2>
       <Col data-uid="CardList-Col">
-        {cards.map((card) => (
-          <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
-        ))}
+        {
+          // @utopia/uid=cardlist-expr
+          cards.map((card) => (
+            <Card data-uid="CardList-Card" testid={'generated-card-'+ card} />
+          ))
+        }
       </Col>
     </>
   );
@@ -3072,20 +3081,23 @@ export var storyboard = (
       }}
       data-uid='sc-generated'
     >
-      {[1, 2, 3].map((i) => (
-        <GeneratedComponent
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 10 + (i - 1) * 85,
-            top: 10 + (i - 1) * 85,
-            width: 80,
-            height: 80,
-          }}
-          data-uid='generated'
-          testid={'generated-span-' + i}
-        />
-      ))}
+      {
+        // @utopia/uid=5f0
+        [1, 2, 3].map((i) => (
+          <GeneratedComponent
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 10 + (i - 1) * 85,
+              top: 10 + (i - 1) * 85,
+              width: 80,
+              height: 80,
+            }}
+            data-uid='generated'
+            testid={'generated-span-' + i}
+          />
+        ))
+      }
     </Scene>
     <SBChild
       style={{

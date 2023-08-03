@@ -4,20 +4,22 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { AllElementProps, EditorState } from '../../editor/store/editor-state'
+import type { AllElementProps, EditorState, TrueUpTarget } from '../../editor/store/editor-state'
+import { trueUpElementChanged } from '../../editor/store/editor-state'
 import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { BaseCommand, CommandFunction } from './commands'
+import { trueUpTargetToDescription } from '../../../core/model/groups'
 
 export interface QueueGroupTrueUp extends BaseCommand {
   type: 'QUEUE_GROUP_TRUE_UP'
-  element: ElementPath
+  target: TrueUpTarget
 }
 
-export function queueGroupTrueUp(element: ElementPath): QueueGroupTrueUp {
+export function queueGroupTrueUp(target: TrueUpTarget): QueueGroupTrueUp {
   return {
     type: 'QUEUE_GROUP_TRUE_UP',
     whenToRun: 'on-complete',
-    element: element,
+    target: target,
   }
 }
 
@@ -26,12 +28,10 @@ export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
   command: QueueGroupTrueUp,
 ) => {
   return {
-    commandDescription: `Queue element for group true-up once the interaction has finished: ${EP.toString(
-      command.element,
+    commandDescription: `Once the interaction has finished: ${trueUpTargetToDescription(
+      command.target,
     )}`,
-    editorStatePatches: [
-      { trueUpGroupsForElementAfterDomWalkerRuns: { $push: [command.element] } },
-    ],
+    editorStatePatches: [{ trueUpGroupsForElementAfterDomWalkerRuns: { $push: [command.target] } }],
   }
 }
 
@@ -46,7 +46,7 @@ export function getRequiredGroupTrueUps(
   const parentPath = EP.parentPath(target)
   if (allowGroupTrueUp(projectContents, metadata, pathTrees, allElementProps, parentPath)) {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTrees, target)
-    return siblings.map((sibling) => queueGroupTrueUp(sibling.elementPath))
+    return siblings.map((sibling) => queueGroupTrueUp(trueUpElementChanged(sibling.elementPath)))
   } else {
     return []
   }

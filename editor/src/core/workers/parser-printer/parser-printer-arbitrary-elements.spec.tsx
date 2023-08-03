@@ -6,7 +6,6 @@ import {
   isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsExpression,
   jsExpressionOtherJavaScript,
   jsExpressionValue,
   jsxElement,
@@ -226,7 +225,7 @@ export var whatever = props => (
       emptyComments,
     )
 
-    const codeBlock = jsExpression(
+    const codeBlock = jsExpressionOtherJavaScript(
       `<MyComp data-uid='aab'/>`,
       `<MyComp data-uid='aab' />;`,
       `return utopiaCanvasJSXLookup("aab", {
@@ -246,6 +245,7 @@ export var whatever = props => (
           [],
         ),
       },
+      emptyComments,
     )
     const view = jsxElement(
       'View',
@@ -322,6 +322,7 @@ export var whatever = (props) => {
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
                   'n',
+                  'n',
                   'return n;',
                   ['n'],
                   expect.objectContaining({
@@ -330,11 +331,13 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                   {},
+                  emptyComments,
                 ),
               }),
               [],
             ),
           },
+          emptyComments,
         ),
       ],
     )
@@ -424,6 +427,7 @@ export var whatever = (props) => {
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
                   'n',
+                  'n',
                   'return n;',
                   ['n'],
                   expect.objectContaining({
@@ -432,11 +436,13 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                   {},
+                  emptyComments,
                 ),
               }),
               [],
             ),
           },
+          emptyComments,
         ),
       ],
     )
@@ -533,6 +539,7 @@ export var whatever = (props) => {
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
                   'n',
+                  'n',
                   'return n;',
                   ['n'],
                   expect.objectContaining({
@@ -541,11 +548,13 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                   {},
+                  emptyComments,
                 ),
               }),
               [],
             ),
           },
+          emptyComments,
         ),
       ],
     )
@@ -637,7 +646,7 @@ export var whatever = (props) => {
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
-                    jsExpression(
+                    jsExpressionOtherJavaScript(
                       `n`,
                       `n;`,
                       `return n;`,
@@ -648,12 +657,14 @@ export var whatever = (props) => {
                         file: 'code.tsx',
                       }),
                       {},
+                      emptyComments,
                     ),
                   ],
                 ),
               ],
             ),
           },
+          emptyComments,
         ),
       ],
     )
@@ -713,7 +724,7 @@ export var whatever = (props) => {
         'data-uid': jsExpressionValue('aaa', emptyComments),
       }),
       [
-        jsExpression(
+        jsExpressionOtherJavaScript(
           mapJsCode,
           mapJsCode,
           transpiledMapJsCode,
@@ -731,6 +742,7 @@ export var whatever = (props) => {
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
                   'n',
+                  'n',
                   'return n;',
                   ['n'],
                   expect.objectContaining({
@@ -739,11 +751,13 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                   {},
+                  emptyComments,
                 ),
               }),
               [],
             ),
           },
+          emptyComments,
         ),
       ],
     )
@@ -835,7 +849,7 @@ export var whatever = (props) => {
                     'data-uid': jsExpressionValue('aac', emptyComments),
                   }),
                   [
-                    jsExpression(
+                    jsExpressionOtherJavaScript(
                       `n`,
                       `n;`,
                       `return n;`,
@@ -846,12 +860,14 @@ export var whatever = (props) => {
                         file: 'code.tsx',
                       }),
                       {},
+                      emptyComments,
                     ),
                   ],
                 ),
               ],
             ),
           },
+          emptyComments,
         ),
       ],
     )
@@ -929,6 +945,7 @@ export var whatever = (props) => {
                 'data-uid': jsExpressionValue('aab', emptyComments),
                 thing: jsExpressionOtherJavaScript(
                   'n',
+                  'n',
                   'return n;',
                   ['n'],
                   expect.objectContaining({
@@ -937,11 +954,13 @@ export var whatever = (props) => {
                     file: 'code.tsx',
                   }),
                   {},
+                  emptyComments,
                 ),
               }),
               [],
             ),
           },
+          emptyComments,
         ),
       ],
     )

@@ -349,12 +349,13 @@ describe('Floating insert menu', () => {
       )
     })
 
-    it('add element to element in conditional slot - does supports children', async () => {
+    it('add element to element in conditional slot - supports children', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
-        {true ? /* @utopia/uid=conditional */ (
-          <div
+        {
+          // @utopia/uid=ae8
+          true ? <div
             style={{
               backgroundColor: '#aaaaaa33',
               position: 'absolute',
@@ -364,8 +365,8 @@ describe('Floating insert menu', () => {
               height: 115,
             }}
             data-uid='52b'
-          />
-        ) : null}
+          /> : null
+        }
         </div>
         `),
         'await-first-dom-report',
@@ -383,29 +384,31 @@ describe('Floating insert menu', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
       <div data-uid='container'>
-      {true ? (
-        <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 77,
-            top: 235,
-            width: 96,
-            height: 115,
-          }}
-          data-uid='52b'
-        >
-          <img
+      {
+        // @utopia/uid=ae8
+        true ? (
+          <div
             style={{
-              width: '64px',
-              height: '64px',
+              backgroundColor: '#aaaaaa33',
               position: 'absolute',
+              left: 77,
+              top: 235,
+              width: 96,
+              height: 115,
             }}
-            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
-            data-uid='newly-added-img'
-          />
-        </div>
-      ) : null}
+            data-uid='52b'
+          >
+            <img
+              style={{
+                width: '64px',
+                height: '64px',
+                position: 'absolute',
+              }}
+              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+              data-uid='newly-added-img'
+            />
+          </div>
+        ) : null}
       </div>
       `),
       )

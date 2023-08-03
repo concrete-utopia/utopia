@@ -319,7 +319,11 @@ import type {
   PasteHerePostActionMenuData,
   PasteToReplacePostActionMenuData,
   NavigatorReparentPostActionMenuData,
+  TrueUpElementChanged,
+  TrueUpChildrenOfElementChanged,
+  TrueUpTarget,
 } from './editor-state'
+import { trueUpElementChanged, trueUpChildrenOfElementChanged } from './editor-state'
 import {
   TransientCanvasState,
   transientCanvasState,
@@ -785,7 +789,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
   )
 
 export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionMapOrOtherJavascript> {
-  return combine8EqualityCalls(
+  return combine9EqualityCalls(
     (attribute) => attribute.type,
     createCallWithTripleEquals(),
     (attribute) => attribute.javascript,
@@ -802,6 +806,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (block) => block.comments,
+    ParsedCommentsKeepDeepEqualityCall,
     (
       type,
       javascript,
@@ -811,6 +817,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
       sourceMap,
       uniqueID,
       elementsWithin,
+      comments,
     ) => {
       return {
         type: type,
@@ -821,13 +828,14 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
         sourceMap: sourceMap,
         uid: uniqueID,
         elementsWithin: elementsWithin,
+        comments: comments,
       }
     },
   )
 }
 
 export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
-  return combine7EqualityCalls(
+  return combine8EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals<string>(),
     (attribute) => attribute.originalJavascript,
@@ -842,6 +850,8 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (block) => block.comments,
+    ParsedCommentsKeepDeepEqualityCall,
     (
       javascript,
       originalJavascript,
@@ -850,6 +860,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
       sourceMap,
       uniqueID,
       elementsWithin,
+      comments,
     ) => {
       return {
         type: 'JSX_MAP_EXPRESSION',
@@ -860,6 +871,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
         sourceMap: sourceMap,
         uid: uniqueID,
         elementsWithin: elementsWithin,
+        comments: comments,
       }
     },
   )
@@ -4004,6 +4016,37 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const TrueUpElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpElementChanged> =
+  combine1EqualityCall((value) => value.target, ElementPathKeepDeepEquality, trueUpElementChanged)
+
+export const TrueUpChildrenOfElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpChildrenOfElementChanged> =
+  combine1EqualityCall(
+    (value) => value.targetParent,
+    ElementPathKeepDeepEquality,
+    trueUpChildrenOfElementChanged,
+  )
+
+export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = (
+  oldValue,
+  newValue,
+) => {
+  switch (oldValue.type) {
+    case 'TRUE_UP_ELEMENT_CHANGED':
+      if (oldValue.type === newValue.type) {
+        return TrueUpElementChangedKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED':
+      if (oldValue.type === newValue.type) {
+        return TrueUpChildrenOfElementChangedKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    default:
+      assertNever(oldValue)
+  }
+  return keepDeepEqualityResult(newValue, false)
+}
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4033,7 +4076,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
   const isLoadedResult = BooleanKeepDeepEquality(oldValue.isLoaded, newValue.isLoaded)
 
-  const trueUpGroupsForElementAfterDomWalkerRunsResult = ElementPathArrayKeepDeepEquality(
+  const trueUpGroupsForElementAfterDomWalkerRunsResult = arrayDeepEquality(
+    TrueUpTargetKeepDeepEquality,
+  )(
     oldValue.trueUpGroupsForElementAfterDomWalkerRuns,
     newValue.trueUpGroupsForElementAfterDomWalkerRuns,
   )

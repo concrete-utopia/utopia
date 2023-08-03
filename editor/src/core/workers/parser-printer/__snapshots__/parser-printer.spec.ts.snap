@@ -157,13 +157,6 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "startLine": 15,
       "uid": "067",
     },
-    "58a": Object {
-      "endCol": 38,
-      "endLine": 23,
-      "startCol": 14,
-      "startLine": 23,
-      "uid": "58a",
-    },
     "6e3": Object {
       "endCol": 24,
       "endLine": 20,
@@ -198,6 +191,13 @@ return { cakeFn: cakeFn, otherFn: otherFn };",
       "startCol": 0,
       "startLine": 12,
       "uid": "c5d",
+    },
+    "dda": Object {
+      "endCol": 38,
+      "endLine": 23,
+      "startCol": 14,
+      "startLine": 23,
+      "uid": "dda",
     },
     "feb": Object {
       "endCol": 22,
@@ -535,6 +535,10 @@ return { otherFn: otherFn };",
                 "key": "left",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "cakeFn",
                     "otherFn",
@@ -649,12 +653,12 @@ Object {
     },
   ],
   "fullHighlightBounds": Object {
-    "1ae": Object {
-      "endCol": 22,
+    "020": Object {
+      "endCol": 45,
       "endLine": 6,
-      "startCol": 17,
+      "startCol": 40,
       "startLine": 6,
-      "uid": "1ae",
+      "uid": "020",
     },
     "1e3": Object {
       "endCol": 37,
@@ -670,13 +674,6 @@ Object {
       "startLine": 6,
       "uid": "34a",
     },
-    "3c4": Object {
-      "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "3c4",
-    },
     "4cf": Object {
       "endCol": 37,
       "endLine": 4,
@@ -684,19 +681,33 @@ Object {
       "startLine": 4,
       "uid": "4cf",
     },
-    "5fd": Object {
+    "4f0": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "4f0",
+    },
+    "56f": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "56f",
+    },
+    "67f": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "67f",
+    },
+    "6c7": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "5fd",
-    },
-    "690": Object {
-      "endCol": 45,
-      "endLine": 6,
-      "startCol": 40,
-      "startLine": 6,
-      "uid": "690",
+      "uid": "6c7",
     },
     "6e3": Object {
       "endCol": 53,
@@ -704,6 +715,13 @@ Object {
       "startCol": 48,
       "startLine": 5,
       "uid": "6e3",
+    },
+    "74c": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 40,
+      "startLine": 4,
+      "uid": "74c",
     },
     "aaa": Object {
       "endCol": 56,
@@ -718,20 +736,6 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "b93",
-    },
-    "c15": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "c15",
-    },
-    "d03": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "d03",
     },
     "fa9": Object {
       "endCol": 37,
@@ -749,19 +753,12 @@ Object {
     },
   },
   "highlightBounds": Object {
-    "1ae": Object {
-      "endCol": 22,
+    "020": Object {
+      "endCol": 45,
       "endLine": 6,
-      "startCol": 17,
+      "startCol": 40,
       "startLine": 6,
-      "uid": "1ae",
-    },
-    "3c4": Object {
-      "endCol": 22,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "3c4",
+      "uid": "020",
     },
     "4cf": Object {
       "endCol": 37,
@@ -770,19 +767,40 @@ Object {
       "startLine": 4,
       "uid": "4cf",
     },
-    "5fd": Object {
+    "4f0": Object {
+      "endCol": 22,
+      "endLine": 6,
+      "startCol": 17,
+      "startLine": 6,
+      "uid": "4f0",
+    },
+    "56f": Object {
+      "endCol": 22,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "56f",
+    },
+    "67f": Object {
+      "endCol": 45,
+      "endLine": 4,
+      "startCol": 17,
+      "startLine": 4,
+      "uid": "67f",
+    },
+    "6c7": Object {
       "endCol": 45,
       "endLine": 6,
       "startCol": 17,
       "startLine": 6,
-      "uid": "5fd",
+      "uid": "6c7",
     },
-    "690": Object {
+    "74c": Object {
       "endCol": 45,
-      "endLine": 6,
+      "endLine": 4,
       "startCol": 40,
-      "startLine": 6,
-      "uid": "690",
+      "startLine": 4,
+      "uid": "74c",
     },
     "aaa": Object {
       "endCol": 56,
@@ -797,20 +815,6 @@ Object {
       "startCol": 25,
       "startLine": 6,
       "uid": "b93",
-    },
-    "c15": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 40,
-      "startLine": 4,
-      "uid": "c15",
-    },
-    "d03": Object {
-      "endCol": 45,
-      "endLine": 4,
-      "startCol": 17,
-      "startLine": 4,
-      "uid": "d03",
     },
   },
   "imports": Object {
@@ -892,6 +896,11 @@ Object {
           "trailingComments": Array [],
         },
         "condition": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "questionTokenComments": undefined,
+            "trailingComments": Array [],
+          },
           "definedElsewhere": Array [
             "n",
           ],
@@ -930,6 +939,10 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
         "type": "JSX_CONDITIONAL_EXPRESSION",
         "uid": "",
         "whenFalse": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "definedElsewhere": Array [
             "b",
           ],
@@ -1096,6 +1109,11 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
           "trailingComments": Array [],
         },
         "condition": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "questionTokenComments": undefined,
+            "trailingComments": Array [],
+          },
           "definedElsewhere": Array [
             "n",
           ],
@@ -1134,6 +1152,10 @@ const b = (n) => n > 0 ? <div>n</div> : a(10)
         "type": "JSX_CONDITIONAL_EXPRESSION",
         "uid": "",
         "whenFalse": Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "definedElsewhere": Array [
             "a",
           ],
@@ -1272,6 +1294,13 @@ return { a: a };",
     },
   ],
   "fullHighlightBounds": Object {
+    "29f": Object {
+      "endCol": 9,
+      "endLine": 13,
+      "startCol": 3,
+      "startLine": 13,
+      "uid": "29f",
+    },
     "854": Object {
       "endCol": 48,
       "endLine": 12,
@@ -1293,28 +1322,21 @@ return { a: a };",
       "startLine": 12,
       "uid": "bbb",
     },
-    "bcf": Object {
+  },
+  "highlightBounds": Object {
+    "29f": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "bcf",
+      "uid": "29f",
     },
-  },
-  "highlightBounds": Object {
     "bbb": Object {
       "endCol": 7,
       "endLine": 14,
       "startCol": 28,
       "startLine": 12,
       "uid": "bbb",
-    },
-    "bcf": Object {
-      "endCol": 9,
-      "endLine": 13,
-      "startCol": 3,
-      "startLine": 13,
-      "uid": "bcf",
     },
   },
   "imports": Object {
@@ -1482,6 +1504,10 @@ return { a: a };",
       "rootElement": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [],
             "elementsWithin": Object {},
             "javascript": "({ a: a });",

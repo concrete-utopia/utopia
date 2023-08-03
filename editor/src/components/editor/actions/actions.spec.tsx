@@ -22,7 +22,6 @@ import {
   ElementInstanceMetadata,
   jsxAttributesFromMap,
   emptyAttributeMetadata,
-  jsExpressionOtherJavaScript,
   JSXElementChild,
   partOfJsxAttributeValue,
   jsxElementWithoutUID,

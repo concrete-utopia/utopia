@@ -26,6 +26,7 @@ import {
 } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { trueUpElementChanged } from '../../../components/editor/store/editor-state'
 
 const CHILDREN_CONVERTED_TOAST_ID = 'CHILDREN_CONVERTED_TOAST_ID'
 
@@ -73,7 +74,11 @@ function hugContentsSingleElement(
     ]
   })
 
-  return [...basicCommands, ...transformChildrenToFixedCommands, queueGroupTrueUp(elementPath)]
+  return [
+    ...basicCommands,
+    ...transformChildrenToFixedCommands,
+    queueGroupTrueUp(trueUpElementChanged(elementPath)),
+  ]
 }
 
 export const hugContentsBasicStrategy = (axis: Axis): InspectorStrategy => ({

@@ -5,7 +5,7 @@ import {
   isJSExpressionMapOrOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsExpression,
+  jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxElement,
@@ -377,13 +377,14 @@ export var app = (props) => {
                     firstElementWithin.children,
                   ),
                 }
-                const updatedFirstChild = jsExpression(
+                const updatedFirstChild = jsExpressionOtherJavaScript(
                   firstChild.originalJavascript,
                   firstChild.javascript,
                   firstChild.transpiledJavascript,
                   firstChild.definedElsewhere,
                   firstChild.sourceMap,
                   updatedElementsWithin,
+                  firstChild.comments,
                 )
                 const updatedRootElement = jsxElement(
                   rootElement.name,

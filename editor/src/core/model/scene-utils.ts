@@ -67,10 +67,12 @@ export function mapScene(scene: SceneMetadata): JSXElement {
   const sceneProps = jsxAttributesFromMap({
     component: jsExpressionOtherJavaScript(
       scene.component ?? 'null',
+      scene.component ?? 'null',
       `return ${scene.component}`,
       [],
       null,
       {},
+      emptyComments,
     ),
     props: jsExpressionValue(scene.props, emptyComments),
     style: jsExpressionValue(scene.frame, emptyComments),

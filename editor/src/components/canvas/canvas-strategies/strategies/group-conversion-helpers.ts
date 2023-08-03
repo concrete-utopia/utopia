@@ -56,6 +56,7 @@ import { notice } from '../../../common/notice'
 import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types'
 import { applyCommandsAction, showToast } from '../../../editor/actions/action-creators'
 import type { AllElementProps, NavigatorEntry } from '../../../editor/store/editor-state'
+import { trueUpElementChanged } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
   commonInsertionPathFromArray,
@@ -573,7 +574,7 @@ export function convertFrameToGroup(
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: GroupImport,
     }),
-    queueGroupTrueUp(childInstances[0].elementPath), // let the editor know that the children are positioned correctly and the Group needs to be shifted/resized
+    queueGroupTrueUp(trueUpElementChanged(childInstances[0].elementPath)), // let the editor know that the children are positioned correctly and the Group needs to be shifted/resized
   ]
 }
 
@@ -834,7 +835,7 @@ export function createWrapInGroupActions(
     insertGroupCommand,
     ...pinChangeCommands,
     selectNewGroup,
-    queueGroupTrueUp(groupPath),
+    queueGroupTrueUp(trueUpElementChanged(groupPath)),
   ])
 }
 

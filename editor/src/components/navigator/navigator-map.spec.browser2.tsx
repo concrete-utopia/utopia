@@ -68,7 +68,7 @@ export var ${BakedInStoryboardVariableName} = (
 `)
 }
 
-const testArrays = [[0], [0, 1], [0, 1, 2], [0, 1, 2, 3]]
+const testArrays = [[], [0], [0, 1], [0, 1, 2], [0, 1, 2, 3]]
 
 describe('maps in the navigator', () => {
   testArrays.forEach((arr) => {
