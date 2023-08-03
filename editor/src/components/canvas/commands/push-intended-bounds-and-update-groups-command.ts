@@ -62,7 +62,7 @@ import { getFullFrame, getSixPinsFrame } from '../../frame'
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
-  isStartingMetadata: 'starting-metadata' | 'live-metadata'
+  isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
 }
 
 export function pushIntendedBoundsAndUpdateGroups(
@@ -82,10 +82,10 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   command: PushIntendedBoundsAndUpdateGroups,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
-  const { updatedEditor: editorAfterResizingGroupChildren } = getUpdateResizedGroupChildrenCommands(
-    editor,
-    command,
-  )
+  const commandRanBecauseOfQueuedTrueUp = command.isStartingMetadata === 'live-metadata'
+
+  const { updatedEditor: editorAfterResizingGroupChildren, resizedGroupChildren } =
+    getUpdateResizedGroupChildrenCommands(editor, command)
 
   const {
     updatedEditor: editorAfterResizingAncestors,
@@ -97,29 +97,30 @@ export const runPushIntendedBoundsAndUpdateGroups = (
 
   const intendedBoundsPatch =
     commandLifecycle === 'mid-interaction'
-      ? pushCommandStatePatch([...command.value, ...resizeAncestorsIntendedBounds])
+      ? [pushCommandStatePatch([...command.value, ...resizeAncestorsIntendedBounds])]
+      : []
+
+  const queueFollowUpGroupTrueUpPatch: Array<EditorStatePatch> =
+    commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp
+      ? [{ trueUpGroupsForElementAfterDomWalkerRuns: { $set: resizedGroupChildren } }]
       : []
 
   return {
-    editorStatePatches: [editorPatch, ...intendedBoundsPatch],
+    editorStatePatches: [editorPatch, ...intendedBoundsPatch, ...queueFollowUpGroupTrueUpPatch],
     commandDescription: `Set Intended Bounds for ${command.value
       .map((c) => EP.toString(c.target))
       .join(', ')}`,
   }
 }
 
-function pushCommandStatePatch(
-  intendedBounds: Array<CanvasFrameAndTarget>,
-): Array<EditorStatePatch> {
-  return [
-    {
-      canvas: {
-        controls: {
-          strategyIntendedBounds: { $push: intendedBounds },
-        },
+function pushCommandStatePatch(intendedBounds: Array<CanvasFrameAndTarget>): EditorStatePatch {
+  return {
+    canvas: {
+      controls: {
+        strategyIntendedBounds: { $push: intendedBounds },
       },
     },
-  ]
+  }
 }
 
 type LocalFrameAndTarget = {
@@ -131,7 +132,7 @@ type LocalFrameAndTarget = {
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
-): { updatedEditor: EditorState } {
+): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
   const targets: Array<{
     target: ElementPath
     size: Size
@@ -222,6 +223,7 @@ function getUpdateResizedGroupChildrenCommands(
   }
 
   let commandsToRun: Array<CanvasCommand> = []
+  let updatedElements: Array<ElementPath> = []
 
   Object.entries(updatedLocalFrames).forEach(([pathStr, frameAndTarget]) => {
     const elementToUpdate = EP.fromString(pathStr)
@@ -230,6 +232,8 @@ function getUpdateResizedGroupChildrenCommands(
     if (frameAndTarget == null || metadata == null) {
       return
     }
+
+    updatedElements.push(elementToUpdate)
 
     commandsToRun.push(
       ...setElementPins(
@@ -244,6 +248,7 @@ function getUpdateResizedGroupChildrenCommands(
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
   return {
     updatedEditor: updatedEditor,
+    resizedGroupChildren: updatedElements,
   }
 }
 
