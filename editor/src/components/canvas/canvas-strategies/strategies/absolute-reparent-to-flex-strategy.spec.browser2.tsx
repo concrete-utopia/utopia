@@ -265,7 +265,9 @@ describe('Absolute Reparent To Flex Strategy', () => {
           <div
             style={{
               position: 'absolute',
-              left: 20 + (n * 100),
+              left: 
+                // @utopia/uid=6f1
+                20 + (n * 100),
               top: 150,
               width: 100,
               height: 100,
@@ -393,7 +395,9 @@ describe('Absolute Reparent To Flex Strategy', () => {
           <div
             style={{
               position: 'absolute',
-              left: 20 + (n * 100),
+              left:
+              // @utopia/uid=6f1
+                20 + (n * 100),
               top: 150,
               width: 100,
               height: 100,
