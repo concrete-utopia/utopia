@@ -5525,7 +5525,7 @@ export var storyboard = (
         `),
       )
     })
-    it('can do multiselect unwrap under the same subtree', async () => {
+    it('when doing multiselect unwrap for a subtree, predictably limit to the topmost ancestor', async () => {
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <Group style={{ position: 'absolute' }} data-uid='group1'>
@@ -5585,18 +5585,215 @@ export var storyboard = (
               backgroundColor: 'blue',
             }}
             data-uid='div'
-          >
-            <View
+            >
+            <Group
               style={{
-                backgroundColor: 'red',
                 position: 'absolute',
                 width: 50,
                 height: 50,
-                left: 0,
-                top: 0,
               }}
-              data-uid='view'
-            />
+              data-uid='group2'
+            >
+              <View
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                  left: 0,
+                  top: 0,
+                }}
+                data-uid='view'
+              />
+            </Group>
+          </div>
+        </div>
+      `),
+      )
+    })
+    it('when doing multiselect unwrap for a subtree, predictably limit to the topmost ancestor (immediate child)', async () => {
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <Group style={{ position: 'absolute' }} data-uid='group1'>
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+                backgroundColor: 'blue',
+              }}
+              data-uid='div'
+            >
+              <Group
+                style={{
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='group2'
+              >
+                <View
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    width: 50,
+                    height: 50,
+                    left: 0,
+                    top: 0,
+                  }}
+                  data-uid='view'
+                />
+              </Group>
+            </div>
+          </Group>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [unwrapElements([makeTargetPath('aaa/group1'), makeTargetPath('aaa/group1/div')])],
+        true,
+      )
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 100,
+              height: 100,
+              backgroundColor: 'blue',
+            }}
+            data-uid='div'
+            >
+            <Group
+              style={{
+                position: 'absolute',
+                width: 50,
+                height: 50,
+              }}
+              data-uid='group2'
+            >
+              <View
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                  left: 0,
+                  top: 0,
+                }}
+                data-uid='view'
+              />
+            </Group>
+          </div>
+        </div>
+      `),
+      )
+    })
+    it('can do multiselect unwrap with subtrees and isolate elements', async () => {
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <Group style={{ position: 'absolute' }} data-uid='group1'>
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+                backgroundColor: 'blue',
+              }}
+              data-uid='div'
+            >
+              <Group
+                style={{
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='group2'
+              >
+                <View
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    width: 50,
+                    height: 50,
+                    left: 0,
+                    top: 0,
+                  }}
+                  data-uid='view'
+                />
+              </Group>
+            </div>
+          </Group>
+          <div data-uid='another-div'>
+            <div data-uid='unwrap-this'>
+              <div data-uid='foo' />
+              <img data-uid='cat' src='https://placekitten.com/100/100' />
+            </div>
+          </div>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          unwrapElements([
+            makeTargetPath('aaa/group1'),
+            makeTargetPath('aaa/group1/div'),
+            makeTargetPath('aaa/another-div/unwrap-this'),
+          ]),
+        ],
+        true,
+      )
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 100,
+              height: 100,
+              backgroundColor: 'blue',
+            }}
+            data-uid='div'
+          >
+            <Group
+              style={{
+                position: 'absolute',
+                width: 50,
+                height: 50,
+              }}
+              data-uid='group2'
+            >
+              <View
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                  left: 0,
+                  top: 0,
+                }}
+                data-uid='view'
+              />
+            </Group>
+          </div>
+          <div data-uid='another-div'>
+            <div data-uid='foo' />
+            <img data-uid='cat' src='https://placekitten.com/100/100' />
           </div>
         </div>
       `),
