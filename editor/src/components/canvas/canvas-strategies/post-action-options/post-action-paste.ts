@@ -1,6 +1,5 @@
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import type { PathPart } from '../../../../core/model/element-template-utils'
 import {
   elementPathFromInsertionPath,
   generateUidWithExistingComponents,
@@ -24,7 +23,11 @@ import {
   offsetPoint,
 } from '../../../../core/shared/math-utils'
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
-import type { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  ElementPathPart,
+  NodeModules,
+} from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
 import { assertNever } from '../../../../core/shared/utils'
 import { getTargetParentForPaste } from '../../../../utils/clipboard'
@@ -218,7 +221,7 @@ function pasteChoiceCommon(
   )
 }
 
-function appendPathPart(path: ElementPath, part: PathPart): ElementPath {
+function appendPathPart(path: ElementPath, part: ElementPathPart): ElementPath {
   const basePath = EP.parentPath(path)
 
   return EP.isRootElementOfInstance(path)

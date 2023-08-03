@@ -54,6 +54,7 @@ import type {
   StaticElementPath,
   ElementPath,
   Imports,
+  ElementPathPart,
 } from '../shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import * as EP from '../shared/element-path'
@@ -1122,11 +1123,10 @@ export function elementChildSupportsChildrenAlsoText(
   }
 }
 
-export type PathPart = Array<string>
 export function pathPartsFromJSXElementChild(
   element: JSXElementChild,
-  currentParts: PathPart,
-): Array<PathPart> {
+  currentParts: ElementPathPart,
+): Array<ElementPathPart> {
   switch (element.type) {
     case 'JSX_ELEMENT':
     case 'JSX_FRAGMENT':
