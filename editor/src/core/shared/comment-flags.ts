@@ -51,6 +51,12 @@ export function isUtopiaCommentFlagConditional(
   return flag?.type === 'conditional'
 }
 
+export function isUtopiaCommentFlagMap(
+  flag: UtopiaCommentFlag | null,
+): flag is UtopiaCommentFlagMap {
+  return flag?.type === 'map'
+}
+
 export function isUtopiaCommentFlagUid(
   flag: UtopiaCommentFlag | null,
 ): flag is UtopiaCommentFlagUid {

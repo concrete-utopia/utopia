@@ -23,6 +23,7 @@ import {
   jsxTextBlock,
   isJSXFragment,
   isJSExpression,
+  isJSXMapExpression,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -62,8 +63,8 @@ import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
+  isUtopiaCommentFlagMap,
 } from '../../../core/shared/comment-flags'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -84,11 +85,15 @@ export function createLookupRender(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
+  renderLimit?: number,
 ): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
   let index = 0
 
   return (element: JSXElement, scope: MapLike<any>): React.ReactChild => {
     index++
+    if (renderLimit != null && index > renderLimit) {
+      return ''
+    }
     const innerUID = getUtopiaID(element)
     const generatedUID = EP.createIndexedUid(innerUID, index)
     const withGeneratedUID = setJSXValueAtPath(
@@ -257,6 +262,12 @@ export function renderCoreElement(
     }
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+      const commentFlag = findUtopiaCommentFlag(element.comments, 'map')
+      const mapLengthOverride =
+        isJSXMapExpression(element) && isUtopiaCommentFlagMap(commentFlag)
+          ? commentFlag.value
+          : null
+
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementPath != null) {
@@ -316,6 +327,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        mapLengthOverride ?? undefined,
       )
 
       const blockScope = {
@@ -871,6 +883,7 @@ function runJSExpression(
   requireResult: MapLike<any>,
   block: JSExpression,
   currentScope: MapLike<any>,
+  limit?: number,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
@@ -880,7 +893,7 @@ function runJSExpression(
       return jsxAttributeToValue(filePath, block, requireResult, block)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope, limit)
     default:
       assertNever(block)
   }
