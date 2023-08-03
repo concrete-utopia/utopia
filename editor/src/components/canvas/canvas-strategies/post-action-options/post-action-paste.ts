@@ -425,30 +425,6 @@ export const PropsReplacedPastePostActionChoice = (
   }
 }
 
-export function getUidsFromJSXElementChild(element: JSXElementChild): string[] {
-  switch (element.type) {
-    case 'JSX_ELEMENT':
-    case 'JSX_FRAGMENT':
-      return [element.uid, ...element.children.flatMap(getUidsFromJSXElementChild)]
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      return [
-        element.uid,
-        ...getUidsFromJSXElementChild(element.whenTrue),
-        ...getUidsFromJSXElementChild(element.whenFalse),
-      ]
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-    case 'ATTRIBUTE_VALUE':
-    case 'JSX_TEXT_BLOCK':
-    case 'JSX_MAP_EXPRESSION':
-      return [element.uid]
-    default:
-      assertNever(element)
-  }
-}
-
 export const PropsPreservedPasteHerePostActionChoiceId = 'props-preserved-paste-here-action-choice'
 
 export const PropsPreservedPasteHerePostActionChoice = (

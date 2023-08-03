@@ -37,7 +37,7 @@ import {
 import { pathToReparent } from '../strategies/reparent-utils'
 import type { PostActionChoice } from './post-action-options'
 import type { ElementOrPathToInsert, OldPathToNewPathMapping } from './post-action-paste'
-import { getUidsFromJSXElementChild, staticReparentAndUpdatePosition } from './post-action-paste'
+import { staticReparentAndUpdatePosition } from './post-action-paste'
 
 function getNavigatorReparentCommands(
   data: NavigatorReparentPostActionMenuData,
