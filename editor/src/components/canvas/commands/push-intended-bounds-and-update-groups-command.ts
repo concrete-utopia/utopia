@@ -7,6 +7,7 @@ import type {
 } from '../../../core/shared/element-template'
 import {
   localRectangle,
+  roundFullFrameToNearestWhole,
   roundRectangleToNearestWhole,
   transformConstrainedLocalFullFrameUsingBoundingBox,
 } from '../../../core/shared/math-utils'
@@ -201,12 +202,13 @@ function getUpdateResizedGroupChildrenCommands(
         const constrainedFrameProps: Array<keyof SixPinsNoneTheRicher> =
           editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
 
-        // TODO ROUNDING
-        const resizedFullFrame = transformConstrainedLocalFullFrameUsingBoundingBox(
-          updatedSize,
-          originalSize,
-          getSixPinsFrame(currentLocalFrame, originalSize),
-          constrainedFrameProps,
+        const resizedFullFrame = roundFullFrameToNearestWhole(
+          transformConstrainedLocalFullFrameUsingBoundingBox(
+            updatedSize,
+            originalSize,
+            getSixPinsFrame(currentLocalFrame, originalSize),
+            constrainedFrameProps,
+          ),
         )
 
         updatedLocalFrames[EP.toString(child)] = {

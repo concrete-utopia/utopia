@@ -820,6 +820,17 @@ export function roundRectangleToNearestWhole<C extends CoordinateMarker>(
   } as Rectangle<C>
 }
 
+export function roundFullFrameToNearestWhole(fullFrame: FullFrame): FullFrame {
+  return {
+    left: roundToNearestWhole(fullFrame.left),
+    top: roundToNearestWhole(fullFrame.top),
+    right: roundToNearestWhole(fullFrame.right),
+    bottom: roundToNearestWhole(fullFrame.bottom),
+    width: roundToNearestWhole(fullFrame.width),
+    height: roundToNearestWhole(fullFrame.height),
+  }
+}
+
 export function transformFrameUsingBoundingBox<C extends CoordinateMarker>(
   newBoundingBox: Rectangle<C>,
   currentBoundingBox: Rectangle<C>,
