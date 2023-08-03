@@ -51,6 +51,9 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { treatElementAsGroupLike } from './group-helpers'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
@@ -150,6 +153,14 @@ export function basicResizeStrategy(
             [selectedElement],
           )
 
+          const elementIsGroup = treatElementAsGroupLike(
+            canvasState.startingMetadata,
+            selectedElement,
+          )
+          const groupChildren = elementIsGroup
+            ? MetadataUtils.getChildrenUnordered(canvasState.startingMetadata, selectedElement)
+            : []
+
           const resizedBounds = resizeBoundingBox(
             originalBounds,
             drag,
@@ -204,6 +215,11 @@ export function basicResizeStrategy(
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
+            pushIntendedBoundsAndUpdateGroups(
+              [{ target: selectedElement, frame: resizedBounds }],
+              'starting-metadata',
+            ),
+            ...groupChildren.map((c) => queueGroupTrueUp(c.elementPath)),
           ])
         } else {
           return strategyApplicationResult([
