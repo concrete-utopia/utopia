@@ -8,7 +8,7 @@ import {
 } from '../../../../core/model/element-template-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { stripNulls } from '../../../../core/shared/array-utils'
+import { stripNulls, zip } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -449,13 +449,6 @@ export function getUidsFromJSXElementChild(element: JSXElementChild): string[] {
     default:
       assertNever(element)
   }
-}
-
-function zip<A, B, C>(one: A[], other: B[], make: (a: A, b: B) => C): C[] {
-  const doZip = (oneInner: A[], otherInner: B[]) =>
-    oneInner.map((elem, idx) => make(elem, otherInner[idx]))
-
-  return one.length < other.length ? doZip(one, other) : doZip(one.slice(0, other.length), other)
 }
 
 export const PropsPreservedPasteHerePostActionChoiceId = 'props-preserved-paste-here-action-choice'
