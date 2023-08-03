@@ -172,7 +172,7 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
-export type JSExpressionOtherJavaScript = {
+export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   originalJavascript: string
   javascript: string
@@ -180,29 +180,32 @@ export type JSExpressionOtherJavaScript = {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-} & WithElementsWithin
+}
 
 export function jsExpressionOtherJavaScript(
+  originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  comments: ParsedComments,
   uid: string = UUID(),
 ): JSExpressionOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-    originalJavascript: javascript,
+    originalJavascript: originalJavascript,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uid: uid,
+    comments: comments,
     elementsWithin: elementsWithin,
   }
 }
 
-export type JSXMapExpression = {
+export interface JSXMapExpression extends WithComments, WithElementsWithin {
   type: 'JSX_MAP_EXPRESSION'
   originalJavascript: string
   javascript: string
@@ -210,7 +213,7 @@ export type JSXMapExpression = {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-} & WithElementsWithin
+}
 
 export function jsxMapExpression(
   originalJavascript: string,
@@ -219,6 +222,7 @@ export function jsxMapExpression(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  comments: ParsedComments,
   uid: string = UUID(),
 ): JSXMapExpression {
   return {
@@ -229,6 +233,7 @@ export function jsxMapExpression(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uid: uid,
+    comments: comments,
     elementsWithin: elementsWithin,
   }
 }
@@ -1193,27 +1198,6 @@ export interface WithElementsWithin {
 
 export function hasElementsWithin(e: unknown): e is WithElementsWithin {
   return (e as WithElementsWithin).elementsWithin != null
-}
-
-export function jsExpression(
-  originalJavascript: string,
-  javascript: string,
-  transpiledJavascript: string,
-  definedElsewhere: Array<string>,
-  sourceMap: RawSourceMap | null,
-  elementsWithin: ElementsWithin,
-  uid: string = UUID(),
-): JSExpression {
-  return {
-    type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-    originalJavascript: originalJavascript,
-    javascript: javascript,
-    transpiledJavascript: transpiledJavascript,
-    definedElsewhere: definedElsewhere,
-    sourceMap: sourceMap,
-    uid: uid,
-    elementsWithin: elementsWithin,
-  }
 }
 
 export interface JSXTextBlock {

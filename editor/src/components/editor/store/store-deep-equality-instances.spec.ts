@@ -12,7 +12,6 @@ import {
   jsExpressionFunctionCall,
   jsExpressionNestedArray,
   jsExpressionNestedObject,
-  jsExpressionOtherJavaScript,
   jsxAttributesEntry,
   jsxAttributesSpread,
   jsExpressionValue,
@@ -477,6 +476,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'old',
     elementsWithin: {},
+    comments: emptyComments,
   }
   const newSameValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -487,6 +487,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'old',
     elementsWithin: {},
+    comments: emptyComments,
   }
   const newDifferentValue: JSExpressionOtherJavaScript = {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
@@ -497,6 +498,7 @@ describe('JSXAttributeOtherJavaScriptKeepDeepEqualityCall', () => {
     sourceMap: { a: 1, b: [2] } as any,
     uid: 'new',
     elementsWithin: {},
+    comments: emptyComments,
   }
 
   it('same reference returns the same reference', () => {

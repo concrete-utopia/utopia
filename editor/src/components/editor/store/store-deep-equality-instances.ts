@@ -785,7 +785,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
   )
 
 export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionMapOrOtherJavascript> {
-  return combine8EqualityCalls(
+  return combine9EqualityCalls(
     (attribute) => attribute.type,
     createCallWithTripleEquals(),
     (attribute) => attribute.javascript,
@@ -802,6 +802,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (block) => block.comments,
+    ParsedCommentsKeepDeepEqualityCall,
     (
       type,
       javascript,
@@ -811,6 +813,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
       sourceMap,
       uniqueID,
       elementsWithin,
+      comments,
     ) => {
       return {
         type: type,
@@ -821,13 +824,14 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
         sourceMap: sourceMap,
         uid: uniqueID,
         elementsWithin: elementsWithin,
+        comments: comments,
       }
     },
   )
 }
 
 export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
-  return combine7EqualityCalls(
+  return combine8EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals<string>(),
     (attribute) => attribute.originalJavascript,
@@ -842,6 +846,8 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (block) => block.comments,
+    ParsedCommentsKeepDeepEqualityCall,
     (
       javascript,
       originalJavascript,
@@ -850,6 +856,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
       sourceMap,
       uniqueID,
       elementsWithin,
+      comments,
     ) => {
       return {
         type: 'JSX_MAP_EXPRESSION',
@@ -860,6 +867,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
         sourceMap: sourceMap,
         uid: uniqueID,
         elementsWithin: elementsWithin,
+        comments: comments,
       }
     },
   )

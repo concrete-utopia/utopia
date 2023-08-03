@@ -5,7 +5,7 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/201 utopia-storyboard-uid/scene-aaa/app-entity:aaa/201/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -40,17 +40,17 @@ exports[`UiJsxCanvas render Label carried through for generated elements 1`] = `
         <div
           data-uid=\\"bbb~~~1\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/201/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~1\\"
         ></div>
         <div
           data-uid=\\"bbb~~~2\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/201/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~2\\"
         ></div>
         <div
           data-uid=\\"bbb~~~3\\"
           data-label=\\"Plane\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/201/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~3\\"
         ></div>
       </div>
     </div>
@@ -393,6 +393,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "utopiaCanvasJSXLookup",
@@ -525,6 +529,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -679,7 +687,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/201": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -687,6 +695,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "utopiaCanvasJSXLookup",
@@ -801,7 +813,7 @@ Object {
         ],
         Array [
           "aaa",
-          "201",
+          "a8d",
         ],
       ],
       "type": "elementpath",
@@ -865,7 +877,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/201/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -929,7 +941,7 @@ Object {
         ],
         Array [
           "aaa",
-          "201",
+          "a8d",
           "bbb~~~1",
         ],
       ],
@@ -998,7 +1010,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/201/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1062,7 +1074,7 @@ Object {
         ],
         Array [
           "aaa",
-          "201",
+          "a8d",
           "bbb~~~2",
         ],
       ],
@@ -1131,7 +1143,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/201/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/a8d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -1195,7 +1207,7 @@ Object {
         ],
         Array [
           "aaa",
-          "201",
+          "a8d",
           "bbb~~~3",
         ],
       ],
@@ -1671,6 +1683,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -1874,9 +1890,9 @@ exports[`UiJsxCanvas render Renders input tag without errors 1`] = `
       data-uid=\\"scene-aaa\\"
     >
       <input
-        data-uid=\\"852\\"
+        data-uid=\\"846\\"
         style=\\"top: 10px\\"
-        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:852\\"
+        data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:567:846\\"
       />
     </div>
   </div>
@@ -2330,7 +2346,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26 utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa/58a\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1 utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa/b6e\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -2363,19 +2379,19 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~1\\"
         >
           1
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~2\\"
         >
           2
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~3\\"
         >
           3
         </div>
@@ -2720,6 +2736,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "utopiaCanvasJSXLookup",
@@ -2728,6 +2748,10 @@ Object {
               "aaa": Object {
                 "children": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "n",
                     ],
@@ -2967,7 +2991,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -2975,6 +2999,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "utopiaCanvasJSXLookup",
@@ -2983,6 +3011,10 @@ Object {
           "aaa": Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                 ],
@@ -3126,7 +3158,7 @@ Object {
         ],
         Array [
           "zzz",
-          "f26",
+          "4c1",
         ],
       ],
       "type": "elementpath",
@@ -3190,7 +3222,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3200,6 +3232,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
             ],
@@ -3288,7 +3324,7 @@ Object {
         ],
         Array [
           "zzz",
-          "f26",
+          "4c1",
           "aaa~~~1",
         ],
       ],
@@ -3357,7 +3393,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~1/58a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~1/b6e": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3365,6 +3401,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
         ],
@@ -3424,9 +3464,9 @@ Object {
         ],
         Array [
           "zzz",
-          "f26",
+          "4c1",
           "aaa~~~1",
-          "58a",
+          "b6e",
         ],
       ],
       "type": "elementpath",
@@ -3490,7 +3530,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3500,6 +3540,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
             ],
@@ -3588,7 +3632,7 @@ Object {
         ],
         Array [
           "zzz",
-          "f26",
+          "4c1",
           "aaa~~~2",
         ],
       ],
@@ -3657,7 +3701,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~2/58a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~2/b6e": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3665,6 +3709,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
         ],
@@ -3724,9 +3772,9 @@ Object {
         ],
         Array [
           "zzz",
-          "f26",
+          "4c1",
           "aaa~~~2",
-          "58a",
+          "b6e",
         ],
       ],
       "type": "elementpath",
@@ -3790,7 +3838,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3800,6 +3848,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
             ],
@@ -3888,7 +3940,7 @@ Object {
         ],
         Array [
           "zzz",
-          "f26",
+          "4c1",
           "aaa~~~3",
         ],
       ],
@@ -3957,7 +4009,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/f26/aaa~~~3/58a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/4c1/aaa~~~3/b6e": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -3965,6 +4017,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
         ],
@@ -4024,9 +4080,9 @@ Object {
         ],
         Array [
           "zzz",
-          "f26",
+          "4c1",
           "aaa~~~3",
-          "58a",
+          "b6e",
         ],
       ],
       "type": "elementpath",
@@ -4098,7 +4154,7 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08 utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa/d13 utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa/d13/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa/d13/bbb/e1e\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80 utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa/d9d utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa/d9d/bbb utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa/d9d/bbb/d0c\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -4131,69 +4187,69 @@ exports[`UiJsxCanvas render arbitrary jsx block inside an element inside an arbi
       >
         <div
           data-uid=\\"aaa~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~1\\"
           >
             4
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~2\\"
           >
             5
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~3\\"
           >
             6
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~1\\"
           >
             8
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~2\\"
           >
             10
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~3\\"
           >
             12
           </div>
         </div>
         <div
           data-uid=\\"aaa~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3\\"
         >
           <div
             data-uid=\\"bbb~~~1\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~1\\"
           >
             12
           </div>
           <div
             data-uid=\\"bbb~~~2\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~2\\"
           >
             15
           </div>
           <div
             data-uid=\\"bbb~~~3\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~3\\"
           >
             18
           </div>
@@ -4539,6 +4595,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "utopiaCanvasJSXLookup",
@@ -4547,6 +4607,10 @@ Object {
               "aaa": Object {
                 "children": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "n",
                       "React",
@@ -4556,6 +4620,10 @@ Object {
                       "bbb": Object {
                         "children": Array [
                           Object {
+                            "comments": Object {
+                              "leadingComments": Array [],
+                              "trailingComments": Array [],
+                            },
                             "definedElsewhere": Array [
                               "n",
                               "m",
@@ -4906,7 +4974,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -4914,6 +4982,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "utopiaCanvasJSXLookup",
@@ -4922,6 +4994,10 @@ Object {
           "aaa": Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                   "React",
@@ -4931,6 +5007,10 @@ Object {
                   "bbb": Object {
                     "children": Array [
                       Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "definedElsewhere": Array [
                           "n",
                           "m",
@@ -5185,7 +5265,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
         ],
       ],
       "type": "elementpath",
@@ -5249,7 +5329,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5259,6 +5339,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "React",
@@ -5268,6 +5352,10 @@ Object {
               "bbb": Object {
                 "children": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "n",
                       "m",
@@ -5452,7 +5540,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
         ],
       ],
@@ -5521,7 +5609,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5529,6 +5617,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "React",
@@ -5538,6 +5630,10 @@ Object {
           "bbb": Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                   "m",
@@ -5693,9 +5789,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
-          "d13",
+          "d9d",
         ],
       ],
       "type": "elementpath",
@@ -5759,7 +5855,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5769,6 +5865,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -5863,9 +5963,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
-          "d13",
+          "d9d",
           "bbb~~~1",
         ],
       ],
@@ -5934,7 +6034,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~1/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~1/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -5942,6 +6042,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -6007,11 +6111,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
-          "d13",
+          "d9d",
           "bbb~~~1",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -6075,7 +6179,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6085,6 +6189,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -6179,9 +6287,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
-          "d13",
+          "d9d",
           "bbb~~~2",
         ],
       ],
@@ -6250,7 +6358,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~2/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~2/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6258,6 +6366,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -6323,11 +6435,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
-          "d13",
+          "d9d",
           "bbb~~~2",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -6391,7 +6503,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6401,6 +6513,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -6495,9 +6611,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
-          "d13",
+          "d9d",
           "bbb~~~3",
         ],
       ],
@@ -6566,7 +6682,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~1/d13/bbb~~~3/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~1/d9d/bbb~~~3/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6574,6 +6690,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -6639,11 +6759,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~1",
-          "d13",
+          "d9d",
           "bbb~~~3",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -6707,7 +6827,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6717,6 +6837,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "React",
@@ -6726,6 +6850,10 @@ Object {
               "bbb": Object {
                 "children": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "n",
                       "m",
@@ -6910,7 +7038,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
         ],
       ],
@@ -6979,7 +7107,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -6987,6 +7115,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "React",
@@ -6996,6 +7128,10 @@ Object {
           "bbb": Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                   "m",
@@ -7151,9 +7287,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
-          "d13",
+          "d9d",
         ],
       ],
       "type": "elementpath",
@@ -7217,7 +7353,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7227,6 +7363,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -7321,9 +7461,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
-          "d13",
+          "d9d",
           "bbb~~~1",
         ],
       ],
@@ -7392,7 +7532,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~1/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~1/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7400,6 +7540,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -7465,11 +7609,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
-          "d13",
+          "d9d",
           "bbb~~~1",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -7533,7 +7677,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7543,6 +7687,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -7637,9 +7785,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
-          "d13",
+          "d9d",
           "bbb~~~2",
         ],
       ],
@@ -7708,7 +7856,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~2/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~2/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7716,6 +7864,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -7781,11 +7933,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
-          "d13",
+          "d9d",
           "bbb~~~2",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -7849,7 +8001,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -7859,6 +8011,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -7953,9 +8109,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
-          "d13",
+          "d9d",
           "bbb~~~3",
         ],
       ],
@@ -8024,7 +8180,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~2/d13/bbb~~~3/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~2/d9d/bbb~~~3/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8032,6 +8188,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -8097,11 +8257,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~2",
-          "d13",
+          "d9d",
           "bbb~~~3",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -8165,7 +8325,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8175,6 +8335,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "React",
@@ -8184,6 +8348,10 @@ Object {
               "bbb": Object {
                 "children": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "n",
                       "m",
@@ -8368,7 +8536,7 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
         ],
       ],
@@ -8437,7 +8605,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8445,6 +8613,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "React",
@@ -8454,6 +8626,10 @@ Object {
           "bbb": Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                   "m",
@@ -8609,9 +8785,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
-          "d13",
+          "d9d",
         ],
       ],
       "type": "elementpath",
@@ -8675,7 +8851,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8685,6 +8861,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -8779,9 +8959,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
-          "d13",
+          "d9d",
           "bbb~~~1",
         ],
       ],
@@ -8850,7 +9030,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~1/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~1/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -8858,6 +9038,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -8923,11 +9107,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
-          "d13",
+          "d9d",
           "bbb~~~1",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -8991,7 +9175,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9001,6 +9185,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -9095,9 +9283,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
-          "d13",
+          "d9d",
           "bbb~~~2",
         ],
       ],
@@ -9166,7 +9354,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~2/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~2/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9174,6 +9362,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -9239,11 +9431,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
-          "d13",
+          "d9d",
           "bbb~~~2",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -9307,7 +9499,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9317,6 +9509,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
               "m",
@@ -9411,9 +9607,9 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
-          "d13",
+          "d9d",
           "bbb~~~3",
         ],
       ],
@@ -9482,7 +9678,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/c08/aaa~~~3/d13/bbb~~~3/e1e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/e80/aaa~~~3/d9d/bbb~~~3/d0c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -9490,6 +9686,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
           "m",
@@ -9555,11 +9755,11 @@ Object {
         ],
         Array [
           "zzz",
-          "c08",
+          "e80",
           "aaa~~~3",
-          "d13",
+          "d9d",
           "bbb~~~3",
-          "e1e",
+          "d0c",
         ],
       ],
       "type": "elementpath",
@@ -10816,6 +11016,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -10976,7 +11180,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/921 utopia-storyboard-uid/scene-aaa/app-entity:aaa/921/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7 utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -11009,19 +11213,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are not the ap
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/921/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/921/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/921/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -11366,6 +11570,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "MyCard",
@@ -11406,6 +11614,10 @@ Object {
                     "key": "title",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "n",
                       ],
@@ -11624,7 +11836,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/921": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -11632,6 +11844,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "MyCard",
@@ -11672,6 +11888,10 @@ Object {
                 "key": "title",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "n",
                   ],
@@ -11793,7 +12013,7 @@ Object {
         ],
         Array [
           "aaa",
-          "921",
+          "6a7",
         ],
       ],
       "type": "elementpath",
@@ -11857,7 +12077,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/921/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -11898,6 +12118,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -11965,7 +12189,7 @@ Object {
         ],
         Array [
           "aaa",
-          "921",
+          "6a7",
           "bbb~~~1",
         ],
       ],
@@ -12034,7 +12258,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/921/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12075,6 +12299,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -12142,7 +12370,7 @@ Object {
         ],
         Array [
           "aaa",
-          "921",
+          "6a7",
           "bbb~~~2",
         ],
       ],
@@ -12211,7 +12439,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/921/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6a7/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -12252,6 +12480,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -12319,7 +12551,7 @@ Object {
         ],
         Array [
           "aaa",
-          "921",
+          "6a7",
           "bbb~~~3",
         ],
       ],
@@ -12396,7 +12628,7 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -12429,19 +12661,19 @@ exports[`UiJsxCanvas render does not crash if the metadata scenes are undefined 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -12786,6 +13018,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "MyCard",
@@ -12826,6 +13062,10 @@ Object {
                     "key": "title",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "n",
                       ],
@@ -13044,7 +13284,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13052,6 +13292,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "MyCard",
@@ -13092,6 +13336,10 @@ Object {
                 "key": "title",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "n",
                   ],
@@ -13213,7 +13461,7 @@ Object {
         ],
         Array [
           "aaa",
-          "dbc",
+          "dad",
         ],
       ],
       "type": "elementpath",
@@ -13277,7 +13525,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13318,6 +13566,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -13385,7 +13637,7 @@ Object {
         ],
         Array [
           "aaa",
-          "dbc",
+          "dad",
           "bbb~~~1",
         ],
       ],
@@ -13454,7 +13706,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13495,6 +13747,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -13562,7 +13818,7 @@ Object {
         ],
         Array [
           "aaa",
-          "dbc",
+          "dad",
           "bbb~~~2",
         ],
       ],
@@ -13631,7 +13887,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dbc/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/dad/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -13672,6 +13928,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -13739,7 +13999,7 @@ Object {
         ],
         Array [
           "aaa",
-          "dbc",
+          "dad",
           "bbb~~~3",
         ],
       ],
@@ -14603,7 +14863,7 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/a84 utopia-storyboard-uid/scene-aaa/app-entity:zzz/a84/aaa\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:zzz utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97 utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97/aaa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -14636,13 +14896,13 @@ exports[`UiJsxCanvas render function component works inside a map 1`] = `
       >
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a84/aaa~~~1:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97/aaa~~~1:ccc\\"
         >
           Thing
         </div>
         <div
           data-uid=\\"ccc\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a84/aaa~~~2:ccc\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97/aaa~~~2:ccc\\"
         >
           Thing
         </div>
@@ -14987,6 +15247,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "Thing",
@@ -15184,7 +15448,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a84": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -15192,6 +15456,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "Thing",
@@ -15293,7 +15561,7 @@ Object {
         ],
         Array [
           "zzz",
-          "a84",
+          "a97",
         ],
       ],
       "type": "elementpath",
@@ -15357,7 +15625,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a84/aaa~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97/aaa~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -15404,7 +15672,7 @@ Object {
         ],
         Array [
           "zzz",
-          "a84",
+          "a97",
           "aaa~~~1",
         ],
       ],
@@ -15473,7 +15741,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a84/aaa~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:zzz/a97/aaa~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -15520,7 +15788,7 @@ Object {
         ],
         Array [
           "zzz",
-          "a84",
+          "a97",
           "aaa~~~2",
         ],
       ],
@@ -16065,6 +16333,10 @@ Object {
                 "key": "title",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "props",
                   ],
@@ -16154,6 +16426,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -16397,6 +16673,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "props",
               ],
@@ -17011,6 +17291,10 @@ Object {
                 "key": "title",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "props",
                   ],
@@ -17100,6 +17384,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -17343,6 +17631,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "props",
               ],
@@ -17970,6 +18262,10 @@ Object {
                       },
                       "type": "ARRAY_VALUE",
                       "value": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "definedElsewhere": Array [
                           "props",
                         ],
@@ -18098,6 +18394,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -18353,6 +18653,10 @@ Object {
                   },
                   "type": "ARRAY_VALUE",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -19019,6 +19323,10 @@ Object {
                       },
                       "type": "ARRAY_VALUE",
                       "value": Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "definedElsewhere": Array [
                           "props",
                         ],
@@ -19147,6 +19455,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -19402,6 +19714,10 @@ Object {
                   },
                   "type": "ARRAY_VALUE",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -20071,7 +20387,7 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834/7b2 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999/000\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834/604 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999 utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999/000\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -20127,32 +20443,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~1\\"
             data-label=\\"Copy\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~1\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~1\\"
           >
             Copy
           </div>
           <div
             data-uid=\\"999~~~2\\"
             data-label=\\"⌘,⎇,C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~2\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~2/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~2/000:6a8/782/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2/000:6a8/f65/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~2/000:6a8/782/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2/000:6a8/f65/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~2/000:6a8/782/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2/000:6a8/f65/726~~~3\\"
                 >C</span
               ></span
             >
@@ -20160,32 +20476,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~3\\"
             data-label=\\"Paste\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~3\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~3\\"
           >
             Paste
           </div>
           <div
             data-uid=\\"999~~~4\\"
             data-label=\\"⌘⎇V\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~4\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~4/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~4/000:6a8/782/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4/000:6a8/f65/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~4/000:6a8/782/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4/000:6a8/f65/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~4/000:6a8/782/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4/000:6a8/f65/726~~~3\\"
                 >V</span
               ></span
             >
@@ -20193,32 +20509,32 @@ exports[`UiJsxCanvas render handles fragments in an arbitrary block 1`] = `
           <div
             data-uid=\\"834~~~5\\"
             data-label=\\"Cut\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~5\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~5\\"
           >
             Cut
           </div>
           <div
             data-uid=\\"999~~~6\\"
             data-label=\\"⌘⎇C\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~6\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6\\"
           >
             <span
               data-uid=\\"6a8\\"
-              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~6/000:6a8\\"
+              data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6/000:6a8\\"
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~1\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~6/000:6a8/782/726~~~1\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6/000:6a8/f65/726~~~1\\"
                 >⌘</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~2\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~6/000:6a8/782/726~~~2\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6/000:6a8/f65/726~~~2\\"
                 >⎇</span
               ><span
                 style=\\"padding: 6px\\"
                 data-uid=\\"726~~~3\\"
-                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~6/000:6a8/782/726~~~3\\"
+                data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6/000:6a8/f65/726~~~3\\"
                 >C</span
               ></span
             >
@@ -20567,6 +20883,10 @@ Object {
           Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "keyboardShortcuts",
                   "React",
@@ -20577,6 +20897,10 @@ Object {
                   "834": Object {
                     "children": Array [
                       Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "definedElsewhere": Array [
                           "pair",
                         ],
@@ -20729,6 +21053,10 @@ export var storyboard = (props) => {
                         "key": "data-label",
                         "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
                           "definedElsewhere": Array [
                             "pair",
                           ],
@@ -20889,6 +21217,10 @@ export var storyboard = (props) => {
                             "key": "shortcut",
                             "type": "JSX_ATTRIBUTES_ENTRY",
                             "value": Object {
+                              "comments": Object {
+                                "leadingComments": Array [],
+                                "trailingComments": Array [],
+                              },
                               "definedElsewhere": Array [
                                 "pair",
                               ],
@@ -21046,6 +21378,10 @@ export var storyboard = (props) => {
                         "key": "data-label",
                         "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
                           "definedElsewhere": Array [
                             "pair",
                           ],
@@ -21369,6 +21705,10 @@ export var storyboard = (props) => {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -21771,6 +22111,10 @@ export var storyboard = (props) => {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "keyboardShortcuts",
               "React",
@@ -21781,6 +22125,10 @@ export var storyboard = (props) => {
               "834": Object {
                 "children": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "pair",
                     ],
@@ -21933,6 +22281,10 @@ export var storyboard = (props) => {
                     "key": "data-label",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "pair",
                       ],
@@ -22093,6 +22445,10 @@ export var storyboard = (props) => {
                         "key": "shortcut",
                         "type": "JSX_ATTRIBUTES_ENTRY",
                         "value": Object {
+                          "comments": Object {
+                            "leadingComments": Array [],
+                            "trailingComments": Array [],
+                          },
                           "definedElsewhere": Array [
                             "pair",
                           ],
@@ -22250,6 +22606,10 @@ export var storyboard = (props) => {
                     "key": "data-label",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "pair",
                       ],
@@ -22623,7 +22983,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -22631,6 +22991,10 @@ export var storyboard = (props) => {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "keyboardShortcuts",
           "React",
@@ -22641,6 +23005,10 @@ export var storyboard = (props) => {
           "834": Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "pair",
                 ],
@@ -22793,6 +23161,10 @@ export var storyboard = (props) => {
                 "key": "data-label",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "pair",
                   ],
@@ -22953,6 +23325,10 @@ export var storyboard = (props) => {
                     "key": "shortcut",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "pair",
                       ],
@@ -23110,6 +23486,10 @@ export var storyboard = (props) => {
                 "key": "data-label",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "pair",
                   ],
@@ -23387,7 +23767,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
         ],
       ],
       "type": "elementpath",
@@ -23451,7 +23831,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -23461,6 +23841,10 @@ export var storyboard = (props) => {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "pair",
             ],
@@ -23613,6 +23997,10 @@ export var storyboard = (props) => {
             "key": "data-label",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -23748,7 +24136,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "834~~~1",
         ],
       ],
@@ -23817,7 +24205,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~1/7b2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~1/604": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -23825,6 +24213,10 @@ export var storyboard = (props) => {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "pair",
         ],
@@ -23955,9 +24347,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "834~~~1",
-          "7b2",
+          "604",
         ],
       ],
       "type": "elementpath",
@@ -24021,7 +24413,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -24031,6 +24423,10 @@ export var storyboard = (props) => {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "pair",
             ],
@@ -24183,6 +24579,10 @@ export var storyboard = (props) => {
             "key": "data-label",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -24318,7 +24718,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "834~~~3",
         ],
       ],
@@ -24387,7 +24787,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~3/7b2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~3/604": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -24395,6 +24795,10 @@ export var storyboard = (props) => {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "pair",
         ],
@@ -24525,9 +24929,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "834~~~3",
-          "7b2",
+          "604",
         ],
       ],
       "type": "elementpath",
@@ -24591,7 +24995,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~5": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~5": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -24601,6 +25005,10 @@ export var storyboard = (props) => {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "pair",
             ],
@@ -24753,6 +25161,10 @@ export var storyboard = (props) => {
             "key": "data-label",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -24888,7 +25300,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "834~~~5",
         ],
       ],
@@ -24957,7 +25369,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/834~~~5/7b2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/834~~~5/604": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -24965,6 +25377,10 @@ export var storyboard = (props) => {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "pair",
         ],
@@ -25095,9 +25511,9 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "834~~~5",
-          "7b2",
+          "604",
         ],
       ],
       "type": "elementpath",
@@ -25161,7 +25577,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -25204,6 +25620,10 @@ export var storyboard = (props) => {
                 "key": "shortcut",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "pair",
                   ],
@@ -25361,6 +25781,10 @@ export var storyboard = (props) => {
             "key": "data-label",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -25496,7 +25920,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "999~~~2",
         ],
       ],
@@ -25565,7 +25989,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~2/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~2/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -25606,6 +26030,10 @@ export var storyboard = (props) => {
             "key": "shortcut",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -25741,7 +26169,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "999~~~2",
           "000",
         ],
@@ -25811,7 +26239,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~4": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -25854,6 +26282,10 @@ export var storyboard = (props) => {
                 "key": "shortcut",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "pair",
                   ],
@@ -26011,6 +26443,10 @@ export var storyboard = (props) => {
             "key": "data-label",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -26146,7 +26582,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "999~~~4",
         ],
       ],
@@ -26215,7 +26651,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~4/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~4/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -26256,6 +26692,10 @@ export var storyboard = (props) => {
             "key": "shortcut",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -26391,7 +26831,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "999~~~4",
           "000",
         ],
@@ -26461,7 +26901,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~6": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -26504,6 +26944,10 @@ export var storyboard = (props) => {
                 "key": "shortcut",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "pair",
                   ],
@@ -26661,6 +27105,10 @@ export var storyboard = (props) => {
             "key": "data-label",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -26796,7 +27244,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "999~~~6",
         ],
       ],
@@ -26865,7 +27313,7 @@ export var storyboard = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/8fe/999~~~6/000": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/03a/dfc/999~~~6/000": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -26906,6 +27354,10 @@ export var storyboard = (props) => {
             "key": "shortcut",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "pair",
               ],
@@ -27041,7 +27493,7 @@ export var storyboard = (props) => {
         Array [
           "aaa",
           "03a",
-          "8fe",
+          "dfc",
           "999~~~6",
           "000",
         ],
@@ -28371,6 +28823,10 @@ Object {
             "key": "ref",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "console",
               ],
@@ -28920,6 +29376,10 @@ Object {
             "key": "ref",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "console",
               ],
@@ -28992,6 +29452,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -30636,6 +31100,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -31192,6 +31660,10 @@ Object {
                   },
                   "type": "PROPERTY_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "Test",
                     ],
@@ -31612,6 +32084,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -31943,7 +32419,7 @@ exports[`UiJsxCanvas render renders a canvas testing a multitude of export style
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/e55 utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:b93 utopia-storyboard-uid/scene-aaa/app-entity:b93/2f0 utopia-storyboard-uid/scene-aaa/app-entity:b93/59c utopia-storyboard-uid/scene-aaa/app-entity:b93/54b utopia-storyboard-uid/scene-aaa/app-entity:b93/d18 utopia-storyboard-uid/scene-aaa/app-entity:b93/995 utopia-storyboard-uid/scene-aaa/app-entity:b93/0cf utopia-storyboard-uid/scene-aaa/app-entity:b93/d00 utopia-storyboard-uid/scene-aaa/app-entity:b93/7d0 utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/477 utopia-storyboard-uid/scene-aaa/app-entity:b93/d7f utopia-storyboard-uid/scene-aaa/app-entity:b93/315 utopia-storyboard-uid/scene-aaa/app-entity:b93/5b9 utopia-storyboard-uid/scene-aaa/app-entity:b93/1a1 utopia-storyboard-uid/scene-aaa/app-entity:b93/301 utopia-storyboard-uid/scene-aaa/app-entity:b93/8ce utopia-storyboard-uid/scene-aaa/app-entity:b93/f77 utopia-storyboard-uid/scene-aaa/app-entity:b93/218 utopia-storyboard-uid/scene-aaa/app-entity:b93/a17 utopia-storyboard-uid/scene-aaa/app-entity:b93/8aa\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -32673,6 +33149,10 @@ Object {
                 "uid": "",
               },
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "DefaultExpression",
                 ],
@@ -33890,6 +34370,10 @@ export var App = (props) => {
             "uid": "",
           },
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "DefaultExpression",
             ],
@@ -34064,7 +34548,7 @@ export var App = (props) => {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/e55": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:b93/4cf/477": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -34072,6 +34556,10 @@ export var App = (props) => {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "DefaultExpression",
         ],
@@ -34150,7 +34638,7 @@ export var App = (props) => {
         Array [
           "b93",
           "4cf",
-          "e55",
+          "477",
         ],
       ],
       "type": "elementpath",
@@ -35618,7 +36106,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/165 utopia-storyboard-uid/scene-aaa/app-entity:aaa/165/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/517 utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -35651,19 +36139,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/165/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/165/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/165/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -36008,6 +36496,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "MyCard",
@@ -36048,6 +36540,10 @@ Object {
                     "key": "title",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "n",
                       ],
@@ -36266,7 +36762,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/165": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -36274,6 +36770,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "MyCard",
@@ -36314,6 +36814,10 @@ Object {
                 "key": "title",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "n",
                   ],
@@ -36435,7 +36939,7 @@ Object {
         ],
         Array [
           "aaa",
-          "165",
+          "517",
         ],
       ],
       "type": "elementpath",
@@ -36499,7 +37003,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/165/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -36540,6 +37044,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -36607,7 +37115,7 @@ Object {
         ],
         Array [
           "aaa",
-          "165",
+          "517",
           "bbb~~~1",
         ],
       ],
@@ -36676,7 +37184,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/165/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -36717,6 +37225,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -36784,7 +37296,7 @@ Object {
         ],
         Array [
           "aaa",
-          "165",
+          "517",
           "bbb~~~2",
         ],
       ],
@@ -36853,7 +37365,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/165/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/517/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -36894,6 +37406,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -36961,7 +37477,7 @@ Object {
         ],
         Array [
           "aaa",
-          "165",
+          "517",
           "bbb~~~3",
         ],
       ],
@@ -37038,7 +37554,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8 utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -37071,19 +37587,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block corre
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -37428,6 +37944,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "MyCard",
@@ -37468,6 +37988,10 @@ Object {
                     "key": "title",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "div",
                       ],
@@ -37687,7 +38211,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -37695,6 +38219,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "MyCard",
@@ -37735,6 +38263,10 @@ Object {
                 "key": "title",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "div",
                   ],
@@ -37857,7 +38389,7 @@ Object {
         ],
         Array [
           "aaa",
-          "94e",
+          "5d8",
         ],
       ],
       "type": "elementpath",
@@ -37921,7 +38453,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -37962,6 +38494,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "div",
               ],
@@ -38030,7 +38566,7 @@ Object {
         ],
         Array [
           "aaa",
-          "94e",
+          "5d8",
           "bbb~~~1",
         ],
       ],
@@ -38099,7 +38635,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -38140,6 +38676,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "div",
               ],
@@ -38208,7 +38748,7 @@ Object {
         ],
         Array [
           "aaa",
-          "94e",
+          "5d8",
           "bbb~~~2",
         ],
       ],
@@ -38277,7 +38817,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/94e/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/5d8/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -38318,6 +38858,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "div",
               ],
@@ -38386,7 +38930,7 @@ Object {
         ],
         Array [
           "aaa",
-          "94e",
+          "5d8",
           "bbb~~~3",
         ],
       ],
@@ -38463,7 +39007,7 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/415 utopia-storyboard-uid/scene-aaa/app-entity:aaa/415/bbb\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -38496,19 +39040,19 @@ exports[`UiJsxCanvas render renders a component used in an arbitrary block with 
       >
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/415/bbb~~~1:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~1:xxx\\"
         >
           n1
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/415/bbb~~~2:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~2:xxx\\"
         >
           n2
         </div>
         <div
           data-uid=\\"xxx\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/415/bbb~~~3:xxx\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~3:xxx\\"
         >
           n3
         </div>
@@ -38853,6 +39397,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "nestedThings",
               "React",
@@ -38894,6 +39442,10 @@ Object {
                     "key": "title",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "n",
                       ],
@@ -39118,7 +39670,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/415": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39126,6 +39678,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "nestedThings",
           "React",
@@ -39167,6 +39723,10 @@ Object {
                 "key": "title",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "n",
                   ],
@@ -39294,7 +39854,7 @@ Object {
         ],
         Array [
           "aaa",
-          "415",
+          "d7c",
         ],
       ],
       "type": "elementpath",
@@ -39358,7 +39918,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/415/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39399,6 +39959,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -39466,7 +40030,7 @@ Object {
         ],
         Array [
           "aaa",
-          "415",
+          "d7c",
           "bbb~~~1",
         ],
       ],
@@ -39535,7 +40099,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/415/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39576,6 +40140,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -39643,7 +40211,7 @@ Object {
         ],
         Array [
           "aaa",
-          "415",
+          "d7c",
           "bbb~~~2",
         ],
       ],
@@ -39712,7 +40280,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/415/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/d7c/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -39753,6 +40321,10 @@ Object {
             "key": "title",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "n",
               ],
@@ -39820,7 +40392,7 @@ Object {
         ],
         Array [
           "aaa",
-          "415",
+          "d7c",
           "bbb~~~3",
         ],
       ],
@@ -40376,6 +40948,10 @@ Object {
               "trailingComments": Array [],
             },
             "spreadValue": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "props",
               ],
@@ -41811,6 +42387,10 @@ Object {
                 "key": "thing",
                 "type": "JSX_ATTRIBUTES_ENTRY",
                 "value": Object {
+                  "comments": Object {
+                    "leadingComments": Array [],
+                    "trailingComments": Array [],
+                  },
                   "definedElsewhere": Array [
                     "React",
                     "utopiaCanvasJSXLookup",
@@ -42081,6 +42661,10 @@ export var storyboard = (
             "key": "thing",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "React",
                 "utopiaCanvasJSXLookup",
@@ -42663,6 +43247,10 @@ Object {
             "key": "value",
             "type": "JSX_ATTRIBUTES_ENTRY",
             "value": Object {
+              "comments": Object {
+                "leadingComments": Array [],
+                "trailingComments": Array [],
+              },
               "definedElsewhere": Array [
                 "storeRef",
               ],
@@ -44065,7 +44653,7 @@ exports[`UiJsxCanvas render renders fine with two circularly referencing arbitra
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/492 utopia-storyboard-uid/scene/app-entity:aaa/8b0\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene utopia-storyboard-uid/scene/app-entity utopia-storyboard-uid/scene/app-entity:aaa utopia-storyboard-uid/scene/app-entity:aaa/ada utopia-storyboard-uid/scene/app-entity:aaa/848\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -44393,6 +44981,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "b",
             ],
@@ -44465,6 +45057,10 @@ export var storyboard = (
             "uid": "",
           },
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "a",
             ],
@@ -44658,7 +45254,7 @@ export var storyboard = (
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene/app-entity:aaa/492": Object {
+  "utopia-storyboard-uid/scene/app-entity:aaa/848": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -44666,154 +45262,10 @@ export var storyboard = (
     "element": Object {
       "type": "RIGHT",
       "value": Object {
-        "definedElsewhere": Array [
-          "b",
-        ],
-        "elementsWithin": Object {},
-        "javascript": "b(5);",
-        "originalJavascript": "b(5)",
-        "sourceMap": Object {
-          "file": "code.tsx",
-          "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
-          "names": Array [
-            "b",
-          ],
-          "sources": Array [
-            "code.tsx",
-          ],
-          "sourcesContent": Array [
-            "import * as React from 'react'
-import Utopia, {
-  Scene,
-  Storyboard,
-  registerModule,
-} from 'utopia-api'
-
-function a(n) {
-  if (n <= 0) {
-    return 0
-  } else {
-    return b(n - 1)
-  }
-}
-
-export var App = (props) => {
-  return (
-    <div
-      data-uid={'aaa'}
-      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
-      
-    >{b(5)} - {a(5)}</div>
-  )
-}
-
-function b(n) {
-  if (n <= 0) {
-    return 0
-  } else {
-    return a(n - 1)
-  }
-}
-
-export var storyboard = (
-  <Storyboard data-uid={'utopia-storyboard-uid'} >
-    <Scene
-      data-uid={'scene'}
-      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
-    >
-      <App data-uid='app-entity' />
-    </Scene>
-  </Storyboard>
-)",
-          ],
-          "version": 3,
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
         },
-        "transpiledJavascript": "return b(5);",
-        "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-        "uid": "",
-      },
-    },
-    "elementPath": Object {
-      "parts": Array [
-        Array [
-          "utopia-storyboard-uid",
-          "scene",
-          "app-entity",
-        ],
-        Array [
-          "aaa",
-          "492",
-        ],
-      ],
-      "type": "elementpath",
-    },
-    "globalFrame": null,
-    "importInfo": null,
-    "isEmotionOrStyledComponent": false,
-    "label": null,
-    "localFrame": null,
-    "specialSizeMeasurements": Object {
-      "alignItems": null,
-      "borderRadius": null,
-      "clientHeight": 0,
-      "clientWidth": 0,
-      "closestOffsetParentPath": Object {
-        "parts": Array [],
-        "type": "elementpath",
-      },
-      "coordinateSystemBounds": null,
-      "display": "initial",
-      "flexDirection": null,
-      "float": "none",
-      "fontSize": null,
-      "fontStyle": null,
-      "fontWeight": null,
-      "gap": null,
-      "globalContentBoxForChildren": null,
-      "globalFrameWithTextContent": null,
-      "hasPositionOffset": false,
-      "hasTransform": false,
-      "htmlElementName": "div",
-      "immediateParentBounds": Object {
-        "height": 0,
-        "width": 0,
-        "x": 0,
-        "y": 0,
-      },
-      "immediateParentProvidesLayout": true,
-      "justifyContent": null,
-      "layoutSystemForChildren": "flow",
-      "margin": Object {},
-      "naturalHeight": null,
-      "naturalWidth": null,
-      "offset": Object {
-        "x": 0,
-        "y": 0,
-      },
-      "padding": Object {},
-      "parentFlexDirection": null,
-      "parentFlexGap": 0,
-      "parentHugsOnMainAxis": false,
-      "parentJustifyContent": null,
-      "parentLayoutSystem": "flow",
-      "parentPadding": Object {},
-      "parentTextDirection": "ltr",
-      "position": "static",
-      "providesBoundsForAbsoluteChildren": false,
-      "renderedChildrenCount": 0,
-      "textDecorationLine": null,
-      "usesParentBounds": false,
-    },
-    "textContent": null,
-  },
-  "utopia-storyboard-uid/scene/app-entity:aaa/8b0": Object {
-    "attributeMetadatada": Object {},
-    "componentInstance": false,
-    "computedStyle": Object {},
-    "conditionValue": "not-a-conditional",
-    "element": Object {
-      "type": "RIGHT",
-      "value": Object {
         "definedElsewhere": Array [
           "a",
         ],
@@ -44890,7 +45342,159 @@ export var storyboard = (
         ],
         Array [
           "aaa",
-          "8b0",
+          "848",
+        ],
+      ],
+      "type": "elementpath",
+    },
+    "globalFrame": null,
+    "importInfo": null,
+    "isEmotionOrStyledComponent": false,
+    "label": null,
+    "localFrame": null,
+    "specialSizeMeasurements": Object {
+      "alignItems": null,
+      "borderRadius": null,
+      "clientHeight": 0,
+      "clientWidth": 0,
+      "closestOffsetParentPath": Object {
+        "parts": Array [],
+        "type": "elementpath",
+      },
+      "coordinateSystemBounds": null,
+      "display": "initial",
+      "flexDirection": null,
+      "float": "none",
+      "fontSize": null,
+      "fontStyle": null,
+      "fontWeight": null,
+      "gap": null,
+      "globalContentBoxForChildren": null,
+      "globalFrameWithTextContent": null,
+      "hasPositionOffset": false,
+      "hasTransform": false,
+      "htmlElementName": "div",
+      "immediateParentBounds": Object {
+        "height": 0,
+        "width": 0,
+        "x": 0,
+        "y": 0,
+      },
+      "immediateParentProvidesLayout": true,
+      "justifyContent": null,
+      "layoutSystemForChildren": "flow",
+      "margin": Object {},
+      "naturalHeight": null,
+      "naturalWidth": null,
+      "offset": Object {
+        "x": 0,
+        "y": 0,
+      },
+      "padding": Object {},
+      "parentFlexDirection": null,
+      "parentFlexGap": 0,
+      "parentHugsOnMainAxis": false,
+      "parentJustifyContent": null,
+      "parentLayoutSystem": "flow",
+      "parentPadding": Object {},
+      "parentTextDirection": "ltr",
+      "position": "static",
+      "providesBoundsForAbsoluteChildren": false,
+      "renderedChildrenCount": 0,
+      "textDecorationLine": null,
+      "usesParentBounds": false,
+    },
+    "textContent": null,
+  },
+  "utopia-storyboard-uid/scene/app-entity:aaa/ada": Object {
+    "attributeMetadatada": Object {},
+    "componentInstance": false,
+    "computedStyle": Object {},
+    "conditionValue": "not-a-conditional",
+    "element": Object {
+      "type": "RIGHT",
+      "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
+        "definedElsewhere": Array [
+          "b",
+        ],
+        "elementsWithin": Object {},
+        "javascript": "b(5);",
+        "originalJavascript": "b(5)",
+        "sourceMap": Object {
+          "file": "code.tsx",
+          "mappings": "OAAE,CAAC,CAAH,CAAG,CAAFA",
+          "names": Array [
+            "b",
+          ],
+          "sources": Array [
+            "code.tsx",
+          ],
+          "sourcesContent": Array [
+            "import * as React from 'react'
+import Utopia, {
+  Scene,
+  Storyboard,
+  registerModule,
+} from 'utopia-api'
+
+function a(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return b(n - 1)
+  }
+}
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid={'aaa'}
+      style={{ width: '100%', height: '100%', backgroundColor: '#FFFFFF' }}
+      
+    >{b(5)} - {a(5)}</div>
+  )
+}
+
+function b(n) {
+  if (n <= 0) {
+    return 0
+  } else {
+    return a(n - 1)
+  }
+}
+
+export var storyboard = (
+  <Storyboard data-uid={'utopia-storyboard-uid'} >
+    <Scene
+      data-uid={'scene'}
+      style={{ position: 'absolute', left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid='app-entity' />
+    </Scene>
+  </Storyboard>
+)",
+          ],
+          "version": 3,
+        },
+        "transpiledJavascript": "return b(5);",
+        "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+        "uid": "",
+      },
+    },
+    "elementPath": Object {
+      "parts": Array [
+        Array [
+          "utopia-storyboard-uid",
+          "scene",
+          "app-entity",
+        ],
+        Array [
+          "aaa",
+          "ada",
         ],
       ],
       "type": "elementpath",
@@ -46030,6 +46634,10 @@ Object {
                   },
                   "type": "SPREAD_ASSIGNMENT",
                   "value": Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "props",
                     ],
@@ -48296,7 +48904,7 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
   <div
     id=\\"canvas-container\\"
     style=\\"position: absolute\\"
-    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1 utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb/ccc/58a\\"
+    data-utopia-valid-paths=\\"utopia-storyboard-uid utopia-storyboard-uid/scene-aaa utopia-storyboard-uid/scene-aaa/app-entity utopia-storyboard-uid/scene-aaa/app-entity:aaa utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4 utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb/ccc utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb/ccc/b6e\\"
     data-utopia-root-element-path=\\"utopia-storyboard-uid\\"
   >
     <div
@@ -48329,33 +48937,33 @@ exports[`UiJsxCanvas render supports passing down the scope to children of compo
       >
         <div
           data-uid=\\"bbb~~~1\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~1\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~1\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~1/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~1/ccc\\"
           >
             1
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~2\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~2\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~2\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~2/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~2/ccc\\"
           >
             2
           </div>
         </div>
         <div
           data-uid=\\"bbb~~~3\\"
-          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~3\\"
+          data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~3\\"
         >
           <div
             data-uid=\\"ccc\\"
-            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~3/ccc\\"
+            data-path=\\"utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~3/ccc\\"
           >
             3
           </div>
@@ -48701,6 +49309,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "React",
               "utopiaCanvasJSXLookup",
@@ -48711,6 +49323,10 @@ Object {
                   Object {
                     "children": Array [
                       Object {
+                        "comments": Object {
+                          "leadingComments": Array [],
+                          "trailingComments": Array [],
+                        },
                         "definedElsewhere": Array [
                           "n",
                         ],
@@ -48988,7 +49604,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -48996,6 +49612,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "React",
           "utopiaCanvasJSXLookup",
@@ -49006,6 +49626,10 @@ Object {
               Object {
                 "children": Array [
                   Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
                     "definedElsewhere": Array [
                       "n",
                     ],
@@ -49186,7 +49810,7 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
         ],
       ],
       "type": "elementpath",
@@ -49250,7 +49874,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~1": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~1": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -49262,6 +49886,10 @@ Object {
           Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                 ],
@@ -49382,7 +50010,7 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~1",
         ],
       ],
@@ -49451,7 +50079,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~1/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~1/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -49461,6 +50089,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
             ],
@@ -49552,7 +50184,7 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~1",
           "ccc",
         ],
@@ -49622,7 +50254,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~1/ccc/58a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~1/ccc/b6e": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -49630,6 +50262,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
         ],
@@ -49692,10 +50328,10 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~1",
           "ccc",
-          "58a",
+          "b6e",
         ],
       ],
       "type": "elementpath",
@@ -49759,7 +50395,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~2": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~2": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -49771,6 +50407,10 @@ Object {
           Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                 ],
@@ -49891,7 +50531,7 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~2",
         ],
       ],
@@ -49960,7 +50600,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~2/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~2/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -49970,6 +50610,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
             ],
@@ -50061,7 +50705,7 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~2",
           "ccc",
         ],
@@ -50131,7 +50775,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~2/ccc/58a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~2/ccc/b6e": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -50139,6 +50783,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
         ],
@@ -50201,10 +50849,10 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~2",
           "ccc",
-          "58a",
+          "b6e",
         ],
       ],
       "type": "elementpath",
@@ -50268,7 +50916,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~3": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~3": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -50280,6 +50928,10 @@ Object {
           Object {
             "children": Array [
               Object {
+                "comments": Object {
+                  "leadingComments": Array [],
+                  "trailingComments": Array [],
+                },
                 "definedElsewhere": Array [
                   "n",
                 ],
@@ -50400,7 +51052,7 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~3",
         ],
       ],
@@ -50469,7 +51121,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~3/ccc": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~3/ccc": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -50479,6 +51131,10 @@ Object {
       "value": Object {
         "children": Array [
           Object {
+            "comments": Object {
+              "leadingComments": Array [],
+              "trailingComments": Array [],
+            },
             "definedElsewhere": Array [
               "n",
             ],
@@ -50570,7 +51226,7 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~3",
           "ccc",
         ],
@@ -50640,7 +51296,7 @@ Object {
     },
     "textContent": null,
   },
-  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/6d1/bbb~~~3/ccc/58a": Object {
+  "utopia-storyboard-uid/scene-aaa/app-entity:aaa/eb4/bbb~~~3/ccc/b6e": Object {
     "attributeMetadatada": Object {},
     "componentInstance": false,
     "computedStyle": Object {},
@@ -50648,6 +51304,10 @@ Object {
     "element": Object {
       "type": "RIGHT",
       "value": Object {
+        "comments": Object {
+          "leadingComments": Array [],
+          "trailingComments": Array [],
+        },
         "definedElsewhere": Array [
           "n",
         ],
@@ -50710,10 +51370,10 @@ Object {
         ],
         Array [
           "aaa",
-          "6d1",
+          "eb4",
           "bbb~~~3",
           "ccc",
-          "58a",
+          "b6e",
         ],
       ],
       "type": "elementpath",

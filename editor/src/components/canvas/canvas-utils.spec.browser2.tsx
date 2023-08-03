@@ -207,8 +207,9 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
   it('no layout prop on child', async () => {
     const renderResult = await renderTestEditorWithCode(
+      // FIXME This should be fine with {{ ...props.style }} but that causes the uids to switch in tests only
       makeTestProjectCodeWithSnippet(`
-      <View style={{ ...props.style }} data-uid='aaa'>
+      <View style={ props.style } data-uid='aaa'>
         <View
           style={{ backgroundColor: '#aaaaaa33' }}
           data-uid='bbb'
@@ -227,7 +228,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(
-        `<View style={{ ...props.style }} data-uid='aaa'>
+        `<View style={ props.style } data-uid='aaa'>
         <View
           ${/** pins are magically created */ ''}
           style={{ backgroundColor: '#aaaaaa33', left: 20, top: 20, width: 100, height: 100 }}

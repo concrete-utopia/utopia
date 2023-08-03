@@ -24,7 +24,7 @@ import {
   emptyAttributeMetadata,
   emptyComments,
   jsxFragment,
-  jsExpression,
+  jsExpressionOtherJavaScript,
   isJSXElement,
   importedOrigin,
 } from '../shared/element-template'
@@ -453,7 +453,17 @@ describe('targetElementSupportsChildren', () => {
     const element = dummyInstanceDataForElementType(
       jsxElementName('div', []),
       path,
-      [jsExpression('<div />', '<div />;', 'return <div />;', [], null, {})], // Whatever, close enough
+      [
+        jsExpressionOtherJavaScript(
+          '<div />',
+          '<div />;',
+          'return <div />;',
+          [],
+          null,
+          {},
+          emptyComments,
+        ),
+      ], // Whatever, close enough
     )
     const actualResult = MetadataUtils.targetElementSupportsChildren(
       {},
@@ -524,7 +534,15 @@ describe('targetElementSupportsChildren', () => {
             'div',
             [],
             [
-              jsExpression('<div />', '<div />;', 'return <div />;', [], null, {}), // Whatever, close enough
+              jsExpressionOtherJavaScript(
+                '<div />',
+                '<div />;',
+                'return <div />;',
+                [],
+                null,
+                {},
+                emptyComments,
+              ), // Whatever, close enough
             ],
           ),
         ],

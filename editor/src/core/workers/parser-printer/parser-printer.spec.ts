@@ -8,7 +8,6 @@ import {
   modifiableAttributeIsAttributeOtherJavaScript,
   isJSXElement,
   isUtopiaJSXComponent,
-  jsExpression,
   jsxArraySpread,
   jsxArrayValue,
   jsExpressionFunctionCall,
@@ -105,10 +104,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -245,10 +246,12 @@ export function whatever(props) {
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -389,10 +392,12 @@ export default function whatever(props) {
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -530,10 +535,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -603,10 +610,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -616,10 +625,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -688,10 +699,12 @@ export var whatever = (props) => <View data-uid='aaa'>
         style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         left: jsExpressionOtherJavaScript(
           'props.leftOfTheCake[0].hat',
+          'props.leftOfTheCake[0].hat',
           'return props.leftOfTheCake[0].hat;',
           ['props'],
           expect.objectContaining({}),
           {},
+          emptyComments,
         ),
         right: jsExpressionValue(20, emptyComments),
         top: jsExpressionValue(-20, emptyComments),
@@ -761,10 +774,12 @@ export var whatever = (props) => <View data-uid='aaa'>
         style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
         left: jsExpressionOtherJavaScript(
           'props.leftOfTheCake[0].hat',
+          'props.leftOfTheCake[0].hat',
           'return props.leftOfTheCake[0].hat;',
           ['props'],
           expect.objectContaining({}),
           {},
+          emptyComments,
         ),
         right: jsExpressionValue(20, emptyComments),
         top: jsExpressionValue(-20, emptyComments),
@@ -776,10 +791,12 @@ export var whatever = (props) => <View data-uid='aaa'>
         style: jsExpressionValue({ backgroundColor: 'blue' }, emptyComments),
         left: jsExpressionOtherJavaScript(
           'props.rightOfTheCake[0].hat',
+          'props.rightOfTheCake[0].hat',
           'return props.rightOfTheCake[0].hat;',
           ['props'],
           expect.objectContaining({}),
           {},
+          emptyComments,
         ),
         right: jsExpressionValue(10, emptyComments),
         top: jsExpressionValue(-10, emptyComments),
@@ -852,10 +869,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       ),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -931,6 +950,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'getSizing(spacing)',
+        'getSizing(spacing)',
         'return getSizing(spacing);',
         ['getSizing', 'spacing'],
         expect.objectContaining({
@@ -939,10 +959,12 @@ export var whatever = (props) => <View data-uid='aaa'>
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
       onClick: jsExpressionOtherJavaScript(
+        `function click(){console.log('click')}`,
         `function click(){console.log('click')}`,
         `return (function click() {
   console.log('click');
@@ -954,6 +976,7 @@ export var whatever = (props) => <View data-uid='aaa'>
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
     })
     const cake = jsxElement('cake', 'aab', cakeAttributes, [])
@@ -1081,10 +1104,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -1182,10 +1207,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -1289,10 +1316,12 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.leftOfTheCake[0].hat',
+        'props.leftOfTheCake[0].hat',
         'return props.leftOfTheCake[0].hat;',
         ['props'],
         expect.objectContaining({}),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -1383,6 +1412,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'spacing',
+        'spacing',
         'return spacing;',
         ['spacing'],
         expect.objectContaining({
@@ -1391,6 +1421,7 @@ export var whatever = (props) => <View data-uid='aaa'>
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -1470,6 +1501,7 @@ export var whatever = (props) => {
         jsxAttributesFromMap({
           backgroundColor: jsExpressionOtherJavaScript(
             'bgs[0]',
+            'bgs[0]',
             'return bgs[0];',
             ['bgs'],
             expect.objectContaining({
@@ -1478,6 +1510,7 @@ export var whatever = (props) => {
               file: 'code.tsx',
             }),
             {},
+            emptyComments,
           ),
         }),
         emptyComments,
@@ -1548,6 +1581,7 @@ export var whatever = (props) => {
           jsxArraySpread(
             jsExpressionOtherJavaScript(
               'greys',
+              'greys',
               'return greys;',
               ['greys'],
               expect.objectContaining({
@@ -1556,6 +1590,7 @@ export var whatever = (props) => {
                 file: 'code.tsx',
               }),
               {},
+              emptyComments,
             ),
             emptyComments,
           ),
@@ -1623,6 +1658,7 @@ export var whatever = (props) => {
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
         'a + b',
+        'a + b',
         'return a + b;',
         ['a', 'b'],
         expect.objectContaining({
@@ -1631,6 +1667,7 @@ export var whatever = (props) => {
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
@@ -1696,6 +1733,7 @@ export var whatever = (props) => {
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
         'a ? b : c',
+        'a ? b : c',
         'return a ? b : c;',
         ['a', 'b', 'c'],
         expect.objectContaining({
@@ -1704,6 +1742,7 @@ export var whatever = (props) => {
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
@@ -1769,6 +1808,7 @@ export var whatever = (props) => {
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
         'a++',
+        'a++',
         'return a++;',
         ['a'],
         expect.objectContaining({
@@ -1777,8 +1817,10 @@ export var whatever = (props) => {
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
       right: jsExpressionOtherJavaScript(
+        '++a',
         '++a',
         'return ++a;',
         ['a'],
@@ -1788,6 +1830,7 @@ export var whatever = (props) => {
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
@@ -1850,6 +1893,7 @@ export var whatever = (props) => {
       'data-uid': jsExpressionValue('aaa', emptyComments),
       left: jsExpressionOtherJavaScript(
         'b.a',
+        'b.a',
         'return b.a;',
         ['b'],
         expect.objectContaining({
@@ -1858,6 +1902,7 @@ export var whatever = (props) => {
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
     })
     const view = jsxElement('View', 'aaa', viewAttributes, [])
@@ -1926,6 +1971,7 @@ export var whatever = (props) => {
           jsxSpreadAssignment(
             jsExpressionOtherJavaScript(
               'bg',
+              'bg',
               'return bg;',
               ['bg'],
               expect.objectContaining({
@@ -1934,6 +1980,7 @@ export var whatever = (props) => {
                 file: 'code.tsx',
               }),
               {},
+              emptyComments,
             ),
             emptyComments,
           ),
@@ -2010,6 +2057,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       text: jsExpressionOtherJavaScript(
         '`Count ${count}`',
+        '`Count ${count}`',
         'return "Count ".concat(count);',
         ['count'],
         expect.objectContaining({
@@ -2018,6 +2066,7 @@ export var whatever = (props) => <View data-uid='aaa'>
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
     })
     const cake = jsxElement('cake', 'aab', cakeAttributes, [])
@@ -2101,6 +2150,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'use20 ? 20 : 10',
+        'use20 ? 20 : 10',
         'return use20 ? 20 : 10;',
         ['use20'],
         expect.objectContaining({
@@ -2109,6 +2159,7 @@ export var whatever = (props) => <View data-uid='aaa'>
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -2257,6 +2308,7 @@ export var whatever = (props) => <View data-uid='aaa'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'props.left + spacing',
+        'props.left + spacing',
         'return props.left + spacing;',
         ['spacing', 'props'],
         expect.objectContaining({
@@ -2265,6 +2317,7 @@ export var whatever = (props) => <View data-uid='aaa'>
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -2478,10 +2531,12 @@ export var whatever = props => (
             'left',
             jsExpressionOtherJavaScript(
               'props.layout.left',
+              'props.layout.left',
               'return props.layout.left;',
               ['props'],
               expect.objectContaining({}),
               {},
+              emptyComments,
             ),
             emptyComments,
             emptyComments,
@@ -2490,10 +2545,12 @@ export var whatever = props => (
             'top',
             jsExpressionOtherJavaScript(
               'props.layout.top',
+              'props.layout.top',
               'return props.layout.top;',
               ['props'],
               expect.objectContaining({}),
               {},
+              emptyComments,
             ),
             emptyComments,
             emptyComments,
@@ -2664,10 +2721,12 @@ export var whatever = (props) => <View data-uid='aaa'>
               color: jsxAttributeNestedArraySimple([
                 jsExpressionOtherJavaScript(
                   'props.color',
+                  'props.color',
                   'return props.color;',
                   ['props'],
                   expect.objectContaining({}),
                   {},
+                  emptyComments,
                 ),
                 jsExpressionValue(-200, emptyComments),
               ]),
@@ -2807,7 +2866,7 @@ export var App = (props) => <View data-uid='bbb'>
       clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
     )
     const emptyBrackets = {
-      ...jsExpression('', '', 'return undefined', [], null, {}),
+      ...jsExpressionOtherJavaScript('', '', 'return undefined', [], null, {}, emptyComments),
       uid: expect.any(String),
     }
     const view = clearJSXElementChildUniqueIDs(
@@ -2936,6 +2995,7 @@ export var App = (props) => <View data-uid='bbb'>
       style: jsExpressionValue({ backgroundColor: 'red' }, emptyComments),
       left: jsExpressionOtherJavaScript(
         'getSizing(spacing)',
+        'getSizing(spacing)',
         'return getSizing(spacing);',
         ['getSizing', 'spacing'],
         expect.objectContaining({
@@ -2944,6 +3004,7 @@ export var App = (props) => <View data-uid='bbb'>
           file: 'code.tsx',
         }),
         {},
+        emptyComments,
       ),
       right: jsExpressionValue(20, emptyComments),
       top: jsExpressionValue(-20, emptyComments),
@@ -3337,10 +3398,12 @@ export var whatever = props => {
             color: jsxAttributeNestedArraySimple([
               jsExpressionOtherJavaScript(
                 'props.color',
+                'props.color',
                 'return props.color;',
                 ['props'],
                 expect.objectContaining({}),
                 {},
+                emptyComments,
               ),
               jsExpressionValue(-200, emptyComments),
             ]),
@@ -3348,19 +3411,23 @@ export var whatever = props => {
               jsExpressionValue(15, emptyComments),
               jsExpressionOtherJavaScript(
                 'props.shadowValue',
+                'props.shadowValue',
                 'return props.shadowValue;',
                 ['props'],
                 expect.objectContaining({}),
                 {},
+                emptyComments,
               ),
               jsxAttributeNestedArraySimple([
                 jsExpressionValue('hello', emptyComments),
                 jsExpressionOtherJavaScript(
                   'props.there',
+                  'props.there',
                   'return props.there;',
                   ['props'],
                   expect.objectContaining({}),
                   {},
+                  emptyComments,
                 ),
               ]),
             ]),
@@ -3529,6 +3596,7 @@ return { test: test };`
                     'data-uid': jsExpressionValue('aab', emptyComments),
                     left: jsExpressionOtherJavaScript(
                       'test(100)',
+                      'test(100)',
                       'return test(100);',
                       ['test'],
                       expect.objectContaining({
@@ -3537,6 +3605,7 @@ return { test: test };`
                         file: 'code.tsx',
                       }),
                       {},
+                      emptyComments,
                     ),
                   }),
                   [],
@@ -3597,6 +3666,7 @@ return { test: test };`
                   'data-uid': jsExpressionValue('aab', emptyComments),
                   left: jsExpressionOtherJavaScript(
                     'test(100)',
+                    'test(100)',
                     'return test(100);',
                     ['test'],
                     expect.objectContaining({
@@ -3605,6 +3675,7 @@ return { test: test };`
                       file: 'code.tsx',
                     }),
                     {},
+                    emptyComments,
                   ),
                 }),
                 [],
@@ -3730,6 +3801,7 @@ export var App = props => {
                 [],
               ),
             },
+            emptyComments,
           ),
         ],
       ),
@@ -3862,6 +3934,7 @@ export var App = props => {
                 [],
               ),
             },
+            emptyComments,
           ),
         ],
       ),
@@ -3926,6 +3999,7 @@ export var App = props => {
                 [],
               ),
             },
+            emptyComments,
           ),
         ],
       ),
@@ -4081,31 +4155,39 @@ export var App = props => {
             jsxAttributesFromMap({
               height: jsExpressionOtherJavaScript(
                 'props.layout.height',
+                'props.layout.height',
                 'return props.layout.height;',
                 ['props'],
                 expect.objectContaining({}),
                 {},
+                emptyComments,
               ),
               left: jsExpressionOtherJavaScript(
+                'props.layout.left',
                 'props.layout.left',
                 'return props.layout.left;',
                 ['props'],
                 expect.objectContaining({}),
                 {},
+                emptyComments,
               ),
               width: jsExpressionOtherJavaScript(
+                'props.layout.width',
                 'props.layout.width',
                 'return props.layout.width;',
                 ['props'],
                 expect.objectContaining({}),
                 {},
+                emptyComments,
               ),
               top: jsExpressionOtherJavaScript(
+                'props.layout.top',
                 'props.layout.top',
                 'return props.layout.top;',
                 ['props'],
                 expect.objectContaining({}),
                 {},
+                emptyComments,
               ),
             }),
             emptyComments,
@@ -4442,7 +4524,7 @@ return { result: result };`
         }),
       },
     )
-    const innerBlock = jsExpression(
+    const innerBlock = jsExpressionOtherJavaScript(
       'result',
       'result;',
       'return result;',
@@ -4453,6 +4535,7 @@ return { result: result };`
         file: 'code.tsx',
       }),
       {},
+      emptyComments,
     )
     const view = jsxElement(
       'div',
@@ -4518,10 +4601,12 @@ export var whatever = props => {
                 'left',
                 jsExpressionOtherJavaScript(
                   `n * 30`,
+                  `n * 30`,
                   `return n * 30;`,
                   ['n'],
                   expect.objectContaining({}),
                   {},
+                  emptyComments,
                 ),
                 emptyComments,
                 emptyComments,
@@ -4530,10 +4615,12 @@ export var whatever = props => {
                 'top',
                 jsExpressionOtherJavaScript(
                   `n * 30`,
+                  `n * 30`,
                   `return n * 30;`,
                   ['n'],
                   expect.objectContaining({}),
                   {},
+                  emptyComments,
                 ),
                 emptyComments,
                 emptyComments,
@@ -4557,6 +4644,7 @@ export var whatever = props => {
         file: 'code.tsx',
       }),
       { bbb: innerElement },
+      emptyComments,
     )
     const view = clearJSXElementChildUniqueIDs(
       jsxElement(
@@ -4626,10 +4714,12 @@ export var whatever = props => {
                 'left',
                 jsExpressionOtherJavaScript(
                   `n * a`,
+                  `n * a`,
                   `return n * a;`,
                   ['n', 'a'],
                   expect.objectContaining({}),
                   {},
+                  emptyComments,
                 ),
                 emptyComments,
                 emptyComments,
@@ -4638,10 +4728,12 @@ export var whatever = props => {
                 'top',
                 jsExpressionOtherJavaScript(
                   `n * a`,
+                  `n * a`,
                   `return n * a;`,
                   ['n', 'a'],
                   expect.objectContaining({}),
                   {},
+                  emptyComments,
                 ),
                 emptyComments,
                 emptyComments,
@@ -4665,6 +4757,7 @@ export var whatever = props => {
         file: 'code.tsx',
       }),
       { bbb: innerElement },
+      emptyComments,
     )
 
     const topLevelArbitraryBlock = arbitraryJSBlock(

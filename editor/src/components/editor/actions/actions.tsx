@@ -4129,9 +4129,11 @@ export const UPDATE_FNS = {
           condition: jsExpressionOtherJavaScript(
             action.expression,
             action.expression,
+            action.expression,
             oldDefinedElsewhere,
             null,
             oldElementsWithin,
+            emptyComments,
           ),
           originalConditionString: action.expression,
         }

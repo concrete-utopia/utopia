@@ -320,11 +320,14 @@ describe('actions', () => {
         name: 'delete map expression',
         input: `
     <View data-uid='aaa'>
-      {[0,1,2,3].map(() => (<View
-        style={{ background: '#09f', width: 50, height: 50 }}
-        data-uid='bbb'
-        data-testid='bbb'
-      />))}
+      {
+        // @utopia/uid=6bb
+        [0,1,2,3].map(() => (<View
+          style={{ background: '#09f', width: 50, height: 50 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />))
+      }
       <View
         style={{ background: '#f90', width: 50, height: 50 }}
         data-uid='ccc'
@@ -348,11 +351,14 @@ describe('actions', () => {
         name: 'delete expression',
         input: `
     <View data-uid='aaa'>
-      {(() => <View
-        style={{ background: '#09f', width: 50, height: 50 }}
-        data-uid='bbb'
-        data-testid='bbb'
-      />)()}
+      {
+        // @utopia/uid=d16
+        (() => <View
+          style={{ background: '#09f', width: 50, height: 50 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        />)()
+      }
       <View
         style={{ background: '#f90', width: 50, height: 50 }}
         data-uid='ccc'
@@ -1711,10 +1717,13 @@ describe('actions', () => {
     it('can copy-paste an expression end-to-end', async () => {
       const testCode = `
         <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          {(() => (<div data-uid='bbb'>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ddd' style={{width: 60, height: 60}} />
-          </div>))()}
+          {
+            // @utopia/uid=d54
+            (() => (<div data-uid='bbb'>
+              <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
+              <div data-uid='ddd' style={{width: 60, height: 60}} />
+            </div>))()
+          }
         </div>
       `
       const renderResult = await renderTestEditorWithCode(
@@ -1743,42 +1752,48 @@ describe('actions', () => {
             data-uid='aaa'
             style={{ contain: 'layout', width: 300, height: 300 }}
           >
-            {(() => (
-              <div data-uid='bbb'>
-                <div
-                  data-uid='ccc'
-                  style={{
-                    position: 'absolute',
-                    left: 20,
-                    top: 50,
-                    bottom: 150,
-                    width: 100,
-                  }}
-                />
-                <div
-                  data-uid='ddd'
-                  style={{ width: 60, height: 60 }}
-                />
-              </div>
-            ))()}
-            {(() => (
-              <div data-uid='aas'>
-                <div
-                  data-uid='aaj'
-                  style={{
-                    position: 'absolute',
-                    left: 20,
-                    top: 50,
-                    bottom: 150,
-                    width: 100,
-                  }}
-                />
-                <div
-                  data-uid='aap'
-                  style={{ width: 60, height: 60 }}
-                />
-              </div>
-            ))()}
+            {
+              // @utopia/uid=d54
+              (() => (
+                <div data-uid='bbb'>
+                  <div
+                    data-uid='ccc'
+                    style={{
+                      position: 'absolute',
+                      left: 20,
+                      top: 50,
+                      bottom: 150,
+                      width: 100,
+                    }}
+                  />
+                  <div
+                    data-uid='ddd'
+                    style={{ width: 60, height: 60 }}
+                  />
+                </div>
+              ))()
+            }
+            {
+              // @utopia/uid=d54
+              (() => (
+                <div data-uid='aas'>
+                  <div
+                    data-uid='aaj'
+                    style={{
+                      position: 'absolute',
+                      left: 20,
+                      top: 50,
+                      bottom: 150,
+                      width: 100,
+                    }}
+                  />
+                  <div
+                    data-uid='aap'
+                    style={{ width: 60, height: 60 }}
+                  />
+                </div>
+              ))()
+            }
           </div>
   `),
       )
