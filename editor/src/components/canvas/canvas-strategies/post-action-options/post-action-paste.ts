@@ -221,9 +221,7 @@ function pasteChoiceCommon(
 function appendPathPart(path: ElementPath, part: PathPart): ElementPath {
   const basePath = EP.parentPath(path)
 
-  const pathPointsToRootElement =
-    path.parts.length > 1 && path.parts[path.parts.length - 1].length === 1
-  return pathPointsToRootElement
+  return EP.isRootElementOfInstance(path)
     ? EP.appendNewElementPath(basePath, part)
     : EP.appendPartToPath(basePath, part)
 }
