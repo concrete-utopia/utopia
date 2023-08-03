@@ -63,7 +63,7 @@ import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
-  isUtopiaCommentFlagMap,
+  isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 
 export function createLookupRender(
@@ -262,9 +262,9 @@ export function renderCoreElement(
     }
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
-      const commentFlag = findUtopiaCommentFlag(element.comments, 'map')
-      const mapLengthOverride =
-        isJSXMapExpression(element) && isUtopiaCommentFlagMap(commentFlag)
+      const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
+      const mapCountOverride =
+        isJSXMapExpression(element) && isUtopiaCommentFlagMapCount(commentFlag)
           ? commentFlag.value
           : null
 
@@ -327,7 +327,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
-        mapLengthOverride ?? undefined,
+        mapCountOverride ?? undefined,
       )
 
       const blockScope = {

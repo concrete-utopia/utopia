@@ -7,7 +7,7 @@ const UtopiaCommentFlagPrefix = '@utopia/'
 
 export type UtopiaCommentFlagTypeConditional = 'conditional'
 
-export type UtopiaCommentFlagTypeMap = 'map'
+export type UtopiaCommentFlagTypeMapCount = 'map-count'
 
 export type UtopiaCommentFlagTypeUid = 'uid'
 
@@ -18,8 +18,8 @@ export type UtopiaCommentFlagConditional = {
   value: boolean | null
 }
 
-export type UtopiaCommentFlagMap = {
-  type: UtopiaCommentFlagTypeMap
+export type UtopiaCommentFlagMapCount = {
+  type: UtopiaCommentFlagTypeMapCount
   value: number | null
 }
 
@@ -35,13 +35,13 @@ export type UtopiaCommentFlagGroup = {
 
 export type UtopiaCommentFlagType =
   | UtopiaCommentFlagTypeConditional
-  | UtopiaCommentFlagTypeMap
+  | UtopiaCommentFlagTypeMapCount
   | UtopiaCommentFlagTypeUid
   | UtopiaCommentFlagTypeGroup
 
 export type UtopiaCommentFlag =
   | UtopiaCommentFlagConditional
-  | UtopiaCommentFlagMap
+  | UtopiaCommentFlagMapCount
   | UtopiaCommentFlagUid
   | UtopiaCommentFlagGroup
 
@@ -51,10 +51,10 @@ export function isUtopiaCommentFlagConditional(
   return flag?.type === 'conditional'
 }
 
-export function isUtopiaCommentFlagMap(
+export function isUtopiaCommentFlagMapCount(
   flag: UtopiaCommentFlag | null,
-): flag is UtopiaCommentFlagMap {
-  return flag?.type === 'map'
+): flag is UtopiaCommentFlagMapCount {
+  return flag?.type === 'map-count'
 }
 
 export function isUtopiaCommentFlagUid(
@@ -126,9 +126,9 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
           type: 'group',
           value: parseBooleanOrNull(value),
         }
-      case 'map':
+      case 'map-count':
         return {
-          type: 'map',
+          type: 'map-count',
           value: parseIntOrNull(value),
         }
       default:
