@@ -54,6 +54,10 @@ import {
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
+import {
+  trueUpChildrenOfElementChanged,
+  trueUpElementChanged,
+} from '../../../editor/store/editor-state'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
@@ -219,7 +223,7 @@ export function basicResizeStrategy(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) => queueGroupTrueUp(c.elementPath)),
+            ...groupChildren.map((c) => queueGroupTrueUp(trueUpElementChanged(c.elementPath))),
           ])
         } else {
           return strategyApplicationResult([

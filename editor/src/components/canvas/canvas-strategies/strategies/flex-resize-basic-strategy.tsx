@@ -39,6 +39,7 @@ import { getElementDimensions } from './flex-resize-helpers'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
+import { trueUpElementChanged } from '../../../editor/store/editor-state'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -221,7 +222,7 @@ export function flexResizeBasicStrategy(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) => queueGroupTrueUp(c.elementPath)),
+            ...groupChildren.map((c) => queueGroupTrueUp(trueUpElementChanged(c.elementPath))),
           ])
         } else {
           return strategyApplicationResult([

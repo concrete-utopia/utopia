@@ -66,6 +66,7 @@ import type { ElementPathTrees } from '../../../../core/shared/element-path-tree
 import { treatElementAsGroupLike } from './group-helpers'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { trueUpElementChanged } from '../../../editor/store/editor-state'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -352,7 +353,7 @@ export function flexResizeStrategy(
               [{ target: selectedElement, frame: newFrame }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) => queueGroupTrueUp(c.elementPath)),
+            ...groupChildren.map((c) => queueGroupTrueUp(trueUpElementChanged(c.elementPath))),
           ])
         } else {
           return strategyApplicationResult([
