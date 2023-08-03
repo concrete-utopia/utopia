@@ -21,11 +21,11 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
   const { navigatorEntry } = props
   const { elementPath } = navigatorEntry
 
-  const counterValue = useEditorState(
+  const counterValue: number | null = useEditorState(
     Substores.metadata,
     (store) => {
       if (!isRegularNavigatorEntry(navigatorEntry)) {
-        return false
+        return null
       }
       const elementMetadata = MetadataUtils.findElementByElementPath(
         store.editor.jsxMetadata,

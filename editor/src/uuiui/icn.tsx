@@ -38,6 +38,7 @@ export type IcnResultingColor =
   | 'lightorange'
   | 'lightpurple'
   | 'lightblue'
+  | 'lightpink'
 
 function useIconColor(intent: IcnColor): IcnResultingColor {
   const currentTheme: Theme = useEditorState(
@@ -91,7 +92,7 @@ function useIconColor(intent: IcnColor): IcnResultingColor {
       case 'error':
         return 'red'
       case 'overridden':
-        return 'pink'
+        return 'lightpink'
       case 'warning':
         return 'orange'
       case 'component-orange':

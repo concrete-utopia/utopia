@@ -469,3 +469,10 @@ export function groupStateFromJSXElement(
     return null
   }
 }
+
+export function isEmptyGroup(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+  return (
+    treatElementAsGroupLike(metadata, path) &&
+    MetadataUtils.getChildrenUnordered(metadata, path).length === 0
+  )
+}

@@ -21,10 +21,12 @@ function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
     key,
     jsExpressionOtherJavaScript(
       `THREE.${fromThree}`,
+      `THREE.${fromThree}`,
       `return THREE.${fromThree}`,
       ['THREE'],
       null,
       {},
+      emptyComments,
     ),
     emptyComments,
   )

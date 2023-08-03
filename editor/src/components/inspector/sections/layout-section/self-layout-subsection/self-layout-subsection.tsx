@@ -5,6 +5,7 @@ import { emptyComments, jsExpressionValue } from '../../../../../core/shared/ele
 import { shallowEqual } from '../../../../../core/shared/equality-utils'
 import { fastForEach } from '../../../../../core/shared/utils'
 import {
+  FlexRow,
   FunctionIcons,
   Icn,
   InspectorSubsectionHeader,
@@ -180,9 +181,15 @@ const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
 
   return (
     <InspectorSubsectionHeader>
-      <div style={{ flexGrow: 1, display: 'flex', gap: 8 }}>
+      <FlexRow
+        style={{
+          flexGrow: 1,
+          gap: 8,
+          height: 42,
+        }}
+      >
         <EditorContractDropdown />
-      </div>
+      </FlexRow>
       {when(
         layoutType !== 'flow',
         <SquareButton highlight onClick={onDeleteAllConfig}>

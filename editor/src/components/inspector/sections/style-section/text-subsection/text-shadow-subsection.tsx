@@ -20,7 +20,7 @@ import {
   fallbackOnEmptyInputValueToCSSDefaultEmptyValue,
 } from '../../../common/css-utils'
 import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
-import { stopPropagation } from '../../../common/inspector-utils'
+import { stopPropagation, useGetSubsectionHeaderStyle } from '../../../common/inspector-utils'
 import { FakeUnknownArrayItem } from '../../../controls/unknown-array-item'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
@@ -281,6 +281,8 @@ export const TextShadowSubsection = React.memo(() => {
     insertTextShadowItemSubmitValue(null)
   }, [insertTextShadowItemSubmitValue])
 
+  const headerStyle = useGetSubsectionHeaderStyle(controlStatus)
+
   if (isVisible) {
     return (
       <InspectorContextMenuWrapper
@@ -288,7 +290,7 @@ export const TextShadowSubsection = React.memo(() => {
         items={contextMenuItems}
         data={null}
       >
-        <InspectorSubsectionHeader>
+        <InspectorSubsectionHeader style={headerStyle}>
           <FlexRow
             style={{
               flexGrow: 1,

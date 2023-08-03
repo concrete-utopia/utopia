@@ -890,23 +890,26 @@ describe('Absolute Reparent To Flow Strategy', () => {
           data-uid='absoluteparent'
           data-testid='absoluteparent'
         >
-          {[1, 2].map((n) => (
-            <div
-              style={{
-                position: 'absolute',
-                left: 20 + (n * 100),
-                top: 150,
-                width: 100,
-                height: 100,
-                borderWidth: 10,
-                borderColor: 'black',
-                borderStyle: 'solid',
-                backgroundColor: 'yellow',
-              }}
-              data-uid='generatedabsolutechild'
-              data-testid='generatedabsolutechild'
-            />
-          ))}
+          {
+            // @utopia/uid=2e3
+            [1, 2].map((n) => (
+              <div
+                style={{
+                  position: 'absolute',
+                  left: 20 + (n * 100),
+                  top: 150,
+                  width: 100,
+                  height: 100,
+                  borderWidth: 10,
+                  borderColor: 'black',
+                  borderStyle: 'solid',
+                  backgroundColor: 'yellow',
+                }}
+                data-uid='generatedabsolutechild'
+                data-testid='generatedabsolutechild'
+              />
+            ))
+          }
           <div
             style={{
               position: 'absolute',

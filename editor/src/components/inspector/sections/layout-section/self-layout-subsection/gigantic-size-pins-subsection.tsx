@@ -518,7 +518,7 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
   const { resetAllPins, framePins, togglePin } = usePinToggling()
 
   return (
-    <>
+    <div>
       <WidthHeightRow togglePin={togglePin} framePins={framePins} />
       {minMaxToggled ? (
         <>
@@ -535,6 +535,6 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
       {layoutType === 'absolute' ? (
         <OtherPinsRow resetPins={resetAllPins} framePins={framePins} togglePin={togglePin} />
       ) : null}
-    </>
+    </div>
   )
 })

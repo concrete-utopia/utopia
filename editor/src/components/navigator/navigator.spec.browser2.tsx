@@ -349,18 +349,22 @@ export var ${BakedInStoryboardVariableName} = (
           data-testid='thirddiv'
           data-label='thirddiv'
         />
-        {[0,1,2,3].map(i => (<div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265 + 100*i,
-            top: 233,
-          }}
-        >
-          drag my parent
-        </div>))}
+        {
+          // @utopia/uid=e46
+          [0,1,2,3].map(i => (<div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              height: 65,
+              width: 66,
+              position: 'absolute',
+              left: 265 + 100*i,
+              top: 233,
+            }}
+            data-uid='202'
+          >
+            drag my parent
+          </div>))
+        }
         <div
           style={{
             backgroundColor: unmoveableColour,
@@ -467,18 +471,21 @@ export var ${BakedInStoryboardVariableName} = (
           data-testid='thirddiv'
           data-label='thirddiv'
         />
-        {(() => <div
-          style={{
-            backgroundColor: '#aaaaaa33',
-            height: 65,
-            width: 66,
-            position: 'absolute',
-            left: 265,
-            top: 233,
-          }}
-        >
-          drag my parent
-        </div>)()}
+        {
+          // @utopia/uid=b62
+          (() => <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              height: 65,
+              width: 66,
+              position: 'absolute',
+              left: 265,
+              top: 233,
+            }}
+          >
+            drag my parent
+          </div>)()
+        }
         <div
           style={{
             backgroundColor: unmoveableColour,
@@ -689,23 +696,29 @@ import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
     <div data-uid='group'>
-      {[0, 1, 2].map((i) => (
-        <div>first {i}</div>
-      ))}
+      {
+        // @utopia/uid=70f
+        [0, 1, 2].map((i) => (
+          <div data-uid='33d'>first {i}</div>
+        ))
+      }
 
       <div data-uid='foo'>foo</div>
-      // data-uid b68:
-      {[0, 1, 2].map((i) => (
-        <>
-          <div>second {i}</div>
-          <div>third {i}</div>
-        </>
-      ))}
+      {
+        // @utopia/uid=b68
+        [0, 1, 2].map((i) => (
+          <>
+            <div data-uid='46a'>second {i}</div>
+            <div data-uid='a59'>third {i}</div>
+          </>
+        ))
+      }
 
       {
         // @utopia/uid=cond
         true ? (
-          [0, 1, 2].map((i) => <div>fourth {i}</div>)
+          // @utopia/uid=929
+          [0, 1, 2].map((i) => <div data-uid='f23'>fourth {i}</div>)
         ) : (
           <div />
         )
@@ -713,18 +726,29 @@ export var storyboard = (
 
       <div data-uid='bar'>bar</div>
 
-      {[0, 1, 2].map((i) => (
-        <div>fifth {i}</div>
-      ))}
+      {
+        // @utopia/uid=651
+        [0, 1, 2].map((i) => (
+          <div data-uid='3bc'>fifth {i}</div>
+        ))
+      }
 
       <div data-uid='text-expr-cond-wrapper'>{
         // @utopia/uid=text-expr-cond
         true ? (
+          // @utopia/uid=619
           [0, 1, 2].map(() => 'fourth')
         ) : (
           <div />
         )
       }</div>
+
+      <div data-uid='zero-length-map-wrapper'>
+        {[].map(() => (
+          <div>will not render</div>
+        ))}
+      </div>
+
     </div>
   </Storyboard>
 )
@@ -735,23 +759,29 @@ import { Storyboard } from 'utopia-api'
 export var storyboard = (
   <Storyboard data-uid='sb'>
     <div data-uid='group'>
-      {(() => 
-        <div>first</div>
-      )()}
+      {
+        // @utopia/uid=0b5
+        (() => 
+          <div>first</div>
+        )()
+      }
 
       <div data-uid='foo'>foo</div>
 
-      // data-uid 809:
-      {(() => 
-        <>
-          <div>second</div>
-          <div>third</div>
-        </>
-      )()}
+      {
+        // @utopia/uid=809
+        (() => 
+          <>
+            <div>second</div>
+            <div>third</div>
+          </>
+        )()
+      }
 
       {
         // @utopia/uid=cond
         true ? (
+          // @utopia/uid=4ce
           (() => <div>fourth</div>)()
         ) : (
           <div />
@@ -760,9 +790,12 @@ export var storyboard = (
 
       <div data-uid='bar'>bar</div>
 
-      {(() => 
+      {
+        // @utopia/uid=bf0
+        (() => 
         <div>fifth</div>
-      )()}
+        )()
+      }
     </div>
   </Storyboard>
 )
@@ -4087,6 +4120,86 @@ describe('Navigator', () => {
         expect(element.style.width).toEqual('150px')
         expect(element.style.height).toEqual('543px')
       })
+      it('reparenting a fragment with child elements to flex updates children position and size', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(
+            flexLayoutSnippet(`
+            <React.Fragment data-uid='fragment'>
+              <div
+                style={{
+                  backgroundColor: '#35a853',
+                  contain: 'layout',
+                  width: '60%',
+                  height: '50%',
+                  position: 'absolute',
+                  left: 31,
+                  top: 21,
+                }}
+                data-uid='child1'
+                data-testid='child1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#35a853',
+                  contain: 'layout',
+                  width: 150,
+                  height: 100,
+                  position: 'absolute',
+                  bottom: 50,
+                  right: 40,
+                }}
+                data-uid='child2'
+                data-testid='child2'
+              />
+            </React.Fragment>`),
+          ),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/container/fragment`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/flex/aaa`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment', // <- fragment is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child1', // <- fragment child is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fragment/child2', // <- fragment child is moved into the flex container
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/aab',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/flex/fle',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+        ])
+
+        const child1 = editor.renderedDOM.getByTestId('child1')
+
+        expect(child1.style.position).toEqual('')
+        expect(child1.style.top).toEqual('')
+        expect(child1.style.left).toEqual('')
+        expect(child1.style.bottom).toEqual('')
+        expect(child1.style.right).toEqual('')
+        expect(child1.style.width).toEqual('217px')
+        expect(child1.style.height).toEqual('117.5px')
+
+        const child2 = editor.renderedDOM.getByTestId('child2')
+
+        expect(child2.style.position).toEqual('')
+        expect(child2.style.top).toEqual('')
+        expect(child2.style.left).toEqual('')
+        expect(child2.style.bottom).toEqual('')
+        expect(child2.style.right).toEqual('')
+        expect(child2.style.width).toEqual('150px')
+        expect(child2.style.height).toEqual('100px')
+      })
     })
 
     describe('reparenting to absolute', () => {
@@ -4666,6 +4779,75 @@ describe('Navigator', () => {
           ),
         ).toEqual(originalFrame2)
       })
+      it('reparenting a fragment with absolute children to an absolute container updates children position', async () => {
+        const editor = await renderTestEditorWithCode(
+          absoluteSnippet(`
+          <React.Fragment data-uid='fragment'>
+            <div
+              style={{
+                width: '20%',
+                height: '15%',
+                position: 'absolute',
+                left: 31,
+                top: 21,
+              }}
+              data-uid='child1'
+              data-testid='child1'
+            />
+            <div
+              style={{
+                top: 10,
+                left: 10,
+                width: 50,
+                height: 60,
+                position: 'absolute',
+              }}
+              data-uid='child2'
+              data-testid='child2'
+            />
+          </React.Fragment>
+        `),
+          'await-first-dom-report',
+        )
+
+        const dragMeElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/fragment`,
+        )
+
+        const targetElementPath = EP.fromString(
+          `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/new-container`,
+        )
+
+        await doBasicDrag(editor, dragMeElementPath, targetElementPath, ReparentDropTargetTestId)
+
+        expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment/child1',
+          'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/new-container/fragment/child2',
+        ])
+
+        const child1 = editor.renderedDOM.getByTestId('child1')
+        expect(child1.style.position).toEqual('absolute')
+        expect(child1.style.top).toEqual('84px')
+        expect(child1.style.left).toEqual('153px')
+        expect(child1.style.bottom).toEqual('')
+        expect(child1.style.right).toEqual('')
+        expect(child1.style.width).toEqual('80px')
+        expect(child1.style.height).toEqual('60px')
+
+        const child2 = editor.renderedDOM.getByTestId('child2')
+        expect(child2.style.position).toEqual('absolute')
+        expect(child2.style.top).toEqual('73px')
+        expect(child2.style.left).toEqual('132px')
+        expect(child2.style.bottom).toEqual('')
+        expect(child2.style.right).toEqual('')
+        expect(child2.style.width).toEqual('50px')
+        expect(child2.style.height).toEqual('60px')
+      })
     })
   })
 
@@ -4863,7 +5045,10 @@ describe('Navigator row order', () => {
           data-uid='card-root'
         >
           <span data-uid='card-span'>Top of Card</span>
-          {props.children}
+          {
+            // @utopia/uid=30d
+            props.children
+          }
         </div>
       )
     }
@@ -4923,7 +5108,10 @@ describe('Navigator row order', () => {
               ) : null
             }
           </React.Fragment>
-          {props.children}
+          {
+            // @utopia/uid=52e
+            props.children
+          }
         </div>
       )
     }
@@ -4944,7 +5132,10 @@ describe('Navigator row order', () => {
             <span data-uid='app-child'>Child of App</span>
           </App>
         </Scene>
-        {}
+        {
+          // @utopia/uid=1e7
+          null
+        }
       </Storyboard>
     )
   `
@@ -4997,50 +5188,52 @@ describe('Navigator row order', () => {
         'regular-sb/group',
         'regular-sb/group/70f',
         'regular-sb/group/70f/33d~~~1',
-        'regular-sb/group/70f/33d~~~1/f2a',
+        'regular-sb/group/70f/33d~~~1/708',
         'regular-sb/group/70f/33d~~~2',
-        'regular-sb/group/70f/33d~~~2/f2a',
+        'regular-sb/group/70f/33d~~~2/708',
         'regular-sb/group/70f/33d~~~3',
-        'regular-sb/group/70f/33d~~~3/f2a',
+        'regular-sb/group/70f/33d~~~3/708',
         'regular-sb/group/foo',
         'regular-sb/group/b68',
         'regular-sb/group/b68/46a~~~1',
-        'regular-sb/group/b68/46a~~~1/3a5',
+        'regular-sb/group/b68/46a~~~1/3e0',
         'regular-sb/group/b68/a59~~~2',
-        'regular-sb/group/b68/a59~~~2/f75',
+        'regular-sb/group/b68/a59~~~2/157',
         'regular-sb/group/b68/46a~~~3',
-        'regular-sb/group/b68/46a~~~3/3a5',
+        'regular-sb/group/b68/46a~~~3/3e0',
         'regular-sb/group/b68/a59~~~4',
-        'regular-sb/group/b68/a59~~~4/f75',
+        'regular-sb/group/b68/a59~~~4/157',
         'regular-sb/group/b68/46a~~~5',
-        'regular-sb/group/b68/46a~~~5/3a5',
+        'regular-sb/group/b68/46a~~~5/3e0',
         'regular-sb/group/b68/a59~~~6',
-        'regular-sb/group/b68/a59~~~6/f75',
+        'regular-sb/group/b68/a59~~~6/157',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/929',
         'regular-sb/group/cond/929/f23~~~1',
-        'regular-sb/group/cond/929/f23~~~1/b13',
+        'regular-sb/group/cond/929/f23~~~1/8bc',
         'regular-sb/group/cond/929/f23~~~2',
-        'regular-sb/group/cond/929/f23~~~2/b13',
+        'regular-sb/group/cond/929/f23~~~2/8bc',
         'regular-sb/group/cond/929/f23~~~3',
-        'regular-sb/group/cond/929/f23~~~3/b13',
+        'regular-sb/group/cond/929/f23~~~3/8bc',
         'conditional-clause-sb/group/cond-false-case',
         'synthetic-sb/group/cond/15e-element-15e',
         'regular-sb/group/bar',
         'regular-sb/group/651',
         'regular-sb/group/651/3bc~~~1',
-        'regular-sb/group/651/3bc~~~1/ad3',
+        'regular-sb/group/651/3bc~~~1/634',
         'regular-sb/group/651/3bc~~~2',
-        'regular-sb/group/651/3bc~~~2/ad3',
+        'regular-sb/group/651/3bc~~~2/634',
         'regular-sb/group/651/3bc~~~3',
-        'regular-sb/group/651/3bc~~~3/ad3',
+        'regular-sb/group/651/3bc~~~3/634',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
+        'regular-sb/group/zero-length-map-wrapper',
+        'regular-sb/group/zero-length-map-wrapper/063',
       ],
     )
     expect(
@@ -5078,6 +5271,8 @@ describe('Navigator row order', () => {
       'regular-sb/group/text-expr-cond-wrapper/text-expr-cond/619',
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
+      'regular-sb/group/zero-length-map-wrapper',
+      'regular-sb/group/zero-length-map-wrapper/063',
     ])
   })
 

@@ -67,6 +67,10 @@ Array [
     "rootElement": Object {
       "children": Array [
         Object {
+          "comments": Object {
+            "leadingComments": Array [],
+            "trailingComments": Array [],
+          },
           "definedElsewhere": Array [
             "React",
             "utopiaCanvasJSXLookup",

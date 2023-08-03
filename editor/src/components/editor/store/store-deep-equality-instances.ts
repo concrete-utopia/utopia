@@ -785,7 +785,7 @@ export const RawSourceMapKeepDeepEquality: KeepDeepEqualityCall<RawSourceMap> =
   )
 
 export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqualityCall<JSExpressionMapOrOtherJavascript> {
-  return combine8EqualityCalls(
+  return combine9EqualityCalls(
     (attribute) => attribute.type,
     createCallWithTripleEquals(),
     (attribute) => attribute.javascript,
@@ -802,6 +802,8 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (block) => block.comments,
+    ParsedCommentsKeepDeepEqualityCall,
     (
       type,
       javascript,
@@ -811,6 +813,7 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
       sourceMap,
       uniqueID,
       elementsWithin,
+      comments,
     ) => {
       return {
         type: type,
@@ -821,13 +824,14 @@ export function JSXAttributeOtherJavaScriptKeepDeepEqualityCall(): KeepDeepEqual
         sourceMap: sourceMap,
         uid: uniqueID,
         elementsWithin: elementsWithin,
+        comments: comments,
       }
     },
   )
 }
 
 export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSXMapExpression> {
-  return combine7EqualityCalls(
+  return combine8EqualityCalls(
     (attribute) => attribute.javascript,
     createCallWithTripleEquals<string>(),
     (attribute) => attribute.originalJavascript,
@@ -842,6 +846,8 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
     createCallWithTripleEquals(),
     (block) => block.elementsWithin,
     ElementsWithinKeepDeepEqualityCall(),
+    (block) => block.comments,
+    ParsedCommentsKeepDeepEqualityCall,
     (
       javascript,
       originalJavascript,
@@ -850,6 +856,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
       sourceMap,
       uniqueID,
       elementsWithin,
+      comments,
     ) => {
       return {
         type: 'JSX_MAP_EXPRESSION',
@@ -860,6 +867,7 @@ export function JSXMapExpressionKeepDeepEqualityCall(): KeepDeepEqualityCall<JSX
         sourceMap: sourceMap,
         uid: uniqueID,
         elementsWithin: elementsWithin,
+        comments: comments,
       }
     },
   )
@@ -3193,6 +3201,9 @@ export const ModeKeepDeepEquality: KeepDeepEqualityCall<Mode> = (oldValue, newVa
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
+  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
+
 export const NoticeKeepDeepEquality: KeepDeepEqualityCall<Notice> = combine4EqualityCalls(
   (note) => note.message,
   createCallWithTripleEquals<React.ReactChild>(),
@@ -3816,9 +3827,6 @@ export const GithubDataKeepDeepEquality: KeepDeepEqualityCall<GithubData> = comb
   emptyGithubData,
 )
 
-export const AllElementPropsKeepDeepEquality: KeepDeepEqualityCall<AllElementProps> =
-  objectDeepEquality(objectDeepEquality(createCallFromIntrospectiveKeepDeep()))
-
 export const GithubOperationKeepDeepEquality: KeepDeepEqualityCall<GithubOperation> = (
   oldValue,
   newValue,
@@ -3849,21 +3857,25 @@ export const ValueAtPathDeepEquality: KeepDeepEqualityCall<ValueAtPath> = combin
 )
 
 export const JSXElementsCopyDataDeepEquality: KeepDeepEqualityCall<CopyData> =
-  combine3EqualityCalls(
+  combine4EqualityCalls(
     (c) => c.copyDataWithPropsReplaced,
     nullableDeepEquality(ElementPasteWithMetadataKeepDeepEquality),
     (c) => c.copyDataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (c) => c.targetOriginalContextElementPathTrees,
     ElementPathTreesKeepDeepEquality(),
+    (c) => c.originalAllElementProps,
+    AllElementPropsKeepDeepEquality,
     (
       copyDataWithPropsReplaced,
       copyDataWithPropsPreserved,
       targetOriginalContextElementPathTrees,
+      originalAllElementProps,
     ) => ({
       copyDataWithPropsReplaced,
       copyDataWithPropsPreserved,
       targetOriginalContextElementPathTrees,
+      originalAllElementProps,
     }),
   )
 
@@ -3877,7 +3889,7 @@ export const InternalClipboardKeepDeepEquality: KeepDeepEqualityCall<InternalCli
   )
 
 export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PastePostActionMenuData> =
-  combine6EqualityCalls(
+  combine7EqualityCalls(
     (data) => data.dataWithPropsPreserved,
     ElementPasteWithMetadataKeepDeepEquality,
     (data) => data.dataWithPropsReplaced,
@@ -3888,6 +3900,8 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
     ElementPathArrayKeepDeepEquality,
     (data) => data.canvasViewportCenter,
     CanvasPointKeepDeepEquality,
+    (data) => data.originalAllElementProps,
+    AllElementPropsKeepDeepEquality,
     (data) => data.target,
     (_, newValue) => keepDeepEqualityResult(newValue, false),
     (
@@ -3896,6 +3910,7 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
       targetOriginalPathTrees,
       pasteTargetsToIgnore,
       canvasViewportCenter,
+      originalAllElementProps,
       target,
     ) => ({
       type: 'PASTE',
@@ -3905,6 +3920,7 @@ export const PastePostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<Paste
       targetOriginalPathTrees: targetOriginalPathTrees,
       pasteTargetsToIgnore: pasteTargetsToIgnore,
       canvasViewportCenter: canvasViewportCenter,
+      originalAllElementProps: originalAllElementProps,
     }),
   )
 

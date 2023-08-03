@@ -5,7 +5,7 @@ import {
   FlexRow,
   FormButton,
   InspectorSectionIcons,
-  InspectorSubsectionHeader,
+  UtopiaTheme,
   useColorTheme,
 } from '../../../uuiui'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
@@ -24,7 +24,10 @@ export const CodeElementSection = React.memo(({ paths }: { paths: ElementPath[] 
     Substores.metadata,
     (store) => {
       return paths.every((path) => {
-        return MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata)
+        return (
+          MetadataUtils.isExpressionOtherJavascript(path, store.editor.jsxMetadata) ||
+          MetadataUtils.isJSXMapExpression(path, store.editor.jsxMetadata)
+        )
       })
     },
     'CodeElementSection isCodeElement',
@@ -38,8 +41,11 @@ export const CodeElementSection = React.memo(({ paths }: { paths: ElementPath[] 
 
   return (
     <div data-testid={CodeElementSectionTestId}>
-      <InspectorSubsectionHeader
+      <FlexRow
         css={{
+          height: UtopiaTheme.layout.rowHeight.large,
+          label: 'subsection-header',
+          padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
           transition: 'color .1s ease-in-out',
           color: colorTheme.fg1.value,
           '--buttonContentOpacity': 0.3,
@@ -58,7 +64,7 @@ export const CodeElementSection = React.memo(({ paths }: { paths: ElementPath[] 
           <InspectorSectionIcons.Code style={{ width: 16, height: 16 }} />
           <span>Code</span>
         </FlexRow>
-      </InspectorSubsectionHeader>
+      </FlexRow>
       <UIGridRow padded={true} variant='<--1fr--><--1fr--><--1fr-->'>
         <div />
         <FormButton onClick={dispatchOpenCodeEditor}>Show Code</FormButton>

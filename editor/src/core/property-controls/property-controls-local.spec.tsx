@@ -146,6 +146,10 @@ describe('registered property controls', () => {
                     "key": "person",
                     "type": "JSX_ATTRIBUTES_ENTRY",
                     "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
                       "definedElsewhere": Array [
                         "DefaultPerson",
                       ],
@@ -191,7 +195,7 @@ describe('registered property controls', () => {
                       },
                       "type": "ATTRIBUTE_VALUE",
                       "uid": "",
-                      "value": "d8b",
+                      "value": "627",
                     },
                   },
                 ],

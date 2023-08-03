@@ -172,7 +172,7 @@ export function jsxAttributeNotFound(): JSXAttributeNotFound {
   }
 }
 
-export type JSExpressionOtherJavaScript = {
+export interface JSExpressionOtherJavaScript extends WithComments, WithElementsWithin {
   type: 'ATTRIBUTE_OTHER_JAVASCRIPT'
   originalJavascript: string
   javascript: string
@@ -180,29 +180,32 @@ export type JSExpressionOtherJavaScript = {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-} & WithElementsWithin
+}
 
 export function jsExpressionOtherJavaScript(
+  originalJavascript: string,
   javascript: string,
   transpiledJavascript: string,
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  comments: ParsedComments,
   uid: string = UUID(),
 ): JSExpressionOtherJavaScript {
   return {
     type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-    originalJavascript: javascript,
+    originalJavascript: originalJavascript,
     javascript: javascript,
     transpiledJavascript: transpiledJavascript,
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uid: uid,
+    comments: comments,
     elementsWithin: elementsWithin,
   }
 }
 
-export type JSXMapExpression = {
+export interface JSXMapExpression extends WithComments, WithElementsWithin {
   type: 'JSX_MAP_EXPRESSION'
   originalJavascript: string
   javascript: string
@@ -210,7 +213,7 @@ export type JSXMapExpression = {
   definedElsewhere: Array<string>
   sourceMap: RawSourceMap | null
   uid: string
-} & WithElementsWithin
+}
 
 export function jsxMapExpression(
   originalJavascript: string,
@@ -219,6 +222,7 @@ export function jsxMapExpression(
   definedElsewhere: Array<string>,
   sourceMap: RawSourceMap | null,
   elementsWithin: ElementsWithin,
+  comments: ParsedComments,
   uid: string = UUID(),
 ): JSXMapExpression {
   return {
@@ -229,6 +233,7 @@ export function jsxMapExpression(
     definedElsewhere: definedElsewhere,
     sourceMap: sourceMap,
     uid: uid,
+    comments: comments,
     elementsWithin: elementsWithin,
   }
 }
@@ -997,17 +1002,38 @@ export function getDefinedElsewhereFromAttributes(attributes: JSXAttributes): Ar
   }, [])
 }
 
+function getDefinedElsewhereFromElementChild(
+  working: Array<string>,
+  child: JSXElementChild,
+): Array<string> {
+  switch (child.type) {
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+    case 'JSX_MAP_EXPRESSION':
+      return addAllUniquely(working, child.definedElsewhere)
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      const withCondition = getDefinedElsewhereFromElementChild(working, child.condition)
+      const withWhenTrue = getDefinedElsewhereFromElementChild(withCondition, child.whenTrue)
+      return getDefinedElsewhereFromElementChild(withWhenTrue, child.whenFalse)
+    case 'JSX_ELEMENT':
+      return addAllUniquely(working, getDefinedElsewhereFromElement(child))
+    case 'JSX_TEXT_BLOCK':
+    case 'JSX_FRAGMENT':
+    case 'ATTRIBUTE_VALUE':
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+    case 'ATTRIBUTE_FUNCTION_CALL':
+      return working
+    default:
+      assertNever(child)
+  }
+}
+
 export function getDefinedElsewhereFromElement(element: JSXElement): Array<string> {
   const fromAttributes = getDefinedElsewhereFromAttributes(element.props)
-  return element.children.reduce((working, child) => {
-    if (isJSExpressionMapOrOtherJavaScript(child)) {
-      return addAllUniquely(working, child.definedElsewhere)
-    } else if (isJSXElement(child)) {
-      return addAllUniquely(working, getDefinedElsewhereFromElement(child))
-    } else {
-      return working
-    }
-  }, fromAttributes)
+  return element.children.reduce(
+    (working, child) => getDefinedElsewhereFromElementChild(working, child),
+    fromAttributes,
+  )
 }
 
 export function clearAttributesUniqueIDs(attributes: JSXAttributes): JSXAttributes {
@@ -1174,27 +1200,6 @@ export function hasElementsWithin(e: unknown): e is WithElementsWithin {
   return (e as WithElementsWithin).elementsWithin != null
 }
 
-export function jsExpression(
-  originalJavascript: string,
-  javascript: string,
-  transpiledJavascript: string,
-  definedElsewhere: Array<string>,
-  sourceMap: RawSourceMap | null,
-  elementsWithin: ElementsWithin,
-  uid: string = UUID(),
-): JSExpression {
-  return {
-    type: 'ATTRIBUTE_OTHER_JAVASCRIPT',
-    originalJavascript: originalJavascript,
-    javascript: javascript,
-    transpiledJavascript: transpiledJavascript,
-    definedElsewhere: definedElsewhere,
-    sourceMap: sourceMap,
-    uid: uid,
-    elementsWithin: elementsWithin,
-  }
-}
-
 export interface JSXTextBlock {
   type: 'JSX_TEXT_BLOCK'
   text: string
@@ -1335,7 +1340,7 @@ export function isJSExpressionOtherJavaScript(
   return element.type === 'ATTRIBUTE_OTHER_JAVASCRIPT'
 }
 
-export function isJSXMapExpression(element: JSXElementChild) {
+export function isJSXMapExpression(element: JSXElementChild): element is JSXMapExpression {
   return element.type === 'JSX_MAP_EXPRESSION'
 }
 

@@ -14,6 +14,7 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
           style={{
             flexGrow: 1,
             gap: 8,
+            height: 42,
           }}
         >
           <div style={{ flex: 1 }} />

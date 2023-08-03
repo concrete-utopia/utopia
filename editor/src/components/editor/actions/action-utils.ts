@@ -153,7 +153,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'deprecated_TOGGLE_ENABLED_PROPERTY':
     case 'RESET_PINS':
     case 'WRAP_IN_ELEMENT':
-    case 'UNWRAP_ELEMENT':
+    case 'UNWRAP_ELEMENTS':
     case 'SET_CANVAS_FRAMES':
     case 'SET_PROJECT_NAME':
     case 'SET_PROJECT_DESCRIPTION':

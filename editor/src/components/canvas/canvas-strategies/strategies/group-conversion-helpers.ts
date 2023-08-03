@@ -59,6 +59,7 @@ import type { AllElementProps, NavigatorEntry } from '../../../editor/store/edit
 import {
   childInsertionPath,
   commonInsertionPathFromArray,
+  replaceWithSingleElement,
 } from '../../../editor/store/insertion-path'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { cssPixelLength, isCSSNumber } from '../../../inspector/common/css-utils'
@@ -92,6 +93,7 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
+import { isEmptyGroup, treatElementAsGroupLike } from './group-helpers'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -664,7 +666,7 @@ export function createWrapInGroupActions(
     orderedActionTargets.map((actionTarget) => {
       return MetadataUtils.getReparentTargetOfTarget(metadata, actionTarget)
     }),
-    'replace',
+    replaceWithSingleElement(),
   )
 
   if (parentPath == null) {
@@ -684,6 +686,11 @@ export function createWrapInGroupActions(
     return showToast(
       notice('Only simple JSX Elements can be wrapped into Groups for now 🙇', 'ERROR'),
     )
+  }
+
+  const anyTargetIsAnEmptyGroup = orderedActionTargets.some((e) => isEmptyGroup(metadata, e))
+  if (anyTargetIsAnEmptyGroup) {
+    return showToast(notice('Empty Groups cannot be wrapped into Groups', 'ERROR'))
   }
 
   // TODO if any target doesn't honour the size or offset prop, refuse wrapping and show toast!

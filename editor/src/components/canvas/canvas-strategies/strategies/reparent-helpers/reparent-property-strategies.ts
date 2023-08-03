@@ -12,28 +12,29 @@ import { styleStringInArray } from '../../../../../utils/common-constants'
 import type { CanvasCommand } from '../../../commands/commands'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import {
-  flexChildProps,
   nukeSizingPropsForAxisCommand,
-  pruneFlexPropsCommands,
   sizeToVisualDimensionsAlongAxisInstance,
-  styleP,
 } from '../../../../inspector/inspector-common'
 import { deleteProperties } from '../../../commands/delete-properties-command'
 import * as PP from '../../../../../core/shared/property-path'
-import {
-  CanvasPoint,
-  CanvasVector,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  rectangleIntersection,
-  roundTo,
-} from '../../../../../core/shared/math-utils'
 import { setCssLengthProperty, setExplicitCssValue } from '../../../commands/set-css-length-command'
 import { cssNumber } from '../../../../inspector/common/css-utils'
-import { setProperty } from '../../../commands/set-property-command'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import * as EP from '../../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
+import {
+  getStaticReparentPropertyChanges,
+  getAbsoluteReparentPropertyChanges,
+} from './reparent-property-changes'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../fragment-like-helpers'
+import type { AllElementProps } from '../../../../editor/store/editor-state'
+import type { ReparentStrategy } from './reparent-strategy-helpers'
+import type { ProjectContentTreeRoot } from '../../../../assets'
+import { singleAxisAutoLayoutContainerDirections } from '../flow-reorder-helpers'
+import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -165,8 +166,8 @@ export const convertRelativeSizingToVisualSize =
 export const convertSizingToVisualSizeWhenPastingFromFlexToFlex =
   (
     elementToReparent: ElementPathSnapshots,
-    targetParent: ElementPath,
     metadata: MetadataSnapshots,
+    targetParent: ElementPath,
   ): ReparentPropertyStrategy =>
   () => {
     const targetParentInstance = MetadataUtils.findElementByElementPath(
@@ -257,6 +258,92 @@ export const setZIndexOnPastedElement =
         null,
       ),
     ])
+  }
+
+export const convertFragmentLikeChildrenToVisualSize =
+  (
+    elementToReparent: ElementPathSnapshots,
+    metadata: MetadataSnapshots,
+    oldAllElementProps: AllElementProps,
+    childPathLookup: OldPathToNewPathMapping,
+    newParent: ElementPath,
+    reparentStrategy: ReparentStrategy,
+    projectContents: ProjectContentTreeRoot,
+    openFile: string | null | undefined,
+    propertyStrategies: Array<
+      (
+        elementToReparent: ElementPathSnapshots,
+        metadata: MetadataSnapshots,
+        newParent: ElementPath,
+      ) => ReparentPropertyStrategy
+    >,
+  ): ReparentPropertyStrategy =>
+  () => {
+    const isElementFragmentLike = treatElementAsFragmentLike(
+      metadata.originalTargetMetadata,
+      oldAllElementProps,
+      metadata.originalPathTrees,
+      elementToReparent.oldPath,
+    )
+    if (!isElementFragmentLike) {
+      return left('Element is not fragment-like')
+    }
+
+    const childPaths = replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata.originalTargetMetadata,
+      oldAllElementProps,
+      metadata.originalPathTrees,
+      [elementToReparent.oldPath],
+    )
+
+    const commands = childPaths.flatMap((originalPath) => {
+      const instance = MetadataUtils.findElementByElementPath(
+        metadata.originalTargetMetadata,
+        originalPath,
+      )
+      const newPath = childPathLookup[EP.toString(originalPath)]
+      if (instance == null || newPath == null) {
+        return []
+      }
+      let baseLayoutConversionCommands: Array<CanvasCommand> = []
+      if (reparentStrategy === 'REPARENT_AS_ABSOLUTE') {
+        baseLayoutConversionCommands = getAbsoluteReparentPropertyChanges(
+          newPath,
+          newParent,
+          metadata.originalTargetMetadata,
+          metadata.currentMetadata,
+          projectContents,
+          openFile,
+        )
+      } else {
+        const directions = singleAxisAutoLayoutContainerDirections(
+          newParent,
+          metadata.currentMetadata,
+          metadata.currentPathTrees,
+        )
+
+        const convertDisplayInline =
+          directions === 'non-single-axis-autolayout' || directions.flexOrFlow === 'flex'
+            ? 'do-not-convert'
+            : directions.direction
+        baseLayoutConversionCommands = getStaticReparentPropertyChanges(
+          newPath,
+          instance.specialSizeMeasurements.position,
+          instance.specialSizeMeasurements.display,
+          convertDisplayInline,
+        )
+      }
+      return [
+        ...baseLayoutConversionCommands,
+        ...runReparentPropertyStrategies(
+          propertyStrategies.map((strategy) =>
+            strategy({ oldPath: originalPath, newPath: newPath }, metadata, newParent),
+          ),
+        ),
+      ]
+    })
+
+    return right(commands)
   }
 
 export function runReparentPropertyStrategies(
