@@ -4967,6 +4967,8 @@ export const UPDATE_FNS = {
                 action.toInsert.element.whenTrue != null ||
                 action.toInsert.element.whenFalse != null
               ) {
+                // FIXME: This is a mid-step, as the conditional being inserted currently
+                // has nulls in both clauses, resulting in a zero-sized element.
                 groupCommands.push(
                   queueGroupTrueUp(
                     trueUpChildrenOfElementChanged(action.insertionPath.intendedParentPath),
