@@ -67,7 +67,7 @@ export const SettingsPanel = React.memo(() => {
         borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
       }}
     >
-      <StyledFlexRow style={{ marginTop: 8, marginBottom: 12, paddingLeft: 8 }}>
+      <StyledFlexRow>
         <H2>Interface</H2>
       </StyledFlexRow>
       <StyledFlexRow>

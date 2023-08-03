@@ -1,6 +1,8 @@
+import { wait } from '../../../utils/utils.test-utils'
 import { renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
 import type { NavigatorEntry } from '../../editor/store/editor-state'
 import { createElementIconPropsFromMetadata } from '../layout-element-icons'
+import { itemLabelTestIdForEntry } from './item-label'
 import { layoutIconTestIdForEntry } from './layout-icon'
 
 describe('Navigator item row icons', () => {
@@ -280,7 +282,7 @@ describe('Navigator item row icons', () => {
     await checkNavigatorIcon('Empty Slot', 'no-icon', visibleNavigatorTargets[11])
     await checkNavigatorIcon(
       'Code element',
-      { category: 'element', type: 'lists' },
+      { category: 'element', type: 'genericcode' },
       visibleNavigatorTargets[12],
     )
     await checkNavigatorIcon(
@@ -325,5 +327,48 @@ describe('Navigator item row icons', () => {
       { category: 'element', type: 'image' },
       visibleNavigatorTargets[20],
     )
+  })
+
+  it('Should show the correct labels for each type of row', async () => {
+    const editor = await renderTestEditorWithCode(testProjectCode, 'await-first-dom-report')
+    const visibleNavigatorTargets = editor.getEditorState().derived.visibleNavigatorTargets
+
+    async function checkNavigatorLabel(
+      navigatorEntry: NavigatorEntry,
+      expectedLabel: string | null,
+    ) {
+      const testId = itemLabelTestIdForEntry(navigatorEntry)
+      if (expectedLabel != null) {
+        const labelElement = editor.renderedDOM.getByTestId(testId)
+
+        expect(labelElement.innerText).toEqual(expectedLabel)
+      } else {
+        expect(() => editor.renderedDOM.getByTestId(testId)).toThrow()
+      }
+    }
+
+    expect(visibleNavigatorTargets.length).toEqual(21)
+
+    await checkNavigatorLabel(visibleNavigatorTargets[0], 'div')
+    await checkNavigatorLabel(visibleNavigatorTargets[1], 'div with text')
+    await checkNavigatorLabel(visibleNavigatorTargets[2], 'Display Inline')
+    await checkNavigatorLabel(visibleNavigatorTargets[3], 'Some text')
+    await checkNavigatorLabel(visibleNavigatorTargets[4], 'Group')
+    await checkNavigatorLabel(visibleNavigatorTargets[5], 'Card')
+    await checkNavigatorLabel(visibleNavigatorTargets[6], 'button')
+    await checkNavigatorLabel(visibleNavigatorTargets[7], 'CONDITIONAL')
+    await checkNavigatorLabel(visibleNavigatorTargets[8], 'TRUE')
+    await checkNavigatorLabel(visibleNavigatorTargets[9], 'div')
+    await checkNavigatorLabel(visibleNavigatorTargets[10], 'FALSE')
+    await checkNavigatorLabel(visibleNavigatorTargets[11], null)
+    await checkNavigatorLabel(visibleNavigatorTargets[12], 'CODE')
+    await checkNavigatorLabel(visibleNavigatorTargets[13], 'div')
+    await checkNavigatorLabel(visibleNavigatorTargets[14], 'MAP')
+    await checkNavigatorLabel(visibleNavigatorTargets[15], 'div')
+    await checkNavigatorLabel(visibleNavigatorTargets[16], 'Fragment')
+    await checkNavigatorLabel(visibleNavigatorTargets[17], 'div')
+    await checkNavigatorLabel(visibleNavigatorTargets[18], 'text')
+    await checkNavigatorLabel(visibleNavigatorTargets[19], 'Scene')
+    await checkNavigatorLabel(visibleNavigatorTargets[20], 'img') // TODO: this is eventually replaced by Utopia logo
   })
 })

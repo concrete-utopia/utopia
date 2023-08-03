@@ -36,6 +36,7 @@ import type { InsertionPath } from '../../../../editor/store/insertion-path'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
+  replaceWithSingleElement,
 } from '../../../../editor/store/insertion-path'
 import { CSSCursor } from '../../../canvas-types'
 import { setCursorCommand } from '../../../commands/set-cursor-command'
@@ -331,7 +332,7 @@ export function getInsertionPathForReparentTarget(
   if (clause == null) {
     return childInsertionPath(newParent)
   }
-  return conditionalClauseInsertionPath(newParent, clause, 'replace')
+  return conditionalClauseInsertionPath(newParent, clause, replaceWithSingleElement())
 }
 
 function areElementsInstancesOfTheSameComponent(

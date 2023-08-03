@@ -235,8 +235,10 @@ function codeElementsTargeted(canvasState: InteractionCanvasState): boolean {
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
-  return [...originalTargets, ...retargetedTargets].some((target) =>
-    MetadataUtils.isExpressionOtherJavascript(target, canvasState.startingMetadata),
+  return [...originalTargets, ...retargetedTargets].some(
+    (target) =>
+      MetadataUtils.isExpressionOtherJavascript(target, canvasState.startingMetadata) ||
+      MetadataUtils.isJSXMapExpression(target, canvasState.startingMetadata),
   )
 }
 

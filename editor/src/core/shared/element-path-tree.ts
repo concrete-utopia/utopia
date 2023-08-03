@@ -5,6 +5,7 @@ import * as EP from './element-path'
 import type { ElementInstanceMetadataMap } from './element-template'
 import {
   isJSExpressionMapOrOtherJavaScript,
+  isJSExpressionOtherJavaScript,
   isJSXConditionalExpression,
   isJSXElement,
   isJSXFragment,
@@ -148,7 +149,8 @@ function getReorderedPaths(
     }
     return (
       MetadataUtils.isConditionalFromMetadata(element) ||
-      MetadataUtils.isExpressionOtherJavascriptFromMetadata(element)
+      MetadataUtils.isExpressionOtherJavascriptFromMetadata(element) ||
+      MetadataUtils.isJSXMapExpressionFromMetadata(element)
     )
   })
   const pathsToBeReordered = original.filter(

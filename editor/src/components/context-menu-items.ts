@@ -402,9 +402,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
     )
   },
   action: (data, dispatch?: EditorDispatch) => {
-    if (data.selectedViews.length > 0) {
-      requireDispatch(dispatch)([EditorActions.unwrapElement(data.selectedViews[0])], 'everyone')
-    }
+    requireDispatch(dispatch)([EditorActions.unwrapElements(data.selectedViews)], 'everyone')
   },
 }
 

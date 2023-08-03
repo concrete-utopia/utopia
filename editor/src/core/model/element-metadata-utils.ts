@@ -153,6 +153,7 @@ import {
   childInsertionPath,
   conditionalClauseInsertionPath,
   isChildInsertionPath,
+  replaceWithSingleElement,
 } from '../../components/editor/store/insertion-path'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
@@ -1497,7 +1498,7 @@ export const MetadataUtils = {
             case 'JSX_MAP_EXPRESSION':
               return 'Map'
             case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-              return jsxElement.originalJavascript
+              return 'Code'
             case 'JSX_FRAGMENT':
               return 'Fragment'
             case 'JSX_CONDITIONAL_EXPRESSION':
@@ -2035,7 +2036,7 @@ export const MetadataUtils = {
     return (
       element?.element != null &&
       isRight(element.element) &&
-      isJSExpressionMapOrOtherJavaScript(element.element.value)
+      isJSExpressionOtherJavaScript(element.element.value)
     )
   },
   isExpressionOtherJavascript(target: ElementPath, metadata: ElementInstanceMetadataMap): boolean {
@@ -2169,9 +2170,17 @@ export const MetadataUtils = {
       ) {
         const conditionalExpression: JSXConditionalExpression = parentElement.element.value
         if (getUtopiaID(conditionalExpression.whenTrue) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'true-case', 'replace')
+          return conditionalClauseInsertionPath(
+            parentElement.elementPath,
+            'true-case',
+            replaceWithSingleElement(),
+          )
         } else if (getUtopiaID(conditionalExpression.whenFalse) === EP.toUid(target)) {
-          return conditionalClauseInsertionPath(parentElement.elementPath, 'false-case', 'replace')
+          return conditionalClauseInsertionPath(
+            parentElement.elementPath,
+            'false-case',
+            replaceWithSingleElement(),
+          )
         }
       }
       return childInsertionPath(parentElement.elementPath)

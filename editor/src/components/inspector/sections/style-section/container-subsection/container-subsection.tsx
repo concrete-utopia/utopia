@@ -17,6 +17,7 @@ export const ContainerSubsection = React.memo(() => {
           style={{
             flexGrow: 1,
             gap: 8,
+            height: 42,
           }}
         >
           <span>Container</span>

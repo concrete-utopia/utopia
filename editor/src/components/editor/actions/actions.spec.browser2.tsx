@@ -15,11 +15,16 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import { deleteSelected, selectComponents, unwrapElement, wrapInElement } from './action-creators'
+import { deleteSelected, selectComponents, unwrapElements, wrapInElement } from './action-creators'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementPaste } from '../action-types'
 import type { InsertionPath } from '../store/insertion-path'
-import { childInsertionPath, conditionalClauseInsertionPath } from '../store/insertion-path'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  replaceWithSingleElement,
+  wrapInFragmentAndAppendElements,
+} from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
 import { jsxFragment } from '../../../core/shared/element-template'
 import { defaultDivElement } from '../defaults'
@@ -859,7 +864,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replaceWithSingleElement(),
         ),
         want: `
         <div data-uid='root'>
@@ -908,7 +913,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
-          'replace',
+          replaceWithSingleElement(),
         ),
         want: `
         <div data-uid='root'>
@@ -970,7 +975,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replaceWithSingleElement(),
         ),
         want: `
         <div data-uid='root'>
@@ -1047,7 +1052,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'false-case',
-          'wrap-with-fragment',
+          wrapInFragmentAndAppendElements('wrapper-fragment'),
         ),
         want: `
         <div data-uid='root'>
@@ -1120,7 +1125,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replaceWithSingleElement(),
         ),
         want: `
         <div data-uid='root'>
@@ -1177,7 +1182,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'replace',
+          replaceWithSingleElement(),
         ),
         want: `
       <div data-uid='root'>
@@ -1414,7 +1419,7 @@ describe('actions', () => {
         pasteInto: conditionalClauseInsertionPath(
           EP.appendNewElementPath(TestScenePath, ['root', 'conditional']),
           'true-case',
-          'wrap-with-fragment',
+          wrapInFragmentAndAppendElements('wrapper-fragment'),
         ),
         want: `
         <div data-uid='root' style={{ height: 100 }}>
@@ -2496,7 +2501,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 738,
+          left: 598,
           top: 316,
           width: 244,
           height: 208,
@@ -2507,7 +2512,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 992,
+          left: 852,
           top: 316,
           width: 244,
           height: 208,
@@ -2518,7 +2523,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1246,
+          left: 1106,
           top: 316,
           width: 244,
           height: 208,
@@ -2529,7 +2534,7 @@ export var storyboard = (props) => {
         style={{
           backgroundColor: '#da82c9',
           position: 'absolute',
-          left: 1500,
+          left: 1360,
           top: 316,
           width: 244,
           height: 208,
@@ -3404,7 +3409,7 @@ export var storyboard = (props) => {
                 <div data-uid='bbb' style={{position: 'absolute', width: 50, height: 40, top: 30, left: 20}}>Hello!</div>
               </div>`,
             targets: [makeTargetPath('root/bbb')],
-            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 835}}>Hello!</div>`,
+            result: `<div data-uid='aai' style={{position: 'absolute', width: 50, height: 40, top: 400, left: 695}}>Hello!</div>`,
           },
           {
             name: `paste a flex child into the storyboard`,
@@ -3416,7 +3421,7 @@ export var storyboard = (props) => {
                 </div>
               </div>`,
             targets: [makeTargetPath('root/bbb/ddd')],
-            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 675, position: 'absolute' }}>
+            result: `<div data-uid='aak' style={{ height: 20, top: 410, left: 535, position: 'absolute' }}>
                 <div data-uid='aae' style={{ width: 20, height: 20 }}/>
               </div>`,
           },
@@ -3427,8 +3432,8 @@ export var storyboard = (props) => {
               <div data-uid='bello' style={{ position: 'absolute', top: 30, left: 30, contain: 'layout', height: 20 }}>bello</div>
             </div>`,
             targets: [makeTargetPath('root/hello'), makeTargetPath('root/bello')],
-            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 854, contain: 'layout', height: 20 }}>hello</div>
-            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 834, contain: 'layout', height: 20 }}>bello</div>`,
+            result: `<div data-uid='hel' style={{ position: 'absolute', top: 405, left: 714, contain: 'layout', height: 20 }}>hello</div>
+            <div data-uid='bel' style={{ position: 'absolute', top: 415, left: 694, contain: 'layout', height: 20 }}>bello</div>`,
           },
         ]
 
@@ -4011,7 +4016,7 @@ export var storyboard = (
         width: 44,
         height: 33,
         top: 404,
-        left: 838,
+        left: 698,
         backgroundColor: '#cee5ff',
       }}
       onClick={undefined}
@@ -4139,7 +4144,7 @@ export var storyboard = (
     <div
       data-label='grandParent'
       data-uid='roo'
-      style={{ top: 420, left: 760, position: 'absolute' }}
+      style={{ top: 420, left: 620, position: 'absolute' }}
     >
       <div
         data-label='parent'
@@ -4720,7 +4725,7 @@ export var storyboard = (
     </Scene>
     <div
       data-uid='roo'
-      style={{ top: 420, left: 760, position: 'absolute' }}
+      style={{ top: 420, left: 620, position: 'absolute' }}
     >
       <div data-uid='par'>
         <div
@@ -5269,7 +5274,7 @@ export var storyboard = (
       })
     })
   })
-  describe('UNWRAP_ELEMENT', () => {
+  describe('UNWRAP_ELEMENTS', () => {
     it(`Unwraps a fragment-like element`, async () => {
       const testCode = `
       <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -5283,7 +5288,7 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/bbb')])], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -5306,7 +5311,7 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/bbb')])], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -5339,7 +5344,7 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/bbb')])], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -5363,7 +5368,7 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/bbb')])], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
@@ -5387,12 +5392,214 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/bbb'))], true)
+      await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/bbb')])], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}} />`,
         ),
+      )
+    })
+    it('can do multiselect unwrap', async () => {
+      const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div data-uid='unwrap-div'>
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='foo'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                }}
+                data-uid='bar'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  height: 60,
+                }}
+                data-uid='baz'
+              />
+            </div>
+            <View data-uid='unwrap-view'>
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                }}
+                data-uid='qux'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  height: 60,
+                }}
+                data-uid='waldo'
+              />
+            </View>
+            <div data-uid='nested'>
+                <div data-uid='nested-div' />
+                <React.Fragment data-uid='fragment'>
+                  <div data-uid='fragment-child1' />
+                  <div data-uid='fragment-child2' />
+                  <div data-uid='fragment-child3' />
+                </React.Fragment>
+            </div>
+            {
+              // @utopia/uid=cond
+              true ? <div data-uid='true-branch' /> : <div data-uid='false-branch' />
+            }
+          </div>
+        `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [
+          unwrapElements([
+            makeTargetPath('aaa/unwrap-div'),
+            makeTargetPath('aaa/unwrap-view'),
+            makeTargetPath('aaa/nested/fragment'),
+            makeTargetPath('aaa/cond'),
+          ]),
+        ],
+        true,
+      )
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <div
+              style={{
+                backgroundColor: 'orange',
+                width: 50,
+                height: 50,
+              }}
+              data-uid='foo'
+            />
+            <div
+              style={{
+                backgroundColor: 'orange',
+                width: 30,
+                height: 30,
+              }}
+              data-uid='bar'
+            />
+            <div
+              style={{ backgroundColor: 'orange', height: 60 }}
+              data-uid='baz'
+            />
+            <div
+              style={{
+                backgroundColor: 'orange',
+                width: 30,
+                height: 30,
+                top: 140,
+              }}
+              data-uid='qux'
+            />
+            <div
+              style={{
+                backgroundColor: 'orange',
+                height: 60,
+                top: 170,
+              }}
+              data-uid='waldo'
+            />
+            <div data-uid='nested'>
+                <div data-uid='nested-div' />
+                <div data-uid='fragment-child1' />
+                <div data-uid='fragment-child2' />
+                <div data-uid='fragment-child3' />
+            </div>
+            <div data-uid='true-branch' />
+          </div>
+        `),
+      )
+    })
+    it('can do multiselect unwrap under the same subtree', async () => {
+      const testCode = `
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <Group style={{ position: 'absolute' }} data-uid='group1'>
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+                backgroundColor: 'blue',
+              }}
+              data-uid='div'
+            >
+              <Group
+                style={{
+                  position: 'absolute',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='group2'
+              >
+                <View
+                  style={{
+                    backgroundColor: 'red',
+                    position: 'absolute',
+                    width: 50,
+                    height: 50,
+                    left: 0,
+                    top: 0,
+                  }}
+                  data-uid='view'
+                />
+              </Group>
+            </div>
+          </Group>
+        </div>
+      `
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(testCode),
+        'await-first-dom-report',
+      )
+      await renderResult.dispatch(
+        [unwrapElements([makeTargetPath('aaa/group1'), makeTargetPath('aaa/group1/div/group2')])],
+        true,
+      )
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: 100,
+              height: 100,
+              backgroundColor: 'blue',
+            }}
+            data-uid='div'
+          >
+            <View
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                width: 50,
+                height: 50,
+                left: 0,
+                top: 0,
+              }}
+              data-uid='view'
+            />
+          </div>
+        </div>
+      `),
       )
     })
     it(`Unwraps a fragment`, async () => {
@@ -5408,7 +5615,7 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/fragment'))], true)
+      await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/fragment')])], true)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -5433,7 +5640,7 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/conditional')])], true)
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -5456,7 +5663,7 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/conditional')])], true)
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -5480,7 +5687,7 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/conditional')])], true)
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -5503,7 +5710,7 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/conditional')])], true)
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -5526,7 +5733,7 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/conditional'))], true)
+        await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/conditional')])], true)
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -5558,7 +5765,7 @@ export var storyboard = (
           'await-first-dom-report',
         )
         await renderResult.dispatch(
-          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          [unwrapElements([makeTargetPath('aaa/conditional/conditional2')])],
           true,
         )
 
@@ -5593,7 +5800,7 @@ export var storyboard = (
           'await-first-dom-report',
         )
         await renderResult.dispatch(
-          [unwrapElement(makeTargetPath('aaa/conditional/conditional2'))],
+          [unwrapElements([makeTargetPath('aaa/conditional/conditional2')])],
           true,
         )
 
@@ -5666,7 +5873,7 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch([unwrapElement(makeTargetPath('aaa/group/unwrap-me'))], true)
+        await renderResult.dispatch([unwrapElements([makeTargetPath('aaa/group/unwrap-me')])], true)
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
@@ -5713,6 +5920,113 @@ export var storyboard = (
             </Group>
           </div>
         `),
+        )
+      })
+      it('selects all unwrapped children on multiselect unwrap', async () => {
+        const testCode = `
+          <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+            <Group data-uid='group1'>
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='foo'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                }}
+                data-uid='bar'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  height: 60,
+                }}
+                data-uid='baz'
+              />
+            </Group>
+            <Group data-uid='group2'>
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                }}
+                data-uid='qux'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  height: 60,
+                }}
+                data-uid='waldo'
+              />
+            </Group>
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [unwrapElements([makeTargetPath('aaa/group1'), makeTargetPath('aaa/group2')])],
+          true,
+        )
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='foo'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                }}
+                data-uid='bar'
+              />
+              <div
+                style={{ backgroundColor: 'orange', height: 60 }}
+                data-uid='baz'
+              />
+              <div
+                style={{
+                  backgroundColor: 'orange',
+                  width: 30,
+                  height: 30,
+                }}
+                data-uid='qux'
+              />
+              <div
+                style={{ backgroundColor: 'orange', height: 60 }}
+                data-uid='waldo'
+              />
+            </div>
+        `),
+        )
+
+        const selection = [...renderResult.getEditorState().editor.selectedViews].sort(
+          comparePathStrings,
+        )
+        expect(selection).toEqual(
+          [
+            makeTargetPath('aaa/foo'),
+            makeTargetPath('aaa/bar'),
+            makeTargetPath('aaa/baz'),
+            makeTargetPath('aaa/qux'),
+            makeTargetPath('aaa/waldo'),
+          ].sort(comparePathStrings),
         )
       })
     })
@@ -5873,3 +6187,7 @@ export var storyboard = (
     })
   })
 })
+
+function comparePathStrings(a: ElementPath, b: ElementPath): number {
+  return EP.toString(a).localeCompare(EP.toString(b))
+}
