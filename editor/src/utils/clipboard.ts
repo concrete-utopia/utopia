@@ -124,15 +124,13 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
 
 function getJSXElementPasteActions(
   editor: EditorState,
-  builtInDependencies: BuiltInDependencies,
   clipboardData: Array<CopyData>,
   canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
-  if (clipboardData.length === 0) {
+  const clipboardFirstEntry = clipboardData.at(0)
+  if (clipboardFirstEntry == null) {
     return []
   }
-  // Length check above proves this should exist.
-  const clipboardFirstEntry = clipboardData[0]!
 
   const copyDataToUse =
     clipboardFirstEntry.copyDataWithPropsReplaced != null
@@ -165,10 +163,10 @@ function getJSXElementPasteActions(
   const pastePostActionData: PastePostActionMenuData = {
     type: 'PASTE',
     target: target.value,
-    dataWithPropsPreserved: clipboardData[0].copyDataWithPropsPreserved,
-    dataWithPropsReplaced: clipboardData[0].copyDataWithPropsReplaced,
-    targetOriginalPathTrees: clipboardData[0].targetOriginalContextElementPathTrees,
-    originalAllElementProps: clipboardData[0].originalAllElementProps,
+    dataWithPropsPreserved: clipboardFirstEntry.copyDataWithPropsPreserved,
+    dataWithPropsReplaced: clipboardFirstEntry.copyDataWithPropsReplaced,
+    targetOriginalPathTrees: clipboardFirstEntry.targetOriginalContextElementPathTrees,
+    originalAllElementProps: clipboardFirstEntry.originalAllElementProps,
     pasteTargetsToIgnore: editor.pasteTargetsToIgnore,
     canvasViewportCenter: canvasViewportCenter,
   }
@@ -262,14 +260,13 @@ function getFilePasteActions(
 
 export function getActionsForClipboardItems(
   editor: EditorState,
-  builtInDependencies: BuiltInDependencies,
   canvasViewportCenter: CanvasPoint,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
   canvasScale: number,
 ): Array<EditorAction> {
   return [
-    ...getJSXElementPasteActions(editor, builtInDependencies, clipboardData, canvasViewportCenter),
+    ...getJSXElementPasteActions(editor, clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
       editor.projectContents,
       editor.nodeModules.files,
