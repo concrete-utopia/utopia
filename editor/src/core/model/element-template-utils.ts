@@ -1122,7 +1122,7 @@ export function elementChildSupportsChildrenAlsoText(
   }
 }
 
-type PathPart = Array<string>
+export type PathPart = Array<string>
 export function pathPartsFromJSXElementChild(
   element: JSXElementChild,
   currentParts: PathPart,

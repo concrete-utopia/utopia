@@ -1,5 +1,6 @@
 import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { PathPart } from '../../../../core/model/element-template-utils'
 import {
   elementPathFromInsertionPath,
   generateUidWithExistingComponents,
@@ -175,11 +176,11 @@ function pasteChoiceCommon(
       )
 
       const originalPaths = pathPartsFromJSXElementChild(elementPaste.element, []).map((part) =>
-        EP.appendPartToPath(EP.parentPath(elementPaste.originalElementPath), part),
+        appendPathPart(elementPaste.originalElementPath, part),
       )
 
       const pathsAfterUIDFix = pathPartsFromJSXElementChild(elementWithUID.value, []).map((part) =>
-        EP.appendPartToPath(EP.parentPath(pathAfterReparent), part),
+        appendPathPart(pathAfterReparent, part),
       )
 
       const mapping: OldPathToNewPathMapping = zip(
@@ -215,6 +216,16 @@ function pasteChoiceCommon(
     indexPosition,
     oldPathToNewPathMapping,
   )
+}
+
+function appendPathPart(path: ElementPath, part: PathPart): ElementPath {
+  const basePath = EP.parentPath(path)
+
+  const pathPointsToRootElement =
+    path.parts.length > 1 && path.parts[path.parts.length - 1].length === 1
+  return pathPointsToRootElement
+    ? EP.appendNewElementPath(basePath, part)
+    : EP.appendPartToPath(basePath, part)
 }
 
 export interface OldPathToNewPathMapping {

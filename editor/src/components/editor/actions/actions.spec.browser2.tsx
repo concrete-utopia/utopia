@@ -4678,7 +4678,7 @@ export var storyboard = (
             width: 44,
             height: 33,
             top: 404,
-            left: 838,
+            left: 698,
             backgroundColor: '#cee5ff',
           }}
           onClick={undefined}
@@ -4825,7 +4825,7 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 838,
+            left: 698,
             top: 404,
             width: 44,
             height: 33,
@@ -4982,7 +4982,7 @@ export var storyboard = (
           style={{
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
-            left: 838,
+            left: 698,
             top: 404,
             width: 44,
             height: 33,

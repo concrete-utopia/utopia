@@ -525,10 +525,6 @@ import {
   refreshDependencies,
   removeModulesFromNodeModules,
 } from '../../../core/shared/dependencies'
-import {
-  getReparentPropertyChanges,
-  positionElementToCoordinatesCommands,
-} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { collapseTextElements } from '../../../components/text-editor/text-handling'
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
