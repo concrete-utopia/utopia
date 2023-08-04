@@ -1909,8 +1909,8 @@ describe('Groups behaviors', () => {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: 50, y: 100 }, EdgePositionBottomRight, emptyModifiers)
 
-          expect(groupDiv.style.width).toBe('300px')
-          expect(groupDiv.style.height).toBe('350px')
+          expect(groupDiv.style.width).toBe('240px')
+          expect(groupDiv.style.height).toBe('280px')
 
           assertStylePropsSet(editor, `${GroupPath}`, {
             left: 50,
@@ -1933,8 +1933,8 @@ describe('Groups behaviors', () => {
             top: 140,
             width: undefined,
             height: undefined,
-            right: 60,
-            bottom: 70,
+            right: 0,
+            bottom: 0,
           })
           assertStylePropsSet(editor, `${GroupPath}/inner-group/child-2`, {
             left: 0,
@@ -1951,8 +1951,8 @@ describe('Groups behaviors', () => {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
 
-          expect(groupDiv.style.width).toBe('350px')
-          expect(groupDiv.style.height).toBe('400px')
+          expect(groupDiv.style.width).toBe('290px')
+          expect(groupDiv.style.height).toBe('330px')
 
           assertStylePropsSet(editor, `${GroupPath}`, {
             left: 0,
@@ -1965,24 +1965,24 @@ describe('Groups behaviors', () => {
           assertStylePropsSet(editor, `${GroupPath}/child-1`, {
             left: 0,
             top: 0,
-            width: 140,
-            height: 160,
+            width: 145,
+            height: 165,
             right: undefined,
             bottom: undefined,
           })
           assertStylePropsSet(editor, `${GroupPath}/inner-group`, {
-            left: 140,
-            top: 160,
+            left: 145,
+            top: 165,
             width: undefined,
             height: undefined,
-            right: 70,
-            bottom: 80,
+            right: 0,
+            bottom: 0,
           })
           assertStylePropsSet(editor, `${GroupPath}/inner-group/child-2`, {
             left: 0,
             top: 0,
-            width: 140,
-            height: 160,
+            width: 145,
+            height: 165,
             right: undefined,
             bottom: undefined,
           })
