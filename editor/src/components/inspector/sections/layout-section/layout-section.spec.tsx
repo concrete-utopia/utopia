@@ -40,7 +40,6 @@ describe('Position Section', () => {
       >
         <PositionSection hasNonDefaultPositionAttributes={true} />
       </TestInspectorContextProvider>,
-      { legacyRoot: true },
     )
 
     expect(getByText('Frame')).toBeDefined()

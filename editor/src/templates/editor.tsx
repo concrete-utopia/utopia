@@ -2,6 +2,7 @@
 import '../utils/feature-switches'
 
 import React from 'react'
+import { createRoot } from 'react-dom/client'
 import * as ReactDOM from 'react-dom'
 import { hot } from 'react-hot-loader/root'
 import { useAtomsDevtools } from 'jotai-devtools'
@@ -742,8 +743,9 @@ async function renderRootComponent(
     // as subsequent updates will be fed through Zustand
     const rootElement = document.getElementById(EditorID)
     if (rootElement != null) {
+      const root = createRoot(rootElement)
       if (process.env.HOT_MODE != null) {
-        ReactDOM.render(
+        root.render(
           <HotRoot
             dispatch={dispatch}
             mainStore={mainStore}
@@ -752,10 +754,9 @@ async function renderRootComponent(
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
-          rootElement,
         )
       } else {
-        ReactDOM.render(
+        root.render(
           <EditorRoot
             dispatch={dispatch}
             spyCollector={spyCollector}
@@ -764,7 +765,6 @@ async function renderRootComponent(
             lowPriorityStore={lowPriorityStore}
             domWalkerMutableState={domWalkerMutableState}
           />,
-          rootElement,
         )
       }
     }
@@ -799,6 +799,7 @@ const renderProjectNotFound = () => renderProjectLoadError('Project could not be
 async function renderProjectLoadError(error: string): Promise<void> {
   const rootElement = document.getElementById(EditorID)
   if (rootElement != null) {
-    ReactDOM.render(<ProjectLoadError error={error} />, rootElement)
+    const root = createRoot(rootElement)
+    root.render(<ProjectLoadError error={error} />)
   }
 }

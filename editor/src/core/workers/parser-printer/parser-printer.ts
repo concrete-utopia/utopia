@@ -1180,7 +1180,6 @@ export function getComponentsRenderedWithReactDOM(
         ) {
           const propertyExpressionIdentifier: TS.Identifier = propertyAccessExpression.expression
           const propertyNameIdentifier: TS.Identifier = propertyAccessExpression.name
-          // Checks if this starts as ReactDOM.render(...).
           if (
             propertyExpressionIdentifier.getText(sourceFile) === 'ReactDOM' &&
             propertyNameIdentifier.getText(sourceFile) === 'render'
