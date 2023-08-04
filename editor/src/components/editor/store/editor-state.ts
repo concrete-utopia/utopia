@@ -193,8 +193,8 @@ export const LeftPaneMinimumWidth = 5
 export const LeftPaneDefaultWidth = 260
 export const LeftPanelMinWidth = 240
 export const DefaultNavigatorWidth = 280
-export const NavigatorWidthAtom = atomWithPubSub({
-  key: 'NavigatorWidthAtom',
+export const LeftPanelWidthAtom = atomWithPubSub({
+  key: 'LeftPanelWidthAtom',
   defaultValue: LeftPaneDefaultWidth,
 })
 export const CanvasSizeAtom = atomWithPubSub({

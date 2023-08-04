@@ -15,7 +15,7 @@ import {
   LeftMenuTab,
   LeftPaneDefaultWidth,
   LeftPanelMinWidth,
-  NavigatorWidthAtom,
+  LeftPanelWidthAtom,
 } from '../../editor/store/editor-state'
 import { LowPriorityStoreProvider } from '../../editor/store/store-context-providers'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
@@ -80,12 +80,12 @@ export const LeftPaneComponent = React.memo(() => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
-  const [navigatorWidth, setNavigatorWidth] = usePubSubAtom(NavigatorWidthAtom)
+  const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
-      setNavigatorWidth((currentWidth) => currentWidth + delta.width)
+      setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
     },
-    [setNavigatorWidth],
+    [setLeftPanelWidth],
   )
 
   const leftMenuExpanded = useEditorState(
@@ -103,7 +103,7 @@ export const LeftPaneComponent = React.memo(() => {
       <ResizableFlexColumn
         onResizeStop={onLeftPanelResizeStop}
         defaultSize={{
-          width: navigatorWidth,
+          width: leftPanelWidth,
           height: '100%',
         }}
         minWidth={LeftPanelMinWidth}
