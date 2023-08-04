@@ -47,6 +47,7 @@ import {
 import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
 import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
+import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
@@ -84,7 +85,14 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   const {
     updatedEditor: editorAfterResizingAncestors,
     intendedBounds: resizeAncestorsIntendedBounds,
-  } = getResizeAncestorGroupsCommands(editorAfterResizingGroupChildren, command)
+  } = getResizeAncestorGroupsCommands(
+    editorAfterResizingGroupChildren,
+    command,
+    commandRanBecauseOfQueuedTrueUp
+      ? 'do-not-create-if-doesnt-exist'
+      : // TODO this can be removed in a future PR, but for now matching the previous behavior
+        'create-if-not-existing',
+  )
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
   const editorPatch = { projectContents: { $set: editorAfterResizingAncestors.projectContents } }
@@ -253,6 +261,7 @@ function getUpdateResizedGroupChildrenCommands(
 function getResizeAncestorGroupsCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
+  addGroupSizeIfNonExistant: CreateIfNotExistant,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
   const targets: Array<CanvasFrameAndTarget> = [...command.value]
 
@@ -319,7 +328,12 @@ function getResizeAncestorGroupsCommands(
 
       if (currentGlobalFrame != null && updatedGlobalFrame != null) {
         commandsToRun.push(
-          ...setGroupPins(metadata, currentGlobalFrame, updatedGlobalFrame),
+          ...setGroupPins(
+            metadata,
+            currentGlobalFrame,
+            updatedGlobalFrame,
+            addGroupSizeIfNonExistant,
+          ),
           wildcardPatch('always', {
             jsxMetadata: { [pathStr]: { globalFrame: { $set: updatedGlobalFrame } } },
           }),
@@ -439,6 +453,7 @@ function setGroupPins(
   instance: ElementInstanceMetadata,
   currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
+  createSizeIfNonExistant: CreateIfNotExistant,
 ): Array<CanvasCommand> {
   // TODO retarget Fragments
   const result = [
@@ -484,7 +499,7 @@ function setGroupPins(
         instance.specialSizeMeasurements.coordinateSystemBounds?.width,
       ),
       instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
+      createSizeIfNonExistant,
     ),
     setCssLengthProperty(
       'always',
@@ -495,7 +510,7 @@ function setGroupPins(
         instance.specialSizeMeasurements.coordinateSystemBounds?.height,
       ),
       instance.specialSizeMeasurements.parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
+      createSizeIfNonExistant,
     ),
   ]
   return result
