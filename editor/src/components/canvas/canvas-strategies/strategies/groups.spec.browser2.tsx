@@ -1469,22 +1469,22 @@ describe('Groups behaviors', () => {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: 100, y: 150 }, EdgePositionBottomRight, emptyModifiers)
 
-          expect(groupDiv.style.width).toBe('300px')
-          expect(groupDiv.style.height).toBe('350px')
+          expect(groupDiv.style.width).toBe('75px')
+          expect(groupDiv.style.height).toBe('88px')
 
           assertStylePropsSet(editor, `${GroupPath}`, {
-            left: 50,
-            top: 50,
+            left: 125,
+            top: 138,
             width: undefined,
             height: undefined,
             right: undefined,
             bottom: undefined,
           })
           assertStylePropsSet(editor, `${GroupPath}/child-1`, {
-            left: 75,
-            top: 88,
-            right: 150,
-            bottom: 174,
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
             width: 75,
             height: 88,
           })
@@ -1495,24 +1495,24 @@ describe('Groups behaviors', () => {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
 
-          expect(groupDiv.style.width).toBe('350px')
-          expect(groupDiv.style.height).toBe('400px')
+          expect(groupDiv.style.width).toBe('125px')
+          expect(groupDiv.style.height).toBe('138px')
 
           assertStylePropsSet(editor, `${GroupPath}`, {
-            left: 0,
-            top: 0,
+            left: 75,
+            top: 88,
             width: undefined,
             height: undefined,
             right: undefined,
             bottom: undefined,
           })
           assertStylePropsSet(editor, `${GroupPath}/child-1`, {
-            left: 88,
-            top: 101,
-            right: 174,
-            bottom: 198,
-            width: 88,
-            height: 101,
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: 125,
+            height: 138,
           })
         }
       })
