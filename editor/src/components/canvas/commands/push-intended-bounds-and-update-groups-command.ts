@@ -88,10 +88,7 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   } = getResizeAncestorGroupsCommands(
     editorAfterResizingGroupChildren,
     command,
-    commandRanBecauseOfQueuedTrueUp
-      ? 'do-not-create-if-doesnt-exist'
-      : // TODO this can be removed in a future PR, but for now matching the previous behavior
-        'create-if-not-existing',
+    'create-if-not-existing',
   )
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
