@@ -5442,8 +5442,6 @@ describe('groups', () => {
                 position: 'absolute',
                 left: 10,
                 top: 10,
-                width: 340,
-                height: 340,
               }}
             >
               <div data-uid='dragme' style={{
@@ -5908,8 +5906,6 @@ describe('groups', () => {
                 position: 'absolute',
                 left: 10,
                 top: 10,
-                width: 390,
-                height: 390,
               }}
             >
               <div data-uid='intruder' style={{
@@ -5927,8 +5923,6 @@ describe('groups', () => {
                   position: 'absolute',
                   left: 0,
                   top: 0,
-                  width: 390,
-                  height: 390,
                 }}
               >
                 <div data-uid='dragme' style={{

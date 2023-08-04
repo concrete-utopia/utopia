@@ -54,7 +54,7 @@ export const fixedSizeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
-        queueGroupTrueUp(trueUpElementChanged(path)),
+        queueGroupTrueUp([trueUpElementChanged(path)]),
       ]
     })
   },

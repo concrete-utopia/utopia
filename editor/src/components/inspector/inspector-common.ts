@@ -4,6 +4,7 @@ import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/elemen
 import {
   allElemsEqual,
   mapDropNulls,
+  safeIndex,
   strictEvery,
   stripNulls,
   uniq,
@@ -61,9 +62,10 @@ import type { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
 import type { ControlStatus } from '../../uuiui-deps'
 import { getFallbackControlStatusForProperty } from './common/control-status'
-import type { AllElementProps } from '../editor/store/editor-state'
+import type { AllElementProps, ElementProps } from '../editor/store/editor-state'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
+import { convertGroupToFrameCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -662,6 +664,36 @@ export function detectFillHugFixedState(
   return { fixedHugFill: null, controlStatus: 'unset' }
 }
 
+export function isFixedHugFillModeApplied(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+  mode: FixedHugFillMode,
+): boolean {
+  return (
+    detectFillHugFixedState('horizontal', metadata, element).fixedHugFill?.type === mode &&
+    detectFillHugFixedState('vertical', metadata, element).fixedHugFill?.type === mode
+  )
+}
+
+export function setToFixedSizeCommands(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: ElementProps,
+  targetElements: Array<ElementPath>,
+): Array<CanvasCommand> {
+  return targetElements.flatMap((targetElement) => {
+    const parentPath = EP.parentPath(targetElement)
+    const isChildOfGroup = treatElementAsGroupLike(metadata, parentPath)
+    const isGroup = treatElementAsGroupLike(metadata, targetElement)
+    // Only convert the group to a frame if it is not itself a child of a group.
+    if (isGroup && !isChildOfGroup) {
+      return convertGroupToFrameCommands(metadata, elementPathTree, allElementProps, targetElement)
+    } else {
+      return sizeToVisualDimensions(metadata, targetElement)
+    }
+  })
+}
+
 export function isHugFromStyleAttribute(
   props: JSXAttributes,
   property: 'width' | 'height',
@@ -729,6 +761,7 @@ export function detectPackedSpacedSetting(
     ? detectedPackedSpacedSettings.at(0) ?? null
     : null
 }
+
 export function resizeToFitCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
@@ -840,16 +873,16 @@ export function toggleResizeToFitSetToFixed(
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
-  if (elementPaths.length === 0) {
+  const firstElementPath = safeIndex(elementPaths, 0)
+  if (firstElementPath == null || elementPaths.length < 1) {
     return []
   }
 
-  const isSetToHug =
-    detectFillHugFixedState('horizontal', metadata, elementPaths[0]).fixedHugFill?.type === 'hug' &&
-    detectFillHugFixedState('vertical', metadata, elementPaths[0]).fixedHugFill?.type === 'hug'
+  // Note: This is checking the first but the changes apply to everything...
+  const isSetToHug = isFixedHugFillModeApplied(metadata, firstElementPath, 'hug')
 
   return isSetToHug
-    ? elementPaths.flatMap((e) => sizeToVisualDimensions(metadata, e))
+    ? setToFixedSizeCommands(metadata, elementPathTree, allElementProps, elementPaths)
     : resizeToFitCommands(metadata, elementPaths, elementPathTree, allElementProps)
 }
 

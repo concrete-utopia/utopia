@@ -11,8 +11,9 @@ import { Substores, useEditorState, useRefEditorState } from '../editor/store/st
 import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import type { FixedHugFillMode } from './inspector-common'
+import { setToFixedSizeCommands } from './inspector-common'
+import { isFixedHugFillModeApplied } from './inspector-common'
 import {
-  detectFillHugFixedState,
   getFixedFillHugOptionsForElement,
   resizeToFillCommands,
   resizeToFitCommands,
@@ -67,10 +68,7 @@ const isApplicableSelector = createCachedSelector(
       selectedViews.length > 0 &&
       checkGroupSuitability(metadata, firstSelectedView, mode) &&
       getFixedFillHugOptionsForElement(metadata, pathTrees, firstSelectedView).has(mode)
-    const isAlreadyApplied =
-      detectFillHugFixedState('horizontal', metadata, firstSelectedView).fixedHugFill?.type ===
-        mode &&
-      detectFillHugFixedState('vertical', metadata, firstSelectedView).fixedHugFill?.type === mode
+    const isAlreadyApplied = isFixedHugFillModeApplied(metadata, firstSelectedView, mode)
     return isApplicable && !isAlreadyApplied
   },
 )((_, mode) => mode)
@@ -139,22 +137,12 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   ])
 
   const onSetToFixedSize = React.useCallback(() => {
-    const commands = selectedViewsRef.current.flatMap((selectedView) => {
-      const parentPath = EP.parentPath(selectedView)
-      const isChildOfGroup = treatElementAsGroupLike(metadataRef.current, parentPath)
-      const isGroup = treatElementAsGroupLike(metadataRef.current, selectedView)
-      // Only convert the group to a frame if it is not itself a child of a group.
-      if (isGroup && !isChildOfGroup) {
-        return convertGroupToFrameCommands(
-          metadataRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          selectedView,
-        )
-      } else {
-        return sizeToVisualDimensions(metadataRef.current, selectedView)
-      }
-    })
+    const commands = setToFixedSizeCommands(
+      metadataRef.current,
+      elementPathTreeRef.current,
+      allElementPropsRef.current,
+      selectedViewsRef.current,
+    )
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
