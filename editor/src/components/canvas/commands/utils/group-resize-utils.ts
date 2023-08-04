@@ -10,6 +10,9 @@ const VerticalFramePoints = ['top', 'bottom', 'height'] as const
 function isHorizontalPoint(point: FramePoint): boolean {
   return (HorizontalFramePoints as ReadonlyArray<FramePoint>).includes(point)
 }
+function isVerticalPoint(point: FramePoint): boolean {
+  return (VerticalFramePoints as ReadonlyArray<FramePoint>).includes(point)
+}
 
 export type FrameWithAllPoints = {
   left: number
@@ -56,17 +59,46 @@ export function transformConstrainedLocalFullFrameUsingBoundingBox(
   // TODO verify that currentBoundingBox and currentFrame's dimensions match up
 
   function sumConstrainedLengths(sum: number, framePoint: FramePoint) {
-    if (constrainedPoints.includes(framePoint)) {
-      return sum + currentFrame[framePoint]
-    }
-    return sum
+    return sum + currentFrame[framePoint]
   }
+
+  const horizontalConstrainedPoints = constrainedPoints.filter(isHorizontalPoint)
+  const verticalContrainedPoints = constrainedPoints.filter(isVerticalPoint)
+
   // first we sum the lengths of all constrained frame points for each dimension
-  const horizontalConstrainedLength: number = HorizontalFramePoints.reduce(sumConstrainedLengths, 0)
-  const verticelConstrainedLength: number = VerticalFramePoints.reduce(sumConstrainedLengths, 0)
+  const horizontalConstrainedLength: number = horizontalConstrainedPoints.reduce(
+    sumConstrainedLengths,
+    0,
+  )
+  const verticalConstrainedLength: number = verticalContrainedPoints.reduce(
+    sumConstrainedLengths,
+    0,
+  )
 
   const updatedFrame: FrameWithAllPoints = AllFramePoints.reduce(
     (newFullFrame: Partial<FrameWithAllPoints>, framePoint) => {
+      const horizontal = isHorizontalPoint(framePoint)
+
+      const currentSizeForDimension = horizontal
+        ? currentBoundingBox.width
+        : currentBoundingBox.height
+
+      const newSizeForDimension = horizontal ? newBoundingBox.width : newBoundingBox.height
+
+      const constrainedPointsForDimension = horizontal
+        ? horizontalConstrainedPoints
+        : verticalContrainedPoints
+
+      // if this is the only unconstrained point for the dimension, let's just give it all the extra size to avoid a multiply by zero later down the line
+      if (
+        constrainedPointsForDimension.length === 2 &&
+        !constrainedPointsForDimension.includes(framePoint)
+      ) {
+        newFullFrame[framePoint] =
+          currentFrame[framePoint] + newSizeForDimension - currentSizeForDimension
+        return newFullFrame
+      }
+
       // a zero-length Frame Point is the equivalent of a constrained one. I include it here to avoid a division by zero later down the line
       if (constrainedPoints.includes(framePoint) || currentFrame[framePoint] === 0) {
         // for Constrained Frame Points, we simply return the current value
@@ -74,20 +106,15 @@ export function transformConstrainedLocalFullFrameUsingBoundingBox(
         return newFullFrame
       }
 
-      const constrainedLengthForDimension = isHorizontalPoint(framePoint)
+      const constrainedLengthForDimension = horizontal
         ? horizontalConstrainedLength
-        : verticelConstrainedLength
-      const currentSizeForDimension = isHorizontalPoint(framePoint)
-        ? currentBoundingBox.width
-        : currentBoundingBox.height
-
-      const newSizeForDimension = isHorizontalPoint(framePoint)
-        ? newBoundingBox.width
-        : newBoundingBox.height
+        : verticalConstrainedLength
 
       const currentFramePointLength = currentFrame[framePoint]
 
       // for non-constrained Frame Points, we change them by calculating the ratio of the old bounding rectangle's non-constrained area vs the new bounding rectangle's non-constrained area
+      // as you can see above, while I think the maths is right, zeros are creeping in causing edge cases I need to fix
+      // I think this function could be rewritten into a much shorter, way more elegant piece of code
       const updatedFramePointLength =
         (currentFramePointLength * (newSizeForDimension - constrainedLengthForDimension)) /
         (currentSizeForDimension - constrainedLengthForDimension)
