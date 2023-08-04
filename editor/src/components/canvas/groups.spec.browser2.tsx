@@ -3,7 +3,8 @@ import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { selectComponents } from '../editor/actions/meta-actions'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
-import { openContextMenuAndClickOnItem } from './event-helpers.test-utils'
+import { openContextMenuAndClickOnItem, pressKey } from './event-helpers.test-utils'
+import type { EditorRenderResult } from './ui-jsx.test-utils'
 import {
   renderTestEditorWithCode,
   makeTestProjectCodeWithSnippet,
@@ -11,7 +12,11 @@ import {
   TestAppUID,
   getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippetWithoutUIDs,
+  formatTestProjectCode,
+  getPrintedUiJsCode,
 } from './ui-jsx.test-utils'
+import { shiftCmdModifier } from '../../utils/modifiers'
+import type { ElementPath } from '../../core/shared/project-file-types'
 
 describe('Groups', () => {
   describe('wrap in group', () => {
@@ -955,4 +960,299 @@ describe('Groups', () => {
       )
     })
   })
+
+  describe('ungroup', () => {
+    async function ungroup(renderResult: EditorRenderResult, paths: ElementPath[]) {
+      await renderResult.dispatch(selectComponents(paths, false), true)
+      await pressKey('g', { modifiers: shiftCmdModifier })
+    }
+
+    it('can ungroup a single group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group'>
+                    <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+
+      await ungroup(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group`),
+      ])
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+            </div>
+        `),
+        ),
+      )
+    })
+    it('can ungroup multiple groups', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group1' style={{ position: 'absolute', top: 0, left: 0}}>
+                    <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+                <Group data-uid='group2' style={{ position: 'absolute', top: 120, left: 120}}>
+                    <div data-uid='one' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='two' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='three' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='four' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+
+      await ungroup(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group1`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group2`),
+      ])
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                <div data-uid='one' style={{ position: 'absolute', top: 120, left: 120, width: 50, height: 50, background: 'blue' }} />
+                <div data-uid='two' style={{ position: 'absolute', top: 120, left: 220, width: 50, height: 50, background: 'red' }} />
+                <div data-uid='three' style={{ position: 'absolute', top: 220, left: 120, width: 50, height: 50, background: 'green' }} />
+                <div data-uid='four' style={{ position: 'absolute', top: 220, left: 220, width: 50, height: 50, background: 'orange' }} />
+            </div>
+        `),
+        ),
+      )
+    })
+    it('can ungroup multiple groups as part as a mixed multiselect', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group1' style={{ position: 'absolute', top: 0, left: 0}}>
+                    <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+                <div data-uid='also-this' />
+                <Group data-uid='group2' style={{ position: 'absolute', top: 120, left: 120}}>
+                    <div data-uid='one' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='two' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='three' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='four' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+
+      await ungroup(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group1`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/also-this`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group2`),
+      ])
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                <div data-uid='one' style={{ position: 'absolute', top: 120, left: 120, width: 50, height: 50, background: 'blue' }} />
+                <div data-uid='two' style={{ position: 'absolute', top: 120, left: 220, width: 50, height: 50, background: 'red' }} />
+                <div data-uid='three' style={{ position: 'absolute', top: 220, left: 120, width: 50, height: 50, background: 'green' }} />
+                <div data-uid='four' style={{ position: 'absolute', top: 220, left: 220, width: 50, height: 50, background: 'orange' }} />
+            </div>
+        `),
+        ),
+      )
+    })
+    it('when ungrouping a group the selection is set to the inner elements', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group'>
+                    <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+
+      await ungroup(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group`),
+      ])
+
+      const selection = [...renderResult.getEditorState().editor.selectedViews].sort(
+        comparePathStrings,
+      )
+      expect(selection).toEqual(
+        [
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/foo`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/bar`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/baz`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/qux`),
+        ].sort(comparePathStrings),
+      )
+    })
+    it('when ungrouping a group the selection is set to the inner elements (multiselect)', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group1' style={{ position: 'absolute', top: 0, left: 0}}>
+                    <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+                <Group data-uid='group2' style={{ position: 'absolute', top: 120, left: 120}}>
+                    <div data-uid='one' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='two' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='three' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='four' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+
+      await ungroup(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group1`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group2`),
+      ])
+
+      const selection = [...renderResult.getEditorState().editor.selectedViews].sort(
+        comparePathStrings,
+      )
+      expect(selection).toEqual(
+        [
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/foo`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/bar`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/baz`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/qux`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/one`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/two`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/three`),
+          EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/four`),
+        ].sort(comparePathStrings),
+      )
+    })
+
+    it("ungrouping that isn't a group, but is inside a group, trues up the group (without siblings)", async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group' style={{ position: 'absolute', top: 0, left: 0 }}>
+                    <div data-uid='unwrap-me' style={{ position: 'absolute', top: 0, left: 0, padding: 10 }}>
+                        <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                        <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                        <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                        <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                    </div>
+                </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+
+      await ungroup(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group/unwrap-me`),
+      ])
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group' style={{ position: 'absolute', top: 0, left: 0 }}>
+                    <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                </Group>
+            </div>
+        `),
+        ),
+      )
+    })
+    xit("ungrouping that isn't a group, but is inside a group, trues up the group (with siblings)", async () => {
+      // TODO un-xit this test when the related trueup bug is fixed
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group' style={{ position: 'absolute', top: 0, left: 0, background: 'pink' }}>
+                    <div data-uid='unwrap-me' style={{ position: 'absolute', top: 0, left: 0, width: 193, height: 180, padding: 10 }}>
+                        <div data-uid='foo' style={{ position: 'absolute', top: 10, left: 10, width: 50, height: 50, background: 'blue' }} />
+                        <div data-uid='bar' style={{ position: 'absolute', top: 10, left: 100, width: 50, height: 50, background: 'red' }} />
+                        <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 10, width: 50, height: 50, background: 'green' }} />
+                        <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+                    </div>
+                    <div data-uid='another-div' style={{ position: 'absolute', left: 200, top: 250, width: 50, height: 50, background: 'black' }} />
+                </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+
+      await ungroup(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group/unwrap-me`),
+      ])
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+                <Group data-uid='group' style={{ position: 'absolute', top: 10, left: 10, background: 'pink', width: 240, height: 290 }}>
+                    <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 94, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 93, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 93, left: 94, width: 50, height: 50, background: 'orange' }} />
+                    <div data-uid='another-div' style={{ position: 'absolute', left: 200, top: 250, width: 50, height: 50, background: 'black', }} />
+                </Group>
+            </div>
+        `),
+        ),
+      )
+    })
+  })
 })
+
+function comparePathStrings(a: ElementPath, b: ElementPath): number {
+  return EP.toString(a).localeCompare(EP.toString(b))
+}
