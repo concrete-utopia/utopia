@@ -393,7 +393,10 @@ describe('actions', () => {
         targets: [makeTargetPath('view/group/child3')],
         wantCode: `
           <View data-uid='view'>
-            <Group data-uid='group'>
+            <Group
+              data-uid='group'
+              style={{ width: 50, height: 50 }}
+            >
               <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
               <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
               <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
@@ -420,7 +423,10 @@ describe('actions', () => {
         targets: [makeTargetPath('view/group/child3'), makeTargetPath('view/foo/bar')],
         wantCode: `
           <View data-uid='view'>
-            <Group data-uid='group'>
+            <Group
+              data-uid='group'
+              style={{ width: 50, height: 50 }}
+            >
               <div data-uid='child1' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 0, background: 'blue' }} />
               <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
               <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
@@ -1576,7 +1582,7 @@ describe('actions', () => {
         want: `
             <div data-uid='root'>
               <div data-uid='foo' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 200, top: 200 }} />
-              <Group data-uid='group' style={{ background: 'yellow' }}>
+              <Group data-uid='group' style={{ background: 'yellow', width: 50, height: 110 }}>
                 <div data-uid='bar' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 0, left: 10 }} />
                 <div data-uid='baz' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 100, left: 30 }} />
                 <div data-uid='aai' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 0, top: 30 }} />

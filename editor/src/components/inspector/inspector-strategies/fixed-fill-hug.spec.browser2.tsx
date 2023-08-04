@@ -1020,7 +1020,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
       <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
-        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 0, top: 50}}>
+        <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 0, top: 50, width: 250, height: 200}}>
           <div 
             data-uid='child-1'
             style={{
@@ -1109,7 +1109,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
-          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 200, height: 250}}>
             <div 
               data-uid='child-1'
               style={{
@@ -1198,7 +1198,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
-          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 300, height: 200}}>
             <div 
               data-uid='child-1'
               style={{
@@ -1210,7 +1210,7 @@ describe('Fixed / Fill / Hug control', () => {
                 height: 100,
               }}
             />
-            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100}}>
+            <Group data-uid='inner-group' style={{position: 'absolute', top: 100, left: 100, width: 200, height: 100}}>
               <div 
                 data-uid='child-2'
                 style={{
@@ -1370,7 +1370,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
-          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 200, height: 200}}>
             <div 
               data-uid='child-1'
               style={{
