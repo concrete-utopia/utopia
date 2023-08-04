@@ -14,6 +14,7 @@ import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import {
   LeftMenuTab,
   LeftPaneDefaultWidth,
+  LeftPanelMinWidth,
   NavigatorWidthAtom,
 } from '../../editor/store/editor-state'
 import { LowPriorityStoreProvider } from '../../editor/store/store-context-providers'
@@ -105,6 +106,7 @@ export const LeftPaneComponent = React.memo(() => {
           width: navigatorWidth,
           height: '100%',
         }}
+        minWidth={LeftPanelMinWidth}
         style={{
           overscrollBehavior: 'contain',
           backgroundColor: colorTheme.inspectorBackground.value,
