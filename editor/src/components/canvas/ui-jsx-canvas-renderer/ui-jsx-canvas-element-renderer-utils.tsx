@@ -23,6 +23,7 @@ import {
   jsxTextBlock,
   isJSXFragment,
   isJSExpression,
+  isJSXMapExpression,
 } from '../../../core/shared/element-template'
 import {
   getAccumulatedElementsWithin,
@@ -62,8 +63,8 @@ import { TextEditorWrapper, unescapeHTML } from '../../text-editor/text-editor'
 import {
   findUtopiaCommentFlag,
   isUtopiaCommentFlagConditional,
+  isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -84,11 +85,15 @@ export function createLookupRender(
   code: string,
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
-): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
+  renderLimit: number | null,
+): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
-  return (element: JSXElement, scope: MapLike<any>): React.ReactChild => {
+  return (element: JSXElement, scope: MapLike<any>): React.ReactChild | null => {
     index++
+    if (renderLimit != null && index > renderLimit) {
+      return null
+    }
     const innerUID = getUtopiaID(element)
     const generatedUID = EP.createIndexedUid(innerUID, index)
     const withGeneratedUID = setJSXValueAtPath(
@@ -205,6 +210,7 @@ export function renderCoreElement(
             code,
             highlightBounds,
             editedText,
+            null,
           )
         : NoOpLookupRender
 
@@ -257,6 +263,12 @@ export function renderCoreElement(
     }
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
+      const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
+      const mapCountOverride =
+        isJSXMapExpression(element) && isUtopiaCommentFlagMapCount(commentFlag)
+          ? commentFlag.value
+          : null
+
       const elementIsTextEdited = elementPath != null && EP.pathsEqual(elementPath, editedText)
 
       if (elementPath != null) {
@@ -316,6 +328,7 @@ export function renderCoreElement(
         code,
         highlightBounds,
         editedText,
+        mapCountOverride,
       )
 
       const blockScope = {
@@ -853,7 +866,7 @@ function displayNoneElement(props: any): any {
 export function utopiaCanvasJSXLookup(
   elementsWithin: ElementsWithin,
   executionScope: MapLike<any>,
-  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactChild,
+  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactChild | null,
 ): (uid: string, inScope: MapLike<any>) => React.ReactChild | null {
   return (uid, inScope) => {
     const element = elementsWithin[uid]
@@ -871,6 +884,7 @@ function runJSExpression(
   requireResult: MapLike<any>,
   block: JSExpression,
   currentScope: MapLike<any>,
+  limit?: number,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':

@@ -728,6 +728,7 @@ export var storyboard = (
 
       {
         // @utopia/uid=651
+        // @utopia/map-count=2
         [0, 1, 2].map((i) => (
           <div data-uid='3bc'>fifth {i}</div>
         ))
@@ -5224,8 +5225,6 @@ describe('Navigator row order', () => {
         'regular-sb/group/651/3bc~~~1/634',
         'regular-sb/group/651/3bc~~~2',
         'regular-sb/group/651/3bc~~~2/634',
-        'regular-sb/group/651/3bc~~~3',
-        'regular-sb/group/651/3bc~~~3/634',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
@@ -5264,7 +5263,6 @@ describe('Navigator row order', () => {
       'regular-sb/group/651',
       'regular-sb/group/651/3bc~~~1',
       'regular-sb/group/651/3bc~~~2',
-      'regular-sb/group/651/3bc~~~3',
       'regular-sb/group/text-expr-cond-wrapper',
       'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',

@@ -7,6 +7,8 @@ const UtopiaCommentFlagPrefix = '@utopia/'
 
 export type UtopiaCommentFlagTypeConditional = 'conditional'
 
+export type UtopiaCommentFlagTypeMapCount = 'map-count'
+
 export type UtopiaCommentFlagTypeUid = 'uid'
 
 export type UtopiaCommentFlagTypeGroup = 'group'
@@ -14,6 +16,11 @@ export type UtopiaCommentFlagTypeGroup = 'group'
 export type UtopiaCommentFlagConditional = {
   type: UtopiaCommentFlagTypeConditional
   value: boolean | null
+}
+
+export type UtopiaCommentFlagMapCount = {
+  type: UtopiaCommentFlagTypeMapCount
+  value: number | null
 }
 
 export type UtopiaCommentFlagUid = {
@@ -28,11 +35,13 @@ export type UtopiaCommentFlagGroup = {
 
 export type UtopiaCommentFlagType =
   | UtopiaCommentFlagTypeConditional
+  | UtopiaCommentFlagTypeMapCount
   | UtopiaCommentFlagTypeUid
   | UtopiaCommentFlagTypeGroup
 
 export type UtopiaCommentFlag =
   | UtopiaCommentFlagConditional
+  | UtopiaCommentFlagMapCount
   | UtopiaCommentFlagUid
   | UtopiaCommentFlagGroup
 
@@ -40,6 +49,12 @@ export function isUtopiaCommentFlagConditional(
   flag: UtopiaCommentFlag | null,
 ): flag is UtopiaCommentFlagConditional {
   return flag?.type === 'conditional'
+}
+
+export function isUtopiaCommentFlagMapCount(
+  flag: UtopiaCommentFlag | null,
+): flag is UtopiaCommentFlagMapCount {
+  return flag?.type === 'map-count'
 }
 
 export function isUtopiaCommentFlagUid(
@@ -82,6 +97,14 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
     return null
   }
 
+  function parseIntOrNull(value: string): number | null {
+    const intValue = parseInt(value)
+    if (isFinite(intValue)) {
+      return intValue
+    }
+    return null
+  }
+
   const comment = commentString(c)
   const prefix = utopiaCommentFlagKey(type) + '='
 
@@ -102,6 +125,11 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
         return {
           type: 'group',
           value: parseBooleanOrNull(value),
+        }
+      case 'map-count':
+        return {
+          type: 'map-count',
+          value: parseIntOrNull(value),
         }
       default:
         assertNever(type)
