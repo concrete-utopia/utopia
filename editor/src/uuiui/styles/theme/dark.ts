@@ -15,6 +15,7 @@ const darkBase = {
   brandNeonPink: createUtopiColor('oklch(78.64% 0.237 327.81)'),
   brandNeonPink10: createUtopiColor('oklch(78.64% 0.237 327.81 / 10%)'),
   brandNeonGreen: base.neongreen,
+  pinkSubdued: createUtopiColor('#FFCCE7 '), // TODO: review this color
   jsYellow: base.jsYellow,
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),
