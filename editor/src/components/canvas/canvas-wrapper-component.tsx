@@ -97,7 +97,7 @@ export const CanvasWrapperComponent = React.memo(() => {
 
   const isNavigatorOverCanvas = useEditorState(
     Substores.restOfEditor,
-    (store) => !store.editor.navigator.minimised,
+    (store) => store.editor.leftMenu.expanded,
     'ErrorOverlayComponent isOverlappingWithNavigator',
   )
 

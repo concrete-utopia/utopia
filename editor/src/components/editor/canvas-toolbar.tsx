@@ -166,7 +166,7 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch])
 
   const toggleNavigatorVisible = React.useCallback(() => {
-    dispatch([togglePanel('navigator')])
+    dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
   return (

@@ -34,7 +34,6 @@ import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
 import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
 import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
-import { LeftPaneComponent } from '../navigator/left-pane'
 import { PreviewColumn } from '../preview/preview-pane'
 import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
@@ -303,13 +302,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
     (store) => store.editor.preview.visible,
     'EditorComponentInner previewVisible',
   )
-  const leftMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'EditorComponentInner leftMenuExpanded',
-  )
-
-  const delayedLeftMenuExpanded = useDelayedValueHook(leftMenuExpanded, 200)
 
   React.useEffect(() => {
     document.title = projectName + ' - Utopia'
@@ -382,19 +374,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
               alignItems: 'stretch',
             }}
           >
-            <div
-              className='LeftPaneShell'
-              style={{
-                height: '100%',
-                display: 'flex',
-                flexShrink: 0,
-                width: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
-                overflowX: 'scroll',
-                backgroundColor: colorTheme.leftPaneBackground.value,
-              }}
-            >
-              {delayedLeftMenuExpanded ? <LeftPaneComponent /> : null}
-            </div>
             <SimpleFlexRow
               className='editor-shell'
               style={{

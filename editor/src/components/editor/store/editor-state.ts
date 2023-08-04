@@ -185,6 +185,7 @@ export enum LeftMenuTab {
   Project = 'project',
   Settings = 'settings',
   Github = 'github',
+  Navigator = 'navigator',
 }
 
 export const LeftPaneMinimumWidth = 5
@@ -194,7 +195,7 @@ export const LeftPaneDefaultWidth = 260
 export const DefaultNavigatorWidth = 280
 export const NavigatorWidthAtom = atomWithPubSub({
   key: 'NavigatorWidthAtom',
-  defaultValue: DefaultNavigatorWidth,
+  defaultValue: LeftPaneDefaultWidth,
 })
 export const CanvasSizeAtom = atomWithPubSub({
   key: 'CanvasSizeAtom',
@@ -2309,8 +2310,8 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.Project,
-      expanded: false,
+      selectedTab: LeftMenuTab.Navigator,
+      expanded: true,
       paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
@@ -2681,8 +2682,8 @@ export function editorModelFromPersistentModel(
       mouseOver: [],
     },
     leftMenu: {
-      selectedTab: LeftMenuTab.Project,
-      expanded: false,
+      selectedTab: LeftMenuTab.Navigator,
+      expanded: true,
       paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
