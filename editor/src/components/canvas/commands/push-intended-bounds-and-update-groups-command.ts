@@ -91,7 +91,7 @@ export const runPushIntendedBoundsAndUpdateGroups = (
 
   const intendedBoundsPatch =
     commandLifecycle === 'mid-interaction'
-      ? pushCommandStatePatch([...command.value, ...resizeAncestorsIntendedBounds])
+      ? pushIntendedBoundsPatch([...command.value, ...resizeAncestorsIntendedBounds])
       : []
 
   const queueFollowUpGroupTrueUpPatch: Array<EditorStatePatch> =
@@ -113,7 +113,7 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   }
 }
 
-function pushCommandStatePatch(
+function pushIntendedBoundsPatch(
   intendedBounds: Array<CanvasFrameAndTarget>,
 ): Array<EditorStatePatch> {
   return [
