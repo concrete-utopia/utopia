@@ -2367,10 +2367,6 @@ export const UPDATE_FNS = {
                     workingEditor.jsxMetadata,
                   )
 
-            if (isGroupChild && parentPath != null) {
-              groupTrueUps.push(parentPath.intendedParentPath)
-            }
-
             const withChildrenMoved = children.reduce((working, child) => {
               const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
                 child.elementPath,
