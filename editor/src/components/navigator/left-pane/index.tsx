@@ -141,7 +141,7 @@ export const LeftPaneComponent = React.memo(() => {
             }}
           >
             <UIGridRow
-              variant='<--1fr--><--1fr--><--1fr--><--1fr-->'
+              variant='|--67px--||--67px--||--67px--||--67px--|'
               padded={false}
               css={{ gridColumnGap: 0 }}
               style={{ alignItems: 'stretch', marginBottom: 10 }}
