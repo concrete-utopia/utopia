@@ -10,6 +10,7 @@ import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../../../../util
 import { selectComponents } from '../../../editor/actions/action-creators'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
@@ -532,6 +533,109 @@ describe('Resizing sets hug when size matches with children size', () => {
       )
     })
   })
+})
+
+it('trues up groups', async () => {
+  const inputCode = formatTestProjectCode(
+    makeTestProjectCodeWithSnippet(`
+      <div
+        data-uid='aaa'
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'center',
+          gap: 10,
+        }}
+      >
+        <Group
+          data-uid='group'
+          style={{
+            background: 'white',
+          }}
+          >
+            <div
+              data-uid='foo'
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 50,
+                background: 'red',
+              }}
+            />
+            <div
+              data-uid='bar'
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 100,
+                width: 50,
+                height: 50,
+                background: 'blue',
+              }}
+            />
+        </Group>
+      </div>
+    `),
+  )
+
+  const renderResult = await renderTestEditorWithCode(inputCode, 'await-first-dom-report')
+  const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/group`)
+  await dragResizeControl(
+    renderResult,
+    target,
+    EdgePositionBottomRight,
+    canvasPoint({ x: 50, y: 25 }),
+  )
+
+  expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+    formatTestProjectCode(
+      makeTestProjectCodeWithSnippet(`
+        <div
+          data-uid='aaa'
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 10,
+          }}
+        >
+          <Group
+            data-uid='group'
+            style={{
+              background: 'white',
+              width: 250,
+              height: 200,
+            }}
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 83,
+                  height: 67,
+                  background: 'red',
+                }}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  left: 167,
+                  top: 133,
+                  width: 83,
+                  height: 67,
+                  background: 'blue',
+                }}
+              />
+          </Group>
+        </div>
+      `),
+    ),
+  )
 })
 
 async function resizeTestAddsFlexGrow(
