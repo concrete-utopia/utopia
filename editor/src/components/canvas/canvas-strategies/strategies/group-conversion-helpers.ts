@@ -574,7 +574,7 @@ export function convertFrameToGroup(
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: GroupImport,
     }),
-    queueGroupTrueUp(trueUpElementChanged(childInstances[0].elementPath)), // let the editor know that the children are positioned correctly and the Group needs to be shifted/resized
+    queueGroupTrueUp([trueUpElementChanged(childInstances[0].elementPath)]), // TODO change this to trueUpChildrenOfElementChanged(elementPath)
   ]
 }
 
@@ -835,7 +835,7 @@ export function createWrapInGroupActions(
     insertGroupCommand,
     ...pinChangeCommands,
     selectNewGroup,
-    queueGroupTrueUp(trueUpElementChanged(groupPath)),
+    queueGroupTrueUp([trueUpElementChanged(groupPath)]),
   ])
 }
 

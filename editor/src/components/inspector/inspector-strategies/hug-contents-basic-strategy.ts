@@ -77,7 +77,7 @@ function hugContentsSingleElement(
   return [
     ...basicCommands,
     ...transformChildrenToFixedCommands,
-    queueGroupTrueUp(trueUpElementChanged(elementPath)),
+    queueGroupTrueUp([trueUpElementChanged(elementPath)]),
   ]
 }
 

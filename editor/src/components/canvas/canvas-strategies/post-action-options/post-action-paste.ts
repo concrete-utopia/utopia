@@ -344,7 +344,7 @@ export function staticReparentAndUpdatePosition(
         },
       },
     }),
-    ...groupTrueUpPaths.map((path) => queueGroupTrueUp(trueUpElementChanged(path))),
+    ...groupTrueUpPaths.map((path) => queueGroupTrueUp([trueUpElementChanged(path)])),
   ])
 }
 

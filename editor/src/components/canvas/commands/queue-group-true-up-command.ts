@@ -12,14 +12,14 @@ import { trueUpTargetToDescription } from '../../../core/model/groups'
 
 export interface QueueGroupTrueUp extends BaseCommand {
   type: 'QUEUE_GROUP_TRUE_UP'
-  target: TrueUpTarget
+  targets: Array<TrueUpTarget>
 }
 
-export function queueGroupTrueUp(target: TrueUpTarget): QueueGroupTrueUp {
+export function queueGroupTrueUp(targets: Array<TrueUpTarget>): QueueGroupTrueUp {
   return {
     type: 'QUEUE_GROUP_TRUE_UP',
     whenToRun: 'on-complete',
-    target: target,
+    targets: targets,
   }
 }
 
@@ -28,10 +28,10 @@ export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
   command: QueueGroupTrueUp,
 ) => {
   return {
-    commandDescription: `Once the interaction has finished: ${trueUpTargetToDescription(
-      command.target,
-    )}`,
-    editorStatePatches: [{ trueUpGroupsForElementAfterDomWalkerRuns: { $push: [command.target] } }],
+    commandDescription: `Once the interaction has finished: ${command.targets
+      .map((target) => trueUpTargetToDescription(target))
+      .join(', ')}`,
+    editorStatePatches: [{ trueUpGroupsForElementAfterDomWalkerRuns: { $push: command.targets } }],
   }
 }
 
@@ -46,7 +46,7 @@ export function getRequiredGroupTrueUps(
   const parentPath = EP.parentPath(target)
   if (allowGroupTrueUp(projectContents, metadata, pathTrees, allElementProps, parentPath)) {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTrees, target)
-    return siblings.map((sibling) => queueGroupTrueUp(trueUpElementChanged(sibling.elementPath)))
+    return [queueGroupTrueUp(siblings.map((sibling) => trueUpElementChanged(sibling.elementPath)))]
   } else {
     return []
   }
