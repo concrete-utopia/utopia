@@ -112,20 +112,38 @@ describe('Resize to fit control', () => {
       'await-first-dom-report',
     )
     const view = await selectView(editor, 'middle')
-    await expectSingleUndo2Saves(editor, async () => {
-      await pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } })
-    })
 
-    expect(view.style.width).toEqual(MaxContent)
-    expect(view.style.minWidth).toEqual('')
-    expect(view.style.maxWidth).toEqual('')
-    expect(view.style.height).toEqual(MaxContent)
-    expect(view.style.minHeight).toEqual('')
-    expect(view.style.maxHeight).toEqual('')
-    expect(view.style.flex).toEqual('')
-    expect(view.style.flexShrink).toEqual('')
-    expect(view.style.flexGrow).toEqual('')
-    expect(view.style.flexBasis).toEqual('')
+    for (let count: number = 0; count < 2; count++) {
+      await expectSingleUndo2Saves(editor, async () => {
+        await pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } })
+      })
+
+      expect(view.style.width).toEqual(MaxContent)
+      expect(view.style.minWidth).toEqual('')
+      expect(view.style.maxWidth).toEqual('')
+      expect(view.style.height).toEqual(MaxContent)
+      expect(view.style.minHeight).toEqual('')
+      expect(view.style.maxHeight).toEqual('')
+      expect(view.style.flex).toEqual('')
+      expect(view.style.flexShrink).toEqual('')
+      expect(view.style.flexGrow).toEqual('')
+      expect(view.style.flexBasis).toEqual('')
+
+      await expectSingleUndo2Saves(editor, async () => {
+        await pressKey('r', { modifiers: { alt: true, cmd: true, shift: true, ctrl: false } })
+      })
+
+      expect(view.style.width).toEqual('154px')
+      expect(view.style.minWidth).toEqual('')
+      expect(view.style.maxWidth).toEqual('')
+      expect(view.style.height).toEqual('343px')
+      expect(view.style.minHeight).toEqual('')
+      expect(view.style.maxHeight).toEqual('')
+      expect(view.style.flex).toEqual('')
+      expect(view.style.flexShrink).toEqual('')
+      expect(view.style.flexGrow).toEqual('')
+      expect(view.style.flexBasis).toEqual('')
+    }
   })
 
   it('when container is set to hug on one axis, it is resized to fit', async () => {
