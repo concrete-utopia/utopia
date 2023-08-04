@@ -86,11 +86,14 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
   })()
 
   const onClick = React.useCallback(() => {
-    const nextValue = getNextOverrideValue(overrideStatus, countOverride)
+    if (nrChildren == null) {
+      return
+    }
+    const nextValue = getNextOverrideValue(overrideStatus, countOverride, nrChildren)
     if (nextValue !== countOverride) {
       dispatch([setMapCountOverride(elementPath, nextValue)])
     }
-  }, [elementPath, dispatch, overrideStatus, countOverride])
+  }, [elementPath, dispatch, overrideStatus, countOverride, nrChildren])
 
   if (nrChildren == null) {
     return null
@@ -147,18 +150,22 @@ function getMapCounterStyleProps(overrideStatus: OverrideStatus): CSSProperties 
 function getNextOverrideValue(
   overrideStatus: OverrideStatus,
   countOverride: number | null,
+  nrChildren: number,
 ): number | null {
+  const maxOverride = Math.min(2, nrChildren)
   switch (overrideStatus) {
     case 'no-override':
-      return 1
+      return maxOverride
     case 'override-failed':
       return null
     case 'overridden':
-      if (countOverride === 0 || countOverride === 1) {
-        return countOverride + 1
-      } else {
-        return null
+      if (countOverride === null || countOverride > 2) {
+        return maxOverride
       }
+      if (countOverride === 2 || countOverride === 1) {
+        return Math.min(countOverride - 1, nrChildren)
+      }
+      return null
     default:
       assertNever(overrideStatus)
   }
