@@ -86,13 +86,13 @@ export function createLookupRender(
   highlightBounds: HighlightBoundsForUids | null,
   editedText: ElementPath | null,
   renderLimit: number | null,
-): (element: JSXElement, scope: MapLike<any>) => React.ReactChild {
+): (element: JSXElement, scope: MapLike<any>) => React.ReactChild | null {
   let index = 0
 
-  return (element: JSXElement, scope: MapLike<any>): React.ReactChild => {
+  return (element: JSXElement, scope: MapLike<any>): React.ReactChild | null => {
     index++
     if (renderLimit != null && index > renderLimit) {
-      return ''
+      return null
     }
     const innerUID = getUtopiaID(element)
     const generatedUID = EP.createIndexedUid(innerUID, index)
@@ -866,7 +866,7 @@ function displayNoneElement(props: any): any {
 export function utopiaCanvasJSXLookup(
   elementsWithin: ElementsWithin,
   executionScope: MapLike<any>,
-  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactChild,
+  render: (element: JSXElement, inScope: MapLike<any>) => React.ReactChild | null,
 ): (uid: string, inScope: MapLike<any>) => React.ReactChild | null {
   return (uid, inScope) => {
     const element = elementsWithin[uid]
