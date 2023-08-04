@@ -1467,7 +1467,12 @@ describe('Groups behaviors', () => {
         // Resizing bottom right
         {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
-          await resizeElement(editor, { x: 100, y: 150 }, EdgePositionBottomRight, emptyModifiers)
+          await resizeElement(editor, { x: 100, y: 150 }, EdgePositionBottomRight, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('300px')
+              expect(groupDiv.style.height).toBe('351px') // TODO for a later date: ideally this would be 350, but I think I am making a rounding error somewhere
+            },
+          })
 
           expect(groupDiv.style.width).toBe('75px')
           expect(groupDiv.style.height).toBe('88px')
@@ -2597,6 +2602,299 @@ describe('Groups behaviors', () => {
             height: 100,
             right: undefined,
             bottom: undefined,
+          })
+        }
+      })
+
+      it('nested sized groups with single child with top,left,width,height pins, the inner group is constrained width', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 100, height: 100}}>
+            <Group data-constraints={['width']} data-uid='group-inner' data-testid='group-inner' style={{position: 'absolute', left: 0, top: 0, width: 100, height: 100}}>
+              <div 
+                data-uid='child-1'
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              />
+            </Group>
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('150px')
+              expect(groupDiv.style.height).toBe('150px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('150px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 100,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner/child-1`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 150,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('150px')
+              expect(groupDiv.style.height).toBe('200px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('200px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/group-inner/child-1`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 200,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
+
+      it('Zero-sized child with top,left,bottom,right pins, no width,height pins, constrained left,top,bottom,right, sized Group', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 150, height: 150}}>
+            <div
+              data-testid='child-1'
+              data-uid='child-1'
+              data-constraints={['left', 'top', 'right', 'bottom']}
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 50,
+                left: 50,
+                right: 100,
+                bottom: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+        expect(groupDiv.style.width).toBe('150px')
+        expect(groupDiv.style.height).toBe('150px')
+
+        const childDiv = editor.renderedDOM.getByTestId('child-1')
+        // notice that the child ends up with zero width and height because it was set to auto
+        expect(childDiv.getBoundingClientRect().width).toBe(0)
+        expect(childDiv.getBoundingClientRect().height).toBe(0)
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('200px')
+              expect(groupDiv.style.height).toBe('200px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('50px')
+          expect(groupDiv.style.height).toBe('50px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 100,
+            top: 100,
+            width: 50,
+            height: 50,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: undefined,
+            height: undefined,
+            right: 0,
+            bottom: 0,
+          })
+        }
+
+        // resizing top left
+        {
+          // now the child's left,top,right,bottom are 0, so it doesn't matter if they are marked as Constrained or not: 0 would be equivalent to a constraint anyways, so this is a simple resize
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('100px')
+              expect(groupDiv.style.height).toBe('100px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: undefined,
+            height: undefined,
+            right: 0,
+            bottom: 0,
+          })
+        }
+      })
+
+      xit('Zero-sized child with top,left,bottom,right pins, no width,height pins, constrained left,top,bottom,right, SIZELESS Group', async () => {
+        // This is a documentation of a missing feature.
+        // It can happen that a Group + Child doesn't have enough Tentpole Points to correctly spread the Group to a given size and position
+        // In this case, you can try to resize the parent Group, but nothing will happen on the canvas, because the code tries to change the Group's width/height (doesn't exist and we are not adding it)
+        // and it also tries to change the child's width and height (which are not printed to the code either)
+
+        // we should either make the missing points explicit on the child, or on the group
+
+        // there are other examples for this problem, if you try to move a tentpole child towards negative Top and the group doesn't have an explicit Top point, nothing will happen
+
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div
+              data-testid='child-1'
+              data-uid='child-1'
+              data-constraints={['left', 'top', 'right', 'bottom']}
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 50,
+                left: 50,
+                right: 100,
+                bottom: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+        expect(groupDiv.style.width).toBe('150px')
+        expect(groupDiv.style.height).toBe('150px')
+
+        const childDiv = editor.renderedDOM.getByTestId('child-1')
+        // notice that the child ends up with zero width and height because it was set to auto
+        expect(childDiv.getBoundingClientRect().width).toBe(0)
+        expect(childDiv.getBoundingClientRect().height).toBe(0)
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('200px')
+              expect(groupDiv.style.height).toBe('200px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('50px')
+          expect(groupDiv.style.height).toBe('50px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 100,
+            top: 100,
+            width: undefined,
+            height: undefined,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 50, // THIS IS THE KEY! we are not smart enough to know that without this explicit width here, nothing good will happen
+            height: 50,
+            right: 0,
+            bottom: 0,
+          })
+        }
+
+        // resizing top left
+        {
+          // now the child's left,top,right,bottom are 0, so it doesn't matter if they are marked as Constrained or not: 0 would be equivalent to a constraint anyways, so this is a simple resize
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('100px')
+              expect(groupDiv.style.height).toBe('100px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: undefined,
+            height: undefined,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 100, // badly missing
+            height: 100,
+            right: 0,
+            bottom: 0,
           })
         }
       })
