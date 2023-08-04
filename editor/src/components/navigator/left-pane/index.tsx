@@ -122,7 +122,6 @@ export const LeftPaneComponent = React.memo(() => {
             position: 'relative',
             backgroundColor: colorTheme.leftPaneBackground.value,
             color: colorTheme.fg1.value,
-            paddingLeft: 4,
             display: 'flex',
           }}
         >
