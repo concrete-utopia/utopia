@@ -2,12 +2,12 @@
 
 exports[`React Render Count Tests - Changing the selected view with a less simple project 2`] = `
 Array [
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.memo)()",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.memo)(NavigatorDragLayer)",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/UtopiaSpiedClass(AutoSizer)",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal):data-testid='navigator'",
+  "/div/div/NavigatorComponent/Symbol(react.memo)()",
+  "/div/div/NavigatorComponent/Symbol(react.memo)(NavigatorDragLayer)",
+  "/div/div/NavigatorComponent/UtopiaSpiedClass(AutoSizer)",
+  "/div/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
+  "/div/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
+  "/div/div/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal):data-testid='navigator'",
   "/div/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal)/Symbol(react.forward_ref)(Styled(div)):data-testid='navigator'",
   "/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal)/Symbol(react.forward_ref)(Styled(div))/div:data-testid='navigator'",
   "/Symbol(react.forward_ref)(Styled(div))/div/Symbol(react.forward_ref)(Styled(div))/div",
@@ -651,12 +651,12 @@ Array [
 
 exports[`React Render Count Tests - Changing the selected view with a simple project 2`] = `
 Array [
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.memo)()",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.memo)(NavigatorDragLayer)",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/UtopiaSpiedClass(AutoSizer)",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
-  "/UtopiaSpiedClass(Resizable)/div/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal):data-testid='navigator'",
+  "/div/div/NavigatorComponent/Symbol(react.memo)()",
+  "/div/div/NavigatorComponent/Symbol(react.memo)(NavigatorDragLayer)",
+  "/div/div/NavigatorComponent/UtopiaSpiedClass(AutoSizer)",
+  "/div/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
+  "/div/div/NavigatorComponent/Symbol(react.forward_ref)(Styled(div))",
+  "/div/div/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal):data-testid='navigator'",
   "/div/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal)/Symbol(react.forward_ref)(Styled(div)):data-testid='navigator'",
   "/NavigatorComponent/Symbol(react.forward_ref)(EmotionCssPropInternal)/Symbol(react.forward_ref)(Styled(div))/div:data-testid='navigator'",
   "/Symbol(react.forward_ref)(Styled(div))/div/Symbol(react.forward_ref)(Styled(div))/div",
