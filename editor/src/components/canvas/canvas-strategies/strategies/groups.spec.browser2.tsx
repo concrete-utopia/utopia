@@ -1188,8 +1188,7 @@ describe('Groups behaviors', () => {
         }
       })
 
-      it('FIXME single child with OFFSET top,left,width,height', async () => {
-        // NOTE: currently the group resize does not auto-fix the group's children.
+      it('single child with OFFSET top,left,width,height results in a trued up group', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
             <div 
@@ -1215,20 +1214,20 @@ describe('Groups behaviors', () => {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers)
 
-          expect(groupDiv.style.width).toBe('200px')
-          expect(groupDiv.style.height).toBe('200px')
+          expect(groupDiv.style.width).toBe('133px')
+          expect(groupDiv.style.height).toBe('133px')
 
           assertStylePropsSet(editor, `${GroupPath}`, {
-            left: 50,
-            top: 50,
+            left: 117,
+            top: 117,
             width: undefined,
             height: undefined,
             right: undefined,
             bottom: undefined,
           })
           assertStylePropsSet(editor, `${GroupPath}/child-1`, {
-            left: 67,
-            top: 67,
+            left: 0,
+            top: 0,
             width: 133,
             height: 133,
           })
@@ -1239,22 +1238,22 @@ describe('Groups behaviors', () => {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers)
 
-          expect(groupDiv.style.width).toBe('250px')
-          expect(groupDiv.style.height).toBe('250px')
+          expect(groupDiv.style.width).toBe('183px')
+          expect(groupDiv.style.height).toBe('183px')
 
           assertStylePropsSet(editor, `${GroupPath}`, {
-            left: 0,
-            top: 0,
+            left: 67,
+            top: 67,
             width: undefined,
             height: undefined,
             right: undefined,
             bottom: undefined,
           })
           assertStylePropsSet(editor, `${GroupPath}/child-1`, {
-            left: 84,
-            top: 84,
-            width: 166,
-            height: 166,
+            left: 0,
+            top: 0,
+            width: 183,
+            height: 183,
             right: undefined,
             bottom: undefined,
           })
