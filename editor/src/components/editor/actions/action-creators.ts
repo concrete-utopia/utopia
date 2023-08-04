@@ -216,6 +216,7 @@ import type {
   ClearPostActionSession,
   ScrollToElementBehaviour,
   OpenCodeEditor,
+  SetMapCountOverride,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1590,6 +1591,17 @@ export function setConditionalOverriddenCondition(
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
     target: target,
     condition: condition,
+  }
+}
+
+export function setMapCountOverride(
+  target: ElementPath,
+  value: number | null,
+): SetMapCountOverride {
+  return {
+    action: 'SET_MAP_COUNT_OVERRIDE',
+    target: target,
+    value: value,
   }
 }
 

@@ -754,6 +754,12 @@ export interface SetConditionalOverriddenCondition {
   condition: boolean | null
 }
 
+export interface SetMapCountOverride {
+  action: 'SET_MAP_COUNT_OVERRIDE'
+  target: ElementPath
+  value: number | null
+}
+
 export interface UpdateConditionalExpression {
   action: 'UPDATE_CONIDTIONAL_EXPRESSION'
   target: ElementPath
@@ -1192,6 +1198,7 @@ export type EditorAction =
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
+  | SetMapCountOverride
   | SwitchConditionalBranches
   | UpdateConditionalExpression
   | ExecutePostActionMenuChoice
