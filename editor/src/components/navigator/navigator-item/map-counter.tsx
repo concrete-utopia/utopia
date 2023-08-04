@@ -75,7 +75,7 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
 
   const isOverridden = countOverride != null
   const shownCounterValue = countOverride ?? nrChildren
-  const overrideFailed = isOverridden && countOverride > nrChildren
+  const overrideFailed = isOverridden && countOverride !== nrChildren
   const overrideStatus: OverrideStatus = (() => {
     if (isOverridden) {
       if (overrideFailed) {
