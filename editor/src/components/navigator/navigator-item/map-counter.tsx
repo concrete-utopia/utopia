@@ -124,7 +124,7 @@ function getMapCounterStyleProps(overrideStatus: OverrideStatus): CSSProperties 
       return {
         ...stylePropsBase,
         color: colorTheme.brandNeonPink.value,
-        background: `linear-gradient(to left bottom, ${colorTheme.pinkSubdued.value} 48%, ${colorTheme.brandNeonPink.value} 48%, ${colorTheme.brandNeonPink.value} 52%, ${colorTheme.pinkSubdued.value} 52%)`,
+        background: `linear-gradient(to left bottom, ${colorTheme.pinkSubdued.value} 47%, ${colorTheme.brandNeonPink.value} 48%, ${colorTheme.brandNeonPink.value} 52%, ${colorTheme.pinkSubdued.value} 53%)`,
         boxSizing: 'border-box',
         border: `1px solid ${colorTheme.brandNeonPink.value}`,
       }
