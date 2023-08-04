@@ -53,6 +53,12 @@ import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './comman
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
+import type { FrameWithAllPoints } from './utils/group-resize-utils'
+import {
+  localRectangleToSixFramePoints,
+  roundSixPointFrameToNearestWhole,
+  transformConstrainedLocalFullFrameUsingBoundingBox,
+} from './utils/group-resize-utils'
 
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
@@ -138,7 +144,7 @@ function pushIntendedBoundsPatch(
 type LocalFrameAndTarget = {
   target: ElementPath
   parentSize: Size
-  localFrame: LocalRectangle
+  allSixFramePoints: FrameWithAllPoints
 }
 
 function getUpdateResizedGroupChildrenCommands(
@@ -211,19 +217,24 @@ function getUpdateResizedGroupChildrenCommands(
           // bail
           return
         }
-        const resizedLocalFrame = roundRectangleToNearestWhole(
-          transformFrameUsingBoundingBox(
-            localRectangle({ ...updatedSize, x: 0, y: 0 }),
-            localRectangle({ ...originalSize, x: 0, y: 0 }),
-            currentLocalFrame,
+
+        const constraints: Array<keyof FrameWithAllPoints> =
+          editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
+
+        const resizedLocalFramePoints = roundSixPointFrameToNearestWhole(
+          transformConstrainedLocalFullFrameUsingBoundingBox(
+            updatedSize,
+            originalSize,
+            localRectangleToSixFramePoints(currentLocalFrame, originalSize),
+            constraints,
           ),
         )
         updatedLocalFrames[EP.toString(child)] = {
-          localFrame: resizedLocalFrame,
+          allSixFramePoints: resizedLocalFramePoints,
           parentSize: updatedSize,
           target: child,
         }
-        targets.push({ target: child, size: sizeFromRectangle(resizedLocalFrame) })
+        targets.push({ target: child, size: sizeFromRectangle(resizedLocalFramePoints) })
       })
     }
   }
@@ -244,7 +255,7 @@ function getUpdateResizedGroupChildrenCommands(
     commandsToRun.push(
       ...setElementPins(
         elementToUpdate,
-        frameAndTarget.localFrame,
+        frameAndTarget.allSixFramePoints,
         frameAndTarget.parentSize,
         metadata.specialSizeMeasurements.parentFlexDirection,
       ),
@@ -385,7 +396,7 @@ function getResizeAncestorGroupsCommands(
 
 function setElementPins(
   target: ElementPath,
-  localFrame: LocalRectangle,
+  framePoints: FrameWithAllPoints,
   parentSize: Size,
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
@@ -395,7 +406,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'left'),
-      setValueKeepingOriginalUnit(localFrame.x, parentSize.width),
+      setValueKeepingOriginalUnit(framePoints.left, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -403,7 +414,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'top'),
-      setValueKeepingOriginalUnit(localFrame.y, parentSize.height),
+      setValueKeepingOriginalUnit(framePoints.top, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -411,10 +422,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'right'),
-      setValueKeepingOriginalUnit(
-        parentSize.width - (localFrame.x + localFrame.width),
-        parentSize.width,
-      ),
+      setValueKeepingOriginalUnit(framePoints.right, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -422,10 +430,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'bottom'),
-      setValueKeepingOriginalUnit(
-        parentSize.height - (localFrame.y + localFrame.height),
-        parentSize.height,
-      ),
+      setValueKeepingOriginalUnit(framePoints.bottom, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -433,7 +438,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'width'),
-      setValueKeepingOriginalUnit(localFrame.width, parentSize.width),
+      setValueKeepingOriginalUnit(framePoints.width, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -441,7 +446,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'height'),
-      setValueKeepingOriginalUnit(localFrame.height, parentSize.height),
+      setValueKeepingOriginalUnit(framePoints.height, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
