@@ -1,3 +1,4 @@
+import Draggable from 'react-draggable'
 import type { ResizeCallback, ResizeDirection } from 're-resizable'
 import { Resizable } from 're-resizable'
 import React from 'react'
@@ -42,6 +43,7 @@ import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { MiniTitleBar } from './mini-title-bar'
 
 interface NumberSize {
   width: number
@@ -191,9 +193,12 @@ const DesignPanelRootInner = React.memo(() => {
       delta: NumberSize,
     ) => {
       updateDeltaWidth(delta.width)
+      setCodePaneHeight((height) => height + delta.height)
     },
     [updateDeltaWidth],
   )
+
+  const [codePaneHeight, setCodePaneHeight] = React.useState(400)
 
   const onResize = React.useCallback(
     (
@@ -202,6 +207,8 @@ const DesignPanelRootInner = React.memo(() => {
       elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
+      event.stopPropagation()
+      event.stopImmediatePropagation()
       if (navigatorVisible) {
         setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
       }
@@ -250,23 +257,35 @@ const DesignPanelRootInner = React.memo(() => {
             <NothingOpenCard />
           </div>
         ) : null}
-        <SimpleFlexColumn style={{ flexGrow: isCanvasVisible ? undefined : 1 }}>
+        {/* <Draggable> */}
+        <SimpleFlexColumn
+          style={{
+            flexGrow: isCanvasVisible ? undefined : 1,
+            position: 'absolute',
+            bottom: 4,
+            left: navigatorWidth + 8,
+            borderRadius: 5,
+            overflow: 'hidden',
+            border: '1px solid black',
+            zIndex: 99999, // delete me
+          }}
+        >
           <Resizable
             defaultSize={{
               width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
+              height: codePaneHeight,
             }}
             size={{
               width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
+              height: codePaneHeight,
             }}
             onResizeStop={onResizeStop}
             onResize={onResize}
             enable={{
-              top: false,
+              top: true,
               right: isCanvasVisible,
               bottom: false,
-              topRight: false,
+              topRight: true,
               bottomRight: false,
               bottomLeft: false,
               topLeft: false,
@@ -282,12 +301,39 @@ const DesignPanelRootInner = React.memo(() => {
               justifyContent: 'stretch',
               alignItems: 'stretch',
               borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+              backgroundColor: 'white',
             }}
           >
-            {when(codeEditorEnabled, <CodeEditorWrapper />)}
-            <ConsoleAndErrorsPane />
+            <div
+              style={{
+                paddingLeft: 4,
+                height: 27,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              <div style={{ borderRadius: 4, height: 6, width: 6, background: 'black' }} />
+              <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
+              <div style={{ borderRadius: 4, height: 6, width: 6, border: '1px solid black' }} />
+              <span style={{ fontWeight: 600, marginLeft: 2 }}>Cõte</span>
+            </div>
+            <div
+              style={{
+                transformOrigin: 'top left',
+                width: 'calc(100%/0.7)',
+                height: 'calc(100%/0.7)',
+                transform: 'scale(0.7)',
+                display: 'flex',
+                flexShrink: 0,
+              }}
+            >
+              {when(codeEditorEnabled, <CodeEditorWrapper />)}
+              {/* <ConsoleAndErrorsPane /> */}
+            </div>
           </Resizable>
         </SimpleFlexColumn>
+        {/* </Draggable> */}
 
         {isCanvasVisible ? (
           <SimpleFlexColumn
@@ -322,6 +368,7 @@ const DesignPanelRootInner = React.memo(() => {
                     boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
                   }}
                 >
+                  <MiniTitleBar />
                   <NavigatorComponent />
                 </ResizableFlexColumn>
               </div>
