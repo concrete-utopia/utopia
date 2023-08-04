@@ -2606,6 +2606,143 @@ describe('Groups behaviors', () => {
         }
       })
 
+      it('sizeless group, single child with top,left,width,height pins, constrained width height', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              data-constraints={['width', 'height']}
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('100px') // TODO for a later PR: the group, or at least the canvas controls should resize during the interaction, but it can't because it doesn't have its own size prop
+              expect(groupDiv.style.height).toBe('100px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: undefined,
+            height: undefined,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('100px') // here too
+              expect(groupDiv.style.height).toBe('100px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: undefined,
+            height: undefined,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
+
+      it('single Group child with top,left,width,height,right,bottom !!! pins, constrained left, top. The unconstrained pins resize relative to their ratio.', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div 
+              data-uid='child-1'
+              data-constraints={['left', 'top']}
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 100,
+                height: 100,
+                right: 50,
+                bottom: 50
+              }}
+            />
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('150px')
+        expect(groupDiv.style.height).toBe('150px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 60, y: 60 }, EdgePositionBottomRight, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('210px')
+              expect(groupDiv.style.height).toBe('210px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('140px')
+          expect(groupDiv.style.height).toBe('140px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: undefined,
+            height: undefined,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 140, // so this is interesting here, the original constraints were 100 width, 50 right. resizing by 60 split the resize 40-20 towards the width
+            height: 140,
+          })
+        }
+      })
+
       it('nested sized groups with single child with top,left,width,height pins, the inner group is constrained width', async () => {
         const editor = await renderProjectWithGroup(`
           <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50, width: 100, height: 100}}>
