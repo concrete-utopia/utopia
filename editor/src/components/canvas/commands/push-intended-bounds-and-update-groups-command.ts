@@ -33,6 +33,7 @@ import type {
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
+import { trueUpElementChanged } from '../../editor/store/editor-state'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import {
@@ -46,6 +47,7 @@ import {
 import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
 import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
+import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
@@ -55,7 +57,7 @@ import { wildcardPatch } from './wildcard-patch-command'
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
-  isStartingMetadata: 'starting-metadata' | 'live-metadata'
+  isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
 }
 
 export function pushIntendedBoundsAndUpdateGroups(
@@ -75,33 +77,51 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   command: PushIntendedBoundsAndUpdateGroups,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
-  const { updatedEditor: editorAfterResizingGroupChildren } = getUpdateResizedGroupChildrenCommands(
-    editor,
-    command,
-  )
+  const commandRanBecauseOfQueuedTrueUp = command.isStartingMetadata === 'live-metadata'
+
+  const { updatedEditor: editorAfterResizingGroupChildren, resizedGroupChildren } =
+    getUpdateResizedGroupChildrenCommands(editor, command)
 
   const {
     updatedEditor: editorAfterResizingAncestors,
     intendedBounds: resizeAncestorsIntendedBounds,
-  } = getResizeAncestorGroupsCommands(editorAfterResizingGroupChildren, command)
+  } = getResizeAncestorGroupsCommands(
+    editorAfterResizingGroupChildren,
+    command,
+    commandRanBecauseOfQueuedTrueUp
+      ? 'do-not-create-if-doesnt-exist'
+      : // TODO this can be removed in a future PR, but for now matching the previous behavior
+        'create-if-not-existing',
+  )
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
   const editorPatch = { projectContents: { $set: editorAfterResizingAncestors.projectContents } }
 
   const intendedBoundsPatch =
     commandLifecycle === 'mid-interaction'
-      ? pushCommandStatePatch([...command.value, ...resizeAncestorsIntendedBounds])
+      ? pushIntendedBoundsPatch([...command.value, ...resizeAncestorsIntendedBounds])
+      : []
+
+  const queueFollowUpGroupTrueUpPatch: Array<EditorStatePatch> =
+    commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp
+      ? [
+          {
+            trueUpGroupsForElementAfterDomWalkerRuns: {
+              $set: resizedGroupChildren.map((c) => trueUpElementChanged(c)),
+            },
+          },
+        ]
       : []
 
   return {
-    editorStatePatches: [editorPatch, ...intendedBoundsPatch],
+    editorStatePatches: [editorPatch, ...intendedBoundsPatch, ...queueFollowUpGroupTrueUpPatch],
     commandDescription: `Set Intended Bounds for ${command.value
       .map((c) => EP.toString(c.target))
       .join(', ')}`,
   }
 }
 
-function pushCommandStatePatch(
+function pushIntendedBoundsPatch(
   intendedBounds: Array<CanvasFrameAndTarget>,
 ): Array<EditorStatePatch> {
   return [
@@ -124,7 +144,7 @@ type LocalFrameAndTarget = {
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
-): { updatedEditor: EditorState } {
+): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
   const targets: Array<{
     target: ElementPath
     size: Size
@@ -209,6 +229,7 @@ function getUpdateResizedGroupChildrenCommands(
   }
 
   let commandsToRun: Array<CanvasCommand> = []
+  let updatedElements: Array<ElementPath> = []
 
   Object.entries(updatedLocalFrames).forEach(([pathStr, frameAndTarget]) => {
     const elementToUpdate = EP.fromString(pathStr)
@@ -217,6 +238,8 @@ function getUpdateResizedGroupChildrenCommands(
     if (frameAndTarget == null || metadata == null) {
       return
     }
+
+    updatedElements.push(elementToUpdate)
 
     commandsToRun.push(
       ...setElementPins(
@@ -231,12 +254,14 @@ function getUpdateResizedGroupChildrenCommands(
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
   return {
     updatedEditor: updatedEditor,
+    resizedGroupChildren: updatedElements,
   }
 }
 
 function getResizeAncestorGroupsCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
+  addGroupSizeIfNonExistant: CreateIfNotExistant,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
   const targets: Array<CanvasFrameAndTarget> = [...command.value]
 
@@ -303,7 +328,12 @@ function getResizeAncestorGroupsCommands(
 
       if (currentGlobalFrame != null && updatedGlobalFrame != null) {
         commandsToRun.push(
-          ...setGroupPins(metadata, currentGlobalFrame, updatedGlobalFrame),
+          ...setGroupPins(
+            metadata,
+            currentGlobalFrame,
+            updatedGlobalFrame,
+            addGroupSizeIfNonExistant,
+          ),
           wildcardPatch('always', {
             jsxMetadata: { [pathStr]: { globalFrame: { $set: updatedGlobalFrame } } },
           }),
@@ -423,6 +453,7 @@ function setGroupPins(
   instance: ElementInstanceMetadata,
   currentGlobalFrame: CanvasRectangle,
   updatedGlobalFrame: CanvasRectangle,
+  createSizeIfNonExistant: CreateIfNotExistant,
 ): Array<CanvasCommand> {
   // TODO retarget Fragments
   const result = [
@@ -468,6 +499,7 @@ function setGroupPins(
         instance.specialSizeMeasurements.coordinateSystemBounds?.width,
       ),
       instance.specialSizeMeasurements.parentFlexDirection,
+      createSizeIfNonExistant,
     ),
     setCssLengthProperty(
       'always',
@@ -478,6 +510,7 @@ function setGroupPins(
         instance.specialSizeMeasurements.coordinateSystemBounds?.height,
       ),
       instance.specialSizeMeasurements.parentFlexDirection,
+      createSizeIfNonExistant,
     ),
   ]
   return result
