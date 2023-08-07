@@ -379,8 +379,10 @@ import type {
   UserState,
   EditorStoreUnpatched,
   NavigatorEntry,
-  AllElementProps,
+  TrueUpTarget,
 } from '../store/editor-state'
+import { trueUpChildrenOfElementChanged } from '../store/editor-state'
+import { AllElementProps, trueUpElementChanged } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
   BaseCanvasOffset,
@@ -582,7 +584,7 @@ import type {
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
-import { addToTrueUpGroups } from '../../../core/model/groups'
+import { addToTrueUpGroups, trueUpTargetToTargets } from '../../../core/model/groups'
 import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
@@ -597,6 +599,7 @@ import {
 import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
+import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1019,7 +1022,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         return MetadataUtils.getSiblingsOrdered(editor.jsxMetadata, editor.elementPathTree, target)
       })
       .map((entry) => entry.elementPath)
-    return addToTrueUpGroups(withUpdatedSelectedViews, ...siblings)
+    return addToTrueUpGroups(withUpdatedSelectedViews, ...siblings.map(trueUpElementChanged))
   }
 }
 
@@ -1645,7 +1648,7 @@ export const UPDATE_FNS = {
       (parseSuccess) => parseSuccess,
     )
 
-    updatedEditor = addToTrueUpGroups(updatedEditor, action.target)
+    updatedEditor = addToTrueUpGroups(updatedEditor, trueUpElementChanged(action.target))
 
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
@@ -1698,7 +1701,7 @@ export const UPDATE_FNS = {
       let parent: ElementPath = EP.parentPath(path)
       while (!EP.isStoryboardPath(parent)) {
         const children = MetadataUtils.getChildrenUnordered(metadata, parent)
-        const count = 1 + children.filter((c) => selected.includes(c.elementPath)).length
+        const count = 1 + children.filter((c) => EP.containsPath(c.elementPath, selected)).length
         if (!behavesLikeGroupOrFragmentForDeletion(metadata, parent) || children.length > count) {
           break
         }
@@ -1726,7 +1729,7 @@ export const UPDATE_FNS = {
               path,
             )
             const selectedSiblings = allSelectedPaths.filter((p) =>
-              siblings.includes(editor.jsxMetadata[EP.toString(p)]),
+              siblings.some((sibling) => EP.pathsEqual(sibling.elementPath, p)),
             )
 
             const parentPath = EP.parentPath(path)
@@ -1778,7 +1781,7 @@ export const UPDATE_FNS = {
                   editor.jsxMetadata,
                   editor.elementPathTree,
                   actualParent,
-                ).find((element) => !ignorePaths.includes(element.elementPath))
+                ).find((element) => !EP.containsPath(element.elementPath, ignorePaths))
                 if (target != null) {
                   return target.elementPath
                 }
@@ -1818,7 +1821,7 @@ export const UPDATE_FNS = {
           EP.pathsEqual,
         ).filter((path) => {
           // remove descendants of already-deleted elements during multiselect
-          return !bubbledUpDeletions.includes(path)
+          return !EP.containsPath(path, bubbledUpDeletions)
         })
 
         return {
@@ -2239,7 +2242,7 @@ export const UPDATE_FNS = {
           highlightedViews: [],
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...editorWithElementsInserted.trueUpGroupsForElementAfterDomWalkerRuns,
-            ...newPaths,
+            ...newPaths.map(trueUpElementChanged),
           ],
         }
       },
@@ -2434,7 +2437,7 @@ export const UPDATE_FNS = {
           selectedViews: newSelection,
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...withViewsDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
-            ...adjustedGroupTrueUps,
+            ...adjustedGroupTrueUps.map(trueUpElementChanged),
           ],
         }
       },
@@ -3019,7 +3022,7 @@ export const UPDATE_FNS = {
       ...withFrameUpdated,
       trueUpGroupsForElementAfterDomWalkerRuns: [
         ...withFrameUpdated.trueUpGroupsForElementAfterDomWalkerRuns,
-        action.element,
+        trueUpElementChanged(action.element),
       ],
     }
   },
@@ -3966,6 +3969,11 @@ export const UPDATE_FNS = {
     }
   },
   TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
+    const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
+      (trueUpTarget) => {
+        return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
+      },
+    )
     const canvasFrameAndTargets: Array<CanvasFrameAndTarget> = mapDropNulls((element) => {
       const globalFrame = MetadataUtils.findElementByElementPath(
         editor.jsxMetadata,
@@ -3978,7 +3986,7 @@ export const UPDATE_FNS = {
         frame: globalFrame,
         target: element,
       }
-    }, editor.trueUpGroupsForElementAfterDomWalkerRuns)
+    }, targetsToTrueUp)
     const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
       pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata'),
     ])
@@ -4466,7 +4474,10 @@ export const UPDATE_FNS = {
         assertNever(textProp)
       }
     })()
-    const withGroupTrueUpQueued: EditorState = addToTrueUpGroups(withUpdatedText, action.target)
+    const withGroupTrueUpQueued: EditorState = addToTrueUpGroups(
+      withUpdatedText,
+      trueUpElementChanged(action.target),
+    )
 
     const withCollapsedElements = collapseTextElements(action.target, withGroupTrueUpQueued)
 
@@ -4956,8 +4967,13 @@ export const UPDATE_FNS = {
                 action.toInsert.element.whenTrue != null ||
                 action.toInsert.element.whenFalse != null
               ) {
-                // this needs updating when we support inserting conditionals with non-empty clause
-                throw new Error('unhandled conditional insert into group')
+                // FIXME: This is a mid-step, as the conditional being inserted currently
+                // has nulls in both clauses, resulting in a zero-sized element.
+                groupCommands.push(
+                  queueGroupTrueUp([
+                    trueUpChildrenOfElementChanged(action.insertionPath.intendedParentPath),
+                  ]),
+                )
               }
               break
             case 'JSX_FRAGMENT':
@@ -4978,7 +4994,7 @@ export const UPDATE_FNS = {
           selectedViews: newSelectedViews,
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
-            newPath,
+            trueUpElementChanged(newPath),
           ],
         },
         groupCommands,
@@ -5341,11 +5357,11 @@ export function alignOrDistributeSelectedViews(
 ): EditorModel {
   const selectedViews = editor.selectedViews
 
-  let groupTrueUps: ElementPath[] = [
+  let groupTrueUps: Array<TrueUpTarget> = [
     ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
-    ...selectedViews.filter((path) =>
-      treatElementAsGroupLike(editor.jsxMetadata, EP.parentPath(path)),
-    ),
+    ...selectedViews
+      .filter((path) => treatElementAsGroupLike(editor.jsxMetadata, EP.parentPath(path)))
+      .map(trueUpElementChanged),
   ]
 
   if (selectedViews.length > 0) {

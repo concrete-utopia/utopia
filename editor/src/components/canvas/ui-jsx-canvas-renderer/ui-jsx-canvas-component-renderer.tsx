@@ -203,6 +203,7 @@ export function createComponentRendererComponent(params: {
         code,
         highlightBounds,
         rerenderUtopiaContext.editedText,
+        null,
       )
 
       scope[JSX_CANVAS_LOOKUP_FUNCTION_NAME] = utopiaCanvasJSXLookup(

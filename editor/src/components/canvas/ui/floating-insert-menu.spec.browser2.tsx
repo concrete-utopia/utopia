@@ -64,6 +64,49 @@ describe('Floating insert menu', () => {
     )
   })
 
+  it('can insert a conditional into a group via the floating insert menu', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<Group
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </Group>`),
+      'await-first-dom-report',
+    )
+
+    await expectSingleUndo2Saves(editor, async () => {
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+      ])
+      await insertViaAddElementPopup(editor, 'conditional')
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<Group
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+    {true ? null : null}
+  </Group>`),
+    )
+  })
+
   it('can insert a div via the floating insert menu', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div

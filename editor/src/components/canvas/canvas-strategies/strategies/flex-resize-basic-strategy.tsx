@@ -36,6 +36,10 @@ import {
 } from './resize-helpers'
 import { FlexDirection } from '../../../inspector/common/css-utils'
 import { getElementDimensions } from './flex-resize-helpers'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { treatElementAsGroupLike } from './group-helpers'
+import { trueUpElementChanged } from '../../../editor/store/editor-state'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -152,6 +156,14 @@ export function flexResizeBasicStrategy(
             [selectedElement],
           )
 
+          const elementIsGroup = treatElementAsGroupLike(
+            canvasState.startingMetadata,
+            selectedElement,
+          )
+          const groupChildren = elementIsGroup
+            ? MetadataUtils.getChildrenUnordered(canvasState.startingMetadata, selectedElement)
+            : []
+
           const resizedBounds = resizeBoundingBox(
             originalBounds,
             drag,
@@ -206,6 +218,11 @@ export function flexResizeBasicStrategy(
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
+            pushIntendedBoundsAndUpdateGroups(
+              [{ target: selectedElement, frame: resizedBounds }],
+              'starting-metadata',
+            ),
+            ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
           ])
         } else {
           return strategyApplicationResult([

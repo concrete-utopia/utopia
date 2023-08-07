@@ -728,6 +728,7 @@ export var storyboard = (
 
       {
         // @utopia/uid=651
+        // @utopia/map-count=2
         [0, 1, 2].map((i) => (
           <div data-uid='3bc'>fifth {i}</div>
         ))
@@ -5224,8 +5225,6 @@ describe('Navigator row order', () => {
         'regular-sb/group/651/3bc~~~1/634',
         'regular-sb/group/651/3bc~~~2',
         'regular-sb/group/651/3bc~~~2/634',
-        'regular-sb/group/651/3bc~~~3',
-        'regular-sb/group/651/3bc~~~3/634',
         'regular-sb/group/text-expr-cond-wrapper',
         'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
@@ -5233,7 +5232,7 @@ describe('Navigator row order', () => {
         'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
         'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
         'regular-sb/group/zero-length-map-wrapper',
-        'regular-sb/group/zero-length-map-wrapper/f28',
+        'regular-sb/group/zero-length-map-wrapper/063',
       ],
     )
     expect(
@@ -5264,7 +5263,6 @@ describe('Navigator row order', () => {
       'regular-sb/group/651',
       'regular-sb/group/651/3bc~~~1',
       'regular-sb/group/651/3bc~~~2',
-      'regular-sb/group/651/3bc~~~3',
       'regular-sb/group/text-expr-cond-wrapper',
       'regular-sb/group/text-expr-cond-wrapper/text-expr-cond',
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-true-case',
@@ -5272,7 +5270,7 @@ describe('Navigator row order', () => {
       'conditional-clause-sb/group/text-expr-cond-wrapper/text-expr-cond-false-case',
       'synthetic-sb/group/text-expr-cond-wrapper/text-expr-cond/2f3-element-2f3',
       'regular-sb/group/zero-length-map-wrapper',
-      'regular-sb/group/zero-length-map-wrapper/f28',
+      'regular-sb/group/zero-length-map-wrapper/063',
     ])
   })
 
@@ -5444,8 +5442,6 @@ describe('groups', () => {
                 position: 'absolute',
                 left: 10,
                 top: 10,
-                width: 340,
-                height: 340,
               }}
             >
               <div data-uid='dragme' style={{
@@ -5910,8 +5906,6 @@ describe('groups', () => {
                 position: 'absolute',
                 left: 10,
                 top: 10,
-                width: 390,
-                height: 390,
               }}
             >
               <div data-uid='intruder' style={{
@@ -5929,8 +5923,6 @@ describe('groups', () => {
                   position: 'absolute',
                   left: 0,
                   top: 0,
-                  width: 390,
-                  height: 390,
                 }}
               >
                 <div data-uid='dragme' style={{

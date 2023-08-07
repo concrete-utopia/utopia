@@ -63,6 +63,10 @@ import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-co
 import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { treatElementAsGroupLike } from './group-helpers'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { trueUpElementChanged } from '../../../editor/store/editor-state'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -189,6 +193,14 @@ export function flexResizeStrategy(
             lockedAspectRatio,
             isCenterBasedResize ? 'center-based' : 'non-center-based',
           )
+
+          const elementIsGroup = treatElementAsGroupLike(
+            canvasState.startingMetadata,
+            selectedElement,
+          )
+          const groupChildren = elementIsGroup
+            ? MetadataUtils.getChildrenUnordered(canvasState.startingMetadata, selectedElement)
+            : []
 
           let lengthPropertiesToAdjust: Array<LengthPropertyToAdjust> = []
           function addResizeProperty(
@@ -324,11 +336,24 @@ export function flexResizeStrategy(
             )
           }
 
+          const newFrame = resizeBoundingBox(
+            originalBounds,
+            drag,
+            edgePosition,
+            lockedAspectRatio,
+            'center-based',
+          )
+
           return strategyApplicationResult([
             ...resizeCommands,
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
+            pushIntendedBoundsAndUpdateGroups(
+              [{ target: selectedElement, frame: newFrame }],
+              'starting-metadata',
+            ),
+            ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
           ])
         } else {
           return strategyApplicationResult([
