@@ -125,6 +125,7 @@ export function applyMoveCommon(
         pushIntendedBoundsAndUpdateGroups(
           commandsForSelectedElements.intendedBounds,
           'starting-metadata',
+          'move',
         ),
         updateHighlightedViews('mid-interaction', []),
         setElementsToRerenderCommand(targets),
@@ -160,6 +161,7 @@ export function applyMoveCommon(
         pushIntendedBoundsAndUpdateGroups(
           commandsForSelectedElements.intendedBounds,
           'starting-metadata',
+          'move',
         ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
         setCursorCommand(CSSCursor.Select),

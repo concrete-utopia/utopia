@@ -91,7 +91,9 @@ export function keyboardAbsoluteMoveStrategy(
         const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
-        commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
+        commands.push(
+          pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata', 'move'),
+        )
         commands.push(setElementsToRerenderCommand(selectedElements))
         return strategyApplicationResult(commands)
       } else {
