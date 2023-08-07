@@ -1141,7 +1141,12 @@ describe('Use the text editor', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          true ? myvar2 : <div data-uid='33d' />
+          true ? (
+            // @utopia/uid=536
+            myvar2
+          ) : (
+            <div data-uid='33d' />
+          )
         }`),
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
@@ -1293,7 +1298,12 @@ describe('Use the text editor', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          false ? <div data-uid='33d' /> : myvar2
+          false ? (
+            <div data-uid='33d' />
+          ) : (
+            // @utopia/uid=536
+            myvar2
+          )
         }`),
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
@@ -1323,7 +1333,12 @@ describe('Use the text editor', () => {
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
         projectWithSnippet(`{
           // @utopia/uid=cond
-          false ? <div data-uid='33d' /> : myvar2
+          false ? (
+            <div data-uid='33d' />
+          ) : (
+            // @utopia/uid=089
+            myvar2
+          )
         }`),
       )
       expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('content of myvar2')
