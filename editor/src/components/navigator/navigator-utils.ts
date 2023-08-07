@@ -181,7 +181,6 @@ export function getNavigatorTargets(
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
         }
       } else if (isMap) {
-        // Add in the additional elements for a conditional.
         const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
         if (
           elementMetadata != null &&
