@@ -343,6 +343,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
 
   return (
     <div
+      id='inspector-root'
       style={{
         height: 'calc(100% - 20px)',
         position: 'absolute',
