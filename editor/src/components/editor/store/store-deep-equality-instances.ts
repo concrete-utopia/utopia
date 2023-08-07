@@ -322,8 +322,13 @@ import type {
   TrueUpElementChanged,
   TrueUpChildrenOfElementChanged,
   TrueUpTarget,
+  ErrorNavigatorEntry,
 } from './editor-state'
-import { trueUpElementChanged, trueUpChildrenOfElementChanged } from './editor-state'
+import {
+  trueUpElementChanged,
+  trueUpChildrenOfElementChanged,
+  errorNavigatorEntry,
+} from './editor-state'
 import {
   TransientCanvasState,
   transientCanvasState,
@@ -564,6 +569,15 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const ErrorNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<ErrorNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.message,
+    StringKeepDeepEquality,
+    errorNavigatorEntry,
+  )
+
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
   newValue,
@@ -582,6 +596,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'SYNTHETIC':
       if (oldValue.type === newValue.type) {
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'ERROR':
+      if (oldValue.type === newValue.type) {
+        return ErrorNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

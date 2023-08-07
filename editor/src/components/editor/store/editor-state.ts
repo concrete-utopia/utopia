@@ -120,6 +120,7 @@ import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
+  ErrorNavigatorEntryKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
@@ -2075,10 +2076,39 @@ export function syntheticNavigatorEntriesEqual(
   return SyntheticNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
+export interface ErrorNavigatorEntry {
+  type: 'ERROR'
+  elementPath: ElementPath
+  message: string
+}
+
+export function errorNavigatorEntry(
+  elementPath: ElementPath,
+  message: string,
+): ErrorNavigatorEntry {
+  return {
+    type: 'ERROR',
+    elementPath: elementPath,
+    message: message,
+  }
+}
+
+export function isErrorNavigatorEntry(entry: NavigatorEntry): entry is ErrorNavigatorEntry {
+  return entry.type === 'ERROR'
+}
+
+export function errorNavigatorEntriesEqual(
+  first: ErrorNavigatorEntry,
+  second: ErrorNavigatorEntry,
+): boolean {
+  return ErrorNavigatorEntryKeepDeepEquality(first, second).areEqual
+}
+
 export type NavigatorEntry =
   | RegularNavigatorEntry
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
+  | ErrorNavigatorEntry
 
 export function navigatorEntriesEqual(
   first: NavigatorEntry | null,
@@ -2110,6 +2140,8 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
+    case 'ERROR':
+      return `error-${EP.toComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }
@@ -2126,6 +2158,8 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
+    case 'ERROR':
+      return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }

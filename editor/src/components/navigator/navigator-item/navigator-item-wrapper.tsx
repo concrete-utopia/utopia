@@ -35,12 +35,14 @@ import type {
 } from '../../editor/store/store-hook-substore-types'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
+  ErrorNavigatorItemContainerProps,
   NavigatorItemDragAndDropWrapperProps,
   NavigatorItemDragAndDropWrapperPropsBase,
   SyntheticNavigatorItemContainerProps,
 } from './navigator-item-dnd-container'
 import {
   ConditionalClauseNavigatorItemContainer,
+  ErrorNavigatorItemContainer,
   NavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
@@ -170,6 +172,8 @@ export function getNavigatorEntryLabel(
           throw assertNever(navigatorEntry.childOrAttribute)
       }
     }
+    case 'ERROR':
+      return navigatorEntry.message
     default:
       assertNever(navigatorEntry)
   }
@@ -341,6 +345,15 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       navigatorEntry: props.navigatorEntry,
     }
     return <ConditionalClauseNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'ERROR') {
+    const entryProps: ErrorNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      navigatorEntry: props.navigatorEntry,
+    }
+
+    return <ErrorNavigatorItemContainer {...entryProps} />
   }
 
   assertNever(props.navigatorEntry)
