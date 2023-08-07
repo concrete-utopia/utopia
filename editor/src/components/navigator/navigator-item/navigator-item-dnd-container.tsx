@@ -550,7 +550,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
 
   // Note for future selves: watch out! This works because changing siblings triggers a re-render of the navigator,
   // but if that were not to happen anymore, the references used here by the editorStateRef would not guarantee
-  // updated hook values.
+  // updated hook values. (https://github.com/concrete-utopia/utopia/pull/4055#discussion_r1285777910)
   const isLastSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(
       editorStateRef.current.jsxMetadata,
