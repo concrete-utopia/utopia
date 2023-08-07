@@ -120,7 +120,7 @@ import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
-  ErrorNavigatorEntryKeepDeepEquality,
+  InvalidOverrideNavigatorEntryKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
@@ -2076,39 +2076,41 @@ export function syntheticNavigatorEntriesEqual(
   return SyntheticNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
-export interface ErrorNavigatorEntry {
-  type: 'ERROR'
+export interface InvalidOverrideNavigatorEntry {
+  type: 'INVALID_OVERRIDE'
   elementPath: ElementPath
   message: string
 }
 
-export function errorNavigatorEntry(
+export function invalidOverrideNavigatorEntry(
   elementPath: ElementPath,
   message: string,
-): ErrorNavigatorEntry {
+): InvalidOverrideNavigatorEntry {
   return {
-    type: 'ERROR',
+    type: 'INVALID_OVERRIDE',
     elementPath: elementPath,
     message: message,
   }
 }
 
-export function isErrorNavigatorEntry(entry: NavigatorEntry): entry is ErrorNavigatorEntry {
-  return entry.type === 'ERROR'
+export function isInvalidOverrideNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is InvalidOverrideNavigatorEntry {
+  return entry.type === 'INVALID_OVERRIDE'
 }
 
-export function errorNavigatorEntriesEqual(
-  first: ErrorNavigatorEntry,
-  second: ErrorNavigatorEntry,
+export function invalidOverrideNavigatorEntriesEqual(
+  first: InvalidOverrideNavigatorEntry,
+  second: InvalidOverrideNavigatorEntry,
 ): boolean {
-  return ErrorNavigatorEntryKeepDeepEquality(first, second).areEqual
+  return InvalidOverrideNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
 export type NavigatorEntry =
   | RegularNavigatorEntry
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
-  | ErrorNavigatorEntry
+  | InvalidOverrideNavigatorEntry
 
 export function navigatorEntriesEqual(
   first: NavigatorEntry | null,
@@ -2140,7 +2142,7 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
-    case 'ERROR':
+    case 'INVALID_OVERRIDE':
       return `error-${EP.toComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
@@ -2158,7 +2160,7 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
-    case 'ERROR':
+    case 'INVALID_OVERRIDE':
       return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     default:
       assertNever(entry)

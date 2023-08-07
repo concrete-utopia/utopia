@@ -172,7 +172,7 @@ export function getNavigatorEntryLabel(
           throw assertNever(navigatorEntry.childOrAttribute)
       }
     }
-    case 'ERROR':
+    case 'INVALID_OVERRIDE':
       return navigatorEntry.message
     default:
       assertNever(navigatorEntry)
@@ -347,7 +347,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     return <ConditionalClauseNavigatorItemContainer {...entryProps} />
   }
 
-  if (props.navigatorEntry.type === 'ERROR') {
+  if (props.navigatorEntry.type === 'INVALID_OVERRIDE') {
     const entryProps: ErrorNavigatorItemContainerProps = {
       ...navigatorItemProps,
       navigatorEntry: props.navigatorEntry,

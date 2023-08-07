@@ -322,12 +322,12 @@ import type {
   TrueUpElementChanged,
   TrueUpChildrenOfElementChanged,
   TrueUpTarget,
-  ErrorNavigatorEntry,
+  InvalidOverrideNavigatorEntry,
 } from './editor-state'
 import {
   trueUpElementChanged,
   trueUpChildrenOfElementChanged,
-  errorNavigatorEntry,
+  invalidOverrideNavigatorEntry,
 } from './editor-state'
 import {
   TransientCanvasState,
@@ -569,13 +569,13 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
-export const ErrorNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<ErrorNavigatorEntry> =
+export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<InvalidOverrideNavigatorEntry> =
   combine2EqualityCalls(
     (entry) => entry.elementPath,
     ElementPathKeepDeepEquality,
     (entry) => entry.message,
     StringKeepDeepEquality,
-    errorNavigatorEntry,
+    invalidOverrideNavigatorEntry,
   )
 
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
@@ -598,9 +598,9 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'ERROR':
+    case 'INVALID_OVERRIDE':
       if (oldValue.type === newValue.type) {
-        return ErrorNavigatorEntryKeepDeepEquality(oldValue, newValue)
+        return InvalidOverrideNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

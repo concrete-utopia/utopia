@@ -3,7 +3,7 @@ import React from 'react'
 import type { NavigatorEntry } from '../../../components/editor/store/editor-state'
 import {
   isConditionalClauseNavigatorEntry,
-  isErrorNavigatorEntry,
+  isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
@@ -78,7 +78,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     'NavigatorItemLabel isActiveBranchOfOverriddenConditional',
   )
 
-  const isErrorEntry = isErrorNavigatorEntry(target)
+  const isInvalidOverride = isInvalidOverrideNavigatorEntry(target)
 
   React.useEffect(() => {
     if (inputVisible && elementRef.current != null) {
@@ -226,7 +226,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
               ? colorTheme.dynamicBlue.value
               : isConditionalClause
               ? colorTheme.fg7.value
-              : isErrorEntry
+              : isInvalidOverride
               ? colorTheme.brandNeonPink.value
               : undefined,
             textTransform: isConditionalClause ? 'uppercase' : undefined,

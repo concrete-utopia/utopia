@@ -21,7 +21,7 @@ import type {
   DropTargetHint,
   DropTargetType,
   EditorState,
-  ErrorNavigatorEntry,
+  InvalidOverrideNavigatorEntry,
   NavigatorEntry,
 } from '../../editor/store/editor-state'
 import {
@@ -126,7 +126,7 @@ export interface ConditionalClauseNavigatorItemContainerProps
 }
 
 export interface ErrorNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
-  navigatorEntry: ErrorNavigatorEntry
+  navigatorEntry: InvalidOverrideNavigatorEntry
 }
 
 function isDroppingToOriginalPosition(

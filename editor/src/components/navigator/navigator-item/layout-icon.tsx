@@ -1,7 +1,7 @@
 import React from 'react'
 import type { ElementWarnings, NavigatorEntry } from '../../../components/editor/store/editor-state'
 import {
-  isErrorNavigatorEntry,
+  isInvalidOverrideNavigatorEntry,
   navigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
 import type { IcnProps } from '../../../uuiui'
@@ -67,7 +67,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         color: color,
         style: { opacity: 'var(--iconOpacity)' },
       }
-      if (isErrorNavigatorEntry(navigatorEntry)) {
+      if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
         return (
           <Icons.WarningTriangle
             color={'overridden'}

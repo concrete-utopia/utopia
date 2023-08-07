@@ -15,7 +15,7 @@ import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
-  errorNavigatorEntry,
+  invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
@@ -199,11 +199,11 @@ export function getNavigatorTargets(
           })
           if (mapCountOverride != null) {
             for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
-              const errorEntry = errorNavigatorEntry(
+              const entry = invalidOverrideNavigatorEntry(
                 EP.appendToPath(path, 'override-error'),
                 'data source not found',
               )
-              addNavigatorTargetUnlessCollapsed(errorEntry)
+              addNavigatorTargetUnlessCollapsed(entry)
             }
           }
         }
