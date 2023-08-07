@@ -197,15 +197,14 @@ export function getNavigatorTargets(
           fastForEach(Object.values(subTree.children), (child) => {
             walkAndAddKeys(child, newCollapsedAncestor)
           })
-          if (
-            mapCountOverride != null &&
-            mapCountOverride > Object.values(subTree.children).length
-          ) {
-            const errorEntry = errorNavigatorEntry(
-              EP.appendToPath(path, 'override-error'),
-              'data source not found',
-            )
-            addNavigatorTargetUnlessCollapsed(errorEntry)
+          if (mapCountOverride != null) {
+            for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
+              const errorEntry = errorNavigatorEntry(
+                EP.appendToPath(path, 'override-error'),
+                'data source not found',
+              )
+              addNavigatorTargetUnlessCollapsed(errorEntry)
+            }
           }
         }
       } else {
