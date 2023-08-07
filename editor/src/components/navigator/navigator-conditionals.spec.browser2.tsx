@@ -864,10 +864,7 @@ describe('conditionals in the navigator', () => {
       `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/sibling-div`,
     )
 
-    await act(async () => {
-      await renderResult.dispatch(selectComponents([elementPathToDrag], false), false)
-      await renderResult.getDispatchFollowUpActionsFinished()
-    })
+    await selectComponentsForTest(renderResult, [elementPathToDrag])
 
     // Getting info relating to what element will be dragged.
     const navigatorEntryToDrag = await renderResult.renderedDOM.findByTestId(
@@ -897,26 +894,24 @@ describe('conditionals in the navigator', () => {
 
     FOR_TESTS_setNextGeneratedUids(['fragment'])
 
-    await act(async () =>
-      dragElement(
-        renderResult,
-        `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
-        TopDropTargetLineTestId(
-          varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
-        ),
-        windowPoint(navigatorEntryToDragCenter),
-        windowPoint(dragDelta),
-        'apply-hover-events',
-        async () => {
-          // drop target line is shown before the conditional
-          const dropLine = renderResult.renderedDOM.getByTestId(
-            TopDropTargetLineTestId(
-              varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
-            ),
-          )
-          expect(dropLine.style.opacity).toEqual('1')
-        },
+    await dragElement(
+      renderResult,
+      `navigator-item-${varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToDrag))}`,
+      TopDropTargetLineTestId(
+        varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
       ),
+      windowPoint(navigatorEntryToDragCenter),
+      windowPoint(dragDelta),
+      'apply-hover-events',
+      async () => {
+        // drop target line is shown before the conditional
+        const dropLine = renderResult.renderedDOM.getByTestId(
+          TopDropTargetLineTestId(
+            varSafeNavigatorEntryToKey(regularNavigatorEntry(elementPathToTarget)),
+          ),
+        )
+        expect(dropLine.style.opacity).toEqual('1')
+      },
     )
 
     await renderResult.getDispatchFollowUpActionsFinished()

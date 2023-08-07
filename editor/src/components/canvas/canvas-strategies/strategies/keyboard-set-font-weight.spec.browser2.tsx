@@ -196,11 +196,11 @@ async function doTestWithDelta(
   editor: EditorRenderResult,
   delta: { decreaseBy: number; increaseBy: number },
 ) {
-  for await (const _ of Array(delta.increaseBy)) {
+  for (const _ of Array(delta.increaseBy)) {
     await pressKey('.', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
-  for await (const _ of Array(delta.decreaseBy)) {
+  for (const _ of Array(delta.decreaseBy)) {
     await pressKey(',', { modifiers: { shift: false, cmd: true, alt: true, ctrl: false } })
   }
 
