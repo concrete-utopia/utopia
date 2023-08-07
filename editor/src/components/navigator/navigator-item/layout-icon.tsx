@@ -68,7 +68,13 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         style: { opacity: 'var(--iconOpacity)' },
       }
       if (isErrorNavigatorEntry(navigatorEntry)) {
-        return <WarningIcon tooltipText={navigatorEntry.message} testId={iconTestId} />
+        return (
+          <Icons.WarningTriangle
+            color={'overridden'}
+            tooltipText={navigatorEntry.message}
+            testId={iconTestId}
+          />
+        )
       } else if (warningText == null) {
         return <Icn {...defaults} testId={iconTestId} />
       } else if (isErroredGroup) {
