@@ -177,10 +177,15 @@ function rawCodeToExpressionStatement(
     'temporary.tsx',
     rawCode,
     TS.ScriptTarget.Latest,
-    undefined,
-    TS.ScriptKind.TSX,
+    // undefined,
+    // TS.ScriptKind.TSX,
   )
-  const topLevelStatement = sourceFile.statements[0]
+
+  const statements = flatMapArray(
+    (e) => flattenOutAnnoyingContainers(sourceFile, e),
+    sourceFile.getChildren(sourceFile),
+  )
+  const topLevelStatement = statements[0] // sourceFile.statements[0]
   if (topLevelStatement != null && TS.isExpressionStatement(topLevelStatement)) {
     return { statement: topLevelStatement, sourceFile: sourceFile }
   } else {
@@ -234,9 +239,17 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
         const maybeExpressionStatement = rawCodeToExpressionStatement(attribute.javascript)
-        return maybeExpressionStatement == null
-          ? TS.createNull()
-          : maybeExpressionStatement.statement.expression
+        if (maybeExpressionStatement == null) {
+          return TS.createNull()
+        } else {
+          TS.factory.updateElementAccessExpression
+          const statement = TS.factory.createExpressionStatement(
+            maybeExpressionStatement.statement.expression,
+          )
+          // FIXME Sounds good, doesn't work
+          addCommentsToNode(statement, attribute.comments)
+          return statement.expression
+        }
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
       default:
@@ -310,7 +323,7 @@ function updateJSXElementsWithin(
     if (TS.isJsxElement(node)) {
       const newNode = streamlineInElementsWithin(node.openingElement.attributes, node)
       if (TS.isJsxElement(newNode)) {
-        return TS.updateJsxElement(
+        return TS.factory.updateJsxElement(
           node,
           newNode.openingElement,
           newNode.children,
@@ -322,7 +335,12 @@ function updateJSXElementsWithin(
     } else if (TS.isJsxSelfClosingElement(node)) {
       const newNode = streamlineInElementsWithin(node.attributes, node)
       if (TS.isJsxSelfClosingElement(newNode)) {
-        return TS.updateJsxSelfClosingElement(node, newNode.tagName, undefined, newNode.attributes)
+        return TS.factory.updateJsxSelfClosingElement(
+          node,
+          newNode.tagName,
+          undefined,
+          newNode.attributes,
+        )
       } else {
         return newNode
       }
@@ -470,12 +488,21 @@ function jsxElementToExpression(
           const finalComments =
             lastToken == null ? [] : getLeadingComments(element.javascript, lastToken)
 
-          const updatedStatement = updateJSXElementsWithin(
+          // This works because we are tricking it into thinking the node has not been parsed
+          // Otherwise, when trying to add comments TS will error out because it has a parsed node
+          // but can't find the source file associated with it.
+          // That check uses
+          // function isParseTreeNode(node) {
+          //   return (node.flags & 8 /* Synthesized */) === 0;
+          // }
+          const updatedExpression = updateJSXElementsWithin(
             statement.expression,
             element.elementsWithin,
             imports,
             stripUIDs,
           )
+
+          const updatedStatement = TS.factory.createExpressionStatement(updatedExpression)
           const commentsFromElement = element.comments
           const combinedComments = parsedComments(
             commentsFromElement.leadingComments,
