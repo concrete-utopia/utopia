@@ -173,21 +173,29 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
 function rawCodeToExpressionStatement(
   rawCode: string,
 ): { statement: TS.ExpressionStatement; sourceFile: TS.SourceFile } | null {
-  const sourceFile = TS.createSourceFile(
-    'temporary.tsx',
-    rawCode,
-    TS.ScriptTarget.Latest,
-    // undefined,
-    // TS.ScriptKind.TSX,
-  )
+  const sourceFile = TS.createSourceFile('temporary.tsx', rawCode, TS.ScriptTarget.Latest)
 
   const statements = flatMapArray(
     (e) => flattenOutAnnoyingContainers(sourceFile, e),
     sourceFile.getChildren(sourceFile),
   )
-  const topLevelStatement = statements[0] // sourceFile.statements[0]
+  const topLevelStatement = statements[0]
   if (topLevelStatement != null && TS.isExpressionStatement(topLevelStatement)) {
-    return { statement: topLevelStatement, sourceFile: sourceFile }
+    const innerExpression = topLevelStatement.expression
+
+    // This is horrible, and who knows how long it will work for. When adding comments to a node later
+    // on, TS will check if the node was parsed or synthesized. If it was parsed, TS will then attempt
+    // to look for the SourceFile for that node. In this case, the node is parsed, but TS will fail to
+    // find the SourceFile. Why? I have no idea. But, if we "adjust" the flags to mark the node as
+    // synthesized, TS will gladly add comments to it.
+    const unparsedExpression: TS.Expression = {
+      ...innerExpression,
+      flags: innerExpression.flags + TS.NodeFlags.Synthesized,
+    }
+    return {
+      statement: TS.factory.updateExpressionStatement(topLevelStatement, unparsedExpression),
+      sourceFile: sourceFile,
+    }
   } else {
     return null
   }
@@ -242,13 +250,9 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
         if (maybeExpressionStatement == null) {
           return TS.createNull()
         } else {
-          TS.factory.updateElementAccessExpression
-          const statement = TS.factory.createExpressionStatement(
-            maybeExpressionStatement.statement.expression,
-          )
-          // FIXME Sounds good, doesn't work
-          addCommentsToNode(statement, attribute.comments)
-          return statement.expression
+          const expression = maybeExpressionStatement.statement.expression
+          addCommentsToNode(expression, attribute.comments)
+          return expression
         }
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
@@ -488,13 +492,6 @@ function jsxElementToExpression(
           const finalComments =
             lastToken == null ? [] : getLeadingComments(element.javascript, lastToken)
 
-          // This works because we are tricking it into thinking the node has not been parsed
-          // Otherwise, when trying to add comments TS will error out because it has a parsed node
-          // but can't find the source file associated with it.
-          // That check uses
-          // function isParseTreeNode(node) {
-          //   return (node.flags & 8 /* Synthesized */) === 0;
-          // }
           const updatedExpression = updateJSXElementsWithin(
             statement.expression,
             element.elementsWithin,
@@ -502,17 +499,16 @@ function jsxElementToExpression(
             stripUIDs,
           )
 
-          const updatedStatement = TS.factory.createExpressionStatement(updatedExpression)
           const commentsFromElement = element.comments
           const combinedComments = parsedComments(
             commentsFromElement.leadingComments,
             commentsFromElement.trailingComments.concat(finalComments),
           )
 
-          addCommentsToNode(updatedStatement, combinedComments)
+          addCommentsToNode(updatedExpression, combinedComments)
           rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
             TS.EmitHint.Unspecified,
-            updatedStatement,
+            updatedExpression,
             sourceFile,
           )
         }
