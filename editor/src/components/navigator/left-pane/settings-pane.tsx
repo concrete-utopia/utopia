@@ -4,6 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import {
+  Button,
   CheckboxInput,
   colorTheme,
   FlexColumn,
@@ -35,6 +36,8 @@ import {
 } from '../../../utils/feature-switches'
 import json5 from 'json5'
 import { load } from '../../../components/editor/actions/actions'
+import { when } from '../../../utils/react-conditionals'
+import { useTriggerForkProject } from '../../editor/persistence-hooks'
 
 const themeOptions = [
   {
@@ -200,6 +203,8 @@ export const SettingsPane = React.memo(() => {
     [dispatch, entireStateRef],
   )
 
+  const onForkProjectClicked = useTriggerForkProject()
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -251,6 +256,33 @@ export const SettingsPane = React.memo(() => {
             />
           )}
         </UIGridRow>
+        {when(
+          userState.loginState.type === 'LOGGED_IN',
+          <div
+            style={{
+              height: UtopiaTheme.layout.rowHeight.normal,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              primary={true}
+              outline={false}
+              highlight
+              onClick={onForkProjectClicked}
+              style={{
+                paddingLeft: 4,
+                paddingRight: 4,
+                width: 140,
+                cursor: 'pointer',
+                height: UtopiaTheme.layout.inputHeight.default,
+              }}
+            >
+              Fork this project
+            </Button>
+          </div>,
+        )}
         <SectionBodyArea minimised={false}>
           {/** Theme Toggle: */}
           <UIGridRow
