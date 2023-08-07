@@ -61,10 +61,10 @@ export function useElementsOutsideVisibleArea(
     (store) => store.editor.canvas.roundedCanvasOffset,
     'useElementsOutsideVisibleArea canvasOffset',
   )
-  const navigatorWidth = useEditorState(
+  const leftMenuWidth = useEditorState(
     Substores.restOfEditor,
-    (store) => (store.editor.navigator.minimised ? 0 : LeftPaneDefaultWidth),
-    'useElementsOutsideVisibleArea navigatorMinimised',
+    (store) => (store.editor.leftMenu.expanded ? store.editor.leftMenu.paneWidth : 0),
+    'useElementsOutsideVisibleArea leftMenuWidth',
   )
 
   const elements = React.useMemo(() => {
@@ -94,10 +94,10 @@ export function useElementsOutsideVisibleArea(
     return windowRectangle({
       x: bounds.x * scaleRatio,
       y: bounds.y * scaleRatio,
-      width: bounds.width * scaleRatio - navigatorWidth,
+      width: bounds.width * scaleRatio - leftMenuWidth,
       height: bounds.height * scaleRatio,
     })
-  }, [bounds, navigatorWidth, canvasScale])
+  }, [bounds, leftMenuWidth, canvasScale])
 
   const scaledCanvasAreaCenter = React.useMemo(() => {
     if (scaledCanvasArea == null) {
@@ -116,7 +116,7 @@ export function useElementsOutsideVisibleArea(
         return null
       }
 
-      const topLeftSkew = windowPoint({ x: -navigatorWidth, y: 0 })
+      const topLeftSkew = windowPoint({ x: -leftMenuWidth, y: 0 })
       const topLeftPoint = offsetPoint(
         canvasPointToWindowPoint(frame, canvasScale, canvasOffset),
         topLeftSkew,
@@ -139,7 +139,7 @@ export function useElementsOutsideVisibleArea(
         directions: directions,
       }
     }, elements)
-  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString, navigatorWidth])
+  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString, leftMenuWidth])
 
   return React.useMemo((): ElementOutsideVisibleAreaIndicator[] => {
     if (
@@ -169,7 +169,7 @@ export function useElementsOutsideVisibleArea(
           ),
           directions,
           scaledCanvasArea,
-          navigatorWidth,
+          leftMenuWidth,
           windowRectangle(canvasToolbar),
         ),
       }
@@ -190,7 +190,7 @@ export function useElementsOutsideVisibleArea(
     elementsOutsideVisibleArea,
     scaledCanvasArea,
     scaledCanvasAreaCenter,
-    navigatorWidth,
+    leftMenuWidth,
     bounds,
     canvasToolbar,
   ])

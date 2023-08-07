@@ -743,7 +743,7 @@ export function handleKeyDown(
         return [EditorActions.focusFormulaBar()]
       },
       [TOGGLE_NAVIGATOR]: () => {
-        return [EditorActions.togglePanel('navigator')]
+        return [EditorActions.togglePanel('leftmenu')]
       },
       [TOGGLE_INSPECTOR]: () => {
         return [EditorActions.togglePanel('rightmenu')]
@@ -755,7 +755,7 @@ export function handleKeyDown(
         return [EditorActions.toggleInterfaceDesignerCodeEditor()]
       },
       [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: () => {
-        return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('navigator')]
+        return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('leftmenu')]
       },
       [CONVERT_ELEMENT_SHORTCUT]: () => {
         const possibleToConvert = editor.selectedViews.every((path) => {
