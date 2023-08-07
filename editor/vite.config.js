@@ -1,7 +1,7 @@
 import { resolve, join } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { createHtmlPlugin } from 'vite-plugin-html'
+import { injectHtml } from 'vite-plugin-html'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import { viteExternalsPlugin } from 'vite-plugin-externals'
 
@@ -13,14 +13,12 @@ export default defineConfig(({ mode }) => {
         domtoimage: 'domtoimage',
       }),
       isDevEnv && react(),
-      createHtmlPlugin({
-        inject: {
-          data: {
-            VITE: true,
-            UTOPIA_SHA: process.env.REACT_APP_COMMIT_HASH,
-            UTOPIA_DOMAIN: isDevEnv ? 'http://localhost:8000' : '',
-            VSCODE_DOMAIN: '${window.location.origin}',
-          },
+      injectHtml({
+        data: {
+          VITE: true,
+          UTOPIA_SHA: process.env.REACT_APP_COMMIT_HASH,
+          UTOPIA_DOMAIN: isDevEnv ? 'http://localhost:8000' : '',
+          VSCODE_DOMAIN: '${window.location.origin}',
         },
       }),
     ],
@@ -28,7 +26,6 @@ export default defineConfig(({ mode }) => {
     publicDir: '../../resources/editor',
     server: {
       port: 8088,
-      cors: false,
       host: '0.0.0.0',
       fs: {
         allow: [
