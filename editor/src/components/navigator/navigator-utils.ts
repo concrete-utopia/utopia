@@ -200,7 +200,7 @@ export function getNavigatorTargets(
           if (mapCountOverride != null) {
             for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
               const entry = invalidOverrideNavigatorEntry(
-                EP.appendToPath(path, 'override-error'),
+                EP.appendToPath(path, `invalid-override-${i + 1}`),
                 'data source not found',
               )
               addNavigatorTargetUnlessCollapsed(entry)
