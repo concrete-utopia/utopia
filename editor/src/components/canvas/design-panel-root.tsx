@@ -132,45 +132,8 @@ const DesignPanelRootInner = React.memo(() => {
   )
 
   const colorTheme = useColorTheme()
-  const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
-    interfaceDesigner.codePaneWidth,
-  )
-
-  const isRightMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.rightMenu.expanded,
-    'DesignPanelRoot isRightMenuExpanded',
-  )
-
-  const rightMenuSelectedTab = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.rightMenu.selectedTab,
-    'DesignPanelRoot rightMenuSelectedTab',
-  )
-
-  const leftMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'EditorComponentInner leftMenuExpanded',
-  )
-
-  const isCanvasVisible = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.visible,
-    'design panel root',
-  )
 
   const codeEditorEnabled = isCodeEditorEnabled()
-
-  const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
-
-  const updateDeltaWidth = React.useCallback(
-    (deltaWidth: number) => {
-      dispatch([EditorActions.resizeInterfaceDesignerCodePane(deltaWidth)])
-    },
-    [dispatch],
-  )
-
   const onResizeStop = React.useCallback(
     (
       event: MouseEvent | TouchEvent,
@@ -178,23 +141,9 @@ const DesignPanelRootInner = React.memo(() => {
       elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
-      updateDeltaWidth(delta.width)
+      dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
     },
-    [updateDeltaWidth],
-  )
-
-  const onResize = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      if (leftMenuExpanded) {
-        setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
-      }
-    },
-    [interfaceDesigner, leftMenuExpanded],
+    [dispatch],
   )
 
   return (
@@ -210,39 +159,20 @@ const DesignPanelRootInner = React.memo(() => {
           flexShrink: 0,
         }}
       >
-        {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              top: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <NothingOpenCard />
-          </div>
-        ) : null}
-        <SimpleFlexColumn style={{ flexGrow: isCanvasVisible ? undefined : 1 }}>
+        <SimpleFlexColumn>
           <Resizable
             defaultSize={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+              width: interfaceDesigner.codePaneWidth,
               height: '100%',
             }}
             size={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
+              width: interfaceDesigner.codePaneWidth,
               height: '100%',
             }}
             onResizeStop={onResizeStop}
-            onResize={onResize}
             enable={{
               top: false,
-              right: isCanvasVisible,
+              right: true,
               bottom: false,
               topRight: false,
               bottomRight: false,
@@ -253,7 +183,7 @@ const DesignPanelRootInner = React.memo(() => {
             style={{
               ...UtopiaStyles.flexColumn,
               display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-              width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
+              width: interfaceDesigner.codePaneWidth,
               height: '100%',
               position: 'relative',
               overflow: 'hidden',
@@ -267,7 +197,7 @@ const DesignPanelRootInner = React.memo(() => {
           </Resizable>
         </SimpleFlexColumn>
 
-        {isCanvasVisible ? (
+        {
           <SimpleFlexColumn
             style={{
               flexGrow: 1,
@@ -275,29 +205,12 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
-            {isCanvasVisible && leftMenuExpanded ? (
-              <div
-                style={{
-                  height: 'calc(100% - 20px)',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  zIndex: 1,
-                  margin: 10,
-                }}
-              >
-                <LeftPaneComponent />
-              </div>
-            ) : null}
-
+            <LeftPaneComponent />
             <CanvasWrapperComponent />
             <FloatingInsertMenu />
-
-            {isCanvasVisible && isRightMenuExpanded ? (
-              <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
-            ) : null}
+            <ResizableRightPane />
           </SimpleFlexColumn>
-        ) : null}
+        }
       </SimpleFlexRow>
     </>
   )
@@ -322,10 +235,7 @@ export const DesignPanelRoot = React.memo(() => {
 })
 DesignPanelRoot.displayName = 'DesignPanelRoot'
 
-interface ResizableInspectorPaneProps {
-  isInsertMenuSelected: boolean
-}
-const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) => {
+const ResizableRightPane = React.memo(() => {
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
@@ -340,6 +250,21 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
       updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
     }
   }, [updateInspectorWidth])
+
+  const selectedTab = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.rightMenu.selectedTab,
+    'ResizableRightPane selectedTab',
+  )
+
+  const isRightMenuExpanded = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.rightMenu.expanded,
+    'DesignPanelRoot isRightMenuExpanded',
+  )
+  if (!isRightMenuExpanded) {
+    return null
+  }
 
   return (
     <div
@@ -389,7 +314,8 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
             flexShrink: 0,
           }}
         >
-          {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
+          {selectedTab === RightMenuTab.Insert && <InsertMenuPane />}
+          {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
         </SimpleFlexRow>
         <CanvasStrategyInspector />
       </Resizable>

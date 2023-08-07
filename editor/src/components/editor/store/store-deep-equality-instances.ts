@@ -1850,12 +1850,10 @@ export const EditorStateRightMenuKeepDeepEquality: KeepDeepEqualityCall<EditorSt
   )
 
 export const EditorStateInterfaceDesignerKeepDeepEquality: KeepDeepEqualityCall<EditorStateInterfaceDesigner> =
-  combine4EqualityCalls(
+  combine3EqualityCalls(
     (designer) => designer.codePaneWidth,
     createCallWithTripleEquals(),
     (designer) => designer.codePaneVisible,
-    createCallWithTripleEquals(),
-    (designer) => designer.restorableCodePaneWidth,
     createCallWithTripleEquals(),
     (designer) => designer.additionalControls,
     createCallWithTripleEquals(),
@@ -2354,8 +2352,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     newValue.elementsToRerender,
   )
 
-  const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
-
   const interactionSessionResult = nullableDeepEquality(InteractionSessionKeepDeepEquality)(
     oldValue.interactionSession,
     newValue.interactionSession,
@@ -2428,7 +2424,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
 
   const areEqual =
     elementsToRerenderResult.areEqual &&
-    visibleResult.areEqual &&
     interactionSessionResult.areEqual &&
     scaleResult.areEqual &&
     snappingThresholdResult.areEqual &&
@@ -2453,7 +2448,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   } else {
     const newDeepValue = editorStateCanvas(
       elementsToRerenderResult.value,
-      visibleResult.value,
       interactionSessionResult.value,
       scaleResult.value,
       snappingThresholdResult.value,
