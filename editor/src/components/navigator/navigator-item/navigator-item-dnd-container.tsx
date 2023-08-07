@@ -548,6 +548,9 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
   }, [editorStateRef, props.elementPath])
 
+  // Note for future selves: watch out! This works because changing siblings triggers a re-render of the navigator,
+  // but if that were not to happen anymore, the references used here by the editorStateRef would not guarantee
+  // updated hook values.
   const isLastSibling = React.useMemo(() => {
     const siblings = MetadataUtils.getSiblingsOrdered(
       editorStateRef.current.jsxMetadata,
