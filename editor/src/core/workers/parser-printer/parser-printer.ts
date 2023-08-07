@@ -170,9 +170,10 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
   }
 }
 
-function rawCodeToExpressionStatement(
-  rawCode: string,
-): { statement: TS.ExpressionStatement; sourceFile: TS.SourceFile } | null {
+function rawCodeToExpressionStatement(rawCode: string): {
+  statement: TS.ExpressionStatement | TS.EmptyStatement
+  sourceFile: TS.SourceFile
+} {
   const sourceFile = TS.createSourceFile('temporary.tsx', rawCode, TS.ScriptTarget.Latest)
 
   const statements = flatMapArray(
@@ -197,7 +198,10 @@ function rawCodeToExpressionStatement(
       sourceFile: sourceFile,
     }
   } else {
-    return null
+    return {
+      statement: TS.factory.createEmptyStatement(),
+      sourceFile: sourceFile,
+    }
   }
 }
 
@@ -246,13 +250,15 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
         return TS.createArrayLiteral(arrayExpressions)
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        const maybeExpressionStatement = rawCodeToExpressionStatement(attribute.javascript)
-        if (maybeExpressionStatement == null) {
-          return TS.createNull()
-        } else {
-          const expression = maybeExpressionStatement.statement.expression
+        const maybeExpressionStatement = rawCodeToExpressionStatement(
+          attribute.javascript,
+        ).statement
+        if (TS.isExpressionStatement(maybeExpressionStatement)) {
+          const expression = maybeExpressionStatement.expression
           addCommentsToNode(expression, attribute.comments)
           return expression
+        } else {
+          return TS.factory.createNull()
         }
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
@@ -485,36 +491,26 @@ function jsxElementToExpression(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       if (parentIsJSX) {
         const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
-        let rawCode: string = element.javascript // Fallback for the case where the code is simply a comment
-        if (maybeExpressionStatement != null) {
-          const { statement, sourceFile } = maybeExpressionStatement
-          const lastToken = statement.getLastToken(sourceFile)
-          const finalComments =
-            lastToken == null ? [] : getLeadingComments(element.javascript, lastToken)
+        const { statement, sourceFile } = maybeExpressionStatement
 
-          const updatedExpression = updateJSXElementsWithin(
-            statement.expression,
-            element.elementsWithin,
-            imports,
-            stripUIDs,
-          )
+        const targetNode = TS.isExpressionStatement(statement)
+          ? updateJSXElementsWithin(
+              statement.expression,
+              element.elementsWithin,
+              imports,
+              stripUIDs,
+            )
+          : statement
 
-          const commentsFromElement = element.comments
-          const combinedComments = parsedComments(
-            commentsFromElement.leadingComments,
-            commentsFromElement.trailingComments.concat(finalComments),
-          )
-
-          addCommentsToNode(updatedExpression, combinedComments)
-          rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
-            TS.EmitHint.Unspecified,
-            updatedExpression,
-            sourceFile,
-          )
-        }
+        addCommentsToNode(targetNode, element.comments)
+        const rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
+          TS.EmitHint.Unspecified,
+          targetNode,
+          sourceFile,
+        )
 
         // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
-        return TS.createJsxText(`{${rawCode}}`)
+        return TS.factory.createJsxText(`{${rawCode}}`)
       } else {
         return jsxAttributeToExpression(element)
       }

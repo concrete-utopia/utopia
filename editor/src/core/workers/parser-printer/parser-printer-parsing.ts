@@ -1096,20 +1096,25 @@ function parseJSExpression(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSExpression>> {
-  // Remove the braces around the expression
-  const expression =
-    TS.isJsxExpression(jsxExpression) && jsxExpression.expression != null
-      ? jsxExpression.expression
-      : jsxExpression
-  const expressionFullText = expression.getText(sourceFile)
+  const expression = TS.isJsxExpression(jsxExpression) ? jsxExpression.expression : jsxExpression
+  const expressionFullText = expression == null ? '' : expression.getText(sourceFile)
+  const expressionForLocation = expression ?? jsxExpression
   const expressionAndText = createExpressionAndText(
     expression,
     expressionFullText,
-    expression.getFullStart(),
-    expression.getEnd(),
+    expressionForLocation.getFullStart(),
+    expressionForLocation.getEnd(),
   )
 
-  const comments = getCommentsOnExpression(sourceText, jsxExpression)
+  const firstToken = jsxExpression.getFirstToken(sourceFile)
+  const lastToken = jsxExpression.getLastToken(sourceFile)
+  const commentsOnFirstToken = firstToken == null ? [] : getTrailingComments(sourceText, firstToken)
+  const commentsOnLastToken = lastToken == null ? [] : getLeadingComments(sourceText, lastToken)
+  const commentsOnExpression = getCommentsOnExpression(sourceText, jsxExpression)
+  const comments = parsedComments(
+    [...commentsOnFirstToken, ...commentsOnExpression.leadingComments],
+    [...commentsOnExpression.trailingComments, ...commentsOnLastToken],
+  )
 
   return parseOtherJavaScript(
     sourceFile,
