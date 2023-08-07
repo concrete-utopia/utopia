@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => {
     publicDir: '../../resources/editor',
     server: {
       port: 8088,
+      cors: false,
       host: '0.0.0.0',
       fs: {
         allow: [
