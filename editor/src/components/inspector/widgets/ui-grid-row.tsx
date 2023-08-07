@@ -51,9 +51,9 @@ const gridTemplates = {
     gridTemplateColumns: 'repeat(4, 67px)',
     gridColumnGap: 2,
   },
-  '<--1fr--><--1fr--><--1fr--><--1fr-->': {
+  '<--1fr--><--1fr--><--1fr-->': {
     gridColumnGap: 4,
-    gridTemplateColumns: '1fr 1fr 1fr 1fr',
+    gridTemplateColumns: '1fr 1fr 1fr',
   },
   '<--1fr--><--1fr-->': {
     gridColumnGap: 4,
