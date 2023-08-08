@@ -305,10 +305,6 @@ export type ResizeInterfaceDesignerCodePane = {
   deltaCodePaneWidth: number
 }
 
-export type ToggleInterfaceDesignerCodeEditor = {
-  action: 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR'
-}
-
 export interface OpenPopup {
   action: 'OPEN_POPUP'
   popupId: string
@@ -1086,7 +1082,6 @@ export type EditorAction =
   | HideModal
   | ShowModal
   | ResizeInterfaceDesignerCodePane
-  | ToggleInterfaceDesignerCodeEditor
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset

@@ -134,7 +134,6 @@ import type {
   ToggleCollapse,
   ToggleHidden,
   ToggleInterfaceDesignerAdditionalControls,
-  ToggleInterfaceDesignerCodeEditor,
   TogglePane,
   ToggleProperty,
   TransientActions,
@@ -631,12 +630,6 @@ export function resizeInterfaceDesignerCodePane(
   return {
     action: 'RESIZE_INTERFACEDESIGNER_CODEPANE',
     deltaCodePaneWidth: deltaCodePaneWidth,
-  }
-}
-
-export function toggleInterfaceDesignerCodeEditor(): ToggleInterfaceDesignerCodeEditor {
-  return {
-    action: 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR',
   }
 }
 

@@ -302,7 +302,6 @@ import type {
   ToggleCollapse,
   ToggleHidden,
   ToggleInterfaceDesignerAdditionalControls,
-  ToggleInterfaceDesignerCodeEditor,
   TogglePane,
   ToggleProperty,
   ToggleSelectionLock,
@@ -2900,24 +2899,6 @@ export const UPDATE_FNS = {
       leftMenu: {
         ...editor.leftMenu,
         paneWidth: Math.max(LeftPaneMinimumWidth, targetWidth),
-      },
-    }
-  },
-  TOGGLE_INTERFACEDESIGNER_CODEEDITOR: (
-    action: ToggleInterfaceDesignerCodeEditor,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    const codeEditorVisibleAfter = !editor.interfaceDesigner.codePaneVisible
-    const updatedEditor = codeEditorVisibleAfter
-      ? editor
-      : UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor)
-
-    return {
-      ...updatedEditor,
-      interfaceDesigner: {
-        ...editor.interfaceDesigner,
-        codePaneVisible: codeEditorVisibleAfter,
       },
     }
   },
