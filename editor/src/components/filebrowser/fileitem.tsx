@@ -804,7 +804,7 @@ class FileBrowserItemInner extends React.PureComponent<
                     border: '1px solid primary',
                     padding: '2px 4px',
                     fontSize: 9,
-                    color: colorTheme.primary.value,
+                    color: colorTheme.dynamicBlue.value,
                   }}
                 >
                   S3
