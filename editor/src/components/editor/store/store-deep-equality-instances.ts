@@ -322,8 +322,13 @@ import type {
   TrueUpElementChanged,
   TrueUpChildrenOfElementChanged,
   TrueUpTarget,
+  InvalidOverrideNavigatorEntry,
 } from './editor-state'
-import { trueUpElementChanged, trueUpChildrenOfElementChanged } from './editor-state'
+import {
+  trueUpElementChanged,
+  trueUpChildrenOfElementChanged,
+  invalidOverrideNavigatorEntry,
+} from './editor-state'
 import {
   TransientCanvasState,
   transientCanvasState,
@@ -564,6 +569,15 @@ export const SyntheticNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<Synth
     syntheticNavigatorEntry,
   )
 
+export const InvalidOverrideNavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<InvalidOverrideNavigatorEntry> =
+  combine2EqualityCalls(
+    (entry) => entry.elementPath,
+    ElementPathKeepDeepEquality,
+    (entry) => entry.message,
+    StringKeepDeepEquality,
+    invalidOverrideNavigatorEntry,
+  )
+
 export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry> = (
   oldValue,
   newValue,
@@ -582,6 +596,11 @@ export const NavigatorEntryKeepDeepEquality: KeepDeepEqualityCall<NavigatorEntry
     case 'SYNTHETIC':
       if (oldValue.type === newValue.type) {
         return SyntheticNavigatorEntryKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'INVALID_OVERRIDE':
+      if (oldValue.type === newValue.type) {
+        return InvalidOverrideNavigatorEntryKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -1850,12 +1869,10 @@ export const EditorStateRightMenuKeepDeepEquality: KeepDeepEqualityCall<EditorSt
   )
 
 export const EditorStateInterfaceDesignerKeepDeepEquality: KeepDeepEqualityCall<EditorStateInterfaceDesigner> =
-  combine4EqualityCalls(
+  combine3EqualityCalls(
     (designer) => designer.codePaneWidth,
     createCallWithTripleEquals(),
     (designer) => designer.codePaneVisible,
-    createCallWithTripleEquals(),
-    (designer) => designer.restorableCodePaneWidth,
     createCallWithTripleEquals(),
     (designer) => designer.additionalControls,
     createCallWithTripleEquals(),
@@ -2354,8 +2371,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
     newValue.elementsToRerender,
   )
 
-  const visibleResult = BooleanKeepDeepEquality(oldValue.visible, newValue.visible)
-
   const interactionSessionResult = nullableDeepEquality(InteractionSessionKeepDeepEquality)(
     oldValue.interactionSession,
     newValue.interactionSession,
@@ -2428,7 +2443,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
 
   const areEqual =
     elementsToRerenderResult.areEqual &&
-    visibleResult.areEqual &&
     interactionSessionResult.areEqual &&
     scaleResult.areEqual &&
     snappingThresholdResult.areEqual &&
@@ -2453,7 +2467,6 @@ export const EditorStateCanvasKeepDeepEquality: KeepDeepEqualityCall<EditorState
   } else {
     const newDeepValue = editorStateCanvas(
       elementsToRerenderResult.value,
-      visibleResult.value,
       interactionSessionResult.value,
       scaleResult.value,
       snappingThresholdResult.value,

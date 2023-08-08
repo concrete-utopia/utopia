@@ -53,7 +53,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
-    case 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR':
     case 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS':
     case 'SET_CURSOR_OVERLAY':
     case 'SET_NAVIGATOR_RENAMING_TARGET':

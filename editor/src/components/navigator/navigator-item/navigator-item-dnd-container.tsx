@@ -21,6 +21,7 @@ import type {
   DropTargetHint,
   DropTargetType,
   EditorState,
+  InvalidOverrideNavigatorEntry,
   NavigatorEntry,
 } from '../../editor/store/editor-state'
 import {
@@ -122,6 +123,10 @@ export interface SyntheticNavigatorItemContainerProps
 export interface ConditionalClauseNavigatorItemContainerProps
   extends NavigatorItemDragAndDropWrapperPropsBase {
   navigatorEntry: ConditionalClauseNavigatorEntry
+}
+
+export interface ErrorNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
+  navigatorEntry: InvalidOverrideNavigatorEntry
 }
 
 function isDroppingToOriginalPosition(
@@ -1016,3 +1021,36 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
     )
   },
 )
+
+export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItemContainerProps) => {
+  const safeComponentId = varSafeNavigatorEntryToKey(props.navigatorEntry)
+  return (
+    <div
+      style={{
+        ...props.windowStyle,
+      }}
+    >
+      <div
+        key='navigatorItem'
+        id={`navigator-item-${safeComponentId}`}
+        data-testid={`navigator-item-${safeComponentId}`}
+      >
+        <NavigatorItem
+          navigatorEntry={props.navigatorEntry}
+          index={props.index}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          noOfChildren={props.noOfChildren}
+          label={props.label}
+          dispatch={props.editorDispatch}
+          isHighlighted={props.highlighted}
+          isElementVisible={props.isElementVisible}
+          renamingTarget={props.renamingTarget}
+          collapsed={props.collapsed}
+          selected={props.selected}
+          parentOutline={'none'}
+          visibleNavigatorTargets={props.visibleNavigatorTargets}
+        />
+      </div>
+    </div>
+  )
+})

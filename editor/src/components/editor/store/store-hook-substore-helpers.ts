@@ -55,13 +55,11 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   interfaceDesigner: {
     codePaneWidth: 500,
     codePaneVisible: true,
-    restorableCodePaneWidth: 500,
     additionalControls: true,
   },
   canvas: {
     elementsToRerender: 'rerender-all-elements',
     interactionSession: null,
-    visible: true,
     scale: 1,
     snappingThreshold: null as any,
     realCanvasOffset: null as any,
