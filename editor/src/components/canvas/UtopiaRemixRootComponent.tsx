@@ -14,6 +14,10 @@ import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import { getContentsTreeFileFromString } from '../assets'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { UtopiaRemixRootErrorBoundary } from './UtopiaRemixRootErrorBoundary'
+import { evaluator } from '../../core/es-modules/evaluator/evaluator'
+import { getCurriedEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
+import { NO_OP } from '../../core/shared/utils'
+import { resolveBuiltInDependency } from '../../core/es-modules/package-manager/built-in-dependencies'
 
 function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
   if (value == null) {
@@ -78,15 +82,6 @@ function createAssetsManifest(): AssetsManifest {
   }
 }
 
-async function createRouteModules(fileContents: string): Promise<RouteModules> {
-  const module = await import(fileContents)
-  return {
-    root: {
-      default: module.default,
-    },
-  }
-}
-
 function parseRoutes(): DataRouteObject[] {
   let dataRoute: DataRouteObject = {
     caseSensitive: false,
@@ -122,18 +117,39 @@ export const UtopiaRemixRootComponent = React.memo(() => {
     'RemixRootComponent projectContents',
   )
 
+  const builtInDependencies = useEditorState(
+    Substores.builtInDependencies,
+    (_) => _.builtInDependencies,
+    'RemixRootComponent builtInDependencies',
+  )
+
   const assetsManifest = React.useMemo(() => createAssetsManifest(), [])
 
   React.useEffect(() => {
-    const root = getContentsTreeFileFromString(projectContents, 'src/root.tsx')
-    if (root != null && root.type === 'TEXT_FILE') {
-      // taken from https://stackoverflow.com/a/57255653
-      const contents = `data:text/javascript;base64,${btoa(root.fileContents.code)}`
-      void createRouteModules(contents).then((routes) => setRouteModules(routes))
-      return
+    const path = '/src/root.js'
+    const root = getContentsTreeFileFromString(projectContents, path)
+
+    invariant(root, "file doesn't exist")
+    if (root.type !== 'TEXT_FILE') {
+      throw new Error('not a text file')
     }
-    throw new Error('no such file: src/root.tsx')
-  }, [projectContents])
+
+    const partialRequire = (toImport: string) => {
+      const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
+      if (builtInDependency != null) {
+        return builtInDependency
+      }
+      throw new Error('poof')
+    }
+
+    const module = evaluator(path, root.fileContents.code, { exports: {} }, partialRequire)
+    setRouteModules({
+      root: {
+        default: module.exports.default,
+      },
+    })
+    return
+  }, [builtInDependencies, projectContents])
 
   const router = React.useMemo(() => {
     const routes = parseRoutes()

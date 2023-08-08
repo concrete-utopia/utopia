@@ -184,7 +184,9 @@ export const LeftPaneComponent = React.memo(() => {
             {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
             {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
             {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-            {selectedTab === LeftMenuTab.RemixApp_KILLME_TEMP ? <RemixAppContainer /> : null}
+            {selectedTab === LeftMenuTab.RemixApp_KILLME_TEMP ? (
+              <RemixAppContainer style={{ width: '100%' }} />
+            ) : null}
             {loggedIn ? null : <LoggedOutPane />}
           </div>
         </div>
