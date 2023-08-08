@@ -61,6 +61,7 @@ import type { CanvasControlWithProps } from '../../../inspector/common/inspector
 import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getAllLockedElementPaths } from '../../../../core/shared/element-locking'
+import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -165,6 +166,17 @@ function filterNonSelectableElements(
   )
 }
 
+function isExcludedGroupAncestor(
+  selectablePath: ElementPath,
+  componentMetadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+): boolean {
+  return (
+    treatElementAsGroupLike(componentMetadata, selectablePath) &&
+    selectedViews.some((selectedView) => EP.isDescendantOf(selectedView, selectablePath))
+  )
+}
+
 function replaceNonSelectablePaths(
   selectablePaths: Array<ElementPath>,
   componentMetadata: ElementInstanceMetadataMap,
@@ -174,6 +186,10 @@ function replaceNonSelectablePaths(
 ): Array<ElementPath> {
   let updatedSelectablePaths: Array<ElementPath> = []
   Utils.fastForEach(selectablePaths, (selectablePath) => {
+    if (isExcludedGroupAncestor(selectablePath, componentMetadata, selectedViews)) {
+      // exclude all group-like elements which are ancestors to the currently selected element
+      return
+    }
     if (selectedViews.some((selectedView) => EP.pathsEqual(selectablePath, selectedView))) {
       updatedSelectablePaths.push(selectablePath)
     } else {
@@ -394,6 +410,37 @@ export function useGetSelectableViewsForSelectMode() {
   )
 }
 
+export function useGetSelectableViewsForSelectModeFromSelectedViews(
+  selectedViews: Array<ElementPath>,
+): (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => Array<ElementPath> {
+  const storeRef = useRefEditorState((store) => {
+    return {
+      componentMetadata: store.editor.jsxMetadata,
+      elementPathTree: store.editor.elementPathTree,
+      hiddenInstances: store.editor.hiddenInstances,
+      lockedElements: store.editor.lockedElements,
+    }
+  })
+
+  return React.useCallback(
+    (allElementsDirectlySelectable: boolean, childrenSelectable: boolean) => {
+      const { componentMetadata, elementPathTree, hiddenInstances, lockedElements } =
+        storeRef.current
+      const selectableViews = getSelectableViews(
+        componentMetadata,
+        elementPathTree,
+        selectedViews,
+        hiddenInstances,
+        allElementsDirectlySelectable,
+        childrenSelectable,
+        lockedElements,
+      )
+      return selectableViews
+    },
+    [selectedViews, storeRef],
+  )
+}
+
 export function useCalculateHighlightedViews(
   allowHoverOnSelectedView: boolean,
   getHighlightableViews: (
@@ -511,7 +558,9 @@ function useSelectOrLiveModeSelectAndHover(
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const findValidTarget = useFindValidTarget()
-  const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectMode()
+  const getSelectableViewsForSelectMode = useGetSelectableViewsForSelectModeFromSelectedViews(
+    selectedViewsRef.current,
+  )
   const windowToCanvasCoordinates = useWindowToCanvasCoordinates()
   const interactionSessionHappened = React.useRef(false)
   const didWeHandleMouseDown = React.useRef(false) //  this is here to avoid selecting when closing text editing
