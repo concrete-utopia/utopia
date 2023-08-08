@@ -1,7 +1,10 @@
 import type { RenderResult } from '@testing-library/react'
 import { act, fireEvent, screen } from '@testing-library/react'
 import * as EP from '../../../../../core/shared/element-path'
-import { expectSingleUndo2Saves } from '../../../../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  selectComponentsForTest,
+} from '../../../../../utils/utils.test-utils'
 import { getSubduedPaddingControlTestID } from '../../../../canvas/controls/select-mode/subdued-padding-control'
 import type { EditorRenderResult } from '../../../../canvas/ui-jsx.test-utils'
 import {
@@ -97,6 +100,9 @@ describe('padding controls shorthand', () => {
         await act(async () => {
           fireEvent.click(screen.getByTestId('padding-cycle-mode'))
           await renderResult.getDispatchFollowUpActionsFinished()
+        })
+
+        await act(async () => {
           fireEvent.click(screen.getByTestId('padding-cycle-mode'))
           await renderResult.getDispatchFollowUpActionsFinished()
         })
@@ -127,6 +133,9 @@ describe('padding controls shorthand', () => {
         await act(async () => {
           fireEvent.click(screen.getByTestId('padding-cycle-mode'))
           await renderResult.getDispatchFollowUpActionsFinished()
+        })
+
+        await act(async () => {
           fireEvent.click(screen.getByTestId('padding-cycle-mode'))
           await renderResult.getDispatchFollowUpActionsFinished()
         })
@@ -184,6 +193,9 @@ describe('padding controls shorthand', () => {
         await act(async () => {
           fireEvent.click(screen.getByTestId('padding-cycle-mode'))
           await renderResult.getDispatchFollowUpActionsFinished()
+        })
+
+        await act(async () => {
           fireEvent.click(screen.getByTestId('padding-cycle-mode'))
           await renderResult.getDispatchFollowUpActionsFinished()
         })
@@ -312,9 +324,7 @@ describe('padding controls shorthand', () => {
 
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
-      await act(async () => {
-        await renderResult.dispatch([selectComponents([targetPath], false)], false)
-      })
+      await selectComponentsForTest(renderResult, [targetPath])
 
       if (tt.before != null) {
         await tt.before(renderResult)
@@ -322,11 +332,7 @@ describe('padding controls shorthand', () => {
       }
       await tt.control(renderResult)
 
-      await act(async () => {
-        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-        await renderResult.dispatch([selectComponents([targetPath], false)], true)
-        await dispatchDone
-      })
+      await selectComponentsForTest(renderResult, [targetPath])
 
       await renderResult.getDispatchFollowUpActionsFinished()
 

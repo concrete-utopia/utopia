@@ -53,22 +53,28 @@ import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './comman
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import { wildcardPatch } from './wildcard-patch-command'
+import { isFixedHugFillModeAppliedOnAnySide } from '../../inspector/inspector-common'
 
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
   isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
+  mode: PushIntendedBoundsAndUpdateGroupsMode
 }
+
+export type PushIntendedBoundsAndUpdateGroupsMode = 'move' | 'resize'
 
 export function pushIntendedBoundsAndUpdateGroups(
   value: Array<CanvasFrameAndTarget>,
   isStartingMetadata: 'starting-metadata' | 'live-metadata',
+  mode: PushIntendedBoundsAndUpdateGroupsMode,
 ): PushIntendedBoundsAndUpdateGroups {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
     isStartingMetadata: isStartingMetadata,
+    mode: mode,
   }
 }
 
@@ -169,7 +175,12 @@ function getUpdateResizedGroupChildrenCommands(
         editor.jsxMetadata,
         editor.elementPathTree,
         frameAndTarget.target,
-      )
+      ).filter((path) => {
+        return (
+          command.mode === 'resize' ||
+          !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, path, 'hug')
+        )
+      })
 
       // the original size of the group before the interaction ran
       const originalSize: Size =

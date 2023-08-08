@@ -132,10 +132,11 @@ const config = {
     // Optionally run the TS compiler in a different thread, but as part of the webpack build still
     ...(runCompiler
       ? [
-          new ForkTsCheckerAsyncOverlayWebpackPlugin({
-            checkerPlugin: new ForkTsCheckerWebpackPlugin({
+          new ForkTsCheckerWebpackPlugin({
+            async: true,
+            typescript: {
               memoryLimit: 4096,
-            }),
+            },
           }),
         ]
       : []),

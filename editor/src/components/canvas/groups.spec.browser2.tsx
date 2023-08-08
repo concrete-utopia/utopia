@@ -1209,8 +1209,7 @@ describe('Groups', () => {
         ),
       )
     })
-    xit("ungrouping that isn't a group, but is inside a group, trues up the group (with siblings)", async () => {
-      // TODO un-xit this test when the related trueup bug is fixed
+    it("ungrouping that isn't a group, but is inside a group, trues up the group (with siblings)", async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(
           makeTestProjectCodeWithSnippet(`
@@ -1238,12 +1237,12 @@ describe('Groups', () => {
         formatTestProjectCode(
           makeTestProjectCodeWithSnippet(`
             <div data-uid='root'>
-                <Group data-uid='group' style={{ position: 'absolute', top: 10, left: 10, background: 'pink', width: 240, height: 290 }}>
+                <Group data-uid='group' style={{ position: 'absolute', top: 10, left: 10, background: 'pink' }}>
                     <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
-                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 94, width: 50, height: 50, background: 'red' }} />
-                    <div data-uid='baz' style={{ position: 'absolute', top: 93, left: 0, width: 50, height: 50, background: 'green' }} />
-                    <div data-uid='qux' style={{ position: 'absolute', top: 93, left: 94, width: 50, height: 50, background: 'orange' }} />
-                    <div data-uid='another-div' style={{ position: 'absolute', left: 200, top: 250, width: 50, height: 50, background: 'black', }} />
+                    <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 90, width: 50, height: 50, background: 'red' }} />
+                    <div data-uid='baz' style={{ position: 'absolute', top: 90, left: 0, width: 50, height: 50, background: 'green' }} />
+                    <div data-uid='qux' style={{ position: 'absolute', top: 90, left: 90, width: 50, height: 50, background: 'orange' }} />
+                    <div data-uid='another-div' style={{ position: 'absolute', left: 190, top: 240, width: 50, height: 50, background: 'black', }} />
                 </Group>
             </div>
         `),

@@ -1332,39 +1332,33 @@ describe('Navigator', () => {
       })
 
       const targetElement = EP.fromString('utopia-storyboard-uid/scene-aaa/sceneroot/dragme')
-      await act(async () => {
-        const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
-        await renderResult.dispatch([selectComponents([targetElement], false)], false)
-        await dispatchDone
-      })
+      await selectComponentsForTest(renderResult, [targetElement])
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'before',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'before',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       expect(
@@ -1414,33 +1408,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'after',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'after',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       expect(
@@ -1490,33 +1482,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'after',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'after',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -1640,34 +1630,33 @@ describe('Navigator', () => {
         await renderResult.dispatch([selectComponents([targetElement], false)], false)
         await dispatchDone
       })
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
-          windowPoint(dragMeElementCenter),
-          windowPoint({ x: -25, y: -25 }),
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'after',
-            )
 
-            // highlight is shown on grandparent
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              'transparent solid 1px',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/dragme`,
+        `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
+        windowPoint(dragMeElementCenter),
+        windowPoint({ x: -25, y: -25 }),
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'after',
+          )
 
-            // drop target line is shown in original location
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // highlight is shown on grandparent
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            'transparent solid 1px',
+          )
+
+          // drop target line is shown in original location
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/thirddiv`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -2743,33 +2732,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
-          `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'before',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
+        `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'before',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       expect(
@@ -2823,33 +2810,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'after',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
+        `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'after',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       expect(
@@ -2903,33 +2888,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'after',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/e46`,
+        `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'after',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -3206,33 +3189,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
-          `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'before',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
+        `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'before',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-before-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       expect(
@@ -3283,33 +3264,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'after',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
+        `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'after',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/firstdiv`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       expect(
@@ -3360,33 +3339,31 @@ describe('Navigator', () => {
         await dispatchDone
       })
 
-      await act(async () =>
-        dragElement(
-          renderResult,
-          `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
-          `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-          windowPoint(dragMeElementCenter),
-          dragDelta,
-          'apply-hover-events',
-          async () => {
-            expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
-              'after',
-            )
-            // parent highlight is shown
-            const parentEntry = renderResult.renderedDOM.getByTestId(
-              `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
-            )
-            expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
-              '1px solid var(--utopitheme-navigatorResizeHintBorder)',
-            )
+      await dragElement(
+        renderResult,
+        `navigator-item-drag-regular_utopia_storyboard_uid/scene_aaa/sceneroot/b62`,
+        `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+        windowPoint(dragMeElementCenter),
+        dragDelta,
+        'apply-hover-events',
+        async () => {
+          expect(renderResult.getEditorState().editor.navigator.dropTargetHint?.type).toEqual(
+            'after',
+          )
+          // parent highlight is shown
+          const parentEntry = renderResult.renderedDOM.getByTestId(
+            `navigator-item-regular_utopia_storyboard_uid/scene_aaa/sceneroot`,
+          )
+          expect((parentEntry.firstChild as HTMLElement).style.outline).toEqual(
+            '1px solid var(--utopitheme-navigatorResizeHintBorder)',
+          )
 
-            // drop target line is shown
-            const dropTarget = renderResult.renderedDOM.getByTestId(
-              `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
-            )
-            expect(dropTarget.style.opacity).toEqual('1')
-          },
-        ),
+          // drop target line is shown
+          const dropTarget = renderResult.renderedDOM.getByTestId(
+            `navigator-item-drop-after-regular_utopia_storyboard_uid/scene_aaa/sceneroot/notdrag`,
+          )
+          expect(dropTarget.style.opacity).toEqual('1')
+        },
       )
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -5290,7 +5267,7 @@ describe('Navigator row order', () => {
         'regular-sb/group/foo',
         'regular-sb/group/809',
         'regular-sb/group/809/46a~~~1',
-        'regular-sb/group/809/a59~~~2',
+        'regular-sb/group/809/46a~~~2',
         'regular-sb/group/cond',
         'conditional-clause-sb/group/cond-true-case',
         'regular-sb/group/cond/4ce',
@@ -5311,7 +5288,7 @@ describe('Navigator row order', () => {
       'regular-sb/group/foo',
       'regular-sb/group/809',
       'regular-sb/group/809/46a~~~1',
-      'regular-sb/group/809/a59~~~2',
+      'regular-sb/group/809/46a~~~2',
       'regular-sb/group/cond',
       'conditional-clause-sb/group/cond-true-case',
       'regular-sb/group/cond/4ce',

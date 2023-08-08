@@ -208,14 +208,16 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper elementSupportsChildren',
   )
 
-  const parentElement = useEditorState(
+  const maybeParentConditional = useEditorState(
     Substores.metadata,
     (store) =>
-      MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        EP.parentPath(props.navigatorEntry.elementPath),
+      maybeConditionalExpression(
+        MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          EP.parentPath(props.navigatorEntry.elementPath),
+        ),
       ),
-    'NavigatorItemWrapper parentElement',
+    'NavigatorItemWrapper maybeParentConditional',
   )
 
   function isNullConditionalBranch(
@@ -238,7 +240,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const canReparentInto =
     elementSupportsChildren ||
     isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
-    isNullConditionalBranch(props.navigatorEntry, maybeConditionalExpression(parentElement))
+    isNullConditionalBranch(props.navigatorEntry, maybeParentConditional)
 
   const labelForTheElement = useEditorState(
     Substores.metadata,

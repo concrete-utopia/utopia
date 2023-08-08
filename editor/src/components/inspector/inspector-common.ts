@@ -675,6 +675,17 @@ export function isFixedHugFillModeApplied(
   )
 }
 
+export function isFixedHugFillModeAppliedOnAnySide(
+  metadata: ElementInstanceMetadataMap,
+  element: ElementPath,
+  mode: FixedHugFillMode,
+): boolean {
+  return (
+    detectFillHugFixedState('horizontal', metadata, element).fixedHugFill?.type === mode ||
+    detectFillHugFixedState('vertical', metadata, element).fixedHugFill?.type === mode
+  )
+}
+
 export function setToFixedSizeCommands(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,

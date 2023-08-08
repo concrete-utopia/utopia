@@ -4,12 +4,7 @@ import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
-import {
-  ConsoleLog,
-  LeftPaneDefaultWidth,
-  RightMenuTab,
-  NavigatorWidthAtom,
-} from '../editor/store/editor-state'
+import { ConsoleLog, RightMenuTab } from '../editor/store/editor-state'
 
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
@@ -26,13 +21,10 @@ import {
   useColorTheme,
   Icons,
   LargerIcons,
-  ResizableFlexColumn,
 } from '../../uuiui'
 
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
-import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
-import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
@@ -42,6 +34,7 @@ import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { LeftPaneComponent } from '../navigator/left-pane'
 
 interface NumberSize {
   width: number
@@ -142,11 +135,6 @@ const DesignPanelRootInner = React.memo(() => {
   const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
     interfaceDesigner.codePaneWidth,
   )
-  const navigatorVisible = useEditorState(
-    Substores.restOfEditor,
-    (store) => !store.editor.navigator.minimised,
-    'DesignPanelRoot navigatorVisible',
-  )
 
   const isRightMenuExpanded = useEditorState(
     Substores.restOfEditor,
@@ -202,21 +190,11 @@ const DesignPanelRootInner = React.memo(() => {
       elementRef: HTMLElement,
       delta: NumberSize,
     ) => {
-      if (navigatorVisible) {
+      if (leftMenuExpanded) {
         setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
       }
     },
-    [interfaceDesigner, navigatorVisible],
-  )
-
-  const [navigatorWidth, setNavigatorWidth] = usePubSubAtom(NavigatorWidthAtom)
-
-  const onNavigatorResizeStop = React.useCallback<ResizeCallback>(
-    (_event, _direction, _ref, delta) => {
-      setNavigatorWidth((currentWidth) => currentWidth + delta.width)
-      dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -delta.width, y: 0 }))])
-    },
-    [setNavigatorWidth, dispatch],
+    [interfaceDesigner, leftMenuExpanded],
   )
 
   return (
@@ -297,7 +275,7 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
-            {isCanvasVisible && navigatorVisible ? (
+            {isCanvasVisible && leftMenuExpanded ? (
               <div
                 style={{
                   height: 'calc(100% - 20px)',
@@ -308,22 +286,7 @@ const DesignPanelRootInner = React.memo(() => {
                   margin: 10,
                 }}
               >
-                <ResizableFlexColumn
-                  onResizeStop={onNavigatorResizeStop}
-                  defaultSize={{
-                    width: navigatorWidth,
-                    height: '100%',
-                  }}
-                  style={{
-                    overscrollBehavior: 'contain',
-                    backgroundColor: colorTheme.inspectorBackground.value,
-                    borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-                    overflow: 'scroll',
-                    boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
-                  }}
-                >
-                  <NavigatorComponent />
-                </ResizableFlexColumn>
+                <LeftPaneComponent />
               </div>
             ) : null}
 
@@ -380,6 +343,7 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
 
   return (
     <div
+      id='inspector-root'
       style={{
         height: 'calc(100% - 20px)',
         position: 'absolute',

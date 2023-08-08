@@ -1096,25 +1096,25 @@ function parseJSExpression(
   existingHighlightBounds: Readonly<HighlightBoundsForUids>,
   alreadyExistingUIDs: Set<string>,
 ): Either<string, WithParserMetadata<JSExpression>> {
-  // Remove the braces around the expression
-  const expressionFullText = TS.isJsxExpression(jsxExpression)
-    ? jsxExpression.getFullText(sourceFile).slice(1, -1)
-    : jsxExpression.getFullText(sourceFile)
-  const expressionAndText = TS.isJsxExpression(jsxExpression)
-    ? createExpressionAndText(
-        jsxExpression.expression,
-        expressionFullText,
-        jsxExpression.getFullStart() + 1,
-        jsxExpression.getEnd() + 2,
-      )
-    : createExpressionAndText(
-        jsxExpression,
-        expressionFullText,
-        jsxExpression.getFullStart(),
-        jsxExpression.getEnd(),
-      )
+  const expression = TS.isJsxExpression(jsxExpression) ? jsxExpression.expression : jsxExpression
+  const expressionFullText = expression == null ? '' : expression.getText(sourceFile)
+  const expressionForLocation = expression ?? jsxExpression
+  const expressionAndText = createExpressionAndText(
+    expression,
+    expressionFullText,
+    expressionForLocation.getFullStart(),
+    expressionForLocation.getEnd(),
+  )
 
-  const comments = getCommentsOnExpression(sourceText, jsxExpression)
+  const firstToken = jsxExpression.getFirstToken(sourceFile)
+  const lastToken = jsxExpression.getLastToken(sourceFile)
+  const commentsOnFirstToken = firstToken == null ? [] : getTrailingComments(sourceText, firstToken)
+  const commentsOnLastToken = lastToken == null ? [] : getLeadingComments(sourceText, lastToken)
+  const commentsOnExpression = getCommentsOnExpression(sourceText, jsxExpression)
+  const comments = parsedComments(
+    [...commentsOnFirstToken, ...commentsOnExpression.leadingComments],
+    [...commentsOnExpression.trailingComments, ...commentsOnLastToken],
+  )
 
   return parseOtherJavaScript(
     sourceFile,
