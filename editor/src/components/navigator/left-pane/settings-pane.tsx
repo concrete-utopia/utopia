@@ -268,7 +268,6 @@ export const SettingsPane = React.memo(() => {
             }}
           >
             <Button
-              // primary={true}
               outline={false}
               highlight
               onClick={onForkProjectClicked}
@@ -277,7 +276,7 @@ export const SettingsPane = React.memo(() => {
                 cursor: 'pointer',
                 height: UtopiaTheme.layout.inputHeight.default,
                 background: colorTheme.dynamicBlue.value,
-                color: colorTheme.fg9.value,
+                color: colorTheme.bg1.value,
               }}
             >
               Fork this project
