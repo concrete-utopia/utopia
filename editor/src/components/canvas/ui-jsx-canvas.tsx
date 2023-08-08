@@ -230,17 +230,6 @@ export function pickUiJsxCanvasProps(
   }
 }
 
-function normalizedCssImportsFromImports(filePath: string, imports: Imports): Array<string> {
-  let result: Array<string> = []
-  Utils.fastForEach(Object.keys(imports), (importSource) => {
-    if (importSource.endsWith('.css')) {
-      result.push(normalizeName(filePath, importSource))
-    }
-  })
-  result.sort()
-  return result
-}
-
 function useClearSpyMetadataOnRemount(
   canvasMountCount: number,
   domWalkerInvalidateCount: number,
@@ -284,7 +273,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     curriedResolveFn,
     hiddenInstances,
     displayNoneInstances,
-    imports_KILLME: imports, // FIXME this is the storyboard imports object used only for the cssimport
     clearErrors,
     clearConsoleLogs,
     addToConsoleLogs,
