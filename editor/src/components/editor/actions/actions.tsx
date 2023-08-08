@@ -4575,7 +4575,9 @@ export const UPDATE_FNS = {
     if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
       const isNavigatorOnTop = !editor.navigator.minimised
       const containerRootDiv = document.getElementById('canvas-root')
+      const inspector = document.getElementById('inspector-root')
       const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
+      const inspectorOffset = editor.inspector.visible ? inspector?.clientWidth ?? 0 : 0
       const scale = 1 / editor.canvas.scale
 
       // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
@@ -4606,7 +4608,12 @@ export const UPDATE_FNS = {
           }),
         )
         const topLeftTarget = canvasPoint({
-          x: canvasCenter.x - frame.width / 2 - bounds.x + (navigatorOffset / 2) * scale,
+          x:
+            canvasCenter.x -
+            frame.width / 2 -
+            bounds.x +
+            (navigatorOffset / 2) * scale -
+            (inspectorOffset / 2) * scale,
           y: canvasCenter.y - frame.height / 2 - bounds.y,
         })
         return Utils.pointDifference(frame, topLeftTarget)
