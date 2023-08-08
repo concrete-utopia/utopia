@@ -775,20 +775,17 @@ export function editorStateRightMenu(
 export interface EditorStateInterfaceDesigner {
   codePaneWidth: number
   codePaneVisible: boolean
-  restorableCodePaneWidth: number
   additionalControls: boolean
 }
 
 export function editorStateInterfaceDesigner(
   codePaneWidth: number,
   codePaneVisible: boolean,
-  restorableCodePaneWidth: number,
   additionalControls: boolean,
 ): EditorStateInterfaceDesigner {
   return {
     codePaneWidth: codePaneWidth,
     codePaneVisible: codePaneVisible,
-    restorableCodePaneWidth: restorableCodePaneWidth,
     additionalControls: additionalControls,
   }
 }
@@ -903,7 +900,6 @@ export function internalClipboard(
 
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
-  visible: boolean
   interactionSession: InteractionSession | null
   scale: number
   snappingThreshold: number
@@ -927,7 +923,6 @@ export interface EditorStateCanvas {
 
 export function editorStateCanvas(
   elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
-  visible: boolean,
   interactionSession: InteractionSession | null,
   scale: number,
   snappingThreshold: number,
@@ -950,7 +945,6 @@ export function editorStateCanvas(
 ): EditorStateCanvas {
   return {
     elementsToRerender: elementsToRerender,
-    visible: visible,
     interactionSession: interactionSession,
     scale: scale,
     snappingThreshold: snappingThreshold,
@@ -2321,13 +2315,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     interfaceDesigner: {
       codePaneWidth: 500,
       codePaneVisible: true,
-      restorableCodePaneWidth: 500,
       additionalControls: true,
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
       interactionSession: null,
-      visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
       realCanvasOffset: BaseCanvasOffsetLeftPane,
@@ -2693,13 +2685,11 @@ export function editorModelFromPersistentModel(
     interfaceDesigner: {
       codePaneWidth: 500,
       codePaneVisible: true,
-      restorableCodePaneWidth: 500,
       additionalControls: true,
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
       interactionSession: null,
-      visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
       realCanvasOffset: BaseCanvasOffsetLeftPane,

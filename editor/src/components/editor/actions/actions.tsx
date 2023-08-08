@@ -302,7 +302,6 @@ import type {
   ToggleCollapse,
   ToggleHidden,
   ToggleInterfaceDesignerAdditionalControls,
-  ToggleInterfaceDesignerCodeEditor,
   TogglePane,
   ToggleProperty,
   ToggleSelectionLock,
@@ -858,12 +857,10 @@ export function restoreEditorState(
     interfaceDesigner: {
       codePaneWidth: currentEditor.interfaceDesigner.codePaneWidth,
       codePaneVisible: currentEditor.interfaceDesigner.codePaneVisible,
-      restorableCodePaneWidth: currentEditor.interfaceDesigner.codePaneWidth,
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
     canvas: {
       elementsToRerender: currentEditor.canvas.elementsToRerender,
-      visible: currentEditor.canvas.visible,
       interactionSession: null,
       scale: currentEditor.canvas.scale,
       snappingThreshold: currentEditor.canvas.snappingThreshold,
@@ -2514,14 +2511,6 @@ export const UPDATE_FNS = {
             visible: action.visible,
           },
         }
-      case 'canvas':
-        return {
-          ...editor,
-          canvas: {
-            ...editor.canvas,
-            visible: action.visible,
-          },
-        }
       case 'codeEditor':
         return {
           ...editor,
@@ -2535,6 +2524,7 @@ export const UPDATE_FNS = {
           },
         }
       case 'misccodeeditor':
+      case 'canvas':
       case 'center':
       case 'insertmenu':
       case 'projectsettings':
@@ -2628,17 +2618,6 @@ export const UPDATE_FNS = {
             visible: !editor.preview.visible,
           },
         }
-      case 'canvas':
-        if (!editor.canvas.visible) {
-          return {
-            ...editor,
-            canvas: {
-              ...editor.canvas,
-              visible: !editor.canvas.visible,
-            },
-          }
-        }
-        return editor
       case 'projectsettings':
         return {
           ...editor,
@@ -2650,6 +2629,7 @@ export const UPDATE_FNS = {
 
       case 'codeEditor':
         return updateCodeEditorVisibility(editor, !editor.interfaceDesigner.codePaneVisible)
+      case 'canvas':
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
@@ -2919,33 +2899,6 @@ export const UPDATE_FNS = {
       leftMenu: {
         ...editor.leftMenu,
         paneWidth: Math.max(LeftPaneMinimumWidth, targetWidth),
-      },
-    }
-  },
-  TOGGLE_INTERFACEDESIGNER_CODEEDITOR: (
-    action: ToggleInterfaceDesignerCodeEditor,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    // resulting pane needs to have a width of 2 so it can be resized-to-open
-    const minWidth = 2
-    const codeEditorVisibleAfter = !editor.interfaceDesigner.codePaneVisible
-
-    const updatedEditor = codeEditorVisibleAfter
-      ? editor
-      : UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor)
-
-    return {
-      ...updatedEditor,
-      interfaceDesigner: {
-        ...editor.interfaceDesigner,
-        codePaneVisible: codeEditorVisibleAfter,
-        codePaneWidth: codeEditorVisibleAfter
-          ? editor.interfaceDesigner.restorableCodePaneWidth
-          : minWidth,
-        restorableCodePaneWidth: codeEditorVisibleAfter
-          ? editor.interfaceDesigner.restorableCodePaneWidth
-          : editor.interfaceDesigner.codePaneWidth,
       },
     }
   },

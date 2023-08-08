@@ -752,7 +752,7 @@ export function handleKeyDown(
         return [EditorActions.toggleInterfaceDesignerAdditionalControls()]
       },
       [TOGGLE_CODE_EDITOR_SHORTCUT]: () => {
-        return [EditorActions.toggleInterfaceDesignerCodeEditor()]
+        return [EditorActions.togglePanel('codeEditor')]
       },
       [TOGGLE_INSPECTOR_AND_NAVIGATOR_SHORTCUT]: () => {
         return [EditorActions.togglePanel('rightmenu'), EditorActions.togglePanel('leftmenu')]
