@@ -1,4 +1,5 @@
 import {
+  EditorRenderResult,
   TestSceneUID,
   formatTestProjectCode,
   renderTestEditorWithCode,
@@ -6,7 +7,9 @@ import {
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
+import { wait } from '../../utils/utils.test-utils'
 import { colorTheme } from '../../uuiui'
+import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import { getMapCounterTestId } from './navigator-item/map-counter'
 
 function getProjectCode<T>(arr: Array<T>, countOverride?: number): string {
@@ -72,6 +75,28 @@ export var ${BakedInStoryboardVariableName} = (
 `)
 }
 
+function expectRegularCounterWithCount(domElement: HTMLElement, count: number) {
+  expect(domElement.textContent).toEqual(count.toString())
+  expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-dynamicBlue10)')
+  expect(domElement.style.color).toEqual('')
+}
+
+function expectOverriddenCounterWithCount(
+  domElement: HTMLElement,
+  count: number,
+  overrideSuccess: boolean,
+) {
+  expect(domElement.textContent).toEqual(count.toString())
+  expect(domElement.style.color).toEqual('var(--utopitheme-brandNeonPink)')
+  if (overrideSuccess) {
+    // successful override background color
+    expect(domElement.style.backgroundColor).toEqual('var(--utopitheme-pinkSubdued)')
+  } else {
+    // failed override shows a diagonal strikethrough implemented with linear-gradient
+    expect(domElement.style.background.slice(0, 15)).toEqual('linear-gradient')
+  }
+}
+
 describe('maps in the navigator', () => {
   describe('with default count value', () => {
     const testArrays = [[], [0], [0, 1], [0, 1, 2], [0, 1, 2, 3]]
@@ -86,9 +111,7 @@ describe('maps in the navigator', () => {
         const counterTestId = getMapCounterTestId(mapPath)
         const counter = await renderResult.renderedDOM.findByTestId(counterTestId)
 
-        expect(counter.textContent).toEqual(arr.length.toString())
-        expect(counter.style.backgroundColor).toEqual('var(--utopitheme-dynamicBlue10)')
-        expect(counter.style.color).toEqual('')
+        expectRegularCounterWithCount(counter, arr.length)
       })
     })
   })
@@ -154,16 +177,132 @@ describe('maps in the navigator', () => {
         const counterTestId = getMapCounterTestId(mapElement.elementPath)
         const counter = await renderResult.renderedDOM.findByTestId(counterTestId)
 
-        expect(counter.textContent).toEqual(overrideCount.toString())
-        expect(counter.style.color).toEqual('var(--utopitheme-brandNeonPink)')
-        if (overrideSuccess) {
-          // successful override background color
-          expect(counter.style.backgroundColor).toEqual('var(--utopitheme-pinkSubdued)')
-        } else {
-          // failed override shows a diagonal strikethrough implemented with linear-gradient
-          expect(counter.style.background.slice(0, 15)).toEqual('linear-gradient')
-        }
+        expectOverriddenCounterWithCount(counter, overrideCount, overrideSuccess)
       })
+    })
+  })
+
+  describe('clicking the counter', () => {
+    it('Cycles through 2, 1, 0, off if the output length is more than 2', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode([1, 2, 3]),
+        'await-first-dom-report',
+      )
+
+      const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
+      const counterTestId = getMapCounterTestId(mapPath)
+      let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      const counterBounds = counter.getBoundingClientRect()
+      const counterCentre = {
+        x: counterBounds.x + counterBounds.width / 2,
+        y: counterBounds.y + counterBounds.height / 2,
+      }
+
+      expectRegularCounterWithCount(counter, 3)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 2, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 1, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 0, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+
+      // The counter will have been remounted
+      counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      expectRegularCounterWithCount(counter, 3)
+    })
+
+    it('Cycles through 2, 1, 0, off if the output length is 2', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode([1, 2]),
+        'await-first-dom-report',
+      )
+
+      const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
+      const counterTestId = getMapCounterTestId(mapPath)
+      let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      const counterBounds = counter.getBoundingClientRect()
+      const counterCentre = {
+        x: counterBounds.x + counterBounds.width / 2,
+        y: counterBounds.y + counterBounds.height / 2,
+      }
+
+      expectRegularCounterWithCount(counter, 2)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 2, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 1, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 0, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+
+      // The counter will have been remounted
+      counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      expectRegularCounterWithCount(counter, 2)
+    })
+
+    it('Cycles through 1, 0, off if the output length is 1', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode([1]),
+        'await-first-dom-report',
+      )
+
+      const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
+      const counterTestId = getMapCounterTestId(mapPath)
+      let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      const counterBounds = counter.getBoundingClientRect()
+      const counterCentre = {
+        x: counterBounds.x + counterBounds.width / 2,
+        y: counterBounds.y + counterBounds.height / 2,
+      }
+
+      expectRegularCounterWithCount(counter, 1)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 1, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 0, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+
+      // The counter will have been remounted
+      counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      expectRegularCounterWithCount(counter, 1)
+    })
+    it('Cycles through 0, off if the output length is 0', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        getProjectCode([]),
+        'await-first-dom-report',
+      )
+
+      const mapPath = EP.fromString('utopia-storyboard-uid/scene-aaa/containing-div/map')
+      const counterTestId = getMapCounterTestId(mapPath)
+      let counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      const counterBounds = counter.getBoundingClientRect()
+      const counterCentre = {
+        x: counterBounds.x + counterBounds.width / 2,
+        y: counterBounds.y + counterBounds.height / 2,
+      }
+
+      expectRegularCounterWithCount(counter, 0)
+
+      await mouseClickAtPoint(counter, counterCentre)
+      expectOverriddenCounterWithCount(counter, 0, true)
+
+      await mouseClickAtPoint(counter, counterCentre)
+
+      // The counter will have been remounted
+      counter = await renderResult.renderedDOM.findByTestId(counterTestId)
+      expectRegularCounterWithCount(counter, 0)
     })
   })
 })
