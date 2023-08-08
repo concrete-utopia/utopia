@@ -1,13 +1,13 @@
 import React from 'react'
 import { UtopiaRemixRootComponent } from '../UtopiaRemixRootComponent'
 
-export interface RemixAppContainer {
+export interface RemixAppContainerProps {
   style?: React.CSSProperties
   'data-label'?: string
   'data-uid'?: string
 }
 
-export const RemixAppContainer = React.memo((props: RemixAppContainer) => {
+export const RemixAppContainer = React.memo((props: RemixAppContainerProps) => {
   let style: React.CSSProperties = {
     overflow: 'hidden',
   }
@@ -17,7 +17,7 @@ export const RemixAppContainer = React.memo((props: RemixAppContainer) => {
       ...props.style,
     }
   }
-  const adjustedProps: React.PropsWithChildren<RemixAppContainer> = {
+  const adjustedProps: React.PropsWithChildren<RemixAppContainerProps> = {
     ...props,
     style: style,
   }
