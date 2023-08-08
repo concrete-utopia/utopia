@@ -61,6 +61,7 @@ import type { CanvasControlWithProps } from '../../../inspector/common/inspector
 import { InspectorHoveredCanvasControls } from '../../../inspector/common/inspector-atoms'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getAllLockedElementPaths } from '../../../../core/shared/element-locking'
+import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 
 const DRAG_START_THRESHOLD = 2
 
@@ -174,6 +175,13 @@ function replaceNonSelectablePaths(
 ): Array<ElementPath> {
   let updatedSelectablePaths: Array<ElementPath> = []
   Utils.fastForEach(selectablePaths, (selectablePath) => {
+    if (
+      treatElementAsGroupLike(componentMetadata, selectablePath) &&
+      selectedViews.some((selectedView) => EP.isDescendantOf(selectedView, selectablePath))
+    ) {
+      // exclude all group-like elements which are ancestors to the currently selected element
+      return
+    }
     if (selectedViews.some((selectedView) => EP.pathsEqual(selectablePath, selectedView))) {
       updatedSelectablePaths.push(selectablePath)
     } else {
