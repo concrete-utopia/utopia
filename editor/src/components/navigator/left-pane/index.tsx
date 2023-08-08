@@ -28,6 +28,7 @@ import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
+import { RemixAppContainer } from '../../canvas/remix-container/RemixAppContainer'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -78,6 +79,10 @@ export const LeftPaneComponent = React.memo(() => {
 
   const onClickGithubTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.Github)
+  }, [onClickTab])
+
+  const onClickRemixTab = React.useCallback(() => {
+    onClickTab(LeftMenuTab.RemixApp_KILLME_TEMP)
   }, [onClickTab])
 
   const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
@@ -168,12 +173,18 @@ export const LeftPaneComponent = React.memo(() => {
                 selected={selectedTab === LeftMenuTab.Github}
                 onClick={onClickGithubTab}
               />
+              <MenuTab
+                label={'Remix'}
+                selected={selectedTab === LeftMenuTab.RemixApp_KILLME_TEMP}
+                onClick={onClickRemixTab}
+              />
             </UIGridRow>
 
             {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
             {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
             {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
             {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
+            {selectedTab === LeftMenuTab.RemixApp_KILLME_TEMP ? <RemixAppContainer /> : null}
             {loggedIn ? null : <LoggedOutPane />}
           </div>
         </div>

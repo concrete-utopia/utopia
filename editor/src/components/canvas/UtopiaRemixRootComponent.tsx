@@ -130,7 +130,9 @@ export const UtopiaRemixRootComponent = React.memo(() => {
       // taken from https://stackoverflow.com/a/57255653
       const contents = `data:text/javascript;base64,${btoa(root.fileContents.code)}`
       void createRouteModules(contents).then((routes) => setRouteModules(routes))
+      return
     }
+    throw new Error('no such file: src/root.tsx')
   }, [projectContents])
 
   const router = React.useMemo(() => {
