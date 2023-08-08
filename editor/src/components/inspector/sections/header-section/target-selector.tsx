@@ -391,9 +391,6 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
 
   const togglePathPanel = React.useCallback(() => setIsOpen((value) => !value), [setIsOpen])
 
-  const titleStyle =
-    selectedTargetPath[0] === 'style' ? undefined : { color: colorTheme.primary.value }
-
   return (
     <FlexRow
       style={{
@@ -405,7 +402,11 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
     >
       <H1
         data-testid={`target-selector-${selectedTargetPath[0]}`}
-        style={{ flexGrow: 1, display: 'inline', overflow: 'hidden', ...titleStyle }}
+        style={{
+          flexGrow: 1,
+          display: 'inline',
+          overflow: 'hidden',
+        }}
       >
         {selectedTargetPath}
       </H1>
