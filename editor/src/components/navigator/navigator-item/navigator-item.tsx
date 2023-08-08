@@ -37,6 +37,7 @@ import type { ElementWarnings, NavigatorEntry } from '../../editor/store/editor-
 import {
   defaultElementWarnings,
   isConditionalClauseNavigatorEntry,
+  isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   isSyntheticNavigatorEntry,
   navigatorEntryToKey,
@@ -136,9 +137,11 @@ function selectItem(
   conditionalOverrideUpdate: ConditionalOverrideUpdate,
 ) {
   const elementPath = navigatorEntry.elementPath
-  const selectionActions = isConditionalClauseNavigatorEntry(navigatorEntry)
-    ? []
-    : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
+  const selectionActions =
+    isConditionalClauseNavigatorEntry(navigatorEntry) ||
+    isInvalidOverrideNavigatorEntry(navigatorEntry)
+      ? []
+      : getSelectionActions(getSelectedViewsInRange, index, elementPath, selected, event)
 
   const conditionalOverrideActions = isConditionalClauseNavigatorEntry(navigatorEntry)
     ? getConditionalOverrideActions(elementPath, conditionalOverrideUpdate)

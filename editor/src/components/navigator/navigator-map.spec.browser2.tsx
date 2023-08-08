@@ -7,6 +7,7 @@ import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import { colorTheme } from '../../uuiui'
+import { navigatorEntryToKey } from '../editor/store/editor-state'
 import { getMapCounterTestId } from './navigator-item/map-counter'
 
 function getProjectCode<T>(arr: Array<T>, countOverride?: number): string {
@@ -99,45 +100,114 @@ describe('maps in the navigator', () => {
         arr: [0, 1, 2, 3],
         overrideCount: 0,
         overrideSuccess: true,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
       },
       {
         arr: [0, 1, 2, 3],
         overrideCount: 1,
         overrideSuccess: true,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~1',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
       },
       {
         arr: [0, 1, 2, 3],
         overrideCount: 2,
         overrideSuccess: true,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~1',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~2',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
       },
       {
         arr: [0, 1, 2, 3],
         overrideCount: 3,
         overrideSuccess: true,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~1',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~2',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~3',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
       },
       {
         arr: [0, 1, 2, 3],
         overrideCount: 4,
         overrideSuccess: true,
-      },
-      {
-        arr: [0, 1, 2, 3],
-        overrideCount: 4,
-        overrideSuccess: true,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~1',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~2',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~3',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~4',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
       },
       {
         arr: [0, 1, 2, 3],
         overrideCount: -1,
         overrideSuccess: false,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
       },
       {
         arr: [0, 1, 2, 3],
         overrideCount: 5,
         overrideSuccess: false,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~1',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~2',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~3',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~4',
+          'error-utopia-storyboard-uid/scene-aaa/containing-div/map/invalid-override-5',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
+      },
+      {
+        arr: [0, 1, 2, 3],
+        overrideCount: 6,
+        overrideSuccess: false,
+        expectedTargets: [
+          'regular-utopia-storyboard-uid/scene-aaa',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~1',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~2',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~3',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map/map-child-div~~~4',
+          'error-utopia-storyboard-uid/scene-aaa/containing-div/map/invalid-override-5',
+          'error-utopia-storyboard-uid/scene-aaa/containing-div/map/invalid-override-6',
+          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
+        ],
       },
     ]
 
-    testData.forEach(({ arr, overrideCount, overrideSuccess }) => {
+    testData.forEach(({ arr, overrideCount, overrideSuccess, expectedTargets }) => {
       it(`shows overridden counter ${overrideCount} for map items with list length ${arr.length}`, async () => {
         const renderResult = await renderTestEditorWithCode(
           getProjectCode(arr, overrideCount),
@@ -163,6 +233,9 @@ describe('maps in the navigator', () => {
           // failed override shows a diagonal strikethrough implemented with linear-gradient
           expect(counter.style.background.slice(0, 15)).toEqual('linear-gradient')
         }
+        expect(
+          renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+        ).toEqual(expectedTargets)
       })
     })
   })

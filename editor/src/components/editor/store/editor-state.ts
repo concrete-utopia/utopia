@@ -120,6 +120,7 @@ import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
+  InvalidOverrideNavigatorEntryKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
@@ -2070,10 +2071,41 @@ export function syntheticNavigatorEntriesEqual(
   return SyntheticNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
+export interface InvalidOverrideNavigatorEntry {
+  type: 'INVALID_OVERRIDE'
+  elementPath: ElementPath
+  message: string
+}
+
+export function invalidOverrideNavigatorEntry(
+  elementPath: ElementPath,
+  message: string,
+): InvalidOverrideNavigatorEntry {
+  return {
+    type: 'INVALID_OVERRIDE',
+    elementPath: elementPath,
+    message: message,
+  }
+}
+
+export function isInvalidOverrideNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is InvalidOverrideNavigatorEntry {
+  return entry.type === 'INVALID_OVERRIDE'
+}
+
+export function invalidOverrideNavigatorEntriesEqual(
+  first: InvalidOverrideNavigatorEntry,
+  second: InvalidOverrideNavigatorEntry,
+): boolean {
+  return InvalidOverrideNavigatorEntryKeepDeepEquality(first, second).areEqual
+}
+
 export type NavigatorEntry =
   | RegularNavigatorEntry
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
+  | InvalidOverrideNavigatorEntry
 
 export function navigatorEntriesEqual(
   first: NavigatorEntry | null,
@@ -2105,6 +2137,8 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
+    case 'INVALID_OVERRIDE':
+      return `error-${EP.toComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }
@@ -2121,6 +2155,8 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
+    case 'INVALID_OVERRIDE':
+      return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }

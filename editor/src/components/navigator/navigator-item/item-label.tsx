@@ -3,6 +3,7 @@ import React from 'react'
 import type { NavigatorEntry } from '../../../components/editor/store/editor-state'
 import {
   isConditionalClauseNavigatorEntry,
+  isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../../components/editor/store/editor-state'
@@ -76,6 +77,8 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     },
     'NavigatorItemLabel isActiveBranchOfOverriddenConditional',
   )
+
+  const isInvalidOverride = isInvalidOverrideNavigatorEntry(target)
 
   React.useEffect(() => {
     if (inputVisible && elementRef.current != null) {
@@ -155,6 +158,22 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     'NavigatorItemLabel isActiveBranchOfOverriddenConditional',
   )
 
+  const color = (() => {
+    if (isActiveBranchOfOverriddenConditional) {
+      return colorTheme.brandNeonPink.value
+    }
+    if (isActiveConditionalClause) {
+      return colorTheme.dynamicBlue.value
+    }
+    if (isConditionalClause) {
+      return colorTheme.fg7.value
+    }
+    if (isInvalidOverride) {
+      return colorTheme.brandNeonPink.value
+    }
+    return undefined
+  })()
+
   return (
     <div
       ref={elementRef}
@@ -217,13 +236,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             alignItems: 'center',
             gap: 6,
             fontWeight: isConditionalClause ? 600 : undefined,
-            color: isActiveBranchOfOverriddenConditional
-              ? colorTheme.brandNeonPink.value
-              : isActiveConditionalClause
-              ? colorTheme.dynamicBlue.value
-              : isConditionalClause
-              ? colorTheme.fg7.value
-              : undefined,
+            color: color,
             textTransform: isConditionalClause ? 'uppercase' : undefined,
           }}
           onDoubleClick={(event) => {
