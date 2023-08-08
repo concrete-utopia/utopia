@@ -245,7 +245,7 @@ export const RepositoryListing = React.memo(
     }, [dispatch])
 
     React.useEffect(() => {
-      refreshRepos()
+      setTimeout(() => refreshRepos(), 0)
     }, [refreshRepos])
 
     const clearRepository = React.useCallback(() => {
