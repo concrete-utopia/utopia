@@ -31,7 +31,7 @@ function getPathInner(id: string, segments: string[]): PathFromFileNameResult {
   const parentId = pathPrefix.length === 0 ? 'root' : pathSoFar.join('/')
   const lastSegment = pathSoFar[pathSoFar.length - 1]
   const index = lastSegment === '_index'
-  const path = (index ? segments.slice(0, -1) : segments).join('/')
+  const path = (index ? pathSoFar.slice(0, -1) : pathSoFar).join('/')
 
   return {
     parentId,
