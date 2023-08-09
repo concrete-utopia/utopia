@@ -83,9 +83,9 @@ const AccountBlock = () => {
         highlight
         style={{
           padding: '1em',
-          background: colorTheme.primary.value,
           borderRadius: 3,
-          color: colorTheme.fg9.value,
+          background: colorTheme.dynamicBlue.value,
+          color: colorTheme.bg1.value,
         }}
         css={{
           '&:hover': {
