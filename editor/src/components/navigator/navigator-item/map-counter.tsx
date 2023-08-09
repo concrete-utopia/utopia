@@ -14,6 +14,8 @@ import {
 import { isRight } from '../../../core/shared/either'
 import { isJSXMapExpression } from '../../../core/shared/element-template'
 import { assertNever } from '../../../core/shared/utils'
+import type { EditorDispatch } from '../../editor/action-types'
+import { setMapCountOverride } from '../../editor/actions/action-creators'
 
 export const MapCounterTestIdPrefix = 'map-counter-'
 
@@ -25,10 +27,11 @@ type OverrideStatus = 'no-override' | 'overridden' | 'override-failed'
 
 interface MapCounterProps {
   navigatorEntry: NavigatorEntry
+  dispatch: EditorDispatch
 }
 
 export const MapCounter = React.memo((props: MapCounterProps) => {
-  const { navigatorEntry } = props
+  const { navigatorEntry, dispatch } = props
   const { elementPath } = navigatorEntry
 
   const { nrChildren, countOverride } = useEditorState(
@@ -69,10 +72,6 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
     'MapCounter counterValue',
   )
 
-  if (nrChildren == null) {
-    return null
-  }
-
   const isOverridden = countOverride != null
   const shownCounterValue = countOverride ?? nrChildren
   const overrideFailed = isOverridden && countOverride !== nrChildren
@@ -86,10 +85,25 @@ export const MapCounter = React.memo((props: MapCounterProps) => {
     return 'no-override'
   })()
 
+  const onClick = React.useCallback(() => {
+    if (nrChildren == null) {
+      return
+    }
+    const nextValue = getNextOverrideValue(overrideStatus, countOverride, nrChildren)
+    if (nextValue !== countOverride) {
+      dispatch([setMapCountOverride(elementPath, nextValue)])
+    }
+  }, [elementPath, dispatch, overrideStatus, countOverride, nrChildren])
+
+  if (nrChildren == null) {
+    return null
+  }
+
   return (
     <div
       data-testid={getMapCounterTestId(elementPath)}
       style={getMapCounterStyleProps(overrideStatus)}
+      onClick={onClick}
     >
       {shownCounterValue}
     </div>
@@ -128,6 +142,30 @@ function getMapCounterStyleProps(overrideStatus: OverrideStatus): CSSProperties 
         boxSizing: 'border-box',
         border: `1px solid ${colorTheme.brandNeonPink.value}`,
       }
+    default:
+      assertNever(overrideStatus)
+  }
+}
+
+function getNextOverrideValue(
+  overrideStatus: OverrideStatus,
+  countOverride: number | null,
+  nrChildren: number,
+): number | null {
+  const maxOverride = Math.min(2, nrChildren)
+  switch (overrideStatus) {
+    case 'no-override':
+      return maxOverride
+    case 'override-failed':
+      return null
+    case 'overridden':
+      if (countOverride === null || countOverride > 2) {
+        return maxOverride
+      }
+      if (countOverride === 2 || countOverride === 1) {
+        return Math.min(countOverride - 1, nrChildren)
+      }
+      return null
     default:
       assertNever(overrideStatus)
   }

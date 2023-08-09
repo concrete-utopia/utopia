@@ -99,6 +99,7 @@ import {
   isUtopiaJSXComponent,
   isNullJSXAttributeValue,
   isJSExpression,
+  isJSXMapExpression,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
@@ -345,6 +346,7 @@ import type {
   UpdateConditionalExpression,
   ElementPaste,
   TrueUpGroups,
+  SetMapCountOverride,
 } from '../action-types'
 import { DeleteSelected, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -4052,6 +4054,35 @@ export const UPDATE_FNS = {
           comments: {
             leadingComments: leadingComments,
             trailingComments: element.comments.trailingComments.filter(isNotConditionalFlag),
+            questionTokenComments: element.comments.questionTokenComments,
+          },
+        }
+      },
+      editor,
+    )
+  },
+  SET_MAP_COUNT_OVERRIDE: (action: SetMapCountOverride, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxChildAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXMapExpression(element)) {
+          return element
+        }
+
+        function isNotMapCountFlag(c: Comment): boolean {
+          return !isUtopiaCommentFlag(c, 'map-count')
+        }
+
+        const leadingComments = [...element.comments.leadingComments.filter(isNotMapCountFlag)]
+        if (action.value != null) {
+          leadingComments.push(makeUtopiaFlagComment({ type: 'map-count', value: action.value }))
+        }
+
+        return {
+          ...element,
+          comments: {
+            leadingComments: leadingComments,
+            trailingComments: element.comments.trailingComments.filter(isNotMapCountFlag),
             questionTokenComments: element.comments.questionTokenComments,
           },
         }
