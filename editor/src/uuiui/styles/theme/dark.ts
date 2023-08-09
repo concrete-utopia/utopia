@@ -197,7 +197,7 @@ export const dark: typeof light = {
   contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
 
   inspectorHoverColor: darkBase.fg8,
-  inspectorFocusedColor: darkBase.primary,
+  inspectorFocusedColor: darkBase.dynamicBlue,
   inspectorSetBorderColor: darkPrimitives.neutralBorder,
   flasherHookColor: base.neonpink,
 

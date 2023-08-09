@@ -100,7 +100,7 @@ export const FontFamilySelectPopupItem: React.FunctionComponent<
         paddingRight: 12,
         backgroundColor: selected ? colorTheme.inspectorFocusedColor.value : undefined,
         fontSize: 12,
-        color: selected ? 'white' : undefined,
+        color: selected ? colorTheme.bg1.value : undefined,
       }}
       onClick={onClick}
       onMouseOver={onMouseOver}
