@@ -305,10 +305,6 @@ export type ResizeInterfaceDesignerCodePane = {
   deltaCodePaneWidth: number
 }
 
-export type ToggleInterfaceDesignerCodeEditor = {
-  action: 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR'
-}
-
 export interface OpenPopup {
   action: 'OPEN_POPUP'
   popupId: string
@@ -754,6 +750,12 @@ export interface SetConditionalOverriddenCondition {
   condition: boolean | null
 }
 
+export interface SetMapCountOverride {
+  action: 'SET_MAP_COUNT_OVERRIDE'
+  target: ElementPath
+  value: number | null
+}
+
 export interface UpdateConditionalExpression {
   action: 'UPDATE_CONIDTIONAL_EXPRESSION'
   target: ElementPath
@@ -1086,7 +1088,6 @@ export type EditorAction =
   | HideModal
   | ShowModal
   | ResizeInterfaceDesignerCodePane
-  | ToggleInterfaceDesignerCodeEditor
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset
@@ -1192,6 +1193,7 @@ export type EditorAction =
   | ApplyCommandsAction
   | UpdateColorSwatches
   | SetConditionalOverriddenCondition
+  | SetMapCountOverride
   | SwitchConditionalBranches
   | UpdateConditionalExpression
   | ExecutePostActionMenuChoice

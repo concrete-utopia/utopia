@@ -264,19 +264,19 @@ export const SettingsPane = React.memo(() => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
+              margin: '0 8px',
             }}
           >
             <Button
-              primary={true}
               outline={false}
               highlight
               onClick={onForkProjectClicked}
               style={{
-                paddingLeft: 4,
-                paddingRight: 4,
-                width: 140,
+                width: '100%',
                 cursor: 'pointer',
                 height: UtopiaTheme.layout.inputHeight.default,
+                background: colorTheme.dynamicBlue.value,
+                color: colorTheme.bg1.value,
               }}
             >
               Fork this project

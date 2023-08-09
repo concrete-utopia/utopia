@@ -28,7 +28,6 @@ import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
-import { RemixAppContainer } from '../../canvas/remix/remix-container/remix-app-container'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -101,85 +100,95 @@ export const LeftPaneComponent = React.memo(() => {
 
   return (
     <LowPriorityStoreProvider>
-      <ResizableFlexColumn
-        onResizeStop={onLeftPanelResizeStop}
-        defaultSize={{
-          width: leftPanelWidth,
-          height: '100%',
-        }}
-        minWidth={LeftPanelMinWidth}
+      <div
         style={{
-          overscrollBehavior: 'contain',
-          backgroundColor: colorTheme.inspectorBackground.value,
-          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-          overflow: 'scroll',
-          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
-          height: '100%',
+          height: 'calc(100% - 20px)',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          zIndex: 1,
+          margin: 10,
         }}
       >
-        <div
-          id={LeftPaneComponentId}
-          className='leftPane'
-          style={{
+        <ResizableFlexColumn
+          onResizeStop={onLeftPanelResizeStop}
+          defaultSize={{
+            width: leftPanelWidth,
             height: '100%',
-            position: 'relative',
-            backgroundColor: colorTheme.leftPaneBackground.value,
-            color: colorTheme.fg1.value,
-            display: 'flex',
+          }}
+          minWidth={LeftPanelMinWidth}
+          style={{
+            overscrollBehavior: 'contain',
+            backgroundColor: colorTheme.inspectorBackground.value,
+            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+            overflow: 'scroll',
+            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+            height: '100%',
           }}
         >
           <div
-            id={LeftPaneOverflowScrollId}
-            className='overflow-y-scroll'
+            id={LeftPaneComponentId}
+            className='leftPane'
             style={{
               height: '100%',
-              flexGrow: 1,
-            }}
-            onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
-              if (mouseEvent.target instanceof HTMLDivElement) {
-                if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
-                  dispatch([clearSelection()])
-                }
-              }
+              position: 'relative',
+              backgroundColor: colorTheme.leftPaneBackground.value,
+              color: colorTheme.fg1.value,
+              display: 'flex',
             }}
           >
-            <UIGridRow
-              variant='|--67px--||--67px--||--67px--||--67px--|'
-              padded={false}
-              css={{ gridColumnGap: 0 }}
-              style={{ alignItems: 'stretch', marginBottom: 10 }}
+            <div
+              id={LeftPaneOverflowScrollId}
+              className='overflow-y-scroll'
+              style={{
+                height: '100%',
+                flexGrow: 1,
+              }}
+              onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
+                if (mouseEvent.target instanceof HTMLDivElement) {
+                  if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
+                    dispatch([clearSelection()])
+                  }
+                }
+              }}
             >
-              <MenuTab
-                label={'Navigator'}
-                selected={selectedTab === LeftMenuTab.Navigator}
-                onClick={onClickNavigatorTab}
-              />
-              <MenuTab
-                label={'Project'}
-                selected={selectedTab === LeftMenuTab.Project}
-                onClick={onClickProjectTab}
-              />
-              <MenuTab
-                label={'Settings'}
-                selected={selectedTab === LeftMenuTab.Settings}
-                onClick={onClickSettingsTab}
-              />
-              <MenuTab
-                label={'Github'}
-                selected={selectedTab === LeftMenuTab.Github}
-                onClick={onClickGithubTab}
-              />
-            </UIGridRow>
+              <UIGridRow
+                variant='|--67px--||--67px--||--67px--||--67px--|'
+                padded={false}
+                css={{ gridColumnGap: 0 }}
+                style={{ alignItems: 'stretch', marginBottom: 10 }}
+              >
+                <MenuTab
+                  label={'Navigator'}
+                  selected={selectedTab === LeftMenuTab.Navigator}
+                  onClick={onClickNavigatorTab}
+                />
+                <MenuTab
+                  label={'Project'}
+                  selected={selectedTab === LeftMenuTab.Project}
+                  onClick={onClickProjectTab}
+                />
+                <MenuTab
+                  label={'Settings'}
+                  selected={selectedTab === LeftMenuTab.Settings}
+                  onClick={onClickSettingsTab}
+                />
+                <MenuTab
+                  label={'Github'}
+                  selected={selectedTab === LeftMenuTab.Github}
+                  onClick={onClickGithubTab}
+                />
+              </UIGridRow>
 
-            {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
-            {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
-            {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
-            {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-
-            {loggedIn ? null : <LoggedOutPane />}
+              {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
+              {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
+              {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
+              {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
+              {loggedIn ? null : <LoggedOutPane />}
+            </div>
           </div>
-        </div>
-      </ResizableFlexColumn>
+        </ResizableFlexColumn>
+      </div>
     </LowPriorityStoreProvider>
   )
 })

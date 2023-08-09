@@ -45,7 +45,7 @@ export const SettingsPanel = React.memo(() => {
   )
 
   const toggleCodeEditorVisible = React.useCallback(() => {
-    dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
+    dispatch([EditorActions.togglePanel('codeEditor')])
   }, [dispatch])
 
   const toggleNavigatorVisible = React.useCallback(() => {

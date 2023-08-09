@@ -21,7 +21,6 @@ import {
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 

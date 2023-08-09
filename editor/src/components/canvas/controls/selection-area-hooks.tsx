@@ -15,7 +15,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../editor/store/store-hook'
 import Canvas, { TargetSearchType } from '../canvas'
 import { getAllTargetsUnderAreaAABB, windowToCanvasCoordinates } from '../dom-lookup'
-import { useGetSelectableViewsForSelectMode } from './select-mode/select-mode-hooks'
+import { useGetSelectableViewsForSelectModeFromSelectedViews } from './select-mode/select-mode-hooks'
 import {
   filterUnderSelectionArea,
   getSelectionAreaRenderedRect,
@@ -58,7 +58,7 @@ export function useSelectionArea(
     [storeRef],
   )
 
-  const getSelectableViews = useGetSelectableViewsForSelectMode()
+  const getSelectableViews = useGetSelectableViewsForSelectModeFromSelectedViews(localSelectedViews)
 
   const getValidElementsUnderArea = React.useCallback(
     (area: CanvasRectangle | null): ElementPath[] => {

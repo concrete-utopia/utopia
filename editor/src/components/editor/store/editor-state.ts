@@ -120,6 +120,7 @@ import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
   DerivedStateKeepDeepEquality,
   ElementInstanceMetadataMapKeepDeepEquality,
+  InvalidOverrideNavigatorEntryKeepDeepEquality,
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
@@ -775,20 +776,17 @@ export function editorStateRightMenu(
 export interface EditorStateInterfaceDesigner {
   codePaneWidth: number
   codePaneVisible: boolean
-  restorableCodePaneWidth: number
   additionalControls: boolean
 }
 
 export function editorStateInterfaceDesigner(
   codePaneWidth: number,
   codePaneVisible: boolean,
-  restorableCodePaneWidth: number,
   additionalControls: boolean,
 ): EditorStateInterfaceDesigner {
   return {
     codePaneWidth: codePaneWidth,
     codePaneVisible: codePaneVisible,
-    restorableCodePaneWidth: restorableCodePaneWidth,
     additionalControls: additionalControls,
   }
 }
@@ -903,7 +901,6 @@ export function internalClipboard(
 
 export interface EditorStateCanvas {
   elementsToRerender: ElementsToRerender
-  visible: boolean
   interactionSession: InteractionSession | null
   scale: number
   snappingThreshold: number
@@ -927,7 +924,6 @@ export interface EditorStateCanvas {
 
 export function editorStateCanvas(
   elementsToRerender: Array<ElementPath> | 'rerender-all-elements',
-  visible: boolean,
   interactionSession: InteractionSession | null,
   scale: number,
   snappingThreshold: number,
@@ -950,7 +946,6 @@ export function editorStateCanvas(
 ): EditorStateCanvas {
   return {
     elementsToRerender: elementsToRerender,
-    visible: visible,
     interactionSession: interactionSession,
     scale: scale,
     snappingThreshold: snappingThreshold,
@@ -2076,10 +2071,41 @@ export function syntheticNavigatorEntriesEqual(
   return SyntheticNavigatorEntryKeepDeepEquality(first, second).areEqual
 }
 
+export interface InvalidOverrideNavigatorEntry {
+  type: 'INVALID_OVERRIDE'
+  elementPath: ElementPath
+  message: string
+}
+
+export function invalidOverrideNavigatorEntry(
+  elementPath: ElementPath,
+  message: string,
+): InvalidOverrideNavigatorEntry {
+  return {
+    type: 'INVALID_OVERRIDE',
+    elementPath: elementPath,
+    message: message,
+  }
+}
+
+export function isInvalidOverrideNavigatorEntry(
+  entry: NavigatorEntry,
+): entry is InvalidOverrideNavigatorEntry {
+  return entry.type === 'INVALID_OVERRIDE'
+}
+
+export function invalidOverrideNavigatorEntriesEqual(
+  first: InvalidOverrideNavigatorEntry,
+  second: InvalidOverrideNavigatorEntry,
+): boolean {
+  return InvalidOverrideNavigatorEntryKeepDeepEquality(first, second).areEqual
+}
+
 export type NavigatorEntry =
   | RegularNavigatorEntry
   | ConditionalClauseNavigatorEntry
   | SyntheticNavigatorEntry
+  | InvalidOverrideNavigatorEntry
 
 export function navigatorEntriesEqual(
   first: NavigatorEntry | null,
@@ -2111,6 +2137,8 @@ export function navigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element-${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic-${EP.toComponentId(entry.elementPath)}-${childOrAttributeDetails}`
+    case 'INVALID_OVERRIDE':
+      return `error-${EP.toComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }
@@ -2127,6 +2155,8 @@ export function varSafeNavigatorEntryToKey(entry: NavigatorEntry): string {
         ? `attribute`
         : `element_${getUtopiaID(entry.childOrAttribute)}`
       return `synthetic_${EP.toVarSafeComponentId(entry.elementPath)}_${childOrAttributeDetails}`
+    case 'INVALID_OVERRIDE':
+      return `error_${EP.toVarSafeComponentId(entry.elementPath)}`
     default:
       assertNever(entry)
   }
@@ -2321,13 +2351,11 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     interfaceDesigner: {
       codePaneWidth: 500,
       codePaneVisible: true,
-      restorableCodePaneWidth: 500,
       additionalControls: true,
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
       interactionSession: null,
-      visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
       realCanvasOffset: BaseCanvasOffsetLeftPane,
@@ -2693,13 +2721,11 @@ export function editorModelFromPersistentModel(
     interfaceDesigner: {
       codePaneWidth: 500,
       codePaneVisible: true,
-      restorableCodePaneWidth: 500,
       additionalControls: true,
     },
     canvas: {
       elementsToRerender: 'rerender-all-elements',
       interactionSession: null,
-      visible: true,
       scale: 1,
       snappingThreshold: BaseSnappingThreshold,
       realCanvasOffset: BaseCanvasOffsetLeftPane,

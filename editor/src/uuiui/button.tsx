@@ -45,14 +45,14 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   color: props.primary ? 'white' : 'inherit',
   //TODO Nested ternaries
   background: props.primary
-    ? colorTheme.primary.value
+    ? colorTheme.denimBlue.value
     : props.spotlight
     ? colorTheme.buttonBackground.value
     : undefined,
   '&:hover': {
     background:
       props.primary && props.highlight
-        ? colorTheme.primary.value
+        ? colorTheme.denimBlue.value
         : props.highlight
         ? colorTheme.buttonHoverBackground.value
         : 'transparent',
@@ -112,7 +112,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     props.danger
       ? colorTheme.errorForeground.value
       : props.primary
-      ? colorTheme.primary.value
+      ? colorTheme.denimBlue.value
       : colorTheme.neutralBorder.value
   }`,
   transition: 'all .10s ease-in-out',
@@ -121,7 +121,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     backgroundColor: props.primary
       ? props.danger
         ? colorTheme.errorForeground.value
-        : colorTheme.primary.value
+        : colorTheme.denimBlue.value
       : colorTheme.emphasizedBackground.value,
   },
   '&:focus': {
