@@ -6,13 +6,12 @@ import React from 'react' // this is imported like this so that the monkey patch
 import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
 import * as EmotionStyled from '@emotion/styled'
+import * as RemixRunReact from '@remix-run/react'
 
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { createRegisterModuleFunction } from '../../property-controls/property-controls-local'
-import type { EditorDispatch } from '../../../components/editor/action-types'
-import type { EditorState } from '../../../components/editor/store/editor-state'
 import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
 import { UtopiaApiGroup } from './group-component'
 
@@ -84,6 +83,11 @@ export function createBuiltInDependenciesList(
       '@emotion/styled',
       EmotionStyled,
       editorPackageJSON.dependencies['@emotion/styled'],
+    ),
+    builtInDependency(
+      '@remix-run/react',
+      RemixRunReact,
+      editorPackageJSON.dependencies['@remix-run/react'],
     ),
   ]
 }
