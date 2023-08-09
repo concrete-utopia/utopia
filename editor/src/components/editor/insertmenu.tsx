@@ -357,13 +357,10 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         css={{
           borderRadius: 2,
           padding: 4,
-          background: isSelected ? colorTheme.primary.value : undefined,
-          color: isSelected ? colorTheme.white.value : undefined,
+          background: isSelected ? colorTheme.dynamicBlue.value : undefined,
+          color: isSelected ? colorTheme.bg1.value : undefined,
           gap: 4,
           border: '1px solid transparent',
-          '&:hover': {
-            borderColor: `${colorTheme.primary.value}`,
-          },
         }}
         onMouseDown={insertItemOnMouseDown}
         onMouseUp={insertItemOnMouseUp}
@@ -372,7 +369,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         <Icn
           category='element'
           type='component'
-          color={isSelected ? 'on-highlight-main' : 'main'}
+          color={isSelected ? 'on-light-main' : 'main'}
           width={18}
           height={18}
           style={{ transform: 'scale(0.8)' }}
