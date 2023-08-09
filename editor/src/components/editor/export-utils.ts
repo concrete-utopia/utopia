@@ -79,7 +79,11 @@ export function getExportedComponentImports(
       for (const exportDetail of success.exportsDetail) {
         switch (exportDetail.type) {
           case 'EXPORT_DEFAULT_FUNCTION_OR_CLASS':
-            addToResult(exportDetail.name, '(default)', importDetails(pathLastPart, [], null))
+            addToResult(
+              exportDetail.name,
+              exportDetail.name ?? '(default)',
+              importDetails(pathLastPart, [], null),
+            )
             break
           case 'EXPORT_CLASS':
             addToResult(
