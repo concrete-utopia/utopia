@@ -415,7 +415,7 @@ class FileBrowserItemInner extends React.PureComponent<
       if (this.props.errorMessages.length > 0) {
         labelColor = colorTheme.errorForeground.value
       } else if (this.props.fileType === 'ASSET_FILE') {
-        labelColor = colorTheme.primary.value
+        labelColor = colorTheme.dynamicBlue.value
       }
       return (
         <>
@@ -708,7 +708,7 @@ class FileBrowserItemInner extends React.PureComponent<
       } else if (this.state.isHovered) {
         return colorTheme.secondaryBackground.value
       } else if (this.isCurrentDropTarget()) {
-        return colorTheme.primary.value
+        return colorTheme.subtleBackground.value
       } else {
         return 'transparent'
       }
@@ -801,7 +801,6 @@ class FileBrowserItemInner extends React.PureComponent<
               {this.props.isUploadedAssetFile ? (
                 <span
                   style={{
-                    border: '1px solid primary',
                     padding: '2px 4px',
                     fontSize: 9,
                     color: colorTheme.dynamicBlue.value,
