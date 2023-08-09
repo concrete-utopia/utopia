@@ -57,7 +57,7 @@ export const ReorderSliderControl = controlForStrategyMemoized(
       Substores.highlightedHoveredViews,
       (store) => {
         const { hoveredViews } = store.editor
-        return target != null && hoveredViews.includes(target)
+        return target != null && EP.containsPath(target, hoveredViews)
       },
       'ReorderSliderControl isTargetElementHovered',
     )

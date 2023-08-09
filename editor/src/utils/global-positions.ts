@@ -16,3 +16,14 @@ export function updateGlobalPositions(
   CanvasMousePositionRounded = canvasMousePositionRounded
   WindowMousePositionRaw = windowMousePositionRaw
 }
+
+export function resetGlobalPositions(): void {
+  CanvasMousePositionRaw = null
+  CanvasMousePositionRounded = null
+  WindowMousePositionRaw = null
+
+  CanvasScrollOffset = { x: 0, y: 0 } as CanvasPoint
+  CanvasScale = { current: 1 }
+}
+
+;(globalThis as any).resetGlobalPositions = resetGlobalPositions
