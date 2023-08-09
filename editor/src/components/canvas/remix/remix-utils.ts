@@ -61,7 +61,7 @@ export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
 type GetRoutesError = 'No root file provided'
 
 export const ROOT_FILE_NAME = '/src/root.js'
-export const ROUTE_FILE_PREFIX = '/src/routes'
+export const ROUTE_FILE_PREFIX = '/src/routes/'
 
 export function getRoutesFromFiles(
   files: ProjectContentFile[],

@@ -1,5 +1,5 @@
 import React from 'react'
-import { UtopiaRemixRootComponent } from '../../UtopiaRemixRootComponent'
+import { UtopiaRemixRootComponent } from '../utopia-remix-root-component'
 
 export interface RemixAppContainerProps {
   style?: React.CSSProperties

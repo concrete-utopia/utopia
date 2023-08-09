@@ -17,9 +17,9 @@ import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
 import { resolveBuiltInDependency } from '../../../core/es-modules/package-manager/built-in-dependencies'
 import type { ProjectContentFile, ProjectContentsTree } from '../../assets'
 import { useEditorState, Substores } from '../../editor/store/store-hook'
-import { UtopiaRemixRootErrorBoundary } from '../UtopiaRemixRootErrorBoundary'
 import { getRoutesFromFiles } from './remix-utils'
 import { foldEither } from '../../../core/shared/either'
+import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
 
 function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
   if (value == null) {
@@ -81,8 +81,8 @@ function routeFromEntry(route: EntryRoute): DataRouteObject {
     element: <RemixRoute id={route.id} />,
     errorElement: undefined,
     id: route.id,
-    index: true,
-    path: '/',
+    index: route.index,
+    path: route.path,
     handle: null,
     // Note: we don't need loader/action/shouldRevalidate on these routes
     // since they're for a static render
