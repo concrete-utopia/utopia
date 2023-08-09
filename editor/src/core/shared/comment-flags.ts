@@ -97,9 +97,9 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
     return null
   }
 
-  function parseIntOrNull(value: string): number | null {
+  function parseNonNegativeIntOrNull(value: string): number | null {
     const intValue = parseInt(value)
-    if (isFinite(intValue)) {
+    if (isFinite(intValue) && intValue >= 0) {
       return intValue
     }
     return null
@@ -129,7 +129,7 @@ function getUtopiaCommentFlag(c: Comment, type: UtopiaCommentFlagType): UtopiaCo
       case 'map-count':
         return {
           type: 'map-count',
-          value: parseIntOrNull(value),
+          value: parseNonNegativeIntOrNull(value),
         }
       default:
         assertNever(type)
