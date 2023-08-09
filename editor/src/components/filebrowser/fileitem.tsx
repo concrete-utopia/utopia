@@ -346,7 +346,7 @@ class FileBrowserItemInner extends React.PureComponent<
   }
 
   renderModifiedIcon() {
-    return this.props.modified ? <Icons.CircleSmall color='primary' /> : null
+    return this.props.modified ? <Icons.CircleSmall color='dynamic' /> : null
   }
 
   onChangeFilename = (event: React.ChangeEvent<HTMLInputElement>) => {
