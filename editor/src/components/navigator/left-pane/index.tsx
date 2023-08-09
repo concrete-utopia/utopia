@@ -81,10 +81,6 @@ export const LeftPaneComponent = React.memo(() => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
-  const onClickRemixTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.RemixApp_KILLME_TEMP)
-  }, [onClickTab])
-
   const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
@@ -173,20 +169,13 @@ export const LeftPaneComponent = React.memo(() => {
                 selected={selectedTab === LeftMenuTab.Github}
                 onClick={onClickGithubTab}
               />
-              <MenuTab
-                label={'Remix'}
-                selected={selectedTab === LeftMenuTab.RemixApp_KILLME_TEMP}
-                onClick={onClickRemixTab}
-              />
             </UIGridRow>
 
             {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
             {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
             {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
             {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-            {selectedTab === LeftMenuTab.RemixApp_KILLME_TEMP ? (
-              <RemixAppContainer style={{ width: '100%' }} />
-            ) : null}
+
             {loggedIn ? null : <LoggedOutPane />}
           </div>
         </div>

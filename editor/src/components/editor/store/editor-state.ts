@@ -186,7 +186,6 @@ export enum LeftMenuTab {
   Settings = 'settings',
   Github = 'github',
   Navigator = 'navigator',
-  RemixApp_KILLME_TEMP = 'remix',
 }
 
 export const LeftPaneMinimumWidth = 5
