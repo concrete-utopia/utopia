@@ -28,7 +28,7 @@ import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
-import { RemixAppContainer } from '../../canvas/remix-container/RemixAppContainer'
+import { RemixAppContainer } from '../../canvas/remix/remix-container/remix-app-container'
 
 export interface LeftPaneProps {
   editorState: EditorState
