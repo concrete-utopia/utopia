@@ -123,10 +123,9 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
             className='label-scrollableList'
             style={{
               borderTop: `1px solid ${colorTheme.secondaryBorder.value}`,
-              borderBottom: `1px solid ${colorTheme.secondaryBorder.value}`,
               paddingTop: 5,
               paddingBottom: 8,
-              backgroundColor: colorTheme.emphasizedBackground.value,
+              background: colorTheme.bg1.value,
               flexGrow: 1,
               overflowY: 'scroll',
             }}
