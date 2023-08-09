@@ -1,18 +1,21 @@
 import * as vscode from 'vscode'
+import type {
+  DecorationRange,
+  DecorationRangeType,
+  FSError,
+  BoundsInFile,
+  Bounds,
+  ToVSCodeMessage,
+  UtopiaVSCodeConfig,
+} from 'utopia-vscode-common'
 import {
   ensureDirectoryExists,
   RootDir,
   initMailbox,
   VSCodeInbox,
-  DecorationRange,
-  DecorationRangeType,
   setErrorHandler,
-  FSError,
   toUtopiaPath,
   initializeFS,
-  BoundsInFile,
-  Bounds,
-  ToVSCodeMessage,
   parseToVSCodeMessage,
   sendMessage,
   editorCursorPositionChanged,
@@ -21,7 +24,6 @@ import {
   writeFileUnsavedContentAsUTF8,
   clearFileUnsavedContent,
   applyPrettier,
-  UtopiaVSCodeConfig,
   utopiaVSCodeConfigValues,
   vsCodeReady,
   clearLoadingScreen,
@@ -29,7 +31,7 @@ import {
 } from 'utopia-vscode-common'
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
-import { TextDocumentChangeEvent, TextDocumentWillSaveEvent, Uri } from 'vscode'
+import type { TextDocumentChangeEvent, TextDocumentWillSaveEvent, Uri } from 'vscode'
 
 const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
 
@@ -295,6 +297,7 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
   )
 }
 
+// TODO pass dynamicBlue color from the editor messages instead
 const baseDecorationTypeColor = '#007aff'
 
 const selectionDecorationType = vscode.window.createTextEditorDecorationType({
