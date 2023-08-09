@@ -221,9 +221,13 @@ const TitleBar = React.memo(() => {
         {unless(
           loggedIn,
           <Button
-            primary
             highlight
-            style={{ paddingLeft: 8, paddingRight: 8 }}
+            style={{
+              paddingLeft: 8,
+              paddingRight: 8,
+              background: colorTheme.dynamicBlue.value,
+              color: colorTheme.bg1.value,
+            }}
             onClick={onClickLoginNewTab}
           >
             Sign In To Save
