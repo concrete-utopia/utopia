@@ -507,6 +507,7 @@ const AddTailwindButton = (props: AddTailwindButtonProps) => {
         backgroundImage: 'linear-gradient(3deg, #92ABFF 0%, #1FCCB7 99%)',
         boxShadow: 'inset 0 0 0 1px rgba(94,94,94,0.20)',
         borderRadius: 2,
+        color: colorTheme.bg1.value,
       }}
       onClick={onButtonClicked}
     >
