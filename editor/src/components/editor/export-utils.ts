@@ -82,7 +82,7 @@ export function getExportedComponentImports(
             addToResult(
               exportDetail.name,
               exportDetail.name ?? '(default)',
-              importDetails(pathLastPart, [], null),
+              importDetails(exportDetail.name ?? pathLastPart, [], null),
             )
             break
           case 'EXPORT_CLASS':
