@@ -7,6 +7,7 @@ import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
 import * as EmotionStyled from '@emotion/styled'
 import * as RemixRunReact from '@remix-run/react'
+import * as ReactRouter from 'react-router'
 
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
@@ -89,5 +90,6 @@ export function createBuiltInDependenciesList(
       RemixRunReact,
       editorPackageJSON.dependencies['@remix-run/react'],
     ),
+    builtInDependency('react-router', ReactRouter, editorPackageJSON.dependencies['react-router']),
   ]
 }
