@@ -84,8 +84,6 @@ function routeFromEntry(route: EntryRoute): DataRouteObject {
     index: route.index,
     path: route.path,
     handle: null,
-    // Note: we don't need loader/action/shouldRevalidate on these routes
-    // since they're for a static render
   }
 }
 
@@ -122,9 +120,7 @@ export const UtopiaRemixRootComponent = React.memo(() => {
     const flatFiles = Object.values(projectContents).flatMap(getFlatFilePaths)
 
     return foldEither(
-      (error) => {
-        throw new Error(error)
-      },
+      () => ({}),
       (r) => r,
       getRoutesFromFiles(flatFiles),
     )
@@ -132,7 +128,7 @@ export const UtopiaRemixRootComponent = React.memo(() => {
 
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
 
-  const routeModules = React.useMemo(() => {
+  const { routeModules, routes } = React.useMemo(() => {
     const partialRequire = (toImport: string) => {
       const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
       if (builtInDependency != null) {
@@ -141,27 +137,35 @@ export const UtopiaRemixRootComponent = React.memo(() => {
       throw new Error(`Cannot resolve dependency: ${toImport}`)
     }
 
-    const result: RouteModules = {}
+    const routeManifestResult: RouteModules = {}
+    const routesResult: DataRouteObject[] = []
 
     for (const route of Object.values(routeManifest)) {
-      const module = evaluator(
-        route.filePath,
-        route.moduleContents,
-        { exports: {} },
-        partialRequire,
-      )
-      result[route.id] = {
-        default: module.exports.default,
+      try {
+        const module = evaluator(
+          route.filePath,
+          route.moduleContents,
+          { exports: {} },
+          partialRequire,
+        )
+
+        routeManifestResult[route.id] = {
+          default: module.exports.default,
+        }
+
+        routesResult.push({
+          ...routeFromEntry(route),
+          loader: module.exports.loader != null ? module.exports.loader : undefined,
+        })
+      } catch (e) {
+        console.error(e)
       }
     }
 
-    return result
+    return { routeModules: routeManifestResult, routes: routesResult }
   }, [builtInDependencies, routeManifest])
 
-  const router = React.useMemo(() => {
-    const routes = Object.values(routeManifest).map(routeFromEntry)
-    return createMemoryRouter(routes)
-  }, [routeManifest])
+  const router = React.useMemo(() => createMemoryRouter(routes), [routes])
 
   let [location, setLocation] = React.useState(router.state.location)
 
@@ -173,21 +177,42 @@ export const UtopiaRemixRootComponent = React.memo(() => {
     })
   }, [location, router])
 
+  const onClickBack = React.useCallback(() => router.navigate(-1), [router])
+  const onClickForward = React.useCallback(() => router.navigate(1), [router])
+
   return (
-    <RemixContext.Provider
-      value={{
-        manifest: assetsManifest,
-        routeModules: routeModules,
-        future: defaultFutureConfig,
-      }}
-    >
-      <UtopiaRemixRootErrorBoundary location={location}>
-        <RouterProvider
-          router={router}
-          fallbackElement={null}
-          future={{ v7_startTransition: true }}
-        />
-      </UtopiaRemixRootErrorBoundary>
-    </RemixContext.Provider>
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 5,
+          padding: 5,
+          marginBottom: 10,
+          borderRadius: 3,
+          border: '1px solid gray',
+          backgroundColor: '#CEE5FE',
+        }}
+      >
+        <div onClick={onClickBack}>⬅️</div>
+        <div onClick={onClickForward}>➡️</div>
+        {router.state.location.pathname}
+      </div>
+      <RemixContext.Provider
+        value={{
+          manifest: assetsManifest,
+          routeModules: routeModules,
+          future: defaultFutureConfig,
+        }}
+      >
+        <UtopiaRemixRootErrorBoundary location={location}>
+          <RouterProvider
+            router={router}
+            fallbackElement={null}
+            future={{ v7_startTransition: true }}
+          />
+        </UtopiaRemixRootErrorBoundary>
+      </RemixContext.Provider>
+    </div>
   )
 })
