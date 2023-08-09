@@ -123,10 +123,9 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
             className='label-scrollableList'
             style={{
               borderTop: `1px solid ${colorTheme.secondaryBorder.value}`,
-              borderBottom: `1px solid ${colorTheme.secondaryBorder.value}`,
               paddingTop: 5,
               paddingBottom: 8,
-              backgroundColor: colorTheme.emphasizedBackground.value,
+              background: colorTheme.bg1.value,
               flexGrow: 1,
               overflowY: 'scroll',
             }}
@@ -341,7 +340,7 @@ const TargetListItem = React.memo((props: TargetListItemProps) => {
           borderRadius: UtopiaTheme.inputBorderRadius,
           fontWeight: isSelected ? 600 : 400,
           backgroundImage: isSelected ? colorTheme.primary.value : undefined,
-          color: isSelected ? colorTheme.white.value : colorTheme.neutralForeground.value,
+          color: isSelected ? colorTheme.fg1.value : colorTheme.neutralForeground.value,
         }}
         onDoubleClick={startRename}
         onMouseDown={onSelectByMouseCallback}
@@ -391,9 +390,6 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
 
   const togglePathPanel = React.useCallback(() => setIsOpen((value) => !value), [setIsOpen])
 
-  const titleStyle =
-    selectedTargetPath[0] === 'style' ? undefined : { color: colorTheme.primary.value }
-
   return (
     <FlexRow
       style={{
@@ -405,7 +401,11 @@ const TargetListHeader = React.memo((props: TargetListHeaderProps) => {
     >
       <H1
         data-testid={`target-selector-${selectedTargetPath[0]}`}
-        style={{ flexGrow: 1, display: 'inline', overflow: 'hidden', ...titleStyle }}
+        style={{
+          flexGrow: 1,
+          display: 'inline',
+          overflow: 'hidden',
+        }}
       >
         {selectedTargetPath}
       </H1>

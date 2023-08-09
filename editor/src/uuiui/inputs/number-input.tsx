@@ -645,7 +645,7 @@ export const NumberInput = React.memo<NumberInputProps>(
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
             },
             '&:focus-within': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.primary.value}`,
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
             },
             '&:hover input': {
               color: controlStyles.mainColor,

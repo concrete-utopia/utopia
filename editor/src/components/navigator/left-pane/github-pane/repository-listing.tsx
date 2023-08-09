@@ -309,7 +309,12 @@ export const RepositoryListing = React.memo(
           )}
         </Button>
         <UIGridRow padded={false} variant='<-------------1fr------------->'>
-          <a href='https://github.com/new' target='_blank' rel='noopener noreferrer'>
+          <a
+            href='https://github.com/new'
+            target='_blank'
+            rel='noopener noreferrer'
+            style={{ color: colorTheme.dynamicBlue.value }}
+          >
             Create new repository on Github.
           </a>
         </UIGridRow>

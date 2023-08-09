@@ -378,13 +378,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       onClick={props.onClick}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
     >
-      <Icn
-        category={iconCategory}
-        type={props.iconType}
-        color={primary ? 'on-highlight-main' : 'main'}
-        width={18}
-        height={18}
-      />
+      <Icn category={iconCategory} type={props.iconType} color={'main'} width={18} height={18} />
     </SquareButton>
   )
 })
