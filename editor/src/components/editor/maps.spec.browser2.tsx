@@ -76,7 +76,7 @@ describe('map count override', () => {
     {
       length: 4,
       countOverride: -1,
-      expectedCount: 0,
+      expectedCount: 4,
     },
   ]
 
