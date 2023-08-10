@@ -1245,12 +1245,13 @@ function walkElements(
     )
 
     // Check this is a path we're interested in, otherwise skip straight to the children
-    const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-      const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-      return globalProps.validPaths.some((validPath) => {
-        return EP.pathsEqual(staticPath, validPath)
-      })
-    })
+    // TODO: add it back
+    // const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+    //   const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+    //   return globalProps.validPaths.some((validPath) => {
+    //     return EP.pathsEqual(staticPath, validPath)
+    //   })
+    // })
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
@@ -1276,8 +1277,8 @@ function walkElements(
 
     const { collectedMetadata, cachedPaths, collectedPaths } = collectMetadata(
       element,
-      pluck(foundValidPaths, 'path'),
-      pluck(foundValidPaths, 'asString'),
+      pluck(pathsWithStrings, 'path'),
+      pluck(pathsWithStrings, 'asString'),
       parentPoint,
       closestOffsetParentPath,
       uniqueChildPaths,
