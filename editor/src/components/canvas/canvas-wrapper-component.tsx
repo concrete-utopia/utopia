@@ -105,7 +105,7 @@ export const CanvasWrapperComponent = React.memo(() => {
 
   const leftPanelWidthAtom = usePubSubAtomReadOnly(LeftPanelWidthAtom, AlwaysTrue)
   const leftPanelWidth = React.useMemo(
-    () => (isNavigatorOverCanvas ? leftPanelWidthAtom : 0),
+    () => (isNavigatorOverCanvas ? leftPanelWidthAtom + 10 : 0),
     [leftPanelWidthAtom, isNavigatorOverCanvas],
   )
 
@@ -113,7 +113,7 @@ export const CanvasWrapperComponent = React.memo(() => {
     Substores.restOfEditor,
     (store) =>
       store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth
+        ? store.editor.interfaceDesigner.codePaneWidth + 10
         : 0,
     'CanvasWrapperComponent codeEditorWidth',
   )
@@ -165,7 +165,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           height: '100%',
           transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
           pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
-          left: leftPanelWidth + codeEditorWidth + 20, // padding
+          left: leftPanelWidth + codeEditorWidth,
         }}
       >
         <FlexRow
