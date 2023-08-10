@@ -67,7 +67,11 @@ import {
   getUtopiaID,
 } from '../shared/uid-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import { getComponentsFromTopLevelElements, isSceneAgainstImports } from './project-file-utils'
+import {
+  getComponentsFromTopLevelElements,
+  isRemixContainerAgainstImports,
+  isSceneAgainstImports,
+} from './project-file-utils'
 import type { GetJSXAttributeResult } from '../shared/jsx-attributes'
 import { getJSXAttributesAtPath } from '../shared/jsx-attributes'
 import { forceNotNull } from '../shared/optional-utils'
@@ -137,6 +141,19 @@ export function isSceneElement(
   const file = getContentsTreeFileFromString(projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return isSceneAgainstImports(element, file.fileContents.parsed.imports)
+  } else {
+    return false
+  }
+}
+
+export function isRemixContainerElement(
+  element: JSXElementChild,
+  filePath: string,
+  projectContents: ProjectContentTreeRoot,
+): boolean {
+  const file = getContentsTreeFileFromString(projectContents, filePath)
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return isRemixContainerAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
   }

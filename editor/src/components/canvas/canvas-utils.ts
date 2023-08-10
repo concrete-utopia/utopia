@@ -48,6 +48,7 @@ import {
   getIndexInParent,
   generateUidWithExistingComponents,
   insertJSXElementChildren,
+  isRemixContainerElement,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -72,6 +73,7 @@ import {
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
+  isRemixContainerAgainstImports,
 } from '../../core/model/project-file-utils'
 import type { Either } from '../../core/shared/either'
 import {
@@ -154,7 +156,7 @@ import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/sce
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
-import { getContentsTreeFileFromString } from '../assets'
+import { getContentsTreeFileFromString, getProjectFileFromTree } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
@@ -1990,13 +1992,58 @@ function getValidElementPathsFromElement(
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
-    const isScene = isSceneElement(element, filePath, projectContents)
-    const isSceneWithOneChild = isScene && element.children.length === 1
     const uid = getUtopiaID(element)
+
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
+
     let paths = [path]
+
+    const isRemixContainer = isRemixContainerElement(element, filePath, projectContents)
+    if (isRemixContainer) {
+      /**
+       * TODO: generalize this for all routes
+       * Basically:
+       * - Pass which route module is active on the RemixContainers
+       * - When encountering a RemixContainer, get the active route corresponding to that
+       *   contiainer, and parse the uids from the active route module
+       */
+      const index = getContentsTreeFileFromString(projectContents, '/src/routes/_index.js')
+      if (index == null || index.type !== 'TEXT_FILE' || index.lastParseSuccess == null) {
+        throw new Error("'/src/routes/_index.js' should be a text file")
+      }
+
+      const topLevelElement = index.lastParseSuccess.topLevelElements.find(
+        (e): e is UtopiaJSXComponent => {
+          return isUtopiaJSXComponent(e)
+        },
+      )
+
+      if (topLevelElement == null) {
+        throw new Error("'/src/routes/_index.js' should have a top level element")
+      }
+
+      paths.push(
+        ...getValidElementPathsFromElement(
+          focusedElementPath,
+          topLevelElement.rootElement,
+          path,
+          projectContents,
+          filePath,
+          uiFilePath,
+          false,
+          true,
+          resolve,
+        ),
+      )
+
+      return paths
+    }
+
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const isSceneWithOneChild = isScene && element.children.length === 1
+
     fastForEach(element.children, (c) =>
       paths.push(
         ...getValidElementPathsFromElement(
