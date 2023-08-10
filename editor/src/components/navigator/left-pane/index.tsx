@@ -92,7 +92,7 @@ export const LeftPaneComponent = React.memo(() => {
     Substores.restOfEditor,
     (store) =>
       store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth
+        ? store.editor.interfaceDesigner.codePaneWidth + 10
         : 0,
     'LeftPaneComponent interfaceDesigner',
   )
@@ -114,7 +114,7 @@ export const LeftPaneComponent = React.memo(() => {
           height: 'calc(100% - 20px)',
           position: 'absolute',
           top: 0,
-          left: codeEditorWidth + 10,
+          left: codeEditorWidth,
           zIndex: 1,
           margin: 10,
         }}
