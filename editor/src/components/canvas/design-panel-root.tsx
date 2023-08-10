@@ -1,10 +1,10 @@
 import type { ResizeCallback, ResizeDirection } from 're-resizable'
-import { Resizable } from 're-resizable'
+import type { Resizable } from 're-resizable'
 import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
-import { ConsoleLog, RightMenuTab } from '../editor/store/editor-state'
+import { CanvasSizeAtom, ConsoleLog, RightMenuTab } from '../editor/store/editor-state'
 
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
@@ -35,6 +35,10 @@ import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
+import type ReactGridLayout from 'react-grid-layout'
+import { Responsive as ResponsiveGridLayout } from 'react-grid-layout'
+import 'react-grid-layout/css/styles.css'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 interface NumberSize {
   width: number
@@ -123,7 +127,101 @@ const NothingOpenCard = React.memo(() => {
   )
 })
 
+const MaxGridHeight = 10
 const DesignPanelRootInner = React.memo(() => {
+  const [layout, setLayout] = React.useState<Array<ReactGridLayout.Layout>>([
+    {
+      i: 'leftpane',
+      x: 0,
+      y: 0,
+      w: 2,
+      h: 10,
+      minW: 2,
+      maxW: 6,
+      minH: 1,
+      maxH: 10,
+      resizeHandles: ['s', 'e', 'se', 'sw'],
+    },
+    {
+      i: 'codeeditor',
+      x: 2,
+      y: 0,
+      w: 4,
+      h: 10,
+      minW: 2,
+      maxW: 4,
+      minH: 1,
+      maxH: 10,
+      resizeHandles: ['s', 'e', 'se', 'sw'],
+    },
+    {
+      i: 'rightpane',
+      x: 10,
+      y: 0,
+      w: 2,
+      h: 10,
+      minW: 2,
+      maxW: 6,
+      minH: 1,
+      maxH: 10,
+      resizeHandles: ['s', 'w', 'se', 'sw'],
+    },
+  ])
+  const lastLayoutWithMaxHeight = React.useRef<Array<ReactGridLayout.Layout>>([])
+  const updateLastLayoutBeforeDrag = React.useCallback(
+    (latestLayout: Array<ReactGridLayout.Layout>) => {
+      lastLayoutWithMaxHeight.current = latestLayout
+    },
+    [],
+  )
+  const updateNewLayoutIfItsOutOfScreen = React.useCallback(
+    (currentLayout: Array<ReactGridLayout.Layout> | null) => {
+      if (currentLayout == null) {
+        return false
+      }
+      const updatedLayout = currentLayout.reduce((working, current, i) => {
+        if (current.y + current.h > MaxGridHeight) {
+          const prev = working[i - 1]
+          if (prev != null && prev.h !== currentLayout[i - 1].h) {
+            return [
+              ...working,
+              {
+                ...current,
+                y: current.y - (currentLayout[i - 1].h - prev.h),
+              },
+            ]
+          }
+          return [
+            ...working,
+            {
+              ...current,
+              h: Math.max(0, MaxGridHeight - current.y),
+            },
+          ]
+        }
+        return [...working, current]
+      }, [] as ReactGridLayout.Layout[])
+
+      if (updatedLayout.some((updated, i) => updated.h !== currentLayout[i].h)) {
+        setLayout(updatedLayout)
+        return true
+      }
+      return false
+    },
+    [setLayout],
+  )
+
+  const onLayoutChange = React.useCallback(
+    (newLayout: Array<ReactGridLayout.Layout>) => {
+      setLayout(newLayout)
+      updateNewLayoutIfItsOutOfScreen(newLayout)
+    },
+    [updateNewLayoutIfItsOutOfScreen, setLayout],
+  )
+
+  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
+  const gridSize = 12
+
   return (
     <>
       <SimpleFlexRow
@@ -137,22 +235,50 @@ const DesignPanelRootInner = React.memo(() => {
           flexShrink: 0,
         }}
       >
-        {
-          <SimpleFlexColumn
-            style={{
-              flexGrow: 1,
-              overflow: 'hidden',
-              position: 'relative',
-            }}
+        <SimpleFlexColumn
+          style={{
+            flexGrow: 1,
+            overflow: 'hidden',
+            position: 'relative',
+          }}
+        >
+          <CanvasWrapperComponent />
+        </SimpleFlexColumn>
+        <ResponsiveGridLayout
+          style={{ position: 'absolute', zIndex: 1 }}
+          className='layout'
+          rowHeight={canvasSize.height / gridSize} // this seems to be wrong
+          width={canvasSize.width}
+          margin={[10, 10]}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          layouts={{ lg: layout }} // something is wrong here
+          cols={{ lg: gridSize, md: gridSize, sm: gridSize, xs: gridSize, xxs: gridSize }}
+          onLayoutChange={onLayoutChange}
+          onDragStart={updateLastLayoutBeforeDrag}
+          onResizeStart={updateLastLayoutBeforeDrag}
+        >
+          <div
+            key='leftpane'
+            // style={{ outline: '1px solid red' }}
+          >
+            <LeftPaneComponent />
+          </div>
+          <div
+            key='codeeditor'
+            // style={{ outline: '1px solid red' }}
           >
             <CodeEditorPane />
-            <LeftPaneComponent />
-            <CanvasWrapperComponent />
-            <FloatingInsertMenu />
+          </div>
+          <div
+            key='rightpane'
+            // style={{ outline: '1px solid red' }}
+          >
             <ResizableRightPane />
-          </SimpleFlexColumn>
-        }
+          </div>
+        </ResponsiveGridLayout>
       </SimpleFlexRow>
+      <FloatingInsertMenu />
     </>
   )
 })
@@ -211,13 +337,19 @@ const ResizableRightPane = React.memo(() => {
     <div
       id='inspector-root'
       style={{
-        height: 'calc(100% - 20px)',
-        position: 'absolute',
-        right: 0,
-        margin: 10,
+        // height: 'calc(100% - 20px)',
+        // position: 'absolute',
+        // right: 0,
+        // margin: 10,
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        backgroundColor: colorTheme.inspectorBackground.value,
+        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
     >
-      <Resizable
+      {/* <Resizable
         ref={resizableRef}
         defaultSize={{
           width: UtopiaTheme.layout.inspectorSmallWidth,
@@ -243,24 +375,24 @@ const ResizableRightPane = React.memo(() => {
         enable={{
           left: true,
         }}
+      > */}
+      <SimpleFlexRow
+        className='Inspector-entrypoint'
+        style={{
+          alignItems: 'stretch',
+          flexDirection: 'column',
+          width: '100%',
+          height: '100%',
+          backgroundColor: colorTheme.inspectorBackground.value,
+          flexGrow: 0,
+          flexShrink: 0,
+        }}
       >
-        <SimpleFlexRow
-          className='Inspector-entrypoint'
-          style={{
-            alignItems: 'stretch',
-            flexDirection: 'column',
-            width: '100%',
-            height: '100%',
-            backgroundColor: colorTheme.inspectorBackground.value,
-            flexGrow: 0,
-            flexShrink: 0,
-          }}
-        >
-          {selectedTab === RightMenuTab.Insert && <InsertMenuPane />}
-          {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
-        </SimpleFlexRow>
-        <CanvasStrategyInspector />
-      </Resizable>
+        {selectedTab === RightMenuTab.Insert && <InsertMenuPane />}
+        {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
+      </SimpleFlexRow>
+      <CanvasStrategyInspector />
+      {/* </Resizable> */}
     </div>
   )
 })
@@ -290,13 +422,21 @@ const CodeEditorPane = React.memo(() => {
   return (
     <div
       style={{
-        height: 'calc(100% - 20px)',
-        position: 'absolute',
-        margin: 10,
-        zIndex: 1,
+        // height: 'calc(100% - 20px)',
+        // position: 'absolute',
+        // margin: 10,
+        // zIndex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        backgroundColor: colorTheme.inspectorBackground.value,
+        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
     >
-      <Resizable
+      {/* <Resizable
         defaultSize={{
           width: interfaceDesigner.codePaneWidth,
           height: '100%',
@@ -328,10 +468,10 @@ const CodeEditorPane = React.memo(() => {
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
           boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         }}
-      >
-        {when(codeEditorEnabled, <CodeEditorWrapper />)}
-        <ConsoleAndErrorsPane />
-      </Resizable>
+      > */}
+      {when(codeEditorEnabled, <CodeEditorWrapper />)}
+      <ConsoleAndErrorsPane />
+      {/* </Resizable> */}
     </div>
   )
 })

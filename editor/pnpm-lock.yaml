@@ -109,6 +109,7 @@ specifiers:
   '@types/react': 18.0.9
   '@types/react-dnd': 3.0.2
   '@types/react-dom': 18.0.3
+  '@types/react-grid-layout': ^1.3.2
   '@types/react-helmet': 6.1.0
   '@types/react-highlight-words': 0.16.3
   '@types/react-onclickoutside': 6.7.3
@@ -252,6 +253,7 @@ specifiers:
   react-dnd-html5-backend: 16.0.0
   react-dom: 18.1.0
   react-error-overlay: git://github.com/concrete-utopia/react-error-overlay.git#201980990d653e821f36ab4f921a4f83588a8a42
+  react-grid-layout: ^1.3.4
   react-helmet: 6.1.0
   react-highlight-words: 0.17.0
   react-hot-loader: 4.12.12
@@ -336,6 +338,7 @@ dependencies:
   '@svgr/plugin-jsx': 5.5.0
   '@tippyjs/react': 4.1.0_ef5jwxihqo6n7gxfmzogljlgcm
   '@types/fontfaceobserver': 0.0.6
+  '@types/react-grid-layout': 1.3.2
   '@types/react-syntax-highlighter': 11.0.4
   '@types/w3c-css-typed-object-model-level-1': 20180410.0.5
   '@use-it/interval': 0.1.3_react@18.1.0
@@ -405,6 +408,7 @@ dependencies:
   react-dnd-html5-backend: 16.0.0
   react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
   react-error-overlay: github.com/concrete-utopia/react-error-overlay/201980990d653e821f36ab4f921a4f83588a8a42
+  react-grid-layout: 1.3.4_ef5jwxihqo6n7gxfmzogljlgcm
   react-helmet: 6.1.0_react@18.1.0
   react-highlight-words: 0.17.0_react@18.1.0
   react-hot-loader: 4.12.12_ef5jwxihqo6n7gxfmzogljlgcm
@@ -4133,6 +4137,12 @@ packages:
     resolution: {integrity: sha512-1RRW9kst+67gveJRYPxGmVy8eVJ05O43hg77G2j5m76/RFJtMbcfAs2viQ2UNsvvDg8F7OfQZx8qQcl6ymygaQ==}
     dependencies:
       '@types/react': 18.0.9
+
+  /@types/react-grid-layout/1.3.2:
+    resolution: {integrity: sha512-ZzpBEOC1JTQ7MGe1h1cPKSLP4jSWuxc+yvT4TsAlEW9+EFPzAf8nxQfFd7ea9gL17Em7PbwJZAsiwfQQBUklZQ==}
+    dependencies:
+      '@types/react': 18.0.9
+    dev: false
 
   /@types/react-helmet/6.1.0_g2jxqzs4imdskfndmd2dh2jcni:
     resolution: {integrity: sha512-PYRoU1XJFOzQ3BHvWL1T8iDNbRjdMDJMT5hFmZKGbsq09kbSqJy61uwEpTrbTNWDopVphUT34zUSVLK9pjsgYQ==}
@@ -11992,6 +12002,10 @@ packages:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     dev: true
 
+  /lodash.isequal/4.5.0:
+    resolution: {integrity: sha512-pDo3lu8Jhfjqls6GkMgpahsF9kCyayhgykjyLMNFTKWrpVdAQtYyB4muAMWozBB4ig/dtWAmsMxLEI8wuz+DYQ==}
+    dev: false
+
   /lodash.memoize/3.0.4:
     resolution: {integrity: sha1-LcvSwofLwKVcxCMovQxzYVDVPj8=}
     dev: true
@@ -13733,6 +13747,14 @@ packages:
       react-is: 16.13.1
     dev: false
 
+  /prop-types/15.8.1:
+    resolution: {integrity: sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==}
+    dependencies:
+      loose-envify: 1.4.0
+      object-assign: 4.1.1
+      react-is: 16.13.1
+    dev: false
+
   /property-expr/1.5.1:
     resolution: {integrity: sha512-CGuc0VUTGthpJXL36ydB6jnbyOf/rAHFvmVrJlH+Rg0DqqLFQGAP6hIaxD/G0OAmBJPhXDHuEJigrp0e0wFV6g==}
     dev: true
@@ -13951,7 +13973,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       dom-align: 1.12.2
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       rc-util: 4.21.1
     dev: false
 
@@ -13980,7 +14002,7 @@ packages:
       babel-runtime: 6.26.0
       classnames: 2.2.6
       css-animation: 1.6.1
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       raf: 3.4.1
       rc-util: 4.21.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
@@ -14343,7 +14365,7 @@ packages:
     resolution: {integrity: sha512-dE2ibukxxkrde7wH9W8ozHKUO4aQnPZ6qBHtrTH9LoO836PjDdiaWO73fgPB05VfJs9FbZdmGPVEbXCeOP99Ww==}
     dependencies:
       babel-runtime: 6.26.0
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       rc-trigger: 2.6.5_ef5jwxihqo6n7gxfmzogljlgcm
     transitivePeerDependencies:
       - react
@@ -14412,7 +14434,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       rc-align: 2.4.5
       rc-animate: 2.11.1_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 4.21.1
@@ -14447,7 +14469,7 @@ packages:
     resolution: {integrity: sha512-Z+vlkSQVc1l8O2UjR3WQ+XdWlhj5q9BMQNLk2iOBch75CqPfrJyGtcWMcnhRlNuDu0Ndtt4kLVO8JI8BrABobg==}
     dependencies:
       add-dom-event-listener: 1.1.0
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       react-is: 16.13.1
       react-lifecycles-compat: 3.0.4
       shallowequal: 1.1.0
@@ -14565,6 +14587,18 @@ packages:
       scheduler: 0.22.0
     patched: true
 
+  /react-draggable/4.4.5_ef5jwxihqo6n7gxfmzogljlgcm:
+    resolution: {integrity: sha512-OMHzJdyJbYTZo4uQE393fHcqqPYsEtkjfMgvCHr6rejT+Ezn4OZbNyGH50vv+SunC1RMvwOTSWkEODQLzw1M9g==}
+    peerDependencies:
+      react: '>= 16.3.0'
+      react-dom: '>= 16.3.0'
+    dependencies:
+      clsx: 1.1.1
+      prop-types: 15.8.1
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
+    dev: false
+
   /react-emotion/9.2.12_beus4p4qy2l5kloq3acohbokce:
     resolution: {integrity: sha512-qt7XbxnEKX5sZ73rERJ92JMbEOoyOwG3BuCRFRkXrsJhEe+rFBRTljRw7yOLHZUCQC4GBObZhjXIduQ8S0ZpYw==}
     peerDependencies:
@@ -14581,6 +14615,21 @@ packages:
 
   /react-fast-compare/3.2.0:
     resolution: {integrity: sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==}
+    dev: false
+
+  /react-grid-layout/1.3.4_ef5jwxihqo6n7gxfmzogljlgcm:
+    resolution: {integrity: sha512-sB3rNhorW77HUdOjB4JkelZTdJGQKuXLl3gNg+BI8gJkTScspL1myfZzW/EM0dLEn+1eH+xW+wNqk0oIM9o7cw==}
+    peerDependencies:
+      react: '>= 16.3.0'
+      react-dom: '>= 16.3.0'
+    dependencies:
+      clsx: 1.1.1
+      lodash.isequal: 4.5.0
+      prop-types: 15.8.1
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
+      react-draggable: 4.4.5_ef5jwxihqo6n7gxfmzogljlgcm
+      react-resizable: 3.0.5_ef5jwxihqo6n7gxfmzogljlgcm
     dev: false
 
   /react-helmet/6.1.0_react@18.1.0:
@@ -14630,7 +14679,7 @@ packages:
     peerDependencies:
       react: ^0.14.9 || ^15.3.0 || ^16.0.0-rc || ^16.0
     dependencies:
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
@@ -14639,7 +14688,7 @@ packages:
     peerDependencies:
       react: ^16.3.0 || ^17.0.0
     dependencies:
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
@@ -14650,7 +14699,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       is-dom: 1.1.0
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
@@ -14723,6 +14772,18 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
+  /react-resizable/3.0.5_ef5jwxihqo6n7gxfmzogljlgcm:
+    resolution: {integrity: sha512-vKpeHhI5OZvYn82kXOs1bC8aOXktGU5AmKAgaZS4F5JPburCtbmDPqE7Pzp+1kN4+Wb81LlF33VpGwWwtXem+w==}
+    peerDependencies:
+      react: '>= 16.3'
+    dependencies:
+      prop-types: 15.8.1
+      react: 18.1.0_47cciibm4ysmleigs33s763fqu
+      react-draggable: 4.4.5_ef5jwxihqo6n7gxfmzogljlgcm
+    transitivePeerDependencies:
+      - react-dom
+    dev: false
+
   /react-select/3.1.0_t5nmcyzy5uxlteq6gsp6gbc254_ef5jwxihqo6n7gxfmzogljlgcm:
     resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}
     peerDependencies:
@@ -14752,7 +14813,7 @@ packages:
       '@emotion/cache': 11.4.0
       '@emotion/react': 11.1.2_l23vr2jl6b3o5l3eanlyfmxl6q_hckexctj6og6b6fgnwzdyzgtia
       memoize-one: 5.2.1
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
       react-input-autosize: 3.0.0_react@18.1.0
@@ -14834,7 +14895,7 @@ packages:
       '@babel/runtime': 7.20.13
       dom-helpers: 5.2.1
       loose-envify: 1.4.0
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
       react-dom: 18.1.0_abari7w75zfr6mrhvamxwmfpxm_react@18.1.0
     dev: false
@@ -17915,7 +17976,7 @@ packages:
     dependencies:
       babel-runtime: 6.26.0
       classnames: 2.2.6
-      prop-types: 15.7.2
+      prop-types: 15.8.1
       rc-tooltip: 3.7.3_ef5jwxihqo6n7gxfmzogljlgcm
       rc-util: 4.21.1
       shallowequal: 1.1.0
