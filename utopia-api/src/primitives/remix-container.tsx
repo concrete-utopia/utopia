@@ -21,10 +21,5 @@ export const RemixContainer = React.memo((props: React.PropsWithChildren<RemixCo
     ...props,
     style: style,
   }
-  return (
-    <View {...adjustedProps}>
-      I am a polar bear
-      {props.children}
-    </View>
-  )
+  return <View {...adjustedProps}>{props.children}</View>
 })

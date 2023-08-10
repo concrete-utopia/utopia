@@ -181,38 +181,20 @@ export const UtopiaRemixRootComponent = React.memo(() => {
   const onClickForward = React.useCallback(() => router.navigate(1), [router])
 
   return (
-    <div>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          gap: 5,
-          padding: 5,
-          marginBottom: 10,
-          borderRadius: 3,
-          border: '1px solid gray',
-          backgroundColor: '#CEE5FE',
-        }}
-      >
-        <div onClick={onClickBack}>⬅️</div>
-        <div onClick={onClickForward}>➡️</div>
-        {router.state.location.pathname}
-      </div>
-      <RemixContext.Provider
-        value={{
-          manifest: assetsManifest,
-          routeModules: routeModules,
-          future: defaultFutureConfig,
-        }}
-      >
-        <UtopiaRemixRootErrorBoundary location={location}>
-          <RouterProvider
-            router={router}
-            fallbackElement={null}
-            future={{ v7_startTransition: true }}
-          />
-        </UtopiaRemixRootErrorBoundary>
-      </RemixContext.Provider>
-    </div>
+    <RemixContext.Provider
+      value={{
+        manifest: assetsManifest,
+        routeModules: routeModules,
+        future: defaultFutureConfig,
+      }}
+    >
+      <UtopiaRemixRootErrorBoundary location={location}>
+        <RouterProvider
+          router={router}
+          fallbackElement={null}
+          future={{ v7_startTransition: true }}
+        />
+      </UtopiaRemixRootErrorBoundary>
+    </RemixContext.Provider>
   )
 })
