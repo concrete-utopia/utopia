@@ -242,25 +242,19 @@ function getUpdateResizedGroupChildrenCommands(
   let commandsToRun: Array<CanvasCommand> = []
   let updatedElements: Array<ElementPath> = []
 
-  Object.entries(updatedLocalFrames)
-    .filter(([path]) => {
-      return canPushIntendedBoundsForElement(
-        EP.fromString(path),
-        editor.jsxMetadata,
-        command.mode,
-        ['resize'],
-      )
-    })
-    .forEach(([pathStr, frameAndTarget]) => {
-      const elementToUpdate = EP.fromString(pathStr)
-      const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
+  Object.entries(updatedLocalFrames).forEach(([pathStr, frameAndTarget]) => {
+    const elementToUpdate = EP.fromString(pathStr)
+    const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementToUpdate)
 
-      if (frameAndTarget == null || metadata == null) {
-        return
-      }
+    if (frameAndTarget == null || metadata == null) {
+      return
+    }
 
-      updatedElements.push(elementToUpdate)
+    updatedElements.push(elementToUpdate)
 
+    if (
+      canPushIntendedBoundsForElement(elementToUpdate, editor.jsxMetadata, command.mode, ['resize'])
+    ) {
       commandsToRun.push(
         ...setElementPins(
           elementToUpdate,
@@ -269,7 +263,8 @@ function getUpdateResizedGroupChildrenCommands(
           metadata.specialSizeMeasurements.parentFlexDirection,
         ),
       )
-    })
+    }
+  })
 
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
   return {
