@@ -10,6 +10,7 @@ import { mouseClickAtPoint, pressKey } from '../event-helpers.test-utils'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
+  getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
@@ -200,6 +201,114 @@ describe('Floating insert menu', () => {
     <span data-uid='sample-text'>Sample text</span>
   </div>`),
     )
+  })
+
+  it('can search for and insert default exported component', async () => {
+    const editor = await renderTestEditorWithModel(
+      createTestProjectWithMultipleFiles({
+        [StoryboardFilePath]: `
+        import * as React from 'react'
+        import { Scene, Storyboard } from 'utopia-api'
+        import { Playground } from '/src/playground.js'
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <Scene
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+              }}
+              data-label='Playground'
+              data-uid='scene-1'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 136,
+                  top: 77,
+                  width: 275,
+                  height: 303,
+                }}
+                data-uid='insert-target'
+            />
+            </Scene>
+          </Storyboard>
+        )
+        `,
+        [PlaygroundFilePath]: `            
+        export default function DefaultExportedComponent() {
+          return (
+            <div
+              style={{
+                height: '100%',
+                width: '100%',
+                contain: 'layout',
+              }}
+              data-uid='pg-root'
+            >
+              <div
+                style={{
+                  height: 300,
+                  position: 'absolute',
+                  width: 300,
+                  left: 154,
+                  top: 134,
+                  backgroundColor: '#ff7262',
+                }}
+                data-uid='pg-container'
+              />
+            </div>
+          )
+        }
+        
+        `,
+      }),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString('sb/scene-1/insert-target')])
+
+    await pressKey('a')
+    await searchInFloatingMenu(editor, 'DefaultExportedComp')
+
+    expect(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))
+      .toEqual(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { Playground } from '/src/playground.js'
+import DefaultExportedComponent from '/src/playground.js'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 136,
+          top: 77,
+          width: 275,
+          height: 303,
+        }}
+      >
+        <DefaultExportedComponent />
+      </div>
+    </Scene>
+  </Storyboard>
+)
+`)
   })
 
   describe('add element to conditional', () => {
