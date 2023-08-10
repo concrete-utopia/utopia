@@ -24,6 +24,7 @@ import { mapDropNulls } from '../../../core/shared/array-utils'
 import { assertNever } from '../../../core/shared/utils'
 import type { CanvasSubstate } from '../../editor/store/store-hook-substore-types'
 import { FLEX_RESIZE_STRATEGY_ID } from '../canvas-strategies/strategies/flex-resize-strategy'
+import { treatElementAsGroupLike } from '../canvas-strategies/strategies/group-helpers'
 
 // STRATEGY GUIDELINE CONTROLS
 export const GuidelineControls = React.memo(() => {
@@ -41,7 +42,10 @@ export const GuidelineControls = React.memo(() => {
           if (measuredFrame == null || isInfinityRectangle(measuredFrame)) {
             return false
           } else {
-            return rectanglesEqual(measuredFrame, frame)
+            return (
+              rectanglesEqual(measuredFrame, frame) ||
+              treatElementAsGroupLike(store.editor.jsxMetadata, target)
+            )
           }
         })
       )
