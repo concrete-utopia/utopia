@@ -88,10 +88,19 @@ export const LeftPaneComponent = React.memo(() => {
     [setLeftPanelWidth],
   )
 
+  const codeEditorWidth = useEditorState(
+    Substores.restOfEditor,
+    (store) =>
+      store.editor.interfaceDesigner.codePaneVisible
+        ? store.editor.interfaceDesigner.codePaneWidth
+        : 0,
+    'LeftPaneComponent interfaceDesigner',
+  )
+
   const leftMenuExpanded = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.expanded,
-    'EditorComponentInner leftMenuExpanded',
+    'LeftPaneComponent leftMenuExpanded',
   )
 
   if (!leftMenuExpanded) {
@@ -105,7 +114,7 @@ export const LeftPaneComponent = React.memo(() => {
           height: 'calc(100% - 20px)',
           position: 'absolute',
           top: 0,
-          left: 0,
+          left: codeEditorWidth + 10,
           zIndex: 1,
           margin: 10,
         }}
