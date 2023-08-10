@@ -270,6 +270,7 @@ function getCandidateSelectableViews(
   childrenSelectable: boolean,
   lockedElements: LockedElements,
 ): ElementPath[] {
+  return Object.keys(componentMetadata).map(EP.fromString)
   if (allElementsDirectlySelectable) {
     return MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
       componentMetadata,

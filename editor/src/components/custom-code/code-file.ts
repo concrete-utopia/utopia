@@ -544,6 +544,18 @@ function lookupElementImport(
           )}`,
         )
       }
+    } else if (
+      importedFrom.type === 'IMPORTED_ORIGIN' &&
+      importedFrom.filePath === 'utopia-api' &&
+      importedFrom.exportedName === 'RemixContainer'
+    ) {
+      // jump to the currently active route
+      return normalisePathToUnderlyingTarget(
+        projectContents,
+        nodeModules,
+        '/src/routes/_index.js', // TODO: unhardcode
+        potentiallyDroppedFirstPathElementResult.newPath,
+      )
     } else {
       const resolutionResult = resolveModule(
         projectContents,
