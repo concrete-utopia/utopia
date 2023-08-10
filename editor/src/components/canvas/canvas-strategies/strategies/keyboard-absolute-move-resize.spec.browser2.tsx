@@ -11,11 +11,18 @@ import {
   shiftCmdModifier,
   shiftModifier,
 } from '../../../../utils/modifiers'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { selectComponents, setHighlightedView } from '../../../editor/actions/action-creators'
 import { pressKey, keyDown, keyUp } from '../../event-helpers.test-utils'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
-import { getPrintedUiJsCode, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
+import {
+  TestAppUID,
+  TestSceneUID,
+  formatTestProjectCode,
+  getPrintedUiJsCode,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+} from '../../ui-jsx.test-utils'
 import { KeyboardInteractionTimeout } from '../interaction-state'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import { AllFragmentLikeTypes } from './fragment-like-helpers'
@@ -25,6 +32,7 @@ import {
   FragmentLikeElementUid,
 } from './fragment-like-helpers.test-utils'
 import { ResizeMinimumValue } from './keyboard-absolute-resize-strategy'
+import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
 
 const defaultBBBProperties = {
   left: 0,
@@ -255,6 +263,117 @@ describe('Keyboard Absolute Resize E2E', () => {
       width: 11,
       height: 101,
     })
+  })
+
+  it('keeps trueuing up groups as directions change', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <Group
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 150,
+                height: 250,
+                backgroundColor: 'white',
+              }}
+              data-uid='group'
+            >
+              <div
+                style={{
+                  height: '100%',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 83,
+                  backgroundColor: 'blue',
+                }}
+                data-uid='left'
+              />
+              <div
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  left: 100,
+                  top: 26,
+                  width: 50,
+                  height: 16,
+                }}
+                data-uid='right'
+              />
+            </Group>
+          </div>
+        `),
+      ),
+      'await-first-dom-report',
+    )
+
+    const groupPath = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group`,
+    )
+    await renderResult.dispatch([selectComponents([groupPath], false)], true)
+
+    await keyDownArrowLeftHoldingCmd()
+    await keyDownArrowLeftHoldingCmd()
+    await keyDownArrowLeftHoldingCmd()
+    await keyDownArrowLeftHoldingCmd()
+    await keyDownArrowLeftHoldingCmd()
+    await keyDownArrowLeftHoldingCmd()
+
+    await keyDownArrowDownHoldingCmd()
+    await keyDownArrowDownHoldingCmd()
+    await keyDownArrowDownHoldingCmd()
+    await keyDownArrowDownHoldingCmd()
+    await keyDownArrowDownHoldingCmd()
+
+    clock.current.tick(KeyboardInteractionTimeout)
+
+    await wait(500)
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <Group
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 144,
+                height: 255,
+                backgroundColor: 'white',
+              }}
+              data-uid='group'
+            >
+              <div
+                style={{
+                  height: '100%',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 80,
+                  backgroundColor: 'blue',
+                }}
+                data-uid='left'
+              />
+              <div
+                style={{
+                  backgroundColor: 'red',
+                  position: 'absolute',
+                  left: 96,
+                  top: 27,
+                  width: 48,
+                  height: 16,
+                }}
+                data-uid='right'
+              />
+            </Group>
+          </div>
+        `),
+      ),
+    )
   })
 })
 
@@ -702,6 +821,10 @@ async function pressArrowLeft3x() {
   await pressKey('ArrowLeft')
   await pressKey('ArrowLeft')
   await pressKey('ArrowLeft')
+}
+
+async function keyDownArrowDownHoldingCmd() {
+  await keyDown('ArrowDown', { modifiers: cmdModifier })
 }
 
 async function pressEsc() {

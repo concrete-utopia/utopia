@@ -31,6 +31,7 @@ import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
 import type { AccumulatedPresses } from './shared-keyboard-strategy-helpers'
 import {
   accumulatePresses,
+  addOrMergeIntendedBounds,
   getKeyboardStrategyGuidelines,
   getLastKeyPressState,
   getMovementDeltaFromKey,
@@ -194,7 +195,11 @@ export function keyboardAbsoluteResizeStrategy(
               )
               commands.push(...elementResult.commands)
               if (elementResult.intendedBounds != null) {
-                intendedBounds.push(elementResult.intendedBounds)
+                intendedBounds = addOrMergeIntendedBounds(
+                  intendedBounds,
+                  originalFrame,
+                  elementResult.intendedBounds,
+                )
               }
             }
           })
