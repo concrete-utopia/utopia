@@ -164,6 +164,21 @@ export function replaceLast(
   return newHistory
 }
 
+export function replaceLastWithUpdate(
+  stateHistory: StateHistory,
+  updateEditor: (editorState: EditorState) => EditorState,
+): StateHistory {
+  const newHistory: StateHistory = {
+    previous: stateHistory.previous,
+    current: {
+      ...stateHistory.current,
+      editor: updateEditor(stateHistory.current.editor),
+    },
+    next: stateHistory.next,
+  }
+  return newHistory
+}
+
 export function init(editor: EditorState, derived: DerivedState): StateHistory {
   return {
     previous: [],
