@@ -127,46 +127,53 @@ const NothingOpenCard = React.memo(() => {
   )
 })
 
-const MaxGridHeight = 10
+const MaxGridHeight = 700
 const DesignPanelRootInner = React.memo(() => {
   const [layout, setLayout] = React.useState<Array<ReactGridLayout.Layout>>([
     {
       i: 'leftpane',
       x: 0,
       y: 0,
-      w: 2,
-      h: 10,
-      minW: 2,
-      maxW: 6,
-      minH: 1,
-      maxH: 10,
+      w: 250,
+      h: MaxGridHeight,
+      minW: 230,
+      maxW: 400,
+      minH: 10,
+      maxH: MaxGridHeight,
       resizeHandles: ['s', 'e', 'se', 'sw'],
     },
     {
       i: 'codeeditor',
-      x: 2,
+      x: 251,
       y: 0,
-      w: 4,
-      h: 10,
-      minW: 2,
-      maxW: 4,
-      minH: 1,
-      maxH: 10,
+      w: 400,
+      h: MaxGridHeight,
+      minW: 200,
+      maxW: 600,
+      minH: 10,
+      maxH: MaxGridHeight,
       resizeHandles: ['s', 'e', 'se', 'sw'],
     },
     {
       i: 'rightpane',
-      x: 10,
+      x: 1300,
       y: 0,
-      w: 2,
-      h: 10,
-      minW: 2,
-      maxW: 6,
-      minH: 1,
-      maxH: 10,
+      w: 250,
+      h: MaxGridHeight,
+      minW: 230,
+      maxW: 400,
+      minH: 10,
+      maxH: MaxGridHeight,
       resizeHandles: ['s', 'w', 'se', 'sw'],
     },
   ])
+
+  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
+  const gridSize = React.useMemo(
+    () => (canvasSize.width == 0 ? 12 : canvasSize.width),
+    [canvasSize],
+  )
+
   const lastLayoutWithMaxHeight = React.useRef<Array<ReactGridLayout.Layout>>([])
   const updateLastLayoutBeforeDrag = React.useCallback(
     (latestLayout: Array<ReactGridLayout.Layout>) => {
@@ -179,8 +186,13 @@ const DesignPanelRootInner = React.memo(() => {
       if (currentLayout == null) {
         return false
       }
-      const updatedLayout = currentLayout.reduce((working, current, i) => {
-        if (current.y + current.h > MaxGridHeight) {
+      const updateMaxHeight =
+        canvasSize.height !== 0 && currentLayout[0].maxH !== canvasSize.height
+          ? currentLayout.map((l) => ({ ...l, maxH: canvasSize.height }))
+          : currentLayout
+      // with this big grid sizes it's just not working like it should
+      const updatedLayout = updateMaxHeight.reduce((working, current, i) => {
+        if (current.y + current.h > canvasSize.height) {
           const prev = working[i - 1]
           if (prev != null && prev.h !== currentLayout[i - 1].h) {
             return [
@@ -195,20 +207,23 @@ const DesignPanelRootInner = React.memo(() => {
             ...working,
             {
               ...current,
-              h: Math.max(0, MaxGridHeight - current.y),
+              h: Math.max(0, canvasSize.height - current.y),
             },
           ]
         }
         return [...working, current]
       }, [] as ReactGridLayout.Layout[])
 
-      if (updatedLayout.some((updated, i) => updated.h !== currentLayout[i].h)) {
+      if (
+        updatedLayout.some((updated, i) => updated.h !== currentLayout[i].h) ||
+        currentLayout[0].maxH !== canvasSize.height
+      ) {
         setLayout(updatedLayout)
         return true
       }
       return false
     },
-    [setLayout],
+    [setLayout, canvasSize],
   )
 
   const onLayoutChange = React.useCallback(
@@ -218,9 +233,6 @@ const DesignPanelRootInner = React.memo(() => {
     },
     [updateNewLayoutIfItsOutOfScreen, setLayout],
   )
-
-  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
-  const gridSize = 12
 
   return (
     <>
@@ -247,9 +259,9 @@ const DesignPanelRootInner = React.memo(() => {
         <ResponsiveGridLayout
           style={{ position: 'absolute', zIndex: 1 }}
           className='layout'
-          rowHeight={canvasSize.height / gridSize} // this seems to be wrong
+          rowHeight={1} // this seems to be wrong
           width={canvasSize.width}
-          margin={[10, 10]}
+          margin={[10, 0]}
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           layouts={{ lg: layout }} // something is wrong here
