@@ -27,7 +27,7 @@ const minClusterDistance = 17 // px
 const topBarHeight = 40 // px
 const canvasToolbarSkew = topBarHeight + ElementOutisdeVisibleAreaIndicatorSize
 
-type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
+export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
 
 type ElementOutsideVisibleArea = {
   path: ElementPath
