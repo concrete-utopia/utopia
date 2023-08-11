@@ -352,6 +352,7 @@ export function flexResizeStrategy(
             pushIntendedBoundsAndUpdateGroups(
               [{ target: selectedElement, frame: newFrame }],
               'starting-metadata',
+              'resize',
             ),
             ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
           ])

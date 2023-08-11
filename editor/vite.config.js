@@ -36,6 +36,11 @@ export default defineConfig(({ mode }) => {
           '../../../utopia-vscode-common/',
         ],
       },
+      hmr: {
+        protocol: 'ws',
+        host: '0.0.0.0',
+        port: 8088,
+      },
     },
     base: '/editor/',
     resolve: {

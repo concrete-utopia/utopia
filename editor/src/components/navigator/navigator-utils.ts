@@ -5,12 +5,17 @@ import type {
   ElementInstanceMetadataMap,
   JSXConditionalExpression,
 } from '../../core/shared/element-template'
-import { hasElementsWithin, isJSXConditionalExpression } from '../../core/shared/element-template'
+import {
+  hasElementsWithin,
+  isJSXConditionalExpression,
+  isJSXMapExpression,
+} from '../../core/shared/element-template'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { foldEither, isLeft, isRight } from '../../core/shared/either'
 import type { ConditionalClauseNavigatorEntry, NavigatorEntry } from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
+  invalidOverrideNavigatorEntry,
   isConditionalClauseNavigatorEntry,
   regularNavigatorEntry,
   syntheticNavigatorEntry,
@@ -20,6 +25,7 @@ import { getCanvasRoots, getSubTree } from '../../core/shared/element-path-tree'
 import { fastForEach } from '../../core/shared/utils'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import { getConditionalClausePath } from '../../core/model/conditionals'
+import { findUtopiaCommentFlag, isUtopiaCommentFlagMapCount } from '../../core/shared/comment-flags'
 
 export function baseNavigatorDepth(path: ElementPath): number {
   // The storyboard means that this starts at -1,
@@ -80,6 +86,7 @@ export function getNavigatorTargets(
       const path = subTree.path
       const isHiddenInNavigator = EP.containsPath(path, hiddenInNavigator)
       const isConditional = MetadataUtils.isElementPathConditionalFromMetadata(metadata, path)
+      const isMap = MetadataUtils.isJSXMapExpression(path, metadata)
       navigatorTargets.push(regularNavigatorEntry(path))
       if (
         !collapsedAncestor &&
@@ -92,6 +99,14 @@ export function getNavigatorTargets(
       const isCollapsed = EP.containsPath(path, collapsedViews)
       const newCollapsedAncestor = collapsedAncestor || isCollapsed || isHiddenInNavigator
 
+      function addNavigatorTargetUnlessCollapsed(entry: NavigatorEntry) {
+        if (newCollapsedAncestor) {
+          return
+        }
+        navigatorTargets.push(entry)
+        visibleNavigatorTargets.push(entry)
+      }
+
       function walkConditionalClause(
         conditionalSubTree: ElementPathTree,
         conditional: JSXConditionalExpression,
@@ -99,14 +114,6 @@ export function getNavigatorTargets(
       ): void {
         const clauseValue =
           conditionalCase === 'true-case' ? conditional.whenTrue : conditional.whenFalse
-
-        function addNavigatorTargetUnlessCollapsed(entry: NavigatorEntry) {
-          if (newCollapsedAncestor) {
-            return
-          }
-          navigatorTargets.push(entry)
-          visibleNavigatorTargets.push(entry)
-        }
 
         // Get the clause path.
         const clausePath = getConditionalClausePath(path, clauseValue)
@@ -172,6 +179,32 @@ export function getNavigatorTargets(
           walkConditionalClause(subTree, jsxConditionalElement, 'false-case')
         } else {
           throw new Error(`Unexpected non-conditional expression retrieved at ${EP.toString(path)}`)
+        }
+      } else if (isMap) {
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
+        if (
+          elementMetadata != null &&
+          isRight(elementMetadata.element) &&
+          isJSXMapExpression(elementMetadata.element.value)
+        ) {
+          const element = elementMetadata.element.value
+          const commentFlag = findUtopiaCommentFlag(element.comments, 'map-count')
+
+          const mapCountOverride = isUtopiaCommentFlagMapCount(commentFlag)
+            ? commentFlag.value
+            : null
+          fastForEach(Object.values(subTree.children), (child) => {
+            walkAndAddKeys(child, newCollapsedAncestor)
+          })
+          if (mapCountOverride != null) {
+            for (let i = Object.values(subTree.children).length; i < mapCountOverride; i++) {
+              const entry = invalidOverrideNavigatorEntry(
+                EP.appendToPath(path, `invalid-override-${i + 1}`),
+                'data source not found',
+              )
+              addNavigatorTargetUnlessCollapsed(entry)
+            }
+          }
         }
       } else {
         fastForEach(Object.values(subTree.children), (child) => {

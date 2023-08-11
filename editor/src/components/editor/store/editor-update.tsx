@@ -106,8 +106,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_PANE(action, state)
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
       return UPDATE_FNS.RESIZE_INTERFACEDESIGNER_CODEPANE(action, state, dispatch)
-    case 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR':
-      return UPDATE_FNS.TOGGLE_INTERFACEDESIGNER_CODEEDITOR(action, state, dispatch)
     case 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS':
       return UPDATE_FNS.TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS(action, state)
     case 'OPEN_POPUP':
@@ -368,6 +366,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
       return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state)
+    case 'SET_MAP_COUNT_OVERRIDE':
+      return UPDATE_FNS.SET_MAP_COUNT_OVERRIDE(action, state)
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':

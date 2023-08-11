@@ -134,7 +134,6 @@ import type {
   ToggleCollapse,
   ToggleHidden,
   ToggleInterfaceDesignerAdditionalControls,
-  ToggleInterfaceDesignerCodeEditor,
   TogglePane,
   ToggleProperty,
   TransientActions,
@@ -216,6 +215,7 @@ import type {
   ClearPostActionSession,
   ScrollToElementBehaviour,
   OpenCodeEditor,
+  SetMapCountOverride,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -631,12 +631,6 @@ export function resizeInterfaceDesignerCodePane(
   return {
     action: 'RESIZE_INTERFACEDESIGNER_CODEPANE',
     deltaCodePaneWidth: deltaCodePaneWidth,
-  }
-}
-
-export function toggleInterfaceDesignerCodeEditor(): ToggleInterfaceDesignerCodeEditor {
-  return {
-    action: 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR',
   }
 }
 
@@ -1590,6 +1584,17 @@ export function setConditionalOverriddenCondition(
     action: 'SET_CONDITIONAL_OVERRIDDEN_CONDITION',
     target: target,
     condition: condition,
+  }
+}
+
+export function setMapCountOverride(
+  target: ElementPath,
+  value: number | null,
+): SetMapCountOverride {
+  return {
+    action: 'SET_MAP_COUNT_OVERRIDE',
+    target: target,
+    value: value,
   }
 }
 

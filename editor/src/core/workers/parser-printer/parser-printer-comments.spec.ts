@@ -1,5 +1,11 @@
+import type {
+  JSExpressionOtherJavaScript,
+  JSXElement,
+  UtopiaJSXComponent,
+} from '../../shared/element-template'
 import { forEachValue } from '../../shared/object-utils'
-import { parseThenPrint } from './parser-printer.test-utils'
+import type { ParseSuccess } from '../../shared/project-file-types'
+import { parseThenPrint, testParseModifyPrint } from './parser-printer.test-utils'
 import { applyPrettier } from 'utopia-vscode-common'
 
 describe('Parsing and printing code with comments', () => {
@@ -192,5 +198,31 @@ describe('Parsing and printing code with comments', () => {
       // Final line comment
       "
     `)
+  })
+
+  it('Correctly supports actually parsing and updating comments in JS Expressions', () => {
+    const startingCode = applyPrettier(
+      `const App = () => <div>{/* ingredients */}</div>`,
+      false,
+    ).formatted
+    testParseModifyPrint(
+      'test.jsx',
+      applyPrettier(`const App = () => <div>{/* ingredients */}</div>`, false).formatted,
+      applyPrettier(`const App = () => <div>{/* cake */}</div>`, false).formatted,
+      (parsed) => {
+        const component = (parsed as ParseSuccess).topLevelElements[0]
+        const rootElement = (component as UtopiaJSXComponent).rootElement
+        const jsxBlock = (rootElement as JSXElement).children[0] as JSExpressionOtherJavaScript
+
+        // Check the comment was parsed
+        expect(jsxBlock.comments.leadingComments[0].comment).toEqual(' ingredients ')
+
+        // Replace it
+        jsxBlock.comments.leadingComments[0].comment = ' cake '
+
+        return parsed
+      },
+      true,
+    )
   })
 })

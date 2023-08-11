@@ -28,7 +28,9 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
   const [isSliding, setIsSliding] = React.useState(false)
   const [slidingValue, setSlidingValue] = React.useState(0)
 
+  const withinChange = React.useRef(false)
   const handleBeforeChange = React.useCallback(() => {
+    withinChange.current = true
     setIsSliding(true)
     if (onDragStart != null) {
       onDragStart()
@@ -48,10 +50,15 @@ export const SliderControl: React.FunctionComponent<React.PropsWithChildren<Slid
   const onChangeFn = props.onForcedSubmitValue ?? props.onSubmitValue
   const handleOnAfterChange = React.useCallback(
     (n: number) => {
-      onChangeFn(n)
-      setIsSliding(false)
-      if (onDragEnd != null) {
-        onDragEnd()
+      // Prevents any additional triggered onAfterChange calls without a matching
+      // onBeforeChange from being actioned.
+      if (withinChange.current) {
+        withinChange.current = false
+        onChangeFn(n)
+        setIsSliding(false)
+        if (onDragEnd != null) {
+          onDragEnd()
+        }
       }
     },
     [onChangeFn, onDragEnd],

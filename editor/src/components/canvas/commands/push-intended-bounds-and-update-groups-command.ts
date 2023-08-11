@@ -5,26 +5,13 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { localRectangle, roundRectangleToNearestWhole } from '../../../core/shared/math-utils'
-import type { CanvasRectangle, LocalRectangle, Size } from '../../../core/shared/math-utils'
+import type { CanvasRectangle, Size } from '../../../core/shared/math-utils'
 import {
-  MaybeInfinityCanvasRectangle,
   boundingRectangleArray,
-  canvasRectangle,
-  canvasVector,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  magnitude,
   nullIfInfinity,
-  offsetRect,
   rectangleDifference,
-  resizeCanvasRectangle,
-  size,
   sizeFromRectangle,
-  transformFrameUsingBoundingBox,
-  vectorDifference,
 } from '../../../core/shared/math-utils'
-import { notNull } from '../../../core/shared/optics/optic-creators'
 import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
@@ -35,46 +22,47 @@ import type {
 } from '../../editor/store/editor-state'
 import { trueUpElementChanged } from '../../editor/store/editor-state'
 import type { FlexDirection } from '../../inspector/common/css-utils'
+import { isFixedHugFillModeAppliedOnAnySide } from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import {
-  allowGroupTrueUp,
-  treatElementAsGroupLike,
-} from '../canvas-strategies/strategies/group-helpers'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
 } from '../canvas-strategies/strategies/fragment-like-helpers'
-import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
+import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
-import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
 import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
-import { wildcardPatch } from './wildcard-patch-command'
 import type { FrameWithAllPoints } from './utils/group-resize-utils'
 import {
   localRectangleToSixFramePoints,
   roundSixPointFrameToNearestWhole,
   transformConstrainedLocalFullFrameUsingBoundingBox,
 } from './utils/group-resize-utils'
+import { wildcardPatch } from './wildcard-patch-command'
 
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
   isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
+  mode: PushIntendedBoundsAndUpdateGroupsMode
 }
+
+export type PushIntendedBoundsAndUpdateGroupsMode = 'move' | 'resize' | 'wrap'
 
 export function pushIntendedBoundsAndUpdateGroups(
   value: Array<CanvasFrameAndTarget>,
   isStartingMetadata: 'starting-metadata' | 'live-metadata',
+  mode: PushIntendedBoundsAndUpdateGroupsMode,
 ): PushIntendedBoundsAndUpdateGroups {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
     isStartingMetadata: isStartingMetadata,
+    mode: mode,
   }
 }
 
@@ -147,6 +135,21 @@ type LocalFrameAndTarget = {
   allSixFramePoints: FrameWithAllPoints
 }
 
+/**
+ * returns whether the given path can be used as a target for pushing intended bounds
+ * and have its frame changed when in a given mode.
+ */
+function canPushIntendedBoundsForElement(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  currentMode: PushIntendedBoundsAndUpdateGroupsMode,
+  validModes: PushIntendedBoundsAndUpdateGroupsMode[],
+): boolean {
+  return (
+    validModes.includes(currentMode) || !isFixedHugFillModeAppliedOnAnySide(metadata, path, 'hug')
+  )
+}
+
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
@@ -175,7 +178,12 @@ function getUpdateResizedGroupChildrenCommands(
         editor.jsxMetadata,
         editor.elementPathTree,
         frameAndTarget.target,
-      )
+      ).filter((path) => {
+        return canPushIntendedBoundsForElement(path, editor.jsxMetadata, command.mode, [
+          'resize',
+          'wrap',
+        ])
+      })
 
       // the original size of the group before the interaction ran
       const originalSize: Size =
@@ -252,14 +260,18 @@ function getUpdateResizedGroupChildrenCommands(
 
     updatedElements.push(elementToUpdate)
 
-    commandsToRun.push(
-      ...setElementPins(
-        elementToUpdate,
-        frameAndTarget.allSixFramePoints,
-        frameAndTarget.parentSize,
-        metadata.specialSizeMeasurements.parentFlexDirection,
-      ),
-    )
+    if (
+      canPushIntendedBoundsForElement(elementToUpdate, editor.jsxMetadata, command.mode, ['resize'])
+    ) {
+      commandsToRun.push(
+        ...setElementPins(
+          elementToUpdate,
+          frameAndTarget.allSixFramePoints,
+          frameAndTarget.parentSize,
+          metadata.specialSizeMeasurements.parentFlexDirection,
+        ),
+      )
+    }
   })
 
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)

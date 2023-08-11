@@ -21,6 +21,7 @@ import type {
   DropTargetHint,
   DropTargetType,
   EditorState,
+  InvalidOverrideNavigatorEntry,
   NavigatorEntry,
 } from '../../editor/store/editor-state'
 import {
@@ -122,6 +123,10 @@ export interface SyntheticNavigatorItemContainerProps
 export interface ConditionalClauseNavigatorItemContainerProps
   extends NavigatorItemDragAndDropWrapperPropsBase {
   navigatorEntry: ConditionalClauseNavigatorEntry
+}
+
+export interface ErrorNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
+  navigatorEntry: InvalidOverrideNavigatorEntry
 }
 
 function isDroppingToOriginalPosition(
@@ -522,18 +527,6 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props, updateDragSessionInProgress],
   )
 
-  const metadata = useEditorState(
-    Substores.metadata,
-    metadataSelector,
-    'NavigatorItemContainer metadata',
-  )
-
-  const elementPathTree = useEditorState(
-    Substores.metadata,
-    (store) => store.editor.elementPathTree,
-    'NavigatorItemDndWrapper elementPathTree',
-  )
-
   const dropTargetHint = useEditorState(
     Substores.navigator,
     (store) => store.editor.navigator.dropTargetHint,
@@ -547,24 +540,35 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   )
 
   const isFirstSibling = React.useMemo(() => {
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
+    const siblings = MetadataUtils.getSiblingsOrdered(
+      editorStateRef.current.jsxMetadata,
+      editorStateRef.current.elementPathTree,
+      props.elementPath,
+    )
     const firstSibling = siblings.at(0)
     if (firstSibling == null) {
       return false
     }
 
     return EP.pathsEqual(firstSibling.elementPath, props.elementPath)
-  }, [metadata, elementPathTree, props.elementPath])
+  }, [editorStateRef, props.elementPath])
 
+  // Note for future selves: watch out! This works because changing siblings triggers a re-render of the navigator,
+  // but if that were not to happen anymore, the references used here by the editorStateRef would not guarantee
+  // updated hook values. (https://github.com/concrete-utopia/utopia/pull/4055#discussion_r1285777910)
   const isLastSibling = React.useMemo(() => {
-    const siblings = MetadataUtils.getSiblingsOrdered(metadata, elementPathTree, props.elementPath)
+    const siblings = MetadataUtils.getSiblingsOrdered(
+      editorStateRef.current.jsxMetadata,
+      editorStateRef.current.elementPathTree,
+      props.elementPath,
+    )
     const lastSibling = siblings.at(-1)
     if (lastSibling == null) {
       return false
     }
 
     return EP.pathsEqual(lastSibling.elementPath, props.elementPath)
-  }, [metadata, elementPathTree, props.elementPath])
+  }, [editorStateRef, props.elementPath])
 
   const [{ isOver: isOverBottomHint, canDrop: canDropOnBottomHint }, bottomDropRef] = useDrop<
     NavigatorItemDragAndDropWrapperProps,
@@ -585,7 +589,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           'after',
           editorStateRef.current.jsxMetadata,
           navigatorTargets,
-          elementPathTree,
+          editorStateRef.current.elementPathTree,
           isLastSibling,
         )
       },
@@ -595,7 +599,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           dropTargetHint != null &&
           !isDroppingToOriginalPosition(
             editorStateRef.current.jsxMetadata,
-            elementPathTree,
+            editorStateRef.current.elementPathTree,
             dropTargetHint,
             props.elementPath,
             item.elementPath,
@@ -625,7 +629,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         return canDropNextTo(editorStateRef.current, target)
       },
     }),
-    [props, elementPathTree, dropTargetHint, isLastSibling],
+    [props, editorStateRef, dropTargetHint, isLastSibling],
   )
 
   const [{ isOver: isOverTopHint, canDrop: canDropOnTopHint }, topDropRef] = useDrop<
@@ -647,7 +651,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           'before',
           editorStateRef.current.jsxMetadata,
           navigatorTargets,
-          elementPathTree,
+          editorStateRef.current.elementPathTree,
           isLastSibling,
         )
       },
@@ -657,7 +661,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           dropTargetHint != null &&
           !isDroppingToOriginalPosition(
             editorStateRef.current.jsxMetadata,
-            elementPathTree,
+            editorStateRef.current.elementPathTree,
             dropTargetHint,
             props.elementPath,
             item.elementPath,
@@ -687,7 +691,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         return canDropNextTo(editorStateRef.current, target)
       },
     }),
-    [props, elementPathTree, dropTargetHint, isLastSibling],
+    [props, editorStateRef, dropTargetHint, isLastSibling],
   )
 
   const [{ canDrop: canDropParentOutline }, reparentDropRef] = useDrop<
@@ -739,10 +743,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const shouldShowTopHint =
     isOverTopHint &&
     canDropOnTopHint &&
-    !isHintDisallowed(dropTargetHint?.displayAtEntry?.elementPath ?? null, metadata)
+    !isHintDisallowed(
+      dropTargetHint?.displayAtEntry?.elementPath ?? null,
+      editorStateRef.current.jsxMetadata,
+    )
 
   const isConditionalEntry = MetadataUtils.isConditionalFromMetadata(
-    MetadataUtils.findElementByElementPath(metadata, props.elementPath),
+    MetadataUtils.findElementByElementPath(editorStateRef.current.jsxMetadata, props.elementPath),
   )
 
   const isCollapsedCondtionalEntry = isConditionalEntry ? props.collapsed : true
@@ -750,7 +757,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
   const shouldShowBottomHint =
     isOverBottomHint &&
     canDropOnBottomHint &&
-    !isHintDisallowed(props.elementPath, metadata) &&
+    !isHintDisallowed(props.elementPath, editorStateRef.current.jsxMetadata) &&
     isCollapsedCondtionalEntry
 
   const margin = (() => {
@@ -758,7 +765,9 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       return 0
     }
 
-    return getHintPaddingForDepth(navigatorDepth(dropTargetHint.targetParent, metadata))
+    return getHintPaddingForDepth(
+      navigatorDepth(dropTargetHint.targetParent, editorStateRef.current.jsxMetadata),
+    )
   })()
 
   const parentOutline = React.useMemo((): ParentOutline => {
@@ -1012,3 +1021,36 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
     )
   },
 )
+
+export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItemContainerProps) => {
+  const safeComponentId = varSafeNavigatorEntryToKey(props.navigatorEntry)
+  return (
+    <div
+      style={{
+        ...props.windowStyle,
+      }}
+    >
+      <div
+        key='navigatorItem'
+        id={`navigator-item-${safeComponentId}`}
+        data-testid={`navigator-item-${safeComponentId}`}
+      >
+        <NavigatorItem
+          navigatorEntry={props.navigatorEntry}
+          index={props.index}
+          getSelectedViewsInRange={props.getSelectedViewsInRange}
+          noOfChildren={props.noOfChildren}
+          label={props.label}
+          dispatch={props.editorDispatch}
+          isHighlighted={props.highlighted}
+          isElementVisible={props.isElementVisible}
+          renamingTarget={props.renamingTarget}
+          collapsed={props.collapsed}
+          selected={props.selected}
+          parentOutline={'none'}
+          visibleNavigatorTargets={props.visibleNavigatorTargets}
+        />
+      </div>
+    </div>
+  )
+})

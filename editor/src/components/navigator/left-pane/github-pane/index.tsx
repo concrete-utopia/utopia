@@ -83,9 +83,9 @@ const AccountBlock = () => {
         highlight
         style={{
           padding: '1em',
-          background: colorTheme.primary.value,
           borderRadius: 3,
-          color: colorTheme.fg9.value,
+          background: colorTheme.dynamicBlue.value,
+          color: colorTheme.bg1.value,
         }}
         css={{
           '&:hover': {
@@ -329,12 +329,12 @@ const BranchBlock = () => {
                     : 'pointer',
                   opacity: isListingBranches && !loadingThisBranch ? 0.5 : 1,
                   '&:hover': {
-                    background: colorTheme.primary.value,
-                    color: colorTheme.white.value,
+                    background: colorTheme.dynamicBlue.value,
+                    color: colorTheme.bg1.value,
                     svg: { stroke: colorTheme.white.value },
                   },
                   fontWeight: isCurrent ? 'bold' : 'normal',
-                  color: branch.new === true ? colorTheme.primary.value : 'inherit',
+                  color: branch.new === true ? colorTheme.dynamicBlue.value : 'inherit',
                 }}
                 onClick={selectBranch}
               >

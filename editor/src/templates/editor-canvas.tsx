@@ -667,7 +667,6 @@ interface EditorCanvasProps {
   builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch
   updateCanvasSize: (newValueOrUpdater: Size | ((oldValue: Size) => Size)) => void
-  navigatorWidth: number
 }
 
 export class EditorCanvas extends React.Component<EditorCanvasProps> {

@@ -170,21 +170,38 @@ function getJSXAttributeComments(attribute: JSExpression): ParsedComments {
   }
 }
 
-function rawCodeToExpressionStatement(
-  rawCode: string,
-): { statement: TS.ExpressionStatement; sourceFile: TS.SourceFile } | null {
-  const sourceFile = TS.createSourceFile(
-    'temporary.tsx',
-    rawCode,
-    TS.ScriptTarget.Latest,
-    undefined,
-    TS.ScriptKind.TSX,
+function rawCodeToExpressionStatement(rawCode: string): {
+  statement: TS.ExpressionStatement | TS.EmptyStatement
+  sourceFile: TS.SourceFile
+} {
+  const sourceFile = TS.createSourceFile('temporary.tsx', rawCode, TS.ScriptTarget.Latest)
+
+  const statements = flatMapArray(
+    (e) => flattenOutAnnoyingContainers(sourceFile, e),
+    sourceFile.getChildren(sourceFile),
   )
-  const topLevelStatement = sourceFile.statements[0]
+  const topLevelStatement = statements[0]
   if (topLevelStatement != null && TS.isExpressionStatement(topLevelStatement)) {
-    return { statement: topLevelStatement, sourceFile: sourceFile }
+    const innerExpression = topLevelStatement.expression
+
+    // This is horrible, and who knows how long it will work for. When adding comments to a node later
+    // on, TS will check if the node was parsed or synthesized. If it was parsed, TS will then attempt
+    // to look for the SourceFile for that node. In this case, the node is parsed, but TS will fail to
+    // find the SourceFile. Why? I have no idea. But, if we "adjust" the flags to mark the node as
+    // synthesized, TS will gladly add comments to it.
+    const unparsedExpression: TS.Expression = {
+      ...innerExpression,
+      flags: innerExpression.flags + TS.NodeFlags.Synthesized,
+    }
+    return {
+      statement: TS.factory.updateExpressionStatement(topLevelStatement, unparsedExpression),
+      sourceFile: sourceFile,
+    }
   } else {
-    return null
+    return {
+      statement: TS.factory.createEmptyStatement(),
+      sourceFile: sourceFile,
+    }
   }
 }
 
@@ -233,10 +250,16 @@ function jsxAttributeToExpression(attribute: JSExpression): TS.Expression {
         return TS.createArrayLiteral(arrayExpressions)
       case 'JSX_MAP_EXPRESSION':
       case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-        const maybeExpressionStatement = rawCodeToExpressionStatement(attribute.javascript)
-        return maybeExpressionStatement == null
-          ? TS.createNull()
-          : maybeExpressionStatement.statement.expression
+        const maybeExpressionStatement = rawCodeToExpressionStatement(
+          attribute.javascript,
+        ).statement
+        if (TS.isExpressionStatement(maybeExpressionStatement)) {
+          const expression = maybeExpressionStatement.expression
+          addCommentsToNode(expression, attribute.comments)
+          return expression
+        } else {
+          return TS.factory.createNull()
+        }
       case 'ATTRIBUTE_FUNCTION_CALL':
         return buildPropertyCallingFunction(attribute.functionName, attribute.parameters)
       default:
@@ -310,7 +333,7 @@ function updateJSXElementsWithin(
     if (TS.isJsxElement(node)) {
       const newNode = streamlineInElementsWithin(node.openingElement.attributes, node)
       if (TS.isJsxElement(newNode)) {
-        return TS.updateJsxElement(
+        return TS.factory.updateJsxElement(
           node,
           newNode.openingElement,
           newNode.children,
@@ -322,7 +345,12 @@ function updateJSXElementsWithin(
     } else if (TS.isJsxSelfClosingElement(node)) {
       const newNode = streamlineInElementsWithin(node.attributes, node)
       if (TS.isJsxSelfClosingElement(newNode)) {
-        return TS.updateJsxSelfClosingElement(node, newNode.tagName, undefined, newNode.attributes)
+        return TS.factory.updateJsxSelfClosingElement(
+          node,
+          newNode.tagName,
+          undefined,
+          newNode.attributes,
+        )
       } else {
         return newNode
       }
@@ -463,31 +491,26 @@ function jsxElementToExpression(
     case 'ATTRIBUTE_OTHER_JAVASCRIPT': {
       if (parentIsJSX) {
         const maybeExpressionStatement = rawCodeToExpressionStatement(element.javascript)
-        let rawCode: string = element.javascript // Fallback for the case where the code is simply a comment
-        if (maybeExpressionStatement != null) {
-          const { statement, sourceFile } = maybeExpressionStatement
-          const lastToken = statement.getLastToken(sourceFile)
-          const finalComments =
-            lastToken == null
-              ? emptyComments
-              : parsedComments([], getLeadingComments(element.javascript, lastToken))
+        const { statement, sourceFile } = maybeExpressionStatement
 
-          const updatedStatement = updateJSXElementsWithin(
-            statement.expression,
-            element.elementsWithin,
-            imports,
-            stripUIDs,
-          )
-          addCommentsToNode(updatedStatement, finalComments)
-          rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
-            TS.EmitHint.Unspecified,
-            updatedStatement,
-            sourceFile,
-          )
-        }
+        const targetNode = TS.isExpressionStatement(statement)
+          ? updateJSXElementsWithin(
+              statement.expression,
+              element.elementsWithin,
+              imports,
+              stripUIDs,
+            )
+          : statement
+
+        addCommentsToNode(targetNode, element.comments)
+        const rawCode = TS.createPrinter({ omitTrailingSemicolon: true }).printNode(
+          TS.EmitHint.Unspecified,
+          targetNode,
+          sourceFile,
+        )
 
         // By creating a `JsxText` element containing the raw code surrounded by braces, we can print the code directly
-        return TS.createJsxText(`{${rawCode}}`)
+        return TS.factory.createJsxText(`{${rawCode}}`)
       } else {
         return jsxAttributeToExpression(element)
       }

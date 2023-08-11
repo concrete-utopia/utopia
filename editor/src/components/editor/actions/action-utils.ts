@@ -53,7 +53,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
     case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
-    case 'TOGGLE_INTERFACEDESIGNER_CODEEDITOR':
     case 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS':
     case 'SET_CURSOR_OVERLAY':
     case 'SET_NAVIGATOR_RENAMING_TARGET':
@@ -192,6 +191,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'APPLY_COMMANDS':
     case 'UPDATE_COLOR_SWATCHES':
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
+    case 'SET_MAP_COUNT_OVERRIDE':
     case 'SWITCH_CONDITIONAL_BRANCHES':
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
     case 'CUT_SELECTION_TO_CLIPBOARD':

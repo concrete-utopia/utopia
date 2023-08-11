@@ -1490,8 +1490,13 @@ describe('inspector tests with real metadata', () => {
     await act(async () => {
       await screen.findByTestId('target-selector-style')
       fireEvent.click(screen.getByTestId('target-selector'))
+    })
+    await act(async () => {
       await screen.findByTestId('target-list-item-css')
       fireEvent.mouseDown(screen.getByTestId('target-list-item-css'))
+    })
+
+    await act(async () => {
       await screen.findByTestId('target-selector-css')
     })
 
@@ -1584,8 +1589,12 @@ describe('inspector tests with real metadata', () => {
     await act(async () => {
       await screen.findByTestId('target-selector-style')
       fireEvent.click(screen.getByTestId('target-selector'))
+    })
+    await act(async () => {
       await screen.findByTestId('target-list-item-css')
       fireEvent.mouseDown(screen.getByTestId('target-list-item-css'))
+    })
+    await act(async () => {
       await screen.findByTestId('target-selector-css')
     })
 

@@ -385,7 +385,7 @@ const ProblemsHeaderRow = React.memo((props: ProblemsHeaderRowProps) => {
   const { fileName } = props
   return (
     <FlexRow style={{ height: ProblemsHeaderRowHeight, padding: '4px 8px' }}>
-      <Icons.React />
+      <Icons.React color='dynamic' />
       <span style={{ marginLeft: 4 }}> {fileName}</span>
     </FlexRow>
   )

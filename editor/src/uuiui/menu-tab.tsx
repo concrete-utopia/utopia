@@ -36,7 +36,7 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
       transition: 'all .05s ease-in-out',
       '&:hover': {
         backgroundColor: colorTheme.tabHoveredBackground.value,
-        boxShadow: `inset 0px -2px 0px 0px ${colorTheme.primary.value}`,
+        boxShadow: `inset 0px -2px 0px 0px ${colorTheme.dynamicBlue.value}`,
       },
       cursor: 'pointer',
       flexGrow: 1,
@@ -44,7 +44,7 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
     }
 
     const selectionHandlingStyle = {
-      boxShadow: selected ? `inset 0px -2px 0px 0px ${colorTheme.primary.value}` : undefined,
+      boxShadow: selected ? `inset 0px -2px 0px 0px ${colorTheme.dynamicBlue.value}` : undefined,
       color: hasErrorMessages
         ? colorTheme.errorForeground.value
         : colorTheme.tabSelectedForeground.value,

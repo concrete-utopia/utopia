@@ -35,12 +35,14 @@ import type {
 } from '../../editor/store/store-hook-substore-types'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
+  ErrorNavigatorItemContainerProps,
   NavigatorItemDragAndDropWrapperProps,
   NavigatorItemDragAndDropWrapperPropsBase,
   SyntheticNavigatorItemContainerProps,
 } from './navigator-item-dnd-container'
 import {
   ConditionalClauseNavigatorItemContainer,
+  ErrorNavigatorItemContainer,
   NavigatorItemContainer,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
@@ -170,6 +172,8 @@ export function getNavigatorEntryLabel(
           throw assertNever(navigatorEntry.childOrAttribute)
       }
     }
+    case 'INVALID_OVERRIDE':
+      return navigatorEntry.message
     default:
       assertNever(navigatorEntry)
   }
@@ -208,14 +212,16 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     'NavigatorItemWrapper elementSupportsChildren',
   )
 
-  const parentElement = useEditorState(
+  const maybeParentConditional = useEditorState(
     Substores.metadata,
     (store) =>
-      MetadataUtils.findElementByElementPath(
-        store.editor.jsxMetadata,
-        EP.parentPath(props.navigatorEntry.elementPath),
+      maybeConditionalExpression(
+        MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          EP.parentPath(props.navigatorEntry.elementPath),
+        ),
       ),
-    'NavigatorItemWrapper parentElement',
+    'NavigatorItemWrapper maybeParentConditional',
   )
 
   function isNullConditionalBranch(
@@ -238,7 +244,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
   const canReparentInto =
     elementSupportsChildren ||
     isConditionalClauseNavigatorEntry(props.navigatorEntry) ||
-    isNullConditionalBranch(props.navigatorEntry, maybeConditionalExpression(parentElement))
+    isNullConditionalBranch(props.navigatorEntry, maybeParentConditional)
 
   const labelForTheElement = useEditorState(
     Substores.metadata,
@@ -339,6 +345,15 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       navigatorEntry: props.navigatorEntry,
     }
     return <ConditionalClauseNavigatorItemContainer {...entryProps} />
+  }
+
+  if (props.navigatorEntry.type === 'INVALID_OVERRIDE') {
+    const entryProps: ErrorNavigatorItemContainerProps = {
+      ...navigatorItemProps,
+      navigatorEntry: props.navigatorEntry,
+    }
+
+    return <ErrorNavigatorItemContainer {...entryProps} />
   }
 
   assertNever(props.navigatorEntry)

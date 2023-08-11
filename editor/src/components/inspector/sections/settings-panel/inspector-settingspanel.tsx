@@ -34,7 +34,7 @@ export const SettingsPanel = React.memo(() => {
   )
   const navigatorMinimised = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.navigator.minimised,
+    (store) => !store.editor.leftMenu.expanded,
     'SettingsPanel navigator.minimised',
   )
 
@@ -45,11 +45,11 @@ export const SettingsPanel = React.memo(() => {
   )
 
   const toggleCodeEditorVisible = React.useCallback(() => {
-    dispatch([EditorActions.toggleInterfaceDesignerCodeEditor()])
+    dispatch([EditorActions.togglePanel('codeEditor')])
   }, [dispatch])
 
   const toggleNavigatorVisible = React.useCallback(() => {
-    dispatch([EditorActions.togglePanel('navigator')])
+    dispatch([EditorActions.togglePanel('leftmenu')])
   }, [dispatch])
 
   const toggleInspectorVisible = React.useCallback(() => {

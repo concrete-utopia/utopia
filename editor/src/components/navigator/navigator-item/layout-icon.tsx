@@ -1,6 +1,9 @@
 import React from 'react'
 import type { ElementWarnings, NavigatorEntry } from '../../../components/editor/store/editor-state'
-import { navigatorEntryToKey } from '../../../components/editor/store/editor-state'
+import {
+  isInvalidOverrideNavigatorEntry,
+  navigatorEntryToKey,
+} from '../../../components/editor/store/editor-state'
 import type { IcnProps } from '../../../uuiui'
 import { colorTheme } from '../../../uuiui'
 import { Icn, Icons } from '../../../uuiui'
@@ -64,7 +67,15 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         color: color,
         style: { opacity: 'var(--iconOpacity)' },
       }
-      if (warningText == null) {
+      if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
+        return (
+          <Icons.WarningTriangle
+            color={'overridden'}
+            tooltipText={navigatorEntry.message}
+            testId={iconTestId}
+          />
+        )
+      } else if (warningText == null) {
         return <Icn {...defaults} testId={iconTestId} />
       } else if (isErroredGroup) {
         return (
@@ -75,7 +86,15 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
       } else {
         return <WarningIcon tooltipText={warningText} testId={iconTestId} />
       }
-    }, [isErroredGroup, isErroredGroupChild, warningText, iconProps, color, iconTestId])
+    }, [
+      isErroredGroup,
+      isErroredGroupChild,
+      warningText,
+      iconProps,
+      color,
+      iconTestId,
+      navigatorEntry,
+    ])
 
     const marker = React.useMemo(() => {
       if (warningText != null && isErroredGroupChild) {

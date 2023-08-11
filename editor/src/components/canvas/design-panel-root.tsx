@@ -4,12 +4,7 @@ import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
-import {
-  ConsoleLog,
-  LeftPaneDefaultWidth,
-  RightMenuTab,
-  NavigatorWidthAtom,
-} from '../editor/store/editor-state'
+import { ConsoleLog, RightMenuTab } from '../editor/store/editor-state'
 
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
@@ -26,13 +21,10 @@ import {
   useColorTheme,
   Icons,
   LargerIcons,
-  ResizableFlexColumn,
 } from '../../uuiui'
 
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
-import { usePubSubAtom } from '../../core/shared/atom-with-pub-sub'
-import CanvasActions from './canvas-actions'
 import { canvasPoint } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
@@ -42,6 +34,7 @@ import { when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
+import { LeftPaneComponent } from '../navigator/left-pane'
 
 interface NumberSize {
   width: number
@@ -131,94 +124,6 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const dispatch = useDispatch()
-  const interfaceDesigner = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.interfaceDesigner,
-    'DesignPanelRoot interfaceDesigner',
-  )
-
-  const colorTheme = useColorTheme()
-  const [codeEditorResizingWidth, setCodeEditorResizingWidth] = React.useState<number | null>(
-    interfaceDesigner.codePaneWidth,
-  )
-  const navigatorVisible = useEditorState(
-    Substores.restOfEditor,
-    (store) => !store.editor.navigator.minimised,
-    'DesignPanelRoot navigatorVisible',
-  )
-
-  const isRightMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.rightMenu.expanded,
-    'DesignPanelRoot isRightMenuExpanded',
-  )
-
-  const rightMenuSelectedTab = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.rightMenu.selectedTab,
-    'DesignPanelRoot rightMenuSelectedTab',
-  )
-
-  const leftMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'EditorComponentInner leftMenuExpanded',
-  )
-
-  const isCanvasVisible = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.visible,
-    'design panel root',
-  )
-
-  const codeEditorEnabled = isCodeEditorEnabled()
-
-  const isInsertMenuSelected = rightMenuSelectedTab === RightMenuTab.Insert
-
-  const updateDeltaWidth = React.useCallback(
-    (deltaWidth: number) => {
-      dispatch([EditorActions.resizeInterfaceDesignerCodePane(deltaWidth)])
-    },
-    [dispatch],
-  )
-
-  const onResizeStop = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      updateDeltaWidth(delta.width)
-    },
-    [updateDeltaWidth],
-  )
-
-  const onResize = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      if (navigatorVisible) {
-        setCodeEditorResizingWidth(interfaceDesigner.codePaneWidth + delta.width)
-      }
-    },
-    [interfaceDesigner, navigatorVisible],
-  )
-
-  const [navigatorWidth, setNavigatorWidth] = usePubSubAtom(NavigatorWidthAtom)
-
-  const onNavigatorResizeStop = React.useCallback<ResizeCallback>(
-    (_event, _direction, _ref, delta) => {
-      setNavigatorWidth((currentWidth) => currentWidth + delta.width)
-      dispatch([CanvasActions.scrollCanvas(canvasPoint({ x: -delta.width, y: 0 }))])
-    },
-    [setNavigatorWidth, dispatch],
-  )
-
   return (
     <>
       <SimpleFlexRow
@@ -232,64 +137,7 @@ const DesignPanelRootInner = React.memo(() => {
           flexShrink: 0,
         }}
       >
-        {!isCanvasVisible && !interfaceDesigner.codePaneVisible ? (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              top: 0,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <NothingOpenCard />
-          </div>
-        ) : null}
-        <SimpleFlexColumn style={{ flexGrow: isCanvasVisible ? undefined : 1 }}>
-          <Resizable
-            defaultSize={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
-            }}
-            size={{
-              width: isCanvasVisible ? interfaceDesigner.codePaneWidth : '100%',
-              height: '100%',
-            }}
-            onResizeStop={onResizeStop}
-            onResize={onResize}
-            enable={{
-              top: false,
-              right: isCanvasVisible,
-              bottom: false,
-              topRight: false,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }}
-            className='resizableFlexColumnCanvasCode'
-            style={{
-              ...UtopiaStyles.flexColumn,
-              display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-              width: isCanvasVisible ? undefined : interfaceDesigner.codePaneWidth,
-              height: '100%',
-              position: 'relative',
-              overflow: 'hidden',
-              justifyContent: 'stretch',
-              alignItems: 'stretch',
-              borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
-            }}
-          >
-            {when(codeEditorEnabled, <CodeEditorWrapper />)}
-            <ConsoleAndErrorsPane />
-          </Resizable>
-        </SimpleFlexColumn>
-
-        {isCanvasVisible ? (
+        {
           <SimpleFlexColumn
             style={{
               flexGrow: 1,
@@ -297,44 +145,13 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
-            {isCanvasVisible && navigatorVisible ? (
-              <div
-                style={{
-                  height: 'calc(100% - 20px)',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  zIndex: 1,
-                  margin: 10,
-                }}
-              >
-                <ResizableFlexColumn
-                  onResizeStop={onNavigatorResizeStop}
-                  defaultSize={{
-                    width: navigatorWidth,
-                    height: '100%',
-                  }}
-                  style={{
-                    overscrollBehavior: 'contain',
-                    backgroundColor: colorTheme.inspectorBackground.value,
-                    borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-                    overflow: 'scroll',
-                    boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
-                  }}
-                >
-                  <NavigatorComponent />
-                </ResizableFlexColumn>
-              </div>
-            ) : null}
-
+            <CodeEditorPane />
+            <LeftPaneComponent />
             <CanvasWrapperComponent />
             <FloatingInsertMenu />
-
-            {isCanvasVisible && isRightMenuExpanded ? (
-              <ResizableInspectorPane isInsertMenuSelected={isInsertMenuSelected} />
-            ) : null}
+            <ResizableRightPane />
           </SimpleFlexColumn>
-        ) : null}
+        }
       </SimpleFlexRow>
     </>
   )
@@ -359,10 +176,7 @@ export const DesignPanelRoot = React.memo(() => {
 })
 DesignPanelRoot.displayName = 'DesignPanelRoot'
 
-interface ResizableInspectorPaneProps {
-  isInsertMenuSelected: boolean
-}
-const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) => {
+const ResizableRightPane = React.memo(() => {
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
@@ -378,8 +192,24 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
     }
   }, [updateInspectorWidth])
 
+  const selectedTab = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.rightMenu.selectedTab,
+    'ResizableRightPane selectedTab',
+  )
+
+  const isRightMenuExpanded = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.rightMenu.expanded,
+    'DesignPanelRoot isRightMenuExpanded',
+  )
+  if (!isRightMenuExpanded) {
+    return null
+  }
+
   return (
     <div
+      id='inspector-root'
       style={{
         height: 'calc(100% - 20px)',
         position: 'absolute',
@@ -426,9 +256,81 @@ const ResizableInspectorPane = React.memo<ResizableInspectorPaneProps>((props) =
             flexShrink: 0,
           }}
         >
-          {props.isInsertMenuSelected ? <InsertMenuPane /> : <InspectorEntryPoint />}
+          {selectedTab === RightMenuTab.Insert && <InsertMenuPane />}
+          {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
         </SimpleFlexRow>
         <CanvasStrategyInspector />
+      </Resizable>
+    </div>
+  )
+})
+
+const CodeEditorPane = React.memo(() => {
+  const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
+  const interfaceDesigner = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.interfaceDesigner,
+    'CodeEditorPane interfaceDesigner',
+  )
+
+  const codeEditorEnabled = isCodeEditorEnabled()
+  const onResizeStop = React.useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      direction: ResizeDirection,
+      elementRef: HTMLElement,
+      delta: NumberSize,
+    ) => {
+      dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
+    },
+    [dispatch],
+  )
+
+  return (
+    <div
+      style={{
+        height: 'calc(100% - 20px)',
+        position: 'absolute',
+        margin: 10,
+        zIndex: 1,
+      }}
+    >
+      <Resizable
+        defaultSize={{
+          width: interfaceDesigner.codePaneWidth,
+          height: '100%',
+        }}
+        size={{
+          width: interfaceDesigner.codePaneWidth,
+          height: '100%',
+        }}
+        onResizeStop={onResizeStop}
+        enable={{
+          top: false,
+          right: true,
+          bottom: false,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false,
+        }}
+        className='resizableFlexColumnCanvasCode'
+        style={{
+          ...UtopiaStyles.flexColumn,
+          display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+          width: interfaceDesigner.codePaneWidth,
+          height: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+          justifyContent: 'stretch',
+          alignItems: 'stretch',
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        }}
+      >
+        {when(codeEditorEnabled, <CodeEditorWrapper />)}
+        <ConsoleAndErrorsPane />
       </Resizable>
     </div>
   )
