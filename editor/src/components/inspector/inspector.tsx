@@ -440,7 +440,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       style={{
         width: '100%',
         position: 'relative',
-        color: colorTheme.neutralForeground.value,
         height: '100%',
       }}
       onFocus={onFocus}

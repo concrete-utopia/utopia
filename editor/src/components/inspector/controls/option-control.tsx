@@ -66,7 +66,7 @@ export const OptionControl: React.FunctionComponent<
     if (props.controlStatus === 'overridden' && props.value) {
       return colorTheme.brandNeonPink10.value
     } else if (props.value) {
-      return colorTheme.unavailableGrey10.value
+      return colorTheme.bg2.value
     } else {
       return 'transparent'
     }
@@ -92,10 +92,8 @@ export const OptionControl: React.FunctionComponent<
           data-ischecked={isChecked}
           data-controlstatus={props.controlStatus}
           css={{
-            boxShadow: isChecked
-              ? undefined
-              : `0 0 0 1px ${colorTheme.unavailableGrey10.value} inset`,
-            backgroundColor: props.value ? colorTheme.unavailableGrey10.value : 'transparent',
+            border: isChecked ? undefined : `1px solid ${colorTheme.bg2.value}`,
+            backgroundColor: props.value ? colorTheme.bg2.value : 'transparent',
             background: background,
             color:
               isChecked && props.controlStatus === 'overridden'
