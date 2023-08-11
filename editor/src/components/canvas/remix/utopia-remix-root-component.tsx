@@ -156,6 +156,7 @@ export const UtopiaRemixRootComponent = React.memo(() => {
         routesResult.push({
           ...routeFromEntry(route),
           loader: module.exports.loader != null ? module.exports.loader : undefined,
+          action: module.exports.action != null ? module.exports.action : undefined,
         })
       } catch (e) {
         console.error(e)
@@ -176,9 +177,6 @@ export const UtopiaRemixRootComponent = React.memo(() => {
       }
     })
   }, [location, router])
-
-  const onClickBack = React.useCallback(() => router.navigate(-1), [router])
-  const onClickForward = React.useCallback(() => router.navigate(1), [router])
 
   return (
     <RemixContext.Provider
