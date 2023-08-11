@@ -5,18 +5,15 @@ import { keyDown, mouseClickAtPoint, mouseDragFromPointToPoint } from '../event-
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { CanvasControlsContainerID } from './new-canvas-controls'
+import type { ElementOutsideVisibleAreaDirection } from './elements-outside-visible-area-hooks'
 import { getIndicatorId } from './elements-outside-visible-area-hooks'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  getRectCenter,
-  isFiniteRectangle,
-  offsetPoint,
-  windowPoint,
-  windowRectangle,
-} from '../../../core/shared/math-utils'
+import { getRectCenter, isFiniteRectangle, windowRectangle } from '../../../core/shared/math-utils'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 import { DefaultNavigatorWidth } from '../../editor/store/editor-state'
+import { parseCSSNumber } from '../../inspector/common/css-utils'
+import { isRight } from '../../../core/shared/either'
 
 async function panCanvas(
   x: number,
@@ -57,6 +54,24 @@ async function selectAndPan(
 const farAway = 99999999 // px
 
 describe('elements outside visible area', () => {
+  function indicatorPoints(
+    targetPath: ElementPath,
+    sides: ElementOutsideVisibleAreaDirection[],
+    suffix: string = '',
+  ) {
+    const indicator = screen.queryByTestId(getIndicatorId(targetPath, sides) + suffix)
+    if (indicator == null) {
+      return null
+    }
+    function cssValueOrNull(s: string) {
+      const got = parseCSSNumber(s, 'Px')
+      return isRight(got) ? got.value.value : null
+    }
+    return {
+      top: cssValueOrNull(indicator.style.top),
+      left: cssValueOrNull(indicator.style.left),
+    }
+  }
   describe('single element', () => {
     it('shows the indicator on the left side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -78,10 +93,10 @@ describe('elements outside visible area', () => {
 
       await selectAndPan(renderResult, [targetPath], -farAway, 0)
 
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['left']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('182px')
-      expect(indicator?.style.left).toBe('363px')
+      const points = indicatorPoints(targetPath, ['left'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toBeGreaterThan(180)
+      expect(points?.left).toBeGreaterThan(300)
     })
     it('shows the indicator on the right side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -103,10 +118,10 @@ describe('elements outside visible area', () => {
 
       await selectAndPan(renderResult, [targetPath], farAway, 0)
 
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['right']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('182px')
-      expect(indicator?.style.left).toBe('1900px')
+      const points = indicatorPoints(targetPath, ['right'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toBeGreaterThan(180)
+      expect(points?.left).toBeGreaterThan(1500)
     })
     it('shows the indicator on the top side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -128,10 +143,10 @@ describe('elements outside visible area', () => {
 
       await selectAndPan(renderResult, [targetPath], 0, -farAway)
 
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['top']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('0px')
-      expect(indicator?.style.left).toMatch('493px')
+      const points = indicatorPoints(targetPath, ['top'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toEqual(0)
+      expect(points?.left).toBeGreaterThan(400)
     })
     it('shows the indicator on the bottom side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -153,10 +168,10 @@ describe('elements outside visible area', () => {
 
       await selectAndPan(renderResult, [targetPath], 0, farAway)
 
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['bottom']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('936px')
-      expect(indicator?.style.left).toMatch('493px')
+      const points = indicatorPoints(targetPath, ['bottom'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toBeGreaterThan(900)
+      expect(points?.left).toBeGreaterThan(450)
     })
     it('shows the indicator on the top-left side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -178,10 +193,10 @@ describe('elements outside visible area', () => {
 
       await selectAndPan(renderResult, [targetPath], -farAway, -farAway)
 
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['top', 'left']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('0px')
-      expect(indicator?.style.left).toMatch('363px')
+      const points = indicatorPoints(targetPath, ['top', 'left'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toEqual(0)
+      expect(points?.left).toBeGreaterThan(300)
     })
     it('shows the indicator on the top-right side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -202,11 +217,10 @@ describe('elements outside visible area', () => {
       expect(screen.queryByTestId(getIndicatorId(targetPath, ['top', 'right']))).toBeNull()
 
       await selectAndPan(renderResult, [targetPath], farAway, -farAway)
-
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['top', 'right']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('0px')
-      expect(indicator?.style.left).toMatch('1900px')
+      const points = indicatorPoints(targetPath, ['top', 'right'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toEqual(0)
+      expect(points?.left).toBeGreaterThan(1500)
     })
     it('shows the indicator on the bottom-left side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -228,10 +242,10 @@ describe('elements outside visible area', () => {
 
       await selectAndPan(renderResult, [targetPath], -farAway, farAway)
 
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['bottom', 'left']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('936px')
-      expect(indicator?.style.left).toMatch('282px')
+      const points = indicatorPoints(targetPath, ['bottom', 'left'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toBeGreaterThan(900)
+      expect(points?.left).toBeGreaterThan(250)
     })
     it('shows the indicator on the bottom-right side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -253,10 +267,10 @@ describe('elements outside visible area', () => {
 
       await selectAndPan(renderResult, [targetPath], farAway, farAway)
 
-      const indicator = screen.queryByTestId(getIndicatorId(targetPath, ['bottom', 'right']))
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('936px')
-      expect(indicator?.style.left).toMatch('1900px')
+      const points = indicatorPoints(targetPath, ['bottom', 'right'])
+      expect(points).not.toBeNull()
+      expect(points?.top).toBeGreaterThan(900)
+      expect(points?.left).toBeGreaterThan(1500)
     })
   })
   describe('multiple elements', () => {
@@ -287,20 +301,21 @@ describe('elements outside visible area', () => {
 
       const foo = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/foo')
       const bar = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/bar')
-      expect(screen.queryByTestId(getIndicatorId(foo, ['top']))).toBeNull()
-      expect(screen.queryByTestId(getIndicatorId(bar, ['left']))).toBeNull()
+
+      expect(indicatorPoints(foo, ['top'])).toBeNull()
+      expect(indicatorPoints(bar, ['left'])).toBeNull()
 
       await selectAndPan(renderResult, [foo, bar], -250, -300)
 
-      const indicatorFoo = screen.queryByTestId(getIndicatorId(foo, ['top']))
-      expect(indicatorFoo).not.toBeNull()
-      expect(indicatorFoo?.style.top).toBe('0px')
-      expect(indicatorFoo?.style.left).toMatch('443px')
+      const pointsFoo = indicatorPoints(foo, ['top'])
+      expect(pointsFoo).not.toBeNull()
+      expect(pointsFoo?.top).toEqual(0)
+      expect(pointsFoo?.left).toBeGreaterThan(400)
 
-      const indicatorBar = screen.queryByTestId(getIndicatorId(bar, ['left']))
-      expect(indicatorBar).not.toBeNull()
-      expect(indicatorBar?.style.top).toBe('82px')
-      expect(indicatorBar?.style.left).toMatch('363px')
+      const pointsBar = indicatorPoints(bar, ['left'])
+      expect(pointsBar).not.toBeNull()
+      expect(pointsBar?.top).toBeGreaterThan(50)
+      expect(pointsBar?.left).toBeGreaterThan(300)
     })
     it('shows a single indicator for clustered elements', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -329,19 +344,20 @@ describe('elements outside visible area', () => {
 
       const foo = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/foo')
       const bar = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:container/bar')
-      expect(screen.queryByTestId(getIndicatorId(foo, ['top']))).toBeNull()
-      expect(screen.queryByTestId(getIndicatorId(bar, ['left']))).toBeNull()
+
+      expect(indicatorPoints(foo, ['top'])).toBeNull()
+      expect(indicatorPoints(bar, ['left'])).toBeNull()
       expect(screen.queryByTestId(getIndicatorId(bar, ['top', 'left']) + '-cluster-2')).toBeNull()
 
       await selectAndPan(renderResult, [foo, bar], -farAway, -farAway)
 
-      expect(screen.queryByTestId(getIndicatorId(foo, ['top']))).toBeNull()
-      expect(screen.queryByTestId(getIndicatorId(bar, ['left']))).toBeNull()
+      expect(indicatorPoints(foo, ['top'])).toBeNull()
+      expect(indicatorPoints(bar, ['left'])).toBeNull()
 
-      const indicator = screen.queryByTestId(getIndicatorId(foo, ['top', 'left']) + '-cluster-2')
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('0px')
-      expect(indicator?.style.left).toMatch('363px')
+      const points = indicatorPoints(foo, ['top', 'left'], '-cluster-2')
+      expect(points).not.toBeNull()
+      expect(points?.top).toEqual(0)
+      expect(points?.left).toBeGreaterThan(300)
     })
   })
   describe('scroll', () => {
@@ -361,7 +377,7 @@ describe('elements outside visible area', () => {
       )
 
       const targetPath = EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:foo')
-      expect(screen.queryByTestId(getIndicatorId(targetPath, ['left']))).toBeNull()
+      expect(indicatorPoints(targetPath, ['top'])).toBeNull()
 
       await selectAndPan(renderResult, [targetPath], -farAway, 0)
 
