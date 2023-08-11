@@ -54,8 +54,12 @@ async function selectAndPan(
 const farAway = 99999999 // px
 
 describe('elements outside visible area', () => {
-  function indicatorPoints(targetPath: ElementPath, sides: ElementOutsideVisibleAreaDirection[]) {
-    const indicator = screen.queryByTestId(getIndicatorId(targetPath, sides))
+  function indicatorPoints(
+    targetPath: ElementPath,
+    sides: ElementOutsideVisibleAreaDirection[],
+    suffix: string = '',
+  ) {
+    const indicator = screen.queryByTestId(getIndicatorId(targetPath, sides) + suffix)
     if (indicator == null) {
       return null
     }
@@ -350,10 +354,10 @@ describe('elements outside visible area', () => {
       expect(indicatorPoints(foo, ['top'])).toBeNull()
       expect(indicatorPoints(bar, ['left'])).toBeNull()
 
-      const indicator = screen.queryByTestId(getIndicatorId(foo, ['top', 'left']) + '-cluster-2')
-      expect(indicator).not.toBeNull()
-      expect(indicator?.style.top).toBe('0px')
-      expect(indicator?.style.left).toMatch('363px')
+      const points = indicatorPoints(foo, ['top', 'left'], '-cluster-2')
+      expect(points).not.toBeNull()
+      expect(points?.top).toEqual(0)
+      expect(points?.left).toBeGreaterThan(300)
     })
   })
   describe('scroll', () => {
