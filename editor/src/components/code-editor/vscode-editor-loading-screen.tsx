@@ -1,7 +1,7 @@
 import React from 'react'
 import { Global, css } from '@emotion/react'
 import { Substores, useEditorState } from '../editor/store/store-hook'
-import { colorTheme } from '../../uuiui'
+import { useColorTheme } from '../../uuiui'
 
 const SampleCode = [
   {
@@ -91,6 +91,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
     (store) => store.editor.vscodeLoadingScreenVisible,
     'VSCodeIframeContainer',
   )
+  const colorTheme = useColorTheme()
   if (!vscodeLoadingScreenVisible) {
     return null
   }
@@ -103,6 +104,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
         display: 'flex',
         flexDirection: 'column',
         fontFamily: '-apple-system, system-ui, sans-serif',
+        backgroundColor: colorTheme.inspectorBackground.value,
       }}
       id={VSCodeLoadingScreenID}
     >
