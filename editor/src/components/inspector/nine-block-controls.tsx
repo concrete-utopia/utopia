@@ -3,7 +3,7 @@ import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import type { Size } from '../../core/shared/math-utils'
 import { size } from '../../core/shared/math-utils'
-import { useColorTheme } from '../../uuiui'
+import { UtopiaTheme, colorTheme, useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FlexDirection } from './common/css-utils'
@@ -243,15 +243,13 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
           opacity: isSelected ? 0 : undefined,
         }}
       >
-        <Dot bgColor={fgColor} size={DotSize} />
+        <Dot bgColor={colorTheme.fg7.value} size={DotSize} />
       </DotContainer>
     </div>
   )
 })
 
 export const NineBlockControl = React.memo(() => {
-  const colorTheme = useColorTheme()
-
   const dispatch = useDispatch()
 
   const nFlexContainers = useEditorState(
@@ -350,8 +348,8 @@ export const NineBlockControl = React.memo(() => {
         gridTemplateRows: '1fr 1fr 1fr',
         gridTemplateColumns: '1fr 1fr 1fr',
         backgroundColor: colorTheme.bg1.value,
-        border: `1px solid ${colorTheme.fg5.value}`,
-        borderRadius: 3,
+        border: `1px solid ${colorTheme.fg7.value}`,
+        borderRadius: UtopiaTheme.inputBorderRadius,
         overflow: 'hidden',
       }}
     >

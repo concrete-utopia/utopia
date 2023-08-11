@@ -9,7 +9,7 @@ import {
   selectedViewsSelector,
 } from './inpector-selectors'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { colorTheme, useColorTheme } from '../../uuiui'
+import { UtopiaTheme, colorTheme, useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
@@ -189,7 +189,7 @@ const ThreeBarSection = React.memo<ThreeBarSectionProps>(({ alignItems, onClick 
     'ThreeBarControl flexDirection',
   )
 
-  const dotColor = colorTheme.fg0.value
+  const dotColor = colorTheme.fg7.value
   const slabColor = colorTheme.fg0.value
 
   const shortSlabHeight = SlabHeight(layerFlexDirectionValue, 'short')
@@ -310,7 +310,9 @@ export const ThreeBarControl = React.memo(() => {
       style={{
         display: shouldShow ? 'flex' : 'none',
         flexDirection: ContainerFlexDirection(flexDirection),
-        border: `1px solid ${colorTheme.fg5.value}`,
+        border: `1px solid ${colorTheme.fg7.value}`,
+        borderRadius: UtopiaTheme.inputBorderRadius,
+        overflow: 'hidden',
       }}
     >
       <ThreeBarSection alignItems={'flex-start'} onClick={setAlignItemsStart} />
