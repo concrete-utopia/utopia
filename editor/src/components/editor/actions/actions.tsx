@@ -3939,7 +3939,7 @@ export const UPDATE_FNS = {
       }
     }, targetsToTrueUp)
     const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
-      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata', 'resize'),
+      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata', 'wrap'),
     ])
     return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
   },
