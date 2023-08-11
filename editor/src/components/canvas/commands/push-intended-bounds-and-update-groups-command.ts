@@ -4,6 +4,7 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSXAttributes,
 } from '../../../core/shared/element-template'
 import type { CanvasRectangle, Size } from '../../../core/shared/math-utils'
 import {
@@ -22,7 +23,10 @@ import type {
 } from '../../editor/store/editor-state'
 import { trueUpElementChanged } from '../../editor/store/editor-state'
 import type { FlexDirection } from '../../inspector/common/css-utils'
-import { isFixedHugFillModeAppliedOnAnySide } from '../../inspector/inspector-common'
+import {
+  isHugFromStyleAttribute,
+  isHugFromStyleAttributeOrNull,
+} from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
@@ -47,22 +51,17 @@ export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
   isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
-  mode: PushIntendedBoundsAndUpdateGroupsMode
 }
-
-export type PushIntendedBoundsAndUpdateGroupsMode = 'move' | 'resize' | 'wrap'
 
 export function pushIntendedBoundsAndUpdateGroups(
   value: Array<CanvasFrameAndTarget>,
   isStartingMetadata: 'starting-metadata' | 'live-metadata',
-  mode: PushIntendedBoundsAndUpdateGroupsMode,
 ): PushIntendedBoundsAndUpdateGroups {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
     isStartingMetadata: isStartingMetadata,
-    mode: mode,
   }
 }
 
@@ -135,21 +134,6 @@ type LocalFrameAndTarget = {
   allSixFramePoints: FrameWithAllPoints
 }
 
-/**
- * returns whether the given path can be used as a target for pushing intended bounds
- * and have its frame changed when in a given mode.
- */
-function canPushIntendedBoundsForElement(
-  path: ElementPath,
-  metadata: ElementInstanceMetadataMap,
-  currentMode: PushIntendedBoundsAndUpdateGroupsMode,
-  validModes: PushIntendedBoundsAndUpdateGroupsMode[],
-): boolean {
-  return (
-    validModes.includes(currentMode) || !isFixedHugFillModeAppliedOnAnySide(metadata, path, 'hug')
-  )
-}
-
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
@@ -178,12 +162,7 @@ function getUpdateResizedGroupChildrenCommands(
         editor.jsxMetadata,
         editor.elementPathTree,
         frameAndTarget.target,
-      ).filter((path) => {
-        return canPushIntendedBoundsForElement(path, editor.jsxMetadata, command.mode, [
-          'resize',
-          'wrap',
-        ])
-      })
+      )
 
       // the original size of the group before the interaction ran
       const originalSize: Size =
@@ -229,6 +208,16 @@ function getUpdateResizedGroupChildrenCommands(
         const constraints: Array<keyof FrameWithAllPoints> =
           editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
 
+        const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
+        if (jsxElement != null) {
+          if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
+            constraints.push('width')
+          }
+          if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
+            constraints.push('height')
+          }
+        }
+
         const resizedLocalFramePoints = roundSixPointFrameToNearestWhole(
           transformConstrainedLocalFullFrameUsingBoundingBox(
             updatedSize,
@@ -260,18 +249,15 @@ function getUpdateResizedGroupChildrenCommands(
 
     updatedElements.push(elementToUpdate)
 
-    if (
-      canPushIntendedBoundsForElement(elementToUpdate, editor.jsxMetadata, command.mode, ['resize'])
-    ) {
-      commandsToRun.push(
-        ...setElementPins(
-          elementToUpdate,
-          frameAndTarget.allSixFramePoints,
-          frameAndTarget.parentSize,
-          metadata.specialSizeMeasurements.parentFlexDirection,
-        ),
-      )
-    }
+    commandsToRun.push(
+      ...setElementPins(
+        elementToUpdate,
+        MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, elementToUpdate)?.props ?? null,
+        frameAndTarget.allSixFramePoints,
+        frameAndTarget.parentSize,
+        metadata.specialSizeMeasurements.parentFlexDirection,
+      ),
+    )
   })
 
   const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
@@ -408,12 +394,13 @@ function getResizeAncestorGroupsCommands(
 
 function setElementPins(
   target: ElementPath,
+  targetProps: JSXAttributes | null,
   framePoints: FrameWithAllPoints,
   parentSize: Size,
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
   // TODO retarget Fragments
-  const result = [
+  let result: Array<CanvasCommand> = [
     setCssLengthProperty(
       'always',
       target,
@@ -446,23 +433,32 @@ function setElementPins(
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'width'),
-      setValueKeepingOriginalUnit(framePoints.width, parentSize.width),
-      parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'height'),
-      setValueKeepingOriginalUnit(framePoints.height, parentSize.height),
-      parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
   ]
+
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'width')) {
+    result.push(
+      setCssLengthProperty(
+        'always',
+        target,
+        PP.create('style', 'width'),
+        setValueKeepingOriginalUnit(framePoints.width, parentSize.width),
+        parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+    )
+  }
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'height')) {
+    result.push(
+      setCssLengthProperty(
+        'always',
+        target,
+        PP.create('style', 'height'),
+        setValueKeepingOriginalUnit(framePoints.height, parentSize.height),
+        parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+    )
+  }
   return result
 }
 
