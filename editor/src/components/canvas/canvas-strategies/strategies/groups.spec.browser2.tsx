@@ -3128,6 +3128,90 @@ describe('Groups behaviors', () => {
           })
         }
       })
+
+      it('group with width/height prop, single child with top,left and hugging width/height', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-uid='group' data-testid='group' style={{position: 'absolute', width: 100, height: 100, left: 50, top: 50}}>
+            <div
+              data-uid='child-1'
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 'max-content',
+                height: 'max-content',
+              }}
+            >
+              <div data-uid='inner' style={{ width: 100, height: 100 }} />
+            </div>
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('100px')
+        expect(groupDiv.style.height).toBe('100px')
+
+        // Resizing bottom right
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: 50, y: 50 }, EdgePositionBottomRight, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('150px')
+              expect(groupDiv.style.height).toBe('150px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 50,
+            top: 50,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 'max-content',
+            height: 'max-content',
+          })
+        }
+
+        // resizing top left
+        {
+          await selectComponentsForTest(editor, [fromString(GroupPath)])
+          await resizeElement(editor, { x: -50, y: -50 }, EdgePositionTopLeft, emptyModifiers, {
+            midDragCallback: async () => {
+              expect(groupDiv.style.width).toBe('150px')
+              expect(groupDiv.style.height).toBe('150px')
+            },
+          })
+
+          expect(groupDiv.style.width).toBe('100px')
+          expect(groupDiv.style.height).toBe('100px')
+
+          assertStylePropsSet(editor, `${GroupPath}`, {
+            left: 0,
+            top: 0,
+            width: 100,
+            height: 100,
+            right: undefined,
+            bottom: undefined,
+          })
+          assertStylePropsSet(editor, `${GroupPath}/child-1`, {
+            left: 0,
+            top: 0,
+            width: 'max-content',
+            height: 'max-content',
+            right: undefined,
+            bottom: undefined,
+          })
+        }
+      })
     })
 
     describe('Moving one Child', () => {
