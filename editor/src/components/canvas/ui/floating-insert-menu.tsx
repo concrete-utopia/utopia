@@ -262,7 +262,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
             controlStyles: getControlStyles('simple'),
           }) as CSSObject),
           paddingLeft: 4,
-          backgroundColor: colorTheme.bg4.value,
+          backgroundColor: colorTheme.seperator.value,
           // color: 'black',
           // fontSize: 11,
           flexGrow: 1,

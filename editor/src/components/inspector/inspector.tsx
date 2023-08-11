@@ -168,7 +168,7 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         justifyContent: 'space-around',
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        outline: `1px solid ${colorTheme.bg4.value}`,
+        outline: `1px solid ${colorTheme.seperator.value}`,
         background: colorTheme.inspectorBackground.value,
       }}
     >
