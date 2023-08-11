@@ -9,7 +9,7 @@ import {
   selectedViewsSelector,
 } from './inpector-selectors'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { useColorTheme } from '../../uuiui'
+import { colorTheme, useColorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
@@ -90,7 +90,7 @@ const DotLayer = styled('div', {
   display: 'flex',
   flexDirection: 'column',
   opacity: 1,
-  backgroundColor: 'white',
+  backgroundColor: colorTheme.bg1.value,
   '&:hover': {
     opacity: 0,
   },
@@ -188,8 +188,6 @@ const ThreeBarSection = React.memo<ThreeBarSectionProps>(({ alignItems, onClick 
     'ThreeBarControl flexDirection',
   )
 
-  const colorTheme = useColorTheme()
-
   const dotColor = colorTheme.fg0.value
   const slabColor = colorTheme.fg0.value
 
@@ -257,8 +255,6 @@ export const ThreeBarControl = React.memo(() => {
     numberOfFlexContainersSelector,
     'FlexDirectionToggle, nFlexContainers',
   )
-
-  const colorTheme = useColorTheme()
 
   const packedSpacedSetting =
     useEditorState(

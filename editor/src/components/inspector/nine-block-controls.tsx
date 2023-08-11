@@ -349,69 +349,69 @@ export const NineBlockControl = React.memo(() => {
         boxSizing: 'border-box',
         gridTemplateRows: '1fr 1fr 1fr',
         gridTemplateColumns: '1fr 1fr 1fr',
-        backgroundColor: colorTheme.bg0.value,
+        backgroundColor: colorTheme.bg1.value,
         border: `1px solid ${colorTheme.fg5.value}`,
       }}
     >
       <NineBlockControlCell
         onSelect={callbacks['flex-start-flex-start']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'flex-start'}
         justifyContent={'flex-start'}
       />
       <NineBlockControlCell
         onSelect={callbacks['flex-start-center']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'flex-start'}
         justifyContent={'center'}
       />
       <NineBlockControlCell
         onSelect={callbacks['flex-start-flex-end']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'flex-start'}
         justifyContent={'flex-end'}
       />
       <NineBlockControlCell
         onSelect={callbacks['center-flex-start']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'center'}
         justifyContent={'flex-start'}
       />
       <NineBlockControlCell
         onSelect={callbacks['center-center']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'center'}
         justifyContent={'center'}
       />
       <NineBlockControlCell
         onSelect={callbacks['center-flex-end']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'center'}
         justifyContent={'flex-end'}
       />
       <NineBlockControlCell
         onSelect={callbacks['flex-end-flex-start']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'flex-end'}
         justifyContent={'flex-start'}
       />
       <NineBlockControlCell
         onSelect={callbacks['flex-end-center']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'flex-end'}
         justifyContent={'center'}
       />
       <NineBlockControlCell
         onSelect={callbacks['flex-end-flex-end']}
-        bgColor={colorTheme.bg0.value}
+        bgColor={colorTheme.bg1.value}
         fgColor={colorTheme.fg0.value}
         alignItems={'flex-end'}
         justifyContent={'flex-end'}
