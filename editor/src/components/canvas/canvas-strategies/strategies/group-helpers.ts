@@ -191,12 +191,8 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
     if (pin !== 'width' && pin !== 'height') {
       return false
     }
-    const isTextElement =
-      jsxElement.children.length > 0 &&
-      jsxElement.children.every((child) => child.type === 'JSX_TEXT_BLOCK')
-    if (!isTextElement) {
-      return false
-    }
+
+    // max-content (hug) is fine
     const verbatimProp = getLayoutPropVerbatim(right(jsxElement.props), pin)
     return isRight(verbatimProp) && verbatimProp.value === MaxContent
   }
