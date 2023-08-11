@@ -205,7 +205,7 @@ function getUpdateResizedGroupChildrenCommands(
           return
         }
 
-        const constraints: Array<keyof FrameWithAllPoints> =
+        let constraints: Array<keyof FrameWithAllPoints> =
           editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
 
         const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
