@@ -187,7 +187,7 @@ function getLayoutPropVerbatim(props: PropsOrJSXAttributes, pin: AbsolutePin): E
 }
 
 function elementHasValidPins(jsxElement: JSXElement): boolean {
-  function isHugPinForTextElement(pin: AbsolutePin): boolean {
+  function isMaxContentWidthOrHeight(pin: AbsolutePin): boolean {
     if (pin !== 'width' && pin !== 'height') {
       return false
     }
@@ -201,7 +201,7 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
     const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
     const isNumericPin = isRight(prop) && prop.value != null
 
-    return isNumericPin || isHugPinForTextElement(pin)
+    return isNumericPin || isMaxContentWidthOrHeight(pin)
   }
 
   return (
