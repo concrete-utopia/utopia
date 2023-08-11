@@ -30,7 +30,7 @@ const SlabHoverOpacity = 0.3
 
 function SlabSide(side: 'width' | 'height', variety: 'short' | 'long') {
   const SlabHeightN = 10
-  const LongSlabWidthN = 30
+  const LongSlabWidthN = 20
   const ShortSlabWidthN = LongSlabWidthN / 1.618
   switch (side) {
     case 'width':
@@ -81,6 +81,7 @@ const DotContainer = styled('div', {
 const Slab = styled('div', {
   backgroundColor: 'black',
   borderRadius: 2,
+  margin: 3,
 })
 
 const DotLayer = styled('div', {

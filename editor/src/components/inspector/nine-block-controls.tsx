@@ -193,7 +193,7 @@ const NineBlockControlCell = React.memo<NineBlockControlCellProps>((props) => {
       data-testid={NineBlockTestId(alignItems, justifyContent)}
       style={{
         display: 'flex',
-        padding: 1,
+        margin: 3,
         alignItems: 'center',
         position: 'relative',
         boxSizing: 'border-box',
@@ -351,6 +351,8 @@ export const NineBlockControl = React.memo(() => {
         gridTemplateColumns: '1fr 1fr 1fr',
         backgroundColor: colorTheme.bg1.value,
         border: `1px solid ${colorTheme.fg5.value}`,
+        borderRadius: 3,
+        overflow: 'hidden',
       }}
     >
       <NineBlockControlCell
