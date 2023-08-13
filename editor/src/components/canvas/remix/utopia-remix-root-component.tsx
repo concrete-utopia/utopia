@@ -153,11 +153,19 @@ export const UtopiaRemixRootComponent = React.memo(() => {
           default: module.exports.default,
         }
 
-        routesResult.push({
+        // HACK LVL: >9000
+        // `children` should be filled out properly
+        const routeObject: DataRouteObject = {
           ...routeFromEntry(route),
           loader: module.exports.loader != null ? module.exports.loader : undefined,
           action: module.exports.action != null ? module.exports.action : undefined,
-        })
+        }
+
+        if (routeObject.id === '_index.js') {
+          routesResult.find((r) => r.id === 'root')!.children = [routeObject]
+        } else {
+          routesResult.push(routeObject)
+        }
       } catch (e) {
         console.error(e)
       }
