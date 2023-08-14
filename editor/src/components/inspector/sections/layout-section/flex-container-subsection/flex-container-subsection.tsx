@@ -68,39 +68,12 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
   )
 
   return (
-    <>
-      {/* <UIGridRow
-        padded={true}
-        variant='<-auto-><----------1fr--------->'
-        style={{ padding: '0 16px' }}
-      >
-        <FlexWrapControl
-          value={flexWrap.value}
-          onSubmitValue={flexWrap.onSubmitValue}
-          onUnset={flexWrap.onUnsetValues}
-          controlStatus={flexWrap.controlStatus}
-          controlStyles={flexWrap.controlStyles}
-        />
-        <FlexAlignContentControl
-          value={alignContent.value}
-          onSubmitValue={alignContent.onSubmitValue}
-          onUnset={alignContent.onUnsetValues}
-          controlStatus={alignItemsControlStatus}
-          controlStyles={alignItemsControlStyles}
-          alignDirection={alignDirection}
-          alignContentFlexStart={alignContentFlexStart}
-          alignContentFlexEnd={alignContentFlexEnd}
-        />
-      </UIGridRow> */}
-      {/* <UIGridRow padded variant='|--67px--|<--------1fr-------->'> */}
-      <FlexWrapControl
-        value={flexWrap.value}
-        onSubmitValue={flexWrap.onSubmitValue}
-        onUnset={flexWrap.onUnsetValues}
-        controlStatus={flexWrap.controlStatus}
-        controlStyles={flexWrap.controlStyles}
-      />
-      {/* </UIGridRow> */}
-    </>
+    <FlexWrapControl
+      value={flexWrap.value}
+      onSubmitValue={flexWrap.onSubmitValue}
+      onUnset={flexWrap.onUnsetValues}
+      controlStatus={flexWrap.controlStatus}
+      controlStyles={flexWrap.controlStyles}
+    />
   )
 })
