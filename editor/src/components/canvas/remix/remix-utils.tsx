@@ -18,7 +18,10 @@ import type {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import {
+  getJSXElementNameAsString,
+  isUtopiaJSXComponent,
+} from '../../../core/shared/element-template'
 import type { ElementPathPart } from '../../../core/shared/project-file-types'
 
 interface PathFromFileNameResult {
@@ -127,22 +130,28 @@ export function getTopLevelElement(topLevelElements: TopLevelElement[]): UtopiaJ
   )
 }
 
-interface UidWithPathPart {
+interface JSXElementWalkResult {
   uid: string
   pathPart: ElementPathPart
+  componentName: string
 }
 
 export function* jsxElementUidsPostOrder(
   element: JSXElementChild,
   pathPart: ElementPathPart,
-): Generator<UidWithPathPart, void, unknown> {
+): Generator<JSXElementWalkResult, void, unknown> {
   switch (element.type) {
     case 'JSX_FRAGMENT':
     case 'JSX_ELEMENT':
       for (const child of element.children) {
         yield* jsxElementUidsPostOrder(child, [...pathPart, element.uid])
       }
-      yield { uid: element.uid, pathPart: [...pathPart, element.uid] }
+      yield {
+        uid: element.uid,
+        pathPart: [...pathPart, element.uid],
+        componentName:
+          element.type === 'JSX_FRAGMENT' ? 'Fragment' : getJSXElementNameAsString(element.name),
+      }
       return
     default:
       return

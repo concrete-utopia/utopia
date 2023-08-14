@@ -22,7 +22,7 @@ import {
 import { foldEither } from '../../../core/shared/either'
 import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
 import { patchedCreateReactElement } from '../../../utils/canvas-react-utils'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, ElementPathPart } from '../../../core/shared/project-file-types'
 import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import * as EP from '../../../core/shared/element-path'
 
@@ -60,11 +60,12 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
 
-  const basePath = props[UTOPIA_PATH_KEY]
-
   const { routeModules, routes } = React.useMemo(() => {
     const routeManifestResult: RouteModules = {}
     const routesResult: DataRouteObject[] = []
+
+    let outletPath: ElementPathPart = []
+
     Object.values(routeManifest).forEach((route) => {
       const contents = getContentsTreeFileFromString(projectContents, route.filePath)
       if (
@@ -80,15 +81,23 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         return
       }
 
-      const uidGen = jsxElementUidsPostOrder(topLevelElement.rootElement, [])
+      const uidGen2 = [...jsxElementUidsPostOrder(topLevelElement.rootElement, [])]
+
+      outletPath =
+        uidGen2.find((r) => r.componentName === 'Outlet')?.pathPart.slice(0, -1) ?? outletPath
+
+      const basePath =
+        route.id === 'root'
+          ? props[UTOPIA_PATH_KEY]
+          : EP.appendPartToPath(props[UTOPIA_PATH_KEY], outletPath)
 
       const partialRequire = (toImport: string) => {
         if (toImport === 'react') {
           return {
             ...React,
             createElement: (element: any, propsInner: any, ...children: any) => {
-              const uidInfo = uidGen.next()
-              if (uidInfo.done) {
+              const uidInfo = uidGen2.shift()
+              if (uidInfo == null) {
                 throw new Error('no uid')
               }
 
@@ -96,10 +105,8 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
                 element,
                 {
                   ...propsInner,
-                  [UTOPIA_UID_KEY]: uidInfo.value.uid,
-                  [UTOPIA_PATH_KEY]: EP.toString(
-                    EP.appendPartToPath(basePath, uidInfo.value.pathPart),
-                  ),
+                  [UTOPIA_UID_KEY]: uidInfo.uid,
+                  [UTOPIA_PATH_KEY]: EP.toString(EP.appendPartToPath(basePath, uidInfo.pathPart)),
                 },
                 ...children,
               )
@@ -144,7 +151,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     })
 
     return { routeModules: routeManifestResult, routes: routesResult }
-  }, [basePath, builtInDependencies, projectContents, routeManifest])
+  }, [builtInDependencies, projectContents, props, routeManifest])
 
   const router = React.useMemo(() => createMemoryRouter(routes), [routes])
 
