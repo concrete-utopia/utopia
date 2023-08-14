@@ -953,6 +953,7 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
+    remixRoutingTable: desiredEditor.remixRoutingTable,
   }
 }
 

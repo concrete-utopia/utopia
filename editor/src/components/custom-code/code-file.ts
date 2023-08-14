@@ -432,71 +432,71 @@ export function normalisePathToUnderlyingTarget(
   elementPath: ElementPath | null,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
-  if (currentFile != null && isTextFile(currentFile)) {
-    if (isParseSuccess(currentFile.fileContents.parsed)) {
-      const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
-      const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
-      if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
-        // As the scene path is empty, there's no more traversing to do, the target is in this file.
-        return normalisePathSuccess(staticPath, currentFilePath, currentFile, elementPath)
-      } else {
-        const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
-        if (droppedPathPart.length === 0) {
-          return normalisePathError(
-            `Unable to handle empty scene path part for ${optionalMap(EP.toString, elementPath)}`,
-          )
-        } else {
-          // Now need to identify the element relating to the last part of the dropped scene path.
-          const lastDroppedPathPart = droppedPathPart[droppedPathPart.length - 1]
-
-          // Walk the parsed representation to find the element with the given uid.
-          const parsedContent = currentFile.fileContents.parsed
-          let targetElement: JSXElement | null = null
-          for (const topLevelElement of parsedContent.topLevelElements) {
-            const possibleTarget = findElementWithUID(topLevelElement, lastDroppedPathPart)
-            if (possibleTarget != null) {
-              targetElement = possibleTarget
-              break
-            }
-          }
-
-          // Identify where the component is imported from or if it's in the same file.
-          if (targetElement == null) {
-            return normalisePathImportNotFound(lastDroppedPathPart)
-          } else {
-            const nonNullTargetElement: JSXElement = targetElement
-
-            // Handle things like divs.
-            if (isIntrinsicElement(targetElement.name)) {
-              return normalisePathSuccess(
-                potentiallyDroppedFirstPathElementResult.newPath == null
-                  ? null
-                  : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
-                currentFilePath,
-                currentFile,
-                potentiallyDroppedFirstPathElementResult.newPath,
-              )
-            } else {
-              return lookupElementImport(
-                targetElement.name.baseVariable,
-                currentFilePath,
-                projectContents,
-                nodeModules,
-                nonNullTargetElement,
-                elementPath,
-                parsedContent,
-                potentiallyDroppedFirstPathElementResult,
-              )
-            }
-          }
-        }
-      }
-    } else {
-      return normalisePathUnableToProceed(currentFilePath)
-    }
-  } else {
+  if (
+    currentFile == null ||
+    !isTextFile(currentFile) ||
+    !isParseSuccess(currentFile.fileContents.parsed)
+  ) {
     return normalisePathUnableToProceed(currentFilePath)
   }
+
+  const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
+  const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
+  if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
+    // As the scene path is empty, there's no more traversing to do, the target is in this file.
+    return normalisePathSuccess(staticPath, currentFilePath, currentFile, elementPath)
+  }
+
+  const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
+  if (droppedPathPart.length === 0) {
+    return normalisePathError(
+      `Unable to handle empty scene path part for ${optionalMap(EP.toString, elementPath)}`,
+    )
+  }
+
+  // Now need to identify the element relating to the last part of the dropped scene path.
+  const lastDroppedPathPart = droppedPathPart[droppedPathPart.length - 1]
+
+  // Walk the parsed representation to find the element with the given uid.
+  const parsedContent = currentFile.fileContents.parsed
+  let targetElement: JSXElement | null = null
+  for (const topLevelElement of parsedContent.topLevelElements) {
+    const possibleTarget = findElementWithUID(topLevelElement, lastDroppedPathPart)
+    if (possibleTarget != null) {
+      targetElement = possibleTarget
+      break
+    }
+  }
+
+  // Identify where the component is imported from or if it's in the same file.
+  if (targetElement == null) {
+    return normalisePathImportNotFound(lastDroppedPathPart)
+  }
+
+  const nonNullTargetElement: JSXElement = targetElement
+
+  // Handle things like divs.
+  if (isIntrinsicElement(targetElement.name)) {
+    return normalisePathSuccess(
+      potentiallyDroppedFirstPathElementResult.newPath == null
+        ? null
+        : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
+      currentFilePath,
+      currentFile,
+      potentiallyDroppedFirstPathElementResult.newPath,
+    )
+  }
+
+  return lookupElementImport(
+    targetElement.name.baseVariable,
+    currentFilePath,
+    projectContents,
+    nodeModules,
+    nonNullTargetElement,
+    elementPath,
+    parsedContent,
+    potentiallyDroppedFirstPathElementResult,
+  )
 }
 
 function lookupElementImport(
