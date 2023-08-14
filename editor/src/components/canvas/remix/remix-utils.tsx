@@ -142,10 +142,10 @@ export function* jsxElementUidsPostOrder(
       for (const child of element.children) {
         yield* jsxElementUidsPostOrder(child, [...pathPart, element.uid])
       }
-      yield { uid: element.uid, pathPart: pathPart }
+      yield { uid: element.uid, pathPart: [...pathPart, element.uid] }
       return
     default:
-      yield { uid: element.uid, pathPart: pathPart }
+      return
   }
 }
 
