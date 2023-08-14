@@ -26,7 +26,7 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { Icons, SmallerIcons } from '../../../uuiui/icons'
 
-type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
+export type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
 interface PopupListProps {
   id?: string

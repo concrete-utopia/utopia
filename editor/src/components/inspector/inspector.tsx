@@ -85,8 +85,10 @@ import { CodeElementSection } from './sections/code-element-section'
 import {
   maybeInvalidGroupState,
   groupErrorToastAction,
+  treatElementAsGroupLike,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { FlexCol } from 'utopia-api'
+import { GroupChildResizeSection } from './sections/layout-section/group-child-resize-section'
 
 export interface ElementPathElement {
   name?: string
@@ -349,6 +351,16 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'RootElementIndicator aRootElementIsSelected',
   )
 
+  const areGroupChildren = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every((path) =>
+        treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path)),
+      ),
+    'Inspector areGroupChildren',
+  )
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -414,6 +426,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     />
                     <SizingSection />
                   </>,
+                )}
+                {when(
+                  multiselectedContract === 'frame' && areGroupChildren,
+                  <GroupChildResizeSection />,
                 )}
                 {unless(
                   multiselectedContract === 'fragment' || multiselectedContract === 'group',
