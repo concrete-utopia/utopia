@@ -51,7 +51,7 @@ export const FlexSection = React.memo(() => {
               <NineBlockControl />
               <ThreeBarControl />
             </UIGridRow>
-            <FlexCol css={{ overflow: 'hidden', gap: 10 }}>
+            <FlexCol css={{ gap: 10 }}>
               <FlexDirectionToggle />
               <FlexContainerControls seeMoreVisible={true} />
               <FlexGapControl />
@@ -60,7 +60,7 @@ export const FlexSection = React.memo(() => {
           <UIGridRow padded={false} variant='<-------------1fr------------->'>
             <SpacedPackedControl />
           </UIGridRow>
-          <UIGridRow padded variant='<-------------1fr------------->'>
+          <UIGridRow padded={false} variant='<-------------1fr------------->'>
             <PaddingRow />
           </UIGridRow>
         </FlexCol>,

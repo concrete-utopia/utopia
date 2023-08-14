@@ -165,7 +165,7 @@ export const PaddingRow = React.memo(() => {
         onMouseEnter={onMouseEnterWithPaddingControls}
         onMouseLeave={onMouseLeave}
         tall
-        padded={false}
+        padded
         variant='<---1fr--->|------172px-------|'
       >
         <div onMouseEnter={onMouseEnterWithPaddingControls} onMouseLeave={onMouseLeave}>

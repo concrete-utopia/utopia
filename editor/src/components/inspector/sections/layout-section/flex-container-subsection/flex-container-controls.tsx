@@ -271,7 +271,7 @@ export const FlexGapControl = React.memo(() => {
   }, [targetPath])
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
-      <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
+      <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
         <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
         <SliderNumberControl
           id='flex.container.gap'
