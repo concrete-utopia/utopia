@@ -1,6 +1,7 @@
 import React from 'react'
-import { RemixAppContainer } from '../remix/remix-container/remix-app-container'
-import type { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import * as EP from '../../../core/shared/element-path'
+import { UtopiaRemixRootComponent } from '../remix/utopia-remix-root-component'
 export interface RemixContainerProps {
   style?: React.CSSProperties
   'data-label'?: string
@@ -24,6 +25,20 @@ export const RemixContainerComponent = React.memo(
       ...props,
       style: style,
     }
-    return <RemixAppContainer {...adjustedProps} />
+
+    if (props.style != null) {
+      style = {
+        ...style,
+        ...props.style,
+      }
+    }
+
+    const path = EP.fromString(props[UTOPIA_PATH_KEY])
+
+    return (
+      <div {...adjustedProps}>
+        <UtopiaRemixRootComponent data-path={path} />
+      </div>
+    )
   },
 )
