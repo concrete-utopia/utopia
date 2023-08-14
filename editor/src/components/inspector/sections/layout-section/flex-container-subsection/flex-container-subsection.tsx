@@ -69,7 +69,7 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
 
   return (
     <>
-      <UIGridRow
+      {/* <UIGridRow
         padded={true}
         variant='<-auto-><----------1fr--------->'
         style={{ padding: '0 16px' }}
@@ -91,7 +91,16 @@ export const FlexContainerControls = React.memo<{ seeMoreVisible: boolean }>((pr
           alignContentFlexStart={alignContentFlexStart}
           alignContentFlexEnd={alignContentFlexEnd}
         />
-      </UIGridRow>
+      </UIGridRow> */}
+      {/* <UIGridRow padded variant='|--67px--|<--------1fr-------->'> */}
+      <FlexWrapControl
+        value={flexWrap.value}
+        onSubmitValue={flexWrap.onSubmitValue}
+        onUnset={flexWrap.onUnsetValues}
+        controlStatus={flexWrap.controlStatus}
+        controlStyles={flexWrap.controlStyles}
+      />
+      {/* </UIGridRow> */}
     </>
   )
 })

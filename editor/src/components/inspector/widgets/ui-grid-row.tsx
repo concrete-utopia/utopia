@@ -15,6 +15,9 @@ const gridTemplates = {
   '<---1fr--->|------172px-------|': {
     gridTemplateColumns: '1fr 172px ',
   },
+  '<---1fr--->|------150px-------|': {
+    gridTemplateColumns: '1fr 150px ',
+  },
   '|--67px--||16px||--67px--||16px|': {
     gridTemplateColumns: 'repeat(2, 67px 16px)',
     gridColumnGap: 2,

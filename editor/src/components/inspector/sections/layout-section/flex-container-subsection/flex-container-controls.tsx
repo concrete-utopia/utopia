@@ -187,7 +187,6 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
         display: 'flex',
         overflow: 'hidden',
         width: undefined,
-        marginLeft: -8, // this is Balazs hacking the UI so the text of the dropdown aligns with the rest of the rows
       }}
     >
       <PopupList
@@ -272,7 +271,7 @@ export const FlexGapControl = React.memo(() => {
   }, [targetPath])
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={true} variant='<-auto-><----------1fr--------->'>
         <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
         <SliderNumberControl
           id='flex.container.gap'
