@@ -20,9 +20,7 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
           <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
-      <FlexRow style={{ padding: 4, justifyContent: 'flex-end' }}>
-        <FillHugFixedControl />
-      </FlexRow>
+      <FillHugFixedControl />
     </>
   )
 })

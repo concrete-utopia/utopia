@@ -6,7 +6,7 @@ import { createSelector } from 'reselect'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever, NO_OP } from '../../core/shared/utils'
-import { NumberInput, PopupList } from '../../uuiui'
+import { NumberInput, PopupList, UtopiaTheme, width } from '../../uuiui'
 import type { SelectOption } from '../../uuiui-deps'
 import { getControlStyles, InspectorRowHoverCSS } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -36,6 +36,11 @@ import type { MetadataSubstate } from '../editor/store/store-hook-substore-types
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import * as EP from '../../core/shared/element-path'
+import { FlexCol } from 'utopia-api'
+import { UIGridRow } from './widgets/ui-grid-row'
+import { PropertyLabel } from './widgets/property-label'
+import { useContextSelector } from 'use-context-selector'
+import { InspectorPropsContext, stylePropPathMappingFn } from './common/property-path-hooks'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -93,6 +98,17 @@ const fixedHugFillOptionsSelector = createSelector(
 )
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
+  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
+    return contextData.targetPath
+  })
+  const widthProp = React.useMemo(() => {
+    return [stylePropPathMappingFn('width', targetPath)]
+  }, [targetPath])
+
+  const heightProp = React.useMemo(() => {
+    return [stylePropPathMappingFn('height', targetPath)]
+  }, [targetPath])
+
   const options = useEditorState(
     Substores.metadata,
     fixedHugFillOptionsSelector,
@@ -353,22 +369,9 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateRows: '1fr 1fr',
-        gridTemplateColumns: '1fr',
-      }}
-    >
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 4,
-          padding: 4,
-        }}
-        css={InspectorRowHoverCSS}
-      >
+    <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
+      <UIGridRow padded variant='|20px|<--1fr--><--1fr-->' css={InspectorRowHoverCSS}>
+        <PropertyLabel target={widthProp}>W</PropertyLabel>
         <PopupList
           value={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? undefined}
           options={options}
@@ -388,20 +391,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           stepSize={1}
           minimum={0}
           maximum={Infinity}
-          labelInner={'W'}
           defaultUnitToHide={null}
           focusOnMount={false}
         />
-      </div>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 4,
-          padding: 4,
-        }}
-        css={InspectorRowHoverCSS}
-      >
+      </UIGridRow>
+      <UIGridRow padded variant='|20px|<--1fr--><--1fr-->' css={InspectorRowHoverCSS}>
+        <PropertyLabel target={heightProp}>H</PropertyLabel>
         <PopupList
           value={optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? undefined}
           options={options}
@@ -421,12 +416,11 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           stepSize={1}
           minimum={0}
           maximum={Infinity}
-          labelInner={'H'}
           defaultUnitToHide={null}
           focusOnMount={false}
         />
-      </div>
-    </div>
+      </UIGridRow>
+    </FlexCol>
   )
 })
 
