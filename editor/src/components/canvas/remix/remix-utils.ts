@@ -8,6 +8,13 @@ import type {
   UNSAFE_EntryRoute as EntryRoute,
 } from '@remix-run/react'
 import type { ProjectContentFile } from '../../assets'
+import type {
+  JSXElementChild,
+  TopLevelElement,
+  UtopiaJSXComponent,
+} from '../../../core/shared/element-template'
+import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
+import type { ElementPathPart } from '../../../core/shared/project-file-types'
 
 interface PathFromFileNameResult {
   parentId: string
@@ -52,7 +59,6 @@ export function parsePathFromFileName(fileName: string): PathFromFileNameResult 
 }
 
 export interface EntryRouteWithFileMeta extends EntryRoute {
-  moduleContents: string
   filePath: string
 }
 
@@ -71,9 +77,6 @@ export function getRoutesFromFiles(
     return left('No root file provided')
   }
 
-  const moduleContents = (file: ProjectContentFile) =>
-    file.content.type === 'TEXT_FILE' ? file.content.fileContents.code : ''
-
   const routeManifest: RouteManifestWithContents = {
     root: {
       hasAction: false,
@@ -83,7 +86,6 @@ export function getRoutesFromFiles(
       module: '',
       id: 'root',
       path: '',
-      moduleContents: moduleContents(root),
       filePath: root.fullPath,
     },
   }
@@ -105,10 +107,39 @@ export function getRoutesFromFiles(
       parentId: routePathResult.parentId,
       index: routePathResult.index,
       path: routePathResult.path,
-      moduleContents: moduleContents(file),
       filePath: file.fullPath,
     }
   })
 
   return right(routeManifest)
+}
+
+export function getTopLevelElement(topLevelElements: TopLevelElement[]): UtopiaJSXComponent | null {
+  return (
+    topLevelElements.find((e): e is UtopiaJSXComponent => {
+      return isUtopiaJSXComponent(e)
+    }) ?? null
+  )
+}
+
+interface UidWithPathPart {
+  uid: string
+  pathPart: ElementPathPart
+}
+
+export function* postOrderTraversal(
+  element: JSXElementChild,
+  pathPart: ElementPathPart,
+): Generator<UidWithPathPart, void, unknown> {
+  switch (element.type) {
+    case 'JSX_FRAGMENT':
+    case 'JSX_ELEMENT':
+      for (const child of element.children) {
+        yield* postOrderTraversal(child, [...pathPart, element.uid])
+      }
+      yield { uid: element.uid, pathPart: pathPart }
+      return
+    default:
+      yield { uid: element.uid, pathPart: pathPart }
+  }
 }

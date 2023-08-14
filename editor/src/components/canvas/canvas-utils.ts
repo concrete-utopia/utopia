@@ -184,6 +184,7 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
+import { getTopLevelElement } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -2014,11 +2015,7 @@ function getValidElementPathsFromElement(
         throw new Error("'/src/routes/_index.js' should be a text file")
       }
 
-      const topLevelElement = index.lastParseSuccess.topLevelElements.find(
-        (e): e is UtopiaJSXComponent => {
-          return isUtopiaJSXComponent(e)
-        },
-      )
+      const topLevelElement = getTopLevelElement(index.lastParseSuccess.topLevelElements)
 
       if (topLevelElement == null) {
         throw new Error("'/src/routes/_index.js' should have a top level element")

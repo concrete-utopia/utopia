@@ -1,10 +1,12 @@
 import React from 'react'
 import { UtopiaRemixRootComponent } from '../utopia-remix-root-component'
+import * as EP from '../../../../core/shared/element-path'
 
 export interface RemixAppContainerProps {
   style?: React.CSSProperties
   'data-label'?: string
   'data-uid'?: string
+  'data-path': string
 }
 
 export const RemixAppContainer = React.memo((props: RemixAppContainerProps) => {
@@ -21,9 +23,12 @@ export const RemixAppContainer = React.memo((props: RemixAppContainerProps) => {
     ...props,
     style: style,
   }
+
+  const path = EP.fromString(props['data-path'])
+
   return (
     <div {...adjustedProps}>
-      <UtopiaRemixRootComponent />
+      <UtopiaRemixRootComponent data-path={path} />
     </div>
   )
 })
