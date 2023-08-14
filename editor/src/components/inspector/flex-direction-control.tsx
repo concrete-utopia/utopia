@@ -2,7 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { Icons, useColorTheme } from '../../uuiui'
+import { Icons, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { useSetHoveredControlsHandlers } from '../canvas/controls/select-mode/select-mode-hooks'
 import type { SubduedPaddingControlProps } from '../canvas/controls/select-mode/subdued-padding-control'
 import { SubduedPaddingControl } from '../canvas/controls/select-mode/subdued-padding-control'
@@ -127,12 +127,13 @@ export const FlexDirectionToggle = React.memo(() => {
         onMouseDown={handleRowClick}
         style={{
           aspectRatio: '1',
-          backgroundColor: (flexDirection === 'row' ? colorTheme.fg8 : colorTheme.fg9).value,
+          backgroundColor: (flexDirection === 'row' ? colorTheme.bg2 : colorTheme.bg1).value,
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           padding: 3,
+          borderRadius: UtopiaTheme.inputBorderRadius,
         }}
       >
         <Icons.FlexRow />
@@ -142,12 +143,13 @@ export const FlexDirectionToggle = React.memo(() => {
         onMouseDown={handleColumnClick}
         style={{
           aspectRatio: '1',
-          backgroundColor: (flexDirection === 'column' ? colorTheme.fg8 : colorTheme.fg9).value,
+          backgroundColor: (flexDirection === 'column' ? colorTheme.bg2 : colorTheme.bg1).value,
           cursor: 'pointer',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           padding: 3,
+          borderRadius: UtopiaTheme.inputBorderRadius,
         }}
       >
         <Icons.FlexColumn />
