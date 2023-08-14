@@ -377,7 +377,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
                 ...UtopiaStyles.fontStyles.monospaced,
                 textAlign: 'left',
                 fontWeight: 600,
-                background: colorTheme.unavailableGrey10.value,
+                background: colorTheme.bg2.value,
                 height: 26,
               }}
             />
@@ -452,7 +452,7 @@ const BranchRow = ({
         style={{
           borderRadius: 2,
           padding: '4px 0px 4px 6px',
-          background: colorTheme.unavailableGrey10.value,
+          background: colorTheme.bg2.value,
           fontWeight: 600,
           display: 'flex',
           justifyContent: 'flex-start',
