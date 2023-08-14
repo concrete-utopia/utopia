@@ -18,7 +18,7 @@ import type { SelectOption } from '../../controls/select-control'
 
 type ConstraintOptionType = 'constrained' | 'not-constrained'
 
-export function constraintOption(type: ConstraintOptionType): SelectOption {
+function constraintOption(type: ConstraintOptionType): SelectOption {
   switch (type) {
     case 'constrained':
       return { value: 'constrained', label: 'Constrained' }
@@ -29,11 +29,13 @@ export function constraintOption(type: ConstraintOptionType): SelectOption {
   }
 }
 
-const Constrained = constraintOption('constrained')
-const NotConstrained = constraintOption('not-constrained')
-const Mixed = { value: 'mixed', label: 'Mixed' }
+const optionValues = {
+  constrained: constraintOption('constrained'),
+  notConstrained: constraintOption('not-constrained'),
+  mixed: { value: 'mixed', label: 'Mixed' },
+}
 
-const Options: Array<SelectOption> = [Constrained, NotConstrained]
+const options: Array<SelectOption> = [optionValues.constrained, optionValues.notConstrained]
 
 function getSafeConstraintsArray(allElementProps: AllElementProps, path: ElementPath): any[] {
   const value = allElementProps[EP.toString(path)]?.['data-constraints'] ?? []
@@ -56,6 +58,49 @@ function checkConstraint(
     : constrained === 0
     ? 'not-constrained'
     : 'mixed'
+}
+
+function makeNewProps(dimension: LayoutPinnedProp, current: any[], mode: 'add' | 'remove'): any[] {
+  switch (mode) {
+    case 'add':
+      return [...current, dimension]
+    case 'remove':
+      return current.filter((other) => other !== dimension)
+    default:
+      assertNever(mode)
+  }
+}
+
+function setConstraint(
+  dispatch: EditorDispatch,
+  option: ConstraintOptionType | 'toggle',
+  selectedViews: ElementPath[],
+  allElementProps: AllElementProps,
+  dimension: LayoutPinnedProp,
+) {
+  function getMode(): 'add' | 'remove' {
+    if (option !== 'toggle') {
+      return option === 'constrained' ? 'add' : 'remove'
+    }
+    const notAllContainDimension = selectedViews.some(
+      (path) => !getSafeConstraintsArray(allElementProps, path).includes(dimension),
+    )
+    return notAllContainDimension ? 'add' : 'remove'
+  }
+  const mode = getMode()
+
+  const prop = PP.create('data-constraints')
+
+  const actions: EditorAction[] = mapDropNulls((path) => {
+    const constraints = getSafeConstraintsArray(allElementProps, path)
+    const newProps = makeNewProps(dimension, constraints, mode)
+    const uniqueNewProps = uniqBy(newProps, (a, b) => a === b)
+    return uniqueNewProps.length === 0
+      ? unsetProperty(path, prop)
+      : setProp_UNSAFE(path, prop, jsExpressionValue(uniqueNewProps, emptyComments))
+  }, selectedViews)
+
+  dispatch(actions)
 }
 
 export const GroupChildResizeSection = React.memo(() => {
@@ -142,6 +187,8 @@ export const GroupChildResizeSection = React.memo(() => {
   )
 })
 
+GroupChildResizeSection.displayName = 'GroupChildResizeSection'
+
 const ConstraintSelect = React.memo(
   ({
     label,
@@ -160,16 +207,16 @@ const ConstraintSelect = React.memo(
       allElementProps: store.editor.allElementProps,
     }))
 
-    function valueToOption(value: ConstraintOptionType | 'mixed') {
+    function optionFromType(value: ConstraintOptionType | 'mixed') {
       return value === 'constrained'
-        ? Constrained
+        ? optionValues.constrained
         : value === 'not-constrained'
-        ? NotConstrained
-        : Mixed
+        ? optionValues.notConstrained
+        : optionValues.mixed
     }
 
-    const value = React.useMemo(() => {
-      return valueToOption(type)
+    const listValue = React.useMemo(() => {
+      return optionFromType(type)
     }, [type])
 
     const mainColor = React.useMemo(() => {
@@ -204,8 +251,8 @@ const ConstraintSelect = React.memo(
         <div style={{ width: 120 }}>
           <PopupList
             onSubmitValue={onSubmitValue}
-            value={value}
-            options={Options}
+            value={listValue}
+            options={options}
             style={{ position: 'relative', left: -8 }}
             containerMode={type === 'constrained' ? 'default' : 'showBorderOnHover'}
             controlStyles={{
@@ -219,45 +266,4 @@ const ConstraintSelect = React.memo(
   },
 )
 
-function makeNewProps(dimension: LayoutPinnedProp, current: any[], mode: 'add' | 'remove'): any[] {
-  switch (mode) {
-    case 'add':
-      return [...current, dimension]
-    case 'remove':
-      return current.filter((other) => other !== dimension)
-    default:
-      assertNever(mode)
-  }
-}
-
-function setConstraint(
-  dispatch: EditorDispatch,
-  option: ConstraintOptionType | 'toggle',
-  selectedViews: ElementPath[],
-  allElementProps: AllElementProps,
-  dimension: LayoutPinnedProp,
-) {
-  function getMode(): 'add' | 'remove' {
-    if (option !== 'toggle') {
-      return option === 'constrained' ? 'add' : 'remove'
-    }
-    const notAllContainDimension = selectedViews.some(
-      (path) => !getSafeConstraintsArray(allElementProps, path).includes(dimension),
-    )
-    return notAllContainDimension ? 'add' : 'remove'
-  }
-  const mode = getMode()
-
-  const prop = PP.create('data-constraints')
-
-  const actions: EditorAction[] = mapDropNulls((path) => {
-    const constraints = getSafeConstraintsArray(allElementProps, path)
-    const newProps = makeNewProps(dimension, constraints, mode)
-    const uniqueNewProps = uniqBy(newProps, (a, b) => a === b)
-    return uniqueNewProps.length === 0
-      ? unsetProperty(path, prop)
-      : setProp_UNSAFE(path, prop, jsExpressionValue(uniqueNewProps, emptyComments))
-  }, selectedViews)
-
-  dispatch(actions)
-}
+ConstraintSelect.displayName = 'ConstraintSelect'
