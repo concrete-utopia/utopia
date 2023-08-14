@@ -1,16 +1,9 @@
 import React from 'react'
 
 import type { DataRouteObject } from 'react-router'
-import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
+import { RouterProvider, createMemoryRouter } from 'react-router'
 
-import type {
-  UNSAFE_RemixContextObject as RemixContextObject,
-  UNSAFE_FutureConfig as FutureConfig,
-  UNSAFE_AssetsManifest as AssetsManifest,
-  UNSAFE_EntryRoute as EntryRoute,
-  UNSAFE_RouteManifest as RouteManifest,
-  UNSAFE_RouteModules as RouteModules,
-} from '@remix-run/react'
+import type { UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 
 import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
@@ -18,94 +11,20 @@ import { resolveBuiltInDependency } from '../../../core/es-modules/package-manag
 import type { ProjectContentFile, ProjectContentsTree } from '../../assets'
 import { getContentsTreeFileFromString } from '../../assets'
 import { useEditorState, Substores } from '../../editor/store/store-hook'
-import { getRoutesFromFiles, getTopLevelElement, postOrderTraversal } from './remix-utils'
+import {
+  createAssetsManifest,
+  defaultFutureConfig,
+  getRoutesFromFiles,
+  getTopLevelElement,
+  jsxElementUidsPostOrder,
+  routeFromEntry,
+} from './remix-utils'
 import { foldEither } from '../../../core/shared/either'
 import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
 import { patchedCreateReactElement } from '../../../utils/canvas-react-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import * as EP from '../../../core/shared/element-path'
-
-function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
-  if (value == null) {
-    console.error(`Invariant error: ${message}`)
-    throw new Error(message)
-  }
-}
-
-// Not exported from Remix
-// FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
-function useRemixContext(): RemixContextObject {
-  let context = React.useContext(RemixContext)
-  invariant(context, 'You must render this element inside a <Remix> element')
-  return context
-}
-
-interface UtopiaRemixRouteProps {
-  id: string
-}
-
-// Not exported from Remix
-// FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
-export const UtopiaRemixRoute = React.memo(({ id }: UtopiaRemixRouteProps) => {
-  let { routeModules, future } = useRemixContext()
-
-  invariant(
-    routeModules,
-    "Cannot initialize 'routeModules'. This normally occurs when you have server code in your client modules.\n" +
-      'Check this link for more details:\nhttps://remix.run/pages/gotchas#server-code-in-client-bundles',
-  )
-
-  let { default: Component, ErrorBoundary, CatchBoundary } = routeModules[id]
-
-  // Default Component to Outlet if we expose boundary UI components
-  if (
-    Component == null &&
-    (ErrorBoundary != null || (!future.v2_errorBoundary && CatchBoundary != null))
-  ) {
-    Component = Outlet
-  }
-
-  invariant(
-    Component,
-    `Route "${id}" has no component! Please go add a \`default\` export in the route module file.\n` +
-      'If you were trying to navigate or submit to a resource route, use `<a>` instead of `<Link>` or `<Form reloadDocument>`.',
-  )
-
-  return <Component />
-})
-
-function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest {
-  return {
-    entry: { imports: [], module: 'TODO' },
-    url: '/',
-    version: '1',
-    routes: routes,
-  }
-}
-
-function routeFromEntry(route: EntryRoute, remixContainerPath: ElementPath): DataRouteObject {
-  return {
-    caseSensitive: false,
-    element: <UtopiaRemixRoute id={route.id} />,
-    errorElement: undefined,
-    id: route.id,
-    index: route.index,
-    path: route.path,
-    handle: null,
-  }
-}
-
-const defaultFutureConfig: FutureConfig = {
-  v2_dev: true,
-  unstable_postcss: false,
-  unstable_tailwind: false,
-  v2_errorBoundary: false,
-  v2_headers: false,
-  v2_meta: false,
-  v2_normalizeFormMethod: false,
-  v2_routeConvention: false,
-}
 
 interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
@@ -161,7 +80,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         return
       }
 
-      const uidGen = postOrderTraversal(topLevelElement.rootElement, [])
+      const uidGen = jsxElementUidsPostOrder(topLevelElement.rootElement, [])
 
       const partialRequire = (toImport: string) => {
         if (toImport === 'react') {
@@ -209,7 +128,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         // HACK LVL: >9000
         // `children` should be filled out properly
         const routeObject: DataRouteObject = {
-          ...routeFromEntry(route, props[UTOPIA_PATH_KEY]),
+          ...routeFromEntry(route),
           loader: module.exports.loader != null ? module.exports.loader : undefined,
           action: module.exports.action != null ? module.exports.action : undefined,
         }
@@ -225,7 +144,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     })
 
     return { routeModules: routeManifestResult, routes: routesResult }
-  }, [basePath, builtInDependencies, projectContents, props, routeManifest])
+  }, [basePath, builtInDependencies, projectContents, routeManifest])
 
   const router = React.useMemo(() => createMemoryRouter(routes), [routes])
 

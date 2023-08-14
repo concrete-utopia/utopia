@@ -1,12 +1,17 @@
-// FIXME: this function is not fully remix-route compliant, it only
-// implement what's necessary at a given time
-
-import type { Either } from '../../../core/shared/either'
-import { left, right } from '../../../core/shared/either'
+import React from 'react'
+import type { DataRouteObject } from 'react-router'
+import { Outlet } from 'react-router'
 import type {
   UNSAFE_RouteManifest as RouteManifest,
   UNSAFE_EntryRoute as EntryRoute,
+  UNSAFE_FutureConfig as FutureConfig,
+  UNSAFE_AssetsManifest as AssetsManifest,
+  UNSAFE_RemixContextObject as RemixContextObject,
 } from '@remix-run/react'
+
+import type { Either } from '../../../core/shared/either'
+import { left, right } from '../../../core/shared/either'
+import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import type { ProjectContentFile } from '../../assets'
 import type {
   JSXElementChild,
@@ -127,7 +132,7 @@ interface UidWithPathPart {
   pathPart: ElementPathPart
 }
 
-export function* postOrderTraversal(
+export function* jsxElementUidsPostOrder(
   element: JSXElementChild,
   pathPart: ElementPathPart,
 ): Generator<UidWithPathPart, void, unknown> {
@@ -135,11 +140,92 @@ export function* postOrderTraversal(
     case 'JSX_FRAGMENT':
     case 'JSX_ELEMENT':
       for (const child of element.children) {
-        yield* postOrderTraversal(child, [...pathPart, element.uid])
+        yield* jsxElementUidsPostOrder(child, [...pathPart, element.uid])
       }
       yield { uid: element.uid, pathPart: pathPart }
       return
     default:
       yield { uid: element.uid, pathPart: pathPart }
   }
+}
+
+function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
+  if (value == null) {
+    console.error(`Invariant error: ${message}`)
+    throw new Error(message)
+  }
+}
+
+// Not exported from Remix
+// FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
+function useRemixContext(): RemixContextObject {
+  let context = React.useContext(RemixContext)
+  invariant(context, 'You must render this element inside a <Remix> element')
+  return context
+}
+
+interface UtopiaRemixRouteProps {
+  id: string
+}
+
+// Not exported from Remix
+// FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
+export const UtopiaRemixRoute = React.memo(({ id }: UtopiaRemixRouteProps) => {
+  let { routeModules, future } = useRemixContext()
+
+  invariant(
+    routeModules,
+    "Cannot initialize 'routeModules'. This normally occurs when you have server code in your client modules.\n" +
+      'Check this link for more details:\nhttps://remix.run/pages/gotchas#server-code-in-client-bundles',
+  )
+
+  let { default: Component, ErrorBoundary, CatchBoundary } = routeModules[id]
+
+  // Default Component to Outlet if we expose boundary UI components
+  if (
+    Component == null &&
+    (ErrorBoundary != null || (!future.v2_errorBoundary && CatchBoundary != null))
+  ) {
+    Component = Outlet
+  }
+
+  invariant(
+    Component,
+    `Route "${id}" has no component! Please go add a \`default\` export in the route module file.\n` +
+      'If you were trying to navigate or submit to a resource route, use `<a>` instead of `<Link>` or `<Form reloadDocument>`.',
+  )
+
+  return <Component />
+})
+
+export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest {
+  return {
+    entry: { imports: [], module: 'TODO' },
+    url: '/',
+    version: '1',
+    routes: routes,
+  }
+}
+
+export function routeFromEntry(route: EntryRoute): DataRouteObject {
+  return {
+    caseSensitive: false,
+    element: <UtopiaRemixRoute id={route.id} />,
+    errorElement: undefined,
+    id: route.id,
+    index: route.index,
+    path: route.path,
+    handle: null,
+  }
+}
+
+export const defaultFutureConfig: FutureConfig = {
+  v2_dev: true,
+  unstable_postcss: false,
+  unstable_tailwind: false,
+  v2_errorBoundary: false,
+  v2_headers: false,
+  v2_meta: false,
+  v2_normalizeFormMethod: false,
+  v2_routeConvention: false,
 }
