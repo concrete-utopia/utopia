@@ -14,10 +14,7 @@ import {
 } from '../../components/inspector/sections/layout-section/layout-system-subsection/layout-system-controls'
 import { SpacedPackedControl } from './spaced-packed-control'
 import { ThreeBarControl } from './three-bar-control'
-import {
-  FlexGapControl,
-  FlexWrapControl,
-} from './sections/layout-section/flex-container-subsection/flex-container-controls'
+import { FlexGapControl } from './sections/layout-section/flex-container-subsection/flex-container-controls'
 import { FlexContainerControls } from './sections/layout-section/flex-container-subsection/flex-container-subsection'
 import { FlexCol } from 'utopia-api'
 
