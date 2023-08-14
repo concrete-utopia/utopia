@@ -43,12 +43,11 @@ function useRemixContext(): RemixContextObject {
 
 interface UtopiaRemixRouteProps {
   id: string
-  remixContainerPath: ElementPath
 }
 
 // Not exported from Remix
 // FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
-export const UtopiaRemixRoute = React.memo(({ id, remixContainerPath }: UtopiaRemixRouteProps) => {
+export const UtopiaRemixRoute = React.memo(({ id }: UtopiaRemixRouteProps) => {
   let { routeModules, future } = useRemixContext()
 
   invariant(
@@ -88,7 +87,7 @@ function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest
 function routeFromEntry(route: EntryRoute, remixContainerPath: ElementPath): DataRouteObject {
   return {
     caseSensitive: false,
-    element: <UtopiaRemixRoute id={route.id} remixContainerPath={remixContainerPath} />,
+    element: <UtopiaRemixRoute id={route.id} />,
     errorElement: undefined,
     id: route.id,
     index: route.index,
