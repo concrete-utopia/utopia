@@ -187,7 +187,6 @@ export const FlexWrapControl = React.memo((props: FlexWrapControlProps) => {
         display: 'flex',
         overflow: 'hidden',
         width: undefined,
-        marginLeft: -8, // this is Balazs hacking the UI so the text of the dropdown aligns with the rest of the rows
       }}
     >
       <PopupList
@@ -272,7 +271,7 @@ export const FlexGapControl = React.memo(() => {
   }, [targetPath])
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
-      <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
         <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
         <SliderNumberControl
           id='flex.container.gap'
@@ -307,94 +306,6 @@ export const FlexGapControl = React.memo(() => {
     </InspectorContextMenuWrapper>
   )
 })
-
-interface FlexAlignContentControlProps extends FlexFieldControlProps<FlexAlignment> {
-  alignDirection: uglyLabel
-  alignContentFlexStart: uglyLabel
-  alignContentFlexEnd: uglyLabel
-}
-
-export const FlexAlignContentControl = React.memo((props: FlexAlignContentControlProps) => {
-  return (
-    <InspectorContextMenuWrapper
-      id={`alignContent-context-menu`}
-      items={[unsetPropertyMenuItem('Align Content', props.onUnset)]}
-      data={{}}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        textAlign: 'center',
-      }}
-    >
-      <OptionChainControl
-        id='flex.container.alignContent'
-        key='flex.container.alignContent'
-        testId='flex.container.alignContent'
-        value={props.value}
-        options={alignContentOptions(
-          props.alignDirection,
-          props.alignContentFlexStart,
-          props.alignContentFlexEnd,
-        )}
-        onSubmitValue={props.onSubmitValue}
-        controlStatus={props.controlStatus}
-        controlStyles={props.controlStyles}
-      />
-    </InspectorContextMenuWrapper>
-  )
-})
-
-const alignContentOptions = (
-  alignDirection: string,
-  alignContentFlexStart: uglyLabel,
-  alignContentFlexEnd: uglyLabel,
-) =>
-  [
-    {
-      value: 'flex-start',
-      tooltip: PrettyLabel[alignContentFlexStart],
-      icon: {
-        category: `layout/flex`,
-        type: `alignContent-${alignDirection}-${alignContentFlexStart}`,
-        color: 'secondary',
-        width: 16,
-        height: 16,
-      },
-    },
-    {
-      value: 'center',
-      tooltip: 'Center',
-      icon: {
-        category: `layout/flex`,
-        type: `alignContent-${alignDirection}-center`,
-        color: 'secondary',
-        width: 16,
-        height: 16,
-      },
-    },
-    {
-      value: 'flex-end',
-      tooltip: PrettyLabel[alignContentFlexEnd],
-      icon: {
-        category: `layout/flex`,
-        type: `alignContent-${alignDirection}-${alignContentFlexEnd}`,
-        color: 'secondary',
-        width: 16,
-        height: 16,
-      },
-    },
-    {
-      value: 'stretch',
-      tooltip: 'Stretch',
-      icon: {
-        category: `layout/flex`,
-        type: `alignContent-${alignDirection}-stretch`,
-        color: 'secondary',
-        width: 16,
-        height: 16,
-      },
-    },
-  ] as Array<OptionChainOption<string | number>>
 
 const justifyContentOptions = (
   alignDirection: FlexDirection,
