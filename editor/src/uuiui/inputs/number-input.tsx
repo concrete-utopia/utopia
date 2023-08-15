@@ -636,7 +636,7 @@ export const NumberInput = React.memo<NumberInputProps>(
           className='number-input-container'
           css={{
             color: controlStyles.mainColor,
-            backgroundColor: controlStyles.backgroundColor,
+            background: colorTheme.bg2.value,
             zIndex: isFocused ? 3 : undefined,
             position: 'relative',
             borderRadius: 2,
