@@ -240,6 +240,7 @@ function getJSXElementForTarget(
     nodeModules,
     openUIJSFileKey,
     target,
+    'outside-remix-container',
   )
   const underlyingPath =
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey

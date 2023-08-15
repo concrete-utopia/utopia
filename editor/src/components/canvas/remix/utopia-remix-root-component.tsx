@@ -26,6 +26,16 @@ import type { ElementPath, ElementPathPart } from '../../../core/shared/project-
 import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import * as EP from '../../../core/shared/element-path'
 
+export interface RemixRouteLookup {
+  [remixAppContainerUid: string]: { pathToRouteModule: string; elementUid: string }
+}
+
+export interface RemixRoutingTable {
+  [remixAppContainerPath: string]: RemixRouteLookup
+}
+
+export const RemixRoutingTable_GLOBAL_MUTATING: RemixRoutingTable = {}
+
 interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
@@ -66,6 +76,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
     let outletPath: ElementPathPart = []
 
+    // create a new routing table entry
+    RemixRoutingTable_GLOBAL_MUTATING[EP.toString(props[UTOPIA_PATH_KEY])] = {}
+    let remixAppContainerUid = EP.toUid(props[UTOPIA_PATH_KEY])
+    let lastOutletUid = ''
+
     Object.values(routeManifest).forEach((route) => {
       const contents = getContentsTreeFileFromString(projectContents, route.filePath)
       if (
@@ -81,24 +96,41 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         return
       }
 
-      const uidGen2 = [...jsxElementUidsPostOrder(topLevelElement.rootElement, [])]
+      const uidsFromRouteModule = [...jsxElementUidsPostOrder(topLevelElement.rootElement, [])]
 
       outletPath =
-        uidGen2.find((r) => r.componentName === 'Outlet')?.pathPart.slice(0, -1) ?? outletPath
+        uidsFromRouteModule.find((r) => r.componentName === 'Outlet')?.pathPart ?? outletPath
 
       const basePath =
         route.id === 'root'
           ? props[UTOPIA_PATH_KEY]
-          : EP.appendPartToPath(props[UTOPIA_PATH_KEY], outletPath)
+          : EP.appendNewElementPath(props[UTOPIA_PATH_KEY], outletPath)
 
       const partialRequire = (toImport: string) => {
         if (toImport === 'react') {
           return {
             ...React,
             createElement: (element: any, propsInner: any, ...children: any) => {
-              const uidInfo = uidGen2.shift()
+              const uidInfo = uidsFromRouteModule.shift()
               if (uidInfo == null) {
                 throw new Error('no uid')
+              }
+
+              // we're in the root element of the default exported component
+              if (uidsFromRouteModule.length === 0) {
+                const keyToUse = route.id === 'root' ? remixAppContainerUid : lastOutletUid
+
+                RemixRoutingTable_GLOBAL_MUTATING[EP.toString(props[UTOPIA_PATH_KEY])] = {
+                  ...RemixRoutingTable_GLOBAL_MUTATING[EP.toString(props[UTOPIA_PATH_KEY])],
+                  [keyToUse]: {
+                    elementUid: uidInfo.uid,
+                    pathToRouteModule: route.filePath,
+                  },
+                }
+              }
+
+              if (uidInfo.componentName === 'Outlet') {
+                lastOutletUid = uidInfo.uid
               }
 
               return patchedCreateReactElement(
@@ -106,7 +138,9 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
                 {
                   ...propsInner,
                   [UTOPIA_UID_KEY]: uidInfo.uid,
-                  [UTOPIA_PATH_KEY]: EP.toString(EP.appendPartToPath(basePath, uidInfo.pathPart)),
+                  [UTOPIA_PATH_KEY]: EP.toString(
+                    EP.appendNewElementPath(basePath, uidInfo.pathPart),
+                  ),
                 },
                 ...children,
               )

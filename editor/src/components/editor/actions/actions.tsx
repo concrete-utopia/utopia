@@ -953,7 +953,6 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
-    remixRoutingTable: desiredEditor.remixRoutingTable,
   }
 }
 
@@ -991,6 +990,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         working.nodeModules.files,
         openUIJSFilePath,
         targetPath,
+        'outside-remix-container',
       )
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 

@@ -66,6 +66,8 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
 import type { PropertyControls } from 'utopia-api/core'
+import type { RemixRouteLookup } from '../canvas/remix/utopia-remix-root-component'
+import { RemixRoutingTable_GLOBAL_MUTATING } from '../canvas/remix/utopia-remix-root-component'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -430,6 +432,7 @@ export function normalisePathToUnderlyingTarget(
   nodeModules: NodeModules,
   currentFilePath: string,
   elementPath: ElementPath | null,
+  remixRouteLookup: 'outside-remix-container' | RemixRouteLookup,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (
@@ -484,6 +487,39 @@ export function normalisePathToUnderlyingTarget(
       currentFilePath,
       currentFile,
       potentiallyDroppedFirstPathElementResult.newPath,
+    )
+  }
+
+  if (remixRouteLookup !== 'outside-remix-container') {
+    const remixRoutingResult = remixRouteLookup[lastDroppedPathPart]
+    if (remixRoutingResult != null) {
+      const { pathToRouteModule } = remixRoutingResult
+      return normalisePathToUnderlyingTarget(
+        projectContents,
+        nodeModules,
+        pathToRouteModule,
+        potentiallyDroppedFirstPathElementResult.newPath,
+        remixRouteLookup,
+      )
+    }
+  }
+
+  const routingTableEntry =
+    RemixRoutingTable_GLOBAL_MUTATING[EP.elementPathPartToString(droppedPathPart)]
+
+  const routeModuleInfo = optionalMap(
+    (entry) => entry[droppedPathPart.at(-1) ?? ''],
+    routingTableEntry,
+  )
+
+  if (routingTableEntry != null && routeModuleInfo != null) {
+    const { pathToRouteModule } = routeModuleInfo
+    return normalisePathToUnderlyingTarget(
+      projectContents,
+      nodeModules,
+      pathToRouteModule,
+      potentiallyDroppedFirstPathElementResult.newPath,
+      routingTableEntry,
     )
   }
 
@@ -544,18 +580,6 @@ function lookupElementImport(
           )}`,
         )
       }
-    } else if (
-      importedFrom.type === 'IMPORTED_ORIGIN' &&
-      importedFrom.filePath === 'utopia-api' &&
-      importedFrom.exportedName === 'RemixContainer'
-    ) {
-      // jump to the currently active route
-      return normalisePathToUnderlyingTarget(
-        projectContents,
-        nodeModules,
-        '/src/routes/_index.js', // TODO: unhardcode
-        potentiallyDroppedFirstPathElementResult.newPath,
-      )
     } else {
       const resolutionResult = resolveModule(
         projectContents,
@@ -579,6 +603,7 @@ function lookupElementImport(
                   nodeModules,
                   successResult.path,
                   potentiallyDroppedFirstPathElementResult.newPath,
+                  'outside-remix-container',
                 )
               case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
                 return normalisePathUnableToProceed(successResult.path)
@@ -599,17 +624,6 @@ function lookupElementImport(
       }
     }
   }
-}
-
-export function normalisePathToUnderlyingTargetForced(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  currentFilePath: string,
-  elementPath: ElementPath | null,
-): NormalisePathSuccess {
-  return normalisePathSuccessOrThrowError(
-    normalisePathToUnderlyingTarget(projectContents, nodeModules, currentFilePath, elementPath),
-  )
 }
 
 export function findUnderlyingTargetComponentImplementationFromImportInfo(

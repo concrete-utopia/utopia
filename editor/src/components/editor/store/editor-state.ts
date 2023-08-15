@@ -1351,10 +1351,6 @@ export function trueUpChildrenOfElementChanged(
 
 export type TrueUpTarget = TrueUpElementChanged | TrueUpChildrenOfElementChanged
 
-export interface RemixRoutingTable {
-  [routingComponentUid: string]: string /* path to route module shown */
-}
-
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1432,7 +1428,6 @@ export interface EditorState {
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
-  remixRoutingTable: RemixRoutingTable
 }
 
 export function editorState(
@@ -1511,7 +1506,6 @@ export function editorState(
   refreshingDependencies: boolean,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
-  remixRoutingTable: RemixRoutingTable,
 ): EditorState {
   return {
     id: id,
@@ -1589,7 +1583,6 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
-    remixRoutingTable: remixRoutingTable,
   }
 }
 
@@ -1877,6 +1870,7 @@ export function getJSXComponentsAndImportsForPath(
     nodeModules,
     currentFilePath,
     path,
+    'outside-remix-container',
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
@@ -2474,7 +2468,6 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       styleClipboard: [],
       elements: [],
     },
-    remixRoutingTable: {},
   }
 }
 
@@ -2838,7 +2831,6 @@ export function editorModelFromPersistentModel(
       styleClipboard: [],
       elements: [],
     },
-    remixRoutingTable: {},
   }
   return editor
 }
@@ -3311,6 +3303,7 @@ export function modifyUnderlyingTarget(
     editor.nodeModules.files,
     currentFilePath,
     target,
+    'outside-remix-container',
   )
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -3449,6 +3442,7 @@ export function withUnderlyingTarget<T>(
     nodeModules,
     forceNotNull('Designer file should be open.', openFile),
     target ?? null,
+    'outside-remix-container',
   )
 
   if (

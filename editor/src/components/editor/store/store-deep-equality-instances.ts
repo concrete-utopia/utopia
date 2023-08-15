@@ -4334,11 +4334,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.internalClipboard,
   )
 
-  const routingTablesAreEqual = objectDeepEquality(StringKeepDeepEquality)(
-    oldValue.remixRoutingTable,
-    newValue.remixRoutingTable,
-  )
-
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -4414,8 +4409,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual &&
-    routingTablesAreEqual.areEqual
+    internalClipboardResults.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4496,7 +4490,6 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
-      routingTablesAreEqual.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

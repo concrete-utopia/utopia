@@ -171,5 +171,4 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
     styleClipboard: [],
     elements: [],
   },
-  remixRoutingTable: {},
 }

@@ -483,6 +483,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       StoryboardFilePath,
       EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
+      'outside-remix-container',
     )
     const expectedResult = normalisePathSuccess(
       EP.dynamicPathToStaticPath(EP.fromString('same-file-app-div')),
@@ -500,6 +501,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
+      'outside-remix-container',
     )
     const expectedResult = normalisePathSuccess(
       EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
@@ -515,6 +517,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       '/src/card.js',
       EP.fromString('card-outer-div/card-inner-div'),
+      'outside-remix-container',
     )
     const expectedResult = normalisePathSuccess(
       EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
@@ -530,6 +533,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       SampleNodeModules,
       '/src/nonexistant.js',
       EP.fromString('card-outer-div/card-inner-div'),
+      'outside-remix-container',
     )
     const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
     expect(actualResult).toEqual(expectedResult)
@@ -542,6 +546,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
       ),
+      'outside-remix-container',
     )
     const expectedResult = normalisePathImportNotFound('app-entity')
     expect(actualResult).toEqual(expectedResult)
@@ -554,6 +559,7 @@ describe('normalisePathToUnderlyingTarget', () => {
       EP.fromString(
         'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring:spring-inner-div',
       ),
+      'outside-remix-container',
     )
     const expectedResult = normalisePathEndsAtDependency('non-existant-dummy-library')
     expect(actualResult).toEqual(expectedResult)
