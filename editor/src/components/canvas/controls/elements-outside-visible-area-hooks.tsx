@@ -20,13 +20,14 @@ import { canvasPointToWindowPoint } from '../dom-lookup'
 import { useAtom } from 'jotai'
 import { InspectorWidthAtom } from '../../inspector/common/inspector-atoms'
 import { UtopiaTheme } from '../../../uuiui'
+import { canvasPanelOffsets } from '../canvas-utils'
 
 export const ElementOutisdeVisibleAreaIndicatorSize = 22 // px
 const minClusterDistance = 17 // px
 const topBarHeight = 40 // px
 const canvasToolbarSkew = topBarHeight + ElementOutisdeVisibleAreaIndicatorSize
 
-type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
+export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
 
 type ElementOutsideVisibleArea = {
   path: ElementPath
@@ -64,17 +65,8 @@ export function useElementsOutsideVisibleArea(
     (store) => store.editor.canvas.roundedCanvasOffset,
     'useElementsOutsideVisibleArea canvasOffset',
   )
-  const leftMenuWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) => (store.editor.leftMenu.expanded ? store.editor.leftMenu.paneWidth : 0),
-    'useElementsOutsideVisibleArea leftMenuWidth',
-  )
-  const [atomInspectorWidth] = useAtom(InspectorWidthAtom)
-  const inspectorWidth = React.useMemo(() => {
-    return atomInspectorWidth === 'regular'
-      ? UtopiaTheme.layout.inspectorSmallWidth
-      : UtopiaTheme.layout.inspectorLargeWidth
-  }, [atomInspectorWidth])
+
+  const panelOffsets = canvasPanelOffsets()
 
   const elements = React.useMemo(() => {
     return uniqBy([...localSelectedViews, ...localHighlightedViews], EP.pathsEqual)
@@ -103,10 +95,10 @@ export function useElementsOutsideVisibleArea(
     return windowRectangle({
       x: bounds.x * scaleRatio,
       y: bounds.y * scaleRatio,
-      width: bounds.width * scaleRatio - leftMenuWidth - (inspectorWidth + 20),
+      width: bounds.width * scaleRatio - panelOffsets.left - (panelOffsets.right + 20),
       height: bounds.height * scaleRatio,
     })
-  }, [bounds, leftMenuWidth, canvasScale, inspectorWidth])
+  }, [bounds, panelOffsets, canvasScale])
 
   const scaledCanvasAreaCenter = React.useMemo(() => {
     if (scaledCanvasArea == null) {
@@ -125,7 +117,7 @@ export function useElementsOutsideVisibleArea(
         return null
       }
 
-      const topLeftSkew = windowPoint({ x: -leftMenuWidth, y: 0 })
+      const topLeftSkew = windowPoint({ x: -panelOffsets.left, y: 0 })
       const topLeftPoint = offsetPoint(
         canvasPointToWindowPoint(frame, canvasScale, canvasOffset),
         topLeftSkew,
@@ -148,7 +140,7 @@ export function useElementsOutsideVisibleArea(
         directions: directions,
       }
     }, elements)
-  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString, leftMenuWidth])
+  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString, panelOffsets])
 
   return React.useMemo((): ElementOutsideVisibleAreaIndicator[] => {
     if (
@@ -178,7 +170,7 @@ export function useElementsOutsideVisibleArea(
           ),
           directions,
           scaledCanvasArea,
-          leftMenuWidth,
+          panelOffsets.left,
           windowRectangle(canvasToolbar),
         ),
       }
@@ -199,7 +191,7 @@ export function useElementsOutsideVisibleArea(
     elementsOutsideVisibleArea,
     scaledCanvasArea,
     scaledCanvasAreaCenter,
-    leftMenuWidth,
+    panelOffsets,
     bounds,
     canvasToolbar,
   ])

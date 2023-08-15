@@ -3550,12 +3550,6 @@ describe('Undo behavior in inspector', () => {
       fireEvent.keyUp(opacityControl, { key: 'z', keyCode: 90, metaKey: true })
     })
 
-    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([]) // selection is reset to the previous selection (no elements selected)
-
-    await act(async () => {
-      await renderResult.dispatch([selectComponents([targetPath], false)], false)
-    })
-
     // the control's value should now be undone
     matchInlineSnapshotBrowser(
       ((await renderResult.renderedDOM.findByTestId('opacity-number-input')) as HTMLInputElement)

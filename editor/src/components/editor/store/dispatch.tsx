@@ -72,7 +72,7 @@ import { handleStrategies, updatePostActionState } from './dispatch-strategies'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { MetaCanvasStrategy } from '../../canvas/canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from '../../canvas/canvas-strategies/canvas-strategies'
-import { removePathsWithDeadUIDs } from '../../../core/shared/element-path'
+import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared/element-path'
 import { notice } from '../../../components/common/notice'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
@@ -543,7 +543,22 @@ export function editorDispatchClosingOut(
       assetRenames,
     )
   } else if (transientOrNoChange || !shouldSave) {
-    newHistory = result.history
+    // If there's a selection change, incorporate it into the previous history step.
+    if (
+      arrayOfPathsEqual(
+        storedState.unpatchedEditor.selectedViews,
+        result.unpatchedEditor.selectedViews,
+      )
+    ) {
+      newHistory = result.history
+    } else {
+      newHistory = History.replaceLastWithUpdate(result.history, (historyEditorState) => {
+        return {
+          ...historyEditorState,
+          selectedViews: result.unpatchedEditor.selectedViews,
+        }
+      })
+    }
   } else {
     newHistory = History.add(
       result.history,

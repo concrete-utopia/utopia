@@ -2216,3 +2216,16 @@ export function shouldShowErrorOverlay(
 ): boolean {
   return errorRecords.length > 0 || overlayErrors.length > 0
 }
+
+export function canvasPanelOffsets(): {
+  left: number
+  right: number
+} {
+  const inspector = document.getElementById('inspector-root')
+  const codeEditor = document.getElementById('vscode-editor')
+  const leftPane = document.getElementById('left-pane')
+  return {
+    left: (codeEditor?.clientWidth ?? 0) + (leftPane?.clientWidth ?? 0),
+    right: inspector?.clientWidth ?? 0,
+  }
+}

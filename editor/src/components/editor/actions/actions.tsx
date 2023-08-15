@@ -187,6 +187,7 @@ import {
 import type { CanvasFrameAndTarget, PinOrFlexFrameChange } from '../../canvas/canvas-types'
 import { pinSizeChange } from '../../canvas/canvas-types'
 import {
+  canvasPanelOffsets,
   duplicate,
   getFrameChange,
   moveTemplate,
@@ -350,6 +351,7 @@ import type {
 } from '../action-types'
 import { DeleteSelected, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
+import { isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -1978,6 +1980,19 @@ export const UPDATE_FNS = {
       // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
       // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
       return editor
+    }
+    if (isTextEditMode(action.mode)) {
+      if (
+        !MetadataUtils.targetTextEditable(
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          action.mode.editedText,
+        )
+      ) {
+        // If the target of text edit mode isn't editable, then ignore the requested change.
+        console.error(`Invalid target for text edit mode: ${EP.toString(action.mode.editedText)}`)
+        return editor
+      }
     }
     return setModeState(action.mode, editor)
   },
@@ -4557,18 +4572,16 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
     )
     if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
-      const isNavigatorOnTop = !editor.navigator.minimised
+      const isLeftMenuOpen = editor.leftMenu.expanded
       const containerRootDiv = document.getElementById('canvas-root')
-      const inspector = document.getElementById('inspector-root')
-      const navigatorOffset = isNavigatorOnTop ? DefaultNavigatorWidth : 0
-      const inspectorOffset = editor.inspector.visible ? inspector?.clientWidth ?? 0 : 0
+      const panelOffsets = canvasPanelOffsets()
       const scale = 1 / editor.canvas.scale
 
       // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
       // It will effectively scroll to the element by positioning it at the origin (TL) of the
       // canvas, based on the BaseCanvasOffset value(s).
       function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
-        const baseCanvasOffset = isNavigatorOnTop ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+        const baseCanvasOffset = isLeftMenuOpen ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
         const target = canvasPoint({
           x: baseCanvasOffset.x * scale,
           y: baseCanvasOffset.y * scale,
@@ -4596,8 +4609,8 @@ export const UPDATE_FNS = {
             canvasCenter.x -
             frame.width / 2 -
             bounds.x +
-            (navigatorOffset / 2) * scale -
-            (inspectorOffset / 2) * scale,
+            (panelOffsets.left / 2) * scale -
+            (panelOffsets.right / 2) * scale,
           y: canvasCenter.y - frame.height / 2 - bounds.y,
         })
         return Utils.pointDifference(frame, topLeftTarget)
@@ -4611,7 +4624,7 @@ export const UPDATE_FNS = {
           return canvasOffsetToOrigin(frame) // fallback default
         }
         const containerRectangle = {
-          x: navigatorOffset - editor.canvas.realCanvasOffset.x,
+          x: panelOffsets.left - editor.canvas.realCanvasOffset.x,
           y: -editor.canvas.realCanvasOffset.y,
           width: bounds.width,
           height: bounds.height,

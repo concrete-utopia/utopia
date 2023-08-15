@@ -100,7 +100,7 @@ function getTabStyleForErrors(
 ): { backgroundColor: string } {
   const errorStyle = { backgroundColor: colorTheme.error.value }
   const warningStyle = { backgroundColor: colorTheme.warningBgSolid.value }
-  const defaultStyle = { backgroundColor: colorTheme.subtleBackground.value }
+  const defaultStyle = { backgroundColor: colorTheme.fg7.value }
 
   const isFatalOrError = errorMessages.some(messageIsFatalOrError)
   const isWarning = errorMessages.some(messageIsWarning)

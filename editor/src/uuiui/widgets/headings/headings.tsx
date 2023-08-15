@@ -54,7 +54,7 @@ export const VerySubdued = styled(Subdued)({
 export const InspectorSectionHeader = styled(H1)({
   label: 'section-header',
   height: UtopiaTheme.layout.rowHeight.large,
-  borderTop: `1px solid ${colorTheme.bg4.value}`,
+  borderTop: `1px solid ${colorTheme.seperator.value}`,
   padding: `6px ${UtopiaTheme.layout.inspectorXPadding}px 6px ${UtopiaTheme.layout.inspectorXPadding}px`,
 })
 InspectorSectionHeader.displayName = 'InspectorSectionHeader'
@@ -62,7 +62,7 @@ InspectorSectionHeader.displayName = 'InspectorSectionHeader'
 export const InspectorSubsectionHeader = styled(H2)({
   height: UtopiaTheme.layout.rowHeight.large,
   label: 'subsection-header',
-  borderTop: `1px solid ${colorTheme.bg4.value}`,
+  borderTop: `1px solid ${colorTheme.seperator.value}`,
   // no margin here so that subsections stack nicely
   // margin bottom needs to go into the subsection body
   padding: `0 ${UtopiaTheme.layout.inspectorXPadding}px`,
