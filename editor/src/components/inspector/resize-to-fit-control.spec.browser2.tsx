@@ -166,6 +166,28 @@ describe('Resize to fit control', () => {
     expect(view.style.flexBasis).toEqual('')
   })
   describe('for groups', () => {
+    describe('targeting multiple elements', () => {
+      it('resize to fit is disabled', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [
+          EP.fromString(`storyboard/scene/group/child-1`),
+          EP.fromString(`storyboard/scene/group/child-2`),
+        ])
+        await expectNoAction(editor, async () => {
+          await clickResizeTo(editor, ResizeToFitControlTestId)
+        })
+      })
+      it('resize to fill is disabled', async () => {
+        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+        await selectComponentsForTest(editor, [
+          EP.fromString(`storyboard/scene/group/child-1`),
+          EP.fromString(`storyboard/scene/group/child-2`),
+        ])
+        await expectNoAction(editor, async () => {
+          await clickResizeTo(editor, ResizeToFillControlTestId)
+        })
+      })
+    })
     describe('targeting children of groups that are not groups themselves', () => {
       it('resize to fit works as usual', async () => {
         const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
