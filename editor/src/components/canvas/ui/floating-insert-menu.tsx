@@ -375,7 +375,7 @@ const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
           css={{
             '&:focus': {
               outline: 'auto',
-              outlineColor: colorTheme.primary.value,
+              outlineColor: colorTheme.dynamicBlue.value,
               outlineOffset: 0,
             },
           }}
