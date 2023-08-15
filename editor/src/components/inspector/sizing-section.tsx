@@ -13,17 +13,14 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
         <FlexRow
           style={{
             flexGrow: 1,
-            gap: 8,
             height: 42,
+            justifyContent: 'flex-end',
           }}
         >
-          <div style={{ flex: 1 }} />
           <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
-      <FlexRow style={{ padding: 4, justifyContent: 'flex-end' }}>
-        <FillHugFixedControl />
-      </FlexRow>
+      <FillHugFixedControl />
     </>
   )
 })
