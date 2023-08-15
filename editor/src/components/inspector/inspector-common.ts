@@ -45,7 +45,11 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import type { CanvasRectangle, SimpleRectangle } from '../../core/shared/math-utils'
+import {
+  CanvasRectangle,
+  roundUpToNearestHalf,
+  SimpleRectangle,
+} from '../../core/shared/math-utils'
 import {
   canvasRectangle,
   isFiniteRectangle,
@@ -66,6 +70,7 @@ import type { AllElementProps, ElementProps } from '../editor/store/editor-state
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { convertGroupToFrameCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -417,6 +422,7 @@ export function isIntrinsicallyInlineElement(element: ElementInstanceMetadata | 
 
 export function sizeToVisualDimensions(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
@@ -429,7 +435,7 @@ export function sizeToVisualDimensions(
     return []
   }
 
-  const width = globalFrame.width
+  const width = fixedSizeDimensionHandlingText(metadata, pathTrees, elementPath, globalFrame.width)
   const height = globalFrame.height
 
   return [
@@ -449,19 +455,6 @@ export function sizeToVisualDimensions(
       element.specialSizeMeasurements.parentFlexDirection ?? null,
     ),
   ]
-}
-
-export function sizeToVisualDimensionsAlongAxis(
-  axis: Axis,
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return []
-  }
-
-  return sizeToVisualDimensionsAlongAxisInstance(axis, element)(elementPath)
 }
 
 export const sizeToVisualDimensionsAlongAxisInstance =
@@ -700,7 +693,7 @@ export function setToFixedSizeCommands(
     if (isGroup && !isChildOfGroup) {
       return convertGroupToFrameCommands(metadata, elementPathTree, allElementProps, targetElement)
     } else {
-      return sizeToVisualDimensions(metadata, targetElement)
+      return sizeToVisualDimensions(metadata, elementPathTree, targetElement)
     }
   })
 }

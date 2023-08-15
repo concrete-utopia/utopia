@@ -1501,7 +1501,7 @@ describe('Fixed / Fill / Hug control', () => {
 
         const text = editor.renderedDOM.getByTestId('text')
 
-        expect(text.style.width).toEqual('58.5px')
+        expect(text.style.width).toEqual('59px')
       }
 
       {

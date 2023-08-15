@@ -151,7 +151,7 @@ export function convertLayoutToFlexCommands(
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'alignItems'), alignItems),
       ...childrenPaths.flatMap((child) => [
         ...nukeAllAbsolutePositioningPropsCommands(child),
-        ...sizeToVisualDimensions(metadata, child),
+        ...sizeToVisualDimensions(metadata, elementPathTree, child),
       ]),
       ...rearrangeCommands,
     ]

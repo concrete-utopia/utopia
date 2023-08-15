@@ -69,7 +69,7 @@ function hugContentsSingleElement(
       return []
     }
     return [
-      ...sizeToVisualDimensions(metadata, child),
+      ...sizeToVisualDimensions(metadata, pathTrees, child),
       showToastCommand('Children converted to fixed size', 'INFO', CHILDREN_CONVERTED_TOAST_ID),
     ]
   })
