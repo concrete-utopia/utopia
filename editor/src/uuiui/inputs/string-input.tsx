@@ -91,10 +91,9 @@ export const StringInput = React.memo(
             css={{
               borderRadius: 2,
               color: controlStyles.mainColor,
-              // backgroundColor: controlStyles.backgroundColor,
               position: 'relative',
               '&:hover': {
-                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
               },
               '&:focus-within': {
                 boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,

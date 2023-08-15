@@ -642,7 +642,7 @@ export const NumberInput = React.memo<NumberInputProps>(
             borderRadius: 2,
             ...chainedStyles,
             '&:hover': {
-              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.border3.value}`,
+              boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
             },
             '&:focus-within': {
               boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
