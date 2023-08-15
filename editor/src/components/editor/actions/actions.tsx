@@ -351,6 +351,7 @@ import type {
 } from '../action-types'
 import { DeleteSelected, isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
+import { isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
 import * as History from '../history'
 import type { StateHistory } from '../history'
@@ -1979,6 +1980,19 @@ export const UPDATE_FNS = {
       // For now there's not much more that we can do since the action here can be (and is) evaluated also for transient states
       // (e.g. a `textEdit` mode after an `insertMode`) created with wildcard patches.
       return editor
+    }
+    if (isTextEditMode(action.mode)) {
+      if (
+        !MetadataUtils.targetTextEditable(
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          action.mode.editedText,
+        )
+      ) {
+        // If the target of text edit mode isn't editable, then ignore the requested change.
+        console.error(`Invalid target for text edit mode: ${EP.toString(action.mode.editedText)}`)
+        return editor
+      }
     }
     return setModeState(action.mode, editor)
   },
