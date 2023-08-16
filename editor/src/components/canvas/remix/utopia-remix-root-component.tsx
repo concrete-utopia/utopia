@@ -10,8 +10,8 @@ import {
   createAssetsManifest,
   defaultFutureConfig,
   getDefaultExportNameAndUidFromFile,
-  getRouteManifest,
-  getRoutesFromManifest,
+  createRouteManifestFromProjectContents,
+  getRoutesAndModulesFromManifest,
   invariant,
 } from './remix-utils'
 import type { Either } from '../../../core/shared/either'
@@ -45,7 +45,10 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     'RemixRootComponent projectContents',
   )
 
-  const routeManifest = React.useMemo(() => getRouteManifest(projectContents), [projectContents])
+  const routeManifest = React.useMemo(
+    () => createRouteManifestFromProjectContents(projectContents),
+    [projectContents],
+  )
 
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
@@ -179,7 +182,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
 
   const { routeModules, routes } = React.useMemo(
-    () => getRoutesFromManifest(routeManifest, indexDefaultExport, rootDefaultExport),
+    () => getRoutesAndModulesFromManifest(routeManifest, indexDefaultExport, rootDefaultExport),
     [indexDefaultExport, rootDefaultExport, routeManifest],
   )
 

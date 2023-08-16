@@ -283,7 +283,7 @@ export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
   return <Wrapped {...propsWithPath} />
 }
 
-export function getRouteManifest(
+export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): RouteManifestWithContents {
   const getFlatFilePaths = (root: ProjectContentsTree): ProjectContentFile[] =>
@@ -300,7 +300,7 @@ export function getRouteManifest(
   )
 }
 
-export function getRoutesFromManifest(
+export function getRoutesAndModulesFromManifest(
   routeManifest: RouteManifestWithContents,
   rootDefaultExport: RouteComponent,
   indexDefaultExport: RouteComponent,
