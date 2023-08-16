@@ -170,7 +170,7 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         justifyContent: 'space-around',
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        outline: `1px solid ${colorTheme.bg4.value}`,
+        outline: `1px solid ${colorTheme.seperator.value}`,
         background: colorTheme.inspectorBackground.value,
       }}
     >
@@ -456,7 +456,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       style={{
         width: '100%',
         position: 'relative',
-        color: colorTheme.neutralForeground.value,
         height: '100%',
       }}
       onFocus={onFocus}

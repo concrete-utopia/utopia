@@ -439,11 +439,20 @@ export class ProjectsPage extends React.Component<EmptyProps, ProjectsState> {
               gap: layout.margins.regular,
             }}
           >
-            <img
-              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_@2x.png?raw=true'
-              alt='Utopia logo'
-              css={{ height: '35px' }}
-            ></img>
+            <div
+              css={{
+                height: 60,
+                width: 45,
+                backgroundSize: '45px',
+                backgroundRepeat: 'no-repeat',
+                backgroundImage:
+                  'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_light.png?raw=true)',
+                ['@media (prefers-color-scheme: dark)']: {
+                  backgroundImage:
+                    'url(https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_dark.png?raw=true)',
+                },
+              }}
+            />
             Utopia
           </div>
           <FlexWrappingList

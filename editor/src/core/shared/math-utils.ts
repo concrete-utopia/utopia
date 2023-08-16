@@ -893,6 +893,10 @@ export function roundTo(number: number, digits: number = 0): number {
   return Math.round(n) / multiplicator
 }
 
+export function roundUpToNearestHalf(numberToRound: number): number {
+  return Math.ceil(numberToRound * 2) / 2
+}
+
 export function roundToNearestHalf(n: number): number {
   return Math.round(n * 2) / 2
 }

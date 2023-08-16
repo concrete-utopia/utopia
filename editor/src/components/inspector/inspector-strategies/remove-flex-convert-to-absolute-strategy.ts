@@ -29,9 +29,9 @@ function removeFlexConvertToAbsoluteOne(
   return [
     ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     ...children.flatMap((c) => addPositionAbsoluteTopLeft(metadata, c)), // all children are converted to absolute,
-    ...children.flatMap((c) => sizeToVisualDimensions(metadata, c)), // with width/height based on measured dimensions
+    ...children.flatMap((c) => sizeToVisualDimensions(metadata, pathTrees, c)), // with width/height based on measured dimensions
     ...children.flatMap((c) => pruneFlexPropsCommands(flexChildProps, c)),
-    ...sizeToVisualDimensions(metadata, elementPath), // container is sized to keep its visual dimensions
+    ...sizeToVisualDimensions(metadata, pathTrees, elementPath), // container is sized to keep its visual dimensions
   ]
 }
 

@@ -82,15 +82,21 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
+  const onlyOneElementSelected = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.length === 1,
+    'ResizeToFitControl onlyOneElementSelected',
+  )
+
   const isHugApplicable = useEditorState(
     Substores.metadata,
-    (store) => isApplicableSelector(store, 'hug'),
+    (store) => onlyOneElementSelected && isApplicableSelector(store, 'hug'),
     'ResizeToFitControl isHugApplicable',
   )
 
   const isFillApplicable = useEditorState(
     Substores.metadata,
-    (store) => isApplicableSelector(store, 'fill'),
+    (store) => onlyOneElementSelected && isApplicableSelector(store, 'fill'),
     'ResizeToFitControl isHugApplicable',
   )
 

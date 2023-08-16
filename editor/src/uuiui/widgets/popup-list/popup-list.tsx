@@ -42,7 +42,7 @@ interface PopupListProps {
 }
 
 const WindowEdgePadding = 4
-const OptionHeight = UtopiaTheme.layout.inputHeight.default + 2
+const OptionHeight = UtopiaTheme.layout.inputHeight.default
 const CheckboxPadding = 4
 const CheckboxWidth = 16
 const CheckboxInset = CheckboxPadding + CheckboxWidth
