@@ -359,7 +359,7 @@ export function getRoutesAndModulesFromManifest(
   return { routeModules: routeManifestResult, routes: routesResult }
 }
 
-export function getRemixExportsOfModule(
+function getRemixExportsOfModule(
   filename: string,
   customRequire: (importOrigin: string, toImport: string) => any,
   metadataContext: UiJsxCanvasContextData,
