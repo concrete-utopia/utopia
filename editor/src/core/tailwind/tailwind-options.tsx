@@ -15,6 +15,7 @@ import {
   useEditorState,
   useRefEditorState,
 } from '../../components/editor/store/store-hook'
+import type { RemixRoutingTable } from '../../components/editor/store/editor-state'
 import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../components/assets'
@@ -38,6 +39,7 @@ import * as EP from '../shared/element-path'
 import { isTwindEnabled } from './tailwind'
 import type { AttributeCategory } from './attribute-categories'
 import { AttributeCategories } from './attribute-categories'
+import { RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE } from '../../components/editor/actions/actions'
 
 export interface TailWindOption {
   label: string
@@ -234,13 +236,14 @@ function getJSXElementForTarget(
   openUIJSFileKey: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
+  remixRoutingTable: RemixRoutingTable,
 ): JSXElementChild | null {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     projectContents,
     nodeModules,
     openUIJSFileKey,
     target,
-    'outside-remix-container',
+    { type: 'outside-remix-container', routingTable: remixRoutingTable },
   )
   const underlyingPath =
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey
@@ -304,6 +307,7 @@ export function useGetSelectedClasses(): {
             openUIJSFileKey,
             store.editor.projectContents,
             store.editor.nodeModules.files,
+            RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
           ),
         )
       }

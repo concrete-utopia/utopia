@@ -16,6 +16,7 @@ import {
   defaultFutureConfig,
   getRoutesFromFiles,
   getTopLevelElement,
+  invariant,
   jsxElementUidsPostOrder,
   routeFromEntry,
 } from './remix-utils'
@@ -25,16 +26,8 @@ import { patchedCreateReactElement } from '../../../utils/canvas-react-utils'
 import type { ElementPath, ElementPathPart } from '../../../core/shared/project-file-types'
 import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import * as EP from '../../../core/shared/element-path'
-
-export interface RemixRouteLookup {
-  [remixAppContainerUid: string]: { pathToRouteModule: string; elementUid: string }
-}
-
-export interface RemixRoutingTable {
-  [remixAppContainerPath: string]: RemixRouteLookup
-}
-
-export const RemixRoutingTable_GLOBAL_MUTATING: RemixRoutingTable = {}
+import type { RemixRouteLookup } from '../../editor/store/editor-state'
+import { addToRemixRoutingTable } from '../../editor/actions/actions'
 
 interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
@@ -76,10 +69,8 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
     let outletPath: ElementPathPart = []
 
-    // create a new routing table entry
-    RemixRoutingTable_GLOBAL_MUTATING[EP.toString(props[UTOPIA_PATH_KEY])] = {}
-    let remixAppContainerUid = EP.toUid(props[UTOPIA_PATH_KEY])
-    let lastOutletUid = ''
+    let routingTableEntry: RemixRouteLookup = {}
+    let lastRoutingElementUid: string | null = EP.toUid(props[UTOPIA_PATH_KEY])
 
     Object.values(routeManifest).forEach((route) => {
       const contents = getContentsTreeFileFromString(projectContents, route.filePath)
@@ -101,10 +92,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       outletPath =
         uidsFromRouteModule.find((r) => r.componentName === 'Outlet')?.pathPart ?? outletPath
 
+      const pathForThisRemixContainer = props[UTOPIA_PATH_KEY]
+
       const basePath =
         route.id === 'root'
-          ? props[UTOPIA_PATH_KEY]
-          : EP.appendNewElementPath(props[UTOPIA_PATH_KEY], outletPath)
+          ? pathForThisRemixContainer
+          : EP.appendNewElementPath(pathForThisRemixContainer, outletPath)
+
+      let outletIdFromThisModule: string | null = null
 
       const partialRequire = (toImport: string) => {
         if (toImport === 'react') {
@@ -112,25 +107,30 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
             ...React,
             createElement: (element: any, propsInner: any, ...children: any) => {
               const uidInfo = uidsFromRouteModule.shift()
-              if (uidInfo == null) {
-                throw new Error('no uid')
+              invariant(uidInfo, "the JSXElement AST doesn't match up with what React is rendering")
+
+              if (uidInfo.componentName === 'Outlet') {
+                outletIdFromThisModule = uidInfo.uid
               }
 
               // we're in the root element of the default exported component
               if (uidsFromRouteModule.length === 0) {
-                const keyToUse = route.id === 'root' ? remixAppContainerUid : lastOutletUid
+                invariant(
+                  lastRoutingElementUid,
+                  'route module rendered without a routing component',
+                )
 
-                RemixRoutingTable_GLOBAL_MUTATING[EP.toString(props[UTOPIA_PATH_KEY])] = {
-                  ...RemixRoutingTable_GLOBAL_MUTATING[EP.toString(props[UTOPIA_PATH_KEY])],
-                  [keyToUse]: {
-                    elementUid: uidInfo.uid,
-                    pathToRouteModule: route.filePath,
-                  },
+                routingTableEntry = {
+                  ...routingTableEntry,
+                  [lastRoutingElementUid]: route.filePath,
                 }
-              }
 
-              if (uidInfo.componentName === 'Outlet') {
-                lastOutletUid = uidInfo.uid
+                if (outletIdFromThisModule == null) {
+                  addToRemixRoutingTable(pathForThisRemixContainer, routingTableEntry)
+                }
+
+                lastRoutingElementUid = outletIdFromThisModule
+                outletIdFromThisModule = null
               }
 
               return patchedCreateReactElement(

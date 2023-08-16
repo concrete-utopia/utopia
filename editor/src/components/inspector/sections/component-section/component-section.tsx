@@ -86,6 +86,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { getFilePathForImportedComponent } from '../../../../core/model/project-file-utils'
 import { safeIndex } from '../../../../core/shared/array-utils'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE } from '../../../editor/actions/actions'
 
 function useComponentPropsInspectorInfo(
   partialPath: PropertyPath,
@@ -814,7 +815,10 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           state.editor.nodeModules.files,
           state.editor.canvas.openFile?.filename ?? '',
           target,
-          'outside-remix-container',
+          {
+            type: 'outside-remix-container',
+            routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
+          },
         )
 
         return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null

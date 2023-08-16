@@ -66,8 +66,7 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
 import type { PropertyControls } from 'utopia-api/core'
-import type { RemixRouteLookup } from '../canvas/remix/utopia-remix-root-component'
-import { RemixRoutingTable_GLOBAL_MUTATING } from '../canvas/remix/utopia-remix-root-component'
+import type { RemixRouteLookup, RemixRoutingTable } from '../editor/store/editor-state'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -427,12 +426,16 @@ export function normalisePathSuccessOrThrowError(
   }
 }
 
+type RemixRouteLookupState =
+  | { type: 'outside-remix-container'; routingTable: RemixRoutingTable }
+  | { type: 'inside-remix-container'; lookupTable: RemixRouteLookup }
+
 export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   currentFilePath: string,
   elementPath: ElementPath | null,
-  remixRouteLookup: 'outside-remix-container' | RemixRouteLookup,
+  remixRouteLookupState: RemixRouteLookupState,
 ): NormalisePathResult {
   const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
   if (
@@ -490,36 +493,34 @@ export function normalisePathToUnderlyingTarget(
     )
   }
 
-  if (remixRouteLookup !== 'outside-remix-container') {
-    const remixRoutingResult = remixRouteLookup[lastDroppedPathPart]
-    if (remixRoutingResult != null) {
-      const { pathToRouteModule } = remixRoutingResult
-      return normalisePathToUnderlyingTarget(
-        projectContents,
-        nodeModules,
-        pathToRouteModule,
-        potentiallyDroppedFirstPathElementResult.newPath,
-        remixRouteLookup,
-      )
+  if (remixRouteLookupState.type === 'inside-remix-container') {
+    const pathToRouteModule = remixRouteLookupState.lookupTable[lastDroppedPathPart]
+
+    if (pathToRouteModule == null) {
+      return normalisePathImportNotFound(lastDroppedPathPart) // TODO: first-class support for routes
     }
-  }
 
-  const routingTableEntry =
-    RemixRoutingTable_GLOBAL_MUTATING[EP.elementPathPartToString(droppedPathPart)]
-
-  const routeModuleInfo = optionalMap(
-    (entry) => entry[droppedPathPart.at(-1) ?? ''],
-    routingTableEntry,
-  )
-
-  if (routingTableEntry != null && routeModuleInfo != null) {
-    const { pathToRouteModule } = routeModuleInfo
     return normalisePathToUnderlyingTarget(
       projectContents,
       nodeModules,
       pathToRouteModule,
       potentiallyDroppedFirstPathElementResult.newPath,
-      routingTableEntry,
+      remixRouteLookupState,
+    )
+  }
+
+  const lookupTable =
+    remixRouteLookupState.routingTable[EP.elementPathPartToString(droppedPathPart)]
+
+  const pathToRouteModule = optionalMap((entry) => entry[droppedPathPart.at(-1) ?? ''], lookupTable)
+
+  if (lookupTable != null && pathToRouteModule != null) {
+    return normalisePathToUnderlyingTarget(
+      projectContents,
+      nodeModules,
+      pathToRouteModule,
+      potentiallyDroppedFirstPathElementResult.newPath,
+      { type: 'inside-remix-container', lookupTable: lookupTable },
     )
   }
 
@@ -532,6 +533,7 @@ export function normalisePathToUnderlyingTarget(
     elementPath,
     parsedContent,
     potentiallyDroppedFirstPathElementResult,
+    remixRouteLookupState,
   )
 }
 
@@ -544,6 +546,7 @@ function lookupElementImport(
   elementPath: ElementPath | null,
   parsedContent: ParseSuccess,
   potentiallyDroppedFirstPathElementResult: EP.DropFirstPathElementResultType,
+  remixRouteLookupState: RemixRouteLookupState,
 ): NormalisePathResult {
   const importedFrom = importedFromWhere(
     currentFilePath,
@@ -571,6 +574,7 @@ function lookupElementImport(
           elementPath,
           parsedContent,
           potentiallyDroppedFirstPathElementResult,
+          remixRouteLookupState,
         )
       } else {
         return normalisePathError(
@@ -603,7 +607,7 @@ function lookupElementImport(
                   nodeModules,
                   successResult.path,
                   potentiallyDroppedFirstPathElementResult.newPath,
-                  'outside-remix-container',
+                  remixRouteLookupState,
                 )
               case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
                 return normalisePathUnableToProceed(successResult.path)

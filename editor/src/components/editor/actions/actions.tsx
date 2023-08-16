@@ -381,6 +381,8 @@ import type {
   EditorStoreUnpatched,
   NavigatorEntry,
   TrueUpTarget,
+  RemixRoutingTable,
+  RemixRouteLookup,
 } from '../store/editor-state'
 import { trueUpChildrenOfElementChanged } from '../store/editor-state'
 import { AllElementProps, trueUpElementChanged } from '../store/editor-state'
@@ -457,11 +459,7 @@ import {
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
 import type { CopyData } from '../../../utils/clipboard'
-import {
-  createClipboardDataFromSelection,
-  Clipboard,
-  getTargetParentForPaste,
-} from '../../../utils/clipboard'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
 import {
   NavigatorStateKeepDeepEquality,
   ParamKeepDeepEquality,
@@ -990,7 +988,10 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         working.nodeModules.files,
         openUIJSFilePath,
         targetPath,
-        'outside-remix-container',
+        {
+          type: 'outside-remix-container',
+          routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
+        },
       )
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -1451,6 +1452,20 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
         ? editor.interfaceDesigner.codePaneWidth
         : Math.max(MIN_CODE_PANE_REOPEN_WIDTH, editor.interfaceDesigner.codePaneWidth),
     },
+  }
+}
+
+export const RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE: { current: RemixRoutingTable } = {
+  current: {},
+}
+
+export function addToRemixRoutingTable(
+  remixContainerPath: ElementPath,
+  loookup: RemixRouteLookup,
+): void {
+  RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current = {
+    ...RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
+    [EP.toString(remixContainerPath)]: loookup,
   }
 }
 

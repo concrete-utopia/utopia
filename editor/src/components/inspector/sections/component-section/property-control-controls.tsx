@@ -55,6 +55,7 @@ import {
   normalisePathToUnderlyingTarget,
 } from '../../../custom-code/code-file'
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE } from '../../../editor/actions/actions'
 
 export interface ControlForPropProps<T extends BaseControlDescription> {
   propPath: PropertyPath
@@ -130,7 +131,10 @@ export const ExpressionInputPropertyControl = React.memo(
             store.editor.nodeModules.files,
             currentFilePath,
             selectedView,
-            'outside-remix-container',
+            {
+              type: 'outside-remix-container',
+              routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
+            },
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath
         })
@@ -250,7 +254,10 @@ export const ExpressionPopUpListPropertyControl = React.memo(
             store.editor.nodeModules.files,
             currentFilePath,
             selectedView,
-            'outside-remix-container',
+            {
+              type: 'outside-remix-container',
+              routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
+            },
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath
         })

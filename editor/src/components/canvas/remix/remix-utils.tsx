@@ -158,7 +158,7 @@ export function* jsxElementUidsPostOrder(
   }
 }
 
-function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
+export function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
   if (value == null) {
     console.error(`Invariant error: ${message}`)
     throw new Error(message)
