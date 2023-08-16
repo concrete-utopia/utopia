@@ -29,6 +29,7 @@ import type {
 } from '../../../core/shared/project-file-types'
 import type { RouteComponent, RouteModules } from '@remix-run/react/dist/routeModules'
 import { forceNotNull } from '../../../core/shared/optional-utils'
+import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 
 interface PathFromFileNameResult {
   parentId: string
@@ -245,20 +246,41 @@ export const defaultFutureConfig: FutureConfig = {
   v2_routeConvention: false,
 }
 
-export function getDefaultExportNameFromFile(
+export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
-): string | null {
+): { name: string; uid: string } | null {
   const file = getContentsTreeFileFromString(projectContents, filePath)
   if (file == null || file.type != 'TEXT_FILE' || file.lastParseSuccess == null) {
     return null
   }
 
-  return (
+  const defaultExportName =
     file.lastParseSuccess.exportsDetail.find(
       (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
     )?.name ?? null
-  )
+
+  if (defaultExportName == null) {
+    return null
+  }
+
+  const elementUid = file.lastParseSuccess.topLevelElements.find(
+    (t): t is UtopiaJSXComponent =>
+      t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+  )?.rootElement.uid
+  if (elementUid == null) {
+    return null
+  }
+
+  return { name: defaultExportName, uid: elementUid }
+}
+
+export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
+  const propsWithPath = {
+    [UTOPIA_PATH_KEY]: path,
+    ...props,
+  }
+  return <Wrapped {...propsWithPath} />
 }
 
 export function getRouteManifest(
