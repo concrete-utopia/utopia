@@ -323,7 +323,7 @@ export function getRoutesAndModulesFromManifest(
   const routeManifestResult: RouteModules = {}
   const routesResult: DataRouteObject[] = []
   Object.values(routeManifest).forEach((route) => {
-    const { defaultExport, loader } = defaultExportForModule(
+    const { defaultExport, loader, action } = defaultExportForModule(
       route.filePath,
       customRequire,
       metadataContext,
@@ -343,6 +343,7 @@ export function getRoutesAndModulesFromManifest(
       const routeObject: DataRouteObject = {
         ...routeFromEntry(route),
         loader: loader,
+        action: action,
       }
 
       if (routeObject.id === '_index.js') {
@@ -371,6 +372,7 @@ export function defaultExportForModule(
 ): {
   defaultExport: (props: any) => JSX.Element
   loader: any
+  action: any
 } {
   const executionScope = createExecutionScope(
     filename,
@@ -397,5 +399,6 @@ export function defaultExportForModule(
       EP.toString(props[UTOPIA_PATH_KEY]),
     ),
     loader: executionScope.scope['loader'],
+    action: executionScope.scope['action'],
   }
 }
