@@ -27,8 +27,7 @@ import type {
   ElementPathPart,
   ExportDefaultFunctionOrClass,
 } from '../../../core/shared/project-file-types'
-import type { RouteComponent, RouteModules } from '@remix-run/react/dist/routeModules'
-import { forceNotNull } from '../../../core/shared/optional-utils'
+import type { RouteModules } from '@remix-run/react/dist/routeModules'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
