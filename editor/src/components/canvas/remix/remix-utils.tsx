@@ -314,14 +314,11 @@ export function getRoutesFromManifest(
   Object.values(routeManifest).forEach((route) => {
     try {
       routeManifestResult[route.id] = {
-        default: forceNotNull(
-          'Not a root file',
-          route.id === 'root'
-            ? rootDefaultExport
-            : route.id === '_index.js'
-            ? indexDefaultExport
-            : undefined,
-        ),
+        default: (route.id === 'root'
+          ? rootDefaultExport
+          : route.id === '_index.js'
+          ? indexDefaultExport
+          : undefined) as RouteComponent, // TODO this should not be undefined
       }
 
       // HACK LVL: >9000
