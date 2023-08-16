@@ -10,9 +10,9 @@ import type {
 } from '@remix-run/react'
 
 import type { Either } from '../../../core/shared/either'
-import { left, right } from '../../../core/shared/either'
+import { foldEither, left, right } from '../../../core/shared/either'
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
-import type { ProjectContentFile, ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentFile, ProjectContentTreeRoot, ProjectContentsTree } from '../../assets'
 import { getContentsTreeFileFromString } from '../../assets'
 import type {
   JSXElementChild,
@@ -26,8 +26,9 @@ import {
 import type {
   ElementPathPart,
   ExportDefaultFunctionOrClass,
-  exportDefaultFunctionOrClass,
 } from '../../../core/shared/project-file-types'
+import type { RouteComponent, RouteModules } from '@remix-run/react/dist/routeModules'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 
 interface PathFromFileNameResult {
   parentId: string
@@ -258,4 +259,64 @@ export function getDefaultExportNameFromFile(
       (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
     )?.name ?? null
   )
+}
+
+export function getRouteManifest(
+  projectContents: ProjectContentTreeRoot,
+): RouteManifestWithContents {
+  const getFlatFilePaths = (root: ProjectContentsTree): ProjectContentFile[] =>
+    root.type === 'PROJECT_CONTENT_FILE'
+      ? [root]
+      : Object.values(root.children).flatMap((c) => getFlatFilePaths(c))
+
+  const flatFiles = Object.values(projectContents).flatMap(getFlatFilePaths)
+
+  return foldEither(
+    () => ({}),
+    (r) => r,
+    getRoutesFromFiles(flatFiles),
+  )
+}
+
+export function getRoutesFromManifest(
+  routeManifest: RouteManifestWithContents,
+  rootDefaultExport: RouteComponent,
+  indexDefaultExport: RouteComponent,
+): {
+  routeModules: RouteModules
+  routes: Array<DataRouteObject>
+} {
+  const routeManifestResult: RouteModules = {}
+  const routesResult: DataRouteObject[] = []
+
+  Object.values(routeManifest).forEach((route) => {
+    try {
+      routeManifestResult[route.id] = {
+        default: forceNotNull(
+          'Not a root file',
+          route.id === 'root'
+            ? rootDefaultExport
+            : route.id === '_index.js'
+            ? indexDefaultExport
+            : undefined,
+        ),
+      }
+
+      // HACK LVL: >9000
+      // `children` should be filled out properly
+      const routeObject: DataRouteObject = {
+        ...routeFromEntry(route),
+      }
+
+      if (routeObject.id === '_index.js') {
+        routesResult.find((r) => r.id === 'root')!.children = [routeObject]
+      } else {
+        routesResult.push(routeObject)
+      }
+    } catch (e) {
+      console.error(e)
+    }
+  })
+
+  return { routeModules: routeManifestResult, routes: routesResult }
 }

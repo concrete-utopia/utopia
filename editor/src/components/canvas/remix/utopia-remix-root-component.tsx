@@ -1,36 +1,23 @@
 import React from 'react'
 
-import type { DataRouteObject } from 'react-router'
 import { RouterProvider, createMemoryRouter } from 'react-router'
 
-import type { UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 
-import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
-import { resolveBuiltInDependency } from '../../../core/es-modules/package-manager/built-in-dependencies'
-import type { ProjectContentFile, ProjectContentsTree } from '../../assets'
-import { getContentsTreeFileFromString } from '../../assets'
 import { useEditorState, Substores } from '../../editor/store/store-hook'
 import {
   createAssetsManifest,
   defaultFutureConfig,
   getDefaultExportNameFromFile,
-  getRoutesFromFiles,
-  getTopLevelElement,
+  getRouteManifest,
+  getRoutesFromManifest,
   invariant,
-  jsxElementUidsPostOrder,
-  routeFromEntry,
 } from './remix-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
-import { patchedCreateReactElement } from '../../../utils/canvas-react-utils'
-import type { ElementPath, ElementPathPart } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
-import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import * as EP from '../../../core/shared/element-path'
-import type { RemixRouteLookup } from '../../editor/store/editor-state'
-import { addToRemixRoutingTable } from '../../editor/actions/actions'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { NO_OP } from '../../../core/shared/utils'
@@ -56,20 +43,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     'RemixRootComponent projectContents',
   )
 
-  const routeManifest = React.useMemo(() => {
-    const getFlatFilePaths = (root: ProjectContentsTree): ProjectContentFile[] =>
-      root.type === 'PROJECT_CONTENT_FILE'
-        ? [root]
-        : Object.values(root.children).flatMap((c) => getFlatFilePaths(c))
-
-    const flatFiles = Object.values(projectContents).flatMap(getFlatFilePaths)
-
-    return foldEither(
-      () => ({}),
-      (r) => r,
-      getRoutesFromFiles(flatFiles),
-    )
-  }, [projectContents])
+  const routeManifest = React.useMemo(() => getRouteManifest(projectContents), [projectContents])
 
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
 
@@ -202,39 +176,10 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
 
-  const { routeModules, routes } = React.useMemo(() => {
-    const routeManifestResult: RouteModules = {}
-    const routesResult: DataRouteObject[] = []
-
-    Object.values(routeManifest).forEach((route) => {
-      try {
-        routeManifestResult[route.id] = {
-          default:
-            route.id === 'root'
-              ? rootDefaultExport
-              : route.id === '_index.js'
-              ? indexDefaultExport
-              : undefined,
-        }
-
-        // HACK LVL: >9000
-        // `children` should be filled out properly
-        const routeObject: DataRouteObject = {
-          ...routeFromEntry(route),
-        }
-
-        if (routeObject.id === '_index.js') {
-          routesResult.find((r) => r.id === 'root')!.children = [routeObject]
-        } else {
-          routesResult.push(routeObject)
-        }
-      } catch (e) {
-        console.error(e)
-      }
-    })
-
-    return { routeModules: routeManifestResult, routes: routesResult }
-  }, [indexDefaultExport, rootDefaultExport, routeManifest])
+  const { routeModules, routes } = React.useMemo(
+    () => getRoutesFromManifest(routeManifest, indexDefaultExport, rootDefaultExport),
+    [indexDefaultExport, rootDefaultExport, routeManifest],
+  )
 
   const router = React.useMemo(() => createMemoryRouter(routes), [routes])
 
