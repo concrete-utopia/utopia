@@ -323,7 +323,7 @@ export function getRoutesAndModulesFromManifest(
   const routeManifestResult: RouteModules = {}
   const routesResult: DataRouteObject[] = []
   Object.values(routeManifest).forEach((route) => {
-    const { defaultExport, loader, action } = defaultExportForModule(
+    const { defaultExport, loader, action } = getRemixExportsOfModule(
       route.filePath,
       customRequire,
       metadataContext,
@@ -359,7 +359,7 @@ export function getRoutesAndModulesFromManifest(
   return { routeModules: routeManifestResult, routes: routesResult }
 }
 
-export function defaultExportForModule(
+export function getRemixExportsOfModule(
   filename: string,
   customRequire: (importOrigin: string, toImport: string) => any,
   metadataContext: UiJsxCanvasContextData,
