@@ -85,7 +85,7 @@ export function createComponentRendererComponent(params: {
       ...realPassedProps
     } = realPassedPropsIncludingUtopiaSpecialStuff
 
-    const mutableContext = params.mutableContextRef.current[params.filePath].mutableContext
+    const mutableContext = params.mutableContextRef.current[params.filePath]?.mutableContext ?? {}
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 

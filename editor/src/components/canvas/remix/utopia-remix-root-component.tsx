@@ -17,9 +17,13 @@ import { evaluator } from '../../../core/es-modules/evaluator/evaluator'
 import { resolveBuiltInDependency } from '../../../core/es-modules/package-manager/built-in-dependencies'
 import type { ProjectContentFile, ProjectContentsTree } from '../../assets'
 import { useEditorState, Substores } from '../../editor/store/store-hook'
+import type { EntryRouteWithFileMeta } from './remix-utils'
 import { getRoutesFromFiles } from './remix-utils'
 import { foldEither } from '../../../core/shared/either'
 import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
+import { createComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import type { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
 
 function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
   if (value == null) {
@@ -36,9 +40,17 @@ function useRemixContext(): RemixContextObject {
   return context
 }
 
+type RemixRouteProps = {
+  id: string
+  filePath: string
+  topLevelElements: Array<TopLevelElement>
+}
+
 // Not exported from Remix
 // FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
-export const RemixRoute = React.memo(({ id }: { id: string }) => {
+export const RemixRoute = React.memo((props: RemixRouteProps) => {
+  const { id, filePath, topLevelElements } = props
+
   let { routeModules, future } = useRemixContext()
 
   invariant(
@@ -63,7 +75,17 @@ export const RemixRoute = React.memo(({ id }: { id: string }) => {
       'If you were trying to navigate or submit to a resource route, use `<a>` instead of `<Link>` or `<Form reloadDocument>`.',
   )
 
-  return <Component />
+  const topLevelElement = topLevelElements.find(
+    (e: TopLevelElement): e is UtopiaJSXComponent => e.type === 'UTOPIA_JSX_COMPONENT',
+  )
+
+  return React.createElement(
+    createComponentRendererComponent({
+      filePath: filePath,
+      topLevelElementName: topLevelElement != null ? topLevelElement.name : null,
+      mutableContextRef: React.useRef<MutableUtopiaCtxRefData>({}), // TODO: this is wrong, we need to pass real mutablecontextref here somehow
+    }),
+  )
 })
 
 function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest {
@@ -75,10 +97,16 @@ function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest
   }
 }
 
-function routeFromEntry(route: EntryRoute): DataRouteObject {
+function routeFromEntry(route: EntryRouteWithFileMeta): DataRouteObject {
   return {
     caseSensitive: false,
-    element: <RemixRoute id={route.id} />,
+    element: (
+      <RemixRoute
+        id={route.id}
+        filePath={route.filePath}
+        topLevelElements={route.topLevelElements}
+      />
+    ),
     errorElement: undefined,
     id: route.id,
     index: route.index,

@@ -8,6 +8,7 @@ import type {
   UNSAFE_EntryRoute as EntryRoute,
 } from '@remix-run/react'
 import type { ProjectContentFile } from '../../assets'
+import type { TopLevelElement } from '../../../core/shared/element-template'
 
 interface PathFromFileNameResult {
   parentId: string
@@ -54,6 +55,7 @@ export function parsePathFromFileName(fileName: string): PathFromFileNameResult 
 export interface EntryRouteWithFileMeta extends EntryRoute {
   moduleContents: string
   filePath: string
+  topLevelElements: Array<TopLevelElement>
 }
 
 export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
@@ -85,6 +87,10 @@ export function getRoutesFromFiles(
       path: '',
       moduleContents: moduleContents(root),
       filePath: root.fullPath,
+      topLevelElements:
+        root.content.type === 'TEXT_FILE'
+          ? root.content.lastParseSuccess?.topLevelElements ?? []
+          : [],
     },
   }
 
@@ -107,6 +113,10 @@ export function getRoutesFromFiles(
       path: routePathResult.path,
       moduleContents: moduleContents(file),
       filePath: file.fullPath,
+      topLevelElements:
+        file.content.type === 'TEXT_FILE'
+          ? file.content.lastParseSuccess?.topLevelElements ?? []
+          : [],
     }
   })
 
