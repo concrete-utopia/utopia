@@ -22,6 +22,7 @@ import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
+  formatTestProjectCode,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   makeTestProjectCodeWithSnippetStyledComponents,
@@ -47,7 +48,11 @@ import {
   ConditionalsControlSectionOpenTestId,
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
-import { pressKey } from '../../canvas/event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  pressKey,
+} from '../../canvas/event-helpers.test-utils'
 import {
   sendLinterRequestMessage,
   updateFromCodeEditor,
@@ -3369,6 +3374,659 @@ describe('inspector tests with real metadata', () => {
 
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
       expectGroupToast(renderResult, 'child-has-percentage-pins-without-group-size')
+    })
+    describe('group children', () => {
+      it('allows setting constraint for tlbr (set)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+          `),
+          ),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+          await dispatchDone
+        })
+
+        const control = await renderResult.renderedDOM.findByTestId(
+          'group-child-controls-catcher-pin-top',
+        )
+        await mouseClickAtPoint(control, { x: 1, y: 1 })
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['top']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+            `),
+          ),
+        )
+      })
+      it('allows setting constraint for tlbr (unset)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['top']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+          `),
+          ),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+          await dispatchDone
+        })
+
+        const control = await renderResult.renderedDOM.findByTestId(
+          'group-child-controls-catcher-pin-top',
+        )
+        await mouseClickAtPoint(control, { x: 1, y: 1 })
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+            `),
+          ),
+        )
+      })
+      it('allows setting constraint for tlbr (set, multiple values)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'width']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+          `),
+          ),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+          await dispatchDone
+        })
+
+        const control = await renderResult.renderedDOM.findByTestId(
+          'group-child-controls-catcher-pin-top',
+        )
+        await mouseClickAtPoint(control, { x: 1, y: 1 })
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'width', 'top']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+            `),
+          ),
+        )
+      })
+      it('allows setting constraint for tlbr (unset, multiple values)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'top', 'width']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+          `),
+          ),
+          'await-first-dom-report',
+        )
+
+        const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch([selectComponents([targetPath], false)], false)
+          await dispatchDone
+        })
+
+        const control = await renderResult.renderedDOM.findByTestId(
+          'group-child-controls-catcher-pin-top',
+        )
+        await mouseClickAtPoint(control, { x: 1, y: 1 })
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'width']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+            `),
+          ),
+        )
+      })
+      it('allows setting constraint for tlbr (set, multiselect)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'width']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+          `),
+          ),
+          'await-first-dom-report',
+        )
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch(
+            [
+              selectComponents(
+                [
+                  EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+                  EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+                ],
+                false,
+              ),
+            ],
+            false,
+          )
+          await dispatchDone
+        })
+
+        const control = await renderResult.renderedDOM.findByTestId(
+          'group-child-controls-catcher-pin-top',
+        )
+        await mouseClickAtPoint(control, { x: 1, y: 1 })
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'width', 'top']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                    data-constraints={['top']}
+                  />
+                </Group>
+              </div>
+            `),
+          ),
+        )
+      })
+      it('allows setting constraint for tlbr (set, multiselect with already-present values)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'top', 'width']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+          `),
+          ),
+          'await-first-dom-report',
+        )
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch(
+            [
+              selectComponents(
+                [
+                  EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+                  EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+                ],
+                false,
+              ),
+            ],
+            false,
+          )
+          await dispatchDone
+        })
+
+        const control = await renderResult.renderedDOM.findByTestId(
+          'group-child-controls-catcher-pin-top',
+        )
+        await mouseClickAtPoint(control, { x: 1, y: 1 })
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'top', 'width']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                    data-constraints={['top']}
+                  />
+                </Group>
+              </div>
+            `),
+          ),
+        )
+      })
+      it('allows setting constraint for tlbr (unset, multiselect)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left', 'top']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                    data-constraints={['top']}
+                  />
+                </Group>
+              </div>
+          `),
+          ),
+          'await-first-dom-report',
+        )
+
+        await act(async () => {
+          const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+          await renderResult.dispatch(
+            [
+              selectComponents(
+                [
+                  EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+                  EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+                ],
+                false,
+              ),
+            ],
+            false,
+          )
+          await dispatchDone
+        })
+
+        const control = await renderResult.renderedDOM.findByTestId(
+          'group-child-controls-catcher-pin-top',
+        )
+        await mouseClickAtPoint(control, { x: 1, y: 1 })
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div
+                style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+                data-uid='aaa'
+              >
+                <Group
+                  data-uid='group'
+                >
+                  <div
+                    data-uid='foo'
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: 100,
+                      height: 100,
+                      backgroundColor: 'blue'
+                    }}
+                    data-constraints={['left']}
+                  />
+                  <div
+                    data-uid='bar'
+                    style={{
+                      position: 'absolute',
+                      top: 200,
+                      left: 200,
+                      backgroundColor: 'red'
+                    }}
+                  />
+                </Group>
+              </div>
+            `),
+          ),
+        )
+      })
     })
   })
 })

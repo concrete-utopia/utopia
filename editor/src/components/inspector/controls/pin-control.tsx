@@ -10,6 +10,7 @@ import { unless } from '../../../utils/react-conditionals'
 
 interface PinControlProps {
   handlePinMouseDown: (frameProp: LayoutPinnedProp) => void
+  name: string
   controlStatus: ControlStatus
   framePoints: FramePinsInfo
   mixed?: boolean
@@ -73,6 +74,10 @@ function getStrokeDashArray(
   }
 }
 
+function getTestId(prefix: string, id: string): string {
+  return `${prefix}-${id}`
+}
+
 export const PinControl = (props: PinControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
 
@@ -99,7 +104,8 @@ export const PinControl = (props: PinControlProps) => {
         vectorEffect='non-scaling-stroke'
       >
         <rect
-          id='positioncontrols-box'
+          id={getTestId(props.name, 'box')}
+          data-testid={getTestId(props.name, 'box')}
           fill={controlStyles.backgroundColor}
           stroke={controlStyles.borderColor}
           strokeWidth='0'
@@ -110,7 +116,8 @@ export const PinControl = (props: PinControlProps) => {
           rx={UtopiaTheme.inputBorderRadius}
         />
         <rect
-          id='positioncontrols-divider'
+          id={getTestId(props.name, 'divider')}
+          data-testid={getTestId(props.name, 'divider')}
           fill={controlStyles.backgroundColor}
           stroke={controlStyles.borderColor}
           strokeWidth='1'
@@ -120,14 +127,19 @@ export const PinControl = (props: PinControlProps) => {
           height={VerticalDividerHeight}
           rx={UtopiaTheme.inputBorderRadius}
         />
-        <g id='positioncontrols-pins' strokeWidth='1'>
+        <g
+          id={getTestId(props.name, 'pins')}
+          data-testid={getTestId(props.name, 'pins')}
+          strokeWidth='1'
+        >
           {unless(
             exclude.sides === true,
             <>
               <path
                 d={`M${HorizontalMid},${VerticalStart} l0,${VerticalLength}`}
                 className='pin-indicator'
-                id='positioncontrols-pin-top'
+                id={getTestId(props.name, 'pin-top')}
+                data-testid={getTestId(props.name, 'pin-top')}
                 stroke={getStrokeColor(
                   controlStyles,
                   props.framePoints,
@@ -142,13 +154,14 @@ export const PinControl = (props: PinControlProps) => {
                 strokeWidth={MouseCatchmentStrokeWidth}
                 stroke='transparent'
                 strokeLinecap='butt'
-                data-testid='positioncontrols-catcher-pin-top'
+                data-testid={getTestId(props.name, 'catcher-pin-top')}
                 onMouseDown={handlePinMouseDown('top')}
               />
               <path
                 d={`M${HorizontalMid},${VerticalEnd} l0,${VerticalLength}`}
                 className='pin-indicator'
-                id='positioncontrols-pin-bottom'
+                id={getTestId(props.name, 'pin-bottom')}
+                data-testid={getTestId(props.name, 'pin-bottom')}
                 stroke={getStrokeColor(
                   controlStyles,
                   props.framePoints,
@@ -167,13 +180,14 @@ export const PinControl = (props: PinControlProps) => {
                 strokeWidth={MouseCatchmentStrokeWidth}
                 stroke='transparent'
                 strokeLinecap='butt'
-                data-testid='positioncontrols-catcher-pin-bottom'
+                data-testid={getTestId(props.name, 'catcher-pin-bottom')}
                 onMouseDown={handlePinMouseDown('bottom')}
               />
               <path
                 d={`M${HorizontalEnd},${VerticalMid} l${HorizontalLength},0`}
                 className='pin-indicator'
-                id='positioncontrols-pin-right'
+                id={getTestId(props.name, 'pin-right')}
+                data-testid={getTestId(props.name, 'pin-right')}
                 stroke={getStrokeColor(
                   controlStyles,
                   props.framePoints,
@@ -192,13 +206,14 @@ export const PinControl = (props: PinControlProps) => {
                 strokeWidth={MouseCatchmentStrokeWidth}
                 stroke='transparent'
                 strokeLinecap='butt'
-                data-testid='positioncontrols-catcher-pin-right'
+                data-testid={getTestId(props.name, 'catcher-pin-right')}
                 onMouseDown={handlePinMouseDown('right')}
               />
               <path
                 d={`M${HorizontalStart},${VerticalMid} l${HorizontalLength},0`}
                 className='pin-indicator'
-                id='positioncontrols-pin-left'
+                id={getTestId(props.name, 'pin-left')}
+                data-testid={getTestId(props.name, 'pin-left')}
                 stroke={getStrokeColor(
                   controlStyles,
                   props.framePoints,
@@ -217,7 +232,7 @@ export const PinControl = (props: PinControlProps) => {
                 strokeWidth={MouseCatchmentStrokeWidth}
                 stroke='transparent'
                 strokeLinecap='butt'
-                data-testid='positioncontrols-catcher-pin-left'
+                data-testid={getTestId(props.name, 'catcher-pin-left')}
                 onMouseDown={handlePinMouseDown('left')}
               />
             </>,
@@ -230,7 +245,8 @@ export const PinControl = (props: PinControlProps) => {
                   (HorizontalLength - 6) * 2
                 },0`}
                 className='pin-indicator'
-                id='positioncontrols-pin-centerx'
+                id={getTestId(props.name, 'pin-centerx')}
+                data-testid={getTestId(props.name, 'pin-centerx')}
                 stroke={getStrokeColor(
                   controlStyles,
                   props.framePoints,
@@ -249,7 +265,8 @@ export const PinControl = (props: PinControlProps) => {
                   (VerticalLength - 4) * 2
                 }`}
                 className='pin-indicator'
-                id='positioncontrols-pin-centery'
+                id={getTestId(props.name, 'pin-centery')}
+                data-testid={getTestId(props.name, 'pin-centery')}
                 stroke={getStrokeColor(
                   controlStyles,
                   props.framePoints,
@@ -267,7 +284,8 @@ export const PinControl = (props: PinControlProps) => {
                 <path
                   d={`M 0,0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},0 ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
                   className='pin-indicator'
-                  id='positioncontrols-pin-centerx-transparent'
+                  id={getTestId(props.name, 'pin-centerx-transparent')}
+                  data-testid={getTestId(props.name, 'pin-centerx-transparent')}
                   stroke='transparent'
                   fill='transparent'
                   onMouseDown={Utils.NO_OP}
@@ -275,7 +293,8 @@ export const PinControl = (props: PinControlProps) => {
                 <path
                   d={`M 0,0 ${HorizontalDividerWidth},0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
                   className='pin-indicator'
-                  id='positioncontrols-pin-centery-transparent'
+                  id={getTestId(props.name, 'pin-centery-transparent')}
+                  data-testid={getTestId(props.name, 'pin-centery-transparent')}
                   stroke='transparent'
                   fill='transparent'
                   onMouseDown={Utils.NO_OP}

@@ -179,6 +179,7 @@ export const GroupChildResizeSection = React.memo(() => {
           framePoints={framePoints}
           controlStatus='simple'
           exclude={{ center: true }}
+          name='group-child-controls'
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <ConstraintSelect label='Width' dimension='width' type={constraints.width} />
@@ -252,6 +253,7 @@ const ConstraintSelect = React.memo(
         <span style={{ flex: 1 }}>{label}</span>
         <div style={{ width: 120 }}>
           <PopupList
+            id={`group-child-resize-${dimension}`}
             onSubmitValue={onSubmitValue}
             value={listValue}
             options={options}
