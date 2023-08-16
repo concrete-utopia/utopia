@@ -30,6 +30,14 @@ import type {
 import type { RouteComponent, RouteModules } from '@remix-run/react/dist/routeModules'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import type { UtopiaRemixRootComponentProps } from './utopia-remix-root-component'
+import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import { NO_OP } from '../../../core/shared/utils'
+import * as EP from '../../../core/shared/element-path'
+import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import type { MapLike } from 'typescript'
 
 interface PathFromFileNameResult {
   parentId: string
@@ -188,7 +196,6 @@ interface UtopiaRemixRouteProps {
 // FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
 export const UtopiaRemixRoute = React.memo(({ id }: UtopiaRemixRouteProps) => {
   let { routeModules, future } = useRemixContext()
-
   invariant(
     routeModules,
     "Cannot initialize 'routeModules'. This normally occurs when you have server code in your client modules.\n" +
@@ -302,8 +309,14 @@ export function createRouteManifestFromProjectContents(
 
 export function getRoutesAndModulesFromManifest(
   routeManifest: RouteManifestWithContents,
-  rootDefaultExport: RouteComponent,
-  indexDefaultExport: RouteComponent,
+  customRequire: (importOrigin: string, toImport: string) => any,
+  metadataContext: UiJsxCanvasContextData,
+  projectContents: ProjectContentTreeRoot,
+  props: UtopiaRemixRootComponentProps,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
+  topLevelComponentRendererComponents: React.MutableRefObject<
+    MapLike<MapLike<ComponentRendererComponent>>
+  >,
 ): {
   routeModules: RouteModules
   routes: Array<DataRouteObject>
@@ -314,11 +327,15 @@ export function getRoutesAndModulesFromManifest(
   Object.values(routeManifest).forEach((route) => {
     try {
       routeManifestResult[route.id] = {
-        default: (route.id === 'root'
-          ? rootDefaultExport
-          : route.id === '_index.js'
-          ? indexDefaultExport
-          : undefined) as RouteComponent, // TODO this should not be undefined
+        default: defaultExportForModule(
+          route.filePath,
+          customRequire,
+          metadataContext,
+          projectContents,
+          props,
+          mutableContextRef,
+          topLevelComponentRendererComponents,
+        ),
       }
 
       // HACK LVL: >9000
@@ -338,4 +355,37 @@ export function getRoutesAndModulesFromManifest(
   })
 
   return { routeModules: routeManifestResult, routes: routesResult }
+}
+
+export function defaultExportForModule(
+  filename: string,
+  customRequire: (importOrigin: string, toImport: string) => any,
+  metadataContext: UiJsxCanvasContextData,
+  projectContents: ProjectContentTreeRoot,
+  props: UtopiaRemixRootComponentProps,
+  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
+  topLevelComponentRendererComponents: React.MutableRefObject<
+    MapLike<MapLike<ComponentRendererComponent>>
+  >,
+): (props: any) => JSX.Element {
+  const executionScope = createExecutionScope(
+    filename,
+    customRequire,
+    mutableContextRef,
+    topLevelComponentRendererComponents,
+    projectContents,
+    filename,
+    {},
+    [],
+    [],
+    metadataContext,
+    NO_OP,
+    false,
+    null,
+  )
+
+  const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
+  invariant(nameAndUid, 'a default export should be provided')
+
+  return PathPropHOC(executionScope.scope[nameAndUid.name], EP.toString(props[UTOPIA_PATH_KEY]))
 }

@@ -6,10 +6,8 @@ import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 
 import { useEditorState, Substores } from '../../editor/store/store-hook'
 import {
-  PathPropHOC,
   createAssetsManifest,
   defaultFutureConfig,
-  getDefaultExportNameAndUidFromFile,
   createRouteManifestFromProjectContents,
   getRoutesAndModulesFromManifest,
   invariant,
@@ -18,8 +16,7 @@ import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
-import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import type { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { NO_OP } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -34,7 +31,7 @@ import type { MapLike } from 'typescript'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import * as EP from '../../../core/shared/element-path'
 
-interface UtopiaRemixRootComponentProps {
+export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
 
@@ -133,57 +130,20 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     [metadataContext, projectContents, requireFn, resolve],
   )
 
-  const rootDefaultExport = React.useMemo(() => {
-    const executionScope = createExecutionScope(
-      '/src/root.js',
-      customRequire,
-      mutableContextRef,
-      topLevelComponentRendererComponents,
-      projectContents,
-      '/src/root.js',
-      {},
-      [],
-      [],
-      metadataContext,
-      NO_OP,
-      false,
-      null,
-    )
-
-    const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, '/src/root.js')
-    invariant(nameAndUid, 'a default export should be provided')
-
-    return PathPropHOC(executionScope.scope[nameAndUid.name], EP.toString(props[UTOPIA_PATH_KEY]))
-  }, [customRequire, metadataContext, projectContents, props])
-
-  const indexDefaultExport = React.useMemo(() => {
-    const executionScope = createExecutionScope(
-      '/src/routes/_index.js',
-      customRequire,
-      mutableContextRef,
-      topLevelComponentRendererComponents,
-      projectContents,
-      '/src/routes/_index.js',
-      {},
-      [],
-      [],
-      metadataContext,
-      NO_OP,
-      false,
-      null,
-    )
-
-    const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, '/src/routes/_index.js')
-    invariant(nameAndUid, 'a default export should be provided')
-
-    return PathPropHOC(executionScope.scope[nameAndUid.name], EP.toString(props[UTOPIA_PATH_KEY]))
-  }, [customRequire, metadataContext, projectContents, props])
-
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
 
   const { routeModules, routes } = React.useMemo(
-    () => getRoutesAndModulesFromManifest(routeManifest, rootDefaultExport, indexDefaultExport),
-    [indexDefaultExport, rootDefaultExport, routeManifest],
+    () =>
+      getRoutesAndModulesFromManifest(
+        routeManifest,
+        customRequire,
+        metadataContext,
+        projectContents,
+        props,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+      ),
+    [routeManifest, customRequire, metadataContext, projectContents, props],
   )
 
   const router = React.useMemo(() => createMemoryRouter(routes), [routes])
