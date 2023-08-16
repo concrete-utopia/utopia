@@ -323,25 +323,27 @@ export function getRoutesAndModulesFromManifest(
 } {
   const routeManifestResult: RouteModules = {}
   const routesResult: DataRouteObject[] = []
-
   Object.values(routeManifest).forEach((route) => {
+    const { defaultExport, loader } = defaultExportForModule(
+      route.filePath,
+      customRequire,
+      metadataContext,
+      projectContents,
+      props,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+    )
+
     try {
       routeManifestResult[route.id] = {
-        default: defaultExportForModule(
-          route.filePath,
-          customRequire,
-          metadataContext,
-          projectContents,
-          props,
-          mutableContextRef,
-          topLevelComponentRendererComponents,
-        ),
+        default: defaultExport,
       }
 
       // HACK LVL: >9000
       // `children` should be filled out properly
       const routeObject: DataRouteObject = {
         ...routeFromEntry(route),
+        loader: loader,
       }
 
       if (routeObject.id === '_index.js') {
@@ -367,7 +369,10 @@ export function defaultExportForModule(
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
-): (props: any) => JSX.Element {
+): {
+  defaultExport: (props: any) => JSX.Element
+  loader: any
+} {
   const executionScope = createExecutionScope(
     filename,
     customRequire,
@@ -387,5 +392,11 @@ export function defaultExportForModule(
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
   invariant(nameAndUid, 'a default export should be provided')
 
-  return PathPropHOC(executionScope.scope[nameAndUid.name], EP.toString(props[UTOPIA_PATH_KEY]))
+  return {
+    defaultExport: PathPropHOC(
+      executionScope.scope[nameAndUid.name],
+      EP.toString(props[UTOPIA_PATH_KEY]),
+    ),
+    loader: executionScope.scope['loader'],
+  }
 }
