@@ -344,6 +344,7 @@
     "only-allow": "^1.0.0",
     "pegjs": "0.10.0",
     "pretty-format": "26.1.0",
+    "react-select-event": "^5.5.1",
     "react-test-renderer": "16.9.0",
     "script-ext-html-webpack-plugin": "2.1.5",
     "selenium-webdriver": "3.0.1",
