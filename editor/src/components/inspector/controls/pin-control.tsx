@@ -5,7 +5,7 @@ import { getControlStyles } from '../common/control-status'
 import { FramePoint } from 'utopia-api/core'
 import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'
-import { UtopiaTheme, SquareButton, width } from '../../../uuiui'
+import { UtopiaTheme, SquareButton } from '../../../uuiui'
 import { unless } from '../../../utils/react-conditionals'
 
 interface PinControlProps {
@@ -15,10 +15,12 @@ interface PinControlProps {
   mixed?: boolean
   className?: string
   style?: React.CSSProperties
-  exclude?: {
-    center?: boolean
-    sides?: boolean
-  }
+  exclude?: ExcludePinControls
+}
+
+export type ExcludePinControls = {
+  center?: boolean
+  sides?: boolean
 }
 
 const Margin = 3
@@ -78,8 +80,12 @@ export const PinControl = (props: PinControlProps) => {
     props.handlePinMouseDown(frameProp)
   }
 
-  const exclude = React.useMemo(
-    () => props.exclude ?? { center: false, sides: false },
+  const exclude: ExcludePinControls = React.useMemo(
+    () =>
+      props.exclude ?? {
+        center: false,
+        sides: false,
+      },
     [props.exclude],
   )
 
