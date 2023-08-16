@@ -41,6 +41,8 @@ import { UIGridRow } from './widgets/ui-grid-row'
 import { PropertyLabel } from './widgets/property-label'
 import { useContextSelector } from 'use-context-selector'
 import { InspectorPropsContext, stylePropPathMappingFn } from './common/property-path-hooks'
+import { safeIndex } from '../../core/shared/array-utils'
+import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -209,20 +211,32 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
             ? fillsContainerVerticallyRef.current
             : fillsContainerHorizontallyRef.current
 
-        const strategy = strategyForChangingFillFixedHugType(
-          currentComputedValue,
-          axis,
-          value,
-          otherAxisSetToFill,
-        )
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          strategy,
-        )
+        const firstSelectedView = safeIndex(selectedViewsRef.current, 0)
+        if (firstSelectedView != null) {
+          const valueToUse =
+            axis === 'horizontal'
+              ? fixedSizeDimensionHandlingText(
+                  metadataRef.current,
+                  elementPathTreeRef.current,
+                  firstSelectedView,
+                  currentComputedValue,
+                )
+              : currentComputedValue
+          const strategy = strategyForChangingFillFixedHugType(
+            valueToUse,
+            axis,
+            value,
+            otherAxisSetToFill,
+          )
+          executeFirstApplicableStrategy(
+            dispatch,
+            metadataRef.current,
+            selectedViewsRef.current,
+            elementPathTreeRef.current,
+            allElementPropsRef.current,
+            strategy,
+          )
+        }
       }
 
     return {
