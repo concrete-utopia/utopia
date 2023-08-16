@@ -6,6 +6,7 @@ import { FramePoint } from 'utopia-api/core'
 import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'
 import { UtopiaTheme, SquareButton, width } from '../../../uuiui'
+import { unless } from '../../../utils/react-conditionals'
 
 interface PinControlProps {
   handlePinMouseDown: (frameProp: LayoutPinnedProp) => void
@@ -14,6 +15,10 @@ interface PinControlProps {
   mixed?: boolean
   className?: string
   style?: React.CSSProperties
+  exclude?: {
+    center?: boolean
+    sides?: boolean
+  }
 }
 
 const Margin = 3
@@ -73,6 +78,11 @@ export const PinControl = (props: PinControlProps) => {
     props.handlePinMouseDown(frameProp)
   }
 
+  const exclude = React.useMemo(
+    () => props.exclude ?? { center: false, sides: false },
+    [props.exclude],
+  )
+
   return (
     <div id='pin-control' className={props.className} style={props.style}>
       <svg
@@ -105,123 +115,168 @@ export const PinControl = (props: PinControlProps) => {
           rx={UtopiaTheme.inputBorderRadius}
         />
         <g id='positioncontrols-pins' strokeWidth='1'>
-          <path
-            d={`M${HorizontalMid},${VerticalStart} l0,${VerticalLength}`}
-            className='pin-indicator'
-            id='positioncontrols-pin-top'
-            stroke={getStrokeColor(controlStyles, props.framePoints, props.mixed, FramePoint.Top)}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.Top)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalMid},${VerticalStart} l0,${VerticalLength}`}
-            strokeWidth={MouseCatchmentStrokeWidth}
-            stroke='transparent'
-            strokeLinecap='butt'
-            data-testid='positioncontrols-catcher-pin-top'
-            onMouseDown={handlePinMouseDown('top')}
-          />
-          <path
-            d={`M${HorizontalMid},${VerticalMid - (VerticalLength - 4)} l0,${
-              (VerticalLength - 4) * 2
-            }`}
-            className='pin-indicator'
-            id='positioncontrols-pin-centery'
-            stroke={getStrokeColor(
-              controlStyles,
-              props.framePoints,
-              props.mixed,
-              FramePoint.CenterY,
-            )}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.CenterY)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalMid},${VerticalEnd} l0,${VerticalLength}`}
-            className='pin-indicator'
-            id='positioncontrols-pin-bottom'
-            stroke={getStrokeColor(
-              controlStyles,
-              props.framePoints,
-              props.mixed,
-              FramePoint.Bottom,
-            )}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.Bottom)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalMid},${VerticalEnd} l0,${VerticalLength}`}
-            strokeWidth={MouseCatchmentStrokeWidth}
-            stroke='transparent'
-            strokeLinecap='butt'
-            data-testid='positioncontrols-catcher-pin-bottom'
-            onMouseDown={handlePinMouseDown('bottom')}
-          />
-          <path
-            d={`M${HorizontalEnd},${VerticalMid} l${HorizontalLength},0`}
-            className='pin-indicator'
-            id='positioncontrols-pin-right'
-            stroke={getStrokeColor(controlStyles, props.framePoints, props.mixed, FramePoint.Right)}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.Right)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalEnd},${VerticalMid} l${HorizontalLength},0`}
-            strokeWidth={MouseCatchmentStrokeWidth}
-            stroke='transparent'
-            strokeLinecap='butt'
-            data-testid='positioncontrols-catcher-pin-right'
-            onMouseDown={handlePinMouseDown('right')}
-          />
-          <path
-            d={`M${HorizontalMid - (HorizontalLength - 6)},${VerticalMid} l${
-              (HorizontalLength - 6) * 2
-            },0`}
-            className='pin-indicator'
-            id='positioncontrols-pin-centerx'
-            stroke={getStrokeColor(
-              controlStyles,
-              props.framePoints,
-              props.mixed,
-              FramePoint.CenterX,
-            )}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.CenterX)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalStart},${VerticalMid} l${HorizontalLength},0`}
-            className='pin-indicator'
-            id='positioncontrols-pin-left'
-            stroke={getStrokeColor(controlStyles, props.framePoints, props.mixed, FramePoint.Left)}
-            strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.Left)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalStart},${VerticalMid} l${HorizontalLength},0`}
-            strokeWidth={MouseCatchmentStrokeWidth}
-            stroke='transparent'
-            strokeLinecap='butt'
-            data-testid='positioncontrols-catcher-pin-left'
-            onMouseDown={handlePinMouseDown('left')}
-          />
-          <g transform={`translate(${HorizontalDividerStart},${VerticalDividerStart})`}>
-            <path
-              d={`M 0,0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},0 ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
-              className='pin-indicator'
-              id='positioncontrols-pin-centerx-transparent'
-              stroke='transparent'
-              fill='transparent'
-              onMouseDown={Utils.NO_OP}
-            />
-            <path
-              d={`M 0,0 ${HorizontalDividerWidth},0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
-              className='pin-indicator'
-              id='positioncontrols-pin-centery-transparent'
-              stroke='transparent'
-              fill='transparent'
-              onMouseDown={Utils.NO_OP}
-            />
-          </g>
+          {unless(
+            exclude.sides === true,
+            <>
+              <path
+                d={`M${HorizontalMid},${VerticalStart} l0,${VerticalLength}`}
+                className='pin-indicator'
+                id='positioncontrols-pin-top'
+                stroke={getStrokeColor(
+                  controlStyles,
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.Top,
+                )}
+                strokeDasharray={getStrokeDashArray(props.framePoints, props.mixed, FramePoint.Top)}
+                strokeLinecap='round'
+              />
+              <path
+                d={`M${HorizontalMid},${VerticalStart} l0,${VerticalLength}`}
+                strokeWidth={MouseCatchmentStrokeWidth}
+                stroke='transparent'
+                strokeLinecap='butt'
+                data-testid='positioncontrols-catcher-pin-top'
+                onMouseDown={handlePinMouseDown('top')}
+              />
+              <path
+                d={`M${HorizontalMid},${VerticalEnd} l0,${VerticalLength}`}
+                className='pin-indicator'
+                id='positioncontrols-pin-bottom'
+                stroke={getStrokeColor(
+                  controlStyles,
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.Bottom,
+                )}
+                strokeDasharray={getStrokeDashArray(
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.Bottom,
+                )}
+                strokeLinecap='round'
+              />
+              <path
+                d={`M${HorizontalMid},${VerticalEnd} l0,${VerticalLength}`}
+                strokeWidth={MouseCatchmentStrokeWidth}
+                stroke='transparent'
+                strokeLinecap='butt'
+                data-testid='positioncontrols-catcher-pin-bottom'
+                onMouseDown={handlePinMouseDown('bottom')}
+              />
+              <path
+                d={`M${HorizontalEnd},${VerticalMid} l${HorizontalLength},0`}
+                className='pin-indicator'
+                id='positioncontrols-pin-right'
+                stroke={getStrokeColor(
+                  controlStyles,
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.Right,
+                )}
+                strokeDasharray={getStrokeDashArray(
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.Right,
+                )}
+                strokeLinecap='round'
+              />
+              <path
+                d={`M${HorizontalEnd},${VerticalMid} l${HorizontalLength},0`}
+                strokeWidth={MouseCatchmentStrokeWidth}
+                stroke='transparent'
+                strokeLinecap='butt'
+                data-testid='positioncontrols-catcher-pin-right'
+                onMouseDown={handlePinMouseDown('right')}
+              />
+              <path
+                d={`M${HorizontalStart},${VerticalMid} l${HorizontalLength},0`}
+                className='pin-indicator'
+                id='positioncontrols-pin-left'
+                stroke={getStrokeColor(
+                  controlStyles,
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.Left,
+                )}
+                strokeDasharray={getStrokeDashArray(
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.Left,
+                )}
+                strokeLinecap='round'
+              />
+              <path
+                d={`M${HorizontalStart},${VerticalMid} l${HorizontalLength},0`}
+                strokeWidth={MouseCatchmentStrokeWidth}
+                stroke='transparent'
+                strokeLinecap='butt'
+                data-testid='positioncontrols-catcher-pin-left'
+                onMouseDown={handlePinMouseDown('left')}
+              />
+            </>,
+          )}
+          {unless(
+            exclude.center === true,
+            <>
+              <path
+                d={`M${HorizontalMid - (HorizontalLength - 6)},${VerticalMid} l${
+                  (HorizontalLength - 6) * 2
+                },0`}
+                className='pin-indicator'
+                id='positioncontrols-pin-centerx'
+                stroke={getStrokeColor(
+                  controlStyles,
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.CenterX,
+                )}
+                strokeDasharray={getStrokeDashArray(
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.CenterX,
+                )}
+                strokeLinecap='round'
+              />
+              <path
+                d={`M${HorizontalMid},${VerticalMid - (VerticalLength - 4)} l0,${
+                  (VerticalLength - 4) * 2
+                }`}
+                className='pin-indicator'
+                id='positioncontrols-pin-centery'
+                stroke={getStrokeColor(
+                  controlStyles,
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.CenterY,
+                )}
+                strokeDasharray={getStrokeDashArray(
+                  props.framePoints,
+                  props.mixed,
+                  FramePoint.CenterY,
+                )}
+                strokeLinecap='round'
+              />
+              <g transform={`translate(${HorizontalDividerStart},${VerticalDividerStart})`}>
+                <path
+                  d={`M 0,0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},0 ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
+                  className='pin-indicator'
+                  id='positioncontrols-pin-centerx-transparent'
+                  stroke='transparent'
+                  fill='transparent'
+                  onMouseDown={Utils.NO_OP}
+                />
+                <path
+                  d={`M 0,0 ${HorizontalDividerWidth},0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
+                  className='pin-indicator'
+                  id='positioncontrols-pin-centery-transparent'
+                  stroke='transparent'
+                  fill='transparent'
+                  onMouseDown={Utils.NO_OP}
+                />
+              </g>
+            </>,
+          )}
         </g>
       </svg>
     </div>

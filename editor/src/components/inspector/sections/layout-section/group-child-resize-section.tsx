@@ -15,6 +15,7 @@ import { Substores, useEditorState, useRefEditorState } from '../../../editor/st
 import { getControlStyles } from '../../common/control-status'
 import { PinControl } from '../../controls/pin-control'
 import type { SelectOption } from '../../controls/select-control'
+import type { FramePinsInfo } from '../../common/layout-property-path-hooks'
 
 type ConstraintOptionType = 'constrained' | 'not-constrained'
 
@@ -137,7 +138,7 @@ export const GroupChildResizeSection = React.memo(() => {
     [dispatch, editorRef],
   )
 
-  const framePoints = React.useMemo(() => {
+  const framePoints: FramePinsInfo = React.useMemo(() => {
     const ignore = { isPrimaryPosition: false, isRelativePosition: false }
     return {
       left: {
@@ -177,6 +178,7 @@ export const GroupChildResizeSection = React.memo(() => {
           handlePinMouseDown={handlePinMouseDown}
           framePoints={framePoints}
           controlStatus='simple'
+          exclude={{ center: true }}
         />
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
           <ConstraintSelect label='Width' dimension='width' type={constraints.width} />
