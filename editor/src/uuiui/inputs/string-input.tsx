@@ -92,11 +92,12 @@ export const StringInput = React.memo(
               borderRadius: 2,
               color: controlStyles.mainColor,
               position: 'relative',
+              background: colorTheme.bg2.value,
               '&:hover': {
-                outline: `1px solid ${colorTheme.fg7.value}`,
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
               },
               '&:focus-within': {
-                outline: `1px solid ${colorTheme.dynamicBlue.value}`,
+                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
               },
             }}
           >

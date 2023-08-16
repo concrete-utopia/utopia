@@ -221,7 +221,6 @@ export function flexResizeBasicStrategy(
             pushIntendedBoundsAndUpdateGroups(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
-              'resize',
             ),
             ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
           ])
