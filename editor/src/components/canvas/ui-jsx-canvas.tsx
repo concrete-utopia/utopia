@@ -537,7 +537,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   )
 })
 
-function attemptToResolveParsedComponents(
+export function attemptToResolveParsedComponents(
   resolvedFromThisOrigin: string[],
   toImport: string,
   projectContents: ProjectContentTreeRoot,

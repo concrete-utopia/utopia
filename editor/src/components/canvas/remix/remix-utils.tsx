@@ -12,7 +12,8 @@ import type {
 import type { Either } from '../../../core/shared/either'
 import { left, right } from '../../../core/shared/either'
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
-import type { ProjectContentFile } from '../../assets'
+import type { ProjectContentFile, ProjectContentTreeRoot } from '../../assets'
+import { getContentsTreeFileFromString } from '../../assets'
 import type {
   JSXElementChild,
   TopLevelElement,
@@ -22,7 +23,11 @@ import {
   getJSXElementNameAsString,
   isUtopiaJSXComponent,
 } from '../../../core/shared/element-template'
-import type { ElementPathPart } from '../../../core/shared/project-file-types'
+import type {
+  ElementPathPart,
+  ExportDefaultFunctionOrClass,
+  exportDefaultFunctionOrClass,
+} from '../../../core/shared/project-file-types'
 
 interface PathFromFileNameResult {
   parentId: string
@@ -237,4 +242,20 @@ export const defaultFutureConfig: FutureConfig = {
   v2_meta: false,
   v2_normalizeFormMethod: false,
   v2_routeConvention: false,
+}
+
+export function getDefaultExportNameFromFile(
+  projectContents: ProjectContentTreeRoot,
+  filePath: string,
+): string | null {
+  const file = getContentsTreeFileFromString(projectContents, filePath)
+  if (file == null || file.type != 'TEXT_FILE' || file.lastParseSuccess == null) {
+    return null
+  }
+
+  return (
+    file.lastParseSuccess.exportsDetail.find(
+      (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
+    )?.name ?? null
+  )
 }

@@ -14,20 +14,36 @@ import { useEditorState, Substores } from '../../editor/store/store-hook'
 import {
   createAssetsManifest,
   defaultFutureConfig,
+  getDefaultExportNameFromFile,
   getRoutesFromFiles,
   getTopLevelElement,
   invariant,
   jsxElementUidsPostOrder,
   routeFromEntry,
 } from './remix-utils'
-import { foldEither } from '../../../core/shared/either'
+import type { Either } from '../../../core/shared/either'
+import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
 import { patchedCreateReactElement } from '../../../utils/canvas-react-utils'
 import type { ElementPath, ElementPathPart } from '../../../core/shared/project-file-types'
-import { UTOPIA_PATH_KEY, UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
+import type { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
 import * as EP from '../../../core/shared/element-path'
 import type { RemixRouteLookup } from '../../editor/store/editor-state'
 import { addToRemixRoutingTable } from '../../editor/actions/actions'
+import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import { NO_OP } from '../../../core/shared/utils'
+import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import {
+  UiJsxCanvasCtxAtom,
+  attemptToResolveParsedComponents,
+  pickUiJsxCanvasProps,
+} from '../ui-jsx-canvas'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import type { MapLike } from 'typescript'
+import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 
 interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
@@ -38,12 +54,6 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     Substores.projectContents,
     (_) => _.editor.projectContents,
     'RemixRootComponent projectContents',
-  )
-
-  const builtInDependencies = useEditorState(
-    Substores.builtInDependencies,
-    (_) => _.builtInDependencies,
-    'RemixRootComponent builtInDependencies',
   )
 
   const routeManifest = React.useMemo(() => {
@@ -61,117 +71,156 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     )
   }, [projectContents])
 
+  let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
+
+  let topLevelComponentRendererComponents = React.useRef<
+    MapLike<MapLike<ComponentRendererComponent>>
+  >({})
+
+  let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
+  resolvedFiles.current = {}
+
+  let resolvedFileNames = React.useRef<Array<string>>([]) // resolved (i.e. imported) files this render
+  resolvedFileNames.current = ['/src/root.js']
+
+  const canvasStuff = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return pickUiJsxCanvasProps(store.editor, store.derived, NO_OP, NO_OP, NO_OP)
+    },
+    'CanvasComponentEntry canvasProps',
+  )
+
+  let metadataContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
+  )
+
+  invariant(canvasStuff, "canvasStuff shouldn't be null")
+
+  const requireFn = React.useMemo(
+    () => canvasStuff.curriedRequireFn(projectContents),
+    [canvasStuff, projectContents],
+  )
+
+  const resolve = React.useMemo(
+    () => canvasStuff.curriedResolveFn(projectContents),
+    [canvasStuff, projectContents],
+  )
+
+  const customRequire = React.useCallback(
+    (importOrigin: string, toImport: string) => {
+      if (resolvedFiles.current[importOrigin] == null) {
+        resolvedFiles.current[importOrigin] = []
+      }
+      let resolvedFromThisOrigin = resolvedFiles.current[importOrigin]
+
+      const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
+      const filePathResolveResult = alreadyResolved
+        ? left<string, string>('Already resolved')
+        : resolve(importOrigin, toImport)
+
+      forEachRight(filePathResolveResult, (filepath) => resolvedFileNames.current.push(filepath))
+
+      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+        resolvedFromThisOrigin,
+        toImport,
+        projectContents,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+        '/src/root.js',
+        {},
+        [],
+        [],
+        metadataContext,
+        NO_OP,
+        false,
+        filePathResolveResult,
+        null,
+      )
+      return foldEither(
+        () => {
+          // We did not find a ParseSuccess, fallback to standard require Fn
+          return requireFn(importOrigin, toImport, false)
+        },
+        (scope) => {
+          // Return an artificial exports object that contains our ComponentRendererComponents
+          return scope
+        },
+        resolvedParseSuccess,
+      )
+    },
+    [metadataContext, projectContents, requireFn, resolve],
+  )
+
+  const rootDefaultExport = React.useMemo(() => {
+    const executionScope = createExecutionScope(
+      '/src/root.js',
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      projectContents,
+      '/src/root.js',
+      {},
+      [],
+      [],
+      metadataContext,
+      NO_OP,
+      false,
+      null,
+    )
+
+    const defaultExport = getDefaultExportNameFromFile(projectContents, '/src/root.js')
+    invariant(defaultExport, 'a default export should be provided')
+
+    return executionScope.scope[defaultExport]
+  }, [customRequire, metadataContext, projectContents])
+
+  const indexDefaultExport = React.useMemo(() => {
+    const executionScope = createExecutionScope(
+      '/src/routes/_index.js',
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      projectContents,
+      '/src/routes/_index.js',
+      {},
+      [],
+      [],
+      metadataContext,
+      NO_OP,
+      false,
+      null,
+    )
+
+    const defaultExport = getDefaultExportNameFromFile(projectContents, '/src/routes/_index.js')
+    invariant(defaultExport, 'a default export should be provided')
+
+    return executionScope.scope[defaultExport]
+  }, [customRequire, metadataContext, projectContents])
+
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
 
   const { routeModules, routes } = React.useMemo(() => {
     const routeManifestResult: RouteModules = {}
     const routesResult: DataRouteObject[] = []
 
-    let outletPath: ElementPathPart = []
-
-    let routingTableEntry: RemixRouteLookup = {}
-    let lastRoutingElementUid: string | null = EP.toUid(props[UTOPIA_PATH_KEY])
-
     Object.values(routeManifest).forEach((route) => {
-      const contents = getContentsTreeFileFromString(projectContents, route.filePath)
-      if (
-        contents == null ||
-        contents.type !== 'TEXT_FILE' ||
-        contents.lastParseSuccess?.type !== 'PARSE_SUCCESS'
-      ) {
-        return
-      }
-
-      const topLevelElement = getTopLevelElement(contents.lastParseSuccess.topLevelElements)
-      if (topLevelElement == null) {
-        return
-      }
-
-      const uidsFromRouteModule = [...jsxElementUidsPostOrder(topLevelElement.rootElement, [])]
-
-      outletPath =
-        uidsFromRouteModule.find((r) => r.componentName === 'Outlet')?.pathPart ?? outletPath
-
-      const pathForThisRemixContainer = props[UTOPIA_PATH_KEY]
-
-      const basePath =
-        route.id === 'root'
-          ? pathForThisRemixContainer
-          : EP.appendNewElementPath(pathForThisRemixContainer, outletPath)
-
-      let outletIdFromThisModule: string | null = null
-
-      const partialRequire = (toImport: string) => {
-        if (toImport === 'react') {
-          return {
-            ...React,
-            createElement: (element: any, propsInner: any, ...children: any) => {
-              const uidInfo = uidsFromRouteModule.shift()
-              invariant(uidInfo, "the JSXElement AST doesn't match up with what React is rendering")
-
-              if (uidInfo.componentName === 'Outlet') {
-                outletIdFromThisModule = uidInfo.uid
-              }
-
-              // we're in the root element of the default exported component
-              if (uidsFromRouteModule.length === 0) {
-                invariant(
-                  lastRoutingElementUid,
-                  'route module rendered without a routing component',
-                )
-
-                routingTableEntry = {
-                  ...routingTableEntry,
-                  [lastRoutingElementUid]: route.filePath,
-                }
-
-                if (outletIdFromThisModule == null) {
-                  addToRemixRoutingTable(pathForThisRemixContainer, routingTableEntry)
-                }
-
-                lastRoutingElementUid = outletIdFromThisModule
-                outletIdFromThisModule = null
-              }
-
-              return patchedCreateReactElement(
-                element,
-                {
-                  ...propsInner,
-                  [UTOPIA_UID_KEY]: uidInfo.uid,
-                  [UTOPIA_PATH_KEY]: EP.toString(
-                    EP.appendNewElementPath(basePath, uidInfo.pathPart),
-                  ),
-                },
-                ...children,
-              )
-            },
-          }
-        }
-        const builtInDependency = resolveBuiltInDependency(builtInDependencies, toImport)
-        if (builtInDependency != null) {
-          return builtInDependency
-        }
-        throw new Error(`Cannot resolve dependency: ${toImport}`)
-      }
-
       try {
-        const module = evaluator(
-          route.filePath,
-          contents.fileContents.code,
-          { exports: {} },
-          partialRequire,
-        )
-
         routeManifestResult[route.id] = {
-          default: module.exports.default,
+          default:
+            route.id === 'root'
+              ? rootDefaultExport
+              : route.id === '_index.js'
+              ? indexDefaultExport
+              : undefined,
         }
 
         // HACK LVL: >9000
         // `children` should be filled out properly
         const routeObject: DataRouteObject = {
           ...routeFromEntry(route),
-          loader: module.exports.loader != null ? module.exports.loader : undefined,
-          action: module.exports.action != null ? module.exports.action : undefined,
         }
 
         if (routeObject.id === '_index.js') {
@@ -185,7 +234,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     })
 
     return { routeModules: routeManifestResult, routes: routesResult }
-  }, [builtInDependencies, projectContents, props, routeManifest])
+  }, [indexDefaultExport, rootDefaultExport, routeManifest])
 
   const router = React.useMemo(() => createMemoryRouter(routes), [routes])
 
