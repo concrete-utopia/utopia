@@ -710,6 +710,16 @@ export function isHugFromStyleAttribute(
   return simpleAttribute === MaxContent
 }
 
+export function isHugFromStyleAttributeOrNull(
+  props: JSXAttributes | null,
+  property: 'width' | 'height',
+): boolean {
+  if (props == null) {
+    return false
+  }
+  return isHugFromStyleAttribute(props, property)
+}
+
 export function detectFillHugFixedStateMultiselect(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
