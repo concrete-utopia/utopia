@@ -182,7 +182,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
 
   const { routeModules, routes } = React.useMemo(
-    () => getRoutesAndModulesFromManifest(routeManifest, indexDefaultExport, rootDefaultExport),
+    () => getRoutesAndModulesFromManifest(routeManifest, rootDefaultExport, indexDefaultExport),
     [indexDefaultExport, rootDefaultExport, routeManifest],
   )
 
