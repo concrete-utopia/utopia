@@ -8,7 +8,7 @@ const lightBase = {
   primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
   component: base.purple,
   componentChild: base.orange,
-  css: base.neongreen,
+  css: createUtopiColor('oklch(69% 0.18 166.76)'),
   white: base.white,
   black: base.black,
   brandPurple: base.purple,
