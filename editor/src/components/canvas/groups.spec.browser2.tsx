@@ -17,8 +17,284 @@ import {
 } from './ui-jsx.test-utils'
 import { shiftCmdModifier } from '../../utils/modifiers'
 import type { ElementPath } from '../../core/shared/project-file-types'
+import selectEvent from 'react-select-event'
+import { forceNotNull } from '../../core/shared/optional-utils'
+import { fromTypeGuard, notNull } from '../../core/shared/optics/optic-creators'
+import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from '../../core/shared/math-utils'
+import { isFiniteRectangle } from '../../core/shared/math-utils'
+import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 
 describe('Groups', () => {
+  describe('removes padding and margin appropriately', () => {
+    const paddingAndMarginSnippet = `
+      <div
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: 'blue',
+            position: 'absolute',
+            left: 20,
+            top: 74,
+            width: 358,
+            height: 380,
+            padding: 50,
+          }}
+          data-uid='div'
+        >
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: -7,
+              top: 20,
+              width: 106,
+              height: 95,
+              margin: 80,
+            }}
+            data-uid='div-rect-1'
+          />
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 127,
+              top: 134,
+              width: 110,
+              height: 132,
+              margin: 80,
+            }}
+            data-uid='div-rect-2'
+          />
+        </div>
+        <React.Fragment data-uid='fragment'>
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 350,
+              top: 20,
+              width: 106,
+              height: 95,
+              margin: 80,
+            }}
+            data-uid='fragment-rect-1'
+          />
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 427,
+              top: 134,
+              width: 110,
+              height: 132,
+              margin: 80,
+            }}
+            data-uid='fragment-rect-2'
+          />
+        </React.Fragment>
+      </div>
+`
+    const nonNullFiniteCanvasRectangleOptic = notNull<MaybeInfinityCanvasRectangle>().compose(
+      fromTypeGuard(isFiniteRectangle),
+    )
+    function getElementGlobalFrame(
+      renderResult: EditorRenderResult,
+      path: string,
+    ): CanvasRectangle {
+      const metadata = renderResult.getEditorState().editor.jsxMetadata
+      const targetMetadata = forceNotNull('Metadata for target should exist.', metadata[path])
+      return unsafeGet(nonNullFiniteCanvasRectangleOptic, targetMetadata.globalFrame)
+    }
+    it('works when converting fragment to group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(paddingAndMarginSnippet),
+        'await-first-dom-report',
+      )
+      const targetPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div`,
+      )
+      await renderResult.dispatch(selectComponents([targetPath], false), true)
+
+      const rect1Path = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div/div-rect-1`
+      const rect2Path = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div/div-rect-2`
+      const rect1FrameBefore = getElementGlobalFrame(renderResult, rect1Path)
+      const rect2FrameBefore = getElementGlobalFrame(renderResult, rect2Path)
+
+      const control = forceNotNull(
+        'Should be able to find control.',
+        document.getElementById('editor-contract-popup-list'),
+      )
+      await selectEvent.select(control, 'Group')
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      const rect1FrameAfter = getElementGlobalFrame(renderResult, rect1Path)
+      const rect2FrameAfter = getElementGlobalFrame(renderResult, rect2Path)
+
+      expect(rect1FrameAfter.x).toEqual(rect1FrameBefore.x)
+      expect(rect1FrameAfter.y).toEqual(rect1FrameBefore.y)
+      expect(rect2FrameAfter.x).toEqual(rect2FrameBefore.x)
+      expect(rect2FrameAfter.y).toEqual(rect2FrameBefore.y)
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div>
+        <div
+          style={{
+            backgroundColor: 'blue',
+            position: 'absolute',
+            left: 20,
+            top: 74,
+            width: 358,
+            height: 380,
+            padding: 50,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: -7,
+              top: 20,
+              width: 106,
+              height: 95,
+              margin: 80,
+          />
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 127,
+              top: 134,
+              width: 110,
+              height: 132,
+              margin: 80,
+            }}
+          />
+        </div>
+        <Group>
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 350,
+              top: 20,
+              width: 106,
+              height: 95,
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 427,
+              top: 134,
+              width: 110,
+              height: 132,
+            }}
+          />
+        </Group>
+      </div>
+`,
+        ),
+      )
+    })
+    it('works when converting frame to group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(paddingAndMarginSnippet),
+        'await-first-dom-report',
+      )
+      const targetPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div`,
+      )
+      await renderResult.dispatch(selectComponents([targetPath], false), true)
+
+      const rect1Path = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div/div-rect-1`
+      const rect2Path = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div/div-rect-2`
+      const rect1FrameBefore = getElementGlobalFrame(renderResult, rect1Path)
+      const rect2FrameBefore = getElementGlobalFrame(renderResult, rect2Path)
+
+      const control = forceNotNull(
+        'Should be able to find control.',
+        document.getElementById('editor-contract-popup-list'),
+      )
+      await selectEvent.select(control, 'Group')
+
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      const rect1FrameAfter = getElementGlobalFrame(renderResult, rect1Path)
+      const rect2FrameAfter = getElementGlobalFrame(renderResult, rect2Path)
+
+      expect(rect1FrameAfter.x).toEqual(rect1FrameBefore.x)
+      expect(rect1FrameAfter.y).toEqual(rect1FrameBefore.y)
+      expect(rect2FrameAfter.x).toEqual(rect2FrameBefore.x)
+      expect(rect2FrameAfter.y).toEqual(rect2FrameBefore.y)
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div>
+        <Group
+          style={{
+            backgroundColor: 'blue',
+            position: 'absolute',
+            left: 20,
+            top: 76,
+            width: 358,
+            height: 380,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 73,
+              top: 100,
+              width: 106,
+              height: 95,
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 207,
+              top: 214,
+              width: 110,
+              height: 132,
+            }}
+          />
+        </Group>
+        <React.Fragment>
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 350,
+              top: 20,
+              width: 106,
+              height: 95,
+              margin: 80,
+            }}
+          />
+          <div
+            style={{
+              backgroundColor: '#FF69B4AB',
+              position: 'absolute',
+              left: 427,
+              top: 134,
+              width: 110,
+              height: 132,
+              margin: 80,
+            }}
+          />
+        </React.Fragment>
+      </div>
+`,
+        ),
+      )
+    })
+  })
   describe('wrap in group', () => {
     it('works inside a conditional on an element', async () => {
       const renderResult = await renderTestEditorWithCode(

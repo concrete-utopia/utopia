@@ -6,7 +6,7 @@ import {
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import { arrayAccumulate, mapDropNulls } from '../../../../core/shared/array-utils'
-import { isLeft, isRight, right } from '../../../../core/shared/either'
+import { foldEither, isLeft, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
@@ -14,6 +14,7 @@ import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
   JSXElement,
+  JSXElementChild,
   JSXElementLike,
 } from '../../../../core/shared/element-template'
 import {
@@ -33,6 +34,12 @@ import type {
   LocalPoint,
   LocalRectangle,
   Size,
+} from '../../../../core/shared/math-utils'
+import { canvasVector } from '../../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  MaybeInfinityCanvasRectangle,
+  offsetRect,
 } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
@@ -56,7 +63,10 @@ import { notice } from '../../../common/notice'
 import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types'
 import { applyCommandsAction, showToast } from '../../../editor/actions/action-creators'
 import type { AllElementProps, NavigatorEntry } from '../../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../../editor/store/editor-state'
+import {
+  trueUpElementChanged,
+  trueUpChildrenOfElementChanged,
+} from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
   commonInsertionPathFromArray,
@@ -71,6 +81,7 @@ import {
   nukeSizingPropsForAxisCommand,
   setElementTopLeft,
 } from '../../../inspector/inspector-common'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { EdgePositionBottomRight } from '../../canvas-types'
 import { addElement } from '../../commands/add-element-command'
 import type { CanvasCommand } from '../../commands/commands'
@@ -94,7 +105,20 @@ import { updateSelectedViews } from '../../commands/update-selected-views-comman
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
-import { isEmptyGroup, treatElementAsGroupLike } from './group-helpers'
+import { isEmptyGroup } from './group-helpers'
+import {
+  removeMarginProperties,
+  removePaddingProperties,
+} from '../../../../core/model/margin-and-padding'
+import {
+  fromField,
+  fromTypeGuard,
+  notNullOrUndefined,
+  traverseArray,
+} from '../../../../core/shared/optics/optic-creators'
+import { modify, toFirst } from '../../../../core/shared/optics/optic-utilities'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { createMoveCommandsForElement } from './shared-move-strategies-helpers'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -309,6 +333,11 @@ export function convertFragmentToGroup(
   }
 
   const { children, uid } = element.element.value
+  // Remove the margins from the children.
+  const toPropsOptic = traverseArray<JSXElementChild>()
+    .compose(fromTypeGuard(isJSXElement))
+    .compose(fromField('props'))
+  const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
 
   const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
@@ -349,7 +378,7 @@ export function convertFragmentToGroup(
             emptyComments,
           ),
         }),
-        children,
+        childrenWithoutMargins,
       ),
       {
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
@@ -566,7 +595,49 @@ export function convertFrameToGroup(
   }
 
   const { children, uid, props } = instance.element.value
-  const elementToAdd = jsxElement('Group', uid, props, children)
+  // Remove the padding properties from the parent.
+  const propsWithoutPadding = removePaddingProperties(props)
+  // Remove the margin properties for the children of the newly created group.
+  const toPropsOptic = traverseArray<JSXElementChild>()
+    .compose(fromTypeGuard(isJSXElement))
+    .compose(fromField('props'))
+  const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
+  const elementToAdd = jsxElement('Group', uid, propsWithoutPadding, childrenWithoutMargins)
+
+  // Any margin may result in a shift when that margin is gone, so this shifts
+  // in the opposite direction.
+  const moveChildrenCommands = arrayAccumulate<CanvasCommand>((workingArray) => {
+    for (const child of childrenWithoutMargins) {
+      const targetPath = EP.appendToPath(elementPath, child.uid)
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, targetPath)
+      if (elementMetadata != null) {
+        const globalFrame = elementMetadata.globalFrame
+        const localFrame = elementMetadata.localFrame
+        const canvasMargin = elementMetadata.specialSizeMeasurements.margin
+        if (
+          (globalFrame == null || isFiniteRectangle(globalFrame)) &&
+          (localFrame == null || isFiniteRectangle(localFrame))
+        ) {
+          const shiftLeftBy = canvasMargin.left ?? 0
+          const shiftTopBy = canvasMargin.top ?? 0
+          if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
+            workingArray.push(
+              ...createMoveCommandsForElement(
+                elementMetadata.element.value,
+                targetPath,
+                targetPath,
+                canvasVector({ x: shiftLeftBy, y: shiftTopBy }),
+                localFrame,
+                globalFrame,
+                elementMetadata.specialSizeMeasurements.immediateParentBounds,
+                elementMetadata.specialSizeMeasurements.parentFlexDirection,
+              ).commands,
+            )
+          }
+        }
+      }
+    }
+  })
 
   return [
     deleteElement('always', elementPath),
@@ -574,7 +645,8 @@ export function convertFrameToGroup(
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: GroupImport,
     }),
-    queueGroupTrueUp([trueUpElementChanged(childInstances[0].elementPath)]), // TODO change this to trueUpChildrenOfElementChanged(elementPath)
+    ...moveChildrenCommands,
+    queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
   ]
 }
 
