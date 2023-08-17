@@ -90,16 +90,17 @@ export function createComponentRendererComponent(params: {
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
     function shouldUpdate() {
-      return (
-        ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
-        ElementsToRerenderGLOBAL.current.some((er) => {
-          return (
-            (instancePath != null &&
-              (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
-            isElementInChildrenPropTree(EP.toString(er), realPassedProps)
-          )
-        })
-      )
+      return true // TODO solve selective rendering for remix
+      // return (
+      //   ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
+      //   ElementsToRerenderGLOBAL.current.some((er) => {
+      //     return (
+      //       (instancePath != null &&
+      //         (EP.pathsEqual(er, instancePath) || EP.isParentComponentOf(instancePath, er))) ||
+      //       isElementInChildrenPropTree(EP.toString(er), realPassedProps)
+      //     )
+      //   })
+      // )
     }
 
     const rerenderUtopiaContext = usePubSubAtomReadOnly(RerenderUtopiaCtxAtom, shouldUpdate)
