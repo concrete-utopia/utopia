@@ -351,7 +351,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'RootElementIndicator aRootElementIsSelected',
   )
 
-  const areGroupChildren = useEditorState(
+  const allSelecteElementsdAreChildrenOfAGroup = useEditorState(
     Substores.metadata,
     (store) =>
       store.editor.selectedViews.length > 0 &&
@@ -428,7 +428,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   </>,
                 )}
                 {when(
-                  multiselectedContract === 'frame' && areGroupChildren,
+                  multiselectedContract === 'frame' && allSelecteElementsdAreChildrenOfAGroup,
                   <GroupChildResizeSection />,
                 )}
                 {unless(
