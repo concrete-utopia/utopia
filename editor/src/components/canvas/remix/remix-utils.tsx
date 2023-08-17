@@ -144,34 +144,6 @@ export function getTopLevelElement(topLevelElements: TopLevelElement[]): UtopiaJ
   )
 }
 
-interface JSXElementWalkResult {
-  uid: string
-  pathPart: ElementPathPart
-  componentName: string
-}
-
-export function* jsxElementUidsPostOrder(
-  element: JSXElementChild,
-  pathPart: ElementPathPart,
-): Generator<JSXElementWalkResult, void, unknown> {
-  switch (element.type) {
-    case 'JSX_FRAGMENT':
-    case 'JSX_ELEMENT':
-      for (const child of element.children) {
-        yield* jsxElementUidsPostOrder(child, [...pathPart, element.uid])
-      }
-      yield {
-        uid: element.uid,
-        pathPart: [...pathPart, element.uid],
-        componentName:
-          element.type === 'JSX_FRAGMENT' ? 'Fragment' : getJSXElementNameAsString(element.name),
-      }
-      return
-    default:
-      return
-  }
-}
-
 export function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
   if (value == null) {
     console.error(`Invariant error: ${message}`)
