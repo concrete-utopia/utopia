@@ -109,95 +109,87 @@ export const LeftPaneComponent = React.memo(() => {
 
   return (
     <LowPriorityStoreProvider>
-      <div
+      <ResizableFlexColumn
+        onResizeStop={onLeftPanelResizeStop}
+        defaultSize={{
+          width: leftPanelWidth,
+          height: '100%',
+        }}
+        minWidth={LeftPanelMinWidth}
         style={{
-          height: 'calc(100% - 20px)',
-          position: 'absolute',
-          top: 0,
-          left: codeEditorWidth,
-          zIndex: 1,
-          margin: 10,
+          overscrollBehavior: 'contain',
+          backgroundColor: colorTheme.inspectorBackground.value,
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          overflow: 'scroll',
+          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+          height: '100%',
         }}
       >
-        <ResizableFlexColumn
-          onResizeStop={onLeftPanelResizeStop}
-          defaultSize={{
-            width: leftPanelWidth,
-            height: '100%',
-          }}
-          minWidth={LeftPanelMinWidth}
+        <div
+          id={LeftPaneComponentId}
+          className='leftPane'
           style={{
-            overscrollBehavior: 'contain',
-            backgroundColor: colorTheme.inspectorBackground.value,
-            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-            overflow: 'scroll',
-            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
             height: '100%',
+            position: 'relative',
+            backgroundColor: colorTheme.leftPaneBackground.value,
+            color: colorTheme.fg1.value,
+            display: 'flex',
           }}
         >
           <div
-            id={LeftPaneComponentId}
-            className='leftPane'
+            id={LeftPaneOverflowScrollId}
+            className='overflow-y-scroll'
             style={{
               height: '100%',
-              position: 'relative',
-              backgroundColor: colorTheme.leftPaneBackground.value,
-              color: colorTheme.fg1.value,
-              display: 'flex',
+              flexGrow: 1,
+            }}
+            onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
+              if (mouseEvent.target instanceof HTMLDivElement) {
+                if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
+                  dispatch([clearSelection()])
+                }
+              }
             }}
           >
-            <div
-              id={LeftPaneOverflowScrollId}
-              className='overflow-y-scroll'
-              style={{
-                height: '100%',
-                flexGrow: 1,
-              }}
-              onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
-                if (mouseEvent.target instanceof HTMLDivElement) {
-                  if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
-                    dispatch([clearSelection()])
-                  }
-                }
-              }}
-            >
-              <UIGridRow
-                variant='|--67px--||--67px--||--67px--||--67px--|'
-                padded={false}
-                css={{ gridColumnGap: 0 }}
-                style={{ alignItems: 'stretch', marginBottom: 10 }}
-              >
-                <MenuTab
-                  label={'Navigator'}
-                  selected={selectedTab === LeftMenuTab.Navigator}
-                  onClick={onClickNavigatorTab}
-                />
-                <MenuTab
-                  label={'Project'}
-                  selected={selectedTab === LeftMenuTab.Project}
-                  onClick={onClickProjectTab}
-                />
-                <MenuTab
-                  label={'Settings'}
-                  selected={selectedTab === LeftMenuTab.Settings}
-                  onClick={onClickSettingsTab}
-                />
-                <MenuTab
-                  label={'Github'}
-                  selected={selectedTab === LeftMenuTab.Github}
-                  onClick={onClickGithubTab}
-                />
-              </UIGridRow>
-
-              {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
-              {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
-              {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
-              {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-              {loggedIn ? null : <LoggedOutPane />}
+            <div className='handle' style={{ height: 34, width: '100%' }}>
+              draggable title
             </div>
+            <UIGridRow
+              variant='|--67px--||--67px--||--67px--||--67px--|'
+              padded={false}
+              css={{ gridColumnGap: 0 }}
+              style={{ alignItems: 'stretch', marginBottom: 10 }}
+            >
+              <MenuTab
+                label={'Navigator'}
+                selected={selectedTab === LeftMenuTab.Navigator}
+                onClick={onClickNavigatorTab}
+              />
+              <MenuTab
+                label={'Project'}
+                selected={selectedTab === LeftMenuTab.Project}
+                onClick={onClickProjectTab}
+              />
+              <MenuTab
+                label={'Settings'}
+                selected={selectedTab === LeftMenuTab.Settings}
+                onClick={onClickSettingsTab}
+              />
+              <MenuTab
+                label={'Github'}
+                selected={selectedTab === LeftMenuTab.Github}
+                onClick={onClickGithubTab}
+              />
+            </UIGridRow>
+
+            {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
+            {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
+            {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
+            {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
+            {loggedIn ? null : <LoggedOutPane />}
           </div>
-        </ResizableFlexColumn>
-      </div>
+        </div>
+      </ResizableFlexColumn>
     </LowPriorityStoreProvider>
   )
 })
