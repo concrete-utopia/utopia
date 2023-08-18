@@ -281,7 +281,9 @@ export const hugContentsApplicableForText = (
 export const fillContainerApplicable = (
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): boolean => !EP.isStoryboardChild(elementPath)
+): boolean => {
+  return !EP.isStoryboardChild(elementPath) && !treatElementAsGroupLike(metadata, elementPath)
+}
 
 export function justifyContentAlignItemsEquals(
   flexDirection: FlexDirection,
