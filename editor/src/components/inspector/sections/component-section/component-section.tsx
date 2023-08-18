@@ -346,8 +346,8 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
   return (
     <React.Fragment>
       <InspectorSectionHeader>
-        <SimpleFlexRow style={{ flexGrow: 1 }}>
-          <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize' }}>
+        <SimpleFlexRow style={{ flexGrow: 1, gap: 5 }}>
+          <PropertyLabel target={[propPath]} style={{ textTransform: 'capitalize', paddingTop: 2 }}>
             {title}
           </PropertyLabel>
           {propertyStatus.overwritable ? (
@@ -358,15 +358,13 @@ const RowForArrayControl = React.memo((props: RowForArrayControlProps) => {
             >
               {insertingRow ? (
                 <Icons.Minus
-                  style={{ paddingTop: 1 }}
-                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                  color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
                   width={16}
                   height={16}
                 />
               ) : (
                 <Icons.Plus
-                  style={{ paddingTop: 1 }}
-                  color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                  color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
                   width={16}
                   height={16}
                 />
