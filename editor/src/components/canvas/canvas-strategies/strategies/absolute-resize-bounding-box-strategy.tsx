@@ -41,7 +41,7 @@ import { flattenSelection, getMultiselectBounds } from './shared-move-strategies
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from './group-helpers'
-import type { EnsurePinsExist } from './resize-strategy-helpers'
+import type { EnsureFramePointsExist } from './resize-strategy-helpers'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
 
@@ -178,14 +178,14 @@ export function absoluteResizeBoundingBoxStrategy(
               const elementParentFlexDirection =
                 metadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
-              const ensurePinsExist: EnsurePinsExist =
+              const ensureFramePointsExist: EnsureFramePointsExist =
                 !elementIsGroup ||
                 (isEdgePositionEqualTo(edgePosition, EdgePositionLeft) && originalFrame.x === 0) ||
                 (isEdgePositionEqualTo(edgePosition, EdgePositionTop) && originalFrame.y === 0) ||
                 (isEdgePositionEqualTo(edgePosition, EdgePositionTopLeft) &&
                   (originalFrame.x === 0 || originalFrame.y === 0))
-                  ? 'ensure-two-pins-per-dimension-exists'
-                  : 'only-offset-pins-are-needed'
+                  ? 'ensure-two-frame-points-per-dimension-exists'
+                  : 'only-offset-frame-points-are-needed'
 
               return [
                 ...createResizeCommandsFromFrame(
@@ -196,7 +196,7 @@ export function absoluteResizeBoundingBoxStrategy(
                   elementParentBounds,
                   elementParentFlexDirection,
                   edgePosition,
-                  ensurePinsExist,
+                  ensureFramePointsExist,
                 ),
                 pushIntendedBoundsAndUpdateGroups(
                   [{ target: selectedElement, frame: newFrame }],
