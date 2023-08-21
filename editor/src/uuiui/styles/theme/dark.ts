@@ -33,9 +33,9 @@ const darkBase = {
 
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
-  bg2: createUtopiColor('#23262F'),
+  bg2: createUtopiColor('#20232C'),
   bg3: createUtopiColor('#55575F'),
-  bg4: createUtopiColor('#4C4D5B'),
+  bg4: createUtopiColor('#282B35'),
   bg5: createUtopiColor('#848998'),
   fg0: createUtopiColor('#ffffff'),
   fg1: createUtopiColor('#D9DCE3'),
@@ -115,6 +115,7 @@ export const dark: typeof light = {
   textColor: base.white,
 
   panelShadowColor: createUtopiColor('rgba(0,0,0, .3)'),
+  seperator: createUtopiColor('#282B35'),
 
   // big sections
   leftMenuBackground: darkPrimitives.neutralBackground,

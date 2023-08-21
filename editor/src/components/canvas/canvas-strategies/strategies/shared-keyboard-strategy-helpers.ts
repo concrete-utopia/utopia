@@ -1,11 +1,13 @@
-import type { InteractionSession, KeyState } from '../interaction-state'
-import { StrategyState } from '../interaction-state'
-import { setsEqual } from '../../../../core/shared/set-utils'
 import { last, mapDropNulls } from '../../../../core/shared/array-utils'
+import * as EP from '../../../../core/shared/element-path'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { canvasRectangle } from '../../../../core/shared/math-utils'
+import { setsEqual } from '../../../../core/shared/set-utils'
+import type { KeyCharacter } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { Modifier } from '../../../../utils/modifiers'
-import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
-import type { KeyCharacter } from '../../../../utils/keyboard'
+import Utils from '../../../../utils/utils'
+import type { CanvasFrameAndTarget } from '../../canvas-types'
 import {
   collectParentAndSiblingGuidelines,
   oneGuidelinePerDimension,
@@ -14,7 +16,7 @@ import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guid
 import { Guidelines } from '../../guideline'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import { getTargetPathsFromInteractionTarget } from '../canvas-strategy-types'
-import Utils from '../../../../utils/utils'
+import type { InteractionSession, KeyState } from '../interaction-state'
 
 export interface AccumulatedPresses extends KeyState {
   count: number
@@ -160,4 +162,40 @@ export function getKeyboardStrategyGuidelines(
   )
   const winningGuidelines = oneGuidelinePerDimension(closestGuideLines)
   return winningGuidelines
+}
+
+/**
+ * Adds the new bounds to the array, if for a new element, or merges the existing element bounds
+ * with the updated data from the new element bounds which have diverged from the original frame.
+ */
+export function addOrMergeIntendedBounds(
+  boundsArray: CanvasFrameAndTarget[],
+  originalFrame: CanvasRectangle,
+  newBounds: CanvasFrameAndTarget,
+): CanvasFrameAndTarget[] {
+  const existingIndex = boundsArray.findIndex((other) =>
+    EP.pathsEqual(other.target, newBounds.target),
+  )
+
+  // If the bounds for the current element don't exist in the array, return the array + the new bounds.
+  if (existingIndex < 0) {
+    return [...boundsArray, newBounds]
+  }
+
+  // …otherwise, merge the new values from the new bounds with the existing ones in the array.
+  function replaceIfNew(newValue: number, originalValue: number, existingValue: number): number {
+    return newValue !== originalValue ? newValue : existingValue
+  }
+  const result = [...boundsArray]
+  const existing = result[existingIndex]
+  result[existingIndex] = {
+    ...existing,
+    frame: canvasRectangle({
+      x: replaceIfNew(newBounds.frame.x, originalFrame.x, existing.frame.x),
+      y: replaceIfNew(newBounds.frame.y, originalFrame.y, existing.frame.y),
+      width: replaceIfNew(newBounds.frame.width, originalFrame.width, existing.frame.width),
+      height: replaceIfNew(newBounds.frame.height, originalFrame.height, existing.frame.height),
+    }),
+  }
+  return result
 }

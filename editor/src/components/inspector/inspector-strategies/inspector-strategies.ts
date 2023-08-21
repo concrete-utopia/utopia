@@ -114,7 +114,7 @@ export const updateFlexDirectionStrategies = (
         setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
         ...MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path).flatMap((child) => [
           ...pruneFlexPropsCommands(flexChildProps, child),
-          ...sizeToVisualDimensions(metadata, child),
+          ...sizeToVisualDimensions(metadata, pathTrees, child),
         ]),
       ])
     },

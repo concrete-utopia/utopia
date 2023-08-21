@@ -1,10 +1,16 @@
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { AllElementProps } from '../../../../components/editor/store/editor-state'
-import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
+import {
+  MetadataUtils,
+  getSimpleAttributeAtPath,
+} from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import type { Either } from '../../../../core/shared/either'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
@@ -13,10 +19,10 @@ import type {
   JSXElementWithoutUID,
 } from '../../../../core/shared/element-template'
 import {
-  jsxAttributesFromMap,
-  jsxElementWithoutUID,
   emptyComments,
   jsExpressionValue,
+  jsxAttributesFromMap,
+  jsxElementWithoutUID,
 } from '../../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
@@ -26,13 +32,13 @@ import { notice } from '../../../common/notice'
 import type { AddToast } from '../../../editor/action-types'
 import { showToast } from '../../../editor/actions/action-creators'
 import { isCSSNumber } from '../../../inspector/common/css-utils'
+import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
+import { MaxContent } from '../../../inspector/inspector-common'
 import type { ShowToastCommand } from '../../commands/show-toast-command'
 import { showToastCommand } from '../../commands/show-toast-command'
-import * as EP from '../../../../core/shared/element-path'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { horizontalPins, verticalPins } from './resize-helpers'
-import type { ProjectContentTreeRoot } from '../../../../components/assets'
 
 // Returns true if the element should be treated as a group,
 // even if it's configuration (including its children) means that we cannot do any
@@ -176,11 +182,28 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
   })
 }
 
+function getLayoutPropVerbatim(props: PropsOrJSXAttributes, pin: AbsolutePin): Either<string, any> {
+  return getSimpleAttributeAtPath(props, stylePropPathMappingFn(pin, styleStringInArray))
+}
+
 function elementHasValidPins(jsxElement: JSXElement): boolean {
-  function containsPin(pin: AbsolutePin) {
-    const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
-    return isRight(prop) && prop.value != null
+  function isMaxContentWidthOrHeight(pin: AbsolutePin): boolean {
+    if (pin !== 'width' && pin !== 'height') {
+      return false
+    }
+
+    // max-content (hug) is fine
+    const verbatimProp = getLayoutPropVerbatim(right(jsxElement.props), pin)
+    return isRight(verbatimProp) && verbatimProp.value === MaxContent
   }
+
+  function containsPin(pin: AbsolutePin): boolean {
+    const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
+    const isNumericPin = isRight(prop) && prop.value != null
+
+    return isNumericPin || isMaxContentWidthOrHeight(pin)
+  }
+
   return (
     horizontalPins.filter(containsPin).length >= 2 && verticalPins.filter(containsPin).length >= 2
   )

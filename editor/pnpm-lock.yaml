@@ -261,6 +261,7 @@ specifiers:
   react-popper: 2.2.3
   react-router: ^6.14.2
   react-select: 3.1.0
+  react-select-event: ^5.5.1
   react-spring: 9.0.0-rc.3
   react-syntax-highlighter: 12.2.1
   react-test-renderer: 16.9.0
@@ -572,6 +573,7 @@ devDependencies:
   only-allow: 1.0.0
   pegjs: 0.10.0
   pretty-format: 26.1.0
+  react-select-event: 5.5.1
   react-test-renderer: 16.9.0_react@18.1.0
   script-ext-html-webpack-plugin: 2.1.5_r6mod32wttoeaygbcejskeqeza
   selenium-webdriver: 3.0.1
@@ -14802,6 +14804,12 @@ packages:
       '@remix-run/router': 1.7.2
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
+
+  /react-select-event/5.5.1:
+    resolution: {integrity: sha512-goAx28y0+iYrbqZA2FeRTreHHs/ZtSuKxtA+J5jpKT5RHPCbVZJ4MqACfPnWyFXsEec+3dP5bCrNTxIX8oYe9A==}
+    dependencies:
+      '@testing-library/dom': 9.3.1
+    dev: true
 
   /react-select/3.1.0_t5nmcyzy5uxlteq6gsp6gbc254_ef5jwxihqo6n7gxfmzogljlgcm:
     resolution: {integrity: sha512-wBFVblBH1iuCBprtpyGtd1dGMadsG36W5/t2Aj8OE6WbByDg5jIFyT7X5gT+l0qmT5TqWhxX+VsKJvCEl2uL9g==}

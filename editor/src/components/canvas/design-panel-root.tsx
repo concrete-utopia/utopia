@@ -124,28 +124,6 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const dispatch = useDispatch()
-  const interfaceDesigner = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.interfaceDesigner,
-    'DesignPanelRoot interfaceDesigner',
-  )
-
-  const colorTheme = useColorTheme()
-
-  const codeEditorEnabled = isCodeEditorEnabled()
-  const onResizeStop = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
-    },
-    [dispatch],
-  )
-
   return (
     <>
       <SimpleFlexRow
@@ -159,44 +137,6 @@ const DesignPanelRootInner = React.memo(() => {
           flexShrink: 0,
         }}
       >
-        <SimpleFlexColumn>
-          <Resizable
-            defaultSize={{
-              width: interfaceDesigner.codePaneWidth,
-              height: '100%',
-            }}
-            size={{
-              width: interfaceDesigner.codePaneWidth,
-              height: '100%',
-            }}
-            onResizeStop={onResizeStop}
-            enable={{
-              top: false,
-              right: true,
-              bottom: false,
-              topRight: false,
-              bottomRight: false,
-              bottomLeft: false,
-              topLeft: false,
-            }}
-            className='resizableFlexColumnCanvasCode'
-            style={{
-              ...UtopiaStyles.flexColumn,
-              display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-              width: interfaceDesigner.codePaneWidth,
-              height: '100%',
-              position: 'relative',
-              overflow: 'hidden',
-              justifyContent: 'stretch',
-              alignItems: 'stretch',
-              borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
-            }}
-          >
-            {when(codeEditorEnabled, <CodeEditorWrapper />)}
-            <ConsoleAndErrorsPane />
-          </Resizable>
-        </SimpleFlexColumn>
-
         {
           <SimpleFlexColumn
             style={{
@@ -205,6 +145,7 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
+            <CodeEditorPane />
             <LeftPaneComponent />
             <CanvasWrapperComponent />
             <FloatingInsertMenu />
@@ -319,6 +260,77 @@ const ResizableRightPane = React.memo(() => {
           {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
         </SimpleFlexRow>
         <CanvasStrategyInspector />
+      </Resizable>
+    </div>
+  )
+})
+
+const CodeEditorPane = React.memo(() => {
+  const colorTheme = useColorTheme()
+  const dispatch = useDispatch()
+  const interfaceDesigner = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.interfaceDesigner,
+    'CodeEditorPane interfaceDesigner',
+  )
+
+  const codeEditorEnabled = isCodeEditorEnabled()
+  const onResizeStop = React.useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      direction: ResizeDirection,
+      elementRef: HTMLElement,
+      delta: NumberSize,
+    ) => {
+      dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
+    },
+    [dispatch],
+  )
+
+  return (
+    <div
+      style={{
+        height: 'calc(100% - 20px)',
+        position: 'absolute',
+        margin: 10,
+        zIndex: 1,
+      }}
+    >
+      <Resizable
+        defaultSize={{
+          width: interfaceDesigner.codePaneWidth,
+          height: '100%',
+        }}
+        size={{
+          width: interfaceDesigner.codePaneWidth,
+          height: '100%',
+        }}
+        onResizeStop={onResizeStop}
+        enable={{
+          top: false,
+          right: true,
+          bottom: false,
+          topRight: false,
+          bottomRight: false,
+          bottomLeft: false,
+          topLeft: false,
+        }}
+        className='resizableFlexColumnCanvasCode'
+        style={{
+          ...UtopiaStyles.flexColumn,
+          display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+          width: interfaceDesigner.codePaneWidth,
+          height: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+          justifyContent: 'stretch',
+          alignItems: 'stretch',
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        }}
+      >
+        {when(codeEditorEnabled, <CodeEditorWrapper />)}
+        <ConsoleAndErrorsPane />
       </Resizable>
     </div>
   )

@@ -35,7 +35,7 @@ const lightBase = {
   bg1: createUtopiColor('lch(99.5 0.01 0)'),
   bg2: createUtopiColor('lch(97.0 0.01 0)'),
   bg3: createUtopiColor('hsl(0,0%,94%)'),
-  bg4: createUtopiColor('hsl(0,0%,92%)'),
+  bg4: createUtopiColor('hsl(0,0%,94%)'),
   bg5: createUtopiColor('hsl(0,0%,90%)'),
   fg0: createUtopiColor('hsl(0,0%,0%)'),
   fg1: createUtopiColor('hsl(0,0%,10%)'),
@@ -116,6 +116,7 @@ export const light = {
   textColor: base.almostBlack,
 
   panelShadowColor: createUtopiColor('rgba(0,0,0, .3)'),
+  seperator: createUtopiColor('hsl(0,0%,92%)'),
 
   // big sections
   leftMenuBackground: lightPrimitives.neutralBackground,

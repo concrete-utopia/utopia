@@ -4,27 +4,15 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
+  JSXAttributes,
 } from '../../../core/shared/element-template'
-import { localRectangle, roundRectangleToNearestWhole } from '../../../core/shared/math-utils'
-import type { CanvasRectangle, LocalRectangle, Size } from '../../../core/shared/math-utils'
+import type { CanvasRectangle, Size } from '../../../core/shared/math-utils'
 import {
-  MaybeInfinityCanvasRectangle,
   boundingRectangleArray,
-  canvasRectangle,
-  canvasVector,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  magnitude,
   nullIfInfinity,
-  offsetRect,
   rectangleDifference,
-  resizeCanvasRectangle,
-  size,
   sizeFromRectangle,
-  transformFrameUsingBoundingBox,
-  vectorDifference,
 } from '../../../core/shared/math-utils'
-import { notNull } from '../../../core/shared/optics/optic-creators'
 import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
@@ -35,46 +23,45 @@ import type {
 } from '../../editor/store/editor-state'
 import { trueUpElementChanged } from '../../editor/store/editor-state'
 import type { FlexDirection } from '../../inspector/common/css-utils'
-import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import {
-  allowGroupTrueUp,
-  treatElementAsGroupLike,
-} from '../canvas-strategies/strategies/group-helpers'
+  isHugFromStyleAttribute,
+  isHugFromStyleAttributeOrNull,
+} from '../../inspector/inspector-common'
+import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
 } from '../canvas-strategies/strategies/fragment-like-helpers'
-import { resizeBoundingBoxFromCorner } from '../canvas-strategies/strategies/resize-helpers'
+import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { CanvasFrameAndTarget } from '../canvas-types'
-import { EdgePositionBottomRight, FrameAndTarget } from '../canvas-types'
 import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
+import type { FrameWithAllPoints } from './utils/group-resize-utils'
+import {
+  localRectangleToSixFramePoints,
+  roundSixPointFrameToNearestWhole,
+  transformConstrainedLocalFullFrameUsingBoundingBox,
+} from './utils/group-resize-utils'
 import { wildcardPatch } from './wildcard-patch-command'
-import { isFixedHugFillModeAppliedOnAnySide } from '../../inspector/inspector-common'
 
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>
   isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
-  mode: PushIntendedBoundsAndUpdateGroupsMode
 }
-
-export type PushIntendedBoundsAndUpdateGroupsMode = 'move' | 'resize'
 
 export function pushIntendedBoundsAndUpdateGroups(
   value: Array<CanvasFrameAndTarget>,
   isStartingMetadata: 'starting-metadata' | 'live-metadata',
-  mode: PushIntendedBoundsAndUpdateGroupsMode,
 ): PushIntendedBoundsAndUpdateGroups {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS',
     whenToRun: 'always',
     value: value,
     isStartingMetadata: isStartingMetadata,
-    mode: mode,
   }
 }
 
@@ -144,7 +131,7 @@ function pushIntendedBoundsPatch(
 type LocalFrameAndTarget = {
   target: ElementPath
   parentSize: Size
-  localFrame: LocalRectangle
+  allSixFramePoints: FrameWithAllPoints
 }
 
 function getUpdateResizedGroupChildrenCommands(
@@ -175,12 +162,7 @@ function getUpdateResizedGroupChildrenCommands(
         editor.jsxMetadata,
         editor.elementPathTree,
         frameAndTarget.target,
-      ).filter((path) => {
-        return (
-          command.mode === 'resize' ||
-          !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, path, 'hug')
-        )
-      })
+      )
 
       // the original size of the group before the interaction ran
       const originalSize: Size =
@@ -222,19 +204,34 @@ function getUpdateResizedGroupChildrenCommands(
           // bail
           return
         }
-        const resizedLocalFrame = roundRectangleToNearestWhole(
-          transformFrameUsingBoundingBox(
-            localRectangle({ ...updatedSize, x: 0, y: 0 }),
-            localRectangle({ ...originalSize, x: 0, y: 0 }),
-            currentLocalFrame,
+
+        let constraints: Array<keyof FrameWithAllPoints> =
+          editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
+
+        const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
+        if (jsxElement != null) {
+          if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
+            constraints.push('width')
+          }
+          if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
+            constraints.push('height')
+          }
+        }
+
+        const resizedLocalFramePoints = roundSixPointFrameToNearestWhole(
+          transformConstrainedLocalFullFrameUsingBoundingBox(
+            updatedSize,
+            originalSize,
+            localRectangleToSixFramePoints(currentLocalFrame, originalSize),
+            constraints,
           ),
         )
         updatedLocalFrames[EP.toString(child)] = {
-          localFrame: resizedLocalFrame,
+          allSixFramePoints: resizedLocalFramePoints,
           parentSize: updatedSize,
           target: child,
         }
-        targets.push({ target: child, size: sizeFromRectangle(resizedLocalFrame) })
+        targets.push({ target: child, size: sizeFromRectangle(resizedLocalFramePoints) })
       })
     }
   }
@@ -255,7 +252,8 @@ function getUpdateResizedGroupChildrenCommands(
     commandsToRun.push(
       ...setElementPins(
         elementToUpdate,
-        frameAndTarget.localFrame,
+        MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, elementToUpdate)?.props ?? null,
+        frameAndTarget.allSixFramePoints,
         frameAndTarget.parentSize,
         metadata.specialSizeMeasurements.parentFlexDirection,
       ),
@@ -396,17 +394,18 @@ function getResizeAncestorGroupsCommands(
 
 function setElementPins(
   target: ElementPath,
-  localFrame: LocalRectangle,
+  targetProps: JSXAttributes | null,
+  framePoints: FrameWithAllPoints,
   parentSize: Size,
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
   // TODO retarget Fragments
-  const result = [
+  let result: Array<CanvasCommand> = [
     setCssLengthProperty(
       'always',
       target,
       PP.create('style', 'left'),
-      setValueKeepingOriginalUnit(localFrame.x, parentSize.width),
+      setValueKeepingOriginalUnit(framePoints.left, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -414,7 +413,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'top'),
-      setValueKeepingOriginalUnit(localFrame.y, parentSize.height),
+      setValueKeepingOriginalUnit(framePoints.top, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -422,10 +421,7 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'right'),
-      setValueKeepingOriginalUnit(
-        parentSize.width - (localFrame.x + localFrame.width),
-        parentSize.width,
-      ),
+      setValueKeepingOriginalUnit(framePoints.right, parentSize.width),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
@@ -433,30 +429,36 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'bottom'),
-      setValueKeepingOriginalUnit(
-        parentSize.height - (localFrame.y + localFrame.height),
-        parentSize.height,
-      ),
-      parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'width'),
-      setValueKeepingOriginalUnit(localFrame.width, parentSize.width),
-      parentFlexDirection,
-      'do-not-create-if-doesnt-exist',
-    ),
-    setCssLengthProperty(
-      'always',
-      target,
-      PP.create('style', 'height'),
-      setValueKeepingOriginalUnit(localFrame.height, parentSize.height),
+      setValueKeepingOriginalUnit(framePoints.bottom, parentSize.height),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
     ),
   ]
+
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'width')) {
+    result.push(
+      setCssLengthProperty(
+        'always',
+        target,
+        PP.create('style', 'width'),
+        setValueKeepingOriginalUnit(framePoints.width, parentSize.width),
+        parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+    )
+  }
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'height')) {
+    result.push(
+      setCssLengthProperty(
+        'always',
+        target,
+        PP.create('style', 'height'),
+        setValueKeepingOriginalUnit(framePoints.height, parentSize.height),
+        parentFlexDirection,
+        'do-not-create-if-doesnt-exist',
+      ),
+    )
+  }
   return result
 }
 

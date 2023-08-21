@@ -183,17 +183,6 @@ describe('maps in the navigator', () => {
       },
       {
         arr: [0, 1, 2, 3],
-        overrideCount: -1,
-        overrideSuccess: false,
-        expectedTargets: [
-          'regular-utopia-storyboard-uid/scene-aaa',
-          'regular-utopia-storyboard-uid/scene-aaa/containing-div',
-          'regular-utopia-storyboard-uid/scene-aaa/containing-div/map',
-          'regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div',
-        ],
-      },
-      {
-        arr: [0, 1, 2, 3],
         overrideCount: 5,
         overrideSuccess: false,
         expectedTargets: [

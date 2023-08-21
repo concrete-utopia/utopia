@@ -85,8 +85,10 @@ import { CodeElementSection } from './sections/code-element-section'
 import {
   maybeInvalidGroupState,
   groupErrorToastAction,
+  treatElementAsGroupLike,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { FlexCol } from 'utopia-api'
+import { GroupChildResizeSection } from './sections/layout-section/group-child-resize-section'
 
 export interface ElementPathElement {
   name?: string
@@ -168,7 +170,7 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         justifyContent: 'space-around',
         alignItems: 'center',
         height: UtopiaTheme.layout.rowHeight.normal,
-        outline: `1px solid ${colorTheme.bg4.value}`,
+        outline: `1px solid ${colorTheme.seperator.value}`,
         background: colorTheme.inspectorBackground.value,
       }}
     >
@@ -349,6 +351,16 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'RootElementIndicator aRootElementIsSelected',
   )
 
+  const allSelecteElementsdAreChildrenOfAGroup = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.length > 0 &&
+      store.editor.selectedViews.every((path) =>
+        treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path)),
+      ),
+    'Inspector areGroupChildren',
+  )
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -415,6 +427,10 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     <SizingSection />
                   </>,
                 )}
+                {when(
+                  multiselectedContract === 'frame' && allSelecteElementsdAreChildrenOfAGroup,
+                  <GroupChildResizeSection />,
+                )}
                 {unless(
                   multiselectedContract === 'fragment' || multiselectedContract === 'group',
                   // All the regular inspector sections are only visible if frames are selected
@@ -440,7 +456,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       style={{
         width: '100%',
         position: 'relative',
-        color: colorTheme.neutralForeground.value,
         height: '100%',
       }}
       onFocus={onFocus}

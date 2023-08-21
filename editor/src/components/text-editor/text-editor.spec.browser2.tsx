@@ -22,7 +22,8 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import { TextEditorSpanId } from './text-editor'
 import { FOR_TESTS_setNextGeneratedUid } from '../../core/model/element-template-utils.test-utils'
-import { selectComponents } from '../editor/actions/action-creators'
+import { selectComponents, switchEditorMode } from '../editor/actions/action-creators'
+import { EditorModes } from '../editor/editor-modes'
 
 describe('Use the text editor', () => {
   it('Click to edit text', async () => {
@@ -1589,6 +1590,40 @@ describe('Use the text editor', () => {
       }`),
     )
     expect(editor.renderedDOM.getByTestId('div').innerText).toEqual('this is just a string')
+  })
+})
+
+describe('SWITCH_EDITOR_MODE', () => {
+  describe('TextEditMode', () => {
+    it('should be permitted for something that is text editable', async () => {
+      const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+      await editor.dispatch(
+        [
+          switchEditorMode(
+            EditorModes.textEditMode(
+              EP.fromString('sb/39e'),
+              null,
+              'existing',
+              'no-text-selection',
+            ),
+          ),
+        ],
+        true,
+      )
+      expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
+    })
+    it('should not be permitted for something that is not text editable', async () => {
+      const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
+      await editor.dispatch(
+        [
+          switchEditorMode(
+            EditorModes.textEditMode(EP.fromString('sb'), null, 'existing', 'no-text-selection'),
+          ),
+        ],
+        true,
+      )
+      expect(editor.getEditorState().editor.mode.type).toEqual('select')
+    })
   })
 })
 

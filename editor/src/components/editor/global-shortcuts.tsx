@@ -967,7 +967,11 @@ export function handleKeyDown(
               ...nukeAllAbsolutePositioningPropsCommands(elementPath),
               ...(isIntrinsicallyInlineElement(element)
                 ? [
-                    ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+                    ...sizeToVisualDimensions(
+                      editor.jsxMetadata,
+                      editor.elementPathTree,
+                      elementPath,
+                    ),
                     setProperty(
                       'always',
                       elementPath,
@@ -979,7 +983,7 @@ export function handleKeyDown(
             ]
           } else {
             return [
-              ...sizeToVisualDimensions(editor.jsxMetadata, elementPath),
+              ...sizeToVisualDimensions(editor.jsxMetadata, editor.elementPathTree, elementPath),
               ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
             ]
           }
