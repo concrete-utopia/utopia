@@ -1,42 +1,17 @@
-import { styleStringInArray } from '../../../../utils/common-constants'
-import { isHorizontalPoint } from 'utopia-api/core'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { isRight, right } from '../../../../core/shared/either'
-import type {
-  ElementInstanceMetadataMap,
-  JSXElement,
-} from '../../../../core/shared/element-template'
-import type { CanvasRectangle, SimpleRectangle } from '../../../../core/shared/math-utils'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
-  canvasRectangleToLocalRectangle,
   isInfinityRectangle,
-  rectangleDifference,
   roundRectangleToNearestWhole,
-  roundTo,
   transformFrameUsingBoundingBox,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { getElementFromProjectContents } from '../../../editor/store/editor-state'
-import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type { EdgePosition } from '../../canvas-types'
-import type {
-  AdjustCssLengthProperties,
-  LengthPropertyToAdjust,
-} from '../../commands/adjust-css-length-command'
-import {
-  adjustCssLengthProperties,
-  lengthPropertyToAdjust,
-} from '../../commands/adjust-css-length-command'
+import { EdgePositionTop, EdgePositionLeft, EdgePositionTopLeft } from '../../canvas-types'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
-import {
-  setCssLengthProperty,
-  setValueKeepingOriginalUnit,
-} from '../../commands/set-css-length-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -54,23 +29,21 @@ import {
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import type { AbsolutePin } from './resize-helpers'
 import {
   isAnySelectedElementAspectRatioLocked,
-  ensureAtLeastTwoPinsForEdgePosition,
   getLockedAspectRatio,
   pickCursorFromEdgePosition,
   resizeBoundingBox,
   supportsAbsoluteResize,
-  onlyEnsureOffsetPinsExist,
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
-import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { allowGroupTrueUp, treatElementAsGroupLike } from './group-helpers'
+import { treatElementAsGroupLike } from './group-helpers'
+import type { EnsurePinsExist } from './resize-strategy-helpers'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
+import { isEdgePositionEqualTo } from '../../canvas-utils'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -205,6 +178,15 @@ export function absoluteResizeBoundingBoxStrategy(
               const elementParentFlexDirection =
                 metadata?.specialSizeMeasurements.parentFlexDirection ?? null
 
+              const ensurePinsExist: EnsurePinsExist =
+                !elementIsGroup ||
+                (isEdgePositionEqualTo(edgePosition, EdgePositionLeft) && originalFrame.x === 0) ||
+                (isEdgePositionEqualTo(edgePosition, EdgePositionTop) && originalFrame.y === 0) ||
+                (isEdgePositionEqualTo(edgePosition, EdgePositionTopLeft) &&
+                  (originalFrame.x === 0 || originalFrame.y === 0))
+                  ? 'ensure-two-pins-per-dimension-exists'
+                  : 'only-offset-pins-are-needed'
+
               return [
                 ...createResizeCommandsFromFrame(
                   element,
@@ -214,9 +196,7 @@ export function absoluteResizeBoundingBoxStrategy(
                   elementParentBounds,
                   elementParentFlexDirection,
                   edgePosition,
-                  elementIsGroup
-                    ? 'only-offset-pins-are-needed'
-                    : 'ensure-two-pins-per-dimension-exists',
+                  ensurePinsExist,
                 ),
                 pushIntendedBoundsAndUpdateGroups(
                   [{ target: selectedElement, frame: newFrame }],

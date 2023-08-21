@@ -902,6 +902,10 @@ export function isEdgePositionOnSide(edgePosition: EdgePosition): boolean {
   return edgePosition.x === 0.5 || edgePosition.y === 0.5
 }
 
+export function isEdgePositionEqualTo(a: EdgePosition, b: EdgePosition): boolean {
+  return a.x === b.x && a.y === b.y
+}
+
 export const SnappingThreshold = 5
 
 export function collectGuidelines(

@@ -30,6 +30,8 @@ import {
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, onlyEnsureOffsetPinsExist } from './resize-helpers'
 
+export type EnsurePinsExist = 'ensure-two-pins-per-dimension-exists' | 'only-offset-pins-are-needed'
+
 export function createResizeCommandsFromFrame(
   element: JSXElement,
   selectedElement: ElementPath,
@@ -38,7 +40,7 @@ export function createResizeCommandsFromFrame(
   elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
   edgePosition: EdgePosition,
-  ensurePinsExist: 'ensure-two-pins-per-dimension-exists' | 'only-offset-pins-are-needed',
+  ensurePinsExist: EnsurePinsExist,
 ): (AdjustCssLengthProperties | SetCssLengthProperty)[] {
   const pins: Array<AbsolutePin> =
     ensurePinsExist === 'ensure-two-pins-per-dimension-exists'
