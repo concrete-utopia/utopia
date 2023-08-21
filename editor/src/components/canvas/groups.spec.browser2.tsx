@@ -40,7 +40,7 @@ const notNullFiniteCanvasRectangleOptic = notNull<MaybeInfinityCanvasRectangle>(
 function getElementGlobalFrame(renderResult: EditorRenderResult, path: string): CanvasRectangle {
   const metadata = renderResult.getEditorState().editor.jsxMetadata
   const targetMetadata = forceNotNull('Metadata for target should exist.', metadata[path])
-  return unsafeGet(nonNullFiniteCanvasRectangleOptic, targetMetadata.globalFrame)
+  return unsafeGet(notNullFiniteCanvasRectangleOptic, targetMetadata.globalFrame)
 }
 
 describe('Groups', () => {
