@@ -17,12 +17,16 @@ import {
 } from './ui-jsx.test-utils'
 import { shiftCmdModifier } from '../../utils/modifiers'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import selectEvent from 'react-select-event'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { fromTypeGuard, notNull } from '../../core/shared/optics/optic-creators'
 import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from '../../core/shared/math-utils'
 import { isFiniteRectangle } from '../../core/shared/math-utils'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
+import { applyCommandsAction } from '../editor/actions/action-creators'
+import {
+  convertFragmentToGroup,
+  convertFrameToGroup,
+} from './canvas-strategies/strategies/group-conversion-helpers'
 
 describe('Groups', () => {
   describe('removes padding and margin appropriately', () => {
@@ -112,7 +116,7 @@ describe('Groups', () => {
         'await-first-dom-report',
       )
       const targetPath = EP.fromString(
-        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div`,
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/fragment`,
       )
       await renderResult.dispatch(selectComponents([targetPath], false), true)
 
@@ -121,21 +125,35 @@ describe('Groups', () => {
       const rect1FrameBefore = getElementGlobalFrame(renderResult, rect1Path)
       const rect2FrameBefore = getElementGlobalFrame(renderResult, rect2Path)
 
-      const control = forceNotNull(
-        'Should be able to find control.',
-        document.getElementById('editor-contract-popup-list'),
+      // Trigger change to group.
+      const editorState = renderResult.getEditorState().editor
+      await renderResult.dispatch(
+        [
+          applyCommandsAction(
+            convertFragmentToGroup(
+              editorState.jsxMetadata,
+              editorState.elementPathTree,
+              editorState.allElementProps,
+              targetPath,
+            ),
+          ),
+        ],
+        true,
       )
-      await selectEvent.select(control, 'Group')
-
       await renderResult.getDispatchFollowUpActionsFinished()
 
       const rect1FrameAfter = getElementGlobalFrame(renderResult, rect1Path)
       const rect2FrameAfter = getElementGlobalFrame(renderResult, rect2Path)
 
-      expect(rect1FrameAfter.x).toEqual(rect1FrameBefore.x)
-      expect(rect1FrameAfter.y).toEqual(rect1FrameBefore.y)
-      expect(rect2FrameAfter.x).toEqual(rect2FrameBefore.x)
-      expect(rect2FrameAfter.y).toEqual(rect2FrameBefore.y)
+      const expectedFrames = {
+        rect1: rect1FrameBefore,
+        rect2: rect2FrameBefore,
+      }
+      const actualFrames = {
+        rect1: rect1FrameAfter,
+        rect2: rect2FrameAfter,
+      }
+      expect(actualFrames).toEqual(expectedFrames)
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -160,6 +178,7 @@ describe('Groups', () => {
               width: 106,
               height: 95,
               margin: 80,
+            }}
           />
           <div
             style={{
@@ -173,13 +192,21 @@ describe('Groups', () => {
             }}
           />
         </div>
-        <Group>
+        <Group
+          style={{
+            position: 'absolute',
+            top: 100,
+            left: 430,
+            width: 187,
+            height: 246,
+          }}
+        >
           <div
             style={{
               backgroundColor: '#FF69B4AB',
               position: 'absolute',
-              left: 350,
-              top: 20,
+              left: 0,
+              top: 0,
               width: 106,
               height: 95,
             }}
@@ -188,8 +215,8 @@ describe('Groups', () => {
             style={{
               backgroundColor: '#FF69B4AB',
               position: 'absolute',
-              left: 427,
-              top: 134,
+              left: 77,
+              top: 114,
               width: 110,
               height: 132,
             }}
@@ -209,27 +236,32 @@ describe('Groups', () => {
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div`,
       )
       await renderResult.dispatch(selectComponents([targetPath], false), true)
+      await renderResult.getDispatchFollowUpActionsFinished()
 
       const rect1Path = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div/div-rect-1`
       const rect2Path = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/div/div-rect-2`
       const rect1FrameBefore = getElementGlobalFrame(renderResult, rect1Path)
       const rect2FrameBefore = getElementGlobalFrame(renderResult, rect2Path)
 
-      const control = forceNotNull(
-        'Should be able to find control.',
-        document.getElementById('editor-contract-popup-list'),
+      // Trigger the change to group.
+      const editorState = renderResult.getEditorState().editor
+      await renderResult.dispatch(
+        [
+          applyCommandsAction(
+            convertFrameToGroup(
+              editorState.jsxMetadata,
+              editorState.elementPathTree,
+              editorState.allElementProps,
+              targetPath,
+            ),
+          ),
+        ],
+        true,
       )
-      await selectEvent.select(control, 'Group')
-
       await renderResult.getDispatchFollowUpActionsFinished()
 
       const rect1FrameAfter = getElementGlobalFrame(renderResult, rect1Path)
       const rect2FrameAfter = getElementGlobalFrame(renderResult, rect2Path)
-
-      expect(rect1FrameAfter.x).toEqual(rect1FrameBefore.x)
-      expect(rect1FrameAfter.y).toEqual(rect1FrameBefore.y)
-      expect(rect2FrameAfter.x).toEqual(rect2FrameBefore.x)
-      expect(rect2FrameAfter.y).toEqual(rect2FrameBefore.y)
 
       expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippetWithoutUIDs(
@@ -238,18 +270,18 @@ describe('Groups', () => {
           style={{
             backgroundColor: 'blue',
             position: 'absolute',
-            left: 20,
-            top: 76,
-            width: 358,
-            height: 380,
+            left: 93,
+            top: 174,
+            width: 244,
+            height: 246,
           }}
         >
           <div
             style={{
               backgroundColor: '#FF69B4AB',
               position: 'absolute',
-              left: 73,
-              top: 100,
+              left: 0,
+              top: 0,
               width: 106,
               height: 95,
             }}
@@ -258,8 +290,8 @@ describe('Groups', () => {
             style={{
               backgroundColor: '#FF69B4AB',
               position: 'absolute',
-              left: 207,
-              top: 214,
+              left: 134,
+              top: 114,
               width: 110,
               height: 132,
             }}
@@ -293,6 +325,16 @@ describe('Groups', () => {
 `,
         ),
       )
+
+      const expectedFrames = {
+        rect1: rect1FrameBefore,
+        rect2: rect2FrameBefore,
+      }
+      const actualFrames = {
+        rect1: rect1FrameAfter,
+        rect2: rect2FrameAfter,
+      }
+      expect(actualFrames).toEqual(expectedFrames)
     })
   })
   describe('wrap in group', () => {
