@@ -3,12 +3,7 @@ import Draggable from 'react-draggable'
 import type { DraggableEventHandler } from 'react-draggable'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import {
-  AlwaysTrue,
-  atomWithPubSub,
-  usePubSubAtom,
-  usePubSubAtomReadOnly,
-} from '../../core/shared/atom-with-pub-sub'
+import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import type { Size, WindowPoint, WindowRectangle } from '../../core/shared/math-utils'
 import {
   rectContainsPoint,
@@ -16,8 +11,16 @@ import {
   windowPoint,
   windowRectangle,
 } from '../../core/shared/math-utils'
-import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-state'
+import {
+  CanvasSizeAtom,
+  LeftPaneDefaultWidth,
+  LeftPanelWidthAtom,
+} from '../editor/store/editor-state'
 import { mapArrayToDictionary } from '../../core/shared/array-utils'
+import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
+import { UtopiaTheme } from '../../uuiui'
+import { useAtom } from 'jotai'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 // import type { ResizeCallback, ResizeDirection } from 're-resizable'
 // import { Resizable } from 're-resizable'
 
@@ -43,87 +46,160 @@ type PanelName = 'leftMenu1' | 'leftMenu2' | 'rightMenu1' | 'rightMenu2'
 const Panels: Array<PanelName> = ['leftMenu1', 'leftMenu2', 'rightMenu1', 'rightMenu2']
 
 const DefaultPanels: { [key in PanelName]: Array<Menu | Pane> } = {
-  leftMenu1: ['navigator'],
-  leftMenu2: ['code-editor'],
+  leftMenu1: ['code-editor'],
+  leftMenu2: ['navigator'],
   rightMenu1: ['inspector'],
   rightMenu2: [],
 }
 
 const DefaultSizes: { [key in PanelName]: WindowRectangle } = {
-  leftMenu1: windowRectangle({ x: 0, y: 0, width: LeftPaneDefaultWidth, height: 0 }),
-  leftMenu2: windowRectangle({ x: 0, y: 0, width: 500, height: 600 }),
+  leftMenu1: windowRectangle({ x: 0, y: 0, width: 500, height: 600 }),
+  leftMenu2: windowRectangle({ x: 0, y: 0, width: LeftPaneDefaultWidth, height: 0 }),
   rightMenu1: windowRectangle({ x: 0, y: 0, width: 255, height: 0 }),
   rightMenu2: windowRectangle({ x: 0, y: 0, width: 0, height: 0 }),
 }
-
-export const FloatingPanelsAtom = atomWithPubSub({
-  key: 'FloatingPanelsAtom',
-  defaultValue: DefaultPanels,
-})
 
 function isOnlyMenuContainingPanel(menusOrPanes: Array<Menu | Pane>): boolean {
   return menusOrPanes.some((value) => value === 'inspector' || value === 'navigator')
 }
 
 export const FloatingPanelsContainer = React.memo(() => {
-  const [panelsData, setPanelsData] = usePubSubAtom(FloatingPanelsAtom)
+  const [panelsData, setPanelsData] =
+    React.useState<{ [key in PanelName]: Array<Menu | Pane> }>(DefaultPanels)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
+  const navigatorSize = usePubSubAtomReadOnly(LeftPanelWidthAtom, AlwaysTrue)
+  const [inspectorSize, _] = useAtom(InspectorWidthAtom)
+  const codeEditorWidth = useEditorState(
+    Substores.restOfEditor,
+    (store) =>
+      store.editor.interfaceDesigner.codePaneVisible
+        ? store.editor.interfaceDesigner.codePaneWidth + 10
+        : 0,
+    'CanvasWrapperComponent codeEditorWidth',
+  )
 
   const [panelFrames, setPanelFrames] =
     React.useState<{ [key in PanelName]: WindowRectangle }>(DefaultSizes)
 
-  const updateSize = React.useCallback(
-    (menuOrPane: Menu | Pane, panel: PanelName, newSize: Size) => {
-      setPanelFrames({
-        ...panelFrames,
-        [panel]: windowRectangle({
-          x: panelFrames[panel].x,
-          y: panelFrames[panel].y,
-          width: newSize.width,
-          height: newSize.height,
-        }),
-      })
-    },
-    [panelFrames, setPanelFrames],
-  )
   const updateColumn = React.useCallback(
     (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => {
-      // TODO SWITCH PANELS
-      const newPanel = (() => {
+      const { newPanel, switchWithPanel } = ((): {
+        newPanel: PanelName | null
+        switchWithPanel: PanelName | null
+      } => {
+        // TODO THIS SHOULD BE NOT BASED ON THE CURSOR X,Y BUT WHERE THE FRAME TOP/LEFT IS
         if (newPosition.x <= 10) {
-          return 'leftMenu1'
-        } else if (newPosition.x <= panelFrames.leftMenu2.width + 10) {
-          return 'leftMenu2'
+          if (
+            panelsData.leftMenu1.length > 0 &&
+            (panelsData.leftMenu2.length === 0 || currentPanel === 'leftMenu2')
+          ) {
+            // dragging to far left when something is already there
+            return { newPanel: 'leftMenu1', switchWithPanel: 'leftMenu2' }
+          } else {
+            return { newPanel: 'leftMenu1', switchWithPanel: null }
+          }
+        } else if (
+          newPosition.x >= panelFrames.leftMenu2.x + panelFrames.leftMenu2.width &&
+          newPosition.x <= panelFrames.leftMenu2.x + panelFrames.leftMenu2.width + 25
+        ) {
+          if (
+            panelsData.leftMenu2.length > 0 &&
+            (panelsData.leftMenu1.length === 0 || currentPanel === 'leftMenu2')
+          ) {
+            // dragging to the right of the left panel 2
+            return { newPanel: 'leftMenu2', switchWithPanel: 'leftMenu1' }
+          } else {
+            return { newPanel: 'leftMenu2', switchWithPanel: null }
+          }
         } else if (newPosition.x >= canvasSize.width - 10) {
-          return 'rightMenu2'
-        } else if (newPosition.x >= panelFrames.rightMenu1.x - 10) {
-          return 'rightMenu1'
+          if (
+            panelsData.rightMenu2.length > 0 &&
+            (panelsData.rightMenu1.length === 0 || currentPanel === 'rightMenu1')
+          ) {
+            // dragging to far right when something is already there
+            return { newPanel: 'rightMenu2', switchWithPanel: 'rightMenu1' }
+          } else {
+            return { newPanel: 'rightMenu2', switchWithPanel: null }
+          }
+        } else if (
+          newPosition.x <= panelFrames.rightMenu1.x &&
+          newPosition.x >= panelFrames.rightMenu1.x - 25
+        ) {
+          if (
+            panelsData.rightMenu1.length > 0 &&
+            (panelsData.rightMenu2.length === 0 || currentPanel === 'rightMenu1')
+          ) {
+            // dragging to the left of the right panel 1
+            return { newPanel: 'rightMenu1', switchWithPanel: 'rightMenu2' }
+          } else {
+            return { newPanel: 'rightMenu1', switchWithPanel: null }
+          }
         } else {
-          return (Panels.reverse() as Array<PanelName>).find((name) =>
-            rectContainsPoint(panelFrames[name], newPosition),
-          )
+          return {
+            newPanel:
+              (Panels.reverse() as Array<PanelName>).find((name) =>
+                rectContainsPoint(panelFrames[name], newPosition),
+              ) ?? null,
+            switchWithPanel: null,
+          }
         }
       })()
 
-      if (newPanel != null && currentPanel != newPanel) {
-        const remainingMenusAndPanes = panelsData[currentPanel].filter(
-          (name) => name !== menuOrPane,
-        )
-        const newPanelsData = {
-          ...panelsData,
-          [newPanel]: [...panelsData[newPanel], menuOrPane],
-          [currentPanel]: remainingMenusAndPanes,
+      if (newPanel != null && (currentPanel != newPanel || switchWithPanel != null)) {
+        if (switchWithPanel != null) {
+          const newPanelsData = {
+            ...panelsData,
+            [switchWithPanel]: panelsData[newPanel].filter((name) => name !== menuOrPane),
+            [newPanel]: [menuOrPane],
+          }
+          setPanelsData(newPanelsData)
+        } else {
+          const remainingMenusAndPanes = panelsData[currentPanel].filter(
+            (name) => name !== menuOrPane,
+          )
+
+          const newPanelsData = {
+            ...panelsData,
+            [newPanel]: [...panelsData[newPanel], menuOrPane],
+            [currentPanel]: remainingMenusAndPanes,
+          }
+          setPanelsData(newPanelsData)
         }
-        setPanelsData(newPanelsData)
-        if (remainingMenusAndPanes.length === 0) {
-          updateSize(menuOrPane, currentPanel, { width: 0, height: 0 })
+
+        // TODO MOVE THIS SOMEWHERE ELSE!!
+        let newPanelSize = panelFrames[newPanel]
+        switch (menuOrPane) {
+          case 'navigator':
+            newPanelSize.width = Math.max(newPanelSize.width, navigatorSize)
+            break
+          case 'code-editor':
+            newPanelSize.width = Math.max(newPanelSize.width, codeEditorWidth)
+            break
+          case 'inspector':
+            newPanelSize.width =
+              inspectorSize === 'wide'
+                ? UtopiaTheme.layout.inspectorLargeWidth
+                : UtopiaTheme.layout.inspectorSmallWidth
+            break
+          case 'preview':
+          default:
+            break
         }
-        if (panelFrames[newPanel].width === 0) {
-          updateSize(menuOrPane, newPanel, { width: 255, height: 0 }) // TODO USE MENU SIZE
-        }
+        setPanelFrames({
+          ...panelFrames,
+          [newPanel]: newPanelSize,
+        })
       }
     },
-    [panelFrames, panelsData, setPanelsData, updateSize, canvasSize],
+    [
+      panelFrames,
+      panelsData,
+      setPanelsData,
+      canvasSize,
+      navigatorSize,
+      inspectorSize,
+      codeEditorWidth,
+    ],
   )
 
   React.useEffect(() => {
@@ -135,6 +211,10 @@ export const FloatingPanelsContainer = React.memo(() => {
         if (isOnlyMenuContainingPanel(panelsData[p])) {
           height = canvasSize.height
         }
+        let width = panelFrames[p].width
+        if (panelsData[p].length === 0) {
+          width = 0
+        }
 
         let x = 0
         switch (p) {
@@ -142,16 +222,16 @@ export const FloatingPanelsContainer = React.memo(() => {
             x = panelFrames.leftMenu1.width
             break
           case 'rightMenu1':
-            x = canvasSize.width - panelFrames.rightMenu1.width - panelFrames.rightMenu2.width - 20
+            x = canvasSize.width - panelFrames.rightMenu1.width - panelFrames.rightMenu2.width
             break
           case 'rightMenu2':
-            x = canvasSize.width - panelFrames.rightMenu2.width - 20
+            x = canvasSize.width - panelFrames.rightMenu2.width
             break
           default:
             break
         }
 
-        return windowRectangle({ x: x, y: 0, width: panelFrames[p].width, height: height })
+        return windowRectangle({ x: x, y: 0, width: width, height: height })
       },
     )
     if (

@@ -35,7 +35,7 @@ import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import { FloatingPanel, FloatingPanelsAtom, FloatingPanelsContainer } from './floating-panels'
+import { FloatingPanel, FloatingPanelsContainer } from './floating-panels'
 
 interface NumberSize {
   width: number
@@ -307,14 +307,11 @@ export const CodeEditorPane = React.memo(() => {
       }}
       className='resizableFlexColumnCanvasCode'
       style={{
-        ...UtopiaStyles.flexColumn,
-        display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+        display: interfaceDesigner.codePaneVisible ? 'block' : 'none',
         width: interfaceDesigner.codePaneWidth,
         height: '100%',
         position: 'relative',
         overflow: 'hidden',
-        justifyContent: 'stretch',
-        alignItems: 'stretch',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
@@ -322,8 +319,22 @@ export const CodeEditorPane = React.memo(() => {
       <div className='handle' style={{ height: 34, width: '100%' }}>
         draggable title
       </div>
-      {when(codeEditorEnabled, <CodeEditorWrapper />)}
-      <ConsoleAndErrorsPane />
+      <div
+        style={{
+          transformOrigin: 'top left',
+          width: 'calc(100%/0.7)',
+          height: 'calc(100%/0.7)',
+          transform: 'scale(0.7)',
+          flexDirection: 'column',
+          whiteSpace: 'nowrap',
+          display: 'flex',
+          alignItems: 'stretch',
+          justifyContent: 'stretch',
+        }}
+      >
+        {when(codeEditorEnabled, <CodeEditorWrapper />)}
+        <ConsoleAndErrorsPane />
+      </div>
     </Resizable>
   )
 })
