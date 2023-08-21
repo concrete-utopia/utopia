@@ -59,7 +59,7 @@ const DefaultSizes: { [key in PanelName]: WindowRectangle } = {
   rightMenu2: windowRectangle({ x: 0, y: 0, width: 0, height: 0 }),
 }
 
-function isOnlyMenuContainingPanel(menusOrPanes: Array<Menu | Pane>): boolean {
+function isMenuContainingPanel(menusOrPanes: Array<Menu | Pane>): boolean {
   return menusOrPanes.some((value) => value === 'inspector' || value === 'navigator')
 }
 
@@ -127,7 +127,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         ) {
           if (
             panelsData.rightMenu1.length > 0 &&
-            (panelsData.rightMenu2.length === 0 || currentPanel === 'rightMenu1')
+            (panelsData.rightMenu2.length === 0 || currentPanel === 'rightMenu2')
           ) {
             // dragging to the left of the right panel 1
             return { newPanel: 'rightMenu1', switchWithPanel: 'rightMenu2' }
@@ -208,7 +208,7 @@ export const FloatingPanelsContainer = React.memo(() => {
       (p) => p,
       (p, i) => {
         let height = 600 // canvasSize.height // code pane height!!!
-        if (isOnlyMenuContainingPanel(panelsData[p])) {
+        if (isMenuContainingPanel(panelsData[p])) {
           height = canvasSize.height
         }
         let width = panelFrames[p].width
@@ -324,7 +324,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   }, [canvasSize, frame, alignment])
 
   const height = React.useMemo(() => {
-    if (isOnlyMenuContainingPanel(menusAndPanes)) {
+    if (isMenuContainingPanel(menusAndPanes)) {
       return 'calc(100% - 20px)'
     } else {
       return frame.height
@@ -370,7 +370,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                 onStop={dragStopEventHandler('code-editor')}
               >
                 <div>
-                  <CodeEditorPane />
+                  <CodeEditorPane small={isMenuContainingPanel(menusAndPanes)} />
                 </div>
               </Draggable>
             )

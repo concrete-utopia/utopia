@@ -263,7 +263,11 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
   )
 })
 
-export const CodeEditorPane = React.memo(() => {
+interface CodeEditorPaneProps {
+  small: boolean
+}
+
+export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
@@ -322,9 +326,9 @@ export const CodeEditorPane = React.memo(() => {
       <div
         style={{
           transformOrigin: 'top left',
-          width: 'calc(100%/0.7)',
-          height: 'calc(100%/0.7)',
-          transform: 'scale(0.7)',
+          width: props.small ? 'calc(100%/0.7)' : '100%',
+          height: props.small ? 'calc(100%/0.7)' : '100%',
+          transform: props.small ? 'scale(0.7)' : undefined,
           flexDirection: 'column',
           whiteSpace: 'nowrap',
           display: 'flex',
