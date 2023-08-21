@@ -167,17 +167,8 @@ function useDeleteAllSelfLayoutConfig() {
 }
 
 const LayoutSectionHeader = React.memo((props: LayoutSectionHeaderProps) => {
-  const colorTheme = useColorTheme()
   const { layoutType } = props
   const onDeleteAllConfig = useDeleteAllSelfLayoutConfig()
-
-  const dispatch = useDispatch()
-  const selectedViews = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.selectedViews
-  })
-  const onAbsoluteButtonClick = React.useCallback(() => {
-    dispatch([runEscapeHatch(selectedViews)], 'everyone')
-  }, [dispatch, selectedViews])
 
   return (
     <InspectorSubsectionHeader>
