@@ -47,6 +47,7 @@ import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
+import type { RemixRendererComponentType } from './ui-jsx-canvas-spy-wrapper'
 import {
   addFakeSpyEntry,
   buildSpyWrappedElement,
@@ -308,6 +309,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          'not-a-renderer-component',
         )
       }
       const innerRender = createLookupRender(
@@ -465,6 +467,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          'not-a-renderer-component',
         )
       }
 
@@ -523,6 +526,7 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
+          'not-a-renderer-component',
         )
       }
 
@@ -724,16 +728,23 @@ function renderJSXElement(
     ? null
     : importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
 
-  const isElementBuiltInFromUtopiaApi = (name: string) =>
+  const isElementImportedFromModule = (moduleName: string, name: string) =>
     !elementIsIntrinsic &&
     importedFrom != null &&
     importedFrom.type === 'IMPORTED_ORIGIN' && // Imported and not from the same file.
-    importedFrom.filePath === 'utopia-api' && // Originating from `utopia-api`
+    importedFrom.filePath === moduleName && // Originating from {moduleName}
     importedFrom.exportedName === name && // {name} component.
     elementFromImport === elementInScope // Ensures this is not a user defined component with the same name.
 
-  const elementIsScene = isElementBuiltInFromUtopiaApi('Scene')
-  const elementIsRemixContainer = isElementBuiltInFromUtopiaApi('RemixContainer')
+  const elementIsScene = isElementImportedFromModule('utopia-api', 'Scene')
+  const elementIsRemixContainer = isElementImportedFromModule('utopia-api', 'RemixContainer')
+  const elementIsRemixOutlet = isElementImportedFromModule('@remix-run/react', 'Outlet')
+
+  const remixRendererComponentType: RemixRendererComponentType = elementIsRemixContainer
+    ? 'remix-container'
+    : elementIsRemixOutlet
+    ? 'outlet'
+    : 'not-a-renderer-component'
 
   const elementOrScam = elementIsScene
     ? SceneComponent
@@ -808,6 +819,7 @@ function renderJSXElement(
         shouldIncludeCanvasRootInTheSpy,
         imports,
         filePath,
+        'not-a-renderer-component',
       )
     }
     return buildSpyWrappedElement(
@@ -823,6 +835,7 @@ function renderJSXElement(
       shouldIncludeCanvasRootInTheSpy,
       imports,
       filePath,
+      remixRendererComponentType,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

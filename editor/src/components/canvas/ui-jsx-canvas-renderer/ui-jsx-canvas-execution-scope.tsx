@@ -19,7 +19,11 @@ import { createLookupRender, utopiaCanvasJSXLookup } from './ui-jsx-canvas-eleme
 import { runBlockUpdatingScope } from './ui-jsx-canvas-scope-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import type { ElementPath, HighlightBoundsForUids } from '../../../core/shared/project-file-types'
+import type {
+  ElementPath,
+  ExportDefaultFunctionOrClass,
+  HighlightBoundsForUids,
+} from '../../../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { defaultIfNull, optionalFlatMap } from '../../../core/shared/optional-utils'
 import { getParseSuccessForFilePath } from '../canvas-utils'
@@ -61,8 +65,13 @@ export function createExecutionScope(
 
   const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
-  const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
-    getParseSuccessForFilePath(filePath, projectContents)
+  const {
+    topLevelElements,
+    imports,
+    jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock,
+    exportsDetail,
+  } = getParseSuccessForFilePath(filePath, projectContents)
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback
@@ -95,11 +104,17 @@ export function createExecutionScope(
     if (isUtopiaJSXComponent(topLevelElement)) {
       topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
       const elementName = topLevelElement.name ?? 'default'
+      const defaultExport = exportsDetail.find(
+        (e): e is ExportDefaultFunctionOrClass =>
+          e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS' && e.name === elementName,
+      )
+
       if (!(elementName in topLevelComponentRendererComponentsForFile)) {
         topLevelComponentRendererComponentsForFile[elementName] = createComponentRendererComponent({
           topLevelElementName: topLevelElement.name,
           mutableContextRef: mutableContextRef,
           filePath: filePath,
+          isComponentDefaultExported: defaultExport != null,
         })
       }
     }

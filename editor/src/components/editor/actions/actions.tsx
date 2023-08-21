@@ -1457,14 +1457,94 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
   }
 }
 
+type RemixRouterStateMachineState =
+  | { type: 'inactive' }
+  | { type: 'remix-container-id-added'; remixContainerPath: ElementPath; remixContainerId: string }
+  | { type: 'outlet-id-added'; remixContainerPath: ElementPath; outletId: string }
+  | {
+      type: 'route-module-root-id-added'
+      remixContainerPath: ElementPath
+    }
+
+type AddRendererIdMessage =
+  | { type: 'remix-container'; remixContainerId: string; remixContainerPath: ElementPath }
+  | { type: 'outlet'; outletId: string }
+
+class RemixRouterStateMachine {
+  constructor(
+    private state: RemixRouterStateMachineState = { type: 'inactive' },
+    private partialLookupTable: RemixRouteLookup = {},
+    private lastRendererId: string | null = null,
+  ) {}
+
+  reset = () => {
+    this.state = { type: 'inactive' }
+    this.partialLookupTable = {}
+    this.lastRendererId = null
+  }
+
+  addRouteModuleRootId = (filePath: string) => {
+    if (this.state.type === 'inactive') {
+      // console.error('Route module ID added when no route is being built')
+      return
+    }
+    if (this.lastRendererId == null) {
+      // console.error('Renderer id not added')
+      return
+    }
+
+    this.partialLookupTable[this.lastRendererId] = filePath
+    this.lastRendererId = this.state.type === 'outlet-id-added' ? this.state.outletId : null
+
+    this.state = {
+      type: 'route-module-root-id-added',
+      remixContainerPath: this.state.remixContainerPath,
+    }
+
+    if (this.lastRendererId == null) {
+      addToRemixRoutingTable(this.state.remixContainerPath, this.partialLookupTable)
+      this.reset()
+    }
+  }
+
+  addRendererId = (message: AddRendererIdMessage) => {
+    if (message.type === 'remix-container') {
+      if (this.state.type !== 'inactive') {
+        // console.error('New remix container id is added while a route is being built')
+        return
+      }
+
+      this.state = {
+        type: 'remix-container-id-added',
+        remixContainerId: message.remixContainerId,
+        remixContainerPath: message.remixContainerPath,
+      }
+
+      this.lastRendererId = message.remixContainerId
+    } else if (message.type === 'outlet') {
+      if (this.state.type === 'inactive') {
+        // console.error('Outlet ID added when no route is being built')
+        return
+      }
+
+      this.state = {
+        type: 'outlet-id-added',
+        outletId: message.outletId,
+        remixContainerPath: this.state.remixContainerPath,
+      }
+    } else {
+      assertNever(message)
+    }
+  }
+}
+
+export const RemixRouterStateMachineInstance = new RemixRouterStateMachine()
+
 export const RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE: { current: RemixRoutingTable } = {
   current: {},
 }
 
-export function addToRemixRoutingTable(
-  remixContainerPath: ElementPath,
-  loookup: RemixRouteLookup,
-): void {
+function addToRemixRoutingTable(remixContainerPath: ElementPath, loookup: RemixRouteLookup): void {
   RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current = {
     ...RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
     [EP.toString(remixContainerPath)]: loookup,

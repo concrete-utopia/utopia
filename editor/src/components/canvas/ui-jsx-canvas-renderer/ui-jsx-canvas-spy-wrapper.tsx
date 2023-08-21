@@ -25,6 +25,7 @@ import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
+import { RemixRouterStateMachineInstance } from '../../editor/actions/actions'
 
 // Should the condition value of conditional expression change (which maybe be done by overriding it),
 // then the values we have accumulated in the spy metadata may need to be cleaned up.
@@ -98,6 +99,8 @@ export function addFakeSpyEntry(
   }
 }
 
+export type RemixRendererComponentType = 'remix-container' | 'outlet' | 'not-a-renderer-component'
+
 export function buildSpyWrappedElement(
   jsx: JSXElementChild,
   finalProps: any,
@@ -111,6 +114,7 @@ export function buildSpyWrappedElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   imports: Imports,
   filePath: string,
+  remixRendererComponentType: RemixRendererComponentType,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -140,6 +144,7 @@ export function buildSpyWrappedElement(
       conditionValue: 'not-a-conditional',
       textContent: null,
     }
+
     if (!EP.isStoryboardPath(elementPath) || shouldIncludeCanvasRootInTheSpy) {
       const elementPathString = EP.toComponentId(elementPath)
       // TODO right now we don't actually invalidate the path, just let the dom-walker know it should walk again
@@ -147,6 +152,21 @@ export function buildSpyWrappedElement(
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
       metadataContext.current.spyValues.allElementProps[elementPathString] =
         makeCanvasElementPropsSafe(reportedProps)
+    }
+
+    if (elementPath != null && remixRendererComponentType !== 'not-a-renderer-component') {
+      // console.log('if (isElementRemixRendererComponent)', jsx.type === 'JSX_ELEMENT' && jsx.name)
+      switch (remixRendererComponentType) {
+        case 'outlet':
+          RemixRouterStateMachineInstance.addRendererId({ type: 'outlet', outletId: jsx.uid })
+          break
+        case 'remix-container':
+          RemixRouterStateMachineInstance.addRendererId({
+            type: 'remix-container',
+            remixContainerId: jsx.uid,
+            remixContainerPath: elementPath,
+          })
+      }
     }
   }
   const spyWrapperProps: SpyWrapperProps = {
