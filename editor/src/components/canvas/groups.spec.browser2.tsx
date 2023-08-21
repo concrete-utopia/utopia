@@ -33,7 +33,7 @@ import {
   convertFrameToGroup,
 } from './canvas-strategies/strategies/group-conversion-helpers'
 
-const nonNullFiniteCanvasRectangleOptic = notNull<MaybeInfinityCanvasRectangle>().compose(
+const notNullFiniteCanvasRectangleOptic = notNull<MaybeInfinityCanvasRectangle>().compose(
   fromTypeGuard(isFiniteRectangle),
 )
 
