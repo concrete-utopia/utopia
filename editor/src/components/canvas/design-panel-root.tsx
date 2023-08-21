@@ -1,4 +1,4 @@
-import type { ResizeCallback, ResizeDirection } from 're-resizable'
+import type { Enable, ResizeCallback, ResizeDirection } from 're-resizable'
 import { Resizable } from 're-resizable'
 import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -178,7 +178,11 @@ export const DesignPanelRoot = React.memo(() => {
 })
 DesignPanelRoot.displayName = 'DesignPanelRoot'
 
-export const ResizableRightPane = React.memo(() => {
+interface ResizableRightPaneProps {
+  enabledDirection: Enable
+}
+
+export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
@@ -233,9 +237,7 @@ export const ResizableRightPane = React.memo(() => {
       onResizeStart={onResize}
       onResize={onResize}
       onResizeStop={onResize}
-      enable={{
-        left: true,
-      }}
+      enable={props.enabledDirection}
     >
       <div className='handle' style={{ height: 34, width: '100%' }}>
         draggable title

@@ -170,32 +170,32 @@ export const FloatingPanelsContainer = React.memo(() => {
         panelName={'leftMenu1'}
         frame={panelFrames.leftMenu1}
         menusAndPanes={panelsData.leftMenu1}
-        updateMenuSize={updateSize}
         updateColumn={updateColumn}
+        alignment='left'
       />
       <FloatingPanel
         key={'leftMenu2'}
         panelName={'leftMenu2'}
         frame={panelFrames.leftMenu2}
         menusAndPanes={panelsData.leftMenu2}
-        updateMenuSize={updateSize}
         updateColumn={updateColumn}
+        alignment='left'
       />
       <FloatingPanel
         key={'rightMenu1'}
         panelName={'rightMenu1'}
         frame={panelFrames.rightMenu1}
         menusAndPanes={panelsData.rightMenu1}
-        updateMenuSize={updateSize}
         updateColumn={updateColumn}
+        alignment='right'
       />
       <FloatingPanel
         key={'rightMenu2'}
         panelName={'rightMenu2'}
         frame={panelFrames.rightMenu2}
         menusAndPanes={panelsData.rightMenu2}
-        updateMenuSize={updateSize}
         updateColumn={updateColumn}
+        alignment='right'
       />
       {/* {Panels.map((key, i) => (
         <FloatingPanel
@@ -216,7 +216,7 @@ interface FloatingPanelProps {
   panelName: PanelName
   menusAndPanes: Array<Menu | Pane>
   frame: WindowRectangle
-  updateMenuSize: (menuOrPane: Menu | Pane, currentPanel: PanelName, newSize: Size) => void
+  alignment: 'left' | 'right'
   updateColumn: (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => void
 }
 
@@ -233,16 +233,15 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   //   }
   // }, [setWidth])
 
-  const { panelName, menusAndPanes, frame, updateMenuSize, updateColumn } = props
+  const { panelName, menusAndPanes, frame, alignment, updateColumn } = props
+  const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
 
-  // TODO RESIZE
-  const enabledResizeDirections = React.useMemo(() => {
-    if (isOnlyMenuContainingPanel(menusAndPanes)) {
-      return ['width']
-    } else {
-      return ['width', 'height']
+  const leftOrRightPosition = React.useMemo(() => {
+    if (alignment === 'right') {
+      return canvasSize.width - frame.x - frame.width
     }
-  }, [menusAndPanes])
+    return frame.x
+  }, [canvasSize, frame, alignment])
 
   const height = React.useMemo(() => {
     if (isOnlyMenuContainingPanel(menusAndPanes)) {
@@ -252,12 +251,6 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     }
   }, [menusAndPanes, frame])
 
-  const dragEventHandler = React.useCallback<DraggableEventHandler>((e, data) => {
-    // ha valami folott vagyunk akkor highlight az oszlopot
-    if ((e as any).clientX < 400) {
-      // console.log('NA HELLO')
-    }
-  }, [])
   const dragStopEventHandler = React.useCallback<
     (menuOrPane: Menu | Pane) => DraggableEventHandler
   >(
@@ -279,8 +272,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       style={{
         position: 'absolute',
         height: height,
-        width: frame.width,
-        left: frame.x,
+        [props.alignment]: leftOrRightPosition,
         top: frame.y,
         margin: 10,
         border: '1px solid green',
@@ -292,7 +284,11 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         switch (value) {
           case 'code-editor':
             return (
-              <Draggable handle='.handle' onStop={dragStopEventHandler('code-editor')}>
+              <Draggable
+                key='code-editor'
+                handle='.handle'
+                onStop={dragStopEventHandler('code-editor')}
+              >
                 <div>
                   <CodeEditorPane />
                 </div>
@@ -301,26 +297,36 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           case 'inspector':
             return (
               <Draggable
-                onDrag={dragEventHandler}
+                key='inspector'
                 onStop={dragStopEventHandler('inspector')}
                 handle='.handle'
                 position={{ x: 0, y: 0 }}
               >
                 <div>
-                  <ResizableRightPane />
+                  <ResizableRightPane
+                    enabledDirection={{
+                      left: props.alignment === 'right',
+                      right: props.alignment === 'left',
+                    }}
+                  />
                 </div>
               </Draggable>
             )
           case 'navigator':
             return (
               <Draggable
-                onDrag={dragEventHandler}
+                key='navigator'
                 onStop={dragStopEventHandler('navigator')}
                 handle='.handle'
                 position={{ x: 0, y: 0 }}
               >
                 <div>
-                  <LeftPaneComponent />
+                  <LeftPaneComponent
+                    enabledDirection={{
+                      left: props.alignment === 'right',
+                      right: props.alignment === 'left',
+                    }}
+                  />
                 </div>
               </Draggable>
             )

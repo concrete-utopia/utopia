@@ -27,7 +27,7 @@ import { LoggedOutPane } from './logged-out-pane'
 import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
-import type { ResizeCallback } from 're-resizable'
+import type { Enable, ResizeCallback } from 're-resizable'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -40,7 +40,11 @@ export const LeftPaneComponentId = 'left-pane'
 
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
-export const LeftPaneComponent = React.memo(() => {
+interface LeftPaneComponentProps {
+  enabledDirection: Enable
+}
+
+export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -124,6 +128,7 @@ export const LeftPaneComponent = React.memo(() => {
           boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
           height: '100%',
         }}
+        enable={props.enabledDirection}
       >
         <div
           id={LeftPaneComponentId}
