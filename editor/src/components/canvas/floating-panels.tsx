@@ -7,6 +7,7 @@ import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-p
 import type { Size, WindowPoint, WindowRectangle } from '../../core/shared/math-utils'
 import {
   rectContainsPoint,
+  rectContainsPointInclusive,
   rectanglesEqual,
   windowPoint,
   windowRectangle,
@@ -87,77 +88,128 @@ export const FloatingPanelsContainer = React.memo(() => {
         newPanel: PanelName | null
         switchWithPanel: PanelName | null
       } => {
+        const outerDropAreas: Array<{
+          targetPanel: PanelName
+          frame: WindowRectangle
+        }> = [
+          // between the left edge and the first left menu
+          {
+            targetPanel: 'leftMenu1',
+            frame: windowRectangle({
+              x: 0,
+              y: 0,
+              width: 10, // TODO FIX, now this is a padding value // panelFrames.leftMenu1.x,
+              height: canvasSize.height,
+            }),
+          },
+          // right side of the left menu
+          {
+            targetPanel: 'leftMenu2',
+            frame: windowRectangle({
+              x: panelFrames.leftMenu2.x + panelFrames.leftMenu2.width,
+              y: 0,
+              width: 25,
+              height: canvasSize.height,
+            }),
+          },
+          // left side of the right menu
+          {
+            targetPanel: 'rightMenu1',
+            frame: windowRectangle({
+              x: panelFrames.rightMenu1.x - 25,
+              y: 0,
+              width: 25,
+              height: canvasSize.height,
+            }),
+          },
+          // between the right edge and the last right menu
+          {
+            targetPanel: 'rightMenu2',
+            frame: windowRectangle({
+              x: panelFrames.rightMenu2.x + panelFrames.rightMenu2.width - 10, // TODO FIX, now this is a padding value
+              y: 0,
+              width:
+                canvasSize.width - panelFrames.rightMenu2.x + panelFrames.rightMenu2.width + 10, // TODO FIX, now this is a padding value
+              height: canvasSize.height,
+            }),
+          },
+        ]
+
         // TODO THIS SHOULD BE NOT BASED ON THE CURSOR X,Y BUT WHERE THE FRAME TOP/LEFT IS
-        if (newPosition.x <= 10) {
+        const droppedToOutsideOfAColumn = outerDropAreas.find((area) =>
+          rectContainsPointInclusive(area.frame, newPosition),
+        )
+
+        // maybe switch with existing panels if dragging to edge or when dropped to the side of a column
+        let shouldSwitchPanel: PanelName | null = null
+        if (droppedToOutsideOfAColumn != null) {
           if (
+            droppedToOutsideOfAColumn.targetPanel === 'leftMenu1' &&
             panelsData.leftMenu1.length > 0 &&
-            (panelsData.leftMenu2.length === 0 || currentPanel === 'leftMenu2')
+            (panelsData.leftMenu2.length === 0 ||
+              (currentPanel === 'leftMenu2' && panelsData.leftMenu2.length === 1))
           ) {
             // dragging to far left when something is already there
-            return { newPanel: 'leftMenu1', switchWithPanel: 'leftMenu2' }
-          } else {
-            return { newPanel: 'leftMenu1', switchWithPanel: null }
+            shouldSwitchPanel = 'leftMenu2'
           }
-        } else if (
-          newPosition.x >= panelFrames.leftMenu2.x + panelFrames.leftMenu2.width &&
-          newPosition.x <= panelFrames.leftMenu2.x + panelFrames.leftMenu2.width + 25
-        ) {
           if (
+            droppedToOutsideOfAColumn.targetPanel === 'leftMenu2' &&
             panelsData.leftMenu2.length > 0 &&
-            (panelsData.leftMenu1.length === 0 || currentPanel === 'leftMenu2')
+            (panelsData.leftMenu1.length === 0 ||
+              (currentPanel === 'leftMenu2' && panelsData.leftMenu1.length === 1))
           ) {
             // dragging to the right of the left panel 2
-            return { newPanel: 'leftMenu2', switchWithPanel: 'leftMenu1' }
-          } else {
-            return { newPanel: 'leftMenu2', switchWithPanel: null }
+            shouldSwitchPanel = 'leftMenu1'
           }
-        } else if (newPosition.x >= canvasSize.width - 10) {
+
           if (
-            panelsData.rightMenu2.length > 0 &&
-            (panelsData.rightMenu1.length === 0 || currentPanel === 'rightMenu1')
-          ) {
-            // dragging to far right when something is already there
-            return { newPanel: 'rightMenu2', switchWithPanel: 'rightMenu1' }
-          } else {
-            return { newPanel: 'rightMenu2', switchWithPanel: null }
-          }
-        } else if (
-          newPosition.x <= panelFrames.rightMenu1.x &&
-          newPosition.x >= panelFrames.rightMenu1.x - 25
-        ) {
-          if (
+            droppedToOutsideOfAColumn.targetPanel === 'rightMenu1' &&
             panelsData.rightMenu1.length > 0 &&
-            (panelsData.rightMenu2.length === 0 || currentPanel === 'rightMenu2')
+            (panelsData.rightMenu2.length === 0 ||
+              (currentPanel === 'rightMenu2' && panelsData.rightMenu2.length === 1))
           ) {
             // dragging to the left of the right panel 1
-            return { newPanel: 'rightMenu1', switchWithPanel: 'rightMenu2' }
-          } else {
-            return { newPanel: 'rightMenu1', switchWithPanel: null }
+            shouldSwitchPanel = 'rightMenu2'
           }
-        } else {
+
+          if (
+            droppedToOutsideOfAColumn.targetPanel === 'rightMenu2' &&
+            panelsData.rightMenu2.length > 0 &&
+            (panelsData.rightMenu1.length === 0 ||
+              (currentPanel === 'rightMenu1' && panelsData.rightMenu1.length === 1))
+          ) {
+            // dragging to far right when something is already there
+            shouldSwitchPanel = 'rightMenu1'
+          }
+
           return {
-            newPanel:
-              (Panels.reverse() as Array<PanelName>).find((name) =>
-                rectContainsPoint(panelFrames[name], newPosition),
-              ) ?? null,
-            switchWithPanel: null,
+            newPanel: droppedToOutsideOfAColumn.targetPanel,
+            switchWithPanel: shouldSwitchPanel,
           }
+        }
+
+        return {
+          newPanel:
+            (Panels.reverse() as Array<PanelName>).find((name) =>
+              rectContainsPoint(panelFrames[name], newPosition),
+            ) ?? null,
+          switchWithPanel: null,
         }
       })()
 
       if (newPanel != null && (currentPanel != newPanel || switchWithPanel != null)) {
+        const remainingMenusAndPanes = panelsData[currentPanel].filter(
+          (name) => name !== menuOrPane,
+        )
         if (switchWithPanel != null) {
           const newPanelsData = {
             ...panelsData,
+            [currentPanel]: remainingMenusAndPanes,
             [switchWithPanel]: panelsData[newPanel].filter((name) => name !== menuOrPane),
             [newPanel]: [menuOrPane],
           }
           setPanelsData(newPanelsData)
         } else {
-          const remainingMenusAndPanes = panelsData[currentPanel].filter(
-            (name) => name !== menuOrPane,
-          )
-
           const newPanelsData = {
             ...panelsData,
             [newPanel]: [...panelsData[newPanel], menuOrPane],
