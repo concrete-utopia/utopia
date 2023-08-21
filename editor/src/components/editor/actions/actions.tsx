@@ -1488,6 +1488,7 @@ class RemixRouterStateMachine {
       // console.error('Route module ID added when no route is being built')
       return
     }
+
     if (this.lastRendererId == null) {
       // console.error('Renderer id not added')
       return
@@ -1501,7 +1502,9 @@ class RemixRouterStateMachine {
       remixContainerPath: this.state.remixContainerPath,
     }
 
-    if (this.lastRendererId == null) {
+    // commit the routing table when we know that we are at the end of the path
+    if (filePath === '/src/routes/_index.js') {
+      // TODO: unhardcode when we have access to the hierarchcy
       addToRemixRoutingTable(this.state.remixContainerPath, this.partialLookupTable)
       this.reset()
     }
@@ -1532,6 +1535,7 @@ class RemixRouterStateMachine {
         outletId: message.outletId,
         remixContainerPath: this.state.remixContainerPath,
       }
+      this.lastRendererId = message.outletId
     } else {
       assertNever(message)
     }

@@ -155,7 +155,6 @@ export function buildSpyWrappedElement(
     }
 
     if (elementPath != null && remixRendererComponentType !== 'not-a-renderer-component') {
-      // console.log('if (isElementRemixRendererComponent)', jsx.type === 'JSX_ELEMENT' && jsx.name)
       switch (remixRendererComponentType) {
         case 'outlet':
           RemixRouterStateMachineInstance.addRendererId({ type: 'outlet', outletId: jsx.uid })

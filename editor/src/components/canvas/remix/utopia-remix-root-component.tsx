@@ -16,7 +16,7 @@ import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import { UtopiaRemixRootErrorBoundary } from './utopia-remix-root-error-boundary'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { NO_OP } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -29,7 +29,6 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import type { MapLike } from 'typescript'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
-import * as EP from '../../../core/shared/element-path'
 
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
@@ -139,7 +138,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         customRequire,
         metadataContext,
         projectContents,
-        props,
+        props[UTOPIA_PATH_KEY],
         mutableContextRef,
         topLevelComponentRendererComponents,
       ),

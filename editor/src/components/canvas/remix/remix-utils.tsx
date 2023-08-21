@@ -22,8 +22,11 @@ import type {
 import {
   getJSXElementNameAsString,
   isUtopiaJSXComponent,
+  jsxElementName,
+  jsxElementNameEquals,
 } from '../../../core/shared/element-template'
 import type {
+  ElementPath,
   ElementPathPart,
   ExportDefaultFunctionOrClass,
 } from '../../../core/shared/project-file-types'
@@ -37,6 +40,7 @@ import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { MapLike } from 'typescript'
+import { pathPartsFromJSXElementChild } from '../../../core/model/element-template-utils'
 
 interface PathFromFileNameResult {
   parentId: string
@@ -311,7 +315,7 @@ export function getRoutesAndModulesFromManifest(
   customRequire: (importOrigin: string, toImport: string) => any,
   metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  props: UtopiaRemixRootComponentProps,
+  remixAppContainerPath: ElementPath,
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
@@ -322,13 +326,25 @@ export function getRoutesAndModulesFromManifest(
 } {
   const routeManifestResult: RouteModules = {}
   const routesResult: DataRouteObject[] = []
+
+  const indexJSRootElement = getRootJSRootElement(projectContents)
+  invariant(indexJSRootElement, 'There should be an root.js in the spike project')
+
+  const pathPartForRootJs = findPathToOutlet(indexJSRootElement) ?? []
+
   Object.values(routeManifest).forEach((route) => {
+    // TODO: unhardcode when we have access to the hierarchy
+    const basePath =
+      route.id === 'root'
+        ? remixAppContainerPath
+        : EP.appendNewElementPath(remixAppContainerPath, pathPartForRootJs)
+
     const { defaultExport, loader, action } = getRemixExportsOfModule(
       route.filePath,
       customRequire,
       metadataContext,
       projectContents,
-      props,
+      basePath,
       mutableContextRef,
       topLevelComponentRendererComponents,
     )
@@ -364,7 +380,7 @@ function getRemixExportsOfModule(
   customRequire: (importOrigin: string, toImport: string) => any,
   metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  props: UtopiaRemixRootComponentProps,
+  basePath: ElementPath,
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
@@ -394,11 +410,58 @@ function getRemixExportsOfModule(
   invariant(nameAndUid, 'a default export should be provided')
 
   return {
-    defaultExport: PathPropHOC(
-      executionScope.scope[nameAndUid.name],
-      EP.toString(props[UTOPIA_PATH_KEY]),
-    ),
+    defaultExport: PathPropHOC(executionScope.scope[nameAndUid.name], EP.toString(basePath)),
     loader: executionScope.scope['loader'],
     action: executionScope.scope['action'],
   }
+}
+
+function getRootJSRootElement(projectContents: ProjectContentTreeRoot): JSXElementChild | null {
+  const file = getContentsTreeFileFromString(projectContents, '/src/root.js')
+  if (
+    file == null ||
+    file.type !== 'TEXT_FILE' ||
+    file.lastParseSuccess?.type !== 'PARSE_SUCCESS'
+  ) {
+    return null
+  }
+
+  const defaultExportName =
+    file.lastParseSuccess.exportsDetail.find(
+      (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
+    )?.name ?? null
+
+  if (defaultExportName == null) {
+    return null
+  }
+
+  return (
+    file.lastParseSuccess.topLevelElements.find(
+      (t): t is UtopiaJSXComponent =>
+        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+    )?.rootElement ?? null
+  )
+}
+
+// TODO: needs better `Outlet` detection
+function findPathToOutlet(element: JSXElementChild): ElementPathPart | null {
+  if (
+    element.type === 'JSX_ELEMENT' &&
+    jsxElementNameEquals(jsxElementName('Outlet', []), element.name)
+  ) {
+    return [element.uid]
+  }
+
+  if (element.type === 'JSX_FRAGMENT' || element.type === 'JSX_ELEMENT') {
+    for (const child of element.children) {
+      const path = findPathToOutlet(child)
+      if (path != null) {
+        return [element.uid, ...path]
+      }
+    }
+  }
+
+  // TODO: handle missing cases
+
+  return null
 }
