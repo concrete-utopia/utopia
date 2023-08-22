@@ -502,9 +502,10 @@ export function runDomWalker({
     const { metadata, cachedPaths } =
       // when we don't rerender all elements we just run the dom walker in selective mode: only update the metatdata
       // of the currently rendered elements (for performance reasons)
-      elementsToFocusOn === 'rerender-all-elements'
-        ? walkCanvasRootFragment(canvasRootContainer, globalProps)
-        : runSelectiveDomWalker(elementsToFocusOn, globalProps)
+      walkCanvasRootFragment(canvasRootContainer, globalProps)
+    // TODO solve selecting re-rendering
+    // elementsToFocusOn === 'rerender-all-elements'
+    //   : runSelectiveDomWalker(elementsToFocusOn, globalProps)
 
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
