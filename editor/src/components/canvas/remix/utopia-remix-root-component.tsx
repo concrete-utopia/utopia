@@ -47,10 +47,16 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   )
 
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
+  React.useEffect(() => {
+    mutableContextRef.current = {}
+  }, [projectContents])
 
   let topLevelComponentRendererComponents = React.useRef<
     MapLike<MapLike<ComponentRendererComponent>>
   >({})
+  React.useEffect(() => {
+    topLevelComponentRendererComponents.current = {}
+  }, [projectContents])
 
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
@@ -60,9 +66,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const canvasStuff = useEditorState(
     Substores.fullStore,
-    (store) => {
-      return pickUiJsxCanvasProps(store.editor, store.derived, NO_OP, NO_OP, NO_OP)
-    },
+    (store) => pickUiJsxCanvasProps(store.editor, store.derived, NO_OP, NO_OP, NO_OP),
     'CanvasComponentEntry canvasProps',
   )
 

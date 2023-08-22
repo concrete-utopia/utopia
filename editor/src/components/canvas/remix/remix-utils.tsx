@@ -409,8 +409,11 @@ function getRemixExportsOfModule(
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
   invariant(nameAndUid, 'a default export should be provided')
 
+  // console.log('nameAndUid.name', filename, executionScope.scope)
+  const aaa = () => <React.Fragment />
+
   return {
-    defaultExport: PathPropHOC(executionScope.scope[nameAndUid.name], EP.toString(basePath)),
+    defaultExport: PathPropHOC(executionScope.scope[nameAndUid.name] ?? aaa, EP.toString(basePath)),
     loader: executionScope.scope['loader'],
     action: executionScope.scope['action'],
   }
