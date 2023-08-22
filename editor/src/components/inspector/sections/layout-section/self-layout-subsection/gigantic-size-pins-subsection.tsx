@@ -34,6 +34,7 @@ import { useContextSelector } from 'use-context-selector'
 import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 import { unless } from '../../../../../utils/react-conditionals'
 import type { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
+import { FlexRow } from 'utopia-api'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -357,14 +358,14 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
   }, [togglePin])
 
   return (
-    <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-      <div
+    <UIGridRow padded={true} variant='<-------------1fr------------->'>
+      <FlexRow
         id='width-height-row-toggles'
         style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
+          justifyContent: 'flex-start',
+          gap: 4,
         }}
+        css={undefined}
       >
         <PinWidthControl framePins={framePins} toggleWidth={toggleWidth} controlStatus='simple' />
         <PinHeightControl
@@ -372,7 +373,7 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
           toggleHeight={toggleHeight}
           controlStatus='simple'
         />
-      </div>
+      </FlexRow>
     </UIGridRow>
   )
 })
