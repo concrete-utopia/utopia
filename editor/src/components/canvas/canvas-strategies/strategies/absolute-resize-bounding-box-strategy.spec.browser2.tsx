@@ -66,7 +66,7 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-t
 import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
-import { resizeElement } from './absolute-resize.test-utils'
+import { getResizeControl, resizeElement } from './absolute-resize.test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
@@ -629,15 +629,9 @@ describe('Absolute Resize Strategy', () => {
     )
 
     const target = EP.appendNewElementPath(TestScenePath, ['app2'])
-    const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      formatTestProjectCode(projectDoesNotHonourSizeProperties),
-    )
+    expect(getResizeControl(renderResult, EdgePositionBottomRight)).toBeNull()
   })
   it('resizes absolute positioned element from bottom right edge', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1299,18 +1293,10 @@ export var storyboard = (
     )
 
     const target = EP.fromString('storyboard/scene/containing-div/does-not-support-style')
-    const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    const supportsStyleDiv = renderResult.renderedDOM.getByTestId(
-      'does-not-support-style-component',
-    )
-    const supportsStyleRect = supportsStyleDiv.getBoundingClientRect()
-    expect(supportsStyleRect.width).toEqual(100)
-    expect(supportsStyleRect.height).toEqual(100)
+    const resizeControl = getResizeControl(renderResult, EdgePositionBottomRight)
+    expect(resizeControl).toBeNull()
   })
   describe('snap lines', () => {
     it('horizontal snap lines are shown when resizing a multiselection', async () => {

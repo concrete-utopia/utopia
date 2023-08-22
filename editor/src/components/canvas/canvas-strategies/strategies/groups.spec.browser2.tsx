@@ -9,6 +9,7 @@ import { forceRight } from '../../../../core/shared/either'
 import { right } from '../../../../core/shared/either'
 import { foldEither } from '../../../../core/shared/either'
 import { fromString } from '../../../../core/shared/element-path'
+import * as EP from '../../../../core/shared/element-path'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { create } from '../../../../core/shared/property-path'
 import type { Modifiers } from '../../../../utils/modifiers'
@@ -18,6 +19,11 @@ import { EdgePositionBottomRight, EdgePositionTopLeft } from '../../canvas-types
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
+import {
+  getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippetWithoutUIDs,
+} from '../../ui-jsx.test-utils'
+import { makeTestProjectCodeWithSnippet } from '../../ui-jsx.test-utils'
 import { formatTestProjectCode } from '../../ui-jsx.test-utils'
 import { TestAppUID } from '../../ui-jsx.test-utils'
 import { TestSceneUID } from '../../ui-jsx.test-utils'
@@ -208,6 +214,127 @@ function checkThatParentOutlinesAndBoundsNotPresent(
 }
 
 describe('Groups behaviors', () => {
+  describe('Static Groups', () => {
+    it('group is not `position: absolute`', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+              <Group data-uid='group'>
+                <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+              </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+      const groupPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group`,
+      )
+      const metadataBefore = renderResult.getEditorState().editor.jsxMetadata
+      const groupMetadataBefore = forceNotNull(
+        'Should be able to find metadata for group.',
+        metadataBefore[EP.toString(groupPath)],
+      )
+      expect(groupMetadataBefore.globalFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 150,
+        height: 150,
+      })
+
+      const orangePath = EP.appendToPath(groupPath, 'qux')
+      await selectComponentsForTest(renderResult, [orangePath])
+      await resizeElement(renderResult, { x: 70, y: 90 }, EdgePositionBottomRight, emptyModifiers)
+
+      const metadataAfter = renderResult.getEditorState().editor.jsxMetadata
+      const groupMetadataAfter = forceNotNull(
+        'Should be able to find metadata for group.',
+        metadataAfter[EP.toString(groupPath)],
+      )
+      expect(groupMetadataAfter.globalFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 240,
+      })
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+          <div>
+            <Group style={{ width: 220, height: 240 }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+              <div style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+              <div style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+              <div style={{ position: 'absolute', top: 100, left: 100, width: 120, height: 140, background: 'orange' }} />
+            </Group>
+          </div>
+        `),
+      )
+    })
+    it('group is in a flex container', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <div data-uid='root' style={{ display: 'flex', flexDirection: 'row' }}>
+              <Group data-uid='group'>
+                <div data-uid='foo' style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+                <div data-uid='bar' style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+                <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+                <div data-uid='qux' style={{ position: 'absolute', top: 100, left: 100, width: 50, height: 50, background: 'orange' }} />
+              </Group>
+            </div>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+      const groupPath = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/group`,
+      )
+      const metadataBefore = renderResult.getEditorState().editor.jsxMetadata
+      const groupMetadataBefore = forceNotNull(
+        'Should be able to find metadata for group.',
+        metadataBefore[EP.toString(groupPath)],
+      )
+      expect(groupMetadataBefore.globalFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 150,
+        height: 150,
+      })
+
+      const orangePath = EP.appendToPath(groupPath, 'qux')
+      await selectComponentsForTest(renderResult, [orangePath])
+      await resizeElement(renderResult, { x: 70, y: 90 }, EdgePositionBottomRight, emptyModifiers)
+
+      const metadataAfter = renderResult.getEditorState().editor.jsxMetadata
+      const groupMetadataAfter = forceNotNull(
+        'Should be able to find metadata for group.',
+        metadataAfter[EP.toString(groupPath)],
+      )
+      expect(groupMetadataAfter.globalFrame).toEqual({
+        x: 0,
+        y: 0,
+        width: 220,
+        height: 240,
+      })
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <Group style={{ width: 220, height: 240 }}>
+              <div style={{ position: 'absolute', top: 0, left: 0, width: 50, height: 50, background: 'blue' }} />
+              <div style={{ position: 'absolute', top: 0, left: 100, width: 50, height: 50, background: 'red' }} />
+              <div style={{ position: 'absolute', top: 100, left: 0, width: 50, height: 50, background: 'green' }} />
+              <div style={{ position: 'absolute', top: 100, left: 100, width: 120, height: 140, background: 'orange' }} />
+            </Group>
+          </div>
+        `),
+      )
+    })
+  })
+
   describe('Absolute Positioned Groups', () => {
     describe('Various Group Configurations', () => {
       it('single child with top,left,width,height pins', async () => {
