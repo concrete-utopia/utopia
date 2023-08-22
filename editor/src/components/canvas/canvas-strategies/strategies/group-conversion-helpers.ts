@@ -784,6 +784,9 @@ export function createWrapInGroupActions(
     ),
   )
 
+  const elementPropsOptic = fromTypeGuard<JSXElementLike, JSXElement>(isJSXElement).compose(
+    fromField('props'),
+  )
   const childComponents: Array<{ element: JSXElementLike; metadata: ElementInstanceMetadata }> =
     orderedActionTargets.map((p) => {
       const foundMetadata = MetadataUtils.findElementByElementPath(metadata, p)
@@ -800,7 +803,9 @@ export function createWrapInGroupActions(
           )} was null or Left or not JSXElement`,
         )
       }
-      return { element: element.value, metadata: foundMetadata }
+      // Remove any margin properties from the child.
+      const elementLike = modify(elementPropsOptic, removeMarginProperties, element.value)
+      return { element: elementLike, metadata: foundMetadata }
     })
 
   // delete all reparented elements first to avoid UID clashes

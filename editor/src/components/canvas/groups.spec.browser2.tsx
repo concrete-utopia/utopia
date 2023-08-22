@@ -18,7 +18,12 @@ import {
 import { shiftCmdModifier } from '../../utils/modifiers'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { forceNotNull } from '../../core/shared/optional-utils'
-import { fromTypeGuard, notNull } from '../../core/shared/optics/optic-creators'
+import {
+  filtered,
+  fromTypeGuard,
+  notNull,
+  traverseArray,
+} from '../../core/shared/optics/optic-creators'
 import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from '../../core/shared/math-utils'
 import { isFiniteRectangle } from '../../core/shared/math-utils'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
@@ -27,6 +32,16 @@ import {
   convertFragmentToGroup,
   convertFrameToGroup,
 } from './canvas-strategies/strategies/group-conversion-helpers'
+
+const notNullFiniteCanvasRectangleOptic = notNull<MaybeInfinityCanvasRectangle>().compose(
+  fromTypeGuard(isFiniteRectangle),
+)
+
+function getElementGlobalFrame(renderResult: EditorRenderResult, path: string): CanvasRectangle {
+  const metadata = renderResult.getEditorState().editor.jsxMetadata
+  const targetMetadata = forceNotNull('Metadata for target should exist.', metadata[path])
+  return unsafeGet(notNullFiniteCanvasRectangleOptic, targetMetadata.globalFrame)
+}
 
 describe('Groups', () => {
   describe('removes padding and margin appropriately', () => {
@@ -42,7 +57,10 @@ describe('Groups', () => {
             top: 74,
             width: 358,
             height: 380,
-            padding: 50,
+            paddingLeft: 50,
+            paddingTop: 50,
+            paddingBottom: 50,
+            paddingRight: 50,
           }}
           data-uid='div'
         >
@@ -99,17 +117,6 @@ describe('Groups', () => {
         </React.Fragment>
       </div>
 `
-    const nonNullFiniteCanvasRectangleOptic = notNull<MaybeInfinityCanvasRectangle>().compose(
-      fromTypeGuard(isFiniteRectangle),
-    )
-    function getElementGlobalFrame(
-      renderResult: EditorRenderResult,
-      path: string,
-    ): CanvasRectangle {
-      const metadata = renderResult.getEditorState().editor.jsxMetadata
-      const targetMetadata = forceNotNull('Metadata for target should exist.', metadata[path])
-      return unsafeGet(nonNullFiniteCanvasRectangleOptic, targetMetadata.globalFrame)
-    }
     it('works when converting fragment to group', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(paddingAndMarginSnippet),
@@ -166,7 +173,10 @@ describe('Groups', () => {
             top: 74,
             width: 358,
             height: 380,
-            padding: 50,
+            paddingLeft: 50,
+            paddingTop: 50,
+            paddingBottom: 50,
+            paddingRight: 50,
           }}
         >
           <div
@@ -338,6 +348,142 @@ describe('Groups', () => {
     })
   })
   describe('wrap in group', () => {
+    it('removes margins from the children and takes account of padding on the parent', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+              backgroundColor: '#FFFFFF',
+              padding: 200,
+            }}
+            data-uid='div'
+          >
+            <div
+              style={{
+                backgroundColor: '#FF69B4AB',
+                left: 0,
+                top: 0,
+                width: 106,
+                height: 95,
+                margin: 80,
+              }}
+              data-uid='div-rect-1'
+              data-testid='div-rect-1'
+            />
+            <div
+              style={{
+                backgroundColor: '#FF69B4AB',
+                left: 134,
+                top: 114,
+                width: 110,
+                height: 132,
+                marginLeft: 80,
+                marginTop: 90
+              }}
+              data-uid='div-rect-2'
+              data-testid='div-rect-2'
+            />
+          </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      const divRect1PathBefore = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:div/div-rect-1`,
+      )
+      const divRect2PathBefore = EP.fromString(
+        `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:div/div-rect-2`,
+      )
+      const testValuePaths = [divRect1PathBefore, divRect2PathBefore]
+
+      const rect1FrameBefore = getElementGlobalFrame(renderResult, EP.toString(divRect1PathBefore))
+      const rect2FrameBefore = getElementGlobalFrame(renderResult, EP.toString(divRect2PathBefore))
+
+      // Wrap them in a Group.
+      await renderResult.dispatch(selectComponents(testValuePaths, false), true)
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+      const element = renderResult.renderedDOM.getByTestId('div-rect-1')
+      const elementBounds = element.getBoundingClientRect()
+      await openContextMenuAndClickOnItem(
+        renderResult,
+        canvasControlsLayer,
+        elementBounds,
+        'Group Selection',
+      )
+      await renderResult.getDispatchFollowUpActionsFinished()
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+              backgroundColor: '#FFFFFF',
+              padding: 200,
+            }}
+          >
+            <Group
+              style={{
+                position: 'absolute',
+                left: 280,
+                top: 280,
+                width: 110,
+                height: 317,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#FF69B4AB',
+                  left: 0,
+                  top: 0,
+                  width: 106,
+                  height: 95,
+                  position: 'absolute',
+                }}
+                data-testid='div-rect-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#FF69B4AB',
+                  left: 0,
+                  top: 185,
+                  width: 110,
+                  height: 132,
+                  position: 'absolute',
+                }}
+                data-testid='div-rect-2'
+              />
+            </Group>
+          </div>`,
+        ),
+      )
+
+      const metadataKeys = Object.keys(renderResult.getEditorState().editor.jsxMetadata)
+      const divRect1PathAfter = unsafeGet(
+        traverseArray<string>().compose(filtered((p) => p.endsWith('div-rect-1'))),
+        metadataKeys,
+      )
+      const divRect2PathAfter = unsafeGet(
+        traverseArray<string>().compose(filtered((p) => p.endsWith('div-rect-2'))),
+        metadataKeys,
+      )
+      const rect1FrameAfter = getElementGlobalFrame(renderResult, divRect1PathAfter)
+      const rect2FrameAfter = getElementGlobalFrame(renderResult, divRect2PathAfter)
+
+      const expectedFrames = {
+        rect1: rect1FrameBefore,
+        rect2: rect2FrameBefore,
+      }
+      const actualFrames = {
+        rect1: rect1FrameAfter,
+        rect2: rect2FrameAfter,
+      }
+      expect(actualFrames).toEqual(expectedFrames)
+    })
     it('works inside a conditional on an element', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
