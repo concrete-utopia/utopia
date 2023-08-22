@@ -28,26 +28,32 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
     <CanvasOffsetWrapper>
       {[
         <OutlineControl
+          testId={`multiselect-outline`}
           key='multiselect-outline'
           targets={localSelectedElements}
           color='multiselect-bounds'
           outlineStyle='solid'
         />,
-        ...localSelectedElements.map((path) => (
-          <OutlineControl
-            key={EP.toString(path)}
-            targets={[path]}
-            color='primary'
-            outlineStyle='solid'
-          />
-        )),
+        ...localSelectedElements.map((path) => {
+          const varSafeId = `multiselect-element-outline-${EP.toVarSafeComponentId(path)}`
+          return (
+            <OutlineControl
+              testId={varSafeId}
+              key={varSafeId}
+              targets={[path]}
+              color='primary'
+              outlineStyle='solid'
+            />
+          )
+        }),
       ]}
     </CanvasOffsetWrapper>
   )
 })
 
 interface OutlineControlProps {
-  targets: Array<ElementPath>
+  testId: string
+  targets: ReadonlyArray<ElementPath>
   color: 'primary' | 'multiselect-bounds'
   outlineStyle: 'solid' | 'dotted'
 }
@@ -95,6 +101,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   if (targets.length > 0) {
     return (
       <div
+        data-testid={props.testId}
         ref={outlineRef}
         className='role-outline'
         style={{
