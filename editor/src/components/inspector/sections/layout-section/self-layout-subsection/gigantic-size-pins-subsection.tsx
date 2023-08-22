@@ -320,7 +320,6 @@ const PinControls = React.memo((props: PinControlsProps) => {
         framePoints={props.framePins}
         controlStatus='simple'
         handlePinMouseDown={props.togglePin}
-        style={{ paddingTop: 7 }}
         name='positioncontrols'
       />
     </InspectorContextMenuWrapper>
@@ -464,12 +463,12 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
   return (
     <UIGridRow alignItems='start' padded={true} variant='|--67px--|<--------1fr-------->'>
       <PinControls resetPins={resetPinsFn} framePins={framePins} togglePin={togglePin} />
-      <FlexColumn>
-        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+      <FlexColumn style={{ gap: 8 }}>
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->' style={{ minHeight: undefined }}>
           {firstXAxisControl}
           {firstYAxisControl}
         </UIGridRow>
-        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->' style={{ minHeight: undefined }}>
           {secondXAxisControl}
           {secondYAxisControl}
         </UIGridRow>
