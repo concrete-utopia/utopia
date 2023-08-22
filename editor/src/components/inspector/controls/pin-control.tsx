@@ -25,8 +25,8 @@ export type ExcludePinControls = {
 }
 
 const Margin = 3
-const Width = 66
-const Height = 57
+const Width = 60
+const Height = 60
 
 const HorizontalLength = (Width - Margin * 6) / 4
 const HorizontalStart = Margin
