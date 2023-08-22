@@ -22,7 +22,6 @@ import type { SelfLayoutTab } from './self-layout-subsection'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   NumberInput,
-  SquareButton,
   Icons,
   FlexColumn,
   SimpleNumberInput,
@@ -339,8 +338,6 @@ function flexStyleNumberControl(label: string, styleProp: StyleLayoutNumberProp)
   return <FlexStyleNumberControl label={label} styleProp={styleProp} />
 }
 
-const spacingButton = <SquareButton />
-
 export const AspectRatioLockButtonTestId = 'AspectRatioLockButton'
 
 interface WidthHeightRowProps {
@@ -391,11 +388,9 @@ const MinimumsRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={minimumsProps}>Minimum</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         {flexStyleNumberControl('W', 'minWidth')}
-        {spacingButton}
         {flexStyleNumberControl('H', 'minHeight')}
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -412,11 +407,9 @@ const MaximumsRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={maximumsProps}>Maximum</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         {flexStyleNumberControl('W', 'maxWidth')}
-        {spacingButton}
         {flexStyleNumberControl('H', 'maxHeight')}
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -433,11 +426,9 @@ const FlexWidthHeightRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexWidthHeightProps}>Size</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         {flexLayoutNumberControl('W', 'width')}
-        {spacingButton}
         {flexLayoutNumberControl('H', 'height')}
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -454,11 +445,9 @@ const FlexGrowShrinkRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         <FlexShorthandNumberControl label='G' styleProp='flexGrow' />
-        {spacingButton}
         <FlexShorthandNumberControl label='S' styleProp='flexShrink' />
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -472,25 +461,16 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
   const secondYAxisControl: React.ReactElement = pinsLayoutNumberControl('right')
 
   return (
-    <UIGridRow
-      alignItems='start'
-      padded={true}
-      variant='<---1fr--->|------172px-------|'
-      style={{ height: undefined }}
-    >
+    <UIGridRow alignItems='start' padded={true} variant='|--67px--|<--------1fr-------->'>
       <PinControls resetPins={resetPinsFn} framePins={framePins} togglePin={togglePin} />
       <FlexColumn>
-        <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
           {firstXAxisControl}
-          {spacingButton}
           {firstYAxisControl}
-          {spacingButton}
         </UIGridRow>
-        <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+        <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
           {secondXAxisControl}
-          {spacingButton}
           {secondYAxisControl}
-          {spacingButton}
         </UIGridRow>
       </FlexColumn>
     </UIGridRow>
