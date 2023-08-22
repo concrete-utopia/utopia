@@ -6740,37 +6740,127 @@ export var storyboard = (
         ),
       )
     })
-    it('Cannot wrap an empty group', async () => {
-      const testCode = `
+    describe('groups', () => {
+      it('cannot wrap an empty group', async () => {
+        const testCode = `
         <div data-uid='aaa'>
           <Group data-uid='group' />
         </div>
       `
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(testCode),
-        'await-first-dom-report',
-      )
-      await renderResult.dispatch(
-        [
-          wrapInElement([makeTargetPath('aaa/group')], {
-            element: { ...groupJSXElement([]), uid: 'foo' },
-            importsToAdd: groupJSXElementImportsToAdd(),
-          }),
-        ],
-        true,
-      )
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(testCode),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [
+            wrapInElement([makeTargetPath('aaa/group')], {
+              element: { ...groupJSXElement([]), uid: 'foo' },
+              importsToAdd: groupJSXElementImportsToAdd(),
+            }),
+          ],
+          true,
+        )
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(`
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
           <div data-uid='aaa'>
             <Group data-uid='group' />
           </div>
         `),
-      )
-      expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
-      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
-        'Empty Groups cannot be wrapped',
-      )
+        )
+        expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+        expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+          'Empty Groups cannot be wrapped',
+        )
+      })
+
+      it('can group conditionals', async () => {
+        const testCode = `
+          <div data-uid='aaa'>
+            <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
+            {
+              // @utopia/uid=cond
+              true ? <div data-uid='bar' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'blue' }} /> : null
+            }
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(makeTestProjectCodeWithSnippet(testCode)),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [
+            wrapInElement([makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')], {
+              element: { ...groupJSXElement([]), uid: 'grp' },
+              importsToAdd: groupJSXElementImportsToAdd(),
+            }),
+          ],
+          true,
+        )
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div data-uid='aaa'>
+                <Group
+                  style={{ position: 'absolute', left: 0, top: 0 }}
+                  data-uid='grp'
+                >
+                  <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
+                  {
+                    // @utopia/uid=cond
+                    true ? <div data-uid='bar' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'blue' }} /> : null
+                  }
+                </Group>
+              </div>
+          `),
+          ),
+        )
+      })
+
+      it('cannot group empty conditionals', async () => {
+        const testCode = `
+          <div data-uid='aaa'>
+            <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
+            {
+              // @utopia/uid=cond
+              true ? null : null
+            }
+          </div>
+        `
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(makeTestProjectCodeWithSnippet(testCode)),
+          'await-first-dom-report',
+        )
+        await renderResult.dispatch(
+          [
+            wrapInElement([makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')], {
+              element: { ...groupJSXElement([]), uid: 'grp' },
+              importsToAdd: groupJSXElementImportsToAdd(),
+            }),
+          ],
+          true,
+        )
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(
+            makeTestProjectCodeWithSnippet(`
+              <div data-uid='aaa'>
+                <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 50, top: 0, left: 0, background: 'red' }} />
+                {
+                  // @utopia/uid=cond
+                  true ? null : null
+                }
+              </div>
+          `),
+          ),
+        )
+
+        expect(renderResult.getEditorState().editor.toasts.length).toEqual(1)
+        expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+          'Empty conditionals cannot be wrapped in a Group',
+        )
+      })
     })
   })
   describe('SELECT_COMPONENTS', () => {

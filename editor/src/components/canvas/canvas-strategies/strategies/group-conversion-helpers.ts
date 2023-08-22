@@ -685,12 +685,17 @@ export function convertGroupToFrameCommands(
 
 export type GroupChildElement = JSXElementLike | JSXConditionalExpression
 
-function elementCanBeAGroupChild(element: JSXElementChild): element is GroupChildElement {
+export function elementCanBeAGroupChild(
+  element: JSXElementChild | null,
+): element is GroupChildElement {
+  if (element == null) {
+    return false
+  }
   return (
     isJSXElementLike(element) ||
     (isJSXConditionalExpression(element) &&
-      !isNullJSXAttributeValue(element.whenTrue) && // do not allow grouping zero-sized conditionals
-      !isNullJSXAttributeValue(element.whenFalse))
+      // do not allow grouping zero-sized conditionals
+      !(isNullJSXAttributeValue(element.whenTrue) && isNullJSXAttributeValue(element.whenFalse)))
   )
 }
 

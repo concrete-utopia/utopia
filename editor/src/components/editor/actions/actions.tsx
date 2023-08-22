@@ -592,12 +592,14 @@ import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
   isEmptyGroup,
+  isMaybeGroupForWrapping,
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   createPinChangeCommandsForElementInsertedIntoGroup,
   createPinChangeCommandsForElementBecomingGroupChild,
+  elementCanBeAGroupChild,
 } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
@@ -2202,6 +2204,23 @@ export const UPDATE_FNS = {
         if (anyTargetIsAnEmptyGroup) {
           return UPDATE_FNS.ADD_TOAST(
             showToast(notice('Empty Groups cannot be wrapped', 'ERROR')),
+            editor,
+          )
+        }
+
+        if (
+          isMaybeGroupForWrapping(
+            action.whatToWrapWith.element,
+            action.whatToWrapWith.importsToAdd,
+          ) &&
+          orderedActionTargets.some((path) => {
+            return !elementCanBeAGroupChild(
+              MetadataUtils.getJsxElementChildFromMetadata(editor.jsxMetadata, path),
+            )
+          })
+        ) {
+          return UPDATE_FNS.ADD_TOAST(
+            showToast(notice('Empty conditionals cannot be wrapped in a Group', 'ERROR')),
             editor,
           )
         }
