@@ -2404,6 +2404,7 @@ export const UPDATE_FNS = {
                   return foldAndApplyCommandsSimple(
                     result.editor,
                     createPinChangeCommandsForElementBecomingGroupChild(
+                      workingEditor.jsxMetadata,
                       child,
                       result.newPath,
                       parentFrame,
