@@ -247,7 +247,7 @@ export const FloatingPanelsContainer = React.memo(() => {
             droppedToOutsideOfAColumn.targetPanel === 'leftMenu2' &&
             panelsData.leftMenu2.length > 0 &&
             (panelsData.leftMenu1.length === 0 ||
-              (currentPanel === 'leftMenu2' && panelsData.leftMenu1.length === 1))
+              (currentPanel === 'leftMenu1' && panelsData.leftMenu1.length === 1))
           ) {
             // dragging to the right of the left panel 2
             shouldSwitchPanel = 'leftMenu1'
