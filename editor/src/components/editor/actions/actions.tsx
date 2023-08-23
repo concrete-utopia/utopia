@@ -1541,13 +1541,13 @@ class RemixRouterStateMachine {
 
 export const RemixRouterStateMachineInstance = new RemixRouterStateMachine()
 
-export const RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE: { current: RemixRoutingTable } = {
+export const RemixRoutingTableGLOBAL: { current: RemixRoutingTable } = {
   current: {},
 }
 
 function addToRemixRoutingTable(remixContainerPath: ElementPath, loookup: RemixRouteLookup): void {
-  RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current = {
-    ...RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
+  RemixRoutingTableGLOBAL.current = {
+    ...RemixRoutingTableGLOBAL.current,
     [EP.toString(remixContainerPath)]: loookup,
   }
 }

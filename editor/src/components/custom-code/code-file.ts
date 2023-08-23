@@ -67,7 +67,7 @@ import { ParsedPropertyControls } from '../../core/property-controls/property-co
 import { ParseResult } from '../../utils/value-parser-utils'
 import type { PropertyControls } from 'utopia-api/core'
 import type { RemixRouteLookup, RemixRoutingTable } from '../editor/store/editor-state'
-import { RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE } from '../editor/actions/actions'
+import { RemixRoutingTableGLOBAL } from '../editor/actions/actions'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -508,10 +508,7 @@ export function normalisePathToUnderlyingTarget(
     )
   }
 
-  const lookupTable =
-    RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current[
-      EP.elementPathPartToString(droppedPathPart)
-    ]
+  const lookupTable = RemixRoutingTableGLOBAL.current[EP.elementPathPartToString(droppedPathPart)]
 
   const pathToRouteModule = optionalMap((entry) => entry[droppedPathPart.at(-1) ?? ''], lookupTable)
 
