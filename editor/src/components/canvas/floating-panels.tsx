@@ -3,7 +3,12 @@ import Draggable from 'react-draggable'
 import type { DraggableEventHandler } from 'react-draggable'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import { AlwaysTrue, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import {
+  AlwaysTrue,
+  atomWithPubSub,
+  usePubSubAtom,
+  usePubSubAtomReadOnly,
+} from '../../core/shared/atom-with-pub-sub'
 import type { Size, WindowPoint, WindowRectangle } from '../../core/shared/math-utils'
 import {
   rectContainsPoint,
@@ -75,6 +80,10 @@ const DefaultSizes: { [key in PanelName]: WindowRectangle } = {
   rightMenu1: windowRectangle({ x: 0, y: 0, width: 255, height: 0 }),
   rightMenu2: windowRectangle({ x: 0, y: 0, width: 0, height: 0 }),
 }
+export const FloatingPanelSizesAtom = atomWithPubSub({
+  key: 'CanvasSizeAtom',
+  defaultValue: DefaultSizes,
+})
 
 function isMenuContainingPanel(menusOrPanes: Array<Menu | Pane>): boolean {
   return menusOrPanes.some((value) => value === 'inspector' || value === 'navigator')
@@ -84,9 +93,8 @@ export const FloatingPanelsContainer = React.memo(() => {
   const [panelsData, setPanelsData] =
     React.useState<{ [key in PanelName]: Array<Menu | Pane> }>(DefaultPanels)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
-
   const [panelFrames, setPanelFrames] =
-    React.useState<{ [key in PanelName]: WindowRectangle }>(DefaultSizes)
+    usePubSubAtom<{ [key in PanelName]: WindowRectangle }>(FloatingPanelSizesAtom)
 
   const getUpdatedPanelSizes = React.useCallback(
     (

@@ -37,6 +37,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
+import { FloatingPanelSizesAtom } from './floating-panels'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -103,22 +104,8 @@ export const CanvasWrapperComponent = React.memo(() => {
 
   const scale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, 'scale')
 
-  const leftPanelWidthAtom = usePubSubAtomReadOnly(LeftPanelWidthAtom, AlwaysTrue)
-  const leftPanelWidth = React.useMemo(
-    () => (isNavigatorOverCanvas ? leftPanelWidthAtom + 10 : 0),
-    [leftPanelWidthAtom, isNavigatorOverCanvas],
-  )
-
-  const codeEditorWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth + 10
-        : 0,
-    'CanvasWrapperComponent codeEditorWidth',
-  )
-
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
+  const panelSizes = usePubSubAtomReadOnly(FloatingPanelSizesAtom, AlwaysTrue)
 
   const postActionSessionInProgress = useEditorState(
     Substores.postActionInteractionSession,
@@ -165,7 +152,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           height: '100%',
           transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
           pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
-          left: leftPanelWidth + codeEditorWidth,
+          left: panelSizes.leftMenu1.width + panelSizes.leftMenu2.width + 20,
         }}
       >
         <FlexRow
