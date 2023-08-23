@@ -2221,11 +2221,12 @@ export function canvasPanelOffsets(): {
   left: number
   right: number
 } {
-  const inspector = document.getElementById('inspector-root')
-  const codeEditor = document.getElementById('vscode-editor')
-  const leftPane = document.getElementById('left-pane')
+  const leftMenu1 = document.getElementById(`floating-panel-leftMenu1`)
+  const leftMenu2 = document.getElementById(`floating-panel-leftMenu2`)
+  const rightMenu1 = document.getElementById(`floating-panel-rightMenu1`)
+  const rightMenu2 = document.getElementById(`floating-panel-rightMenu2`)
   return {
-    left: (codeEditor?.clientWidth ?? 0) + (leftPane?.clientWidth ?? 0),
-    right: inspector?.clientWidth ?? 0,
+    left: (leftMenu1?.clientWidth ?? 0) + (leftMenu2?.clientWidth ?? 0),
+    right: (rightMenu1?.clientWidth ?? 0) + (rightMenu2?.clientWidth ?? 0),
   }
 }

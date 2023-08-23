@@ -485,6 +485,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     <>
       <div
         className={panelName}
+        id={`floating-panel-${panelName}`}
         style={{
           position: 'absolute',
           height: height,
@@ -494,7 +495,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           border: '1px solid green',
         }}
       >
-        {menusAndPanes.map((value) => {
+        {menusAndPanes.map((value, i) => {
           switch (value) {
             case 'code-editor':
               return (
@@ -509,6 +510,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     style={{
                       width: '100%',
                       height: `${100 / menusAndPanes.length}%`,
+                      paddingTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
                     <CodeEditorPane
@@ -541,6 +543,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     style={{
                       width: '100%',
                       height: `${100 / menusAndPanes.length}%`,
+                      paddingTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
                     <ResizableRightPane
@@ -572,6 +575,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     style={{
                       width: '100%',
                       height: `${100 / menusAndPanes.length}%`,
+                      paddingTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
                     <LeftPaneComponent
