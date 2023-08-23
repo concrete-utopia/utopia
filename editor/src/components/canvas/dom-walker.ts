@@ -473,7 +473,6 @@ export function runDomWalker({
       return getCanvasRectangleFromElement(canvasRootContainer, scale, 'without-content')
     })
 
-    // here
     const validPaths: Array<ElementPath> | null = optionalMap(
       (paths) => paths.split(' ').map(EP.fromString),
       canvasRootContainer.getAttribute('data-utopia-valid-paths'),
