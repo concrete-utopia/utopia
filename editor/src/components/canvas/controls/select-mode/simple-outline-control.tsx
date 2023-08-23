@@ -35,11 +35,11 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
           outlineStyle='solid'
         />,
         ...localSelectedElements.map((path) => {
-          const varSafeId = `multiselect-element-outline-${EP.toVarSafeComponentId(path)}`
+          const outlineId = `multiselect-element-outline-${EP.toString(path)}`
           return (
             <OutlineControl
-              testId={varSafeId}
-              key={varSafeId}
+              testId={outlineId}
+              key={outlineId}
               targets={[path]}
               color='primary'
               outlineStyle='solid'
