@@ -1,4 +1,4 @@
-import { getContentsTreeFileFromString } from '../../../components/assets'
+import { getProjectFileByFilePath } from '../../../components/assets'
 import { applyCommandsAction } from '../../../components/editor/actions/action-creators'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -50,7 +50,7 @@ export var App = (props) => {
   return null
 }
 `)
-    const appFile = getContentsTreeFileFromString(
+    const appFile = getProjectFileByFilePath(
       renderResult.getEditorState().editor.projectContents,
       '/src/app.js',
     )

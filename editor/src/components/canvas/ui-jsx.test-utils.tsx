@@ -100,7 +100,7 @@ import type { PathAndFileEntry, ProjectContentTreeRoot } from '../assets'
 import {
   contentsToTree,
   contentsTreeOptic,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   treeToContents,
 } from '../assets'
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
@@ -663,7 +663,7 @@ export function getPrintedUiJsCode(
   store: EditorStorePatched,
   filePath: string = StoryboardFilePath,
 ): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
+  const file = getProjectFileByFilePath(store.editor.projectContents, filePath)
   if (file != null && isTextFile(file)) {
     return file.fileContents.code
   } else {
@@ -675,7 +675,7 @@ export function getPrintedUiJsCodeWithoutUIDs(
   store: EditorStorePatched,
   filePath: string = StoryboardFilePath,
 ): string {
-  const file = getContentsTreeFileFromString(store.editor.projectContents, filePath)
+  const file = getProjectFileByFilePath(store.editor.projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return printCode(
       StoryboardFilePath,
@@ -847,7 +847,7 @@ export function editorStateToParseSuccess(
   editorState: EditorState,
   filePath: string = StoryboardFilePath,
 ): ParseSuccess {
-  const file = getContentsTreeFileFromString(editorState.projectContents, filePath)
+  const file = getProjectFileByFilePath(editorState.projectContents, filePath)
   if (file == null) {
     throw new Error(`Cannot find storyboard file.`)
   } else if (isTextFile(file)) {

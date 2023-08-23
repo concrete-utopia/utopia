@@ -1,6 +1,6 @@
 import {
   addFileToProjectContents,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   removeFromProjectContents,
 } from '../../components/assets'
 import type { EditorState } from '../../components/editor/store/editor-state'
@@ -72,7 +72,7 @@ describe('addStoryboardFileToProject', () => {
     if (actualResult == null) {
       throw new Error('Editor state was not updated.')
     } else {
-      const storyboardFile = getContentsTreeFileFromString(
+      const storyboardFile = getProjectFileByFilePath(
         actualResult.projectContents,
         StoryboardFilePath,
       )

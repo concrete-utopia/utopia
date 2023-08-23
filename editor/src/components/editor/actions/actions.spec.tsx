@@ -117,7 +117,7 @@ import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
 import { generateCodeResultCache } from '../../custom-code/code-file'
 import {
   contentsToTree,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   treeToContents,
   walkContentsTreeForParseSuccess,
 } from '../../assets'
@@ -276,7 +276,7 @@ describe('SET_PROP', () => {
       jsExpressionValue(100, emptyComments),
     )
     const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -315,7 +315,7 @@ describe('SET_CANVAS_FRAMES', () => {
       false,
     )
     const newEditor = UPDATE_FNS.SET_CANVAS_FRAMES(action, testEditor, derivedState)
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -451,7 +451,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -496,7 +496,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(newEditor.projectContents, StoryboardFilePath)
+    const newUiJsFile = getProjectFileByFilePath(newEditor.projectContents, StoryboardFilePath)
     if (newUiJsFile != null && isTextFile(newUiJsFile)) {
       if (isParseSuccess(newUiJsFile.fileContents.parsed)) {
         const newTopLevelElements = newUiJsFile.fileContents.parsed.topLevelElements
@@ -545,7 +545,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -580,7 +580,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -614,7 +614,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -649,7 +649,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -683,7 +683,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -737,7 +737,7 @@ xdescribe('moveTemplate', () => {
       null,
     ).editor
 
-    const newUiJsFile = getContentsTreeFileFromString(
+    const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
     ) as TextFile
@@ -846,12 +846,12 @@ describe('LOAD', () => {
     const startingState = deepFreeze(createEditorState(NO_OP))
     const result = UPDATE_FNS.LOAD(action, startingState, NO_OP)
     const newFirstFileContents = (
-      getContentsTreeFileFromString(result.projectContents, firstUIJSFile) as TextFile
+      getProjectFileByFilePath(result.projectContents, firstUIJSFile) as TextFile
     ).fileContents
     expect(isUnparsed(newFirstFileContents.parsed)).toBeTruthy()
     expect(newFirstFileContents.code).toEqual(initialFileContents.code)
     const newSecondFileContents = (
-      getContentsTreeFileFromString(result.projectContents, secondUIJSFile) as TextFile
+      getProjectFileByFilePath(result.projectContents, secondUIJSFile) as TextFile
     ).fileContents
     expect(isUnparsed(newSecondFileContents.parsed)).toBeTruthy()
     expect(newSecondFileContents.code).toEqual(initialFileContents.code)
@@ -938,7 +938,7 @@ describe('INSERT_INSERTABLE', () => {
     )
 
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
-    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
@@ -1045,7 +1045,7 @@ describe('INSERT_INSERTABLE', () => {
     )
 
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
-    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
@@ -1146,7 +1146,7 @@ describe('INSERT_INSERTABLE', () => {
     const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', null)
 
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
-    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {
@@ -1243,7 +1243,7 @@ describe('INSERT_INSERTABLE', () => {
     })
 
     const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
-    const cardFile = getContentsTreeFileFromString(actualResult.projectContents, '/src/card.js')
+    const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
       if (isParseSuccess(parsed)) {

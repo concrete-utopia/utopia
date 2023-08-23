@@ -8,7 +8,7 @@ import {
 } from '../../core/shared/project-file-types'
 import { lintAndParse } from '../../core/workers/parser-printer/parser-printer'
 import type { ProjectContentTreeRoot } from '../assets'
-import { contentsToTree, getContentsTreeFileFromString, treeToContents } from '../assets'
+import { contentsToTree, getProjectFileByFilePath, treeToContents } from '../assets'
 import { StoryboardFilePath } from '../editor/store/editor-state'
 import { createComplexDefaultProjectContents } from '../../sample-projects/sample-project-utils'
 import { replaceAll } from '../../core/shared/string-utils'
@@ -66,7 +66,7 @@ export function defaultProjectContentsForNormalising(): ProjectContentTreeRoot {
 }
 
 export function getTextFileByPath(projectContents: ProjectContentTreeRoot, path: string): TextFile {
-  const possibleResult = getContentsTreeFileFromString(projectContents, path)
+  const possibleResult = getProjectFileByFilePath(projectContents, path)
   if (possibleResult != null && isTextFile(possibleResult)) {
     return possibleResult
   } else {

@@ -18,7 +18,7 @@ import {
 import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getContentsTreeFileFromString } from '../../components/assets'
+import { getProjectFileByFilePath } from '../../components/assets'
 import type { JSXElementChild } from '../shared/element-template'
 import {
   modifiableAttributeIsAttributeNotFound,
@@ -243,7 +243,7 @@ function getJSXElementForTarget(
   )
   const underlyingPath =
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey
-  const projectFile = getContentsTreeFileFromString(projectContents, underlyingPath)
+  const projectFile = getProjectFileByFilePath(projectContents, underlyingPath)
   if (
     projectFile != null &&
     isTextFile(projectFile) &&

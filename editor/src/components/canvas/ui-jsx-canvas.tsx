@@ -68,7 +68,7 @@ import {
 import { unimportAllButTheseCSSFiles } from '../../core/webpack-loaders/css-loader'
 import { UTOPIA_INSTANCE_PATH } from '../../core/model/utopia-constants'
 import type { ProjectContentTreeRoot } from '../assets'
-import { getContentsTreeFileFromString } from '../assets'
+import { getProjectFileByFilePath } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
@@ -570,7 +570,7 @@ function attemptToResolveParsedComponents(
 ): Either<string, MapLike<any>> {
   return flatMapEither((resolvedFilePath) => {
     resolvedFromThisOrigin.push(toImport)
-    const projectFile = getContentsTreeFileFromString(projectContents, resolvedFilePath)
+    const projectFile = getProjectFileByFilePath(projectContents, resolvedFilePath)
     if (
       projectFile != null &&
       isTextFile(projectFile) &&

@@ -9,7 +9,7 @@ import {
 import { emptySet } from '../../../core/shared/set-utils'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { getContentsTreeFileFromString } from '../../assets'
+import { getProjectFileByFilePath } from '../../assets'
 import { updateFile } from '../../editor/actions/action-creators'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
@@ -101,7 +101,7 @@ describe('Updating a transitive dependency', () => {
 
     const oldFile = forceNotNull(
       'Unexpectedly null.',
-      getContentsTreeFileFromString(getEditorState().editor.projectContents, indirectFilePath),
+      getProjectFileByFilePath(getEditorState().editor.projectContents, indirectFilePath),
     )
 
     const updatedIndirectFile = textFile(

@@ -1,7 +1,7 @@
 import * as json5 from 'json5'
 import * as NodeHTMLParser from 'node-html-parser'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getContentsTreeFileFromString } from '../../components/assets'
+import { getProjectFileByFilePath } from '../../components/assets'
 import { notice } from '../../components/common/notice'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import { addToast, updateFile } from '../../components/editor/actions/action-creators'
@@ -105,7 +105,7 @@ export function getGeneratedExternalLinkText(
 function getPreviewHTMLFilePath(
   projectContents: ProjectContentTreeRoot,
 ): Either<DescriptionParseError, string> {
-  const packageJson = getContentsTreeFileFromString(projectContents, '/package.json')
+  const packageJson = getProjectFileByFilePath(projectContents, '/package.json')
   if (packageJson != null && isTextFile(packageJson)) {
     try {
       const parsedJSON = json5.parse(packageJson.fileContents.code)
@@ -133,7 +133,7 @@ function getTextFileContentsFromPath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
 ): Either<DescriptionParseError, TextFile> {
-  const fileContents = getContentsTreeFileFromString(projectContents, filePath)
+  const fileContents = getProjectFileByFilePath(projectContents, filePath)
   if (fileContents != null && isTextFile(fileContents)) {
     return right(fileContents)
   } else {

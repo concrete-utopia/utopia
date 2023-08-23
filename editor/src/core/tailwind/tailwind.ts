@@ -1,5 +1,5 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getContentsTreeFileFromString } from '../../components/assets'
+import { getProjectFileByFilePath } from '../../components/assets'
 import type { Either } from '../shared/either'
 import { isRight, left, right } from '../shared/either'
 import type { RequireFn } from '../shared/npm-dependency-types'
@@ -53,7 +53,7 @@ function postCSSIncludesTailwindPlugin(postCSSFile: ProjectFile, requireFn: Requ
 
 function useGetPostCSSConfigFile(projectContents: ProjectContentTreeRoot): ProjectFile | null {
   return React.useMemo(
-    () => getContentsTreeFileFromString(projectContents, PostCSSPath),
+    () => getProjectFileByFilePath(projectContents, PostCSSPath),
     [projectContents],
   )
 }
@@ -119,7 +119,7 @@ function getTailwindConfig(
 
 function useGetTailwindConfigFile(projectContents: ProjectContentTreeRoot): ProjectFile | null {
   return React.useMemo(
-    () => getContentsTreeFileFromString(projectContents, TailwindConfigPath),
+    () => getProjectFileByFilePath(projectContents, TailwindConfigPath),
     [projectContents],
   )
 }
@@ -246,11 +246,11 @@ export function injectTwind(
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
   const hasDependencies =
     packageJsonFile != null && hasRequiredDependenciesForTailwind(packageJsonFile)
-  const postCSSFile = getContentsTreeFileFromString(projectContents, PostCSSPath)
+  const postCSSFile = getProjectFileByFilePath(projectContents, PostCSSPath)
   const hasPostCSSPlugin =
     postCSSFile != null && postCSSIncludesTailwindPlugin(postCSSFile, requireFn)
   const shouldUseTwind = hasDependencies && hasPostCSSPlugin
-  const tailwindConfigFile = getContentsTreeFileFromString(projectContents, TailwindConfigPath)
+  const tailwindConfigFile = getProjectFileByFilePath(projectContents, TailwindConfigPath)
   const maybeTailwindConfig = getTailwindConfig(tailwindConfigFile, requireFn)
   const tailwindConfig = isRight(maybeTailwindConfig) ? maybeTailwindConfig.value : {}
   if (shouldUseTwind) {
