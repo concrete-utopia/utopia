@@ -782,6 +782,32 @@ describe('Groups behaviors', () => {
         expect(groupDiv.style.width).toBe('100px')
         expect(groupDiv.style.height).toBe('100px')
       })
+
+      it('group with conditionals', async () => {
+        const editor = await renderProjectWithGroup(`
+          <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <div
+              style={{
+                backgroundColor: 'red',
+                position: 'absolute',
+                bottom: 100,
+                right: 100,
+                width: 100,
+                height: 100,
+              }}
+            />
+            {
+              true ? (
+                <div style={{ position: 'absolute', left: 0, top: 0, width: 300, height: 300, background: 'blue' }} />
+              ) : null
+            }
+          </Group>
+        `)
+        const groupDiv = editor.renderedDOM.getByTestId('group')
+
+        expect(groupDiv.style.width).toBe('300px')
+        expect(groupDiv.style.height).toBe('300px')
+      })
     })
 
     describe('Group Resize', () => {

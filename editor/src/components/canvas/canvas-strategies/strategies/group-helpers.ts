@@ -15,6 +15,7 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXElement,
+  JSXElementChild,
   JSXElementChildren,
   JSXElementWithoutUID,
 } from '../../../../core/shared/element-template'
@@ -348,6 +349,20 @@ export function getGroupChildStateWithGroupMetadata(
     projectContents,
     elementMetadata,
     checkGroupHasExplicitSize(groupElement),
+  )
+}
+
+export function isMaybeGroupForWrapping(element: JSXElementChild, imports: Imports): boolean {
+  const group = groupJSXElement([])
+  const groupImports = groupJSXElementImportsToAdd()
+  return (
+    element.type === group.type &&
+    element.name.baseVariable === group.name.baseVariable &&
+    imports['utopia-api'] != null &&
+    imports['utopia-api'].importedFromWithin[0].name ===
+      groupImports['utopia-api'].importedFromWithin[0].name &&
+    imports['utopia-api'].importedFromWithin[0].alias ===
+      groupImports['utopia-api'].importedFromWithin[0].alias
   )
 }
 

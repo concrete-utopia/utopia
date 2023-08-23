@@ -592,12 +592,14 @@ import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
   isEmptyGroup,
+  isMaybeGroupForWrapping,
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   createPinChangeCommandsForElementInsertedIntoGroup,
   createPinChangeCommandsForElementBecomingGroupChild,
+  elementCanBeAGroupChild,
 } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
@@ -2206,6 +2208,25 @@ export const UPDATE_FNS = {
           )
         }
 
+        if (
+          isMaybeGroupForWrapping(
+            action.whatToWrapWith.element,
+            action.whatToWrapWith.importsToAdd,
+          ) &&
+          orderedActionTargets.some((path) => {
+            return !elementCanBeAGroupChild(
+              MetadataUtils.getJsxElementChildFromMetadata(editor.jsxMetadata, path),
+              path,
+              editor.jsxMetadata,
+            )
+          })
+        ) {
+          return UPDATE_FNS.ADD_TOAST(
+            showToast(notice('Not all targets can be wrapped into a Group', 'ERROR')),
+            editor,
+          )
+        }
+
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
@@ -2404,6 +2425,7 @@ export const UPDATE_FNS = {
                   return foldAndApplyCommandsSimple(
                     result.editor,
                     createPinChangeCommandsForElementBecomingGroupChild(
+                      workingEditor.jsxMetadata,
                       child,
                       result.newPath,
                       parentFrame,
