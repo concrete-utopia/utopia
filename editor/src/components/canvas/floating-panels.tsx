@@ -191,6 +191,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         newPanel: PanelName | null
         switchWithPanel: PanelName | null
       } => {
+        const EdgeDropAreaWidth = 60
         const outerDropAreas: Array<{
           targetPanel: PanelName
           frame: WindowRectangle
@@ -201,7 +202,7 @@ export const FloatingPanelsContainer = React.memo(() => {
             frame: windowRectangle({
               x: 0,
               y: 0,
-              width: GapBetweenPanels,
+              width: EdgeDropAreaWidth, //GapBetweenPanels,
               height: canvasSize.height,
             }),
           },
@@ -229,19 +230,18 @@ export const FloatingPanelsContainer = React.memo(() => {
           {
             targetPanel: 'rightMenu2',
             frame: windowRectangle({
-              x: panelFrames.rightMenu2.x + panelFrames.rightMenu2.width - GapBetweenPanels,
+              x: panelFrames.rightMenu2.x + panelFrames.rightMenu2.width - EdgeDropAreaWidth, //GapBetweenPanels,
               y: 0,
               width:
                 canvasSize.width -
                 panelFrames.rightMenu2.x +
                 panelFrames.rightMenu2.width +
-                GapBetweenPanels,
+                EdgeDropAreaWidth, //GapBetweenPanels,
               height: canvasSize.height,
             }),
           },
         ]
 
-        // TODO THIS SHOULD BE NOT BASED ON THE CURSOR X,Y BUT WHERE THE FRAME TOP/LEFT IS
         const droppedToOutsideOfAColumn = outerDropAreas.find((area) =>
           rectContainsPointInclusive(area.frame, newPosition),
         )
