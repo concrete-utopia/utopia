@@ -503,13 +503,13 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
 
   return (
     <FlexCol css={{ gap: 8, paddingBottom: 8 }}>
-      {!minMaxToggled ? (
+      {minMaxToggled ? (
         <div>
           <MinimumsRow />
           <MaximumsRow />
         </div>
       ) : null}
-      {layoutType !== 'flex' ? (
+      {layoutType === 'flex' ? (
         <div>
           <FlexGrowShrinkRow />
           <FlexWidthHeightRow />
