@@ -504,7 +504,7 @@ export async function zipContentsTreeAsync(
 }
 
 // FIXME A lot of these files should be moved to a more relevant file
-export function getContentsTreeFileFromElements(
+export function getProjectFileByFilePath(
   tree: ProjectContentTreeRoot,
   pathElements: ReadonlyArray<string>,
 ): ProjectFile | null {
@@ -533,11 +533,47 @@ export function getContentsTreeFileFromElements(
   }
 }
 
-export function getProjectFileByFilePath(
+export function getContentsTreeFromElements(
+  tree: ProjectContentTreeRoot,
+  pathElements: ReadonlyArray<string>,
+): ProjectContentsTree | null {
+  if (pathElements.length === 0) {
+    throw new Error(`Invalid pathElements.`)
+  } else {
+    let workingTree: ProjectContentTreeRoot = tree
+    for (let index = 0; index < pathElements.length; index++) {
+      const pathPart = pathElements[index]
+      const treePart = workingTree[pathPart]
+      if (treePart == null) {
+        return null
+      } else {
+        if (index === pathElements.length - 1) {
+          return treePart
+        } else {
+          if (treePart.type === 'PROJECT_CONTENT_DIRECTORY') {
+            workingTree = treePart.children
+          } else {
+            return null
+          }
+        }
+      }
+    }
+    return null
+  }
+}
+
+export function getContentsTreeFileFromString(
   tree: ProjectContentTreeRoot,
   path: string,
 ): ProjectFile | null {
   return getContentsTreeFileFromElements(tree, getProjectContentKeyPathElements(path))
+}
+
+export function getContentsTreeFromPath(
+  tree: ProjectContentTreeRoot,
+  path: string,
+): ProjectContentsTree | null {
+  return getContentsTreeFromElements(tree, getProjectContentKeyPathElements(path))
 }
 
 export function addFileToProjectContents(

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import fetch from 'node-fetch'
 import fs from 'fs'
-import path from 'path'
+import path from 'path-browserify'
 import * as csstree from 'css-tree'
 
 type AttributeToClassNames = { [attribute: string]: Array<string> }
