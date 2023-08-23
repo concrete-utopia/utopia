@@ -131,23 +131,26 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
         minWidth={LeftPanelMinWidth}
         style={{
           overscrollBehavior: 'contain',
-          backgroundColor: colorTheme.inspectorBackground.value,
+          backgroundColor: colorTheme.leftPaneBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-          overflow: 'scroll',
           boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
           height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
         {...props.resizableConfig}
       >
+        <PanelTitleBar />
         <div
           id={LeftPaneComponentId}
           className='leftPane'
           style={{
             height: '100%',
             position: 'relative',
-            backgroundColor: colorTheme.leftPaneBackground.value,
             color: colorTheme.fg1.value,
             display: 'flex',
+            overflow: 'scroll',
           }}
         >
           <div
@@ -165,7 +168,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
               }
             }}
           >
-            <PanelTitleBar />
             <UIGridRow
               variant='|--67px--||--67px--||--67px--||--67px--|'
               padded={false}
