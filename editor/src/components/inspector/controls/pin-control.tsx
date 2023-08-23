@@ -242,8 +242,8 @@ export const PinControl = (props: PinControlProps) => {
             exclude.center === true,
             <>
               <path
-                d={`M${HorizontalMid - (HorizontalLength - 6)},${VerticalMid} l${
-                  (HorizontalLength - 6) * 2
+                d={`M${HorizontalMid - (HorizontalLength - 4)},${VerticalMid} l${
+                  (HorizontalLength - 4) * 2
                 },0`}
                 className='pin-indicator'
                 id={getTestId(props.name, 'pin-centerx')}
