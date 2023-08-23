@@ -323,13 +323,14 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       onResize={onResize}
       className='resizableFlexColumnCanvasCode'
       style={{
-        display: interfaceDesigner.codePaneVisible ? 'block' : 'none',
+        display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
         width: interfaceDesigner.codePaneWidth,
         height: '100%',
         position: 'relative',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        flexDirection: 'column',
       }}
       {...resizableConfig}
     >
