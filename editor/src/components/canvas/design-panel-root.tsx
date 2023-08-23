@@ -271,7 +271,7 @@ interface CodeEditorPaneProps {
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const { width, onResizeStop, resizableConfig } = props
+  const { width, onResizeStop: onPanelResizeStop, resizableConfig } = props
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
@@ -281,7 +281,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   )
 
   const codeEditorEnabled = isCodeEditorEnabled()
-  const onResize = React.useCallback(
+  const onResizeStop = React.useCallback(
     (
       event: MouseEvent | TouchEvent,
       direction: ResizeDirection,
@@ -289,9 +289,26 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       delta: NumberSize,
     ) => {
       dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
-      onResizeStop('code-editor', width + delta.width)
+      const newWidth = elementRef?.clientWidth
+      if (newWidth != null) {
+        onPanelResizeStop('code-editor', newWidth)
+      }
     },
-    [dispatch, onResizeStop, width],
+    [dispatch, onPanelResizeStop],
+  )
+  const onResize = React.useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      direction: ResizeDirection,
+      elementRef: HTMLElement,
+      delta: NumberSize,
+    ) => {
+      const newWidth = elementRef?.clientWidth
+      if (newWidth != null) {
+        onPanelResizeStop('code-editor', newWidth)
+      }
+    },
+    [onPanelResizeStop],
   )
 
   return (
@@ -304,7 +321,8 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         width: width,
         height: '100%',
       }}
-      onResizeStop={onResize}
+      onResizeStop={onResizeStop}
+      onResize={onResize}
       className='resizableFlexColumnCanvasCode'
       style={{
         display: interfaceDesigner.codePaneVisible ? 'block' : 'none',

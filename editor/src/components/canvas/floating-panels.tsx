@@ -15,6 +15,7 @@ import {
 import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-state'
 import { mapArrayToDictionary, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui'
+import { when } from '../../utils/react-conditionals'
 
 type Menu = 'inspector' | 'navigator'
 type Pane = 'code-editor' | 'preview'
@@ -198,7 +199,7 @@ export const FloatingPanelsContainer = React.memo(() => {
             frame: windowRectangle({
               x: panelFrames.leftMenu2.x + panelFrames.leftMenu2.width,
               y: 0,
-              width: 25,
+              width: 80,
               height: canvasSize.height,
             }),
           },
@@ -206,9 +207,9 @@ export const FloatingPanelsContainer = React.memo(() => {
           {
             targetPanel: 'rightMenu1',
             frame: windowRectangle({
-              x: panelFrames.rightMenu1.x - 25,
+              x: panelFrames.rightMenu1.x - 80,
               y: 0,
-              width: 25,
+              width: 80,
               height: canvasSize.height,
             }),
           },
@@ -427,9 +428,15 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     }
   }, [menusAndPanes, frame])
 
-  const dragStopEventHandler = React.useCallback<
-    (menuOrPane: Menu | Pane) => DraggableEventHandler
-  >(
+  const [isDragging, setIsDragging] = React.useState(false)
+  const onDragStart = React.useCallback<DraggableEventHandler>(
+    (e, data) => {
+      setIsDragging(true)
+    },
+    [setIsDragging],
+  )
+
+  const onDragStop = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
     (menuOrPane: Menu | Pane) => {
       return (e, data) => {
         updateColumn(
@@ -437,9 +444,10 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           panelName,
           windowPoint({ x: (e as any).clientX, y: (e as any).clientY }),
         )
+        setIsDragging(false)
       }
     },
-    [panelName, updateColumn],
+    [panelName, updateColumn, setIsDragging],
   )
 
   const resizeMinMaxSnap = React.useMemo(() => {
@@ -459,102 +467,127 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   )
 
   return (
-    <div
-      className={panelName}
-      style={{
-        position: 'absolute',
-        height: height,
-        [props.alignment]: leftOrRightPosition,
-        top: frame.y,
-        margin: 10,
-        border: '1px solid green',
-      }}
-    >
-      <style>{`
-.${panelName} > .react-draggable { height: ${100 / menusAndPanes.length}%; width: 100%}`}</style>
-      {menusAndPanes.map((value) => {
-        switch (value) {
-          case 'code-editor':
-            return (
-              <Draggable
-                position={{ x: 0, y: 0 }} // this is needed to control the position
-                key='code-editor'
-                handle='.handle'
-                onStop={dragStopEventHandler('code-editor')}
-              >
-                <div>
-                  <CodeEditorPane
-                    resizableConfig={{
-                      enable: {
-                        left: props.alignment === 'right',
-                        right: props.alignment === 'left',
-                      },
-                      minWidth: resizeMinMaxSnap.minWidth,
-                      maxWidth: resizeMinMaxSnap.maxWidth,
-                      snap: resizeMinMaxSnap.snap,
+    <>
+      <div
+        className={panelName}
+        style={{
+          position: 'absolute',
+          height: height,
+          [props.alignment]: leftOrRightPosition,
+          top: frame.y,
+          margin: 10,
+          border: '1px solid green',
+        }}
+      >
+        {menusAndPanes.map((value) => {
+          switch (value) {
+            case 'code-editor':
+              return (
+                <Draggable
+                  position={{ x: 0, y: 0 }} // this is needed to control the position
+                  key='code-editor'
+                  handle='.handle'
+                  onStart={onDragStart}
+                  onStop={onDragStop('code-editor')}
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      height: `${100 / menusAndPanes.length}%`,
                     }}
-                    width={frame.width}
-                    onResizeStop={resizeStopEventHandler}
-                    small={isMenuContainingPanel(menusAndPanes)}
-                  />
-                </div>
-              </Draggable>
-            )
-          case 'inspector':
-            return (
-              <Draggable
-                position={{ x: 0, y: 0 }} // this is needed to control the position
-                key='inspector'
-                onStart={dragStart}
-                onStop={dragStopEventHandler('inspector')}
-                handle='.handle'
-              >
-                <div>
-                  <ResizableRightPane
-                    resizableConfig={{
-                      enable: {
-                        left: props.alignment === 'right',
-                        right: props.alignment === 'left',
-                      },
-                      minWidth: resizeMinMaxSnap.minWidth,
-                      maxWidth: resizeMinMaxSnap.maxWidth,
-                      snap: resizeMinMaxSnap.snap,
+                  >
+                    <CodeEditorPane
+                      resizableConfig={{
+                        enable: {
+                          left: props.alignment === 'right',
+                          right: props.alignment === 'left',
+                        },
+                        minWidth: resizeMinMaxSnap.minWidth,
+                        maxWidth: resizeMinMaxSnap.maxWidth,
+                        snap: resizeMinMaxSnap.snap,
+                      }}
+                      width={frame.width}
+                      onResizeStop={resizeStopEventHandler}
+                      small={isMenuContainingPanel(menusAndPanes)}
+                    />
+                  </div>
+                </Draggable>
+              )
+            case 'inspector':
+              return (
+                <Draggable
+                  position={{ x: 0, y: 0 }} // this is needed to control the position
+                  key='inspector'
+                  onStart={onDragStart}
+                  onStop={onDragStop('inspector')}
+                  handle='.handle'
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      height: `${100 / menusAndPanes.length}%`,
                     }}
-                    onResizeStop={resizeStopEventHandler}
-                    width={frame.width}
-                  />
-                </div>
-              </Draggable>
-            )
-          case 'navigator':
-            return (
-              <Draggable
-                position={{ x: 0, y: 0 }} // this is needed to control the position
-                key='navigator'
-                onStop={dragStopEventHandler('navigator')}
-                handle='.handle'
-              >
-                <div>
-                  <LeftPaneComponent
-                    resizableConfig={{
-                      enable: {
-                        left: props.alignment === 'right',
-                        right: props.alignment === 'left',
-                      },
-                      minWidth: resizeMinMaxSnap.minWidth,
-                      maxWidth: resizeMinMaxSnap.maxWidth,
-                      snap: resizeMinMaxSnap.snap,
+                  >
+                    <ResizableRightPane
+                      resizableConfig={{
+                        enable: {
+                          left: props.alignment === 'right',
+                          right: props.alignment === 'left',
+                        },
+                        minWidth: resizeMinMaxSnap.minWidth,
+                        maxWidth: resizeMinMaxSnap.maxWidth,
+                        snap: resizeMinMaxSnap.snap,
+                      }}
+                      onResizeStop={resizeStopEventHandler}
+                      width={frame.width}
+                    />
+                  </div>
+                </Draggable>
+              )
+            case 'navigator':
+              return (
+                <Draggable
+                  position={{ x: 0, y: 0 }} // this is needed to control the position
+                  key='navigator'
+                  onStart={onDragStart}
+                  onStop={onDragStop('navigator')}
+                  handle='.handle'
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      height: `${100 / menusAndPanes.length}%`,
                     }}
-                    onResizeStop={resizeStopEventHandler}
-                    width={frame.width}
-                  />
-                </div>
-              </Draggable>
-            )
-          default:
-            return null
-        }
-      })}
-    </div>
+                  >
+                    <LeftPaneComponent
+                      resizableConfig={{
+                        enable: {
+                          left: props.alignment === 'right',
+                          right: props.alignment === 'left',
+                        },
+                        minWidth: resizeMinMaxSnap.minWidth,
+                        maxWidth: resizeMinMaxSnap.maxWidth,
+                        snap: resizeMinMaxSnap.snap,
+                      }}
+                      onResizeStop={resizeStopEventHandler}
+                      width={frame.width}
+                    />
+                  </div>
+                </Draggable>
+              )
+            default:
+              return null
+          }
+        })}
+      </div>
+      {when(
+        isDragging,
+        <style>{`
+          body * {
+            pointer-events: none !important;
+          };
+        `}</style>,
+      )}
+    </>
   )
 })
