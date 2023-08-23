@@ -2008,11 +2008,15 @@ function getValidElementPathsFromElement(
         parentPathInner: ElementPath,
       ): ElementPath | null {
         const file = getContentsTreeFileFromString(projectContents, routeModulePath)
-        if (file == null || file.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
+        if (
+          file == null ||
+          file.type !== 'TEXT_FILE' ||
+          file.fileContents.parsed?.type !== 'PARSE_SUCCESS'
+        ) {
           throw new Error(`${routeModulePath} should be a text file`)
         }
 
-        const topLevelElement = getTopLevelElement(file.lastParseSuccess.topLevelElements)
+        const topLevelElement = getTopLevelElement(file.fileContents.parsed.topLevelElements)
 
         if (topLevelElement == null) {
           throw new Error(`${routeModulePath} should have a top level element`)
