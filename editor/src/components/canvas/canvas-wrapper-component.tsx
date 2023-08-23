@@ -37,7 +37,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-import { FloatingPanelSizesAtom } from './floating-panels'
+import { FloatingPanelSizesAtom, GapBetweenPanels } from './floating-panels'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -152,7 +152,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           height: '100%',
           transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
           pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
-          left: panelSizes.leftMenu1.width + panelSizes.leftMenu2.width + 20,
+          left: panelSizes.leftMenu2.x + panelSizes.leftMenu2.width + GapBetweenPanels,
         }}
       >
         <FlexRow

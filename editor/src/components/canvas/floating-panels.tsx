@@ -24,6 +24,7 @@ import { when } from '../../utils/react-conditionals'
 
 type Menu = 'inspector' | 'navigator'
 type Pane = 'code-editor' | 'preview'
+export const GapBetweenPanels = 10
 
 const SizeConstraints: {
   [key: string]: {
@@ -154,13 +155,16 @@ export const FloatingPanelsContainer = React.memo(() => {
           let x = 0
           switch (p) {
             case 'leftMenu2':
-              x = withPanelSizeUpdates.leftMenu1.width
+              x =
+                withPanelSizeUpdates.leftMenu1.width +
+                (currentPanelsData.leftMenu1.length > 0 ? GapBetweenPanels : 0)
               break
             case 'rightMenu1':
               x =
                 canvasSize.width -
                 withPanelSizeUpdates.rightMenu1.width -
-                withPanelSizeUpdates.rightMenu2.width
+                withPanelSizeUpdates.rightMenu2.width -
+                (currentPanelsData.rightMenu2.length > 0 ? GapBetweenPanels : 0)
               break
             case 'rightMenu2':
               x = canvasSize.width - withPanelSizeUpdates.rightMenu2.width
@@ -197,7 +201,7 @@ export const FloatingPanelsContainer = React.memo(() => {
             frame: windowRectangle({
               x: 0,
               y: 0,
-              width: 10, // TODO FIX, now this is a padding value // panelFrames.leftMenu1.x,
+              width: GapBetweenPanels,
               height: canvasSize.height,
             }),
           },
@@ -225,10 +229,13 @@ export const FloatingPanelsContainer = React.memo(() => {
           {
             targetPanel: 'rightMenu2',
             frame: windowRectangle({
-              x: panelFrames.rightMenu2.x + panelFrames.rightMenu2.width - 10, // TODO FIX, now this is a padding value
+              x: panelFrames.rightMenu2.x + panelFrames.rightMenu2.width - GapBetweenPanels,
               y: 0,
               width:
-                canvasSize.width - panelFrames.rightMenu2.x + panelFrames.rightMenu2.width + 10, // TODO FIX, now this is a padding value
+                canvasSize.width -
+                panelFrames.rightMenu2.x +
+                panelFrames.rightMenu2.width +
+                GapBetweenPanels,
               height: canvasSize.height,
             }),
           },
@@ -430,9 +437,9 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
 
   const height = React.useMemo(() => {
     if (isMenuContainingPanel(menusAndPanes)) {
-      return 'calc(100% - 20px)'
+      return `calc(100% - ${GapBetweenPanels * 2}px)`
     } else {
-      return frame.height
+      return `min(calc(100% - ${GapBetweenPanels * 2}px), ${frame.height}px)`
     }
   }, [menusAndPanes, frame])
 
