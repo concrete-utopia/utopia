@@ -2216,11 +2216,13 @@ export const UPDATE_FNS = {
           orderedActionTargets.some((path) => {
             return !elementCanBeAGroupChild(
               MetadataUtils.getJsxElementChildFromMetadata(editor.jsxMetadata, path),
+              path,
+              editor.jsxMetadata,
             )
           })
         ) {
           return UPDATE_FNS.ADD_TOAST(
-            showToast(notice('Empty conditionals cannot be wrapped in a Group', 'ERROR')),
+            showToast(notice('Not all targets can be wrapped into a Group', 'ERROR')),
             editor,
           )
         }

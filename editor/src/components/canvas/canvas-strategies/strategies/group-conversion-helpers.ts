@@ -686,11 +686,21 @@ export type GroupChildElement = JSXElementLike | JSXConditionalExpression
 
 export function elementCanBeAGroupChild(
   element: JSXElementChild | null,
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
 ): element is GroupChildElement {
   if (element == null) {
     return false
   }
-  return isJSXElementLike(element) || isJSXConditionalExpression(element)
+  if (isJSXElementLike(element)) {
+    return true
+  }
+  if (isJSXConditionalExpression(element)) {
+    const activeBranch = getConditionalActiveCase(elementPath, element, jsxMetadata)
+    const branch = activeBranch === 'true-case' ? element.whenTrue : element.whenFalse
+    return elementCanBeAGroupChild(branch, EP.appendToPath(elementPath, branch.uid), jsxMetadata)
+  }
+  return false
 }
 
 export function groupConversionCommands(
@@ -759,7 +769,11 @@ export function createWrapInGroupActions(
   }
 
   const allTargetsCanBeGroupChildren = orderedActionTargets.every((path) => {
-    return elementCanBeAGroupChild(MetadataUtils.getJsxElementChildFromMetadata(metadata, path))
+    return elementCanBeAGroupChild(
+      MetadataUtils.getJsxElementChildFromMetadata(metadata, path),
+      path,
+      metadata,
+    )
   })
   if (!allTargetsCanBeGroupChildren) {
     return showToast(notice('Not all targets can be wrapped into a Group', 'ERROR'))
@@ -842,7 +856,7 @@ export function createWrapInGroupActions(
         foundMetadata == null ||
         element == null ||
         isLeft(element) ||
-        !elementCanBeAGroupChild(element.value)
+        !elementCanBeAGroupChild(element.value, p, metadata)
       ) {
         throw new Error(
           `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
@@ -973,7 +987,11 @@ export function createPinChangeCommandsForElementBecomingGroupChild(
   if (
     elementMetadata == null ||
     isLeft(elementMetadata.element) ||
-    !elementCanBeAGroupChild(elementMetadata.element.value)
+    !elementCanBeAGroupChild(
+      elementMetadata.element.value,
+      elementMetadata.elementPath,
+      jsxMetadata,
+    )
   ) {
     throw new Error(
       `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
