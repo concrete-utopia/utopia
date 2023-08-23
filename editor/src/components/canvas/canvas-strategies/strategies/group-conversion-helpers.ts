@@ -814,21 +814,20 @@ export function createWrapInGroupActions(
 
       case 'JSX_CONDITIONAL_EXPRESSION':
         // Remove any margin properties from the branches.
-        let conditional: JSXConditionalExpression = { ...element }
-        if (isJSXElementLike(conditional.whenTrue)) {
-          conditional.whenTrue = modify(
-            elementPropsOptic,
-            removeMarginProperties,
-            conditional.whenTrue,
-          )
-        }
-        if (isJSXElementLike(conditional.whenFalse)) {
-          conditional.whenFalse = modify(
-            elementPropsOptic,
-            removeMarginProperties,
-            conditional.whenFalse,
-          )
-        }
+        const conditionalWithUpdatedWhenTrue = modify(
+          fromField<JSXConditionalExpression, 'whenTrue'>('whenTrue')
+            .compose(fromTypeGuard(isJSXElement))
+            .compose(fromField('props')),
+          removeMarginProperties,
+          element,
+        )
+        const conditional = modify(
+          fromField<JSXConditionalExpression, 'whenFalse'>('whenFalse')
+            .compose(fromTypeGuard(isJSXElement))
+            .compose(fromField('props')),
+          removeMarginProperties,
+          conditionalWithUpdatedWhenTrue,
+        )
         return {
           element: conditional,
           metadata: elementMetadata,
