@@ -26,6 +26,7 @@ import { importInfoFromImportDetails } from '../../../core/model/project-file-ut
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
 import { RemixRouterStateMachineInstance } from '../../editor/actions/actions'
+import { assertNever } from '../../../core/shared/utils'
 
 // Should the condition value of conditional expression change (which maybe be done by overriding it),
 // then the values we have accumulated in the spy metadata may need to be cleaned up.
@@ -165,6 +166,9 @@ export function buildSpyWrappedElement(
             remixContainerId: jsx.uid,
             remixContainerPath: elementPath,
           })
+          break
+        default:
+          assertNever(remixRendererComponentType)
       }
     }
   }

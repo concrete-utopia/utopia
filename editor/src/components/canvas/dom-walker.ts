@@ -502,10 +502,9 @@ export function runDomWalker({
     const { metadata, cachedPaths } =
       // when we don't rerender all elements we just run the dom walker in selective mode: only update the metatdata
       // of the currently rendered elements (for performance reasons)
-      walkCanvasRootFragment(canvasRootContainer, globalProps)
-    // TODO solve selecting re-rendering
-    // elementsToFocusOn === 'rerender-all-elements'
-    //   : runSelectiveDomWalker(elementsToFocusOn, globalProps)
+      elementsToFocusOn === 'rerender-all-elements'
+        ? walkCanvasRootFragment(canvasRootContainer, globalProps)
+        : runSelectiveDomWalker(elementsToFocusOn, globalProps)
 
     if (LogDomWalkerPerformance) {
       performance.mark('DOM_WALKER_END')
@@ -1246,13 +1245,12 @@ function walkElements(
     )
 
     // Check this is a path we're interested in, otherwise skip straight to the children
-    // TODO: add it back
-    // const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
-    //   const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
-    //   return globalProps.validPaths.some((validPath) => {
-    //     return EP.pathsEqual(staticPath, validPath)
-    //   })
-    // })
+    const foundValidPaths = pathsWithStrings.filter((pathWithString) => {
+      const staticPath = EP.makeLastPartOfPathStatic(pathWithString.path)
+      return globalProps.validPaths.some((validPath) => {
+        return EP.pathsEqual(staticPath, validPath)
+      })
+    })
 
     // Build the metadata for the children of this DOM node.
     let childPaths: Array<ElementPath> = []
@@ -1278,8 +1276,8 @@ function walkElements(
 
     const { collectedMetadata, cachedPaths, collectedPaths } = collectMetadata(
       element,
-      pluck(pathsWithStrings, 'path'),
-      pluck(pathsWithStrings, 'asString'),
+      pluck(foundValidPaths, 'path'),
+      pluck(foundValidPaths, 'asString'),
       parentPoint,
       closestOffsetParentPath,
       uniqueChildPaths,

@@ -184,7 +184,7 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
-import { getTopLevelElement } from './remix/remix-utils'
+import { findPathToOutlet, getTopLevelElement } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -2003,37 +2003,55 @@ function getValidElementPathsFromElement(
 
     const isRemixContainer = isRemixContainerElement(element, filePath, projectContents)
     if (isRemixContainer) {
+      function makeValidPathsFromModule(
+        routeModulePath: string,
+        parentPathInner: ElementPath,
+      ): ElementPath | null {
+        const file = getContentsTreeFileFromString(projectContents, routeModulePath)
+        if (file == null || file.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
+          throw new Error(`${routeModulePath} should be a text file`)
+        }
+
+        const topLevelElement = getTopLevelElement(file.lastParseSuccess.topLevelElements)
+
+        if (topLevelElement == null) {
+          throw new Error(`${routeModulePath} should have a top level element`)
+        }
+
+        paths.push(
+          ...getValidElementPathsFromElement(
+            focusedElementPath,
+            topLevelElement.rootElement,
+            parentPathInner,
+            projectContents,
+            routeModulePath,
+            uiFilePath,
+            false,
+            true,
+            resolve,
+          ),
+        )
+
+        const pathToOutlet = findPathToOutlet(topLevelElement.rootElement)
+        return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
+      }
+
       /**
        * TODO: generalize this for all routes
        * Basically:
-       * - Pass which route module is active on the RemixContainers
-       * - When encountering a RemixContainer, get the active route corresponding to that
-       *   contiainer, and parse the uids from the active route module
+       * - Pass the route modules parsed from projectContents
+       * - When encountering a RemixContainer, append the paths obtained from the routes (like
+       *   below) to the path of the remix container
        */
-      const index = getContentsTreeFileFromString(projectContents, '/src/routes/_index.js')
-      if (index == null || index.type !== 'TEXT_FILE' || index.lastParseSuccess == null) {
-        throw new Error("'/src/routes/_index.js' should be a text file")
+
+      const ROOTJS_PATH = '/src/root.js'
+      const INDEXJS_PATH = '/src/routes/_index.js'
+
+      const pathToRootOutlet = makeValidPathsFromModule(ROOTJS_PATH, path)
+      if (pathToRootOutlet == null) {
+        throw new Error(`TODO SPIKE: we assume that ${ROOTJS_PATH} has an <Outlet /> component`)
       }
-
-      const topLevelElement = getTopLevelElement(index.lastParseSuccess.topLevelElements)
-
-      if (topLevelElement == null) {
-        throw new Error("'/src/routes/_index.js' should have a top level element")
-      }
-
-      paths.push(
-        ...getValidElementPathsFromElement(
-          focusedElementPath,
-          topLevelElement.rootElement,
-          path,
-          projectContents,
-          filePath,
-          uiFilePath,
-          false,
-          true,
-          resolve,
-        ),
-      )
+      makeValidPathsFromModule(INDEXJS_PATH, pathToRootOutlet)
 
       return paths
     }
