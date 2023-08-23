@@ -444,12 +444,12 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
 
   const resizeMinMaxSnap = React.useMemo(() => {
     const possibleConstraints = mapDropNulls((v) => SizeConstraints[v].resize, menusAndPanes)
-    const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth))
-    const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth))
+    const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth), 0)
+    const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth), canvasSize.width)
     const snap = stripNulls(possibleConstraints.map((v) => v.snap))[0] // TODO what happens if there are multiple conflicting snapping menus
 
     return { minWidth, maxWidth, snap }
-  }, [menusAndPanes])
+  }, [menusAndPanes, canvasSize])
 
   const resizeStopEventHandler = React.useCallback<
     (menuOrPane: Menu | Pane, width: number) => void
@@ -505,6 +505,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
               <Draggable
                 position={{ x: 0, y: 0 }} // this is needed to control the position
                 key='inspector'
+                onStart={dragStart}
                 onStop={dragStopEventHandler('inspector')}
                 handle='.handle'
               >
