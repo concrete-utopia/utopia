@@ -5,7 +5,7 @@ import { getControlStyles } from '../common/control-status'
 import { FramePoint } from 'utopia-api/core'
 import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'
-import { UtopiaTheme, SquareButton, colorTheme } from '../../../uuiui'
+import { UtopiaTheme, SquareButton, colorTheme, color } from '../../../uuiui'
 import { unless } from '../../../utils/react-conditionals'
 
 interface PinControlProps {
@@ -24,9 +24,9 @@ export type ExcludePinControls = {
   sides?: boolean
 }
 
-const Margin = 3
-const Width = 60
-const Height = 60
+const Margin = 2
+const Width = 52
+const Height = 52
 
 const HorizontalLength = (Width - Margin * 6) / 4
 const HorizontalStart = Margin
@@ -95,18 +95,19 @@ export const PinControl = (props: PinControlProps) => {
   )
 
   return (
-    <div id='pin-control' className={props.className} style={props.style}>
+    <div id='pin-control' className={props.className} style={{ ...props.style, height: 54 }}>
       <svg
         width={Width}
         viewBox={`0 0 ${Width} ${Height}`}
         version='1.1'
         xmlns='http://www.w3.org/2000/svg'
         vectorEffect='non-scaling-stroke'
+        style={{ border: `1px solid ${colorTheme.fg7.value}`, borderRadius: 2 }}
       >
         <rect
           id={getTestId(props.name, 'box')}
           data-testid={getTestId(props.name, 'box')}
-          fill={controlStyles.backgroundColor}
+          fill={colorTheme.bg1.value}
           stroke={controlStyles.borderColor}
           strokeWidth='0'
           x='0.5'
@@ -118,7 +119,7 @@ export const PinControl = (props: PinControlProps) => {
         <rect
           id={getTestId(props.name, 'divider')}
           data-testid={getTestId(props.name, 'divider')}
-          fill={controlStyles.backgroundColor}
+          fill={colorTheme.bg1.value}
           stroke={controlStyles.borderColor}
           strokeWidth='1'
           x={HorizontalDividerStart}

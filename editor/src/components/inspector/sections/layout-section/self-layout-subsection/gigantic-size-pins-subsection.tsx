@@ -34,7 +34,7 @@ import { useContextSelector } from 'use-context-selector'
 import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 import { unless } from '../../../../../utils/react-conditionals'
 import type { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
-import { FlexRow } from 'utopia-api'
+import { FlexCol, FlexRow } from 'utopia-api'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -357,23 +357,17 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
   }, [togglePin])
 
   return (
-    <UIGridRow padded={true} variant='<-------------1fr------------->'>
-      <FlexRow
-        id='width-height-row-toggles'
-        style={{
-          justifyContent: 'flex-start',
-          gap: 4,
-        }}
-        css={undefined}
-      >
-        <PinWidthControl framePins={framePins} toggleWidth={toggleWidth} controlStatus='simple' />
-        <PinHeightControl
-          framePins={framePins}
-          toggleHeight={toggleHeight}
-          controlStatus='simple'
-        />
-      </FlexRow>
-    </UIGridRow>
+    <FlexCol
+      id='width-height-row-toggles'
+      style={{
+        justifyContent: 'flex-start',
+        gap: 8,
+      }}
+      css={undefined}
+    >
+      <PinWidthControl framePins={framePins} toggleWidth={toggleWidth} controlStatus='simple' />
+      <PinHeightControl framePins={framePins} toggleHeight={toggleHeight} controlStatus='simple' />
+    </FlexCol>
   )
 })
 
@@ -461,8 +455,9 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
   const secondYAxisControl: React.ReactElement = pinsLayoutNumberControl('right')
 
   return (
-    <UIGridRow alignItems='start' padded={true} variant='|--67px--|<--------1fr-------->'>
+    <UIGridRow alignItems='start' padded={true} variant='<-auto->|20px|<----------1fr--------->'>
       <PinControls resetPins={resetPinsFn} framePins={framePins} togglePin={togglePin} />
+      <WidthHeightRow togglePin={togglePin} framePins={framePins} />
       <FlexColumn style={{ gap: 8 }}>
         <UIGridRow
           padded={false}
@@ -507,23 +502,22 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
   const { resetAllPins, framePins, togglePin } = usePinToggling()
 
   return (
-    <div>
-      <WidthHeightRow togglePin={togglePin} framePins={framePins} />
-      {minMaxToggled ? (
-        <>
+    <FlexCol css={{ gap: 8, paddingBottom: 8 }}>
+      {!minMaxToggled ? (
+        <div>
           <MinimumsRow />
           <MaximumsRow />
-        </>
+        </div>
       ) : null}
-      {layoutType === 'flex' ? (
-        <>
+      {layoutType !== 'flex' ? (
+        <div>
           <FlexGrowShrinkRow />
           <FlexWidthHeightRow />
-        </>
+        </div>
       ) : null}
       {layoutType === 'absolute' ? (
         <OtherPinsRow resetPins={resetAllPins} framePins={framePins} togglePin={togglePin} />
       ) : null}
-    </div>
+    </FlexCol>
   )
 })
