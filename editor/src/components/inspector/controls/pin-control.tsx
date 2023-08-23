@@ -102,7 +102,7 @@ export const PinControl = (props: PinControlProps) => {
         version='1.1'
         xmlns='http://www.w3.org/2000/svg'
         vectorEffect='non-scaling-stroke'
-        style={{ border: `1px solid ${colorTheme.fg7.value}`, borderRadius: 2 }}
+        style={{ border: `1px solid ${colorTheme.fg8.value}`, borderRadius: 2 }}
       >
         <rect
           id={getTestId(props.name, 'box')}
