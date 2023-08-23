@@ -29,6 +29,7 @@ import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
+import { PanelTitleBar } from '../../canvas/floating-panels'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -164,9 +165,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
               }
             }}
           >
-            <div className='handle' style={{ height: 34, width: '100%' }}>
-              draggable title
-            </div>
+            <PanelTitleBar />
             <UIGridRow
               variant='|--67px--||--67px--||--67px--||--67px--|'
               padded={false}

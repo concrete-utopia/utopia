@@ -19,7 +19,7 @@ import {
 } from '../../core/shared/math-utils'
 import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-state'
 import { mapArrayToDictionary, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
-import { UtopiaTheme } from '../../uuiui'
+import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import { when } from '../../utils/react-conditionals'
 
 type Menu = 'inspector' | 'navigator'
@@ -604,5 +604,23 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         `}</style>,
       )}
     </>
+  )
+})
+
+export const PanelTitleBar = React.memo(() => {
+  const colorTheme = useColorTheme()
+  return (
+    <div
+      className='handle'
+      style={{
+        height: 28,
+        width: '100%',
+        backgroundColor: colorTheme.fg8.value,
+        lineHeight: '28px',
+        paddingLeft: 10,
+      }}
+    >
+      draggable title
+    </div>
   )
 })

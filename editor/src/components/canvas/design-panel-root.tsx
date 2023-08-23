@@ -35,7 +35,7 @@ import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import { FloatingPanel, FloatingPanelsContainer } from './floating-panels'
+import { FloatingPanel, FloatingPanelsContainer, PanelTitleBar } from './floating-panels'
 import type { ResizableProps } from '../../uuiui-deps'
 
 interface NumberSize {
@@ -239,9 +239,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
       onResizeStop={onResize}
       {...props.resizableConfig}
     >
-      <div className='handle' style={{ height: 34, width: '100%' }}>
-        draggable title
-      </div>
+      <PanelTitleBar />
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
@@ -335,9 +333,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       }}
       {...resizableConfig}
     >
-      <div className='handle' style={{ height: 34, width: '100%' }}>
-        draggable title
-      </div>
+      <PanelTitleBar />
       <div
         style={{
           transformOrigin: 'top left',
