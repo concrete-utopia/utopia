@@ -792,8 +792,8 @@ function renderJSXElement(
   }
 
   if (
-    elementPath != null
-    // && validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
+    elementPath != null &&
+    validPaths.has(EP.toString(EP.makeLastPartOfPathStatic(elementPath)))
   ) {
     if (elementIsTextEdited) {
       const textContent = trimJoinUnescapeTextFromJSXElements(childrenWithNewTextBlock)
