@@ -41,13 +41,104 @@ import * as EP from '../../../core/shared/element-path'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { MapLike } from 'typescript'
 import { pathPartsFromJSXElementChild } from '../../../core/model/element-template-utils'
-import { flatRoutes } from './from-remix/flat-routes'
+
+interface PathFromFileNameResult {
+  parentId: string
+  path: string
+  id: string
+  index: boolean
+}
+
+function getPathInner(id: string, segments: string[]): PathFromFileNameResult {
+  let pathSoFar: string[] = []
+  for (const segment of segments) {
+    // TODO: path segments postfixed with _ are not handled yet
+    if (segment.startsWith('$')) {
+      pathSoFar.push(':' + segment.slice(1))
+    } else {
+      pathSoFar.push(segment)
+    }
+  }
+
+  const pathPrefix = pathSoFar.slice(0, -1)
+  const parentId = pathPrefix.length === 0 ? 'root' : pathSoFar.join('/')
+  const lastSegment = pathSoFar[pathSoFar.length - 1]
+  const index = lastSegment === '_index'
+  const path = (index ? pathSoFar.slice(0, -1) : pathSoFar).join('/')
+
+  return {
+    parentId,
+    path,
+    index,
+    id,
+  }
+}
+
+// `root` is special-cased outside of this function
+// all files are assumed to be located under `routes/`
+export function parsePathFromFileName(fileName: string): PathFromFileNameResult {
+  const id = fileName
+  const segments = fileName.split('.')
+  segments.pop() // the file extension
+
+  return getPathInner(id, segments)
+}
 
 export interface EntryRouteWithFileMeta extends EntryRoute {
   filePath: string
 }
 
 export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
+
+type GetRoutesError = 'No root file provided'
+
+export const ROOT_FILE_NAME = '/src/root.js'
+export const ROUTE_FILE_PREFIX = '/src/routes/'
+
+export function getRoutesFromFiles(
+  files: ProjectContentFile[],
+): Either<GetRoutesError, RouteManifestWithContents> {
+  const root = files.find((f) => f.fullPath === ROOT_FILE_NAME)
+  if (root == null) {
+    return left('No root file provided')
+  }
+
+  const routeManifest: RouteManifestWithContents = {
+    root: {
+      hasAction: false,
+      hasLoader: false,
+      hasCatchBoundary: false,
+      hasErrorBoundary: false,
+      module: '',
+      id: 'root',
+      path: '',
+      filePath: root.fullPath,
+    },
+  }
+
+  files.forEach((file) => {
+    if (!file.fullPath.startsWith(ROUTE_FILE_PREFIX)) {
+      return
+    }
+
+    const pathWithoutPrefix = file.fullPath.slice(ROUTE_FILE_PREFIX.length)
+    const routePathResult = parsePathFromFileName(pathWithoutPrefix)
+    routeManifest[routePathResult.id] = {
+      hasAction: false,
+      hasLoader: false,
+      hasCatchBoundary: false,
+      hasErrorBoundary: false,
+      module: '',
+      id: routePathResult.id,
+      parentId: routePathResult.parentId,
+      index: routePathResult.index,
+      path: routePathResult.path,
+      filePath: file.fullPath,
+    }
+  })
+
+  return right(routeManifest)
+}
 
 export function getTopLevelElement(topLevelElements: TopLevelElement[]): UtopiaJSXComponent | null {
   return (
@@ -205,25 +296,18 @@ export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
 export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): RouteManifestWithContents {
-  const routes = flatRoutes('/src', projectContents)
+  const getFlatFilePaths = (root: ProjectContentsTree): ProjectContentFile[] =>
+    root.type === 'PROJECT_CONTENT_FILE'
+      ? [root]
+      : Object.values(root.children).flatMap((c) => getFlatFilePaths(c))
 
-  let resultRoutes: RouteManifestWithContents = {}
-  for (let route of Object.values(routes)) {
-    // this still feels temporary, probably we should the hasAction and the hasLoader up properly from projectContents,
-    // but it is not used for anything, and we get the action/loader/default exports of the modules manually later.
-    resultRoutes[route.id] = {
-      ...route,
-      parentId: route.parentId ?? 'root',
-      module: '',
-      hasAction: false,
-      hasLoader: false,
-      hasCatchBoundary: false,
-      hasErrorBoundary: false,
-      filePath: `/src/${route.file}`,
-    }
-  }
+  const flatFiles = Object.values(projectContents).flatMap(getFlatFilePaths)
 
-  return resultRoutes
+  return foldEither(
+    () => ({}),
+    (r) => r,
+    getRoutesFromFiles(flatFiles),
+  )
 }
 
 export function getRoutesAndModulesFromManifest(
