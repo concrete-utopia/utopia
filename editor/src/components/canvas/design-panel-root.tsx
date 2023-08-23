@@ -1,4 +1,4 @@
-import type { Enable, ResizeCallback, ResizeDirection } from 're-resizable'
+import type { ResizeCallback, ResizeDirection } from 're-resizable'
 import { Resizable } from 're-resizable'
 import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
@@ -36,6 +36,7 @@ import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { FloatingPanel, FloatingPanelsContainer } from './floating-panels'
+import type { ResizableProps } from '../../uuiui-deps'
 
 interface NumberSize {
   width: number
@@ -179,24 +180,26 @@ export const DesignPanelRoot = React.memo(() => {
 DesignPanelRoot.displayName = 'DesignPanelRoot'
 
 interface ResizableRightPaneProps {
-  enabledDirection: Enable
+  width: number
+  onResizeStop: (menuName: 'inspector', width: number) => void
+  resizableConfig: ResizableProps
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
+  const { onResizeStop, width } = props
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
   const resizableRef = React.useRef<Resizable>(null)
-  const [width, setWidth] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
-
   const onResize = React.useCallback(() => {
     const newWidth = resizableRef.current?.size.width
     if (newWidth != null) {
       // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-      setWidth(newWidth)
+      // setWidth(newWidth)
       updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
+      onResizeStop('inspector', newWidth)
     }
-  }, [updateInspectorWidth])
+  }, [updateInspectorWidth, onResizeStop])
 
   const selectedTab = useEditorState(
     Substores.restOfEditor,
@@ -231,13 +234,10 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
-      snap={{
-        x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
-      }}
       onResizeStart={onResize}
       onResize={onResize}
       onResizeStop={onResize}
-      enable={props.enabledDirection}
+      {...props.resizableConfig}
     >
       <div className='handle' style={{ height: 34, width: '100%' }}>
         draggable title
@@ -265,9 +265,13 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
 
 interface CodeEditorPaneProps {
   small: boolean
+  width: number
+  onResizeStop: (menuName: 'code-editor', width: number) => void
+  resizableConfig: ResizableProps
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
+  const { width, onResizeStop, resizableConfig } = props
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
@@ -277,7 +281,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   )
 
   const codeEditorEnabled = isCodeEditorEnabled()
-  const onResizeStop = React.useCallback(
+  const onResize = React.useCallback(
     (
       event: MouseEvent | TouchEvent,
       direction: ResizeDirection,
@@ -285,8 +289,9 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       delta: NumberSize,
     ) => {
       dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
+      onResizeStop('code-editor', width + delta.width)
     },
-    [dispatch],
+    [dispatch, onResizeStop, width],
   )
 
   return (
@@ -296,19 +301,10 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         height: '100%',
       }}
       size={{
-        width: interfaceDesigner.codePaneWidth,
+        width: width,
         height: '100%',
       }}
-      onResizeStop={onResizeStop}
-      enable={{
-        top: false,
-        right: true,
-        bottom: false,
-        topRight: false,
-        bottomRight: false,
-        bottomLeft: false,
-        topLeft: false,
-      }}
+      onResizeStop={onResize}
       className='resizableFlexColumnCanvasCode'
       style={{
         display: interfaceDesigner.codePaneVisible ? 'block' : 'none',
@@ -319,6 +315,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
+      {...resizableConfig}
     >
       <div className='handle' style={{ height: 34, width: '100%' }}>
         draggable title

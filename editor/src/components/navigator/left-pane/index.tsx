@@ -4,6 +4,7 @@
 import { jsx } from '@emotion/react'
 import React from 'react'
 import { ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
+import type { ResizableProps } from '../../../uuiui-deps'
 import { User } from '../../../uuiui-deps'
 import { MenuTab } from '../../../uuiui/menu-tab'
 import { useIsMyProject } from '../../common/server-hooks'
@@ -27,7 +28,7 @@ import { LoggedOutPane } from './logged-out-pane'
 import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
-import type { Enable, ResizeCallback } from 're-resizable'
+import type { ResizeCallback } from 're-resizable'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -41,10 +42,13 @@ export const LeftPaneComponentId = 'left-pane'
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 interface LeftPaneComponentProps {
-  enabledDirection: Enable
+  width: number
+  onResizeStop: (menuName: 'navigator', width: number) => void
+  resizableConfig: ResizableProps
 }
 
 export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
+  const { onResizeStop, width } = props
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -84,21 +88,20 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
-  const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
-      setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
+      onResizeStop('navigator', _ref?.clientWidth)
     },
-    [setLeftPanelWidth],
+    [onResizeStop],
   )
-
-  const codeEditorWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth + 10
-        : 0,
-    'LeftPaneComponent interfaceDesigner',
+  const onLeftPanelResize = React.useCallback<ResizeCallback>(
+    (_event, _direction, _ref, delta) => {
+      const newWidth = _ref?.clientWidth
+      if (newWidth != null) {
+        onResizeStop('navigator', newWidth)
+      }
+    },
+    [onResizeStop],
   )
 
   const leftMenuExpanded = useEditorState(
@@ -115,8 +118,13 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     <LowPriorityStoreProvider>
       <ResizableFlexColumn
         onResizeStop={onLeftPanelResizeStop}
+        onResize={onLeftPanelResize}
         defaultSize={{
-          width: leftPanelWidth,
+          width: width,
+          height: '100%',
+        }}
+        size={{
+          width: width,
           height: '100%',
         }}
         minWidth={LeftPanelMinWidth}
@@ -128,7 +136,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
           height: '100%',
         }}
-        enable={props.enabledDirection}
+        {...props.resizableConfig}
       >
         <div
           id={LeftPaneComponentId}

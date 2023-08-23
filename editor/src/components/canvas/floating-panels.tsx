@@ -12,34 +12,51 @@ import {
   windowPoint,
   windowRectangle,
 } from '../../core/shared/math-utils'
-import {
-  CanvasSizeAtom,
-  LeftPaneDefaultWidth,
-  LeftPanelWidthAtom,
-} from '../editor/store/editor-state'
-import { mapArrayToDictionary } from '../../core/shared/array-utils'
-import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
+import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-state'
+import { mapArrayToDictionary, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui'
-import { useAtom } from 'jotai'
-import { Substores, useEditorState } from '../editor/store/store-hook'
 // import type { ResizeCallback, ResizeDirection } from 're-resizable'
 // import { Resizable } from 're-resizable'
 
 type Menu = 'inspector' | 'navigator'
 type Pane = 'code-editor' | 'preview'
 
-const ResizeConstraints: {
-  [key: string]: { minWidth: number; maxWidth: number; snap: Array<number> | null }
+const SizeConstraints: {
+  [key: string]: {
+    resize: {
+      minWidth: number
+      maxWidth: number
+      snap: {
+        x?: number[]
+        y?: number[]
+      } | null
+    } | null
+    defaultSize: Size
+  }
 } = {
   inspector: {
-    minWidth: 255,
-    maxWidth: 280,
-    snap: [255, 280],
+    resize: {
+      minWidth: UtopiaTheme.layout.inspectorSmallWidth,
+      maxWidth: UtopiaTheme.layout.inspectorLargeWidth,
+      snap: { x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth] },
+    },
+
+    defaultSize: { width: UtopiaTheme.layout.inspectorSmallWidth, height: 0 },
   },
   navigator: {
-    minWidth: 240,
-    maxWidth: 280,
-    snap: null,
+    resize: {
+      minWidth: 240,
+      maxWidth: 300,
+      snap: null,
+    },
+    defaultSize: { width: LeftPaneDefaultWidth, height: 0 },
+  },
+  'code-editor': {
+    resize: null,
+    defaultSize: {
+      width: 500,
+      height: 600,
+    },
   },
 }
 
@@ -68,19 +85,94 @@ export const FloatingPanelsContainer = React.memo(() => {
   const [panelsData, setPanelsData] =
     React.useState<{ [key in PanelName]: Array<Menu | Pane> }>(DefaultPanels)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
-  const navigatorSize = usePubSubAtomReadOnly(LeftPanelWidthAtom, AlwaysTrue)
-  const [inspectorSize, _] = useAtom(InspectorWidthAtom)
-  const codeEditorWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth + 10
-        : 0,
-    'CanvasWrapperComponent codeEditorWidth',
-  )
 
   const [panelFrames, setPanelFrames] =
     React.useState<{ [key in PanelName]: WindowRectangle }>(DefaultSizes)
+
+  const getUpdatedPanelSizes = React.useCallback(
+    (
+      currentPanelsData: { [key in PanelName]: Array<Menu | Pane> },
+      currentFrames: { [key in PanelName]: WindowRectangle },
+    ) => {
+      return mapArrayToDictionary(
+        Panels,
+        (p) => p,
+        (p, i) => {
+          let height = Math.min(canvasSize.height, 600) // code pane height!!!
+          if (isMenuContainingPanel(currentPanelsData[p])) {
+            height = canvasSize.height
+          }
+          let width = currentFrames[p].width
+          if (currentPanelsData[p].length === 0) {
+            width = 0
+          } else {
+            if (currentFrames[p].width === 0) {
+              // give default size to panel
+              width = SizeConstraints[currentPanelsData[p][0]].defaultSize.width
+            } else {
+              const possibleConstraints = mapDropNulls(
+                (v) => SizeConstraints[v].resize,
+                currentPanelsData[p],
+              )
+              const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth))
+              const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth))
+              if (currentFrames[p].width > maxWidth || currentFrames[p].width < minWidth) {
+                width = maxWidth // TODO maybe some of the default widths?
+              }
+            }
+          }
+
+          return windowRectangle({
+            x: currentFrames[p].x,
+            y: currentFrames[p].y,
+            width: width,
+            height: height,
+          })
+        },
+      )
+    },
+    [canvasSize],
+  )
+
+  const getUpdatedPanelPositions = React.useCallback(
+    (
+      currentPanelsData: { [key in PanelName]: Array<Menu | Pane> },
+      currentFrames: { [key in PanelName]: WindowRectangle },
+    ) => {
+      const withPanelSizeUpdates = getUpdatedPanelSizes(currentPanelsData, currentFrames)
+      return mapArrayToDictionary(
+        Panels,
+        (p) => p,
+        (p, i) => {
+          let x = 0
+          switch (p) {
+            case 'leftMenu2':
+              x = withPanelSizeUpdates.leftMenu1.width
+              break
+            case 'rightMenu1':
+              x =
+                canvasSize.width -
+                withPanelSizeUpdates.rightMenu1.width -
+                withPanelSizeUpdates.rightMenu2.width
+              break
+            case 'rightMenu2':
+              x = canvasSize.width - withPanelSizeUpdates.rightMenu2.width
+              break
+            default:
+              break
+          }
+
+          return windowRectangle({
+            x: x,
+            y: 0,
+            width: withPanelSizeUpdates[p].width,
+            height: withPanelSizeUpdates[p].height,
+          })
+        },
+      )
+    },
+    [canvasSize, getUpdatedPanelSizes],
+  )
 
   const updateColumn = React.useCallback(
     (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => {
@@ -201,6 +293,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         const remainingMenusAndPanes = panelsData[currentPanel].filter(
           (name) => name !== menuOrPane,
         )
+
         if (switchWithPanel != null) {
           const newPanelsData = {
             ...panelsData,
@@ -209,6 +302,14 @@ export const FloatingPanelsContainer = React.memo(() => {
             [newPanel]: [menuOrPane],
           }
           setPanelsData(newPanelsData)
+
+          const newFrameData = {
+            ...panelFrames,
+            [switchWithPanel]: panelFrames[newPanel],
+            [newPanel]: panelFrames[switchWithPanel],
+          }
+          const updatedPanelPositions = getUpdatedPanelPositions(newPanelsData, newFrameData)
+          setPanelFrames(updatedPanelPositions)
         } else {
           const newPanelsData = {
             ...panelsData,
@@ -217,75 +318,27 @@ export const FloatingPanelsContainer = React.memo(() => {
           }
           setPanelsData(newPanelsData)
         }
-
-        // TODO MOVE THIS SOMEWHERE ELSE!!
-        let newPanelSize = panelFrames[newPanel]
-        switch (menuOrPane) {
-          case 'navigator':
-            newPanelSize.width = Math.max(newPanelSize.width, navigatorSize)
-            break
-          case 'code-editor':
-            newPanelSize.width = Math.max(newPanelSize.width, codeEditorWidth)
-            break
-          case 'inspector':
-            newPanelSize.width =
-              inspectorSize === 'wide'
-                ? UtopiaTheme.layout.inspectorLargeWidth
-                : UtopiaTheme.layout.inspectorSmallWidth
-            break
-          case 'preview':
-          default:
-            break
-        }
-        setPanelFrames({
-          ...panelFrames,
-          [newPanel]: newPanelSize,
-        })
       }
     },
-    [
-      panelFrames,
-      panelsData,
-      setPanelsData,
-      canvasSize,
-      navigatorSize,
-      inspectorSize,
-      codeEditorWidth,
-    ],
+    [panelFrames, panelsData, setPanelsData, canvasSize, setPanelFrames, getUpdatedPanelPositions],
+  )
+
+  const updateSize = React.useCallback(
+    (menuOrPane: Menu | Pane, currentPanel: PanelName, width: number) => {
+      let frame = panelFrames[currentPanel]
+      frame.width = width
+      const updatedPanelFrames = {
+        ...panelFrames,
+        [currentPanel]: frame,
+      }
+      const withUpdatedPositions = getUpdatedPanelPositions(panelsData, updatedPanelFrames)
+      setPanelFrames(withUpdatedPositions)
+    },
+    [panelFrames, panelsData, setPanelFrames, getUpdatedPanelPositions],
   )
 
   React.useEffect(() => {
-    const framesWithUpdatedPosition: { [key in PanelName]: WindowRectangle } = mapArrayToDictionary(
-      Panels,
-      (p) => p,
-      (p, i) => {
-        let height = 600 // canvasSize.height // code pane height!!!
-        if (isMenuContainingPanel(panelsData[p])) {
-          height = canvasSize.height
-        }
-        let width = panelFrames[p].width
-        if (panelsData[p].length === 0) {
-          width = 0
-        }
-
-        let x = 0
-        switch (p) {
-          case 'leftMenu2':
-            x = panelFrames.leftMenu1.width
-            break
-          case 'rightMenu1':
-            x = canvasSize.width - panelFrames.rightMenu1.width - panelFrames.rightMenu2.width
-            break
-          case 'rightMenu2':
-            x = canvasSize.width - panelFrames.rightMenu2.width
-            break
-          default:
-            break
-        }
-
-        return windowRectangle({ x: x, y: 0, width: width, height: height })
-      },
-    )
+    const framesWithUpdatedPosition = getUpdatedPanelPositions(panelsData, panelFrames)
     if (
       (Object.keys(framesWithUpdatedPosition) as Array<PanelName>).some(
         (name) => !rectanglesEqual(framesWithUpdatedPosition[name], panelFrames[name]),
@@ -293,7 +346,7 @@ export const FloatingPanelsContainer = React.memo(() => {
     ) {
       setPanelFrames(framesWithUpdatedPosition)
     }
-  }, [canvasSize, panelsData, panelFrames, setPanelFrames])
+  }, [canvasSize, panelsData, panelFrames, getUpdatedPanelPositions, setPanelFrames])
 
   return (
     <>
@@ -302,6 +355,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         panelName={'leftMenu1'}
         frame={panelFrames.leftMenu1}
         menusAndPanes={panelsData.leftMenu1}
+        onResizeStop={updateSize}
         updateColumn={updateColumn}
         alignment='left'
       />
@@ -310,6 +364,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         panelName={'leftMenu2'}
         frame={panelFrames.leftMenu2}
         menusAndPanes={panelsData.leftMenu2}
+        onResizeStop={updateSize}
         updateColumn={updateColumn}
         alignment='left'
       />
@@ -318,6 +373,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         panelName={'rightMenu1'}
         frame={panelFrames.rightMenu1}
         menusAndPanes={panelsData.rightMenu1}
+        onResizeStop={updateSize}
         updateColumn={updateColumn}
         alignment='right'
       />
@@ -326,6 +382,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         panelName={'rightMenu2'}
         frame={panelFrames.rightMenu2}
         menusAndPanes={panelsData.rightMenu2}
+        onResizeStop={updateSize}
         updateColumn={updateColumn}
         alignment='right'
       />
@@ -350,22 +407,11 @@ interface FloatingPanelProps {
   frame: WindowRectangle
   alignment: 'left' | 'right'
   updateColumn: (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => void
+  onResizeStop: (menuOrPane: Menu | Pane, currentPanel: PanelName, width: number) => void
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
-  // TODO RESIZE
-  // const resizableRef = React.useRef<Resizable>(null)
-  // const [width, setWidth] = React.useState<number>(DefaultWidth)
-
-  // const onResize = React.useCallback(() => {
-  //   const newWidth = resizableRef.current?.size.width
-  //   if (newWidth != null) {
-  //     // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-  //     setWidth(newWidth)
-  //   }
-  // }, [setWidth])
-
-  const { panelName, menusAndPanes, frame, alignment, updateColumn } = props
+  const { panelName, menusAndPanes, frame, alignment, updateColumn, onResizeStop } = props
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
 
   const leftOrRightPosition = React.useMemo(() => {
@@ -398,6 +444,22 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     [panelName, updateColumn],
   )
 
+  const resizeMinMaxSnap = React.useMemo(() => {
+    const possibleConstraints = mapDropNulls((v) => SizeConstraints[v].resize, menusAndPanes)
+    const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth))
+    const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth))
+    const snap = stripNulls(possibleConstraints.map((v) => v.snap))[0] // TODO what happens if there are multiple conflicting snapping menus
+
+    return { minWidth, maxWidth, snap }
+  }, [menusAndPanes])
+
+  const resizeStopEventHandler = React.useCallback<
+    (menuOrPane: Menu | Pane, width: number) => void
+  >(
+    (menuOrPane: Menu | Pane, width: number) => onResizeStop(menuOrPane, panelName, width),
+    [panelName, onResizeStop],
+  )
+
   return (
     <div
       className={panelName}
@@ -422,7 +484,20 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                 onStop={dragStopEventHandler('code-editor')}
               >
                 <div>
-                  <CodeEditorPane small={isMenuContainingPanel(menusAndPanes)} />
+                  <CodeEditorPane
+                    resizableConfig={{
+                      enable: {
+                        left: props.alignment === 'right',
+                        right: props.alignment === 'left',
+                      },
+                      minWidth: resizeMinMaxSnap.minWidth,
+                      maxWidth: resizeMinMaxSnap.maxWidth,
+                      snap: resizeMinMaxSnap.snap,
+                    }}
+                    width={frame.width}
+                    onResizeStop={resizeStopEventHandler}
+                    small={isMenuContainingPanel(menusAndPanes)}
+                  />
                 </div>
               </Draggable>
             )
@@ -432,14 +507,20 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                 key='inspector'
                 onStop={dragStopEventHandler('inspector')}
                 handle='.handle'
-                position={{ x: 0, y: 0 }}
               >
                 <div>
                   <ResizableRightPane
-                    enabledDirection={{
-                      left: props.alignment === 'right',
-                      right: props.alignment === 'left',
+                    resizableConfig={{
+                      enable: {
+                        left: props.alignment === 'right',
+                        right: props.alignment === 'left',
+                      },
+                      minWidth: resizeMinMaxSnap.minWidth,
+                      maxWidth: resizeMinMaxSnap.maxWidth,
+                      snap: resizeMinMaxSnap.snap,
                     }}
+                    onResizeStop={resizeStopEventHandler}
+                    width={frame.width}
                   />
                 </div>
               </Draggable>
@@ -450,14 +531,20 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                 key='navigator'
                 onStop={dragStopEventHandler('navigator')}
                 handle='.handle'
-                position={{ x: 0, y: 0 }}
               >
                 <div>
                   <LeftPaneComponent
-                    enabledDirection={{
-                      left: props.alignment === 'right',
-                      right: props.alignment === 'left',
+                    resizableConfig={{
+                      enable: {
+                        left: props.alignment === 'right',
+                        right: props.alignment === 'left',
+                      },
+                      minWidth: resizeMinMaxSnap.minWidth,
+                      maxWidth: resizeMinMaxSnap.maxWidth,
+                      snap: resizeMinMaxSnap.snap,
                     }}
+                    onResizeStop={resizeStopEventHandler}
+                    width={frame.width}
                   />
                 </div>
               </Draggable>
