@@ -111,16 +111,11 @@ export function firstAncestorOrItselfWithValidElementPath(
 ): ElementPath | null {
   const staticAndDynamicTargetElementPaths = getStaticAndDynamicElementPathsForDomElement(target)
 
-  const validStaticElementPaths =
-    validDynamicElementPathsForLookup === 'no-filter'
-      ? new Set<string>()
-      : validDynamicElementPathsForLookup
-  // TODO: problematic
-  // getValidStaticElementPathsForDomElement(
-  //   target,
-  //   parentSceneValidPathsCache,
-  //   validDynamicElementPathsForLookup,
-  // )
+  const validStaticElementPaths = getValidStaticElementPathsForDomElement(
+    target,
+    parentSceneValidPathsCache,
+    validDynamicElementPathsForLookup,
+  )
 
   let resultPath: ElementPath | null = null
   let maxDepth = -1

@@ -450,7 +450,7 @@ function getRootJSRootElement(projectContents: ProjectContentTreeRoot): JSXEleme
 }
 
 // TODO: needs better `Outlet` detection
-function findPathToOutlet(element: JSXElementChild): ElementPathPart | null {
+export function findPathToOutlet(element: JSXElementChild): ElementPathPart | null {
   if (
     element.type === 'JSX_ELEMENT' &&
     jsxElementNameEquals(jsxElementName('Outlet', []), element.name)
