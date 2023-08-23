@@ -15,8 +15,6 @@ import {
 import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-state'
 import { mapArrayToDictionary, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { UtopiaTheme } from '../../uuiui'
-// import type { ResizeCallback, ResizeDirection } from 're-resizable'
-// import { Resizable } from 're-resizable'
 
 type Menu = 'inspector' | 'navigator'
 type Pane = 'code-editor' | 'preview'
@@ -479,6 +477,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           case 'code-editor':
             return (
               <Draggable
+                position={{ x: 0, y: 0 }} // this is needed to control the position
                 key='code-editor'
                 handle='.handle'
                 onStop={dragStopEventHandler('code-editor')}
@@ -504,6 +503,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           case 'inspector':
             return (
               <Draggable
+                position={{ x: 0, y: 0 }} // this is needed to control the position
                 key='inspector'
                 onStop={dragStopEventHandler('inspector')}
                 handle='.handle'
@@ -528,6 +528,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           case 'navigator':
             return (
               <Draggable
+                position={{ x: 0, y: 0 }} // this is needed to control the position
                 key='navigator'
                 onStop={dragStopEventHandler('navigator')}
                 handle='.handle'
