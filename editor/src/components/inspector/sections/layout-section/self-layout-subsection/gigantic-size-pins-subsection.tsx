@@ -464,11 +464,19 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
     <UIGridRow alignItems='start' padded={true} variant='|--67px--|<--------1fr-------->'>
       <PinControls resetPins={resetPinsFn} framePins={framePins} togglePin={togglePin} />
       <FlexColumn style={{ gap: 8 }}>
-        <UIGridRow padded={false} variant='<--1fr--><--1fr-->' style={{ minHeight: undefined }}>
+        <UIGridRow
+          padded={false}
+          variant='<--1fr--><--1fr-->'
+          style={{ minHeight: undefined, gap: 8 }}
+        >
           {firstXAxisControl}
           {firstYAxisControl}
         </UIGridRow>
-        <UIGridRow padded={false} variant='<--1fr--><--1fr-->' style={{ minHeight: undefined }}>
+        <UIGridRow
+          padded={false}
+          variant='<--1fr--><--1fr-->'
+          style={{ minHeight: undefined, gap: 8 }}
+        >
           {secondXAxisControl}
           {secondYAxisControl}
         </UIGridRow>
