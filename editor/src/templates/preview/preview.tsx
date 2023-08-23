@@ -4,7 +4,7 @@ import * as ReactErrorOverlay from 'react-error-overlay'
 import { BASE_URL, getProjectID, getQueryParam, PREVIEW_IS_EMBEDDED } from '../../common/env-vars'
 import { fetchLocalProject } from '../../common/persistence'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getContentsTreeFileFromString } from '../../components/assets'
+import { getProjectFileByFilePath } from '../../components/assets'
 import { incorporateBuildResult } from '../../components/custom-code/code-file'
 import { sendPreviewModel } from '../../components/editor/actions/action-creators'
 import { dependenciesWithEditorRequirements } from '../../components/editor/npm-dependency/npm-dependency'
@@ -261,10 +261,7 @@ const initPreview = () => {
 
     // replacing the document body first
     const previewHTMLFileName = getMainHTMLFilename(projectContents)
-    const previewHTMLFile = getContentsTreeFileFromString(
-      projectContents,
-      `/${previewHTMLFileName}`,
-    )
+    const previewHTMLFile = getProjectFileByFilePath(projectContents, `/${previewHTMLFileName}`)
     if (previewHTMLFile != null && isTextFile(previewHTMLFile)) {
       try {
         try {
@@ -287,7 +284,7 @@ const initPreview = () => {
 
     const previewJSFileName = getMainJSFilename(projectContents)
     const previewJSFilePath = `/${previewJSFileName}`
-    const previewJSFile = getContentsTreeFileFromString(projectContents, previewJSFilePath)
+    const previewJSFile = getProjectFileByFilePath(projectContents, previewJSFilePath)
     if (previewJSFile != null && isTextFile(previewJSFile)) {
       if (bundledProjectFiles[previewJSFilePath] == null) {
         throw new Error(

@@ -7,7 +7,7 @@ import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../compo
 import {
   addFileToProjectContents,
   deriveGithubFileChanges,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   getProjectContentsChecksums,
   getProjectFileFromContents,
   isProjectContentDirectory,
@@ -462,7 +462,7 @@ export function revertGithubFile(
         break
       case 'deleted':
       case 'modified':
-        const previousFile = getContentsTreeFileFromString(branchContents, filename)
+        const previousFile = getProjectFileByFilePath(branchContents, filename)
         if (previousFile != null) {
           const newTree = addFileToProjectContents(projectContents, filename, previousFile)
           actions.push(updateProjectContents(newTree))

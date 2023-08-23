@@ -58,7 +58,7 @@ import { mapDropNulls, pluck } from '../shared/array-utils'
 import { forEachValue } from '../shared/object-utils'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../components/assets'
 import {
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   projectContentFile,
   transformContentsTree,
   walkContentsTree,
@@ -659,7 +659,7 @@ export function uniqueProjectContentID(
 ): string {
   const startingIDCorrected = correctProjectContentsPath(filename)
   const fileWithSameNameExistsAlready =
-    getContentsTreeFileFromString(projectContents, startingIDCorrected) != null
+    getProjectFileByFilePath(projectContents, startingIDCorrected) != null
 
   if (!fileWithSameNameExistsAlready) {
     return startingIDCorrected
@@ -676,7 +676,7 @@ export function uniqueProjectContentID(
   // eslint-disable-next-line no-constant-condition
   while (true) {
     const possibleNewID = makeNameWithCounter(counter)
-    if (getContentsTreeFileFromString(projectContents, possibleNewID) != null) {
+    if (getProjectFileByFilePath(projectContents, possibleNewID) != null) {
       counter += 1
     } else {
       return correctProjectContentsPath(possibleNewID)
@@ -686,7 +686,7 @@ export function uniqueProjectContentID(
 
 export function fileExists(projectContents: ProjectContentTreeRoot, filename: string): boolean {
   const filenameCorrected = correctProjectContentsPath(filename)
-  return getContentsTreeFileFromString(projectContents, filenameCorrected) != null
+  return getProjectFileByFilePath(projectContents, filenameCorrected) != null
 }
 
 export function saveTextFileContents(

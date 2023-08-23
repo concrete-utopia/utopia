@@ -179,7 +179,7 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   removeFromProjectContents,
   treeToContents,
   walkContentsTreeForParseSuccess,
@@ -1492,7 +1492,7 @@ export const UPDATE_FNS = {
         )
       },
     )
-    const storyboardFile = getContentsTreeFileFromString(parsedProjectFiles, StoryboardFilePath)
+    const storyboardFile = getProjectFileByFilePath(parsedProjectFiles, StoryboardFilePath)
     const openFilePath = storyboardFile != null ? StoryboardFilePath : null
     initVSCodeBridge(parsedProjectFiles, dispatch, openFilePath)
 
@@ -3242,7 +3242,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    const possiblyAnImage = getContentsTreeFileFromString(editor.projectContents, action.imagePath)
+    const possiblyAnImage = getProjectFileByFilePath(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
       const newUID = generateUidWithExistingComponents(editor.projectContents)
       const imageURL = imagePathURL(action.imagePath)
@@ -3418,7 +3418,7 @@ export const UPDATE_FNS = {
             filename: newPath,
           }
         }
-        const oldContent = getContentsTreeFileFromString(editor.projectContents, oldPath)
+        const oldContent = getProjectFileByFilePath(editor.projectContents, oldPath)
         if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
           // Update assets.
           if (isLoggedIn(userState.loginState) && editor.id != null) {
@@ -3475,14 +3475,14 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     if (
       !action.addIfNotInFiles &&
-      getContentsTreeFileFromString(editor.projectContents, action.filePath) == null
+      getProjectFileByFilePath(editor.projectContents, action.filePath) == null
     ) {
       return editor
     }
 
     const { file } = action
 
-    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    const existing = getProjectFileByFilePath(editor.projectContents, action.filePath)
     const updatedFile = updateFileIfPossible(file, existing)
 
     if (updatedFile === 'cant-update') {
@@ -3595,7 +3595,7 @@ export const UPDATE_FNS = {
     // files ends up stale only the model in one of them gets updated which clashes with the UIDs in
     // the old version of the other.
     for (const fileUpdate of action.updates) {
-      const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
+      const existing = getProjectFileByFilePath(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
         anyParsedUpdates = true
         const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
@@ -3606,7 +3606,7 @@ export const UPDATE_FNS = {
     }
 
     for (const fileUpdate of action.updates) {
-      const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
+      const existing = getProjectFileByFilePath(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
         anyParsedUpdates = true
         let updatedFile: TextFile
@@ -3692,7 +3692,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    const existing = getProjectFileByFilePath(editor.projectContents, action.filePath)
 
     const manualSave = action.unsavedContent == null
     const code = action.unsavedContent ?? action.savedContent
@@ -3777,7 +3777,7 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     userState: UserState,
   ): EditorModel => {
-    const file = getContentsTreeFileFromString(editor.projectContents, action.filename)
+    const file = getProjectFileByFilePath(editor.projectContents, action.filename)
 
     // Don't delete package.json, otherwise it will bring about the end of days.
     if (file == null || action.filename === 'package.json') {
@@ -5041,7 +5041,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const packageJsonFile = getContentsTreeFileFromString(editor.projectContents, '/package.json')
+    const packageJsonFile = getProjectFileByFilePath(editor.projectContents, '/package.json')
     const currentNpmDeps = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
 
     void findLatestVersion('tailwindcss').then((tailwindResult) => {
@@ -5082,7 +5082,7 @@ export const UPDATE_FNS = {
     })
 
     let updatedProjectContents = editor.projectContents
-    if (getContentsTreeFileFromString(editor.projectContents, TailwindConfigPath) == null) {
+    if (getProjectFileByFilePath(editor.projectContents, TailwindConfigPath) == null) {
       updatedProjectContents = addFileToProjectContents(
         editor.projectContents,
         TailwindConfigPath,
@@ -5090,7 +5090,7 @@ export const UPDATE_FNS = {
       )
     }
 
-    if (getContentsTreeFileFromString(editor.projectContents, PostCSSPath) == null) {
+    if (getProjectFileByFilePath(editor.projectContents, PostCSSPath) == null) {
       updatedProjectContents = addFileToProjectContents(
         updatedProjectContents,
         PostCSSPath,
@@ -5606,7 +5606,7 @@ function saveFileInProjectContents(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
 ): ProjectContentTreeRoot {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
+  const file = getProjectFileByFilePath(projectContents, filePath)
   if (file == null) {
     return projectContents
   } else {

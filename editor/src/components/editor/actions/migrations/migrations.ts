@@ -23,7 +23,7 @@ import type { ProjectContentFile, ProjectContentsTree } from '../../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   projectContentFile,
   removeFromProjectContents,
   transformContentsTree,
@@ -313,7 +313,7 @@ function migrateFromVersion6(
 
     let updatedProjectContents = persistentModel.projectContents
     if (storyboardTarget != null) {
-      const file = getContentsTreeFileFromString(updatedProjectContents, storyboardTarget)
+      const file = getProjectFileByFilePath(updatedProjectContents, storyboardTarget)
       if (file == null) {
         throw new Error(`Internal error in migration: Unable to find file ${storyboardTarget}.`)
       } else {

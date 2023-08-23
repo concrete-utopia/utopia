@@ -2,7 +2,7 @@ import type { Spec } from 'immutability-helper'
 import { drop } from '../../../core/shared/array-utils'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../components/assets'
 import {
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   getProjectContentKeyPathElements,
   ProjectContentFile,
 } from '../../../components/assets'
@@ -97,7 +97,7 @@ export function patchParseSuccessAtFilePath(
   editorState: EditorState,
   patchParseSuccess: (success: ParseSuccess) => Spec<ParsedTextFile> | null,
 ): Spec<EditorState> {
-  const projectFile = getContentsTreeFileFromString(editorState.projectContents, filePath)
+  const projectFile = getProjectFileByFilePath(editorState.projectContents, filePath)
   if (projectFile == null) {
     return {}
   } else {
