@@ -30,7 +30,6 @@ import {
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
-  isNullJSXAttributeValue,
   jsExpressionValue,
   jsxAttributesFromMap,
   jsxElement,
@@ -691,12 +690,7 @@ export function elementCanBeAGroupChild(
   if (element == null) {
     return false
   }
-  return (
-    isJSXElementLike(element) ||
-    (isJSXConditionalExpression(element) &&
-      // do not allow grouping zero-sized conditionals
-      !(isNullJSXAttributeValue(element.whenTrue) && isNullJSXAttributeValue(element.whenFalse)))
-  )
+  return isJSXElementLike(element) || isJSXConditionalExpression(element)
 }
 
 export function groupConversionCommands(
