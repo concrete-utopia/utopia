@@ -990,10 +990,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         working.nodeModules.files,
         openUIJSFilePath,
         targetPath,
-        {
-          type: 'outside-remix-container',
-          routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
-        },
+        'outside-remix-container',
       )
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 

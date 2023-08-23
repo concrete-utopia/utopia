@@ -178,7 +178,6 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE } from '../actions/actions'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1861,7 +1860,6 @@ export function getJSXComponentsAndImportsForPathFromState(
     storyboardFilePath,
     model.projectContents,
     model.nodeModules.files,
-    RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
   )
 }
 
@@ -1870,7 +1868,6 @@ export function getJSXComponentsAndImportsForPath(
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable,
 ): {
   underlyingFilePath: string
   components: UtopiaJSXComponent[]
@@ -1881,7 +1878,7 @@ export function getJSXComponentsAndImportsForPath(
     nodeModules,
     currentFilePath,
     path,
-    { type: 'outside-remix-container', routingTable: remixRoutingTable },
+    'outside-remix-container',
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
@@ -3314,10 +3311,7 @@ export function modifyUnderlyingTarget(
     editor.nodeModules.files,
     currentFilePath,
     target,
-    {
-      type: 'outside-remix-container',
-      routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
-    },
+    'outside-remix-container',
   )
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -3456,10 +3450,7 @@ export function withUnderlyingTarget<T>(
     nodeModules,
     forceNotNull('Designer file should be open.', openFile),
     target ?? null,
-    {
-      type: 'outside-remix-container',
-      routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
-    },
+    'outside-remix-container',
   )
 
   if (

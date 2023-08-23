@@ -67,6 +67,7 @@ import { ParsedPropertyControls } from '../../core/property-controls/property-co
 import { ParseResult } from '../../utils/value-parser-utils'
 import type { PropertyControls } from 'utopia-api/core'
 import type { RemixRouteLookup, RemixRoutingTable } from '../editor/store/editor-state'
+import { RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE } from '../editor/actions/actions'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -426,9 +427,7 @@ export function normalisePathSuccessOrThrowError(
   }
 }
 
-type RemixRouteLookupState =
-  | { type: 'outside-remix-container'; routingTable: RemixRoutingTable }
-  | { type: 'inside-remix-container'; lookupTable: RemixRouteLookup }
+type RemixRouteLookupState = 'outside-remix-container' | RemixRouteLookup
 
 export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
@@ -493,8 +492,8 @@ export function normalisePathToUnderlyingTarget(
     )
   }
 
-  if (remixRouteLookupState.type === 'inside-remix-container') {
-    const pathToRouteModule = remixRouteLookupState.lookupTable[lastDroppedPathPart]
+  if (remixRouteLookupState !== 'outside-remix-container') {
+    const pathToRouteModule = remixRouteLookupState[lastDroppedPathPart]
 
     if (pathToRouteModule == null) {
       return normalisePathImportNotFound(lastDroppedPathPart) // TODO: first-class support for routes
@@ -510,7 +509,9 @@ export function normalisePathToUnderlyingTarget(
   }
 
   const lookupTable =
-    remixRouteLookupState.routingTable[EP.elementPathPartToString(droppedPathPart)]
+    RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current[
+      EP.elementPathPartToString(droppedPathPart)
+    ]
 
   const pathToRouteModule = optionalMap((entry) => entry[droppedPathPart.at(-1) ?? ''], lookupTable)
 
@@ -520,7 +521,7 @@ export function normalisePathToUnderlyingTarget(
       nodeModules,
       pathToRouteModule,
       potentiallyDroppedFirstPathElementResult.newPath,
-      { type: 'inside-remix-container', lookupTable: lookupTable },
+      lookupTable,
     )
   }
 

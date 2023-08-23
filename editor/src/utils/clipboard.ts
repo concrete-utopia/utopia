@@ -62,7 +62,6 @@ import type { Either } from '../core/shared/either'
 import { isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE } from '../components/editor/actions/actions'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -336,10 +335,7 @@ export function createClipboardDataFromSelection(
       editor.nodeModules.files,
       openUIJSFileKey,
       target,
-      {
-        type: 'outside-remix-container',
-        routingTable: RemixRoutingTable_GLOBAL_SPIKE_KILLME_MUTABLE.current,
-      },
+      'outside-remix-container',
     )
     const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
     const projectFile = getContentsTreeFileFromString(
