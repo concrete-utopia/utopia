@@ -462,7 +462,7 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
         <UIGridRow
           padded={false}
           variant='<--1fr--><--1fr-->'
-          style={{ minHeight: undefined, gap: 8 }}
+          style={{ minHeight: undefined, gap: 4 }}
         >
           {firstXAxisControl}
           {firstYAxisControl}
@@ -470,7 +470,7 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
         <UIGridRow
           padded={false}
           variant='<--1fr--><--1fr-->'
-          style={{ minHeight: undefined, gap: 8 }}
+          style={{ minHeight: undefined, gap: 4 }}
         >
           {secondXAxisControl}
           {secondYAxisControl}
