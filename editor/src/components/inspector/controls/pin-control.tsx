@@ -5,7 +5,7 @@ import { getControlStyles } from '../common/control-status'
 import { FramePoint } from 'utopia-api/core'
 import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'
-import { UtopiaTheme, SquareButton } from '../../../uuiui'
+import { UtopiaTheme, SquareButton, colorTheme } from '../../../uuiui'
 import { unless } from '../../../utils/react-conditionals'
 
 interface PinControlProps {
@@ -54,9 +54,9 @@ function getStrokeColor(
   const isPrimary = Utils.propOr(false, 'isPrimaryPosition', framePoints[point])
 
   if (isPrimary && !mixed) {
-    return controlStyles.strokePrimaryColor
+    return colorTheme.fg1.value
   } else {
-    return controlStyles.strokeTertiaryColor
+    return colorTheme.fg8.value
   }
 }
 
