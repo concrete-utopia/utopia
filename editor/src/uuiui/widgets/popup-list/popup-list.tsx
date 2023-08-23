@@ -320,57 +320,69 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
   if (props.selectProps.menuPortalTarget != null) {
     return ReactDOM.createPortal(
       <div
-        className='ignore-react-onclickoutside'
-        onMouseMove={onMouseMove}
-        onMouseUpCapture={onMouseUp}
-        id='menuPortal'
+        // transparent background div so clicks are intercepted and don't spill over
         style={{
-          minWidth: 150,
-          maxWidth: 250,
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
           zIndex: 999999,
-          boxSizing: 'border-box',
-          position: 'absolute',
-          height: popupHeight,
-          top: popupTop,
-          left: alignRight ? undefined : popupLeft - CheckboxInset + ValueContainerLeftPadding,
-          right: alignRight ? ValueContainerLeftPadding : undefined,
-          overflow: 'hidden',
-          ...UtopiaStyles.popup,
+          background: 'transparent',
         }}
       >
         <div
-          ref={ref}
+          className='ignore-react-onclickoutside'
+          onMouseMove={onMouseMove}
+          onMouseUpCapture={onMouseUp}
+          id='menuPortal'
           style={{
             minWidth: 150,
             maxWidth: 250,
+            boxSizing: 'border-box',
+            position: 'absolute',
             height: popupHeight,
+            top: popupTop,
+            left: alignRight ? undefined : popupLeft - CheckboxInset + ValueContainerLeftPadding,
+            right: alignRight ? ValueContainerLeftPadding : undefined,
             overflow: 'hidden',
+            ...UtopiaStyles.popup,
           }}
         >
-          {props.children}
+          <div
+            ref={ref}
+            style={{
+              minWidth: 150,
+              maxWidth: 250,
+              height: popupHeight,
+              overflow: 'hidden',
+            }}
+          >
+            {props.children}
+          </div>
+          {croppedTop ? (
+            <OverflowIndicator
+              style={{
+                top: 0,
+              }}
+              onMouseOver={onCroppedTopMouseOver}
+              onMouseOut={onCroppedTopMouseOut}
+            >
+              …
+            </OverflowIndicator>
+          ) : null}
+          {croppedBottom ? (
+            <OverflowIndicator
+              style={{
+                bottom: 0,
+              }}
+              onMouseOver={onCroppedBottomMouseOver}
+              onMouseOut={onCroppedBottomMouseOut}
+            >
+              …
+            </OverflowIndicator>
+          ) : null}
         </div>
-        {croppedTop ? (
-          <OverflowIndicator
-            style={{
-              top: 0,
-            }}
-            onMouseOver={onCroppedTopMouseOver}
-            onMouseOut={onCroppedTopMouseOut}
-          >
-            …
-          </OverflowIndicator>
-        ) : null}
-        {croppedBottom ? (
-          <OverflowIndicator
-            style={{
-              bottom: 0,
-            }}
-            onMouseOver={onCroppedBottomMouseOver}
-            onMouseOut={onCroppedBottomMouseOut}
-          >
-            …
-          </OverflowIndicator>
-        ) : null}
       </div>,
       props.selectProps.menuPortalTarget,
     )
