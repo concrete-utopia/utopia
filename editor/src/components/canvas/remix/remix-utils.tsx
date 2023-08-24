@@ -44,6 +44,8 @@ import { pathPartsFromJSXElementChild } from '../../../core/model/element-templa
 import { flatRoutes } from './from-remix/flat-routes'
 import { createClientRoutes, groupRoutesByParentId } from './from-remix/client-routes'
 
+const ROOT_DIR = '/src'
+
 export interface EntryRouteWithFileMeta extends EntryRoute {
   filePath: string
 }
@@ -207,7 +209,7 @@ export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): RouteManifestWithContents {
   const routes = {
-    ...flatRoutes('/src', projectContents),
+    ...flatRoutes(ROOT_DIR, projectContents),
     root: { path: '', id: 'root', file: 'root.js', parentId: '' },
   }
 
@@ -223,7 +225,7 @@ export function createRouteManifestFromProjectContents(
       hasLoader: false,
       hasCatchBoundary: false,
       hasErrorBoundary: false,
-      filePath: `/src/${route.file}`,
+      filePath: `${ROOT_DIR}/${route.file}`,
     }
   }
 
@@ -343,7 +345,7 @@ function getRemixExportsOfModule(
 }
 
 function getRootJSRootElement(projectContents: ProjectContentTreeRoot): JSXElementChild | null {
-  const file = getProjectFileByFilePath(projectContents, '/src/root.js')
+  const file = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
   if (
     file == null ||
     file.type !== 'TEXT_FILE' ||
