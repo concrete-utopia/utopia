@@ -287,7 +287,7 @@ function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
           paddingRight: 4,
           cursor: isDisabled ? 'not-allowed' : 'default',
           color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
-          backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
+          backgroundColor: isFocused ? colorTheme.dynamicBlue.value : 'transparent',
           borderRadius: UtopiaTheme.inputBorderRadius,
         }
       },
@@ -330,7 +330,7 @@ const CustomOption = (props: OptionProps<InsertMenuItem, false>) => {
         paddingRight: 4,
         cursor: isDisabled ? 'not-allowed' : 'default',
         color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
-        backgroundColor: isFocused ? colorTheme.primary.value : 'transparent',
+        backgroundColor: isFocused ? colorTheme.dynamicBlue.value : 'transparent',
         borderRadius: UtopiaTheme.inputBorderRadius,
       }}
     >
@@ -375,7 +375,7 @@ const CheckboxRow = React.memo<React.PropsWithChildren<CheckboxRowProps>>(
           css={{
             '&:focus': {
               outline: 'auto',
-              outlineColor: colorTheme.primary.value,
+              outlineColor: colorTheme.dynamicBlue.value,
               outlineOffset: 0,
             },
           }}
@@ -671,11 +671,12 @@ export var FloatingMenu = React.memo(() => {
           width: 280,
           height: 280,
           overflow: 'hidden',
+          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         }}
       >
         <div
           style={{
-            color: colorTheme.primary.value,
+            color: colorTheme.dynamicBlue.value,
             display: 'flex',
             paddingLeft: 9,
             paddingRight: 8,
@@ -710,7 +711,7 @@ export var FloatingMenu = React.memo(() => {
               position: 'absolute',
               bottom: 0,
               width: '100%',
-              background: colorTheme.bg0.value,
+              background: colorTheme.bg1.value,
               borderRadius: '0 0 6px 6px',
               borderTop: '1px solid var(--utopitheme-border1)',
             }}

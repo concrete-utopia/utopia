@@ -41,7 +41,7 @@ import {
 import { stripNulls } from '../shared/array-utils'
 import { UTOPIA_UID_KEY } from './utopia-constants'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getContentsTreeFileFromString } from '../../components/assets'
+import { getProjectFileByFilePath } from '../../components/assets'
 import { getUtopiaJSXComponentsFromSuccess } from './project-file-utils'
 import { generateConsistentUID, generateUID, getUtopiaID } from '../shared/uid-utils'
 import { emptySet } from '../shared/set-utils'
@@ -285,7 +285,7 @@ export function getStoryboardElementPath(
   openFile: string | null | undefined,
 ): StaticElementPath | null {
   if (openFile != null) {
-    const file = getContentsTreeFileFromString(projectContents, openFile)
+    const file = getProjectFileByFilePath(projectContents, openFile)
     if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
       const possiblyStoryboard = getUtopiaJSXComponentsFromSuccess(file.fileContents.parsed).find(
         (component) => component.name === BakedInStoryboardVariableName,

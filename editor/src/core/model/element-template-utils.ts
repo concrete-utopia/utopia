@@ -1,8 +1,5 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import {
-  getContentsTreeFileFromString,
-  walkContentsTreeForParseSuccess,
-} from '../../components/assets'
+import { getProjectFileByFilePath, walkContentsTreeForParseSuccess } from '../../components/assets'
 import type { IndexPosition } from '../../utils/utils'
 import Utils, {
   addElementsToArrayAtIndexPosition,
@@ -138,7 +135,7 @@ export function isSceneElement(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
 ): boolean {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
+  const file = getProjectFileByFilePath(projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return isSceneAgainstImports(element, file.fileContents.parsed.imports)
   } else {

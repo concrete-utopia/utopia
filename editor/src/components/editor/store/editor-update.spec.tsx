@@ -75,7 +75,7 @@ import {
 } from '../../../core/model/test-ui-js-file.test-utils'
 import { emptyUiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { requestedNpmDependency } from '../../../core/shared/npm-dependency-types'
-import { contentsToTree, getContentsTreeFileFromString } from '../../assets'
+import { contentsToTree, getProjectFileByFilePath } from '../../assets'
 import { forceParseSuccessFromFileOrFail } from '../../../core/workers/parser-printer/parser-printer.test-utils'
 import { notice } from '../../common/notice'
 import {
@@ -336,11 +336,8 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
     )
-    const mainUIJSFile = getContentsTreeFileFromString(
-      updatedEditor.projectContents,
-      StoryboardFilePath,
-    )
-    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
+    const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
+    const oldUIJSFile = getProjectFileByFilePath(editor.projectContents, StoryboardFilePath)
     if (
       oldUIJSFile != null &&
       isTextFile(oldUIJSFile) &&
@@ -380,11 +377,8 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
     )
-    const mainUIJSFile = getContentsTreeFileFromString(
-      updatedEditor.projectContents,
-      StoryboardFilePath,
-    )
-    const oldUIJSFile = getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath)
+    const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
+    const oldUIJSFile = getProjectFileByFilePath(editor.projectContents, StoryboardFilePath)
     if (
       oldUIJSFile != null &&
       isTextFile(oldUIJSFile) &&
@@ -455,7 +449,7 @@ describe('action DELETE_SELECTED', () => {
     ])
 
     const parseSuccess = forceParseSuccessFromFileOrFail(
-      getContentsTreeFileFromString(editor.projectContents, StoryboardFilePath),
+      getProjectFileByFilePath(editor.projectContents, StoryboardFilePath),
     )
     const originalChildrenCount = Utils.pathOr(
       [],
@@ -475,10 +469,7 @@ describe('action DELETE_SELECTED', () => {
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
     )
-    const mainUIJSFile = getContentsTreeFileFromString(
-      updatedEditor.projectContents,
-      StoryboardFilePath,
-    )
+    const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
     if (
       mainUIJSFile != null &&
       isTextFile(mainUIJSFile) &&
@@ -745,10 +736,7 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
     )
-    const mainUIJSFile = getContentsTreeFileFromString(
-      updatedEditor.projectContents,
-      StoryboardFilePath,
-    )
+    const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
     if (
       mainUIJSFile != null &&
       isTextFile(mainUIJSFile) &&
@@ -967,10 +955,7 @@ describe('updating package.json', () => {
       builtInDependencies,
     )
 
-    const packageJsonFile = getContentsTreeFileFromString(
-      updatedEditor.projectContents,
-      '/package.json',
-    )
+    const packageJsonFile = getProjectFileByFilePath(updatedEditor.projectContents, '/package.json')
     if (packageJsonFile == null || packageJsonFile.type != 'TEXT_FILE') {
       throw new Error('Package.json file should exist and should be a TextFile')
     } else {

@@ -166,10 +166,10 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'multiselect-controlled':
       case 'multiselect-mixed-simple-or-unset':
         interactive = true
-        mainColor = colorTheme.primary.value
-        secondaryColor = colorTheme.primary.value
-        trackColor = colorTheme.primary.value
-        strokePrimaryColor = colorTheme.primary.value
+        mainColor = colorTheme.dynamicBlue.value
+        secondaryColor = colorTheme.dynamicBlue.value
+        trackColor = colorTheme.dynamicBlue.value
+        strokePrimaryColor = colorTheme.dynamicBlue.value
         showContent = true
         break
       case 'trivial-default':

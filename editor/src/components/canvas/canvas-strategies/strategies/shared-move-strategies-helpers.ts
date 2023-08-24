@@ -225,7 +225,7 @@ export function getMoveCommandsForSelectedElement(
   )
 }
 
-function createMoveCommandsForElement(
+export function createMoveCommandsForElement(
   element: JSXElement,
   selectedElement: ElementPath,
   mappedPath: ElementPath,

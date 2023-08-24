@@ -9,7 +9,7 @@ import type { AssetToSave, SaveProjectResponse, LoadProjectResponse } from '../s
 import { localProjectKey } from '../../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import type { AssetFileWithFileName } from '../../assets'
-import { addFileToProjectContents, getContentsTreeFileFromString } from '../../assets'
+import { addFileToProjectContents, getProjectFileByFilePath } from '../../assets'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assetFile } from '../../../core/model/project-file-utils'
 import type {
@@ -55,7 +55,7 @@ function mockRandomProjectID(): string {
 function updateModel(model: PersistentModel): PersistentModel {
   const oldFile = forceNotNull(
     'Unexpectedly null.',
-    getContentsTreeFileFromString(model.projectContents, StoryboardFilePath),
+    getProjectFileByFilePath(model.projectContents, StoryboardFilePath),
   )
   const updatedFile = {
     ...oldFile,

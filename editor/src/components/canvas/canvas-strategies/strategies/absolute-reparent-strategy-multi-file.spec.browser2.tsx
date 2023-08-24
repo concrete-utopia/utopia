@@ -1,6 +1,6 @@
 import { act } from '@testing-library/react'
 import type { ProjectContentTreeRoot } from '../../../assets'
-import { contentsToTree, getContentsTreeFileFromString } from '../../../assets'
+import { contentsToTree, getProjectFileByFilePath } from '../../../assets'
 import * as EP from '../../../../core/shared/element-path'
 import { codeFile, isTextFile } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
@@ -200,7 +200,7 @@ export var storyboard = (
 
 function getFileCode(renderResult: EditorRenderResult, filename: string): string {
   const projectContents = renderResult.getEditorState().editor.projectContents
-  const possibleFile = getContentsTreeFileFromString(projectContents, filename)
+  const possibleFile = getProjectFileByFilePath(projectContents, filename)
   if (possibleFile == null) {
     throw new Error(`Could not find file ${filename}.`)
   } else if (isTextFile(possibleFile)) {

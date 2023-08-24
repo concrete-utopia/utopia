@@ -16,13 +16,8 @@ import {
 import CanvasActions from '../../canvas-actions'
 import { createInteractionViaMouse, updateInteractionViaMouse } from '../interaction-state'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
-import {
-  canvasPoint,
-  windowPoint,
-  WindowPoint,
-  zeroCanvasPoint,
-} from '../../../../core/shared/math-utils'
-import { emptyModifiers, Modifiers, shiftModifier } from '../../../../utils/modifiers'
+import { canvasPoint, windowPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
+import { emptyModifiers, shiftModifier } from '../../../../utils/modifiers'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { EdgePosition } from '../../canvas-types'
 import {
@@ -71,7 +66,7 @@ import { FOR_TESTS_setNextGeneratedUids } from '../../../../core/model/element-t
 import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
-import { resizeElement } from './absolute-resize.test-utils'
+import { getResizeControl, resizeElement } from './absolute-resize.test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
@@ -634,15 +629,9 @@ describe('Absolute Resize Strategy', () => {
     )
 
     const target = EP.appendNewElementPath(TestScenePath, ['app2'])
-    const dragDelta = windowPoint({ x: 40, y: -25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      formatTestProjectCode(projectDoesNotHonourSizeProperties),
-    )
+    expect(getResizeControl(renderResult, EdgePositionBottomRight)).toBeNull()
   })
   it('resizes absolute positioned element from bottom right edge', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -1304,18 +1293,10 @@ export var storyboard = (
     )
 
     const target = EP.fromString('storyboard/scene/containing-div/does-not-support-style')
-    const dragDelta = windowPoint({ x: 25, y: 25 })
 
     await renderResult.dispatch([selectComponents([target], false)], true)
-    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    const supportsStyleDiv = renderResult.renderedDOM.getByTestId(
-      'does-not-support-style-component',
-    )
-    const supportsStyleRect = supportsStyleDiv.getBoundingClientRect()
-    expect(supportsStyleRect.width).toEqual(100)
-    expect(supportsStyleRect.height).toEqual(100)
+    const resizeControl = getResizeControl(renderResult, EdgePositionBottomRight)
+    expect(resizeControl).toBeNull()
   })
   describe('snap lines', () => {
     it('horizontal snap lines are shown when resizing a multiselection', async () => {
@@ -1448,6 +1429,128 @@ export var storyboard = (
           })
         })
       })
+    })
+  })
+  describe('groups', () => {
+    it('resizes groups correctly when dragging from top/left without existing left/top props (left)', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+        'await-first-dom-report',
+      )
+
+      const target = EP.fromString('storyboard/group')
+
+      await renderResult.dispatch([selectComponents([target], false)], true)
+
+      await resizeElement(renderResult, { x: -200, y: 0 }, EdgePositionLeft, emptyModifiers)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 350, height: 150, background: 'black', left: -200 }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 117, height: 50, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 117, height: 50, background: 'blue', top: 100, left: 233 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+      )
+    })
+    it('resizes groups correctly when dragging from top/left without existing left/top props (top)', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+        'await-first-dom-report',
+      )
+
+      const target = EP.fromString('storyboard/group')
+
+      await renderResult.dispatch([selectComponents([target], false)], true)
+
+      await resizeElement(renderResult, { x: 0, y: -200 }, EdgePositionTop, emptyModifiers)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 350, background: 'black', top: -200 }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 50, height: 117, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 50, height: 117, background: 'blue', top: 233, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+      )
+    })
+    it('resizes groups correctly when dragging from top/left without existing left/top props (top-left)', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+        'await-first-dom-report',
+      )
+
+      const target = EP.fromString('storyboard/group')
+
+      await renderResult.dispatch([selectComponents([target], false)], true)
+
+      await resizeElement(renderResult, { x: -100, y: -200 }, EdgePositionTopLeft, emptyModifiers)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 250, height: 350, background: 'black', left: -100, top: -200 }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 83, height: 117, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 83, height: 117, background: 'blue', top: 233, left: 167 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+      )
     })
   })
 })

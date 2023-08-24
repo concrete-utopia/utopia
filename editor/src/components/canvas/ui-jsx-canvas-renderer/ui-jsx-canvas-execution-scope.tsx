@@ -4,7 +4,7 @@ import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { ArbitraryJSBlock, isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { fastForEach } from '../../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { getContentsTreeFileFromString, ProjectContentsTree } from '../../assets'
+import { getProjectFileByFilePath, ProjectContentsTree } from '../../assets'
 import { importResultFromImports } from '../../editor/npm-dependency/npm-dependency'
 import type { CanvasBase64Blobs, UIFileBase64Blobs } from '../../editor/store/editor-state'
 import { TransientFilesState, TransientFileState } from '../../editor/store/editor-state'
@@ -202,7 +202,7 @@ export function getCodeAndHighlightBoundsForFile(
   code: string
   highlightBounds: HighlightBoundsForUids | null
 } {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
+  const file = getProjectFileByFilePath(projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return {
       code: file.fileContents.code,

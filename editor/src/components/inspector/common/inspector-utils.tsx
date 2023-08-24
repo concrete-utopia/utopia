@@ -12,8 +12,7 @@ import { useRefEditorState } from '../../editor/store/store-hook'
 import { wrapValue } from '../../../core/shared/math-utils'
 
 const isControlledStyling = (colorTheme: any) => ({
-  backgroundColor: colorTheme.inspectorControlledBackground.value,
-  color: colorTheme.primary.value,
+  color: colorTheme.dynamicBlue.value,
 })
 
 const isNotControlledStyling = {

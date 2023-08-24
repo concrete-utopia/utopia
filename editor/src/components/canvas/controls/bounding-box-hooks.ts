@@ -20,7 +20,7 @@ interface NotNullRefObject<T> {
 }
 
 export function useBoundingBox<T = HTMLDivElement>(
-  selectedElements: Array<ElementPath>,
+  selectedElements: ReadonlyArray<ElementPath>,
   onChangeCallback: (ref: NotNullRefObject<T>, boundingBox: CanvasRectangle, scale: number) => void,
 ): React.RefObject<T> {
   const controlRef = React.useRef<T>(null)
@@ -39,7 +39,7 @@ export function useBoundingBox<T = HTMLDivElement>(
 }
 
 function useBoundingBoxFromMetadataRef(
-  selectedElements: Array<ElementPath>,
+  selectedElements: ReadonlyArray<ElementPath>,
   boundingBoxCallback: (boundingRectangle: CanvasRectangle | null, scale: number) => void,
 ): void {
   const metadataRef = useRefEditorState((store) => getMetadata(store.editor))

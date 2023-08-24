@@ -109,9 +109,9 @@ const RepositoryRow = (props: RepositoryRowProps) => {
           : 'pointer',
         opacity: loadingRepos || !props.importPermitted ? 0.5 : 1,
         '&:hover': {
-          background: colorTheme.primarySubdued.value,
-          color: colorTheme.white.value,
-          svg: { stroke: colorTheme.white.value },
+          background: colorTheme.dynamicBlue.value,
+          color: colorTheme.fg1.value,
+          svg: { stroke: colorTheme.fg1.value },
         },
       }}
       onClick={importRepository}

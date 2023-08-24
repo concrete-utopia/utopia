@@ -26,7 +26,7 @@ import { assertNever, fastForEach } from '../../core/shared/utils'
 import { arrayToObject } from '../../core/shared/array-utils'
 import { objectMap } from '../../core/shared/object-utils'
 import type { ProjectContentTreeRoot } from '../assets'
-import { getContentsTreeFileFromString, treeToContents } from '../assets'
+import { getProjectFileByFilePath, treeToContents } from '../assets'
 import type { Either } from '../../core/shared/either'
 import { isRight, left, right } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
@@ -215,7 +215,7 @@ export function incorporateBuildResult(
     if (modulesFile.transpiledCode == null) {
       delete nodeModules[moduleKey]
     } else {
-      const projectContentsFile = getContentsTreeFileFromString(projectContents, moduleKey)
+      const projectContentsFile = getProjectFileByFilePath(projectContents, moduleKey)
       const origin = projectContentsFile == null ? 'NODE_MODULES' : 'PROJECT_CONTENTS'
       nodeModules[moduleKey] = esCodeFile(modulesFile.transpiledCode, origin, moduleKey)
     }
@@ -225,7 +225,7 @@ export function incorporateBuildResult(
     const modulesFile = nodeModules[moduleKey]
     if (isEsCodeFile(modulesFile)) {
       if (modulesFile.origin === 'PROJECT_CONTENTS') {
-        const projectContentsFile = getContentsTreeFileFromString(projectContents, moduleKey)
+        const projectContentsFile = getProjectFileByFilePath(projectContents, moduleKey)
         if (projectContentsFile == null) {
           delete nodeModules[moduleKey]
         }
@@ -436,7 +436,7 @@ export function normalisePathToUnderlyingTarget(
   elementPath: ElementPath | null,
   remixRouteLookupState: RemixRouteLookupState,
 ): NormalisePathResult {
-  const currentFile = getContentsTreeFileFromString(projectContents, currentFilePath)
+  const currentFile = getProjectFileByFilePath(projectContents, currentFilePath)
   if (
     currentFile == null ||
     !isTextFile(currentFile) ||
@@ -640,7 +640,7 @@ export function findUnderlyingTargetComponentImplementationFromImportInfo(
     importInfo.type === 'SAME_FILE_ORIGIN' ? importInfo.variableName : importInfo.exportedName
 
   // we have to find the element based on the top level name
-  const file = getContentsTreeFileFromString(projectContents, importInfo.filePath)
+  const file = getProjectFileByFilePath(projectContents, importInfo.filePath)
   const parsedContents = getParsedContentsFromTextFile(file)
   if (parsedContents == null) {
     return null

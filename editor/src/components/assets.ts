@@ -533,7 +533,7 @@ export function getContentsTreeFileFromElements(
   }
 }
 
-export function getContentsTreeFileFromString(
+export function getProjectFileByFilePath(
   tree: ProjectContentTreeRoot,
   path: string,
 ): ProjectFile | null {

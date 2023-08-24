@@ -1,7 +1,7 @@
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import {
   addFileToProjectContents,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   walkContentsTree,
 } from '../../components/assets'
 import type { EditorModel } from '../../components/editor/action-types'
@@ -159,10 +159,7 @@ const compareComponentToImport: Compare<ComponentToImport> = compareCompose(
 )
 
 export function addStoryboardFileToProject(editorModel: EditorModel): EditorModel | null {
-  const storyboardFile = getContentsTreeFileFromString(
-    editorModel.projectContents,
-    StoryboardFilePath,
-  )
+  const storyboardFile = getProjectFileByFilePath(editorModel.projectContents, StoryboardFilePath)
   if (storyboardFile == null) {
     let currentImportCandidate: ComponentToImport | null = null
     function updateCandidate(importCandidate: ComponentToImport): void {
@@ -335,7 +332,7 @@ function addStoryboardFileForComponent(
       // Modify the targeted file to export the component we're interested in.
       const fileToModify = forceNotNull(
         `Unable to find file at ${createFileWithComponent.path}`,
-        getContentsTreeFileFromString(updatedProjectContents, createFileWithComponent.path),
+        getProjectFileByFilePath(updatedProjectContents, createFileWithComponent.path),
       )
       if (isTextFile(fileToModify)) {
         if (isParseSuccess(fileToModify.fileContents.parsed)) {
