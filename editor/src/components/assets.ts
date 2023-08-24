@@ -504,7 +504,7 @@ export async function zipContentsTreeAsync(
 }
 
 // FIXME A lot of these files should be moved to a more relevant file
-export function getProjectFileByFilePath(
+export function getContentsTreeFileFromElements(
   tree: ProjectContentTreeRoot,
   pathElements: ReadonlyArray<string>,
 ): ProjectFile | null {
@@ -562,7 +562,7 @@ export function getContentsTreeFromElements(
   }
 }
 
-export function getContentsTreeFileFromString(
+export function getProjectFileByFilePath(
   tree: ProjectContentTreeRoot,
   path: string,
 ): ProjectFile | null {

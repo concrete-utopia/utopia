@@ -16,11 +16,7 @@ import {
   paramPrefixChar,
   routeModuleExts,
 } from './routes-convention'
-import {
-  ProjectContentTreeRoot,
-  getContentsTreeFileFromString,
-  getContentsTreeFromPath,
-} from '../../../assets'
+import { ProjectContentTreeRoot, getContentsTreeFromPath } from '../../../assets'
 
 const PrefixLookupTrieEndSymbol = Symbol('PrefixLookupTrieEndSymbol')
 type PrefixLookupNode = {
@@ -534,7 +530,7 @@ export function findConfig(
   for (let ext of extensions) {
     let name = basename + ext
     let file = path.join(dir, name)
-    const projectFile = getContentsTreeFileFromString(projectContents, file)
+    const projectFile = getContentsTreeFromPath(projectContents, file)
     if (projectFile != null) return file
   }
 
