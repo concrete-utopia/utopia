@@ -13,7 +13,7 @@ import type { Either } from '../../../core/shared/either'
 import { foldEither, left, right } from '../../../core/shared/either'
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import type { ProjectContentFile, ProjectContentTreeRoot, ProjectContentsTree } from '../../assets'
-import { getContentsTreeFileFromString } from '../../assets'
+import { getProjectFileByFilePath } from '../../assets'
 import type {
   JSXElementChild,
   TopLevelElement,
@@ -260,7 +260,7 @@ export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
 ): { name: string; uid: string } | null {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
+  const file = getProjectFileByFilePath(projectContents, filePath)
   if (file == null || file.type != 'TEXT_FILE' || file.lastParseSuccess == null) {
     return null
   }
@@ -423,7 +423,7 @@ function getRemixExportsOfModule(
 }
 
 function getRootJSRootElement(projectContents: ProjectContentTreeRoot): JSXElementChild | null {
-  const file = getContentsTreeFileFromString(projectContents, '/src/root.js')
+  const file = getProjectFileByFilePath(projectContents, '/src/root.js')
   if (
     file == null ||
     file.type !== 'TEXT_FILE' ||
