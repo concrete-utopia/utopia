@@ -170,12 +170,9 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch])
 
   return (
-    <FlexColumn
+    <FlexRow
       id={CanvasToolbarId}
       style={{
-        gap: 6,
-        alignItems: 'stretch',
-        width: 64,
         backgroundColor: theme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
@@ -184,169 +181,129 @@ export const CanvasToolbar = React.memo(() => {
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
     >
-      <FlexColumn style={{ padding: 4 }}>
-        {/* ------------------------------------ */}
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Tools</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Select' placement='bottom'>
-            <InsertModeButton
-              iconType='pointer'
-              iconCategory='tools'
-              onClick={clickSelectModeButton}
-            />
-          </Tooltip>
-          <Tooltip title='Insert text' placement='bottom'>
-            <InsertModeButton
-              iconType='pure-text'
-              primary={textInsertion}
-              onClick={insertTextCallback}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom in' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-plus'
-              iconCategory='semantic'
-              onClick={zoomIn}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom out' placement='bottom'>
-            <InsertModeButton
-              iconType='magnifyingglass-minus'
-              iconCategory='semantic'
-              onClick={zoomOut}
-            />
-          </Tooltip>
-          <Tooltip title='Zoom to 100%' placement='bottom'>
-            <SquareButton
-              highlight
-              style={{ textAlign: 'center', width: '100%' }}
-              onClick={zoom100pct}
-            >
-              {zoomLevel * 100}%
-            </SquareButton>
-          </Tooltip>
-        </FlexRow>
-      </FlexColumn>
-
-      {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Insert div' placement='bottom'>
-            <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
-          </Tooltip>
-          <Tooltip title='Insert image' placement='bottom'>
-            <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
-          </Tooltip>
-          <Tooltip title='Insert button' placement='bottom'>
-            <InsertModeButton
-              iconType='clickable'
-              primary={buttonInsertion}
-              onClick={insertButtonCallback}
-            />
-          </Tooltip>
-          <Tooltip title='Choose and insert a component' placement='bottom'>
-            <InsertModeButton
-              iconType='componentinstance'
-              primary={insertMenuMode === 'insert'}
-              onClick={openFloatingInsertMenuCallback}
-            />
-          </Tooltip>
-          <Tooltip title='Insert conditional' placement='bottom'>
-            <InsertModeButton
-              testid={InsertConditionalButtonTestId}
-              iconType='conditional'
-              primary={conditionalInsertion}
-              onClick={insertConditionalCallback}
-            />
-          </Tooltip>
-          <Tooltip title='Open insert menu' placement='bottom'>
-            <InsertModeButton
-              iconType='dotdotdot'
-              iconCategory='semantic'
-              primary={insertMenuSelected}
-              onClick={selectInsertMenuPane}
-            />
-          </Tooltip>
-        </FlexRow>
-      </FlexColumn>
-      {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Convert</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Converts an element or component into another' placement='bottom'>
-            <InsertModeButton
-              iconType='convertobject'
-              iconCategory='semantic'
-              primary={insertMenuMode === 'convert'}
-              onClick={openFloatingConvertMenuCallback}
-            />
-          </Tooltip>
-        </FlexRow>
-      </FlexColumn>
-
-      {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Organise</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Wrap selection in div' placement='bottom'>
-            <InsertModeButton iconType='group-open' onClick={wrapInDivCallback} />
-          </Tooltip>
-          <Tooltip title='Wrap selection in an element' placement='bottom'>
-            <InsertModeButton
-              iconType='designtool-larger'
-              iconCategory='semantic'
-              primary={insertMenuMode === 'wrap'}
-              onClick={openFloatingWrapInMenuCallback}
-            />
-          </Tooltip>
-        </FlexRow>
-      </FlexColumn>
-      {/* ------------------------------------ */}
-      <FlexColumn style={{ padding: 4 }}>
-        <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Editor</header>
-        <FlexRow style={{ flexWrap: 'wrap', gap: 4, padding: 4 }}>
-          <Tooltip title='Toggle Live Mode' placement='bottom'>
-            <InsertModeButton
-              iconType='playbutton'
-              iconCategory='semantic'
-              primary={isLiveMode}
-              onClick={toggleLiveMode}
-              keepActiveInLiveMode
-            />
-          </Tooltip>
-          <Tooltip title='Reset Canvas' placement='bottom'>
-            <InsertModeButton
-              iconType='refresh'
-              iconCategory='semantic'
-              onClick={resetCanvasCallback}
-            />
-          </Tooltip>
-
-          <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
-            <InsertModeButton
-              iconType='navigator-larger'
-              iconCategory='semantic'
-              onClick={toggleNavigatorVisible}
-            />
-          </Tooltip>
-          <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
-            <InsertModeButton
-              iconType='inspector-larger'
-              iconCategory='semantic'
-              onClick={toggleInspectorVisible}
-            />
-          </Tooltip>
-          <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
-            <InsertModeButton
-              iconType='codymccodeface-larger'
-              iconCategory='semantic'
-              onClick={toggleCodeEditorVisible}
-            />
-          </Tooltip>
-        </FlexRow>
-      </FlexColumn>
-    </FlexColumn>
+      <Tooltip title='Select' placement='bottom'>
+        <InsertModeButton iconType='pointer' iconCategory='tools' onClick={clickSelectModeButton} />
+      </Tooltip>
+      <Tooltip title='Insert text' placement='bottom'>
+        <InsertModeButton
+          iconType='pure-text'
+          primary={textInsertion}
+          onClick={insertTextCallback}
+        />
+      </Tooltip>
+      <Tooltip title='Insert div' placement='bottom'>
+        <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
+      </Tooltip>
+      <Tooltip title='Insert image' placement='bottom'>
+        <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
+      </Tooltip>
+      <Tooltip title='Insert button' placement='bottom'>
+        <InsertModeButton
+          iconType='clickable'
+          primary={buttonInsertion}
+          onClick={insertButtonCallback}
+        />
+      </Tooltip>
+      <Tooltip title='Choose and insert a component' placement='bottom'>
+        <InsertModeButton
+          iconType='componentinstance'
+          primary={insertMenuMode === 'insert'}
+          onClick={openFloatingInsertMenuCallback}
+        />
+      </Tooltip>
+      <Tooltip title='Insert conditional' placement='bottom'>
+        <InsertModeButton
+          testid={InsertConditionalButtonTestId}
+          iconType='conditional'
+          primary={conditionalInsertion}
+          onClick={insertConditionalCallback}
+        />
+      </Tooltip>
+      <Tooltip title='Open insert menu' placement='bottom'>
+        <InsertModeButton
+          iconType='dotdotdot'
+          iconCategory='semantic'
+          primary={insertMenuSelected}
+          onClick={selectInsertMenuPane}
+        />
+      </Tooltip>
+      <Tooltip title='Converts an element or component into another' placement='bottom'>
+        <InsertModeButton
+          iconType='convertobject'
+          iconCategory='semantic'
+          primary={insertMenuMode === 'convert'}
+          onClick={openFloatingConvertMenuCallback}
+        />
+      </Tooltip>
+      <Tooltip title='Wrap selection in div' placement='bottom'>
+        <InsertModeButton iconType='group-open' onClick={wrapInDivCallback} />
+      </Tooltip>
+      <Tooltip title='Wrap selection in an element' placement='bottom'>
+        <InsertModeButton
+          iconType='designtool-larger'
+          iconCategory='semantic'
+          primary={insertMenuMode === 'wrap'}
+          onClick={openFloatingWrapInMenuCallback}
+        />
+      </Tooltip>
+      {/* <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
+        <InsertModeButton
+          iconType='navigator-larger'
+          iconCategory='semantic'
+          onClick={toggleNavigatorVisible}
+        />
+      </Tooltip>
+      <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
+        <InsertModeButton
+          iconType='inspector-larger'
+          iconCategory='semantic'
+          onClick={toggleInspectorVisible}
+        />
+      </Tooltip>
+      <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
+        <InsertModeButton
+          iconType='codymccodeface-larger'
+          iconCategory='semantic'
+          onClick={toggleCodeEditorVisible}
+        />
+      </Tooltip> */}
+      <Tooltip title='Reset Canvas' placement='bottom'>
+        <InsertModeButton
+          iconType='refresh'
+          iconCategory='semantic'
+          onClick={resetCanvasCallback}
+        />
+      </Tooltip>
+      <Tooltip title='Toggle Live Mode' placement='bottom'>
+        <InsertModeButton
+          iconType='playbutton'
+          iconCategory='semantic'
+          primary={isLiveMode}
+          onClick={toggleLiveMode}
+          keepActiveInLiveMode
+        />
+      </Tooltip>
+      {/* <Tooltip title='Zoom in' placement='bottom'>
+        <InsertModeButton
+          iconType='magnifyingglass-plus'
+          iconCategory='semantic'
+          onClick={zoomIn}
+        />
+      </Tooltip>
+      <Tooltip title='Zoom out' placement='bottom'>
+        <InsertModeButton
+          iconType='magnifyingglass-minus'
+          iconCategory='semantic'
+          onClick={zoomOut}
+        />
+      </Tooltip> */}
+      <Tooltip title='Zoom to 100%' placement='bottom'>
+        {/* TODO: make this a number input control */}
+        <SquareButton highlight style={{ textAlign: 'center', width: '100%' }} onClick={zoom100pct}>
+          {zoomLevel * 100}%
+        </SquareButton>
+      </Tooltip>
+    </FlexRow>
   )
 })
 
@@ -372,7 +329,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
     <SquareButton
       data-testid={props.testid}
-      style={{ ...props.style, borderRadius: 4 }}
+      style={{ ...props.style, height: 32, width: 32 }}
       primary={primary}
       highlight
       onClick={props.onClick}
