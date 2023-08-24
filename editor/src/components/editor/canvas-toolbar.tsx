@@ -1,3 +1,7 @@
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+import { jsx } from '@emotion/react'
 import * as React from 'react'
 import type { TooltipProps } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
@@ -191,7 +195,7 @@ export const CanvasToolbar = React.memo(() => {
       onClick={stopPropagation}
     >
       <div
-        style={{
+        css={{
           height: toolbarDirection === 'horizontal' ? 32 : 20,
           width: toolbarDirection === 'horizontal' ? 20 : 32,
           display: 'flex',
@@ -199,17 +203,21 @@ export const CanvasToolbar = React.memo(() => {
           justifyContent: 'center',
           gap: 2,
           flexDirection: toolbarDirection === 'horizontal' ? 'column' : 'row',
+          opacity: 0.2,
+          '&:hover': {
+            opacity: 0.7,
+          },
         }}
         onClick={toggleToolbarDirection}
       >
         {Array.from({ length: 5 }).map((_, index) => (
           <div
             key={index}
-            style={{
+            css={{
+              borderRadius: 5,
               height: toolbarDirection === 'horizontal' ? 2 : 7,
               width: toolbarDirection === 'horizontal' ? 7 : 2,
-              background: colorTheme.bg4.value,
-              borderRadius: 5,
+              background: colorTheme.fg1.value,
             }}
           ></div>
         ))}
