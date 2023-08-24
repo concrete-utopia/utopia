@@ -34,7 +34,8 @@ const darkBase = {
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
   bg2: createUtopiColor('#20232C'),
-  bg3: createUtopiColor('#282b35'),
+  // bg3: createUtopiColor('#282b35'),
+  bg3: createUtopiColor('#393d49'),
   bg4: createUtopiColor('#55575f'),
   bg5: createUtopiColor('#848998'),
   fg0: createUtopiColor('#ffffff'),
@@ -121,7 +122,7 @@ export const dark: typeof light = {
   leftMenuBackground: darkPrimitives.neutralBackground,
   leftPaneBackground: darkPrimitives.neutralBackground,
   inspectorBackground: darkPrimitives.neutralBackground,
-  canvasBackground: darkPrimitives.secondaryBackground,
+  canvasBackground: darkBase.bg3,
   canvasLiveBackground: createUtopiColor('rgba(195,197,201,1)'),
   canvasLiveBorder: darkBase.primary,
 
@@ -181,7 +182,7 @@ export const dark: typeof light = {
 
   inlineButtonColor: darkBase.primary,
   buttonBackground: darkBase.bg2,
-  buttonHoverBackground: darkBase.bg3,
+  buttonHoverBackground: darkBase.bg2,
   buttonShadow: darkBase.fg9,
   buttonShadowActive: darkBase.fg8,
 

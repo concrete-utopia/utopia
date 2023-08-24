@@ -175,6 +175,7 @@ export const CanvasToolbar = React.memo(() => {
       style={{
         backgroundColor: theme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+        overflow: 'hidden',
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         pointerEvents: 'initial',
       }}
@@ -298,8 +299,18 @@ export const CanvasToolbar = React.memo(() => {
         />
       </Tooltip> */}
       <Tooltip title='Zoom to 100%' placement='bottom'>
-        {/* TODO: make this a number input control */}
-        <SquareButton highlight style={{ textAlign: 'center', width: '100%' }} onClick={zoom100pct}>
+        {/* TODO make this a number input control */}
+        <SquareButton
+          highlight
+          style={{
+            textAlign: 'center',
+            width: 'min-content',
+            minWidth: 32,
+            height: 32,
+            padding: '0 8px',
+          }}
+          onClick={zoom100pct}
+        >
           {zoomLevel * 100}%
         </SquareButton>
       </Tooltip>
