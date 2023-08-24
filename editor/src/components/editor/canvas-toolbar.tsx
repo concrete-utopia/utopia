@@ -39,6 +39,7 @@ import { Substores, useEditorState, useRefEditorState } from './store/store-hook
 import { togglePanel } from './actions/action-creators'
 import { defaultTransparentViewElement } from './defaults'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { useState } from 'react'
 
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
@@ -169,8 +170,13 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
+  const [toolbarDirection, setToolbarDirection] = useState('horizontal')
+  const toggleToolbarDirection = () => {
+    setToolbarDirection(toolbarDirection === 'horizontal' ? 'vertical' : 'horizontal')
+  }
+
   return (
-    <FlexRow
+    <div
       id={CanvasToolbarId}
       style={{
         backgroundColor: theme.inspectorBackground.value,
@@ -178,10 +184,36 @@ export const CanvasToolbar = React.memo(() => {
         overflow: 'hidden',
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
         pointerEvents: 'initial',
+        display: 'flex',
+        flexDirection: toolbarDirection === 'horizontal' ? 'row' : 'column',
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
     >
+      <div
+        style={{
+          height: toolbarDirection === 'horizontal' ? 32 : 20,
+          width: toolbarDirection === 'horizontal' ? 20 : 32,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 2,
+          flexDirection: toolbarDirection === 'horizontal' ? 'column' : 'row',
+        }}
+        onClick={toggleToolbarDirection}
+      >
+        {Array.from({ length: 5 }).map((_, index) => (
+          <div
+            key={index}
+            style={{
+              height: toolbarDirection === 'horizontal' ? 2 : 7,
+              width: toolbarDirection === 'horizontal' ? 7 : 2,
+              background: colorTheme.bg4.value,
+              borderRadius: 5,
+            }}
+          ></div>
+        ))}
+      </div>
       <Tooltip title='Select' placement='bottom'>
         <InsertModeButton iconType='pointer' iconCategory='tools' onClick={clickSelectModeButton} />
       </Tooltip>
@@ -236,9 +268,9 @@ export const CanvasToolbar = React.memo(() => {
           onClick={openFloatingConvertMenuCallback}
         />
       </Tooltip>
-      <Tooltip title='Wrap selection in div' placement='bottom'>
+      {/* <Tooltip title='Wrap selection in div' placement='bottom'>
         <InsertModeButton iconType='group-open' onClick={wrapInDivCallback} />
-      </Tooltip>
+      </Tooltip> */}
       <Tooltip title='Wrap selection in an element' placement='bottom'>
         <InsertModeButton
           iconType='designtool-larger'
@@ -298,8 +330,8 @@ export const CanvasToolbar = React.memo(() => {
           onClick={zoomOut}
         />
       </Tooltip> */}
-      <Tooltip title='Zoom to 100%' placement='bottom'>
-        {/* TODO make this a number input control */}
+      {/* <Tooltip title='Zoom to 100%' placement='bottom'>
+        TODO make this a number input control
         <SquareButton
           highlight
           style={{
@@ -312,9 +344,10 @@ export const CanvasToolbar = React.memo(() => {
           onClick={zoom100pct}
         >
           {zoomLevel * 100}%
+          {zoomLevel}x
         </SquareButton>
-      </Tooltip>
-    </FlexRow>
+      </Tooltip> */}
+    </div>
   )
 })
 
