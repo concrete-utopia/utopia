@@ -4,7 +4,7 @@ import { RouterProvider, createMemoryRouter } from 'react-router'
 
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 
-import { useEditorState, Substores } from '../../editor/store/store-hook'
+import { useEditorState, Substores, useRefEditorState } from '../../editor/store/store-hook'
 import {
   createAssetsManifest,
   defaultFutureConfig,
@@ -35,28 +35,18 @@ export interface UtopiaRemixRootComponentProps {
 }
 
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
-  const projectContents = useEditorState(
-    Substores.projectContents,
-    (_) => _.editor.projectContents,
-    'RemixRootComponent projectContents',
-  )
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   const routeManifest = React.useMemo(
-    () => createRouteManifestFromProjectContents(projectContents),
-    [projectContents],
+    () => createRouteManifestFromProjectContents(projectContentsRef.current),
+    [projectContentsRef],
   )
 
   let mutableContextRef = React.useRef<MutableUtopiaCtxRefData>({})
-  React.useEffect(() => {
-    mutableContextRef.current = {}
-  }, [projectContents])
 
   let topLevelComponentRendererComponents = React.useRef<
     MapLike<MapLike<ComponentRendererComponent>>
   >({})
-  React.useEffect(() => {
-    topLevelComponentRendererComponents.current = {}
-  }, [projectContents])
 
   let resolvedFiles = React.useRef<MapLike<Array<string>>>({}) // Mapping from importOrigin to an array of toImport
   resolvedFiles.current = {}
@@ -64,10 +54,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   let resolvedFileNames = React.useRef<Array<string>>([]) // resolved (i.e. imported) files this render
   resolvedFileNames.current = ['/src/root.js']
 
-  const canvasStuff = useEditorState(
-    Substores.fullStore,
-    (store) => pickUiJsxCanvasProps(store.editor, store.derived, NO_OP, NO_OP, NO_OP),
-    'CanvasComponentEntry canvasProps',
+  const canvasPropsRef = useRefEditorState((store) =>
+    forceNotNull(
+      "canvasStuff shouldn't be null",
+      pickUiJsxCanvasProps(store.editor, store.derived, NO_OP, NO_OP, NO_OP),
+    ),
   )
 
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
@@ -75,16 +66,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
   )
 
-  invariant(canvasStuff, "canvasStuff shouldn't be null")
-
   const requireFn = React.useMemo(
-    () => canvasStuff.curriedRequireFn(projectContents),
-    [canvasStuff, projectContents],
+    () => canvasPropsRef.current.curriedRequireFn(projectContentsRef.current),
+    [canvasPropsRef, projectContentsRef],
   )
 
   const resolve = React.useMemo(
-    () => canvasStuff.curriedResolveFn(projectContents),
-    [canvasStuff, projectContents],
+    () => canvasPropsRef.current.curriedResolveFn(projectContentsRef.current),
+    [canvasPropsRef, projectContentsRef],
   )
 
   const customRequire = React.useCallback(
@@ -104,7 +93,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
         resolvedFromThisOrigin,
         toImport,
-        projectContents,
+        projectContentsRef.current,
         customRequire,
         mutableContextRef,
         topLevelComponentRendererComponents,
@@ -130,7 +119,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         resolvedParseSuccess,
       )
     },
-    [metadataContext, projectContents, requireFn, resolve],
+    [metadataContext, projectContentsRef, requireFn, resolve],
   )
 
   const assetsManifest = React.useMemo(() => createAssetsManifest(routeManifest), [routeManifest])
@@ -141,12 +130,12 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         routeManifest,
         customRequire,
         metadataContext,
-        projectContents,
+        projectContentsRef.current,
         props[UTOPIA_PATH_KEY],
         mutableContextRef,
         topLevelComponentRendererComponents,
       ),
-    [routeManifest, customRequire, metadataContext, projectContents, props],
+    [routeManifest, customRequire, metadataContext, projectContentsRef, props],
   )
 
   const router = React.useMemo(() => createMemoryRouter(routes), [routes])
