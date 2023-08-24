@@ -1,5 +1,5 @@
 import React from 'react'
-import type { DataRouteObject } from 'react-router'
+import type { ActionFunction, DataRouteObject, LoaderFunction } from 'react-router'
 import { Outlet } from 'react-router'
 import type {
   UNSAFE_RouteManifest as RouteManifest,
@@ -42,6 +42,7 @@ import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-js
 import type { MapLike } from 'typescript'
 import { pathPartsFromJSXElementChild } from '../../../core/model/element-template-utils'
 import { flatRoutes } from './from-remix/flat-routes'
+import { createClientRoutes, groupRoutesByParentId } from './from-remix/client-routes'
 
 export interface EntryRouteWithFileMeta extends EntryRoute {
   filePath: string
@@ -207,7 +208,7 @@ export function createRouteManifestFromProjectContents(
 ): RouteManifestWithContents {
   const routes = {
     ...flatRoutes('/src', projectContents),
-    root: { path: '', id: 'root', file: 'root.js', parentId: undefined },
+    root: { path: '', id: 'root', file: 'root.js', parentId: '' },
   }
 
   let resultRoutes: RouteManifestWithContents = {}
@@ -243,13 +244,18 @@ export function getRoutesAndModulesFromManifest(
   routeModules: RouteModules
   routes: Array<DataRouteObject>
 } {
-  const routeManifestResult: RouteModules = {}
-  const routesResult: DataRouteObject[] = []
+  const routeModules: RouteModules = {}
 
   const indexJSRootElement = getRootJSRootElement(projectContents)
   invariant(indexJSRootElement, 'There should be an root.js in the spike project')
 
   const pathPartForRootJs = findPathToOutlet(indexJSRootElement) ?? []
+  const loaderAndAction: {
+    [id: string]: {
+      loader?: LoaderFunction
+      action?: ActionFunction
+    }
+  } = {}
 
   Object.values(routeManifest).forEach((route) => {
     // TODO: unhardcode when we have access to the hierarchy
@@ -268,30 +274,25 @@ export function getRoutesAndModulesFromManifest(
       topLevelComponentRendererComponents,
     )
 
-    try {
-      routeManifestResult[route.id] = {
-        default: defaultExport,
-      }
-
-      // HACK LVL: >9000
-      // `children` should be filled out properly
-      const routeObject: DataRouteObject = {
-        ...routeFromEntry(route),
-        loader: loader,
-        action: action,
-      }
-
-      if (routeObject.id === '_index.js') {
-        routesResult.find((r) => r.id === 'root')!.children = [routeObject]
-      } else {
-        routesResult.push(routeObject)
-      }
-    } catch (e) {
-      console.error(e)
+    loaderAndAction[route.id] = { loader, action }
+    routeModules[route.id] = {
+      default: defaultExport,
     }
   })
 
-  return { routeModules: routeManifestResult, routes: routesResult }
+  const routesByParentId = groupRoutesByParentId(routeManifest)
+  const routes: DataRouteObject[] = createClientRoutes(
+    routeManifest,
+    {},
+    defaultFutureConfig,
+    '',
+    routesByParentId,
+    (route: EntryRoute, _: RouteModules, isAction: boolean) => {
+      return isAction ? loaderAndAction[route.id].action : loaderAndAction[route.id].loader
+    },
+  )
+
+  return { routeModules: routeModules, routes: routes }
 }
 
 function getRemixExportsOfModule(
