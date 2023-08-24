@@ -161,18 +161,33 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([resetCanvas()])
   }, [dispatch])
 
-  const toggleCodeEditorVisible = React.useCallback(
-    () => dispatch([togglePanel('codeEditor')]),
-    [dispatch],
+  const inspectorVisible = useEditorState(
+    Substores.restOfEditor,
+    (store) => !store.editor.rightMenu.expanded,
+    'SettingsPanel inspector.minimized',
   )
-
   const toggleInspectorVisible = React.useCallback(() => {
     dispatch([togglePanel('rightmenu')])
   }, [dispatch])
 
+  const navigatorVisible = useEditorState(
+    Substores.restOfEditor,
+    (store) => !store.editor.leftMenu.expanded,
+    'SettingsPanel navigator.minimised',
+  )
   const toggleNavigatorVisible = React.useCallback(() => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
+
+  const editorVisible = useEditorState(
+    Substores.restOfEditor,
+    (store) => !store.editor.interfaceDesigner.codePaneVisible,
+    'SettingsPanel navigator.minimised',
+  )
+  const toggleCodeEditorVisible = React.useCallback(
+    () => dispatch([togglePanel('codeEditor')]),
+    [dispatch],
+  )
 
   const [toolbarDirection, setToolbarDirection] = useState('horizontal')
   const toggleToolbarDirection = () => {
@@ -181,150 +196,209 @@ export const CanvasToolbar = React.memo(() => {
 
   return (
     <div
-      id={CanvasToolbarId}
       style={{
-        backgroundColor: theme.inspectorBackground.value,
-        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        overflow: 'hidden',
-        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
-        pointerEvents: 'initial',
         display: 'flex',
+        gap: 10,
         flexDirection: toolbarDirection === 'horizontal' ? 'row' : 'column',
       }}
-      onMouseDown={stopPropagation}
-      onClick={stopPropagation}
     >
+      {navigatorVisible ? (
+        <div
+          style={{
+            backgroundColor: theme.inspectorBackground.value,
+            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+            overflow: 'hidden',
+            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+            pointerEvents: 'initial',
+            display: 'flex',
+            flexDirection: toolbarDirection === 'horizontal' ? 'row' : 'column',
+            width: 32,
+            height: 32,
+          }}
+        >
+          <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
+            <InsertModeButton
+              iconType='navigator-larger'
+              iconCategory='semantic'
+              onClick={toggleNavigatorVisible}
+            />
+          </Tooltip>
+        </div>
+      ) : null}
+      {editorVisible ? (
+        <div
+          style={{
+            backgroundColor: theme.inspectorBackground.value,
+            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+            overflow: 'hidden',
+            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+            pointerEvents: 'initial',
+            display: 'flex',
+            flexDirection: toolbarDirection === 'horizontal' ? 'row' : 'column',
+            width: 32,
+            height: 32,
+          }}
+        >
+          <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
+            <InsertModeButton
+              iconType='codymccodeface-larger'
+              iconCategory='semantic'
+              onClick={toggleCodeEditorVisible}
+            />
+          </Tooltip>
+        </div>
+      ) : null}
+      {inspectorVisible ? (
+        <div
+          style={{
+            backgroundColor: theme.inspectorBackground.value,
+            borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+            overflow: 'hidden',
+            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+            pointerEvents: 'initial',
+            display: 'flex',
+            flexDirection: toolbarDirection === 'horizontal' ? 'row' : 'column',
+            width: 32,
+            height: 32,
+          }}
+        >
+          <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
+            <InsertModeButton
+              iconType='inspector-larger'
+              iconCategory='semantic'
+              onClick={toggleInspectorVisible}
+            />
+          </Tooltip>
+        </div>
+      ) : null}
       <div
-        css={{
-          height: toolbarDirection === 'horizontal' ? 32 : 20,
-          width: toolbarDirection === 'horizontal' ? 20 : 32,
+        id={CanvasToolbarId}
+        style={{
+          backgroundColor: theme.inspectorBackground.value,
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+          overflow: 'hidden',
+          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+          pointerEvents: 'initial',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 2,
-          flexDirection: toolbarDirection === 'horizontal' ? 'column' : 'row',
-          opacity: 0.2,
-          '&:hover': {
-            opacity: 0.7,
-          },
+          flexDirection: toolbarDirection === 'horizontal' ? 'row' : 'column',
         }}
-        onClick={toggleToolbarDirection}
+        onMouseDown={stopPropagation}
+        onClick={stopPropagation}
       >
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div
-            key={index}
-            css={{
-              borderRadius: 5,
-              height: toolbarDirection === 'horizontal' ? 2 : 7,
-              width: toolbarDirection === 'horizontal' ? 7 : 2,
-              background: colorTheme.fg1.value,
-            }}
-          ></div>
-        ))}
-      </div>
-      <Tooltip title='Select' placement='bottom'>
-        <InsertModeButton iconType='pointer' iconCategory='tools' onClick={clickSelectModeButton} />
-      </Tooltip>
-      <Tooltip title='Insert text' placement='bottom'>
-        <InsertModeButton
-          iconType='pure-text'
-          primary={textInsertion}
-          onClick={insertTextCallback}
-        />
-      </Tooltip>
-      <Tooltip title='Insert div' placement='bottom'>
-        <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
-      </Tooltip>
-      <Tooltip title='Insert image' placement='bottom'>
-        <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
-      </Tooltip>
-      <Tooltip title='Insert button' placement='bottom'>
-        <InsertModeButton
-          iconType='clickable'
-          primary={buttonInsertion}
-          onClick={insertButtonCallback}
-        />
-      </Tooltip>
-      <Tooltip title='Choose and insert a component' placement='bottom'>
-        <InsertModeButton
-          iconType='componentinstance'
-          primary={insertMenuMode === 'insert'}
-          onClick={openFloatingInsertMenuCallback}
-        />
-      </Tooltip>
-      <Tooltip title='Insert conditional' placement='bottom'>
-        <InsertModeButton
-          testid={InsertConditionalButtonTestId}
-          iconType='conditional'
-          primary={conditionalInsertion}
-          onClick={insertConditionalCallback}
-        />
-      </Tooltip>
-      <Tooltip title='Open insert menu' placement='bottom'>
-        <InsertModeButton
-          iconType='dotdotdot'
-          iconCategory='semantic'
-          primary={insertMenuSelected}
-          onClick={selectInsertMenuPane}
-        />
-      </Tooltip>
-      <Tooltip title='Converts an element or component into another' placement='bottom'>
-        <InsertModeButton
-          iconType='convertobject'
-          iconCategory='semantic'
-          primary={insertMenuMode === 'convert'}
-          onClick={openFloatingConvertMenuCallback}
-        />
-      </Tooltip>
-      {/* <Tooltip title='Wrap selection in div' placement='bottom'>
+        <div
+          css={{
+            height: toolbarDirection === 'horizontal' ? 32 : 20,
+            width: toolbarDirection === 'horizontal' ? 20 : 32,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            flexDirection: toolbarDirection === 'horizontal' ? 'column' : 'row',
+            opacity: 0.2,
+            '&:hover': {
+              opacity: 0.7,
+            },
+          }}
+          onClick={toggleToolbarDirection}
+        >
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div
+              key={index}
+              css={{
+                borderRadius: 5,
+                height: toolbarDirection === 'horizontal' ? 2 : 7,
+                width: toolbarDirection === 'horizontal' ? 7 : 2,
+                background: colorTheme.fg1.value,
+              }}
+            ></div>
+          ))}
+        </div>
+        <Tooltip title='Select' placement='bottom'>
+          <InsertModeButton
+            iconType='pointer'
+            iconCategory='tools'
+            onClick={clickSelectModeButton}
+          />
+        </Tooltip>
+        <Tooltip title='Insert text' placement='bottom'>
+          <InsertModeButton
+            iconType='pure-text'
+            primary={textInsertion}
+            onClick={insertTextCallback}
+          />
+        </Tooltip>
+        <Tooltip title='Insert div' placement='bottom'>
+          <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
+        </Tooltip>
+        <Tooltip title='Insert image' placement='bottom'>
+          <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
+        </Tooltip>
+        <Tooltip title='Insert button' placement='bottom'>
+          <InsertModeButton
+            iconType='clickable'
+            primary={buttonInsertion}
+            onClick={insertButtonCallback}
+          />
+        </Tooltip>
+        <Tooltip title='Choose and insert a component' placement='bottom'>
+          <InsertModeButton
+            iconType='componentinstance'
+            primary={insertMenuMode === 'insert'}
+            onClick={openFloatingInsertMenuCallback}
+          />
+        </Tooltip>
+        <Tooltip title='Insert conditional' placement='bottom'>
+          <InsertModeButton
+            testid={InsertConditionalButtonTestId}
+            iconType='conditional'
+            primary={conditionalInsertion}
+            onClick={insertConditionalCallback}
+          />
+        </Tooltip>
+        <Tooltip title='Open insert menu' placement='bottom'>
+          <InsertModeButton
+            iconType='dotdotdot'
+            iconCategory='semantic'
+            primary={insertMenuSelected}
+            onClick={selectInsertMenuPane}
+          />
+        </Tooltip>
+        <Tooltip title='Converts an element or component into another' placement='bottom'>
+          <InsertModeButton
+            iconType='convertobject'
+            iconCategory='semantic'
+            primary={insertMenuMode === 'convert'}
+            onClick={openFloatingConvertMenuCallback}
+          />
+        </Tooltip>
+        {/* <Tooltip title='Wrap selection in div' placement='bottom'>
         <InsertModeButton iconType='group-open' onClick={wrapInDivCallback} />
       </Tooltip> */}
-      <Tooltip title='Wrap selection in an element' placement='bottom'>
-        <InsertModeButton
-          iconType='designtool-larger'
-          iconCategory='semantic'
-          primary={insertMenuMode === 'wrap'}
-          onClick={openFloatingWrapInMenuCallback}
-        />
-      </Tooltip>
-      {/* <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
-        <InsertModeButton
-          iconType='navigator-larger'
-          iconCategory='semantic'
-          onClick={toggleNavigatorVisible}
-        />
-      </Tooltip>
-      <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
-        <InsertModeButton
-          iconType='inspector-larger'
-          iconCategory='semantic'
-          onClick={toggleInspectorVisible}
-        />
-      </Tooltip>
-      <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
-        <InsertModeButton
-          iconType='codymccodeface-larger'
-          iconCategory='semantic'
-          onClick={toggleCodeEditorVisible}
-        />
-      </Tooltip> */}
-      <Tooltip title='Reset Canvas' placement='bottom'>
-        <InsertModeButton
-          iconType='refresh'
-          iconCategory='semantic'
-          onClick={resetCanvasCallback}
-        />
-      </Tooltip>
-      <Tooltip title='Toggle Live Mode' placement='bottom'>
-        <InsertModeButton
-          iconType='playbutton'
-          iconCategory='semantic'
-          primary={isLiveMode}
-          onClick={toggleLiveMode}
-          keepActiveInLiveMode
-        />
-      </Tooltip>
-      {/* <Tooltip title='Zoom in' placement='bottom'>
+        <Tooltip title='Wrap selection in an element' placement='bottom'>
+          <InsertModeButton
+            iconType='designtool-larger'
+            iconCategory='semantic'
+            primary={insertMenuMode === 'wrap'}
+            onClick={openFloatingWrapInMenuCallback}
+          />
+        </Tooltip>
+        <Tooltip title='Reset Canvas' placement='bottom'>
+          <InsertModeButton
+            iconType='refresh'
+            iconCategory='semantic'
+            onClick={resetCanvasCallback}
+          />
+        </Tooltip>
+        <Tooltip title='Toggle Live Mode' placement='bottom'>
+          <InsertModeButton
+            iconType='playbutton'
+            iconCategory='semantic'
+            primary={isLiveMode}
+            onClick={toggleLiveMode}
+            keepActiveInLiveMode
+          />
+        </Tooltip>
+        {/* <Tooltip title='Zoom in' placement='bottom'>
         <InsertModeButton
           iconType='magnifyingglass-plus'
           iconCategory='semantic'
@@ -338,7 +412,7 @@ export const CanvasToolbar = React.memo(() => {
           onClick={zoomOut}
         />
       </Tooltip> */}
-      {/* <Tooltip title='Zoom to 100%' placement='bottom'>
+        {/* <Tooltip title='Zoom to 100%' placement='bottom'>
         TODO make this a number input control
         <SquareButton
           highlight
@@ -355,6 +429,7 @@ export const CanvasToolbar = React.memo(() => {
           {zoomLevel}x
         </SquareButton>
       </Tooltip> */}
+      </div>
     </div>
   )
 })
