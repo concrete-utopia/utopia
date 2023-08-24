@@ -21,6 +21,7 @@ import {
   PopupList,
   useWrappedEmptyOrUnknownOnSubmitValue,
   SimpleNumberInput,
+  NumberInput,
 } from '../../../../../uuiui'
 import { OnSubmitValueOrEmpty } from '../../../controls/control'
 import { useContextSelector } from 'use-context-selector'
@@ -273,34 +274,17 @@ export const FlexGapControl = React.memo(() => {
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
       <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
         <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
-        <SliderNumberControl
+        <NumberInput
           id='flex.container.gap'
-          key='flex.container.gap'
           testId='flex.container.gap'
+          key='flex.container.gap'
           value={value}
-          DEPRECATED_controlOptions={
-            {
-              minimum: 0,
-              maximum: 50,
-              stepSize: 1,
-              origin: 0,
-              filled: true,
-              tooltip: 'Gap (sets margin on children)',
-            } as DEPRECATEDSliderControlOptions
-          }
-          controlStatus={controlStatus}
-          controlStyles={controlStyles}
-          minimum={0}
-          maximum={50}
-          stepSize={1}
-          defaultUnitToHide={'px'}
-          numberType='LengthPercent'
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           onForcedSubmitValue={wrappedOnSubmitValue}
-          onSliderSubmitValue={sliderSubmitValue}
-          onSliderTransientSubmitValue={sliderTransientSubmitValue}
-          transformSliderValueToCSSNumber={transformNumberToCSSNumber}
+          controlStatus={controlStatus}
+          numberType='LengthPercent'
+          defaultUnitToHide={'px'}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>
