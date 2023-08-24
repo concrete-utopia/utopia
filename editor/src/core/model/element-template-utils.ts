@@ -148,7 +148,7 @@ export function isRemixContainerElement(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
 ): boolean {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
+  const file = getProjectFileByFilePath(projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     return isRemixContainerAgainstImports(element, file.fileContents.parsed.imports)
   } else {

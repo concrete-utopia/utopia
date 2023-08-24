@@ -2011,7 +2011,7 @@ function getValidElementPathsFromElement(
         routeModulePath: string,
         parentPathInner: ElementPath,
       ): ElementPath | null {
-        const file = getContentsTreeFileFromString(projectContents, routeModulePath)
+        const file = getProjectFileByFilePath(projectContents, routeModulePath)
         if (
           file == null ||
           file.type !== 'TEXT_FILE' ||
