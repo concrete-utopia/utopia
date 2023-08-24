@@ -104,7 +104,7 @@ export const TargetSelectorPanel = React.memo((props: TargetSelectorPanelProps) 
         position: 'relative',
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        borderTop: '1px solid var(--utopitheme-bg4)',
+        borderTop: `1px solid ${colorTheme.seperator.value}`,
       }}
     >
       <TargetListHeader

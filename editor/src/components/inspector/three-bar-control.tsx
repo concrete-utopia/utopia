@@ -310,7 +310,7 @@ export const ThreeBarControl = React.memo(() => {
       style={{
         display: shouldShow ? 'flex' : 'none',
         flexDirection: ContainerFlexDirection(flexDirection),
-        border: `1px solid ${colorTheme.fg7.value}`,
+        border: `1px solid ${colorTheme.fg8.value}`,
         borderRadius: UtopiaTheme.inputBorderRadius,
         overflow: 'hidden',
       }}

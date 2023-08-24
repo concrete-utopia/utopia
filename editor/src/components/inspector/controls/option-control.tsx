@@ -92,7 +92,7 @@ export const OptionControl: React.FunctionComponent<
           data-ischecked={isChecked}
           data-controlstatus={props.controlStatus}
           css={{
-            border: isChecked ? undefined : `1px solid ${colorTheme.fg7.value}`,
+            border: isChecked ? undefined : `1px solid ${colorTheme.fg8.value}`,
             backgroundColor: props.value ? colorTheme.bg2.value : 'transparent',
             background: background,
             color:
