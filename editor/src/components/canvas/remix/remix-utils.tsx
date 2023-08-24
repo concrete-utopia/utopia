@@ -205,7 +205,10 @@ export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
 export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): RouteManifestWithContents {
-  const routes = flatRoutes('/src', projectContents)
+  const routes = {
+    ...flatRoutes('/src', projectContents),
+    root: { path: '', id: 'root', file: 'root.js', parentId: undefined },
+  }
 
   let resultRoutes: RouteManifestWithContents = {}
   for (let route of Object.values(routes)) {
