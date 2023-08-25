@@ -140,15 +140,18 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const router = React.useMemo(() => createMemoryRouter(routes), [routes])
 
-  let [location, setLocation] = React.useState(router.state.location)
+  let [location] = React.useState(router.state.location)
+
+  let uiJsxCanvasContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
+  )
 
   React.useLayoutEffect(() => {
-    return router.subscribe((newState) => {
-      if (newState.location !== location) {
-        setLocation(newState.location)
-      }
+    return router.subscribe(() => {
+      uiJsxCanvasContext.current.spyValues.metadata = {}
     })
-  }, [location, router])
+  }, [router, uiJsxCanvasContext])
 
   return (
     <RemixContext.Provider

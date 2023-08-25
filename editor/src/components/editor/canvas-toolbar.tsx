@@ -39,6 +39,10 @@ import { Substores, useEditorState, useRefEditorState } from './store/store-hook
 import { togglePanel } from './actions/action-creators'
 import { defaultTransparentViewElement } from './defaults'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { forceNotNull } from '../../core/shared/optional-utils'
+import { AlwaysFalse, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
+import type { UiJsxCanvasContextData } from '../canvas/ui-jsx-canvas'
+import { UiJsxCanvasCtxAtom } from '../canvas/ui-jsx-canvas'
 
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
@@ -152,9 +156,15 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [dispatch, isLiveMode])
 
+  let uiJsxCanvasContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
+  )
+
   const resetCanvasCallback = React.useCallback(() => {
+    uiJsxCanvasContext.current.spyValues.metadata = {}
     dispatch([resetCanvas()])
-  }, [dispatch])
+  }, [dispatch, uiJsxCanvasContext])
 
   const toggleCodeEditorVisible = React.useCallback(
     () => dispatch([togglePanel('codeEditor')]),
