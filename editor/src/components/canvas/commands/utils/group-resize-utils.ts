@@ -74,8 +74,6 @@ export function transformConstrainedLocalFullFrameUsingBoundingBox(
   currentFrame: FrameWithAllPoints,
   constrainedPoints: Array<FramePoint>,
 ): FrameWithAllPoints {
-  // TODO verify that currentBoundingBox and currentFrame's dimensions match up
-
   function sumConstrainedLengths(sum: number, framePoint: FramePoint) {
     return sum + currentFrame[framePoint]
   }
@@ -132,30 +130,30 @@ export function transformConstrainedLocalFullFrameUsingBoundingBox(
 
       const currentFramePointLength = currentFrame[framePoint]
 
-      // for non-constrained Frame Points, we change them by calculating the ratio of the old bounding rectangle's non-constrained area vs the new bounding rectangle's non-constrained area
-      // as you can see above, while I think the maths is right, zeros are creeping in causing edge cases I need to fix
-      // I think this function could be rewritten into a much shorter, way more elegant piece of code
+      // For non-constrained Frame Points, we change them by calculating the ratio of the
+      // old bounding rectangle's non-constrained area vs the new bounding rectangle's non-constrained area.
       const dimensionRatioDivisor = currentSizeForDimension - constrainedLengthForDimension
       const dimensionRatio =
         dimensionRatioDivisor === 0
           ? 1
           : (newSizeForDimension - constrainedLengthForDimension) / dimensionRatioDivisor
+
       function getUpdatedFramePoint(): number {
         switch (framePoint) {
           case 'left':
             const leftShift = groupOriginalBoundingBox.x - childrenBoundingBox.x
-            return (currentFramePointLength + leftShift) * dimensionRatio
+            return currentFramePointLength + leftShift
           case 'top':
             const topShift = groupOriginalBoundingBox.y - childrenBoundingBox.y
-            return (currentFramePointLength + topShift) * dimensionRatio
+            return currentFramePointLength + topShift
           default:
-            return currentFramePointLength * dimensionRatio
+            return currentFramePointLength
         }
       }
 
-      const updatedFramePointLength = getUpdatedFramePoint()
+      const updatedFramePointValue = getUpdatedFramePoint()
 
-      newFullFrame[framePoint] = updatedFramePointLength
+      newFullFrame[framePoint] = updatedFramePointValue * dimensionRatio
       return newFullFrame
     },
     {},

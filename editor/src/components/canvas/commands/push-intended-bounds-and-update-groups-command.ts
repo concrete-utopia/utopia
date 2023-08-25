@@ -185,17 +185,10 @@ function getUpdateResizedGroupChildrenCommands(
         )
       }
 
-      // the original size of the group before the interaction ran
-      let childrenBounds: CanvasRectangle | null
-      if (command.isStartingMetadata === 'starting-metadata') {
-        // if we have the starting metadata, we can simply get the original measured bounds of the element and we know it's the originalSize
-        childrenBounds = rectangleFromChildrenBounds(editor, children) //sizeFromMeasuredBounds()
-      } else {
-        // if the metadata is fresh, the group is already resized. so we need to query the size of its children AABB
-        //(which was not yet updated, since this function is updating the children sizes) to get the originalSize
-        childrenBounds = rectangleFromChildrenBounds(editor, children)
-      }
+      // The original size of the children before the interaction ran.
+      const childrenBounds: CanvasRectangle | null = rectangleFromChildrenBounds(editor, children)
 
+      // The original size of the group before the interaction ran.
       const groupOriginalBounds = frameFromMeasuredBounds()
 
       if (childrenBounds != null && groupOriginalBounds != null) {
