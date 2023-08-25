@@ -5,8 +5,6 @@ import type { ControlStatus, ControlStyles } from '../../../common/control-statu
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import type { OptionChainOption } from '../../../controls/option-chain-control'
 import { OptionChainControl } from '../../../controls/option-chain-control'
-import type { DEPRECATEDSliderControlOptions } from '../../../controls/slider-control'
-import { SliderControl } from '../../../controls/slider-control'
 import {
   InspectorPropsContext,
   stylePropPathMappingFn,
@@ -17,16 +15,9 @@ import type { OptionsType } from 'react-select'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { PropertyLabel } from '../../../widgets/property-label'
-import {
-  PopupList,
-  useWrappedEmptyOrUnknownOnSubmitValue,
-  SimpleNumberInput,
-} from '../../../../../uuiui'
-import { OnSubmitValueOrEmpty } from '../../../controls/control'
+import { PopupList, useWrappedEmptyOrUnknownOnSubmitValue, NumberInput } from '../../../../../uuiui'
 import { useContextSelector } from 'use-context-selector'
 import type { FlexDirection } from '../../../common/css-utils'
-import { CSSNumber, setCSSNumberValue } from '../../../common/css-utils'
-import { SliderNumberControl } from '../../../controls/slider-number-control'
 
 type uglyLabel =
   | 'left'
@@ -238,15 +229,8 @@ export const FlexJustifyContentControl = React.memo((props: FlexJustifyContentCo
 })
 
 export const FlexGapControl = React.memo(() => {
-  const {
-    value,
-    useSubmitValueFactory,
-    onSubmitValue,
-    onUnsetValues,
-    onTransientSubmitValue,
-    controlStatus,
-    controlStyles,
-  } = useInspectorLayoutInfo('gap')
+  const { value, onSubmitValue, onUnsetValues, onTransientSubmitValue, controlStatus } =
+    useInspectorLayoutInfo('gap')
   const menuItems = [unsetPropertyMenuItem('Flex Gap', onUnsetValues)]
 
   const wrappedOnSubmitValue = useWrappedEmptyOrUnknownOnSubmitValue(onSubmitValue, onUnsetValues)
@@ -255,52 +239,28 @@ export const FlexGapControl = React.memo(() => {
     onUnsetValues,
   )
 
-  const transformNumberToCSSNumber = React.useCallback(
-    (newValue: number) => setCSSNumberValue(value, newValue),
-    [value],
-  )
-  const [sliderSubmitValue, sliderTransientSubmitValue] = useSubmitValueFactory(
-    transformNumberToCSSNumber,
-  )
-
   const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
     return contextData.targetPath
   })
   const flexGapProp = React.useMemo(() => {
     return [stylePropPathMappingFn('gap', targetPath)]
   }, [targetPath])
+
   return (
     <InspectorContextMenuWrapper id={`gap-context-menu`} items={menuItems} data={{}}>
       <UIGridRow padded={false} variant='<-auto-><----------1fr--------->'>
         <PropertyLabel target={flexGapProp}>Gap</PropertyLabel>
-        <SliderNumberControl
+        <NumberInput
           id='flex.container.gap'
-          key='flex.container.gap'
           testId='flex.container.gap'
+          key='flex.container.gap'
           value={value}
-          DEPRECATED_controlOptions={
-            {
-              minimum: 0,
-              maximum: 50,
-              stepSize: 1,
-              origin: 0,
-              filled: true,
-              tooltip: 'Gap (sets margin on children)',
-            } as DEPRECATEDSliderControlOptions
-          }
-          controlStatus={controlStatus}
-          controlStyles={controlStyles}
-          minimum={0}
-          maximum={50}
-          stepSize={1}
-          defaultUnitToHide={'px'}
-          numberType='LengthPercent'
           onSubmitValue={wrappedOnSubmitValue}
           onTransientSubmitValue={wrappedOnTransientSubmitValue}
           onForcedSubmitValue={wrappedOnSubmitValue}
-          onSliderSubmitValue={sliderSubmitValue}
-          onSliderTransientSubmitValue={sliderTransientSubmitValue}
-          transformSliderValueToCSSNumber={transformNumberToCSSNumber}
+          controlStatus={controlStatus}
+          numberType='LengthPercent'
+          defaultUnitToHide={'px'}
         />
       </UIGridRow>
     </InspectorContextMenuWrapper>
