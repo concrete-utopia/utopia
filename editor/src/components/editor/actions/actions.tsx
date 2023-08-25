@@ -603,6 +603,7 @@ import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { RouteModulePathsCacheGLOBAL } from '../../canvas/remix/remix-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1502,8 +1503,8 @@ class RemixRouterStateMachine {
     }
 
     // commit the routing table when we know that we are at the end of the path
-    if (filePath === '/src/routes/_index.js') {
-      // TODO: unhardcode when we have access to the hierarchcy
+    const isLeafModule = RouteModulePathsCacheGLOBAL.current[filePath]?.isLeafModule ?? true
+    if (isLeafModule) {
       addToRemixRoutingTable(this.state.remixContainerPath, this.partialLookupTable)
       this.reset()
     }

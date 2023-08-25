@@ -3,19 +3,23 @@ import React from 'react'
 import { FutureConfig } from '@remix-run/react/dist/entry'
 import { RouteModules } from '@remix-run/react/dist/routeModules'
 import { EntryRoute, RouteManifest } from '@remix-run/react/dist/routes'
-import {
-  ActionFunction,
-  DataRouteObject,
-  LoaderFunction,
-  ShouldRevalidateFunction,
-} from 'react-router'
+import { DataRouteObject, ShouldRevalidateFunction } from 'react-router'
 import { UtopiaRemixRoute, invariant } from '../remix-utils'
 import { RemixRouteError } from '@remix-run/react/dist/components'
 
+export interface EntryRouteWithFileMeta extends EntryRoute {
+  filePath: string
+}
+
+export type DataRouteWithFilePath = DataRouteObject & {
+  children?: DataRouteWithFilePath[]
+  filePath: string
+}
+
 // Create a map of routes by parentId to use recursively instead of
 // repeatedly filtering the manifest.
-export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
-  let routes: Record<string, Omit<EntryRoute, 'children'>[]> = {}
+export function groupRoutesByParentId(manifest: RouteManifest<EntryRouteWithFileMeta>) {
+  let routes: Record<string, Omit<EntryRouteWithFileMeta, 'children'>[]> = {}
 
   Object.values(manifest).forEach((route) => {
     let parentId = route.parentId || ''
@@ -29,27 +33,23 @@ export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
 }
 
 export function createClientRoutes(
-  manifest: RouteManifest<EntryRoute>,
+  manifest: RouteManifest<EntryRouteWithFileMeta>,
   routeModulesCache: RouteModules,
   future: FutureConfig,
   parentId: string = '',
-  routesByParentId: Record<string, Omit<EntryRoute, 'children'>[]> = groupRoutesByParentId(
-    manifest,
-  ),
-  createDataFunction: (
-    route: EntryRoute,
-    routeModules: RouteModules,
-    isAction: boolean,
-  ) => LoaderFunction | ActionFunction | undefined,
+  routesByParentId: Record<
+    string,
+    Omit<EntryRouteWithFileMeta, 'children'>[]
+  > = groupRoutesByParentId(manifest),
   needsRevalidation?: Set<string>,
-): DataRouteObject[] {
+): DataRouteWithFilePath[] {
   return (routesByParentId[parentId] || []).map((route) => {
     let hasErrorBoundary =
       future.v2_errorBoundary === true
         ? route.id === 'root' || route.hasErrorBoundary
         : route.id === 'root' || route.hasCatchBoundary || route.hasErrorBoundary
 
-    let dataRoute: DataRouteObject = {
+    let dataRoute: DataRouteWithFilePath = {
       caseSensitive: route.caseSensitive,
       element: <UtopiaRemixRoute id={route.id} />,
       errorElement: hasErrorBoundary ? <RemixRouteError id={route.id} /> : undefined,
@@ -59,9 +59,8 @@ export function createClientRoutes(
       // handle gets added in via useMatches since we aren't guaranteed to
       // have the route module available here
       handle: undefined,
-      loader: createDataFunction(route, routeModulesCache, false),
-      action: createDataFunction(route, routeModulesCache, true),
       shouldRevalidate: createShouldRevalidate(route, routeModulesCache, needsRevalidation),
+      filePath: route.filePath,
     }
     let children = createClientRoutes(
       manifest,
@@ -69,7 +68,6 @@ export function createClientRoutes(
       future,
       route.id,
       routesByParentId,
-      createDataFunction,
       needsRevalidation,
     )
     if (children.length > 0) dataRoute.children = children

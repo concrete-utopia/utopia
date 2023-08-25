@@ -184,7 +184,11 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
-import { findPathToOutlet, getTopLevelElement } from './remix/remix-utils'
+import {
+  RouteModulePathsCacheGLOBAL,
+  findPathToOutlet,
+  getTopLevelElement,
+} from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -2044,22 +2048,11 @@ function getValidElementPathsFromElement(
         return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
       }
 
-      /**
-       * TODO: generalize this for all routes
-       * Basically:
-       * - Pass the route modules parsed from projectContents
-       * - When encountering a RemixContainer, append the paths obtained from the routes (like
-       *   below) to the path of the remix container
-       */
-
-      const ROOTJS_PATH = '/src/root.js'
-      const INDEXJS_PATH = '/src/routes/_index.js'
-
-      const pathToRootOutlet = makeValidPathsFromModule(ROOTJS_PATH, path)
-      if (pathToRootOutlet == null) {
-        throw new Error(`TODO SPIKE: we assume that ${ROOTJS_PATH} has an <Outlet /> component`)
+      for (const [filePathOfRouteModule, elementPath] of Object.entries(
+        RouteModulePathsCacheGLOBAL.current,
+      )) {
+        makeValidPathsFromModule(filePathOfRouteModule, elementPath.pathToRootElement)
       }
-      makeValidPathsFromModule(INDEXJS_PATH, pathToRootOutlet)
 
       return paths
     }

@@ -29,6 +29,7 @@ import type {
   ElementPath,
   ElementPathPart,
   ExportDefaultFunctionOrClass,
+  TextFile,
 } from '../../../core/shared/project-file-types'
 import type { RouteModules } from '@remix-run/react/dist/routeModules'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
@@ -42,13 +43,12 @@ import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-js
 import type { MapLike } from 'typescript'
 import { pathPartsFromJSXElementChild } from '../../../core/model/element-template-utils'
 import { flatRoutes } from './from-remix/flat-routes'
+import type { DataRouteWithFilePath, EntryRouteWithFileMeta } from './from-remix/client-routes'
 import { createClientRoutes, groupRoutesByParentId } from './from-remix/client-routes'
 
 const ROOT_DIR = '/src'
 
-export interface EntryRouteWithFileMeta extends EntryRoute {
-  filePath: string
-}
+export const RouteModulePathsCacheGLOBAL: { current: RouteModulesWithBasePaths } = { current: {} }
 
 export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
 
@@ -197,6 +197,28 @@ export function getDefaultExportNameAndUidFromFile(
   return { name: defaultExportName, uid: elementUid }
 }
 
+function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChild | null {
+  if (file.fileContents.parsed.type !== 'PARSE_SUCCESS') {
+    return null
+  }
+
+  const defaultExportName =
+    file.fileContents.parsed.exportsDetail.find(
+      (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
+    )?.name ?? null
+
+  if (defaultExportName == null) {
+    return null
+  }
+
+  return (
+    file.fileContents.parsed.topLevelElements.find(
+      (t): t is UtopiaJSXComponent =>
+        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+    )?.rootElement ?? null
+  )
+}
+
 export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
   const propsWithPath = {
     [UTOPIA_PATH_KEY]: path,
@@ -251,48 +273,46 @@ export function getRoutesAndModulesFromManifest(
   const indexJSRootElement = getRootJSRootElement(projectContents)
   invariant(indexJSRootElement, 'There should be an root.js in the spike project')
 
-  const pathPartForRootJs = findPathToOutlet(indexJSRootElement) ?? []
-  const loaderAndAction: {
-    [id: string]: {
-      loader?: LoaderFunction
-      action?: ActionFunction
-    }
-  } = {}
+  const routesByParentId = groupRoutesByParentId(routeManifest)
+  const routes: DataRouteWithFilePath[] = createClientRoutes(
+    routeManifest,
+    {},
+    defaultFutureConfig,
+    '',
+    routesByParentId,
+  )
+
+  if (routes.length !== 1 && routes[0].id !== 'root') {
+    throw new Error('The root route module must be `root`')
+  }
+
+  const routeModulesToBasePaths = getRouteModulesWithPaths(
+    projectContents,
+    routes[0],
+    remixAppContainerPath,
+  )
+
+  RouteModulePathsCacheGLOBAL.current = routeModulesToBasePaths
 
   Object.values(routeManifest).forEach((route) => {
     // TODO: unhardcode when we have access to the hierarchy
-    const basePath =
-      route.id === 'root'
-        ? remixAppContainerPath
-        : EP.appendNewElementPath(remixAppContainerPath, pathPartForRootJs)
+    const basePath = routeModulesToBasePaths[route.filePath]
 
     const { defaultExport, loader, action } = getRemixExportsOfModule(
       route.filePath,
       customRequire,
       metadataContext,
       projectContents,
-      basePath,
+      basePath.pathToRootElement,
       mutableContextRef,
       topLevelComponentRendererComponents,
     )
 
-    loaderAndAction[route.id] = { loader, action }
+    addLoaderAndActionToRoute(routes, route.id, loader, action)
     routeModules[route.id] = {
       default: defaultExport,
     }
   })
-
-  const routesByParentId = groupRoutesByParentId(routeManifest)
-  const routes: DataRouteObject[] = createClientRoutes(
-    routeManifest,
-    {},
-    defaultFutureConfig,
-    '',
-    routesByParentId,
-    (route: EntryRoute, _: RouteModules, isAction: boolean) => {
-      return isAction ? loaderAndAction[route.id].action : loaderAndAction[route.id].loader
-    },
-  )
 
   return { routeModules: routeModules, routes: routes }
 }
@@ -309,8 +329,8 @@ function getRemixExportsOfModule(
   >,
 ): {
   defaultExport: (props: any) => JSX.Element
-  loader: any
-  action: any
+  loader: LoaderFunction | undefined
+  action: ActionFunction | undefined
 } {
   const executionScope = createExecutionScope(
     filename,
@@ -339,8 +359,8 @@ function getRemixExportsOfModule(
       executionScope.scope[nameAndUid.name] ?? fallbackElement,
       EP.toString(basePath),
     ),
-    loader: executionScope.scope['loader'],
-    action: executionScope.scope['action'],
+    loader: executionScope.scope['loader'] as LoaderFunction | undefined,
+    action: executionScope.scope['action'] as ActionFunction | undefined,
   }
 }
 
@@ -392,4 +412,66 @@ export function findPathToOutlet(element: JSXElementChild): ElementPathPart | nu
   // TODO: handle missing cases
 
   return null
+}
+
+interface RouteModulesWithBasePaths {
+  [filePath: string]: {
+    pathToRootElement: ElementPath
+    isLeafModule: boolean
+  }
+}
+
+function getRouteModulesWithPaths(
+  projectContents: ProjectContentTreeRoot,
+  route: DataRouteWithFilePath,
+  pathSoFar: ElementPath,
+): RouteModulesWithBasePaths {
+  const file = getProjectFileByFilePath(projectContents, route.filePath)
+  if (file == null || file.type !== 'TEXT_FILE') {
+    return {}
+  }
+
+  const topLevelElement = getDefaultExportedTopLevelElement(file)
+  invariant(topLevelElement, 'Route module should provide a default export')
+
+  const pathPartToOutlet = findPathToOutlet(topLevelElement)
+  const isLeafModule = pathPartToOutlet == null
+  let routeModulesWithBasePaths: RouteModulesWithBasePaths = {
+    [route.filePath]: {
+      pathToRootElement: pathSoFar,
+      isLeafModule: isLeafModule,
+    },
+  }
+
+  if (isLeafModule) {
+    return routeModulesWithBasePaths
+  }
+
+  const children = route.children ?? []
+  const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
+
+  for (const child of children) {
+    const paths = getRouteModulesWithPaths(projectContents, child, pathForChildren)
+    for (const [filePath, path] of Object.entries(paths)) {
+      routeModulesWithBasePaths[filePath] = path
+    }
+  }
+
+  return routeModulesWithBasePaths
+}
+
+function addLoaderAndActionToRoute(
+  routes: DataRouteObject[],
+  routeId: string,
+  loader: LoaderFunction | undefined,
+  action: ActionFunction | undefined,
+) {
+  routes.forEach((route) => {
+    if (route.id === routeId) {
+      route.action = action
+      route.loader = loader
+    } else {
+      addLoaderAndActionToRoute(route.children ?? [], routeId, loader, action)
+    }
+  })
 }
