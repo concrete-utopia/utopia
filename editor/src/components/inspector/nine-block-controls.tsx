@@ -348,7 +348,7 @@ export const NineBlockControl = React.memo(() => {
         gridTemplateRows: '1fr 1fr 1fr',
         gridTemplateColumns: '1fr 1fr 1fr',
         backgroundColor: colorTheme.bg1.value,
-        border: `1px solid ${colorTheme.fg7.value}`,
+        border: `1px solid ${colorTheme.fg8.value}`,
         borderRadius: UtopiaTheme.inputBorderRadius,
         overflow: 'hidden',
       }}
