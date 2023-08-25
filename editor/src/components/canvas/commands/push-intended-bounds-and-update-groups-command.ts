@@ -6,14 +6,14 @@ import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
 } from '../../../core/shared/element-template'
-import type { CanvasRectangle, Size } from '../../../core/shared/math-utils'
+import type { CanvasRectangle, LocalRectangle, Size } from '../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   nullIfInfinity,
   rectangleDifference,
   sizeFromRectangle,
 } from '../../../core/shared/math-utils'
-import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
+import { forceNotNull, isNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type {
@@ -40,8 +40,9 @@ import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './comman
 import { foldAndApplyCommandsSimple } from './commands'
 import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
 import type { FrameWithAllPoints } from './utils/group-resize-utils'
+import { rectangleToSixFramePoints } from './utils/group-resize-utils'
+import { sixFramePointsToCanvasRectangle } from './utils/group-resize-utils'
 import {
-  localRectangleToSixFramePoints,
   roundSixPointFrameToNearestWhole,
   transformConstrainedLocalFullFrameUsingBoundingBox,
 } from './utils/group-resize-utils'
@@ -134,16 +135,29 @@ type LocalFrameAndTarget = {
   allSixFramePoints: FrameWithAllPoints
 }
 
+function rectangleFromChildrenBounds(
+  editor: EditorState,
+  children: Array<ElementPath>,
+): CanvasRectangle | null {
+  return boundingRectangleArray(
+    children.map((c) => {
+      return nullIfInfinity(
+        MetadataUtils.findElementByElementPath(editor.jsxMetadata, c)?.globalFrame,
+      )
+    }),
+  )
+}
+
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateGroups,
 ): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
   const targets: Array<{
     target: ElementPath
-    size: Size
+    frame: CanvasRectangle
   }> = command.value.map((ft) => ({
     target: ft.target,
-    size: sizeFromRectangle(ft.frame),
+    frame: ft.frame,
   }))
 
   // we are going to mutate this as we iterate over targets
@@ -164,75 +178,79 @@ function getUpdateResizedGroupChildrenCommands(
         frameAndTarget.target,
       )
 
-      // the original size of the group before the interaction ran
-      const originalSize: Size =
-        command.isStartingMetadata === 'starting-metadata'
-          ? // if we have the starting metadata, we can simply get the original measured bounds of the element and we know it's the originalSize
-            sizeFromRectangle(
-              MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
-                frameAndTarget.target,
-                editor.jsxMetadata,
-              ),
-            )
-          : // if the metadata is fresh, the group is already resized. so we need to query the size of its children AABB
-            //(which was not yet updated, since this function is updating the children sizes) to get the originalSize
-            sizeFromRectangle(
-              boundingRectangleArray(
-                children.map((c) =>
-                  nullIfInfinity(
-                    MetadataUtils.findElementByElementPath(editor.jsxMetadata, c)?.globalFrame,
-                  ),
-                ),
-              ),
-            )
-
-      const updatedSize: Size = frameAndTarget.size
-
-      // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
-      const childrenWithFragmentsRetargeted = replaceFragmentLikePathsWithTheirChildrenRecursive(
-        editor.jsxMetadata,
-        editor.allElementProps,
-        editor.elementPathTree,
-        children,
-      )
-      childrenWithFragmentsRetargeted.forEach((child) => {
-        const currentLocalFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
-          child,
+      function frameFromMeasuredBounds(): CanvasRectangle | null {
+        return MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          frameAndTarget.target,
           editor.jsxMetadata,
         )
-        if (currentLocalFrame == null) {
-          // bail
-          return
-        }
+      }
 
-        let constraints: Array<keyof FrameWithAllPoints> =
-          editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
+      // the original size of the group before the interaction ran
+      let childrenBounds: CanvasRectangle | null
+      if (command.isStartingMetadata === 'starting-metadata') {
+        // if we have the starting metadata, we can simply get the original measured bounds of the element and we know it's the originalSize
+        childrenBounds = rectangleFromChildrenBounds(editor, children) //sizeFromMeasuredBounds()
+      } else {
+        // if the metadata is fresh, the group is already resized. so we need to query the size of its children AABB
+        //(which was not yet updated, since this function is updating the children sizes) to get the originalSize
+        childrenBounds = rectangleFromChildrenBounds(editor, children)
+      }
 
-        const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
-        if (jsxElement != null) {
-          if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
-            constraints.push('width')
-          }
-          if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
-            constraints.push('height')
-          }
-        }
+      const groupOriginalBounds = frameFromMeasuredBounds()
 
-        const resizedLocalFramePoints = roundSixPointFrameToNearestWhole(
-          transformConstrainedLocalFullFrameUsingBoundingBox(
-            updatedSize,
-            originalSize,
-            localRectangleToSixFramePoints(currentLocalFrame, originalSize),
-            constraints,
-          ),
+      if (childrenBounds != null && groupOriginalBounds != null) {
+        const updatedGroupBounds = frameAndTarget.frame
+
+        // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
+        const childrenWithFragmentsRetargeted = replaceFragmentLikePathsWithTheirChildrenRecursive(
+          editor.jsxMetadata,
+          editor.allElementProps,
+          editor.elementPathTree,
+          children,
         )
-        updatedLocalFrames[EP.toString(child)] = {
-          allSixFramePoints: resizedLocalFramePoints,
-          parentSize: updatedSize,
-          target: child,
+        for (const child of childrenWithFragmentsRetargeted) {
+          const currentLocalFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
+            child,
+            editor.jsxMetadata,
+          )
+          if (currentLocalFrame == null) {
+            // bail
+            continue
+          }
+
+          let constraints: Array<keyof FrameWithAllPoints> =
+            editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
+
+          const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
+          if (jsxElement != null) {
+            if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
+              constraints.push('width')
+            }
+            if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
+              constraints.push('height')
+            }
+          }
+
+          const resizedLocalFramePoints = roundSixPointFrameToNearestWhole(
+            transformConstrainedLocalFullFrameUsingBoundingBox(
+              groupOriginalBounds,
+              updatedGroupBounds,
+              childrenBounds,
+              rectangleToSixFramePoints(currentLocalFrame, childrenBounds),
+              constraints,
+            ),
+          )
+          updatedLocalFrames[EP.toString(child)] = {
+            allSixFramePoints: resizedLocalFramePoints,
+            parentSize: updatedGroupBounds,
+            target: child,
+          }
+          targets.push({
+            target: child,
+            frame: sixFramePointsToCanvasRectangle(resizedLocalFramePoints),
+          })
         }
-        targets.push({ target: child, size: sizeFromRectangle(resizedLocalFramePoints) })
-      })
+      }
     }
   }
 

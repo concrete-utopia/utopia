@@ -1,4 +1,10 @@
-import type { LocalRectangle, Size } from '../../../../core/shared/math-utils'
+import type {
+  CanvasRectangle,
+  LocalRectangle,
+  SimpleRectangle,
+  Size,
+} from '../../../../core/shared/math-utils'
+import { canvasRectangle } from '../../../../core/shared/math-utils'
 import { roundToNearestWhole } from '../../../../core/shared/math-utils'
 
 type FramePoint = keyof FrameWithAllPoints
@@ -23,18 +29,29 @@ export type FrameWithAllPoints = {
   height: number
 }
 
-export function localRectangleToSixFramePoints(
-  localRectangle: LocalRectangle,
+export function rectangleToSixFramePoints(
+  rectangle: SimpleRectangle,
   containerSize: Size,
 ): FrameWithAllPoints {
   return {
-    left: localRectangle.x,
-    right: containerSize.width - (localRectangle.x + localRectangle.width),
-    width: localRectangle.width,
-    top: localRectangle.y,
-    bottom: containerSize.height - (localRectangle.y + localRectangle.height),
-    height: localRectangle.height,
+    left: rectangle.x,
+    right: containerSize.width - (rectangle.x + rectangle.width),
+    width: rectangle.width,
+    top: rectangle.y,
+    bottom: containerSize.height - (rectangle.y + rectangle.height),
+    height: rectangle.height,
   }
+}
+
+export function sixFramePointsToCanvasRectangle(
+  frameWithAllPoints: FrameWithAllPoints,
+): CanvasRectangle {
+  return canvasRectangle({
+    x: frameWithAllPoints.left,
+    y: frameWithAllPoints.top,
+    width: frameWithAllPoints.width,
+    height: frameWithAllPoints.height,
+  })
 }
 
 export function roundSixPointFrameToNearestWhole(
@@ -51,8 +68,9 @@ export function roundSixPointFrameToNearestWhole(
 }
 
 export function transformConstrainedLocalFullFrameUsingBoundingBox(
-  newBoundingBox: Size,
-  currentBoundingBox: Size,
+  groupOriginalBoundingBox: CanvasRectangle,
+  groupNewBoundingBox: CanvasRectangle,
+  childrenBoundingBox: CanvasRectangle,
   currentFrame: FrameWithAllPoints,
   constrainedPoints: Array<FramePoint>,
 ): FrameWithAllPoints {
@@ -80,10 +98,12 @@ export function transformConstrainedLocalFullFrameUsingBoundingBox(
       const horizontal = isHorizontalPoint(framePoint)
 
       const currentSizeForDimension = horizontal
-        ? currentBoundingBox.width
-        : currentBoundingBox.height
+        ? childrenBoundingBox.width
+        : childrenBoundingBox.height
 
-      const newSizeForDimension = horizontal ? newBoundingBox.width : newBoundingBox.height
+      const newSizeForDimension = horizontal
+        ? groupNewBoundingBox.width
+        : groupNewBoundingBox.height
 
       const constrainedPointsForDimension = horizontal
         ? horizontalConstrainedPoints
@@ -115,9 +135,25 @@ export function transformConstrainedLocalFullFrameUsingBoundingBox(
       // for non-constrained Frame Points, we change them by calculating the ratio of the old bounding rectangle's non-constrained area vs the new bounding rectangle's non-constrained area
       // as you can see above, while I think the maths is right, zeros are creeping in causing edge cases I need to fix
       // I think this function could be rewritten into a much shorter, way more elegant piece of code
-      const updatedFramePointLength =
-        (currentFramePointLength * (newSizeForDimension - constrainedLengthForDimension)) /
-        (currentSizeForDimension - constrainedLengthForDimension)
+      const dimensionRatioDivisor = currentSizeForDimension - constrainedLengthForDimension
+      const dimensionRatio =
+        dimensionRatioDivisor === 0
+          ? 1
+          : (newSizeForDimension - constrainedLengthForDimension) / dimensionRatioDivisor
+      function getUpdatedFramePoint(): number {
+        switch (framePoint) {
+          case 'left':
+            const leftShift = groupOriginalBoundingBox.x - childrenBoundingBox.x
+            return (currentFramePointLength + leftShift) * dimensionRatio
+          case 'top':
+            const topShift = groupOriginalBoundingBox.y - childrenBoundingBox.y
+            return (currentFramePointLength + topShift) * dimensionRatio
+          default:
+            return currentFramePointLength * dimensionRatio
+        }
+      }
+
+      const updatedFramePointLength = getUpdatedFramePoint()
 
       newFullFrame[framePoint] = updatedFramePointLength
       return newFullFrame
