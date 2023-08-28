@@ -348,7 +348,12 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
         const followSelectionEnabled = getFollowSelectionEnabledConfig()
         if (followSelectionEnabled) {
           currentSelection = message.boundsInFile
-          revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
+          const visibleEditor = vscode.window.visibleTextEditors.find((editor) => {
+            return message.boundsInFile.filePath === editor.document.uri.path
+          })
+          if (!selectionInsideEditorRange(message.boundsInFile, visibleEditor)) {
+            revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
+          }
         }
         break
       case 'GET_UTOPIA_VSCODE_CONFIG':
@@ -407,6 +412,15 @@ function entireDocRange() {
   )
 }
 
+function selectionInsideEditorRange(selection: BoundsInFile, editor: vscode.TextEditor): boolean {
+  return (
+    editor != null &&
+    selection != null &&
+    selection.startLine <= editor.selection.start.line &&
+    selection.endLine >= editor.selection.end.line
+  )
+}
+
 async function clearDirtyFlags(resource: vscode.Uri): Promise<void> {
   // File saved on Utopia side, so FS has been updated, so we want VS Code to revert
   // to the now saved version
@@ -424,7 +438,14 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
     if (editApplied) {
       // Reset the highlights and selection
       updateDecorations(currentDecorations)
-      if (currentSelection != null) {
+
+      const visibleEditor = vscode.window.visibleTextEditors.find((editor) => {
+        return filePath === `/utopia${editor.document.uri.path}`
+      })
+      if (
+        currentSelection != null &&
+        !selectionInsideEditorRange(currentSelection, visibleEditor)
+      ) {
         revealRangeIfPossibleInVisibleEditor(currentSelection)
       }
     } else {
