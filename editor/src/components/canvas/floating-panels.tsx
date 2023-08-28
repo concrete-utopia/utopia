@@ -68,6 +68,7 @@ const SizeConstraints: {
 type PanelName = 'leftMenu1' | 'leftMenu2' | 'rightMenu1' | 'rightMenu2'
 const Panels: Array<PanelName> = ['leftMenu1', 'leftMenu2', 'rightMenu1', 'rightMenu2']
 
+// TODO store menu/pane height
 const DefaultPanels: { [key in PanelName]: Array<Menu | Pane> } = {
   leftMenu1: ['code-editor'],
   leftMenu2: ['navigator'],
@@ -492,7 +493,6 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           [props.alignment]: leftOrRightPosition,
           top: frame.y,
           margin: 10,
-          border: '1px solid green',
         }}
       >
         {menusAndPanes.map((value, i) => {
