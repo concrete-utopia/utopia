@@ -391,7 +391,11 @@ export async function renderTestEditorWithModel(
         const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
         const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
           asyncTestDispatch,
-          [trueUpGroups()],
+          [
+            trueUpGroups(
+              workingEditorState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns,
+            ),
+          ],
           workingEditorState,
           spyCollector,
         )

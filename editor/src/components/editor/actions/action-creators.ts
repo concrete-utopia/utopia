@@ -1080,7 +1080,7 @@ export function updateFromWorker(
   }
 }
 
-export function trueUpGroups(targets: TrueUpTarget[] = []): TrueUpGroups {
+export function trueUpGroups(targets: TrueUpTarget[]): TrueUpGroups {
   return {
     action: 'TRUE_UP_GROUPS',
     targets: targets,
