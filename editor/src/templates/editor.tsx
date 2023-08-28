@@ -122,6 +122,7 @@ import {
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
 import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
+import { groupChildrenThatNeedTrueuingUp } from '../components/canvas/canvas-strategies/strategies/group-helpers'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -482,14 +483,22 @@ export class Editor {
         }
 
         // true up groups if needed
-        if (this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+        let trueUps = [
+          ...this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns,
+          ...groupChildrenThatNeedTrueuingUp(this.storedState.unpatchedEditor.jsxMetadata),
+        ]
+        if (trueUps.length > 0) {
           // updated editor with trued up groups
           Measure.taskTime(`Group true up ${updateId}`, () => {
             const projectContentsBeforeGroupTrueUp =
               this.storedState.unpatchedEditor.projectContents
             const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
-              [{ action: 'TRUE_UP_GROUPS' }],
+              [
+                EditorActions.transientActions([
+                  EditorActions.mergeWithPrevUndo([EditorActions.trueUpGroups(trueUps)]),
+                ]),
+              ],
               this.storedState,
               this.spyCollector,
             )
