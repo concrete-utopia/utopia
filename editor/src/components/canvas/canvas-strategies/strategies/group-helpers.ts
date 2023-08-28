@@ -1,5 +1,9 @@
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
-import type { AllElementProps } from '../../../../components/editor/store/editor-state'
+import type {
+  AllElementProps,
+  TrueUpTarget,
+} from '../../../../components/editor/store/editor-state'
+import { trueUpElementChanged } from '../../../../components/editor/store/editor-state'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import {
@@ -25,6 +29,7 @@ import {
   jsxAttributesFromMap,
   jsxElementWithoutUID,
 } from '../../../../core/shared/element-template'
+import { boundingRectangleArray, isFiniteRectangle } from '../../../../core/shared/math-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -513,4 +518,40 @@ export function isEmptyGroup(metadata: ElementInstanceMetadataMap, path: Element
     treatElementAsGroupLike(metadata, path) &&
     MetadataUtils.getChildrenUnordered(metadata, path).length === 0
   )
+}
+
+export function groupChildrenThatNeedTrueuingUp(
+  metadata: ElementInstanceMetadataMap,
+): TrueUpTarget[] {
+  const groups = Object.values(metadata).filter(treatElementAsGroupLikeFromMetadata)
+
+  let results: ElementPath[] = []
+  for (const group of groups) {
+    const groupFrame = group.localFrame
+    if (groupFrame == null || !isFiniteRectangle(groupFrame)) {
+      continue
+    }
+
+    const children = MetadataUtils.getChildrenUnordered(metadata, group.elementPath)
+    if (children.length === 0) {
+      continue
+    }
+    const childrenFrames = mapDropNulls(
+      (c) => (c != null && isFiniteRectangle(c) ? c : null),
+      children.map((c) => c.localFrame),
+    )
+    const boundingRectangle = boundingRectangleArray(childrenFrames)
+    if (boundingRectangle == null) {
+      continue
+    }
+
+    if (
+      boundingRectangle.width !== groupFrame.width ||
+      boundingRectangle.height !== groupFrame.height
+    ) {
+      results.push(...children.map((c) => c.elementPath))
+    }
+  }
+
+  return results.map(trueUpElementChanged)
 }
