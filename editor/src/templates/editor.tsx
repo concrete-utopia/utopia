@@ -78,6 +78,7 @@ import {
   emptyUiJsxCanvasContextData,
   UiJsxCanvasCtxAtom,
   ElementsToRerenderGLOBAL,
+  ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME,
 } from '../components/canvas/ui-jsx-canvas'
 import { foldEither } from '../core/shared/either'
 import {
@@ -447,7 +448,11 @@ export class Editor {
       this.storedState = dispatchResult
       let entireUpdateFinished = dispatchResult.entireUpdateFinished
 
-      if (!dispatchResult.nothingChanged) {
+      const shouldRunDOMWalker =
+        !dispatchResult.nothingChanged || ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current === true
+
+      if (shouldRunDOMWalker) {
+        ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current = false
         const updateId = canvasUpdateId++
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(

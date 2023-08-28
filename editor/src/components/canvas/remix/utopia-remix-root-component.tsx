@@ -21,6 +21,7 @@ import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-c
 import { NO_OP } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import {
+  ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME,
   UiJsxCanvasCtxAtom,
   attemptToResolveParsedComponents,
   pickUiJsxCanvasProps,
@@ -150,6 +151,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   React.useLayoutEffect(() => {
     return router.subscribe(() => {
       uiJsxCanvasContext.current.spyValues.metadata = {}
+      ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current = true
     })
   }, [router, uiJsxCanvasContext])
 
