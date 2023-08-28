@@ -106,10 +106,10 @@ import {
 import { testStaticElementPath } from '../../core/shared/element-path.test-utils'
 import { createFakeMetadataForParseSuccess } from '../../utils/utils.test-utils'
 import {
-  mergeWithPrevUndo,
   saveDOMReport,
   setPanelVisibility,
   switchEditorMode,
+  trueUpGroups,
   updateNodeModulesContents,
 } from '../editor/actions/action-creators'
 import { EditorModes } from '../editor/editor-modes'
@@ -391,7 +391,7 @@ export async function renderTestEditorWithModel(
         const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
         const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
           asyncTestDispatch,
-          [{ action: 'TRUE_UP_GROUPS' }],
+          [trueUpGroups()],
           workingEditorState,
           spyCollector,
         )

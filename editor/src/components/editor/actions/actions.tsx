@@ -3956,12 +3956,10 @@ export const UPDATE_FNS = {
       }
     }
   },
-  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
-    const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
-      (trueUpTarget) => {
-        return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
-      },
-    )
+  TRUE_UP_GROUPS: (action: TrueUpGroups, editor: EditorModel): EditorModel => {
+    const targetsToTrueUp = action.targets.flatMap((trueUpTarget) => {
+      return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
+    })
     const canvasFrameAndTargets: Array<CanvasFrameAndTarget> = mapDropNulls((element) => {
       const globalFrame = MetadataUtils.findElementByElementPath(
         editor.jsxMetadata,

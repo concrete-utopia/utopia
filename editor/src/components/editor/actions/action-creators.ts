@@ -216,6 +216,7 @@ import type {
   ScrollToElementBehaviour,
   OpenCodeEditor,
   SetMapCountOverride,
+  TrueUpGroups,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -238,6 +239,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  TrueUpTarget,
 } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
@@ -1075,6 +1077,13 @@ export function updateFromWorker(
   return {
     action: 'UPDATE_FROM_WORKER',
     updates: updates,
+  }
+}
+
+export function trueUpGroups(targets: TrueUpTarget[] = []): TrueUpGroups {
+  return {
+    action: 'TRUE_UP_GROUPS',
+    targets: targets,
   }
 }
 

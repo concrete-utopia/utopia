@@ -60,6 +60,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  TrueUpTarget,
 } from './store/editor-state'
 import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
@@ -702,6 +703,7 @@ export interface SaveDOMReport {
 
 export interface TrueUpGroups {
   action: 'TRUE_UP_GROUPS'
+  targets: TrueUpTarget[]
 }
 
 export interface SetProp {
