@@ -65,6 +65,7 @@ import {
   isUtopiaCommentFlagConditional,
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
+import { RemixContainerComponent } from './remix-container-component'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -722,16 +723,25 @@ function renderJSXElement(
   const importedFrom = elementIsFragment
     ? null
     : importedFromWhere(filePath, jsx.name.baseVariable, [], imports)
-  const elementIsScene =
+
+  const isElementImportedFromModule = (moduleName: string, name: string) =>
     !elementIsIntrinsic &&
     importedFrom != null &&
     importedFrom.type === 'IMPORTED_ORIGIN' && // Imported and not from the same file.
-    importedFrom.filePath === 'utopia-api' && // Originating from `utopia-api`
-    importedFrom.exportedName === 'Scene' && // `Scene` component.
+    importedFrom.filePath === moduleName && // Originating from {moduleName}
+    importedFrom.exportedName === name && // {name} component.
     elementFromImport === elementInScope // Ensures this is not a user defined component with the same name.
-  const elementOrScene = elementIsScene ? SceneComponent : elementFromScopeOrImport
 
-  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScene
+  const elementIsScene = isElementImportedFromModule('utopia-api', 'Scene')
+  const elementIsRemixContainer = isElementImportedFromModule('utopia-api', 'RemixContainer')
+
+  const elementOrScam = elementIsScene
+    ? SceneComponent
+    : elementIsRemixContainer
+    ? RemixContainerComponent
+    : elementFromScopeOrImport
+
+  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScam
   const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
 
   let elementProps = { key: key, ...passthroughProps }
