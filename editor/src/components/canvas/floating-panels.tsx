@@ -21,7 +21,9 @@ import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-sta
 import { mapArrayToDictionary, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import { when } from '../../utils/react-conditionals'
+import type { Direction } from 're-resizable/lib/resizer'
 
+const TitleHeight = 28
 type Menu = 'inspector' | 'navigator'
 type Pane = 'code-editor' | 'preview'
 export const GapBetweenPanels = 10
@@ -69,10 +71,16 @@ type PanelName = 'leftMenu1' | 'leftMenu2' | 'rightMenu1' | 'rightMenu2'
 const Panels: Array<PanelName> = ['leftMenu1', 'leftMenu2', 'rightMenu1', 'rightMenu2']
 
 // TODO store menu/pane height
-const DefaultPanels: { [key in PanelName]: Array<Menu | Pane> } = {
-  leftMenu1: ['code-editor'],
-  leftMenu2: ['navigator'],
-  rightMenu1: ['inspector'],
+interface PanelData {
+  menuOrPane: Menu | Pane
+  height: number | null
+}
+const DefaultPanels: {
+  [key in PanelName]: Array<PanelData>
+} = {
+  leftMenu1: [{ menuOrPane: 'code-editor', height: null }],
+  leftMenu2: [{ menuOrPane: 'navigator', height: null }],
+  rightMenu1: [{ menuOrPane: 'inspector', height: null }],
   rightMenu2: [],
 }
 
@@ -87,29 +95,33 @@ export const FloatingPanelSizesAtom = atomWithPubSub({
   defaultValue: DefaultSizes,
 })
 
-function isMenuContainingPanel(menusOrPanes: Array<Menu | Pane>): boolean {
-  return menusOrPanes.some((value) => value === 'inspector' || value === 'navigator')
+function isMenuContainingPanel(menusOrPanes: Array<PanelData>): boolean {
+  return menusOrPanes.some(
+    (value) => value.menuOrPane === 'inspector' || value.menuOrPane === 'navigator',
+  )
 }
 
 export const FloatingPanelsContainer = React.memo(() => {
   const [panelsData, setPanelsData] =
-    React.useState<{ [key in PanelName]: Array<Menu | Pane> }>(DefaultPanels)
+    React.useState<{ [key in PanelName]: Array<PanelData> }>(DefaultPanels)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
   const [panelFrames, setPanelFrames] =
     usePubSubAtom<{ [key in PanelName]: WindowRectangle }>(FloatingPanelSizesAtom)
 
   const getUpdatedPanelSizes = React.useCallback(
     (
-      currentPanelsData: { [key in PanelName]: Array<Menu | Pane> },
+      currentPanelsData: { [key in PanelName]: Array<PanelData> },
       currentFrames: { [key in PanelName]: WindowRectangle },
     ) => {
       return mapArrayToDictionary(
         Panels,
         (p) => p,
         (p, i) => {
-          let height = Math.min(canvasSize.height, 600) // code pane height!!!
-          if (isMenuContainingPanel(currentPanelsData[p])) {
-            height = canvasSize.height
+          let height = canvasSize.height
+          if (!isMenuContainingPanel(currentPanelsData[p]) && currentPanelsData[p].length === 1) {
+            // code pane!
+            const codeEditorHeight = currentPanelsData[p][0].height ?? canvasSize.height
+            height = Math.min(canvasSize.height, codeEditorHeight)
           }
           let width = currentFrames[p].width
           if (currentPanelsData[p].length === 0) {
@@ -117,10 +129,10 @@ export const FloatingPanelsContainer = React.memo(() => {
           } else {
             if (currentFrames[p].width === 0) {
               // give default size to panel
-              width = SizeConstraints[currentPanelsData[p][0]].defaultSize.width
+              width = SizeConstraints[currentPanelsData[p][0].menuOrPane].defaultSize.width
             } else {
               const possibleConstraints = mapDropNulls(
-                (v) => SizeConstraints[v].resize,
+                (v) => SizeConstraints[v.menuOrPane].resize,
                 currentPanelsData[p],
               )
               const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth))
@@ -145,7 +157,7 @@ export const FloatingPanelsContainer = React.memo(() => {
 
   const getUpdatedPanelPositions = React.useCallback(
     (
-      currentPanelsData: { [key in PanelName]: Array<Menu | Pane> },
+      currentPanelsData: { [key in PanelName]: Array<PanelData> },
       currentFrames: { [key in PanelName]: WindowRectangle },
     ) => {
       const withPanelSizeUpdates = getUpdatedPanelSizes(currentPanelsData, currentFrames)
@@ -305,16 +317,18 @@ export const FloatingPanelsContainer = React.memo(() => {
       })()
 
       if (newPanel != null && (currentPanel != newPanel || switchWithPanel != null)) {
-        const remainingMenusAndPanes = panelsData[currentPanel].filter(
-          (name) => name !== menuOrPane,
-        )
+        const remainingMenusAndPanes = panelsData[currentPanel]
+          .filter((panelData) => panelData.menuOrPane !== menuOrPane)
+          .map((v) => ({ ...v, height: null }))
 
         if (switchWithPanel != null) {
           const newPanelsData = {
             ...panelsData,
             [currentPanel]: remainingMenusAndPanes,
-            [switchWithPanel]: panelsData[newPanel].filter((name) => name !== menuOrPane),
-            [newPanel]: [menuOrPane],
+            [switchWithPanel]: panelsData[newPanel].filter(
+              (panelData) => panelData.menuOrPane !== menuOrPane,
+            ),
+            [newPanel]: [{ menuOrPane: menuOrPane, height: null }],
           }
           setPanelsData(newPanelsData)
 
@@ -328,7 +342,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         } else {
           const newPanelsData = {
             ...panelsData,
-            [newPanel]: [...panelsData[newPanel], menuOrPane],
+            [newPanel]: [...panelsData[newPanel], { menuOrPane: menuOrPane, height: null }],
             [currentPanel]: remainingMenusAndPanes,
           }
           setPanelsData(newPanelsData)
@@ -339,17 +353,43 @@ export const FloatingPanelsContainer = React.memo(() => {
   )
 
   const updateSize = React.useCallback(
-    (menuOrPane: Menu | Pane, currentPanel: PanelName, width: number) => {
-      let frame = panelFrames[currentPanel]
-      frame.width = width
-      const updatedPanelFrames = {
-        ...panelFrames,
-        [currentPanel]: frame,
+    (
+      menuOrPane: Menu | Pane,
+      currentPanel: PanelName,
+      direction: Direction,
+      width: number,
+      height: number,
+    ) => {
+      if (direction === 'left' || direction === 'right') {
+        let frame = panelFrames[currentPanel]
+        frame.width = width
+        const updatedPanelFrames = {
+          ...panelFrames,
+          [currentPanel]: frame,
+        }
+        const withUpdatedPositions = getUpdatedPanelPositions(panelsData, updatedPanelFrames)
+        setPanelFrames(withUpdatedPositions)
+      } else {
+        const newPanelsData = {
+          ...panelsData,
+          [currentPanel]: panelsData[currentPanel].map((v) => {
+            if (menuOrPane === v.menuOrPane) {
+              return { menuOrPane: menuOrPane, height: height }
+            } else {
+              const newHeight =
+                (canvasSize.height - height) / (panelsData[currentPanel].length - 1) -
+                (panelsData[currentPanel].length + 1) * GapBetweenPanels
+              return {
+                menuOrPane: v.menuOrPane,
+                height: newHeight,
+              }
+            }
+          }),
+        }
+        setPanelsData(newPanelsData)
       }
-      const withUpdatedPositions = getUpdatedPanelPositions(panelsData, updatedPanelFrames)
-      setPanelFrames(withUpdatedPositions)
     },
-    [panelFrames, panelsData, setPanelFrames, getUpdatedPanelPositions],
+    [panelFrames, panelsData, setPanelFrames, setPanelsData, getUpdatedPanelPositions, canvasSize],
   )
 
   React.useEffect(() => {
@@ -418,11 +458,17 @@ export const FloatingPanelsContainer = React.memo(() => {
 
 interface FloatingPanelProps {
   panelName: PanelName
-  menusAndPanes: Array<Menu | Pane>
+  menusAndPanes: Array<PanelData>
   frame: WindowRectangle
   alignment: 'left' | 'right'
   updateColumn: (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => void
-  onResizeStop: (menuOrPane: Menu | Pane, currentPanel: PanelName, width: number) => void
+  onResizeStop: (
+    menuOrPane: Menu | Pane,
+    currentPanel: PanelName,
+    direction: Direction,
+    width: number,
+    height: number,
+  ) => void
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
@@ -436,7 +482,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     return frame.x
   }, [canvasSize, frame, alignment])
 
-  const height = React.useMemo(() => {
+  const panelHeight = React.useMemo(() => {
     if (isMenuContainingPanel(menusAndPanes)) {
       return `calc(100% - ${GapBetweenPanels * 2}px)`
     } else {
@@ -467,7 +513,10 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   )
 
   const resizeMinMaxSnap = React.useMemo(() => {
-    const possibleConstraints = mapDropNulls((v) => SizeConstraints[v].resize, menusAndPanes)
+    const possibleConstraints = mapDropNulls(
+      (v) => SizeConstraints[v.menuOrPane].resize,
+      menusAndPanes,
+    )
     const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth), 0)
     const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth), canvasSize.width)
     const snap = stripNulls(possibleConstraints.map((v) => v.snap))[0] // TODO what happens if there are multiple conflicting snapping menus
@@ -476,10 +525,17 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   }, [menusAndPanes, canvasSize])
 
   const resizeStopEventHandler = React.useCallback<
-    (menuOrPane: Menu | Pane, width: number) => void
+    (menuOrPane: Menu | Pane, direction: Direction, width: number, height: number) => void
   >(
-    (menuOrPane: Menu | Pane, width: number) => onResizeStop(menuOrPane, panelName, width),
+    (menuOrPane: Menu | Pane, direction: Direction, width: number, height: number) =>
+      onResizeStop(menuOrPane, panelName, direction, width, height),
     [panelName, onResizeStop],
+  )
+
+  const menuHeight = React.useMemo(
+    () =>
+      (canvasSize.height - (menusAndPanes.length + 1) * GapBetweenPanels) / menusAndPanes.length,
+    [menusAndPanes, canvasSize],
   )
 
   return (
@@ -489,14 +545,14 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         id={`floating-panel-${panelName}`}
         style={{
           position: 'absolute',
-          height: height,
+          height: panelHeight,
           [props.alignment]: leftOrRightPosition,
           top: frame.y,
           margin: 10,
         }}
       >
         {menusAndPanes.map((value, i) => {
-          switch (value) {
+          switch (value.menuOrPane) {
             case 'code-editor':
               return (
                 <Draggable
@@ -509,8 +565,8 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                   <div
                     style={{
                       width: '100%',
-                      height: `${100 / menusAndPanes.length}%`,
-                      paddingTop: i >= 1 ? GapBetweenPanels : 0,
+                      height: value.height ?? menuHeight,
+                      paddingTop: 0,
                     }}
                   >
                     <CodeEditorPane
@@ -518,12 +574,15 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                         enable: {
                           left: props.alignment === 'right',
                           right: props.alignment === 'left',
+                          bottom: true,
                         },
                         minWidth: resizeMinMaxSnap.minWidth,
                         maxWidth: resizeMinMaxSnap.maxWidth,
+                        minHeight: TitleHeight,
                         snap: resizeMinMaxSnap.snap,
                       }}
                       width={frame.width}
+                      height={value.height ?? menuHeight}
                       onResizeStop={resizeStopEventHandler}
                       small={isMenuContainingPanel(menusAndPanes)}
                     />
@@ -542,7 +601,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                   <div
                     style={{
                       width: '100%',
-                      height: `${100 / menusAndPanes.length}%`,
+                      height: value.height ?? menuHeight,
                       paddingTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
@@ -551,13 +610,16 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                         enable: {
                           left: props.alignment === 'right',
                           right: props.alignment === 'left',
+                          bottom: menusAndPanes.length > 1,
                         },
                         minWidth: resizeMinMaxSnap.minWidth,
                         maxWidth: resizeMinMaxSnap.maxWidth,
+                        minHeight: TitleHeight,
                         snap: resizeMinMaxSnap.snap,
                       }}
                       onResizeStop={resizeStopEventHandler}
                       width={frame.width}
+                      height={value.height ?? menuHeight}
                     />
                   </div>
                 </Draggable>
@@ -574,7 +636,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                   <div
                     style={{
                       width: '100%',
-                      height: `${100 / menusAndPanes.length}%`,
+                      height: value.height ?? menuHeight,
                       paddingTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
@@ -583,13 +645,16 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                         enable: {
                           left: props.alignment === 'right',
                           right: props.alignment === 'left',
+                          bottom: menusAndPanes.length > 1,
                         },
                         minWidth: resizeMinMaxSnap.minWidth,
                         maxWidth: resizeMinMaxSnap.maxWidth,
+                        minHeight: TitleHeight,
                         snap: resizeMinMaxSnap.snap,
                       }}
                       onResizeStop={resizeStopEventHandler}
                       width={frame.width}
+                      height={value.height ?? menuHeight}
                     />
                   </div>
                 </Draggable>
@@ -617,10 +682,10 @@ export const PanelTitleBar = React.memo(() => {
     <div
       className='handle'
       style={{
-        height: 28,
+        height: TitleHeight,
         width: '100%',
         backgroundColor: colorTheme.fg8.value,
-        lineHeight: '28px',
+        lineHeight: `${TitleHeight}px`,
         paddingLeft: 10,
       }}
     >

@@ -26,6 +26,7 @@ import {
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
 import { canvasPoint } from '../../core/shared/math-utils'
+import type { Size } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
@@ -37,6 +38,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { FloatingPanel, FloatingPanelsContainer, PanelTitleBar } from './floating-panels'
 import type { ResizableProps } from '../../uuiui-deps'
+import type { Direction } from 're-resizable/lib/resizer'
 
 interface NumberSize {
   width: number
@@ -181,25 +183,34 @@ DesignPanelRoot.displayName = 'DesignPanelRoot'
 
 interface ResizableRightPaneProps {
   width: number
-  onResizeStop: (menuName: 'inspector', width: number) => void
+  height: number
+  onResizeStop: (menuName: 'inspector', direction: Direction, width: number, height: number) => void
   resizableConfig: ResizableProps
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const { onResizeStop, width } = props
+  const { onResizeStop, width, height } = props
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
   const resizableRef = React.useRef<Resizable>(null)
-  const onResize = React.useCallback(() => {
-    const newWidth = resizableRef.current?.size.width
-    if (newWidth != null) {
-      // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-      // setWidth(newWidth)
-      updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
-      onResizeStop('inspector', newWidth)
-    }
-  }, [updateInspectorWidth, onResizeStop])
+  const onResize = React.useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      direction: ResizeDirection,
+      elementRef: HTMLElement,
+      delta: Size,
+    ) => {
+      const newWidth = resizableRef.current?.size.width
+      if (newWidth != null) {
+        // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
+        // setWidth(newWidth)
+        updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
+        onResizeStop('inspector', direction, newWidth, elementRef?.clientHeight)
+      }
+    },
+    [updateInspectorWidth, onResizeStop],
+  )
 
   const selectedTab = useEditorState(
     Substores.restOfEditor,
@@ -225,7 +236,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
       }}
       size={{
         width: width,
-        height: '100%',
+        height: height,
       }}
       style={{
         transition: 'width 100ms ease-in-out',
@@ -234,7 +245,6 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
-      onResizeStart={onResize}
       onResize={onResize}
       onResizeStop={onResize}
       {...props.resizableConfig}
@@ -264,12 +274,18 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
 interface CodeEditorPaneProps {
   small: boolean
   width: number
-  onResizeStop: (menuName: 'code-editor', width: number) => void
+  height: number
+  onResizeStop: (
+    menuName: 'code-editor',
+    direction: Direction,
+    width: number,
+    height: number,
+  ) => void
   resizableConfig: ResizableProps
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const { width, onResizeStop: onPanelResizeStop, resizableConfig } = props
+  const { width, height, onResizeStop: onPanelResizeStop, resizableConfig } = props
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
@@ -288,8 +304,9 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
     ) => {
       dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
       const newWidth = elementRef?.clientWidth
-      if (newWidth != null) {
-        onPanelResizeStop('code-editor', newWidth)
+      const newHeight = elementRef?.clientHeight
+      if (newWidth != null && newHeight != null) {
+        onPanelResizeStop('code-editor', direction, newWidth, newHeight)
       }
     },
     [dispatch, onPanelResizeStop],
@@ -302,8 +319,9 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       delta: NumberSize,
     ) => {
       const newWidth = elementRef?.clientWidth
-      if (newWidth != null) {
-        onPanelResizeStop('code-editor', newWidth)
+      const newHeight = elementRef?.clientHeight
+      if (newWidth != null && newHeight != null) {
+        onPanelResizeStop('code-editor', direction, newWidth, newHeight)
       }
     },
     [onPanelResizeStop],
@@ -317,7 +335,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       }}
       size={{
         width: width,
-        height: '100%',
+        height: height,
       }}
       onResizeStop={onResizeStop}
       onResize={onResize}
@@ -325,7 +343,6 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       style={{
         display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
         width: interfaceDesigner.codePaneWidth,
-        height: '100%',
         position: 'relative',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,

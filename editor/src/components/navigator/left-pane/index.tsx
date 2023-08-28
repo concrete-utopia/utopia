@@ -30,6 +30,7 @@ import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
 import { PanelTitleBar } from '../../canvas/floating-panels'
+import type { Direction } from 're-resizable/lib/resizer'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -44,12 +45,13 @@ export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 interface LeftPaneComponentProps {
   width: number
-  onResizeStop: (menuName: 'navigator', width: number) => void
+  height: number
+  onResizeStop: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
   resizableConfig: ResizableProps
 }
 
 export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
-  const { onResizeStop, width } = props
+  const { onResizeStop, width, height } = props
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -91,15 +93,16 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
-      onResizeStop('navigator', _ref?.clientWidth)
+      onResizeStop('navigator', _direction, _ref?.clientWidth, _ref?.clientHeight)
     },
     [onResizeStop],
   )
   const onLeftPanelResize = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
       const newWidth = _ref?.clientWidth
-      if (newWidth != null) {
-        onResizeStop('navigator', newWidth)
+      const newHeight = _ref?.clientHeight
+      if (newWidth != null && newHeight != null) {
+        onResizeStop('navigator', _direction, newWidth, newHeight)
       }
     },
     [onResizeStop],
@@ -126,15 +129,13 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
         }}
         size={{
           width: width,
-          height: '100%',
+          height: height,
         }}
-        minWidth={LeftPanelMinWidth}
         style={{
           overscrollBehavior: 'contain',
           backgroundColor: colorTheme.leftPaneBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
           boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
-          height: '100%',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
