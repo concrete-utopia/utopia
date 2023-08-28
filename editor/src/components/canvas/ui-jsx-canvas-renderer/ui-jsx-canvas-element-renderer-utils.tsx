@@ -66,6 +66,7 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixContainerComponent } from './remix-container-component'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -739,7 +740,7 @@ function renderJSXElement(
     if (elementIsScene) {
       return SceneComponent
     }
-    if (elementIsRemixContainer) {
+    if (isFeatureEnabled('Remix support') && elementIsRemixContainer) {
       return RemixContainerComponent
     }
     return elementFromScopeOrImport
