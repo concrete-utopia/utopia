@@ -735,13 +735,17 @@ function renderJSXElement(
   const elementIsScene = isElementImportedFromModule('utopia-api', 'Scene')
   const elementIsRemixContainer = isElementImportedFromModule('utopia-api', 'RemixContainer')
 
-  const elementOrScam = elementIsScene
-    ? SceneComponent
-    : elementIsRemixContainer
-    ? RemixContainerComponent
-    : elementFromScopeOrImport
+  const element = (() => {
+    if (elementIsScene) {
+      return SceneComponent
+    }
+    if (elementIsRemixContainer) {
+      return RemixContainerComponent
+    }
+    return elementFromScopeOrImport
+  })()
 
-  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScam
+  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : element
   const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
 
   let elementProps = { key: key, ...passthroughProps }
