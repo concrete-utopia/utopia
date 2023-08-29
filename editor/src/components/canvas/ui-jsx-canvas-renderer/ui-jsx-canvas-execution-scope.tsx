@@ -34,6 +34,11 @@ import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { emptySet } from '../../../core/shared/set-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
+export interface ExecutionScope {
+  scope: MapLike<any>
+  topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
+  requireResult: MapLike<any>
+}
 
 export function createExecutionScope(
   filePath: string,
@@ -51,11 +56,7 @@ export function createExecutionScope(
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
   shouldIncludeCanvasRootInTheSpy: boolean,
   editedText: ElementPath | null,
-): {
-  scope: MapLike<any>
-  topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
-  requireResult: MapLike<any>
-} {
+): ExecutionScope {
   if (!(filePath in topLevelComponentRendererComponents.current)) {
     // we make sure that the ref has an entry for this filepath
     topLevelComponentRendererComponents.current[filePath] = {}
