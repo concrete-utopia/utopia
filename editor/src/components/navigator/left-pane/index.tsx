@@ -30,6 +30,7 @@ import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
 import { PanelTitleBar } from '../../canvas/floating-panels'
+import type { Menu, Pane } from '../../canvas/floating-panels'
 import type { Direction } from 're-resizable/lib/resizer'
 
 export interface LeftPaneProps {
@@ -47,7 +48,7 @@ interface LeftPaneComponentProps {
   width: number
   height: number
   onResizeStop: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<boolean>>
+  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
   resizableConfig: ResizableProps
 }
 
@@ -95,7 +96,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
       onResizeStop('navigator', _direction, _ref?.clientWidth, _ref?.clientHeight)
-      setIsResizing(false)
+      setIsResizing(null)
     },
     [onResizeStop, setIsResizing],
   )
@@ -110,7 +111,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     [onResizeStop],
   )
   const onResizeStart = React.useCallback(() => {
-    setIsResizing(true)
+    setIsResizing('navigator')
   }, [setIsResizing])
 
   const leftMenuExpanded = useEditorState(

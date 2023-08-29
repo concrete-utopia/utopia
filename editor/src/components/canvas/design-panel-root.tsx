@@ -37,6 +37,7 @@ import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { FloatingPanel, FloatingPanelsContainer, PanelTitleBar } from './floating-panels'
+import type { Menu, Pane } from './floating-panels'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 
@@ -185,7 +186,7 @@ interface ResizableRightPaneProps {
   width: number
   height: number
   onResizeStop: (menuName: 'inspector', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<boolean>>
+  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
   resizableConfig: ResizableProps
 }
 
@@ -196,7 +197,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
 
   const resizableRef = React.useRef<Resizable>(null)
   const onResizeStart = React.useCallback(() => {
-    setIsResizing(true)
+    setIsResizing('inspector')
   }, [setIsResizing])
   const onResize = React.useCallback(
     (
@@ -222,7 +223,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
       elementRef: HTMLElement,
       delta: Size,
     ) => {
-      setIsResizing(false)
+      setIsResizing(null)
       onResize(event, direction, elementRef, delta)
     },
     [setIsResizing, onResize],
@@ -298,7 +299,7 @@ interface CodeEditorPaneProps {
     width: number,
     height: number,
   ) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<boolean>>
+  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
   resizableConfig: ResizableProps
 }
 
@@ -314,7 +315,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
 
   const codeEditorEnabled = isCodeEditorEnabled()
   const onResizeStart = React.useCallback(() => {
-    setIsResizing(true)
+    setIsResizing('code-editor')
   }, [setIsResizing])
   const onResizeStop = React.useCallback(
     (
@@ -329,7 +330,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       if (newWidth != null && newHeight != null) {
         onPanelResizeStop('code-editor', direction, newWidth, newHeight)
       }
-      setIsResizing(false)
+      setIsResizing(null)
     },
     [dispatch, onPanelResizeStop, setIsResizing],
   )

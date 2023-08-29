@@ -24,8 +24,8 @@ import { when } from '../../utils/react-conditionals'
 import type { Direction } from 're-resizable/lib/resizer'
 
 const TitleHeight = 28
-type Menu = 'inspector' | 'navigator'
-type Pane = 'code-editor' | 'preview'
+export type Menu = 'inspector' | 'navigator'
+export type Pane = 'code-editor' | 'preview'
 export const GapBetweenPanels = 10
 
 const SizeConstraints: {
@@ -495,10 +495,12 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     }
   }, [menusAndPanes, frame])
 
-  const [isDraggingOrResizing, setIsDraggingOrResizing] = React.useState(false)
-  const onDragStart = React.useCallback<DraggableEventHandler>(
-    (e, data) => {
-      setIsDraggingOrResizing(true)
+  const [isDraggingOrResizing, setIsDraggingOrResizing] = React.useState<Menu | Pane | null>(null)
+  const onDragStart = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
+    (menuOrPane: Menu | Pane) => {
+      return (e, data) => {
+        setIsDraggingOrResizing(menuOrPane)
+      }
     },
     [setIsDraggingOrResizing],
   )
@@ -511,7 +513,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           panelName,
           windowPoint({ x: (e as any).clientX, y: (e as any).clientY }),
         )
-        setIsDraggingOrResizing(false)
+        setIsDraggingOrResizing(null)
       }
     },
     [panelName, updateColumn, setIsDraggingOrResizing],
@@ -563,9 +565,8 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     () => ({
       position: { x: 0, y: 0 }, // this is needed to control the position
       handle: '.handle',
-      onStart: onDragStart,
     }),
-    [onDragStart],
+    [],
   )
 
   return (
@@ -589,12 +590,15 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                   {...draggableCommonProps}
                   key='code-editor'
                   onStop={onDragStop('code-editor')}
+                  onStart={onDragStart('code-editor')}
                 >
                   <div
                     style={{
                       width: '100%',
                       height: value.height ?? menuHeight,
                       marginTop: i >= 1 ? GapBetweenPanels : 0,
+                      position: isDraggingOrResizing === 'code-editor' ? 'relative' : undefined,
+                      zIndex: isDraggingOrResizing === 'code-editor' ? 999 : undefined,
                     }}
                   >
                     <CodeEditorPane
@@ -614,12 +618,15 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                   {...draggableCommonProps}
                   key='inspector'
                   onStop={onDragStop('inspector')}
+                  onStart={onDragStart('inspector')}
                 >
                   <div
                     style={{
                       width: '100%',
                       height: value.height ?? menuHeight,
                       marginTop: i >= 1 ? GapBetweenPanels : 0,
+                      position: isDraggingOrResizing === 'inspector' ? 'relative' : undefined,
+                      zIndex: isDraggingOrResizing === 'inspector' ? 999 : undefined,
                     }}
                   >
                     <ResizableRightPane
@@ -638,12 +645,15 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                   {...draggableCommonProps}
                   key='navigator'
                   onStop={onDragStop('navigator')}
+                  onStart={onDragStart('navigator')}
                 >
                   <div
                     style={{
                       width: '100%',
                       height: value.height ?? menuHeight,
                       marginTop: i >= 1 ? GapBetweenPanels : 0,
+                      position: isDraggingOrResizing === 'navigator' ? 'relative' : undefined,
+                      zIndex: isDraggingOrResizing === 'navigator' ? 999 : undefined,
                     }}
                   >
                     <LeftPaneComponent
@@ -662,7 +672,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         })}
       </div>
       {when(
-        isDraggingOrResizing,
+        isDraggingOrResizing != null,
         <style>{`
           body * {
             pointer-events: none !important;
