@@ -342,7 +342,10 @@ export const FloatingPanelsContainer = React.memo(() => {
         } else {
           const newPanelsData = {
             ...panelsData,
-            [newPanel]: [...panelsData[newPanel], { menuOrPane: menuOrPane, height: null }],
+            [newPanel]: [
+              ...panelsData[newPanel].map((v) => ({ menuOrPane: v.menuOrPane, height: null })),
+              { menuOrPane: menuOrPane, height: null },
+            ],
             [currentPanel]: remainingMenusAndPanes,
           }
           setPanelsData(newPanelsData)
@@ -376,9 +379,11 @@ export const FloatingPanelsContainer = React.memo(() => {
             if (menuOrPane === v.menuOrPane) {
               return { menuOrPane: menuOrPane, height: height }
             } else {
-              const newHeight =
-                (canvasSize.height - height) / (panelsData[currentPanel].length - 1) -
+              const remainingSpace =
+                canvasSize.height -
+                height -
                 (panelsData[currentPanel].length + 1) * GapBetweenPanels
+              const newHeight = remainingSpace / (panelsData[currentPanel].length - 1)
               return {
                 menuOrPane: v.menuOrPane,
                 height: newHeight,
@@ -566,7 +571,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     style={{
                       width: '100%',
                       height: value.height ?? menuHeight,
-                      paddingTop: 0,
+                      marginTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
                     <CodeEditorPane
@@ -602,7 +607,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     style={{
                       width: '100%',
                       height: value.height ?? menuHeight,
-                      paddingTop: i >= 1 ? GapBetweenPanels : 0,
+                      marginTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
                     <ResizableRightPane
@@ -637,7 +642,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     style={{
                       width: '100%',
                       height: value.height ?? menuHeight,
-                      paddingTop: i >= 1 ? GapBetweenPanels : 0,
+                      marginTop: i >= 1 ? GapBetweenPanels : 0,
                     }}
                   >
                     <LeftPaneComponent
