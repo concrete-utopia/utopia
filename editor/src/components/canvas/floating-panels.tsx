@@ -91,7 +91,7 @@ const DefaultSizes: { [key in PanelName]: WindowRectangle } = {
   rightMenu2: windowRectangle({ x: 0, y: 0, width: 0, height: 0 }),
 }
 export const FloatingPanelSizesAtom = atomWithPubSub({
-  key: 'CanvasSizeAtom',
+  key: 'FloatingPanelSizesAtom',
   defaultValue: DefaultSizes,
 })
 
