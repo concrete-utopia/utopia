@@ -2906,7 +2906,7 @@ export const UPDATE_FNS = {
       ...updatedEditor,
       interfaceDesigner: {
         ...editor.interfaceDesigner,
-        codePaneVisible: targetWidth < hideWidth ? false : true,
+        codePaneVisible: true,
         codePaneWidth: targetWidth < hideWidth ? minWidth : targetWidth,
       },
     }
