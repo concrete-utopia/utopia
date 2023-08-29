@@ -130,7 +130,6 @@ export const ExpressionInputPropertyControl = React.memo(
             store.editor.nodeModules.files,
             currentFilePath,
             selectedView,
-            'outside-remix-container',
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath
         })
@@ -250,7 +249,6 @@ export const ExpressionPopUpListPropertyControl = React.memo(
             store.editor.nodeModules.files,
             currentFilePath,
             selectedView,
-            'outside-remix-container',
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath
         })

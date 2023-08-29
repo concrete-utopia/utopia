@@ -383,8 +383,6 @@ import type {
   EditorStoreUnpatched,
   NavigatorEntry,
   TrueUpTarget,
-  RemixRoutingTable,
-  RemixRouteLookup,
 } from '../store/editor-state'
 import { trueUpChildrenOfElementChanged } from '../store/editor-state'
 import { AllElementProps, trueUpElementChanged } from '../store/editor-state'
@@ -603,7 +601,6 @@ import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
-import { RouteModulePathsCacheGLOBAL_SPIKE_KILLME } from '../../canvas/remix/remix-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -994,7 +991,6 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         working.nodeModules.files,
         openUIJSFilePath,
         targetPath,
-        'outside-remix-container',
       )
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -1455,113 +1451,6 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
         ? editor.interfaceDesigner.codePaneWidth
         : Math.max(MIN_CODE_PANE_REOPEN_WIDTH, editor.interfaceDesigner.codePaneWidth),
     },
-  }
-}
-
-type RemixRouterStateMachineState =
-  | { type: 'inactive' }
-  | { type: 'remix-container-id-added'; remixContainerPath: ElementPath; remixContainerId: string }
-  | { type: 'outlet-id-added'; remixContainerPath: ElementPath; outletId: string }
-  | {
-      type: 'route-module-root-id-added'
-      remixContainerPath: ElementPath
-    }
-
-type AddRendererIdMessage =
-  | { type: 'remix-container'; remixContainerId: string; remixContainerPath: ElementPath }
-  | { type: 'outlet'; outletId: string }
-
-interface IsFileLeafModuleLookup {
-  [filePath: string]: {
-    isLeafModule: boolean
-  }
-}
-
-export class RemixRouterStateMachine {
-  constructor(
-    private isFileLeafModuleLookup: IsFileLeafModuleLookup,
-    private state: RemixRouterStateMachineState = { type: 'inactive' },
-    private partialLookupTable: RemixRouteLookup = {},
-    private lastRendererId: string | null = null,
-  ) {}
-
-  reset = () => {
-    this.state = { type: 'inactive' }
-    this.partialLookupTable = {}
-    this.lastRendererId = null
-  }
-
-  addRouteModuleRootId = (filePath: string) => {
-    if (this.state.type === 'inactive') {
-      // console.error('Route module ID added when no route is being built')
-      return
-    }
-
-    if (this.lastRendererId == null) {
-      // console.error('Renderer id not added')
-      return
-    }
-
-    this.partialLookupTable[this.lastRendererId] = filePath
-    this.lastRendererId = this.state.type === 'outlet-id-added' ? this.state.outletId : null
-
-    this.state = {
-      type: 'route-module-root-id-added',
-      remixContainerPath: this.state.remixContainerPath,
-    }
-
-    // commit the routing table when we know that we are at the end of the path
-    const isLeafModule = this.isFileLeafModuleLookup[filePath]?.isLeafModule ?? true
-    if (isLeafModule) {
-      addToRemixRoutingTable(this.state.remixContainerPath, this.partialLookupTable)
-      this.reset()
-    }
-  }
-
-  addRendererId = (message: AddRendererIdMessage) => {
-    if (message.type === 'remix-container') {
-      if (this.state.type !== 'inactive') {
-        // console.error('New remix container id is added while a route is being built')
-        return
-      }
-
-      this.state = {
-        type: 'remix-container-id-added',
-        remixContainerId: message.remixContainerId,
-        remixContainerPath: message.remixContainerPath,
-      }
-
-      this.lastRendererId = message.remixContainerId
-    } else if (message.type === 'outlet') {
-      if (this.state.type === 'inactive') {
-        // console.error('Outlet ID added when no route is being built')
-        return
-      }
-
-      this.state = {
-        type: 'outlet-id-added',
-        outletId: message.outletId,
-        remixContainerPath: this.state.remixContainerPath,
-      }
-      this.lastRendererId = message.outletId
-    } else {
-      assertNever(message)
-    }
-  }
-}
-
-export const RemixRouterStateMachineInstanceGLOBAL: { current: RemixRouterStateMachine | null } = {
-  current: null,
-}
-
-export const RemixRoutingTableGLOBAL: { current: RemixRoutingTable } = {
-  current: {},
-}
-
-function addToRemixRoutingTable(remixContainerPath: ElementPath, loookup: RemixRouteLookup): void {
-  RemixRoutingTableGLOBAL.current = {
-    ...RemixRoutingTableGLOBAL.current,
-    [EP.toString(remixContainerPath)]: loookup,
   }
 }
 

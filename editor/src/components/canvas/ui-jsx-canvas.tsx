@@ -471,7 +471,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
   const remixRoutesToBasePathsRef = useRefEditorState(
-    (editor) => editor.derived.remixData?.routeModulesToBasePaths ?? {},
+    (editor) => editor.derived.remixData?.routeModulesToRelativePaths ?? {},
   )
 
   const {

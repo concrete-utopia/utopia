@@ -33,8 +33,6 @@ import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { RemixRouterStateMachineInstanceGLOBAL } from '../../editor/actions/actions'
-import { invariant } from '../remix/remix-utils'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -79,7 +77,6 @@ export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
   filePath: string
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>
-  isComponentDefaultExported: boolean
 }): ComponentRendererComponent {
   const Component = (realPassedPropsIncludingUtopiaSpecialStuff: any) => {
     const {
@@ -259,14 +256,6 @@ export function createComponentRendererComponent(params: {
       } else {
         return renderedCoreElement
       }
-    }
-
-    if (params.isComponentDefaultExported) {
-      invariant(
-        RemixRouterStateMachineInstanceGLOBAL.current,
-        'RemixRouterStateMachineInstance should be initialized before rendering begins',
-      )
-      RemixRouterStateMachineInstanceGLOBAL.current.addRouteModuleRootId(params.filePath)
     }
 
     const buildResult = React.useRef<React.ReactElement | null>(null)

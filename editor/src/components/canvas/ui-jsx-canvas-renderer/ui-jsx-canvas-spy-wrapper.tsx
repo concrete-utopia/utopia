@@ -25,9 +25,7 @@ import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { RemixRouterStateMachineInstanceGLOBAL } from '../../editor/actions/actions'
 import { assertNever } from '../../../core/shared/utils'
-import { invariant } from '../remix/remix-utils'
 
 // Should the condition value of conditional expression change (which maybe be done by overriding it),
 // then the values we have accumulated in the spy metadata may need to be cleaned up.
@@ -116,7 +114,6 @@ export function buildSpyWrappedElement(
   shouldIncludeCanvasRootInTheSpy: boolean,
   imports: Imports,
   filePath: string,
-  remixRendererComponentType: RemixRendererComponentType,
 ): React.ReactElement {
   const props = {
     ...finalProps,
@@ -154,30 +151,6 @@ export function buildSpyWrappedElement(
       metadataContext.current.spyValues.metadata[elementPathString] = instanceMetadata
       metadataContext.current.spyValues.allElementProps[elementPathString] =
         makeCanvasElementPropsSafe(reportedProps)
-    }
-
-    if (elementPath != null && remixRendererComponentType !== 'not-a-renderer-component') {
-      invariant(
-        RemixRouterStateMachineInstanceGLOBAL.current,
-        'RemixRouterStateMachineInstance should be initialized before rendering begins',
-      )
-      switch (remixRendererComponentType) {
-        case 'outlet':
-          RemixRouterStateMachineInstanceGLOBAL.current.addRendererId({
-            type: 'outlet',
-            outletId: jsx.uid,
-          })
-          break
-        case 'remix-container':
-          RemixRouterStateMachineInstanceGLOBAL.current.addRendererId({
-            type: 'remix-container',
-            remixContainerId: jsx.uid,
-            remixContainerPath: elementPath,
-          })
-          break
-        default:
-          assertNever(remixRendererComponentType)
-      }
     }
   }
   const spyWrapperProps: SpyWrapperProps = {

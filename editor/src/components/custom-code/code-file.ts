@@ -8,6 +8,7 @@ import type {
   StaticElementPath,
   ParseSuccess,
   Imports,
+  ElementPathPart,
 } from '../../core/shared/project-file-types'
 import {
   esCodeFile,
@@ -66,8 +67,8 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
 import type { PropertyControls } from 'utopia-api/core'
-import type { RemixRouteLookup, RemixRoutingTable } from '../editor/store/editor-state'
-import { RemixRoutingTableGLOBAL } from '../editor/actions/actions'
+import type { RemixRouteLookup } from '../editor/store/editor-state'
+import { invariant, RemixRoutingTableGLOBAL } from '../canvas/remix/remix-utils'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -434,7 +435,6 @@ export function normalisePathToUnderlyingTarget(
   nodeModules: NodeModules,
   currentFilePath: string,
   elementPath: ElementPath | null,
-  remixRouteLookupState: RemixRouteLookupState,
 ): NormalisePathResult {
   const currentFile = getProjectFileByFilePath(projectContents, currentFilePath)
   if (
@@ -492,34 +492,18 @@ export function normalisePathToUnderlyingTarget(
     )
   }
 
-  if (remixRouteLookupState !== 'outside-remix-container') {
-    const pathToRouteModule = remixRouteLookupState[lastDroppedPathPart]
-
-    if (pathToRouteModule == null) {
-      return normalisePathImportNotFound(lastDroppedPathPart) // TODO: first-class support for routes
+  if (potentiallyDroppedFirstPathElementResult.newPath != null) {
+    const maybeRouteModuleResult = lookupRemixRouteModule(
+      potentiallyDroppedFirstPathElementResult.newPath,
+    )
+    if (maybeRouteModuleResult != null) {
+      return normalisePathToUnderlyingTarget(
+        projectContents,
+        nodeModules,
+        maybeRouteModuleResult.filePath,
+        maybeRouteModuleResult.remainingElementPath,
+      )
     }
-
-    return normalisePathToUnderlyingTarget(
-      projectContents,
-      nodeModules,
-      pathToRouteModule,
-      potentiallyDroppedFirstPathElementResult.newPath,
-      remixRouteLookupState,
-    )
-  }
-
-  const lookupTable = RemixRoutingTableGLOBAL.current[EP.elementPathPartToString(droppedPathPart)]
-
-  const pathToRouteModule = optionalMap((entry) => entry[droppedPathPart.at(-1) ?? ''], lookupTable)
-
-  if (lookupTable != null && pathToRouteModule != null) {
-    return normalisePathToUnderlyingTarget(
-      projectContents,
-      nodeModules,
-      pathToRouteModule,
-      potentiallyDroppedFirstPathElementResult.newPath,
-      lookupTable,
-    )
   }
 
   return lookupElementImport(
@@ -531,7 +515,6 @@ export function normalisePathToUnderlyingTarget(
     elementPath,
     parsedContent,
     potentiallyDroppedFirstPathElementResult,
-    remixRouteLookupState,
   )
 }
 
@@ -544,7 +527,6 @@ function lookupElementImport(
   elementPath: ElementPath | null,
   parsedContent: ParseSuccess,
   potentiallyDroppedFirstPathElementResult: EP.DropFirstPathElementResultType,
-  remixRouteLookupState: RemixRouteLookupState,
 ): NormalisePathResult {
   const importedFrom = importedFromWhere(
     currentFilePath,
@@ -572,7 +554,6 @@ function lookupElementImport(
           elementPath,
           parsedContent,
           potentiallyDroppedFirstPathElementResult,
-          remixRouteLookupState,
         )
       } else {
         return normalisePathError(
@@ -605,7 +586,6 @@ function lookupElementImport(
                   nodeModules,
                   successResult.path,
                   potentiallyDroppedFirstPathElementResult.newPath,
-                  remixRouteLookupState,
                 )
               case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
                 return normalisePathUnableToProceed(successResult.path)
@@ -626,6 +606,29 @@ function lookupElementImport(
       }
     }
   }
+}
+
+function lookupRemixRouteModule(
+  path: ElementPath,
+): { filePath: string; remainingElementPath: ElementPath } | null {
+  // TODO: remove when the routing table is passed dowm from `editor`
+  invariant(RemixRoutingTableGLOBAL.current, 'RemixRoutingTableGLOBAL should be initialized')
+
+  let result: { filePath: string; remainingElementPath: ElementPath } | null = null
+  let currentPathParts = [...path.parts]
+
+  let nextPart: ElementPathPart | undefined
+  while ((nextPart = currentPathParts.shift()) != null) {
+    const maybeFilePath = RemixRoutingTableGLOBAL.current[nextPart[0]]
+    if (maybeFilePath != null) {
+      result = {
+        filePath: maybeFilePath,
+        remainingElementPath: EP.elementPath([nextPart, ...currentPathParts]),
+      }
+    }
+  }
+
+  return result
 }
 
 export function findUnderlyingTargetComponentImplementationFromImportInfo(

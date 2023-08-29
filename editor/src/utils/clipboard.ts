@@ -335,7 +335,6 @@ export function createClipboardDataFromSelection(
       editor.nodeModules.files,
       openUIJSFileKey,
       target,
-      'outside-remix-container',
     )
     const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
     const projectFile = getProjectFileByFilePath(editor.projectContents, targetPathSuccess.filePath)

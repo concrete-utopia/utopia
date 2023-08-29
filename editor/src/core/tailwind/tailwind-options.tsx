@@ -15,7 +15,6 @@ import {
   useEditorState,
   useRefEditorState,
 } from '../../components/editor/store/store-hook'
-import type { RemixRoutingTable } from '../../components/editor/store/editor-state'
 import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../components/assets'
@@ -241,7 +240,6 @@ function getJSXElementForTarget(
     nodeModules,
     openUIJSFileKey,
     target,
-    'outside-remix-container',
   )
   const underlyingPath =
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey

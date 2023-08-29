@@ -1389,10 +1389,6 @@ export interface RemixRouteLookup {
   [remixAppContainerUid: string]: string // path to route module
 }
 
-export interface RemixRoutingTable {
-  [remixAppContainerPath: string]: RemixRouteLookup
-}
-
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
   id: string | null
@@ -1912,7 +1908,6 @@ export function getJSXComponentsAndImportsForPath(
     nodeModules,
     currentFilePath,
     path,
-    'outside-remix-container',
   )
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
@@ -2230,12 +2225,17 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
 export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
   fromTypeGuard(isSyntheticNavigatorEntry)
 
+export interface RemixStaticRoutingTable {
+  [rootElementUid: string]: string /* file path */
+}
+
 export interface RemixDerivedData {
   futureConfig: FutureConfig
   assetsManifest: AssetsManifest
   routeModules: RouteModulesWithFilePaths
-  routeModulesToBasePaths: RouteModulesWithRelativePaths
+  routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routes: Array<DataRouteObject>
+  routingTable: RemixStaticRoutingTable
 }
 
 export interface DerivedState {
@@ -2822,14 +2822,16 @@ function createRemixDerivedData(
     return null
   }
 
-  const { routeModules, routes, routeModulesToBasePaths } = routesAndModulesFromManifestResult
+  const { routeModules, routes, routeModulesToRelativePaths, routingTable } =
+    routesAndModulesFromManifestResult
 
   return {
     futureConfig: defaultFutureConfig,
     routes: routes,
     assetsManifest: assetsManifest,
     routeModules: routeModules,
-    routeModulesToBasePaths: routeModulesToBasePaths,
+    routeModulesToRelativePaths: routeModulesToRelativePaths,
+    routingTable: routingTable,
   }
 }
 
@@ -3499,7 +3501,6 @@ export function modifyUnderlyingTarget(
     editor.nodeModules.files,
     currentFilePath,
     target,
-    'outside-remix-container',
   )
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -3638,7 +3639,6 @@ export function withUnderlyingTarget<T>(
     nodeModules,
     forceNotNull('Designer file should be open.', openFile),
     target ?? null,
-    'outside-remix-container',
   )
 
   if (

@@ -812,7 +812,6 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
           state.editor.nodeModules.files,
           state.editor.canvas.openFile?.filename ?? '',
           target,
-          'outside-remix-container',
         )
 
         return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null

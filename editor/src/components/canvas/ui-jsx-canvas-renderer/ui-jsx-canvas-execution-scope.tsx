@@ -104,17 +104,12 @@ export function createExecutionScope(
     if (isUtopiaJSXComponent(topLevelElement)) {
       topLevelJsxComponents.set(topLevelElement.name, topLevelElement)
       const elementName = topLevelElement.name ?? 'default'
-      const defaultExport = exportsDetail.find(
-        (e): e is ExportDefaultFunctionOrClass =>
-          e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS' && e.name === elementName,
-      )
 
       if (!(elementName in topLevelComponentRendererComponentsForFile)) {
         topLevelComponentRendererComponentsForFile[elementName] = createComponentRendererComponent({
           topLevelElementName: topLevelElement.name,
           mutableContextRef: mutableContextRef,
           filePath: filePath,
-          isComponentDefaultExported: defaultExport != null,
         })
       }
     }

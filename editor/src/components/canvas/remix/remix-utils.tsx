@@ -45,17 +45,13 @@ import { pathPartsFromJSXElementChild } from '../../../core/model/element-templa
 import { flatRoutes } from './from-remix/flat-routes'
 import type { DataRouteWithFilePath, EntryRouteWithFileMeta } from './from-remix/client-routes'
 import { createClientRoutes, groupRoutesByParentId } from './from-remix/client-routes'
-import {
-  RemixRouterStateMachine,
-  RemixRouterStateMachineInstanceGLOBAL,
-} from '../../editor/actions/actions'
+import type { RemixStaticRoutingTable } from '../../editor/store/editor-state'
 
 const ROOT_DIR = '/src'
 
-export const RouteModulePathsCacheGLOBAL_SPIKE_KILLME: { current: RouteModulesWithRelativePaths } =
-  {
-    current: {},
-  }
+export const RemixRoutingTableGLOBAL: { current: RemixStaticRoutingTable | null } = {
+  current: null,
+}
 
 export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
 
@@ -265,7 +261,8 @@ export interface RouteModulesWithFilePaths {
 export interface GetRoutesAndModulesFromManifestResult {
   routeModules: RouteModulesWithFilePaths
   routes: Array<DataRouteObject>
-  routeModulesToBasePaths: RouteModulesWithRelativePaths
+  routeModulesToRelativePaths: RouteModulesWithRelativePaths
+  routingTable: RemixStaticRoutingTable
 }
 
 export function getRoutesAndModulesFromManifest(
@@ -280,6 +277,7 @@ export function getRoutesAndModulesFromManifest(
   >,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModules: RouteModulesWithFilePaths = {}
+  const routingTable: RemixStaticRoutingTable = {}
 
   const indexJSRootElement = getRootJSRootElement(projectContents)
   if (indexJSRootElement == null) {
@@ -305,14 +303,8 @@ export function getRoutesAndModulesFromManifest(
     EP.emptyElementPath,
   )
 
-  RemixRouterStateMachineInstanceGLOBAL.current = new RemixRouterStateMachine(
-    routeModulesToRelativePaths,
-  )
-
-  RouteModulePathsCacheGLOBAL_SPIKE_KILLME.current = routeModulesToRelativePaths
-
   Object.values(routeManifest).forEach((route) => {
-    const { defaultExport, loader, action } = getRemixExportsOfModule(
+    const { defaultExport, loader, action, rootComponentUid } = getRemixExportsOfModule(
       route.filePath,
       customRequire,
       metadataContext,
@@ -326,9 +318,18 @@ export function getRoutesAndModulesFromManifest(
       filePath: route.filePath,
       default: defaultExport,
     }
+
+    routingTable[rootComponentUid] = route.filePath
   })
 
-  return { routeModules, routes, routeModulesToBasePaths: routeModulesToRelativePaths }
+  RemixRoutingTableGLOBAL.current = routingTable
+
+  return {
+    routeModules,
+    routes,
+    routeModulesToRelativePaths,
+    routingTable,
+  }
 }
 
 function getRemixExportsOfModule(
@@ -344,6 +345,7 @@ function getRemixExportsOfModule(
   defaultExport: (props: any) => JSX.Element
   loader: LoaderFunction | undefined
   action: ActionFunction | undefined
+  rootComponentUid: string
 } {
   const executionScope = createExecutionScope(
     filename,
@@ -371,6 +373,7 @@ function getRemixExportsOfModule(
     defaultExport: executionScope.scope[nameAndUid.name] ?? fallbackElement,
     loader: executionScope.scope['loader'] as LoaderFunction | undefined,
     action: executionScope.scope['action'] as ActionFunction | undefined,
+    rootComponentUid: nameAndUid.uid,
   }
 }
 

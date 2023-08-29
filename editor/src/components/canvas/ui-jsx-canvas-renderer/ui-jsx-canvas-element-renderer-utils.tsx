@@ -309,7 +309,6 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
-          'not-a-renderer-component',
         )
       }
       const innerRender = createLookupRender(
@@ -467,7 +466,6 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
-          'not-a-renderer-component',
         )
       }
 
@@ -526,7 +524,6 @@ export function renderCoreElement(
           shouldIncludeCanvasRootInTheSpy,
           imports,
           filePath,
-          'not-a-renderer-component',
         )
       }
 
@@ -738,13 +735,6 @@ function renderJSXElement(
 
   const elementIsScene = isElementImportedFromModule('utopia-api', 'Scene')
   const elementIsRemixContainer = isElementImportedFromModule('utopia-api', 'RemixContainer')
-  const elementIsRemixOutlet = isElementImportedFromModule('@remix-run/react', 'Outlet')
-
-  const remixRendererComponentType: RemixRendererComponentType = elementIsRemixContainer
-    ? 'remix-container'
-    : elementIsRemixOutlet
-    ? 'outlet'
-    : 'not-a-renderer-component'
 
   const elementOrScam = elementIsScene
     ? SceneComponent
@@ -819,7 +809,6 @@ function renderJSXElement(
         shouldIncludeCanvasRootInTheSpy,
         imports,
         filePath,
-        'not-a-renderer-component',
       )
     }
     return buildSpyWrappedElement(
@@ -835,7 +824,6 @@ function renderJSXElement(
       shouldIncludeCanvasRootInTheSpy,
       imports,
       filePath,
-      remixRendererComponentType,
     )
   } else {
     return renderComponentUsingJsxFactoryFunction(

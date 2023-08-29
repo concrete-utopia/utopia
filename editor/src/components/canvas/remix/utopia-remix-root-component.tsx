@@ -37,7 +37,9 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
     const routeModulesResult: RouteModules = {}
     for (const [key, value] of Object.entries(remixDerivedDataRef.routeModules)) {
-      const relativePath = remixDerivedDataRef.routeModulesToBasePaths[value.filePath].relativePath
+      const relativePath =
+        remixDerivedDataRef.routeModulesToRelativePaths[value.filePath].relativePath
+
       routeModulesResult[key] = {
         ...value,
         default: PathPropHOC(value.default, EP.toString(appendTwoPaths(basePath, relativePath))),
