@@ -351,7 +351,7 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
           const visibleEditor = vscode.window.visibleTextEditors.find((editor) => {
             return message.boundsInFile.filePath === editor.document.uri.path
           })
-          if (!selectionInsideEditorRange(message.boundsInFile, visibleEditor)) {
+          if (!boundsIncludedInEditorSelection(visibleEditor, message.boundsInFile)) {
             revealRangeIfPossible(workspaceRootUri, message.boundsInFile)
           }
         }
@@ -412,12 +412,12 @@ function entireDocRange() {
   )
 }
 
-function selectionInsideEditorRange(selection: BoundsInFile, editor: vscode.TextEditor): boolean {
+function boundsIncludedInEditorSelection(editor: vscode.TextEditor, bounds: BoundsInFile): boolean {
   return (
     editor != null &&
-    selection != null &&
-    selection.startLine <= editor.selection.start.line &&
-    selection.endLine >= editor.selection.end.line
+    bounds != null &&
+    bounds.startLine <= editor.selection.start.line &&
+    bounds.endLine >= editor.selection.end.line
   )
 }
 
@@ -444,7 +444,7 @@ async function updateDirtyContent(resource: vscode.Uri): Promise<void> {
       })
       if (
         currentSelection != null &&
-        !selectionInsideEditorRange(currentSelection, visibleEditor)
+        !boundsIncludedInEditorSelection(visibleEditor, currentSelection)
       ) {
         revealRangeIfPossibleInVisibleEditor(currentSelection)
       }
