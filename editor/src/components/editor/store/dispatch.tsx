@@ -256,7 +256,7 @@ function maybeRequestModelUpdate(
         codeNeedsPrinting(file.fileContents.revisionsState) &&
         isParseSuccess(file.fileContents.parsed)
       ) {
-        const shouldStripUids = !isFeatureEnabled('Debug - Print UIDs')
+        const shouldStripUids = PRODUCTION_ENV || !isFeatureEnabled('Debug - Print UIDs')
         filesToUpdate.push(
           createPrintAndReparseFile(
             fullPath,
