@@ -86,5 +86,17 @@ export default defineConfig(({ mode }) => {
         // },
       },
     },
+    // Vitest
+    test: {
+      include: ['**/*.spec.browser3.ts{,x}'],
+      root: './src/',
+      // setupFiles: ['../vitest-setup.js'],
+      // environment: 'jsdom',
+      globals: true,
+      // browser: {
+      //   enabled: true,
+      //   name: 'chrome', // browser name is required
+      // },
+    },
   }
 })
