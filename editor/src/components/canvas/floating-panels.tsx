@@ -584,6 +584,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                         minWidth: resizeMinMaxSnap.minWidth,
                         maxWidth: resizeMinMaxSnap.maxWidth,
                         minHeight: TitleHeight,
+                        maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
                         snap: resizeMinMaxSnap.snap,
                       }}
                       width={frame.width}
@@ -620,6 +621,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                         minWidth: resizeMinMaxSnap.minWidth,
                         maxWidth: resizeMinMaxSnap.maxWidth,
                         minHeight: TitleHeight,
+                        maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
                         snap: resizeMinMaxSnap.snap,
                       }}
                       onResizeStop={resizeStopEventHandler}
@@ -655,6 +657,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                         minWidth: resizeMinMaxSnap.minWidth,
                         maxWidth: resizeMinMaxSnap.maxWidth,
                         minHeight: TitleHeight,
+                        maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
                         snap: resizeMinMaxSnap.snap,
                       }}
                       onResizeStop={resizeStopEventHandler}
