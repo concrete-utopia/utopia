@@ -477,14 +477,14 @@ interface FloatingPanelProps {
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
-  const { panelName, menusAndPanes, frame, alignment, updateColumn, onResizeStop } = props
+  const { alignment, panelName, menusAndPanes, frame, updateColumn, onResizeStop } = props
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
 
-  const leftOrRightPosition = React.useMemo(() => {
+  const horizontalPosition = React.useMemo(() => {
     if (alignment === 'right') {
-      return canvasSize.width - frame.x - frame.width
+      return { right: canvasSize.width - frame.x - frame.width }
     }
-    return frame.x
+    return { left: frame.x }
   }, [canvasSize, frame, alignment])
 
   const panelHeight = React.useMemo(() => {
@@ -543,6 +543,31 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     [menusAndPanes, canvasSize],
   )
 
+  const resizeConfig = React.useMemo(
+    () => ({
+      enable: {
+        left: alignment === 'right',
+        right: alignment === 'left',
+        bottom: true,
+      },
+      minWidth: resizeMinMaxSnap.minWidth,
+      maxWidth: resizeMinMaxSnap.maxWidth,
+      minHeight: TitleHeight,
+      maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
+      snap: resizeMinMaxSnap.snap,
+    }),
+    [alignment, canvasSize, resizeMinMaxSnap, menusAndPanes],
+  )
+
+  const draggableCommonProps = React.useMemo(
+    () => ({
+      position: { x: 0, y: 0 }, // this is needed to control the position
+      handle: '.handle',
+      onStart: onDragStart,
+    }),
+    [onDragStart],
+  )
+
   return (
     <>
       <div
@@ -551,9 +576,9 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         style={{
           position: 'absolute',
           height: panelHeight,
-          [props.alignment]: leftOrRightPosition,
           top: frame.y,
           margin: 10,
+          ...horizontalPosition, // left: x or right: y
         }}
       >
         {menusAndPanes.map((value, i) => {
@@ -561,10 +586,8 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
             case 'code-editor':
               return (
                 <Draggable
-                  position={{ x: 0, y: 0 }} // this is needed to control the position
+                  {...draggableCommonProps}
                   key='code-editor'
-                  handle='.handle'
-                  onStart={onDragStart}
                   onStop={onDragStop('code-editor')}
                 >
                   <div
@@ -575,18 +598,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     }}
                   >
                     <CodeEditorPane
-                      resizableConfig={{
-                        enable: {
-                          left: props.alignment === 'right',
-                          right: props.alignment === 'left',
-                          bottom: true,
-                        },
-                        minWidth: resizeMinMaxSnap.minWidth,
-                        maxWidth: resizeMinMaxSnap.maxWidth,
-                        minHeight: TitleHeight,
-                        maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
-                        snap: resizeMinMaxSnap.snap,
-                      }}
+                      resizableConfig={resizeConfig}
                       width={frame.width}
                       height={value.height ?? menuHeight}
                       onResizeStop={resizeStopEventHandler}
@@ -598,11 +610,9 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
             case 'inspector':
               return (
                 <Draggable
-                  position={{ x: 0, y: 0 }} // this is needed to control the position
+                  {...draggableCommonProps}
                   key='inspector'
-                  onStart={onDragStart}
                   onStop={onDragStop('inspector')}
-                  handle='.handle'
                 >
                   <div
                     style={{
@@ -612,18 +622,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     }}
                   >
                     <ResizableRightPane
-                      resizableConfig={{
-                        enable: {
-                          left: props.alignment === 'right',
-                          right: props.alignment === 'left',
-                          bottom: menusAndPanes.length > 1,
-                        },
-                        minWidth: resizeMinMaxSnap.minWidth,
-                        maxWidth: resizeMinMaxSnap.maxWidth,
-                        minHeight: TitleHeight,
-                        maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
-                        snap: resizeMinMaxSnap.snap,
-                      }}
+                      resizableConfig={resizeConfig}
                       onResizeStop={resizeStopEventHandler}
                       width={frame.width}
                       height={value.height ?? menuHeight}
@@ -634,11 +633,9 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
             case 'navigator':
               return (
                 <Draggable
-                  position={{ x: 0, y: 0 }} // this is needed to control the position
+                  {...draggableCommonProps}
                   key='navigator'
-                  onStart={onDragStart}
                   onStop={onDragStop('navigator')}
-                  handle='.handle'
                 >
                   <div
                     style={{
@@ -648,18 +645,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     }}
                   >
                     <LeftPaneComponent
-                      resizableConfig={{
-                        enable: {
-                          left: props.alignment === 'right',
-                          right: props.alignment === 'left',
-                          bottom: menusAndPanes.length > 1,
-                        },
-                        minWidth: resizeMinMaxSnap.minWidth,
-                        maxWidth: resizeMinMaxSnap.maxWidth,
-                        minHeight: TitleHeight,
-                        maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
-                        snap: resizeMinMaxSnap.snap,
-                      }}
+                      resizableConfig={resizeConfig}
                       onResizeStop={resizeStopEventHandler}
                       width={frame.width}
                       height={value.height ?? menuHeight}
