@@ -2563,22 +2563,22 @@ export const UPDATE_FNS = {
   },
   TOGGLE_PANE: (action: TogglePane, editor: EditorModel): EditorModel => {
     switch (action.target) {
-      case 'leftmenu':
-        return {
-          ...editor,
-          leftMenu: {
-            ...editor.leftMenu,
-            expanded: !editor.leftMenu.expanded,
-          },
-        }
-      case 'rightmenu':
-        return {
-          ...editor,
-          rightMenu: {
-            ...editor.rightMenu,
-            expanded: !editor.rightMenu.expanded,
-          },
-        }
+      // case 'leftmenu':
+      //   return {
+      //     ...editor,
+      //     leftMenu: {
+      //       ...editor.leftMenu,
+      //       expanded: !editor.leftMenu.expanded,
+      //     },
+      //   }
+      // case 'rightmenu':
+      //   return {
+      //     ...editor,
+      //     rightMenu: {
+      //       ...editor.rightMenu,
+      //       expanded: !editor.rightMenu.expanded,
+      //     },
+      //   }
       case 'dependencylist':
         return {
           ...editor,
@@ -2644,13 +2644,16 @@ export const UPDATE_FNS = {
           },
         }
 
-      case 'codeEditor':
-        return updateCodeEditorVisibility(editor, !editor.interfaceDesigner.codePaneVisible)
+      // case 'codeEditor':
+      //   return updateCodeEditorVisibility(editor, !editor.interfaceDesigner.codePaneVisible)
       case 'canvas':
       case 'misccodeeditor':
       case 'center':
       case 'insertmenu':
       case 'githuboptions':
+      case 'leftmenu':
+      case 'rightmenu':
+      case 'codeEditor':
         return editor
       default:
         const _exhaustiveCheck: never = action.target
