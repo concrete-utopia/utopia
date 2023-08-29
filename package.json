@@ -6,7 +6,6 @@
   "main": "./editor",
   "directories": {},
   "devDependencies": {
-    "@types/path-browserify": "^1.0.0",
     "husky": "^7.0.2"
   },
   "scripts": {
@@ -19,8 +18,5 @@
   "bugs": {
     "url": "https://github.com/concrete-utopia/utopia/issues"
   },
-  "homepage": "https://utopia.app",
-  "dependencies": {
-    "path-browserify": "^1.0.1"
-  }
+  "homepage": "https://utopia.app"
 }
