@@ -101,7 +101,7 @@ export function flatRoutes(
 
   let routes: string[] = []
   for (let entry of entries) {
-    let filepath = entry.fullPath
+    let filepath = `/` + entry.fullPath
 
     let route: string | null = null
     // If it's a directory, don't recurse into it, instead just look for a route module
@@ -286,7 +286,6 @@ function findRouteModuleForFile(
   filepath: string,
   ignoredFileRegex: RegExp[],
 ): string | null {
-  console.log(appDirectory, filepath)
   let relativePath = path.relative(appDirectory, filepath)
   let isIgnored = ignoredFileRegex.some((regex) => regex.test(relativePath))
   if (isIgnored) return null

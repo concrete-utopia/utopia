@@ -41,8 +41,7 @@ function patchRemixRoutes(routesFromRemix: RouteManifest<ConfigRoute> | null) {
     root: { path: '', id: 'root', file: 'root.js', parentId: '' },
   }
 
-  let resultRoutes: RouteManifest<EntryRouteWithFilePath> = {}
-  Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
+  const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
     // Maybe we should fill hasAction and hasLoader properly, but it is not used for anything
     acc[route.id] = {
       ...route,
