@@ -523,10 +523,12 @@ export function isEmptyGroup(metadata: ElementInstanceMetadataMap, path: Element
 export function groupChildrenThatNeedTrueuingUp(
   metadata: ElementInstanceMetadataMap,
 ): TrueUpTarget[] {
-  const groups = Object.values(metadata).filter(treatElementAsGroupLikeFromMetadata)
+  let results: TrueUpTarget[] = []
 
-  let results: ElementPath[] = []
-  for (const group of groups) {
+  for (const group of Object.values(metadata)) {
+    if (!treatElementAsGroupLikeFromMetadata(group)) {
+      continue
+    }
     const groupFrame = group.localFrame
     if (groupFrame == null || !isFiniteRectangle(groupFrame)) {
       continue
@@ -549,9 +551,11 @@ export function groupChildrenThatNeedTrueuingUp(
       boundingRectangle.width !== groupFrame.width ||
       boundingRectangle.height !== groupFrame.height
     ) {
-      results.push(...children.map((c) => c.elementPath))
+      for (const child of children) {
+        results.push(trueUpElementChanged(child.elementPath))
+      }
     }
   }
 
-  return results.map(trueUpElementChanged)
+  return results
 }
