@@ -25,8 +25,9 @@ import { renderComponentUsingJsxFactoryFunction } from './ui-jsx-canvas-element-
 import { importInfoFromImportDetails } from '../../../core/model/project-file-utils'
 import { jsxSimpleAttributeToValue } from '../../../core/shared/jsx-attributes'
 import { getUtopiaID } from '../../../core/shared/uid-utils'
-import { RemixRouterStateMachineInstance } from '../../editor/actions/actions'
+import { RemixRouterStateMachineInstanceGLOBAL } from '../../editor/actions/actions'
 import { assertNever } from '../../../core/shared/utils'
+import { invariant } from '../remix/remix-utils'
 
 // Should the condition value of conditional expression change (which maybe be done by overriding it),
 // then the values we have accumulated in the spy metadata may need to be cleaned up.
@@ -156,12 +157,19 @@ export function buildSpyWrappedElement(
     }
 
     if (elementPath != null && remixRendererComponentType !== 'not-a-renderer-component') {
+      invariant(
+        RemixRouterStateMachineInstanceGLOBAL.current,
+        'RemixRouterStateMachineInstance should be initialized before rendering begins',
+      )
       switch (remixRendererComponentType) {
         case 'outlet':
-          RemixRouterStateMachineInstance.addRendererId({ type: 'outlet', outletId: jsx.uid })
+          RemixRouterStateMachineInstanceGLOBAL.current.addRendererId({
+            type: 'outlet',
+            outletId: jsx.uid,
+          })
           break
         case 'remix-container':
-          RemixRouterStateMachineInstance.addRendererId({
+          RemixRouterStateMachineInstanceGLOBAL.current.addRendererId({
             type: 'remix-container',
             remixContainerId: jsx.uid,
             remixContainerPath: elementPath,

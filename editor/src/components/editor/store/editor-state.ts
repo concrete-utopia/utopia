@@ -16,7 +16,14 @@ import {
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath } from '../../../core/model/scene-utils'
 import type { Either } from '../../../core/shared/either'
-import { forEachRight, isRight, left, mapEither, right } from '../../../core/shared/either'
+import {
+  foldEither,
+  forEachRight,
+  isRight,
+  left,
+  mapEither,
+  right,
+} from '../../../core/shared/either'
 import type {
   ElementInstanceMetadataMap,
   JSExpression,
@@ -93,7 +100,13 @@ import type {
 } from '../../canvas/canvas-types'
 import { getParseSuccessForFilePath } from '../../canvas/canvas-utils'
 import type { EditorPanel } from '../../common/actions/index'
-import type { CodeResultCache, PropertyControlsInfo, ResolveFn } from '../../custom-code/code-file'
+import type {
+  CodeResultCache,
+  CurriedResolveFn,
+  CurriedUtopiaRequireFn,
+  PropertyControlsInfo,
+  ResolveFn,
+} from '../../custom-code/code-file'
 import {
   generateCodeResultCache,
   normalisePathSuccessOrThrowError,
@@ -114,7 +127,7 @@ import { ProjectIDPlaceholderPrefix, defaultConfig } from 'utopia-vscode-common'
 import { loginNotYetKnown } from '../../../common/user'
 import * as EP from '../../../core/shared/element-path'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { assertNever } from '../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../core/shared/utils'
 import type { Notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import {
@@ -124,7 +137,7 @@ import {
   SyntheticNavigatorEntryKeepDeepEquality,
 } from './store-deep-equality-instances'
 
-import * as OPI from 'object-path-immutable'
+import OPI from 'object-path-immutable'
 import type { MapLike } from 'typescript'
 import type { LayoutTargetableProp } from '../../../core/layout/layout-helpers-new'
 import { atomWithPubSub } from '../../../core/shared/atom-with-pub-sub'
@@ -178,8 +191,29 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import type {
+  UNSAFE_RouteManifest as RouteManifest,
+  UNSAFE_EntryRoute as EntryRoute,
+  UNSAFE_FutureConfig as FutureConfig,
+  UNSAFE_AssetsManifest as AssetsManifest,
+  UNSAFE_RemixContextObject as RemixContextObject,
+  UNSAFE_RouteModules as RouteModules,
+} from '@remix-run/react'
+import type {
+  RouteModulesWithFilePaths,
+  RouteModulesWithRelativePaths,
+} from '../../canvas/remix/remix-utils'
+import {
+  createAssetsManifest,
+  createRouteManifestFromProjectContents,
+  getRoutesAndModulesFromManifest,
+} from '../../canvas/remix/remix-utils'
+import type { ActionFunction, DataRouteObject, LoaderFunction } from 'react-router'
+import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
+import { attemptToResolveParsedComponents } from '../../canvas/ui-jsx-canvas'
 
-const ObjectPathImmutable: any = OPI
+const ObjectPathImmutable: typeof OPI = OPI
 
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
@@ -2196,6 +2230,14 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
 export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
   fromTypeGuard(isSyntheticNavigatorEntry)
 
+export interface RemixDerivedData {
+  futureConfig: FutureConfig
+  assetsManifest: AssetsManifest
+  routeModules: RouteModulesWithFilePaths
+  routeModulesToBasePaths: RouteModulesWithRelativePaths
+  routes: Array<DataRouteObject>
+}
+
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
@@ -2204,6 +2246,7 @@ export interface DerivedState {
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
+  remixData: RemixDerivedData | null
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2215,6 +2258,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
+    remixData: null,
   }
 }
 
@@ -2597,6 +2641,14 @@ function deriveCacheableStateInner(
 const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 
+const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
+  maxSize: 1,
+})
+
+const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
+  maxSize: 1,
+})
+
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
@@ -2621,6 +2673,23 @@ export function deriveState(
     editor.navigator.hiddenInNavigator,
   )
 
+  // FIXME remix spike: these break the memo if they're passed as args, but I couldn't figure out the right memo in `moize`
+  spyContainer.current = editor.spyMetadata
+  propsContainer.current = editor.allElementProps
+
+  const createRemixDerivedDataMemo =
+    cacheKey === 'patched'
+      ? patchedCreateRemixDerivedDataMemo
+      : cacheKey === 'unpatched'
+      ? unpatchedCreateRemixDerivedDataMemo
+      : assertNever(cacheKey)
+
+  const remixDerivedData = createRemixDerivedDataMemo(
+    editor.projectContents,
+    editor.codeResultCache.curriedRequireFn,
+    editor.codeResultCache.curriedResolveFn,
+  )
+
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
@@ -2638,11 +2707,130 @@ export function deriveState(
             editor.branchOriginContents,
             oldDerivedState?.branchOriginContentsChecksums ?? {},
           ),
+    remixData: remixDerivedData,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 
   return sanitizedDerivedState
+}
+
+const CreateRemixDerivedDataRefs: {
+  mutableContext: { current: MutableUtopiaCtxRefData }
+  topLevelComponentRendererComponents: { current: MapLike<MapLike<ComponentRendererComponent>> }
+  resolvedFiles: { current: MapLike<Array<string>> }
+  resolvedFileNames: { current: Array<string> }
+} = {
+  mutableContext: { current: {} },
+  topLevelComponentRendererComponents: { current: {} },
+  resolvedFiles: { current: {} },
+  resolvedFileNames: { current: [] },
+}
+
+const defaultFutureConfig: FutureConfig = {
+  v2_dev: true,
+  unstable_postcss: false,
+  unstable_tailwind: false,
+  v2_errorBoundary: false,
+  v2_headers: false,
+  v2_meta: false,
+  v2_normalizeFormMethod: false,
+  v2_routeConvention: true,
+}
+
+// Problem: passing these via args breaks the memo
+const spyContainer = { current: {} }
+const propsContainer = { current: {} }
+
+function createRemixDerivedData(
+  projectContents: ProjectContentTreeRoot,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+  curriedResolveFn: CurriedResolveFn,
+): RemixDerivedData | null {
+  const routeManifest = createRouteManifestFromProjectContents(projectContents)
+  if (routeManifest == null) {
+    return null
+  }
+
+  const assetsManifest = createAssetsManifest(routeManifest)
+
+  const require = curriedRequireFn(projectContents)
+  const resolve = curriedResolveFn(projectContents)
+
+  const metadataCtx = {
+    current: {
+      spyValues: { metadata: spyContainer.current, allElementProps: propsContainer.current },
+    },
+  }
+
+  const customRequireFn = (importOrigin: string, toImport: string) => {
+    if (CreateRemixDerivedDataRefs.resolvedFiles.current[importOrigin] == null) {
+      CreateRemixDerivedDataRefs.resolvedFiles.current[importOrigin] = []
+    }
+    let resolvedFromThisOrigin = CreateRemixDerivedDataRefs.resolvedFiles.current[importOrigin]
+
+    const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
+    const filePathResolveResult = alreadyResolved
+      ? left<string, string>('Already resolved')
+      : resolve(importOrigin, toImport)
+
+    forEachRight(filePathResolveResult, (filepath) =>
+      CreateRemixDerivedDataRefs.resolvedFileNames.current.push(filepath),
+    )
+
+    const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+      resolvedFromThisOrigin,
+      toImport,
+      projectContents,
+      customRequireFn,
+      CreateRemixDerivedDataRefs.mutableContext,
+      CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
+      '/src/root.js',
+      {},
+      [],
+      [],
+      metadataCtx,
+      NO_OP,
+      false,
+      filePathResolveResult,
+      null,
+    )
+    return foldEither(
+      () => {
+        // We did not find a ParseSuccess, fallback to standard require Fn
+        return require(importOrigin, toImport, false)
+      },
+      (scope) => {
+        // Return an artificial exports object that contains our ComponentRendererComponents
+        return scope
+      },
+      resolvedParseSuccess,
+    )
+  }
+
+  const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
+    routeManifest,
+    defaultFutureConfig,
+    customRequireFn,
+    metadataCtx,
+    projectContents,
+    CreateRemixDerivedDataRefs.mutableContext,
+    CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
+  )
+
+  if (routesAndModulesFromManifestResult == null) {
+    return null
+  }
+
+  const { routeModules, routes, routeModulesToBasePaths } = routesAndModulesFromManifestResult
+
+  return {
+    futureConfig: defaultFutureConfig,
+    routes: routes,
+    assetsManifest: assetsManifest,
+    routeModules: routeModules,
+    routeModulesToBasePaths: routeModulesToBasePaths,
+  }
 }
 
 export function createCanvasModelKILLME(

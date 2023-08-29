@@ -77,7 +77,7 @@ export function flatRoutes(
   projectContents: ProjectContentTreeRoot,
   ignoredFilePatterns: string[] = [],
   prefix = 'routes',
-) {
+): RouteManifest | null {
   let ignoredFileRegex = ignoredFilePatterns
     .map((re) => makeRe(re))
     .filter((re: any): re is RegExp => !!re)
@@ -86,13 +86,11 @@ export function flatRoutes(
   let rootRoute = findConfig(appDirectory, 'root', routeModuleExts, projectContents)
 
   if (!rootRoute) {
-    throw new Error(`Could not find a root route module in the app directory: ${appDirectory}`)
+    return null
   }
 
   if (getContentsTreeFromPath(projectContents, rootRoute) == null) {
-    throw new Error(
-      `Could not find the routes directory: ${routesDir}. Did you forget to create it?`,
-    )
+    return null
   }
 
   const routesProjectDir = getContentsTreeFromPath(projectContents, routesDir)

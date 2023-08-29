@@ -75,8 +75,10 @@ export function getStoreHook(): UtopiaStoreAPI & UpdateFunctionHelpers {
   }
 
   const storeHook: UtopiaStoreAPI = createStoresAndState(defaultState)
-  const updateStoreWithImmer = (fn: (store: EditorStorePatched) => void) =>
-    storeHook.setState(produce(fn)(storeHook.getState()))
+  const updateStoreWithImmer = (fn: (store: EditorStorePatched) => void) => {
+    const produceAny = produce(fn) as any // to work around the type instantiation depth problem
+    return storeHook.setState(produceAny(storeHook.getState()))
+  }
   const updateStore = (fn: (store: EditorStorePatched) => EditorStorePatched) =>
     storeHook.setState(fn(storeHook.getState()))
 

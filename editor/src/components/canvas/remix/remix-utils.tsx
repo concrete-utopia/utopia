@@ -31,7 +31,7 @@ import type {
   ExportDefaultFunctionOrClass,
   TextFile,
 } from '../../../core/shared/project-file-types'
-import type { RouteModules } from '@remix-run/react/dist/routeModules'
+import type { RouteModule, RouteModules } from '@remix-run/react/dist/routeModules'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -45,10 +45,17 @@ import { pathPartsFromJSXElementChild } from '../../../core/model/element-templa
 import { flatRoutes } from './from-remix/flat-routes'
 import type { DataRouteWithFilePath, EntryRouteWithFileMeta } from './from-remix/client-routes'
 import { createClientRoutes, groupRoutesByParentId } from './from-remix/client-routes'
+import {
+  RemixRouterStateMachine,
+  RemixRouterStateMachineInstanceGLOBAL,
+} from '../../editor/actions/actions'
 
 const ROOT_DIR = '/src'
 
-export const RouteModulePathsCacheGLOBAL: { current: RouteModulesWithBasePaths } = { current: {} }
+export const RouteModulePathsCacheGLOBAL_SPIKE_KILLME: { current: RouteModulesWithRelativePaths } =
+  {
+    current: {},
+  }
 
 export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
 
@@ -157,17 +164,6 @@ export function routeFromEntry(route: EntryRoute): DataRouteObject {
   }
 }
 
-export const defaultFutureConfig: FutureConfig = {
-  v2_dev: true,
-  unstable_postcss: false,
-  unstable_tailwind: false,
-  v2_errorBoundary: false,
-  v2_headers: false,
-  v2_meta: false,
-  v2_normalizeFormMethod: false,
-  v2_routeConvention: false,
-}
-
 export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
@@ -229,9 +225,13 @@ export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
 
 export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
-): RouteManifestWithContents {
+): RouteManifestWithContents | null {
+  const routesFromFlatRoutes = flatRoutes(ROOT_DIR, projectContents)
+  if (routesFromFlatRoutes == null) {
+    return null
+  }
   const routes = {
-    ...flatRoutes(ROOT_DIR, projectContents),
+    ...routesFromFlatRoutes,
     root: { path: '', id: 'root', file: 'root.js', parentId: '' },
   }
 
@@ -254,30 +254,43 @@ export function createRouteManifestFromProjectContents(
   return resultRoutes
 }
 
+export interface RouteModuleWithFilePath extends RouteModule {
+  filePath: string
+}
+
+export interface RouteModulesWithFilePaths {
+  [routeId: string]: RouteModuleWithFilePath
+}
+
+export interface GetRoutesAndModulesFromManifestResult {
+  routeModules: RouteModulesWithFilePaths
+  routes: Array<DataRouteObject>
+  routeModulesToBasePaths: RouteModulesWithRelativePaths
+}
+
 export function getRoutesAndModulesFromManifest(
   routeManifest: RouteManifestWithContents,
+  futureConfig: FutureConfig,
   customRequire: (importOrigin: string, toImport: string) => any,
   metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  remixAppContainerPath: ElementPath,
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
-): {
-  routeModules: RouteModules
-  routes: Array<DataRouteObject>
-} {
-  const routeModules: RouteModules = {}
+): GetRoutesAndModulesFromManifestResult | null {
+  const routeModules: RouteModulesWithFilePaths = {}
 
   const indexJSRootElement = getRootJSRootElement(projectContents)
-  invariant(indexJSRootElement, 'There should be an root.js in the spike project')
+  if (indexJSRootElement == null) {
+    return null
+  }
 
   const routesByParentId = groupRoutesByParentId(routeManifest)
   const routes: DataRouteWithFilePath[] = createClientRoutes(
     routeManifest,
     {},
-    defaultFutureConfig,
+    futureConfig,
     '',
     routesByParentId,
   )
@@ -286,35 +299,36 @@ export function getRoutesAndModulesFromManifest(
     throw new Error('The root route module must be `root`')
   }
 
-  const routeModulesToBasePaths = getRouteModulesWithPaths(
+  const routeModulesToRelativePaths = getRouteModulesWithPaths(
     projectContents,
     routes[0],
-    remixAppContainerPath,
+    EP.emptyElementPath,
   )
 
-  RouteModulePathsCacheGLOBAL.current = routeModulesToBasePaths
+  RemixRouterStateMachineInstanceGLOBAL.current = new RemixRouterStateMachine(
+    routeModulesToRelativePaths,
+  )
+
+  RouteModulePathsCacheGLOBAL_SPIKE_KILLME.current = routeModulesToRelativePaths
 
   Object.values(routeManifest).forEach((route) => {
-    // TODO: unhardcode when we have access to the hierarchy
-    const basePath = routeModulesToBasePaths[route.filePath]
-
     const { defaultExport, loader, action } = getRemixExportsOfModule(
       route.filePath,
       customRequire,
       metadataContext,
       projectContents,
-      basePath.pathToRootElement,
       mutableContextRef,
       topLevelComponentRendererComponents,
     )
 
     addLoaderAndActionToRoute(routes, route.id, loader, action)
     routeModules[route.id] = {
+      filePath: route.filePath,
       default: defaultExport,
     }
   })
 
-  return { routeModules: routeModules, routes: routes }
+  return { routeModules, routes, routeModulesToBasePaths: routeModulesToRelativePaths }
 }
 
 function getRemixExportsOfModule(
@@ -322,7 +336,6 @@ function getRemixExportsOfModule(
   customRequire: (importOrigin: string, toImport: string) => any,
   metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  basePath: ElementPath,
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
@@ -355,10 +368,7 @@ function getRemixExportsOfModule(
   const fallbackElement = () => <React.Fragment />
 
   return {
-    defaultExport: PathPropHOC(
-      executionScope.scope[nameAndUid.name] ?? fallbackElement,
-      EP.toString(basePath),
-    ),
+    defaultExport: executionScope.scope[nameAndUid.name] ?? fallbackElement,
     loader: executionScope.scope['loader'] as LoaderFunction | undefined,
     action: executionScope.scope['action'] as ActionFunction | undefined,
   }
@@ -414,9 +424,9 @@ export function findPathToOutlet(element: JSXElementChild): ElementPathPart | nu
   return null
 }
 
-interface RouteModulesWithBasePaths {
+export interface RouteModulesWithRelativePaths {
   [filePath: string]: {
-    pathToRootElement: ElementPath
+    relativePath: ElementPath
     isLeafModule: boolean
   }
 }
@@ -425,7 +435,7 @@ function getRouteModulesWithPaths(
   projectContents: ProjectContentTreeRoot,
   route: DataRouteWithFilePath,
   pathSoFar: ElementPath,
-): RouteModulesWithBasePaths {
+): RouteModulesWithRelativePaths {
   const file = getProjectFileByFilePath(projectContents, route.filePath)
   if (file == null || file.type !== 'TEXT_FILE') {
     return {}
@@ -436,9 +446,9 @@ function getRouteModulesWithPaths(
 
   const pathPartToOutlet = findPathToOutlet(topLevelElement)
   const isLeafModule = pathPartToOutlet == null
-  let routeModulesWithBasePaths: RouteModulesWithBasePaths = {
+  let routeModulesWithBasePaths: RouteModulesWithRelativePaths = {
     [route.filePath]: {
-      pathToRootElement: pathSoFar,
+      relativePath: pathSoFar,
       isLeafModule: isLeafModule,
     },
   }

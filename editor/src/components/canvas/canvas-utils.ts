@@ -184,11 +184,8 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
-import {
-  RouteModulePathsCacheGLOBAL,
-  findPathToOutlet,
-  getTopLevelElement,
-} from './remix/remix-utils'
+import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
+import { findPathToOutlet, getTopLevelElement } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1948,6 +1945,7 @@ export function getValidElementPaths(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  routeModulesWithBasePath: RouteModulesWithRelativePaths,
 ): Array<ElementPath> {
   const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
@@ -1982,6 +1980,7 @@ export function getValidElementPaths(
           false,
           true,
           resolve,
+          routeModulesWithBasePath,
         )
       }
     }
@@ -1999,6 +1998,7 @@ function getValidElementPathsFromElement(
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  routeModulesWithBasePath: RouteModulesWithRelativePaths,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
     const uid = getUtopiaID(element)
@@ -2041,6 +2041,7 @@ function getValidElementPathsFromElement(
             false,
             true,
             resolve,
+            routeModulesWithBasePath,
           ),
         )
 
@@ -2048,10 +2049,9 @@ function getValidElementPathsFromElement(
         return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
       }
 
-      for (const [filePathOfRouteModule, elementPath] of Object.entries(
-        RouteModulePathsCacheGLOBAL.current,
-      )) {
-        makeValidPathsFromModule(filePathOfRouteModule, elementPath.pathToRootElement)
+      for (const [filePathOfRouteModule, elementPath] of Object.entries(routeModulesWithBasePath)) {
+        const basePath = appendTwoPaths(path, elementPath.relativePath)
+        makeValidPathsFromModule(filePathOfRouteModule, basePath)
       }
 
       return paths
@@ -2072,6 +2072,7 @@ function getValidElementPathsFromElement(
           isSceneWithOneChild,
           false,
           resolve,
+          routeModulesWithBasePath,
         ),
       ),
     )
@@ -2093,6 +2094,7 @@ function getValidElementPathsFromElement(
           projectContents,
           filePath,
           resolve,
+          routeModulesWithBasePath,
         ),
       )
     }
@@ -2134,6 +2136,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          routeModulesWithBasePath,
         ),
       ),
     )
@@ -2156,6 +2159,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          routeModulesWithBasePath,
         ),
       )
     })
@@ -2291,4 +2295,8 @@ export function canvasPanelOffsets(): {
     left: (codeEditor?.clientWidth ?? 0) + (leftPane?.clientWidth ?? 0),
     right: inspector?.clientWidth ?? 0,
   }
+}
+
+export function appendTwoPaths(first: ElementPath, second: ElementPath): ElementPath {
+  return EP.elementPath([...first.parts, ...second.parts])
 }

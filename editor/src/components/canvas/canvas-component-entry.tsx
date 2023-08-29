@@ -63,13 +63,7 @@ const CanvasComponentEntryInner = React.memo((props: CanvasComponentEntryProps) 
   const canvasProps = useEditorState(
     Substores.fullStore,
     (store) => {
-      return pickUiJsxCanvasProps(
-        store.editor,
-        store.derived,
-        dispatch,
-        clearConsoleLogs,
-        addToConsoleLogs,
-      )
+      return pickUiJsxCanvasProps(store.editor, dispatch, clearConsoleLogs, addToConsoleLogs)
     },
     'CanvasComponentEntry canvasProps',
   )

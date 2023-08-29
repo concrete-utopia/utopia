@@ -663,7 +663,7 @@ export const NavigatorStateKeepDeepEquality: KeepDeepEqualityCall<NavigatorState
   )
 
 export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedState> {
-  return combine7EqualityCalls(
+  return combine8EqualityCalls(
     (state) => state.navigatorTargets,
     arrayDeepEquality(NavigatorEntryKeepDeepEquality),
     (state) => state.visibleNavigatorTargets,
@@ -678,6 +678,8 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
     FileChecksumsWithFileKeepDeepEquality,
     (state) => state.branchOriginContentsChecksums,
     nullableDeepEquality(FileChecksumsWithFileKeepDeepEquality),
+    (state) => state.remixData,
+    createCallWithTripleEquals(),
     (
       navigatorTargets,
       visibleNavigatorTargets,
@@ -686,6 +688,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
       elementWarnings,
       projectContentsChecksums,
       branchOriginContentsChecksums,
+      remixData,
     ) => {
       return {
         navigatorTargets: navigatorTargets,
@@ -695,6 +698,7 @@ export function DerivedStateKeepDeepEquality(): KeepDeepEqualityCall<DerivedStat
         elementWarnings: elementWarnings,
         projectContentsChecksums: projectContentsChecksums,
         branchOriginContentsChecksums: branchOriginContentsChecksums,
+        remixData: remixData,
       }
     },
   )

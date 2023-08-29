@@ -603,7 +603,7 @@ import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
-import { RouteModulePathsCacheGLOBAL } from '../../canvas/remix/remix-utils'
+import { RouteModulePathsCacheGLOBAL_SPIKE_KILLME } from '../../canvas/remix/remix-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -978,6 +978,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
+    remixData: poppedDerived.remixData,
   }
 }
 
@@ -1470,8 +1471,15 @@ type AddRendererIdMessage =
   | { type: 'remix-container'; remixContainerId: string; remixContainerPath: ElementPath }
   | { type: 'outlet'; outletId: string }
 
-class RemixRouterStateMachine {
+interface IsFileLeafModuleLookup {
+  [filePath: string]: {
+    isLeafModule: boolean
+  }
+}
+
+export class RemixRouterStateMachine {
   constructor(
+    private isFileLeafModuleLookup: IsFileLeafModuleLookup,
     private state: RemixRouterStateMachineState = { type: 'inactive' },
     private partialLookupTable: RemixRouteLookup = {},
     private lastRendererId: string | null = null,
@@ -1503,7 +1511,7 @@ class RemixRouterStateMachine {
     }
 
     // commit the routing table when we know that we are at the end of the path
-    const isLeafModule = RouteModulePathsCacheGLOBAL.current[filePath]?.isLeafModule ?? true
+    const isLeafModule = this.isFileLeafModuleLookup[filePath]?.isLeafModule ?? true
     if (isLeafModule) {
       addToRemixRoutingTable(this.state.remixContainerPath, this.partialLookupTable)
       this.reset()
@@ -1542,7 +1550,9 @@ class RemixRouterStateMachine {
   }
 }
 
-export const RemixRouterStateMachineInstance = new RemixRouterStateMachine()
+export const RemixRouterStateMachineInstanceGLOBAL: { current: RemixRouterStateMachine | null } = {
+  current: null,
+}
 
 export const RemixRoutingTableGLOBAL: { current: RemixRoutingTable } = {
   current: {},
