@@ -495,12 +495,12 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     }
   }, [menusAndPanes, frame])
 
-  const [isDragging, setIsDragging] = React.useState(false)
+  const [isDraggingOrResizing, setIsDraggingOrResizing] = React.useState(false)
   const onDragStart = React.useCallback<DraggableEventHandler>(
     (e, data) => {
-      setIsDragging(true)
+      setIsDraggingOrResizing(true)
     },
-    [setIsDragging],
+    [setIsDraggingOrResizing],
   )
 
   const onDragStop = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
@@ -511,10 +511,10 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
           panelName,
           windowPoint({ x: (e as any).clientX, y: (e as any).clientY }),
         )
-        setIsDragging(false)
+        setIsDraggingOrResizing(false)
       }
     },
-    [panelName, updateColumn, setIsDragging],
+    [panelName, updateColumn, setIsDraggingOrResizing],
   )
 
   const resizeMinMaxSnap = React.useMemo(() => {
@@ -548,7 +548,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       enable: {
         left: alignment === 'right',
         right: alignment === 'left',
-        bottom: true,
+        bottom: !isMenuContainingPanel(menusAndPanes) || menusAndPanes.length > 1,
       },
       minWidth: resizeMinMaxSnap.minWidth,
       maxWidth: resizeMinMaxSnap.maxWidth,
@@ -602,6 +602,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                       width={frame.width}
                       height={value.height ?? menuHeight}
                       onResizeStop={resizeStopEventHandler}
+                      setIsResizing={setIsDraggingOrResizing}
                       small={isMenuContainingPanel(menusAndPanes)}
                     />
                   </div>
@@ -624,6 +625,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     <ResizableRightPane
                       resizableConfig={resizeConfig}
                       onResizeStop={resizeStopEventHandler}
+                      setIsResizing={setIsDraggingOrResizing}
                       width={frame.width}
                       height={value.height ?? menuHeight}
                     />
@@ -647,6 +649,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
                     <LeftPaneComponent
                       resizableConfig={resizeConfig}
                       onResizeStop={resizeStopEventHandler}
+                      setIsResizing={setIsDraggingOrResizing}
                       width={frame.width}
                       height={value.height ?? menuHeight}
                     />
@@ -659,7 +662,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         })}
       </div>
       {when(
-        isDragging,
+        isDraggingOrResizing,
         <style>{`
           body * {
             pointer-events: none !important;

@@ -185,15 +185,19 @@ interface ResizableRightPaneProps {
   width: number
   height: number
   onResizeStop: (menuName: 'inspector', direction: Direction, width: number, height: number) => void
+  setIsResizing: React.Dispatch<React.SetStateAction<boolean>>
   resizableConfig: ResizableProps
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const { onResizeStop, width, height } = props
+  const { onResizeStop: onPanelResizeStop, setIsResizing, width, height } = props
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
   const resizableRef = React.useRef<Resizable>(null)
+  const onResizeStart = React.useCallback(() => {
+    setIsResizing(true)
+  }, [setIsResizing])
   const onResize = React.useCallback(
     (
       event: MouseEvent | TouchEvent,
@@ -206,10 +210,22 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
         // setWidth(newWidth)
         updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
-        onResizeStop('inspector', direction, newWidth, elementRef?.clientHeight)
+        onPanelResizeStop('inspector', direction, newWidth, elementRef?.clientHeight)
       }
     },
-    [updateInspectorWidth, onResizeStop],
+    [updateInspectorWidth, onPanelResizeStop],
+  )
+  const onResizeStop = React.useCallback(
+    (
+      event: MouseEvent | TouchEvent,
+      direction: ResizeDirection,
+      elementRef: HTMLElement,
+      delta: Size,
+    ) => {
+      setIsResizing(false)
+      onResize(event, direction, elementRef, delta)
+    },
+    [setIsResizing, onResize],
   )
 
   const selectedTab = useEditorState(
@@ -245,8 +261,9 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
+      onResizeStart={onResizeStart}
       onResize={onResize}
-      onResizeStop={onResize}
+      onResizeStop={onResizeStop}
       {...props.resizableConfig}
     >
       <PanelTitleBar />
@@ -281,11 +298,12 @@ interface CodeEditorPaneProps {
     width: number,
     height: number,
   ) => void
+  setIsResizing: React.Dispatch<React.SetStateAction<boolean>>
   resizableConfig: ResizableProps
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const { width, height, onResizeStop: onPanelResizeStop, resizableConfig } = props
+  const { width, height, onResizeStop: onPanelResizeStop, setIsResizing, resizableConfig } = props
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
@@ -295,6 +313,9 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   )
 
   const codeEditorEnabled = isCodeEditorEnabled()
+  const onResizeStart = React.useCallback(() => {
+    setIsResizing(true)
+  }, [setIsResizing])
   const onResizeStop = React.useCallback(
     (
       event: MouseEvent | TouchEvent,
@@ -308,8 +329,9 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       if (newWidth != null && newHeight != null) {
         onPanelResizeStop('code-editor', direction, newWidth, newHeight)
       }
+      setIsResizing(false)
     },
-    [dispatch, onPanelResizeStop],
+    [dispatch, onPanelResizeStop, setIsResizing],
   )
   const onResize = React.useCallback(
     (
@@ -337,6 +359,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         width: width,
         height: height,
       }}
+      onResizeStart={onResizeStart}
       onResizeStop={onResizeStop}
       onResize={onResize}
       className='resizableFlexColumnCanvasCode'
@@ -365,7 +388,9 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
           justifyContent: 'stretch',
         }}
       >
-        {when(codeEditorEnabled, <CodeEditorWrapper />)}
+        <div style={{ display: 'flex', height: props.small ? (height - 28) / 0.7 - 32 : '100%' }}>
+          {when(codeEditorEnabled, <CodeEditorWrapper />)}
+        </div>
         <ConsoleAndErrorsPane />
       </div>
     </Resizable>

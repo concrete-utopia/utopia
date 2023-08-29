@@ -47,11 +47,12 @@ interface LeftPaneComponentProps {
   width: number
   height: number
   onResizeStop: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
+  setIsResizing: React.Dispatch<React.SetStateAction<boolean>>
   resizableConfig: ResizableProps
 }
 
 export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
-  const { onResizeStop, width, height } = props
+  const { onResizeStop, setIsResizing, width, height } = props
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -94,8 +95,9 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
       onResizeStop('navigator', _direction, _ref?.clientWidth, _ref?.clientHeight)
+      setIsResizing(false)
     },
-    [onResizeStop],
+    [onResizeStop, setIsResizing],
   )
   const onLeftPanelResize = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
@@ -107,6 +109,9 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     },
     [onResizeStop],
   )
+  const onResizeStart = React.useCallback(() => {
+    setIsResizing(true)
+  }, [setIsResizing])
 
   const leftMenuExpanded = useEditorState(
     Substores.restOfEditor,
@@ -123,6 +128,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
       <ResizableFlexColumn
         onResizeStop={onLeftPanelResizeStop}
         onResize={onLeftPanelResize}
+        onResizeStart={onResizeStart}
         defaultSize={{
           width: width,
           height: '100%',
