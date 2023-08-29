@@ -522,7 +522,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       (v) => SizeConstraints[v.menuOrPane].resize,
       menusAndPanes,
     )
-    const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth), 0)
+    const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth), 20)
     const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth), canvasSize.width)
     const snap = stripNulls(possibleConstraints.map((v) => v.snap))[0] // TODO what happens if there are multiple conflicting snapping menus
 
