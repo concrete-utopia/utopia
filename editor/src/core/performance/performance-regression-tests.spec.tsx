@@ -9,12 +9,14 @@ import { selectComponents, setProp_UNSAFE } from '../../components/editor/action
 import * as EP from '../shared/element-path'
 import * as PP from '../shared/property-path'
 import { emptyComments, jsExpressionValue } from '../shared/element-template'
+import { setFeatureForUnitTestsUseInDescribeBlockOnly } from '../../utils/utils.test-utils'
 
 jest.mock('../../components/canvas/controls/outline-utils', () => ({
   isZeroSizedElement: () => false, // in test environment elements have no size
 }))
 
 describe('React Render Count Tests -', () => {
+  setFeatureForUnitTestsUseInDescribeBlockOnly('Debug - Print UIDs', true)
   it('Clicking on opacity slider with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
