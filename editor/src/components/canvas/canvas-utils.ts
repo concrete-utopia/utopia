@@ -185,7 +185,7 @@ import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
-import { findPathToOutlet, getTopLevelElement } from './remix/remix-utils'
+import { findPathToOutlet, getDefaultExportedTopLevelElement } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -2016,15 +2016,11 @@ function getValidElementPathsFromElement(
         parentPathInner: ElementPath,
       ): ElementPath | null {
         const file = getProjectFileByFilePath(projectContents, routeModulePath)
-        if (
-          file == null ||
-          file.type !== 'TEXT_FILE' ||
-          file.fileContents.parsed?.type !== 'PARSE_SUCCESS'
-        ) {
+        if (file == null || file.type !== 'TEXT_FILE') {
           throw new Error(`${routeModulePath} should be a text file`)
         }
 
-        const topLevelElement = getTopLevelElement(file.fileContents.parsed.topLevelElements)
+        const topLevelElement = getDefaultExportedTopLevelElement(file)
 
         if (topLevelElement == null) {
           throw new Error(`${routeModulePath} should have a top level element`)
@@ -2033,7 +2029,7 @@ function getValidElementPathsFromElement(
         paths.push(
           ...getValidElementPathsFromElement(
             focusedElementPath,
-            topLevelElement.rootElement,
+            topLevelElement,
             parentPathInner,
             projectContents,
             routeModulePath,
@@ -2045,7 +2041,7 @@ function getValidElementPathsFromElement(
           ),
         )
 
-        const pathToOutlet = findPathToOutlet(topLevelElement.rootElement)
+        const pathToOutlet = findPathToOutlet(topLevelElement)
         return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
       }
 

@@ -55,42 +55,6 @@ export const RemixRoutingTableGLOBAL: { current: RemixStaticRoutingTable | null 
 
 export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
 
-export function getTopLevelElement(topLevelElements: TopLevelElement[]): UtopiaJSXComponent | null {
-  return (
-    topLevelElements.find((e): e is UtopiaJSXComponent => {
-      return isUtopiaJSXComponent(e)
-    }) ?? null
-  )
-}
-
-interface JSXElementWalkResult {
-  uid: string
-  pathPart: ElementPathPart
-  componentName: string
-}
-
-export function* jsxElementUidsPostOrder(
-  element: JSXElementChild,
-  pathPart: ElementPathPart,
-): Generator<JSXElementWalkResult, void, unknown> {
-  switch (element.type) {
-    case 'JSX_FRAGMENT':
-    case 'JSX_ELEMENT':
-      for (const child of element.children) {
-        yield* jsxElementUidsPostOrder(child, [...pathPart, element.uid])
-      }
-      yield {
-        uid: element.uid,
-        pathPart: [...pathPart, element.uid],
-        componentName:
-          element.type === 'JSX_FRAGMENT' ? 'Fragment' : getJSXElementNameAsString(element.name),
-      }
-      return
-    default:
-      return
-  }
-}
-
 export function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
   if (value == null) {
     console.error(`Invariant error: ${message}`)
@@ -148,18 +112,6 @@ export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsM
   }
 }
 
-export function routeFromEntry(route: EntryRoute): DataRouteObject {
-  return {
-    caseSensitive: false,
-    element: <UtopiaRemixRoute id={route.id} />,
-    errorElement: undefined,
-    id: route.id,
-    index: route.index,
-    path: route.path,
-    handle: null,
-  }
-}
-
 export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
@@ -189,7 +141,7 @@ export function getDefaultExportNameAndUidFromFile(
   return { name: defaultExportName, uid: elementUid }
 }
 
-function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChild | null {
+export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChild | null {
   if (file.fileContents.parsed.type !== 'PARSE_SUCCESS') {
     return null
   }
@@ -279,8 +231,13 @@ export function getRoutesAndModulesFromManifest(
   const routeModules: RouteModulesWithFilePaths = {}
   const routingTable: RemixStaticRoutingTable = {}
 
-  const indexJSRootElement = getRootJSRootElement(projectContents)
-  if (indexJSRootElement == null) {
+  const rootJsFile = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
+  if (rootJsFile == null || rootJsFile.type !== 'TEXT_FILE') {
+    return null
+  }
+
+  const rootJSRootElement = getDefaultExportedTopLevelElement(rootJsFile)
+  if (rootJSRootElement == null) {
     return null
   }
 
@@ -377,33 +334,6 @@ function getRemixExportsOfModule(
   }
 }
 
-function getRootJSRootElement(projectContents: ProjectContentTreeRoot): JSXElementChild | null {
-  const file = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
-  if (
-    file == null ||
-    file.type !== 'TEXT_FILE' ||
-    file.lastParseSuccess?.type !== 'PARSE_SUCCESS'
-  ) {
-    return null
-  }
-
-  const defaultExportName =
-    file.lastParseSuccess.exportsDetail.find(
-      (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
-    )?.name ?? null
-
-  if (defaultExportName == null) {
-    return null
-  }
-
-  return (
-    file.lastParseSuccess.topLevelElements.find(
-      (t): t is UtopiaJSXComponent =>
-        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-    )?.rootElement ?? null
-  )
-}
-
 // TODO: needs better `Outlet` detection
 export function findPathToOutlet(element: JSXElementChild): ElementPathPart | null {
   if (
@@ -445,7 +375,10 @@ function getRouteModulesWithPaths(
   }
 
   const topLevelElement = getDefaultExportedTopLevelElement(file)
-  invariant(topLevelElement, 'Route module should provide a default export')
+  if (topLevelElement == null) {
+    // for example because the file in question is not syntactially correct
+    return {}
+  }
 
   const pathPartToOutlet = findPathToOutlet(topLevelElement)
   const isLeafModule = pathPartToOutlet == null
