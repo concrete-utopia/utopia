@@ -8,7 +8,7 @@ import { getContentsTreeFromPath } from '../../assets'
 import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
-s
+
 const ROOT_DIR = '/src'
 
 export const DefaultFutureConfig: FutureConfig = {
