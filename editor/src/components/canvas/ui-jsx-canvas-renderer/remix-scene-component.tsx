@@ -1,5 +1,6 @@
 import React from 'react'
 import { UtopiaRemixRootComponent } from '../remix/utopia-remix-root-component'
+import { UtopiaStyles, useColorTheme } from '../../../uuiui'
 
 export const REMIX_SCENE_TESTID = 'remix-scene'
 
@@ -8,30 +9,23 @@ export interface RemixSceneProps {
 }
 
 export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<RemixSceneProps>) => {
-  let style: React.CSSProperties = {
-    overflow: 'hidden',
-  }
-  if (props.style != null) {
-    style = {
-      ...style,
-      ...props.style,
-    }
-  }
+  const colorTheme = useColorTheme()
+  const canvasIsLive = false
 
-  const adjustedProps: React.PropsWithChildren<RemixSceneProps> = {
-    ...props,
-    style: style,
-  }
+  const { style, ...remainingProps } = props
 
-  if (props.style != null) {
-    style = {
-      ...style,
-      ...props.style,
-    }
+  const sceneStyle: React.CSSProperties = {
+    position: 'relative',
+    backgroundColor: colorTheme.emphasizedBackground.value,
+    boxShadow: canvasIsLive
+      ? UtopiaStyles.scene.live.boxShadow
+      : UtopiaStyles.scene.editing.boxShadow,
+    ...UtopiaStyles.backgrounds.checkerboardBackground,
+    ...style,
   }
 
   return (
-    <div data-testid={REMIX_SCENE_TESTID} {...adjustedProps}>
+    <div data-testid={REMIX_SCENE_TESTID} {...remainingProps} style={sceneStyle}>
       <UtopiaRemixRootComponent />
     </div>
   )
