@@ -819,6 +819,13 @@ const PullRequestButton = () => {
 }
 
 const BranchNotLoadedBlock = () => {
+  const workers = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      return store.workers
+    },
+    'BranchNotLoadedBlock workers',
+  )
   const dispatch = useDispatch()
   const { branchName, branches, branchLoaded, githubOperations, githubRepo } = useEditorState(
     Substores.github,
@@ -849,6 +856,7 @@ const BranchNotLoadedBlock = () => {
   const loadFromBranch = React.useCallback(() => {
     if (githubRepo != null && branchName != null) {
       void updateProjectWithBranchContent(
+        workers,
         dispatch,
         forceNotNull('Should have a project ID by now.', projectID),
         githubRepo,
@@ -858,7 +866,15 @@ const BranchNotLoadedBlock = () => {
         builtInDependencies,
       )
     }
-  }, [dispatch, githubRepo, branchName, currentDependencies, builtInDependencies, projectID])
+  }, [
+    workers,
+    dispatch,
+    githubRepo,
+    branchName,
+    currentDependencies,
+    builtInDependencies,
+    projectID,
+  ])
 
   const isANewBranch = React.useMemo(() => {
     if (branches == null) {

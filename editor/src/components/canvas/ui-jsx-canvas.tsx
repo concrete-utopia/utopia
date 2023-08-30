@@ -87,6 +87,7 @@ import {
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { CanvasControlsContainerID } from './controls/new-canvas-controls'
 
 applyUIDMonkeyPatch()
 
@@ -298,6 +299,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     editedText,
   } = props
 
+  console.log('UiJsxCanvas')
+
   clearListOfEvaluatedFiles()
   let resolvedFileNames = React.useRef<Array<string>>([]) // resolved (i.e. imported) files this render
   resolvedFileNames.current = [uiFilePath]
@@ -315,6 +318,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     }, 0)
   })
 
+  console.log('UiJsxCanvas 2')
   // FIXME This is illegal! The two lines below are triggering a re-render
   clearConsoleLogs()
   proxyConsole(console, addToConsoleLogs)
@@ -354,6 +358,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     maybeOldProjectContents.current = projectContents
   }
 
+  console.log('UiJsxCanvas 3')
   const projectContentsForRequireFn = maybeOldProjectContents.current
   const requireFn = React.useMemo(
     () => curriedRequireFn(projectContentsForRequireFn),
@@ -431,6 +436,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       editedText,
     ],
   )
+  console.log('UiJsxCanvas 4')
 
   const { scope, topLevelJsxComponents } = React.useMemo(() => {
     const executionScope = createExecutionScope(
@@ -471,11 +477,13 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
 
+  console.log('UiJsxCanvas 5')
   const executionScope = scope
 
   useTwind(projectContentsForRequireFn, customRequire, '#canvas-container')
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
+  console.log('UiJsxCanvas 6')
 
   const {
     StoryboardRootComponent,
@@ -745,6 +753,7 @@ function useGetStoryboardRoot(
     | undefined
 
   const storyboardRootJsxComponent = topLevelElementsMap.get(BakedInStoryboardVariableName)
+
   const validPaths =
     storyboardRootJsxComponent == null
       ? []
@@ -762,6 +771,8 @@ function useGetStoryboardRoot(
 
   const rootValidPathsArray = validPaths.map(EP.makeLastPartOfPathStatic)
   const rootValidPathsSet = new Set(rootValidPathsArray.map(EP.toString))
+
+  console.log('StoryboardRootComponent', StoryboardRootComponent != null)
 
   return {
     StoryboardRootComponent: StoryboardRootComponent,
@@ -784,6 +795,7 @@ const CanvasContainer = React.forwardRef<
   return (
     <div
       id={CanvasContainerID}
+      data-testid={CanvasControlsContainerID}
       key={'canvas-container'}
       ref={ref}
       style={{

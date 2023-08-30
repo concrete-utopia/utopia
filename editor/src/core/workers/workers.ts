@@ -24,6 +24,15 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   }
 
   sendParsePrintMessage(request: ParsePrintFilesRequest): void {
+    console.log(
+      'sendParsePrintMessage',
+      request.type,
+      JSON.stringify(
+        request.files.map((f) => {
+          return { requestType: f.type, filename: f.filename }
+        }),
+      ),
+    )
     this.parserPrinterWorker.sendParsePrintMessage(request)
   }
 

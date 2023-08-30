@@ -22,6 +22,7 @@ export class FakeParserPrinterWorker implements ParserPrinterWorker {
   }
 
   receiveMessage = (data: ParsePrintResultMessage): void => {
+    console.log('FakeParserPrinterWorker', data.type)
     this.messageListeners.forEach((l) => {
       l(new MessageEvent('message', { data: data }))
     })

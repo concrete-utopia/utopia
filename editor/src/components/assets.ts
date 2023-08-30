@@ -540,6 +540,12 @@ export function getProjectFileByFilePath(
   return getContentsTreeFileFromElements(tree, getProjectContentKeyPathElements(path))
 }
 
+export function packageJsonFileFromProjectContents(
+  projectContents: ProjectContentTreeRoot,
+): ProjectFile | null {
+  return getProjectFileByFilePath(projectContents, '/package.json')
+}
+
 export function addFileToProjectContents(
   tree: ProjectContentTreeRoot,
   path: string,

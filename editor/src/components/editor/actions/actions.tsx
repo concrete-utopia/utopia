@@ -176,6 +176,7 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
@@ -412,7 +413,6 @@ import {
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
   modifyUnderlyingTargetElement,
-  packageJsonFileFromProjectContents,
   persistentModelFromEditorModel,
   removeElementAtPath,
   StoryboardFilePath,
@@ -605,6 +605,7 @@ import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1991,6 +1992,18 @@ export const UPDATE_FNS = {
           action.mode.editedText,
         )
       ) {
+        const metadataToLog = MetadataUtils.findElementByElementPath(
+          editor.jsxMetadata,
+          action.mode.editedText,
+        )
+        console.log(
+          'metadataToLog',
+          Object.keys(editor.domMetadata).length,
+          Object.keys(editor.spyMetadata).length,
+          Object.keys(editor.jsxMetadata).length,
+          JSON.stringify(metadataToLog, null, 2),
+        )
+
         // If the target of text edit mode isn't editable, then ignore the requested change.
         console.error(`Invalid target for text edit mode: ${EP.toString(action.mode.editedText)}`)
         return editor
@@ -3609,6 +3622,15 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
+    console.log(
+      'UPDATE_FROM_WORKER',
+      action.updates.map((update) => {
+        return {
+          updateType: update.type,
+          filename: update.filePath,
+        }
+      }),
+    )
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
 
@@ -3627,67 +3649,11 @@ export const UPDATE_FNS = {
       }
     }
 
-    for (const fileUpdate of action.updates) {
-      const existing = getProjectFileByFilePath(editor.projectContents, fileUpdate.filePath)
-      if (existing != null && isTextFile(existing)) {
-        anyParsedUpdates = true
-        let updatedFile: TextFile
-        let updatedContents: ParsedTextFile
-        let code: string
-        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
-        switch (fileUpdate.type) {
-          case 'WORKER_PARSED_UPDATE': {
-            code = existing.fileContents.code
-            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-            updatedContents = updateParsedTextFileHighlightBounds(
-              fileUpdate.parsed,
-              highlightBounds,
-            )
-            break
-          }
-          case 'WORKER_CODE_AND_PARSED_UPDATE':
-            code = fileUpdate.code
-            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-            // Because this will print and reparse, we need to be careful of changes to the parsed
-            // model that have happened since we requested this update
-            updatedContents = updateIsStale
-              ? existing.fileContents.parsed
-              : updateParsedTextFileHighlightBounds(fileUpdate.parsed, highlightBounds)
-            break
-          default:
-            const _exhaustiveCheck: never = fileUpdate
-            throw new Error(`Invalid file update: ${fileUpdate}`)
-        }
+    // Apply the updates to the projectContents.
+    const updateResult = processWorkerUpdates(workingProjectContents, action.updates)
+    anyParsedUpdates = anyParsedUpdates || updateResult.anyParsedUpdates
+    workingProjectContents = updateResult.projectContents
 
-        if (updateIsStale) {
-          // if the received file is older than the existing, we still allow it to update the other side,
-          // but we don't bump the revision state.
-          updatedFile = textFile(
-            textFileContents(code, updatedContents, existing.fileContents.revisionsState),
-            existing.lastSavedContents,
-            isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            existing.versionNumber,
-          )
-        } else {
-          updatedFile = textFile(
-            textFileContents(code, updatedContents, RevisionsState.BothMatch),
-            existing.lastSavedContents,
-            isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            existing.versionNumber,
-          )
-        }
-
-        workingProjectContents = addFileToProjectContents(
-          workingProjectContents,
-          fileUpdate.filePath,
-          updatedFile,
-        )
-      } else {
-        // The worker shouldn't be recreating deleted files or reformated files
-        console.error(`Worker thread is trying to update an invalid file ${fileUpdate.filePath}`)
-        return editor
-      }
-    }
     if (anyParsedUpdates) {
       // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
       // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
