@@ -23,23 +23,19 @@ export interface UtopiaRemixRootComponentProps {
 
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   // TODO If we make this actually a ref, we don't need the full route modules in here
-  const remixDerivedDataRef = useEditorState(
-    Substores.derived,
-    (store) => store.derived.remixData,
-    'UtopiaRemixRootComponent remixData',
-  )
+  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   const basePath = props[UTOPIA_PATH_KEY]
 
   const routeModules = React.useMemo(() => {
-    if (remixDerivedDataRef == null) {
+    if (remixDerivedDataRef.current == null) {
       return null
     }
 
     const routeModulesResult: RouteModules = {}
-    for (const [key, value] of Object.entries(remixDerivedDataRef.routeModuleCreators)) {
+    for (const [key, value] of Object.entries(remixDerivedDataRef.current.routeModuleCreators)) {
       const nameAndUid = getDefaultExportNameAndUidFromFile(
         projectContentsRef.current,
         value.filePath,
@@ -47,7 +43,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       invariant(nameAndUid, 'a default export should be provided')
 
       const relativePath =
-        remixDerivedDataRef.routeModulesToRelativePaths[value.filePath].relativePath
+        remixDerivedDataRef.current.routeModulesToRelativePaths[value.filePath].relativePath
 
       const defaultComponent = (componentProps: any) =>
         value
@@ -64,7 +60,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   }, [basePath, remixDerivedDataRef, projectContentsRef])
 
   const router = React.useMemo(
-    () => optionalMap(createMemoryRouter, remixDerivedDataRef?.routes),
+    () => optionalMap(createMemoryRouter, remixDerivedDataRef.current?.routes),
     [remixDerivedDataRef],
   )
 
@@ -80,11 +76,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     })
   }, [router, uiJsxCanvasContext])
 
-  if (remixDerivedDataRef == null || router == null || routeModules == null) {
+  if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null
   }
 
-  const { assetsManifest, futureConfig } = remixDerivedDataRef
+  const { assetsManifest, futureConfig } = remixDerivedDataRef.current
 
   return (
     <RemixContext.Provider

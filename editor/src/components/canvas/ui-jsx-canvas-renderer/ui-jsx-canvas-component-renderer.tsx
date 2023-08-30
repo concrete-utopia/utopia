@@ -260,9 +260,9 @@ export function createComponentRendererComponent(params: {
 
     const buildResult = React.useRef<React.ReactElement | null>(null)
     // TODO remix spike: add back this if when the remix content disappearing bug is fixed
-    // if (shouldUpdate()) {
-    buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
-    // }
+    if (shouldUpdate()) {
+      buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
+    }
     return buildResult.current
   }
   Component.displayName = `ComponentRenderer(${params.topLevelElementName})`
