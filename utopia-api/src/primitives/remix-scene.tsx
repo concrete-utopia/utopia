@@ -1,13 +1,13 @@
 import React from 'react'
 import { View } from './view'
 
-export interface RemixContainerProps {
+export interface RemixSceneProps {
   style?: React.CSSProperties
   'data-label'?: string
   'data-uid'?: string
 }
 
-export const RemixContainer = React.memo((props: React.PropsWithChildren<RemixContainerProps>) => {
+export const RemixScene = React.memo((props: React.PropsWithChildren<RemixSceneProps>) => {
   let style: React.CSSProperties = {
     overflow: 'hidden',
   }
@@ -17,7 +17,7 @@ export const RemixContainer = React.memo((props: React.PropsWithChildren<RemixCo
       ...props.style,
     }
   }
-  const adjustedProps: React.PropsWithChildren<RemixContainerProps> = {
+  const adjustedProps: React.PropsWithChildren<RemixSceneProps> = {
     ...props,
     style: style,
   }

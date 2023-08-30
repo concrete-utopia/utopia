@@ -1,7 +1,7 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
-import { REMIX_CONTAINER_TESTID } from '../ui-jsx-canvas-renderer/remix-container-component'
+import { REMIX_SCENE_TESTID } from '../ui-jsx-canvas-renderer/remix-scene-component'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 
 const storyboardFileContent = `
@@ -9,7 +9,7 @@ import * as React from 'react';
 import Utopia, {
   Scene,
   Storyboard,
-  RemixContainer,
+  RemixScene,
 } from 'utopia-api';
 
 
@@ -19,7 +19,7 @@ export var storyboard = (
       data-uid='scene'
       style={{ position: 'absolute', left: 400, top: 0, width: 375, height: 812 }}
     >
-      <RemixContainer />
+      <RemixScene />
     </Scene>
   </Storyboard>
 );
@@ -32,9 +32,9 @@ describe('Remix content', () => {
       [StoryboardFilePath]: storyboardFileContent,
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
-    const remixContainer = await renderResult.renderedDOM.findByTestId(REMIX_CONTAINER_TESTID)
+    const remixScene = await renderResult.renderedDOM.findByTestId(REMIX_SCENE_TESTID)
 
-    expect(remixContainer.textContent).toEqual('Remix content is coming soon')
+    expect(remixScene.textContent).toEqual('Remix content is coming soon')
   })
 })
 
@@ -47,7 +47,7 @@ describe('Remix content with feature switch off', () => {
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
     await expect(async () =>
-      renderResult.renderedDOM.findAllByTestId(REMIX_CONTAINER_TESTID),
+      renderResult.renderedDOM.findAllByTestId(REMIX_SCENE_TESTID),
     ).rejects.toThrow()
   })
 })

@@ -9,18 +9,16 @@ import * as React from 'react';
 import Utopia, {
   Scene,
   Storyboard,
-  RemixContainer,
+  RemixScene,
 } from 'utopia-api';
 
 
 export var storyboard = (
   <Storyboard data-uid='storyboard'>
-    <Scene
+    <RemixScene
       data-uid='scene'
       style={{ position: 'absolute', left: 400, top: 0, width: 375, height: 812 }}
-    >
-      <RemixContainer />
-    </Scene>
+    />
   </Storyboard>
 );
 `
