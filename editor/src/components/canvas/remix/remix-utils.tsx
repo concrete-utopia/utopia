@@ -22,10 +22,6 @@ export const DefaultFutureConfig: FutureConfig = {
   v2_routeConvention: true,
 }
 
-export interface EntryRouteWithFilePath extends EntryRoute {
-  filePath: string
-}
-
 // This is necessary to create a simple node.fs-like implementation for Utopia projectContents, which
 // can be used by the Remix functions to parse the routes
 export function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): FileOps {
@@ -52,7 +48,7 @@ export function projectContentsToFileOps(projectContents: ProjectContentTreeRoot
 
 export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
-): RouteManifest<EntryRouteWithFilePath> | null {
+): RouteManifest<EntryRoute> | null {
   const routesFromRemix = (() => {
     try {
       return flatRoutes(ROOT_DIR, projectContentsToFileOps(projectContents))
@@ -78,15 +74,14 @@ function patchRemixRoutes(routesFromRemix: RouteManifest<ConfigRoute> | null) {
     acc[route.id] = {
       ...route,
       parentId: route.parentId ?? 'root',
-      module: '',
+      module: `${ROOT_DIR}/${route.file}`,
       hasAction: false,
       hasLoader: false,
       hasCatchBoundary: false,
       hasErrorBoundary: false,
-      filePath: `${ROOT_DIR}/${route.file}`,
     }
     return acc
-  }, {} as RouteManifest<EntryRouteWithFilePath>)
+  }, {} as RouteManifest<EntryRoute>)
 
   return resultRoutes
 }
