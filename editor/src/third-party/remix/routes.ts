@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/main/packages/remix-dev/config/routes.ts
+// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/8779b24d0e51cc49a887d16afab9789557b80124/packages/remix-dev/config/routes.ts
 
 /**
  * A route that was created using `defineRoutes` or created conventionally from
