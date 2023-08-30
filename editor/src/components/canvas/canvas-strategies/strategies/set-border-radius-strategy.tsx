@@ -69,6 +69,7 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { allElemsEqual } from '../../../../core/shared/array-utils'
+import { treatElementAsGroupLikeFromMetadata } from './group-helpers'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
 
@@ -100,6 +101,13 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     canvasState.startingElementPathTree,
   ).has('borderRadius')
   if (!canShowBorderRadiusControls) {
+    return null
+  }
+
+  const isGroup = treatElementAsGroupLikeFromMetadata(element)
+  const hasOverflowHidden =
+    element.computedStyle != null && element.computedStyle['overflow'] === 'hidden'
+  if (isGroup && !hasOverflowHidden) {
     return null
   }
 
