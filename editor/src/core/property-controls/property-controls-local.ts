@@ -4,7 +4,7 @@ import type {
   ComponentInsertOption,
   PropertyControls,
 } from 'utopia-api/core'
-import type { ProjectContentTreeRoot } from '../../components/assets';
+import type { ProjectContentTreeRoot } from '../../components/assets'
 import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
   ComponentDescriptorWithName,
