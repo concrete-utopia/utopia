@@ -7,6 +7,7 @@ import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
+  DefaultStartingFeatureSwitches,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
@@ -20,6 +21,7 @@ describe('adjustNumberProperty', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
+      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 
