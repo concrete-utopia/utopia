@@ -53,7 +53,13 @@ export function projectContentsToFileOps(projectContents: ProjectContentTreeRoot
 export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRouteWithFilePath> | null {
-  const routesFromRemix = flatRoutes(ROOT_DIR, projectContentsToFileOps(projectContents))
+  const routesFromRemix = (() => {
+    try {
+      return flatRoutes(ROOT_DIR, projectContentsToFileOps(projectContents))
+    } catch (e) {
+      return null
+    }
+  })()
 
   if (routesFromRemix == null) {
     return null

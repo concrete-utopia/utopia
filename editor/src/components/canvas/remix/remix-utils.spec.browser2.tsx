@@ -25,7 +25,7 @@ export var storyboard = (
 );
 `
 
-describe('Remix utils', () => {
+describe('Route manifest', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Parses the route manifest from a simple project', async () => {
     const project = createModifiedProject({
@@ -80,6 +80,18 @@ describe('Remix utils', () => {
         filePath: '/src/root.js',
       },
     })
+  })
+  it('Returns null to a non-remix project', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: storyboardFileContent,
+    })
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixManifest = createRouteManifestFromProjectContents(
+      renderResult.getEditorState().editor.projectContents,
+    )
+
+    expect(remixManifest).toBeNull()
   })
   it('Parses the route manifest from the Remix Blog Tutorial project files', async () => {
     const project = createModifiedProject({
