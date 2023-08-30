@@ -253,7 +253,7 @@ export async function renderTestEditorWithProjectContent(
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
-    {},
+    DefaultStartingFeatureSwitches,
     undefined,
     strategiesToUse,
     loginState,

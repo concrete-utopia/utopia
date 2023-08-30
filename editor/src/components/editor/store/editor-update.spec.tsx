@@ -31,11 +31,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import { isRight, right } from '../../../core/shared/either'
-import {
-  createEditorStates,
-  createFakeMetadataForEditor,
-  setFeatureForUnitTestsUseInDescribeBlockOnly,
-} from '../../../utils/utils.test-utils'
+import { createEditorStates, createFakeMetadataForEditor } from '../../../utils/utils.test-utils'
 import Utils, { front } from '../../../utils/utils'
 import { renameComponent } from '../../navigator/actions'
 import * as EP from '../../../core/shared/element-path'
@@ -435,7 +431,6 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
 })
 
 describe('action DELETE_SELECTED', () => {
-  setFeatureForUnitTestsUseInDescribeBlockOnly('Debug - Print UIDs', true)
   it('deletes all selected elements', () => {
     const firstTargetElementPath = EP.appendNewElementPath(
       ScenePathForTestUiJsFile,
