@@ -4,9 +4,11 @@ import type {
   UNSAFE_RouteManifest as RouteManifest,
 } from '@remix-run/react'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { getContentsTreeFromPath } from '../../assets'
+import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
-
+s
 const ROOT_DIR = '/src'
 
 export const DefaultFutureConfig: FutureConfig = {
@@ -24,10 +26,34 @@ export interface EntryRouteWithFilePath extends EntryRoute {
   filePath: string
 }
 
+// This is necessary to create a simple node.fs-like implementation for Utopia projectContents, which
+// can be used by the Remix functions to parse the routes
+export function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): FileOps {
+  return {
+    existsSync: (file: string): boolean => getContentsTreeFromPath(projectContents, file) != null,
+    readdirSync: (dir: string): Array<string> => {
+      const projectDir = getContentsTreeFromPath(projectContents, dir)
+      let entries =
+        projectDir != null && projectDir.type === 'PROJECT_CONTENT_DIRECTORY'
+          ? Object.values(projectDir.children).map((tree) => `/${tree.fullPath}`)
+          : []
+      return entries
+    },
+    isDirectory: (file: string): boolean => {
+      const projectFile = getContentsTreeFromPath(projectContents, file)
+      return projectFile != null && projectFile.type === 'PROJECT_CONTENT_DIRECTORY'
+    },
+    isFile: (file: string): boolean => {
+      const projectFile = getContentsTreeFromPath(projectContents, file)
+      return projectFile != null && projectFile.type === 'PROJECT_CONTENT_FILE'
+    },
+  }
+}
+
 export function createRouteManifestFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRouteWithFilePath> | null {
-  const routesFromRemix = flatRoutes(ROOT_DIR, projectContents)
+  const routesFromRemix = flatRoutes(ROOT_DIR, projectContentsToFileOps(projectContents))
 
   if (routesFromRemix == null) {
     return null
