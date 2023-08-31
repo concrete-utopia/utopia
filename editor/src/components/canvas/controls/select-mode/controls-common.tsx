@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import { ElementInstanceMetadata } from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
 import { roundTo, size, zeroRectIfNullOrInfinity } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { ProjectContentTreeRoot } from '../../../assets'
@@ -11,6 +11,9 @@ import { printCSSNumber } from '../../../inspector/common/css-utils'
 import { elementHasOnlyTextChildren } from '../../canvas-utils'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
+import { treatElementAsGroupLikeFromMetadata } from '../../canvas-strategies/strategies/group-helpers'
+import { assertNever } from '../../../../core/shared/utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 
 export const Emdash: string = '\u2014'
 
@@ -200,38 +203,69 @@ export function canShowCanvasPropControl(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
 ): Set<CanvasPropControl> {
+  function getControls(element: ElementInstanceMetadata): CanvasPropControl[] {
+    const frame = zeroRectIfNullOrInfinity(element.globalFrame)
+
+    const { width, height } = size((frame.width ?? 0) * scale, (frame.height ?? 0) * scale)
+    if (width > SHOW_ALL_CONTROLS_THRESHOLD && height > SHOW_ALL_CONTROLS_THRESHOLD) {
+      return ['borderRadius', 'padding', 'gap']
+    }
+
+    if (width < SHOW_NO_CONTROLS_THRESHOLD || height < SHOW_NO_CONTROLS_THRESHOLD) {
+      return []
+    }
+
+    if (elementHasOnlyTextChildren(element)) {
+      return ['padding']
+    }
+
+    if (
+      !MetadataUtils.targetElementSupportsChildren(
+        projectContents,
+        element.elementPath,
+        metadata,
+        elementPathTree,
+      )
+    ) {
+      return ['borderRadius', 'gap']
+    }
+
+    return ['padding', 'gap']
+  }
+
   const element = MetadataUtils.findElementByElementPath(metadata, path)
   if (element == null) {
     return new Set<CanvasPropControl>([])
   }
-  const frame = zeroRectIfNullOrInfinity(element.globalFrame)
+  return onlyAcceptableCanvasPropControls(element, getControls(element))
+}
 
-  const { width, height } = size((frame.width ?? 0) * scale, (frame.height ?? 0) * scale)
+// return a set from the given controls, dropping all the ones that are not acceptable for the given element.
+function onlyAcceptableCanvasPropControls(
+  element: ElementInstanceMetadata,
+  controls: CanvasPropControl[],
+): Set<CanvasPropControl> {
+  return new Set<CanvasPropControl>(
+    mapDropNulls((control) => {
+      switch (control) {
+        case 'borderRadius':
+          const isGroup = treatElementAsGroupLikeFromMetadata(element)
+          const hasOverflowHidden =
+            element.computedStyle != null && element.computedStyle['overflow'] === 'hidden'
+          if (isGroup && !hasOverflowHidden) {
+            return null
+          }
+          return control
 
-  if (width > SHOW_ALL_CONTROLS_THRESHOLD && height > SHOW_ALL_CONTROLS_THRESHOLD) {
-    return new Set<CanvasPropControl>(['borderRadius', 'padding', 'gap'])
-  }
+        case 'gap':
+        case 'padding':
+          return control
 
-  if (width < SHOW_NO_CONTROLS_THRESHOLD || height < SHOW_NO_CONTROLS_THRESHOLD) {
-    return new Set<CanvasPropControl>([])
-  }
-
-  if (elementHasOnlyTextChildren(element)) {
-    return new Set<CanvasPropControl>(['padding'])
-  }
-
-  if (
-    !MetadataUtils.targetElementSupportsChildren(
-      projectContents,
-      element.elementPath,
-      metadata,
-      elementPathTree,
-    )
-  ) {
-    return new Set<CanvasPropControl>(['borderRadius', 'gap'])
-  }
-
-  return new Set<CanvasPropControl>(['padding', 'gap'])
+        default:
+          assertNever(control)
+      }
+    }, controls),
+  )
 }
 
 export function shouldShowControls(
