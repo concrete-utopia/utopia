@@ -57,7 +57,10 @@ export function findReparentStrategies(
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
 ): Array<FindReparentStrategyResult> {
   const metadata = canvasState.startingMetadata
-  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+  const reparentSubjects = reparentSubjectsForInteractionTarget(
+    canvasState.startingMetadata,
+    canvasState.interactionTarget,
+  )
   const targetParent = getReparentTargetUnified(
     reparentSubjects,
     pointOnCanvas,
@@ -143,6 +146,7 @@ export function getExistingElementsFromReparentSubjects(
 }
 
 export function reparentSubjectsForInteractionTarget(
+  metadata: ElementInstanceMetadataMap,
   interactionTarget: InteractionTarget,
 ): ReparentSubjects {
   switch (interactionTarget.type) {
@@ -150,7 +154,7 @@ export function reparentSubjectsForInteractionTarget(
       return newReparentSubjects(interactionTarget.subjects[0].defaultSize)
     case 'TARGET_PATHS':
       return existingReparentSubjects(
-        flattenSelection(getTargetPathsFromInteractionTarget(interactionTarget)),
+        flattenSelection(metadata, getTargetPathsFromInteractionTarget(interactionTarget)),
       )
     default:
       const _exhaustiveCheck: never = interactionTarget

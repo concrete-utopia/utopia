@@ -145,7 +145,10 @@ function getStartingTargetParentsToFilterOutInner(
     ? 'allow-smaller-parent'
     : 'disallow-smaller-parent'
 
-  const reparentSubjects = reparentSubjectsForInteractionTarget(canvasState.interactionTarget)
+  const reparentSubjects = reparentSubjectsForInteractionTarget(
+    canvasState.startingMetadata,
+    canvasState.interactionTarget,
+  )
 
   let result: Array<ReparentTarget> = []
   const regularReparentTarget = getReparentTargetUnified(
@@ -218,6 +221,7 @@ export const reparentMetaStrategy: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ) => {
   const reparentSubjects = flattenSelection(
+    canvasState.startingMetadata,
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
 

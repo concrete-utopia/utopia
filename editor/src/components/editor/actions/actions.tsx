@@ -2324,7 +2324,7 @@ export const UPDATE_FNS = {
         const orderedPaths = EP.getOrderedPathsByDepth(action.targets)
 
         // make sure to trim descendant paths, so that unwrapping on a subtree only works on the first ancestor
-        const flattenedPaths = flattenSelection(orderedPaths)
+        const flattenedPaths = flattenSelection(editorForAction.jsxMetadata, orderedPaths)
 
         const withViewsUnwrapped: EditorState = flattenedPaths.reduce((workingEditor, target) => {
           const supportsChildren = MetadataUtils.targetSupportsChildren(

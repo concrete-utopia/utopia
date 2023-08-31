@@ -49,6 +49,7 @@ export const dragToMoveMetaStrategy: MetaCanvasStrategy = (
   customStrategyState: CustomStrategyState,
 ): Array<CanvasStrategy> => {
   const selectedElements = flattenSelection(
+    canvasState.startingMetadata,
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
 

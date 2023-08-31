@@ -50,7 +50,10 @@ export function baseAbsoluteReparentStrategy(
     }
 
     const dragInteractionData = interactionSession.interactionData // Why TypeScript?!
-    const filteredSelectedElements = flattenSelection(selectedElements)
+    const filteredSelectedElements = flattenSelection(
+      canvasState.startingMetadata,
+      selectedElements,
+    )
     const isApplicable = replaceFragmentLikePathsWithTheirChildrenRecursive(
       canvasState.startingMetadata,
       canvasState.startingAllElementProps,

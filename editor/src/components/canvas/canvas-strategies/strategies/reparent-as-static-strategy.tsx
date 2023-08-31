@@ -47,7 +47,10 @@ export function baseReparentAsStaticStrategy(
     customStrategyState: CustomStrategyState,
   ): CanvasStrategy | null => {
     const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-    const filteredSelectedElements = flattenSelection(selectedElements)
+    const filteredSelectedElements = flattenSelection(
+      canvasState.startingMetadata,
+      selectedElements,
+    )
     if (
       filteredSelectedElements.length !== 1 ||
       interactionSession == null ||
@@ -130,7 +133,7 @@ function applyStaticReparent(
   reparentResult: ReparentTarget,
 ): StrategyApplicationResult {
   const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const filteredSelectedElements = flattenSelection(selectedElements)
+  const filteredSelectedElements = flattenSelection(canvasState.startingMetadata, selectedElements)
 
   return ifAllowedToReparent(
     canvasState,

@@ -50,10 +50,13 @@ export function absoluteResizeBoundingBoxStrategy(
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
   const originalTargets = flattenSelection(
+    canvasState.startingMetadata,
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = flattenSelection(
+    canvasState.startingMetadata,
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
+    { keepGroups: true },
   )
 
   if (

@@ -126,6 +126,7 @@ const preventOnRootElements: (metaStrategy: MetaCanvasStrategy) => MetaCanvasStr
     customStrategyState: CustomStrategyState,
   ): Array<CanvasStrategy> => {
     const selectedElements = flattenSelection(
+      canvasState.startingMetadata,
       getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
     )
 
@@ -232,6 +233,7 @@ export function applicableStrategy(strategy: CanvasStrategy, name: string): Appl
 
 function codeElementsTargeted(canvasState: InteractionCanvasState): boolean {
   const originalTargets = flattenSelection(
+    canvasState.startingMetadata,
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
