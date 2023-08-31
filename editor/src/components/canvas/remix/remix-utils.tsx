@@ -8,6 +8,8 @@ import { getContentsTreeFromPath } from '../../assets'
 import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
+import type { DataRouteObject } from 'react-router'
+import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 
 const ROOT_DIR = '/src'
 
@@ -84,4 +86,16 @@ function patchRemixRoutes(routesFromRemix: RouteManifest<ConfigRoute> | null) {
   }, {} as RouteManifest<EntryRoute>)
 
   return resultRoutes
+}
+
+export function getRoutesFromRouteManifest(
+  routeManifest: RouteManifest<EntryRoute>,
+  futureConfig: FutureConfig,
+): DataRouteObject[] {
+  const routesByParentId = groupRoutesByParentId(routeManifest)
+  try {
+    return createClientRoutes(routeManifest, {}, futureConfig, '', routesByParentId)
+  } catch (e) {
+    return []
+  }
 }
