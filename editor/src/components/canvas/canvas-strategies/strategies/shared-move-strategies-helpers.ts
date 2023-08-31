@@ -65,6 +65,7 @@ import type { AbsolutePin } from './resize-helpers'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
+import { treatElementAsGroupLike } from './group-helpers'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -83,7 +84,7 @@ export const getAdjustMoveCommands =
     commands: Array<AdjustCssLengthProperties>
     intendedBounds: Array<CanvasFrameAndTarget>
   } => {
-    const filteredSelectedElements = flattenSelection(targets)
+    const filteredSelectedElements = flattenSelection(canvasState.startingMetadata, targets)
     let commands: Array<AdjustCssLengthProperties> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
@@ -317,10 +318,19 @@ export const flattenSelection = memoize(flattenSelectionInner, {
 
 // No need to include descendants in multiselection when dragging
 // Note: this maybe slow when there are lot of selected views
-function flattenSelectionInner(selectedViews: Array<ElementPath>): Array<ElementPath> {
-  const filteredTargets = selectedViews.filter((view) =>
-    selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView)),
-  )
+function flattenSelectionInner(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  params?: {
+    keepGroups?: boolean
+  },
+): Array<ElementPath> {
+  const filteredTargets = selectedViews.filter((view) => {
+    if (params?.keepGroups === true && treatElementAsGroupLike(metadata, view)) {
+      return true
+    }
+    return selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
+  })
 
   return filteredTargets.length === selectedViews.length ? selectedViews : filteredTargets
 }

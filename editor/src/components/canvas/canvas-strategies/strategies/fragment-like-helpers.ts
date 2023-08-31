@@ -15,7 +15,7 @@ import * as PP from '../../../../core/shared/property-path'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import { getTargetPathsFromInteractionTarget } from '../canvas-strategy-types'
-import { treatElementAsGroupLike } from './group-helpers'
+import { treatElementAsGroupLike, treatElementAsGroupLikeFromMetadata } from './group-helpers'
 import { flattenSelection } from './shared-move-strategies-helpers'
 
 export function retargetStrategyToChildrenOfFragmentLikeElements(
@@ -23,21 +23,30 @@ export function retargetStrategyToChildrenOfFragmentLikeElements(
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  const targetsWithoutDescedants = flattenSelection(targets)
+  const targetsWithoutDescedants = flattenSelection(canvasState.startingMetadata, targets)
 
-  return replaceFragmentLikePathsWithTheirChildrenRecursive(
+  const withFragmentsReplaced = replaceFragmentLikePathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     targetsWithoutDescedants,
   )
+
+  const withGroups = withFragmentsReplaced.flatMap((path) => {
+    const childGroups = MetadataUtils.getChildrenUnordered(canvasState.startingMetadata, path)
+      .filter((element) => treatElementAsGroupLikeFromMetadata(element))
+      .map((element) => element.elementPath)
+    return [...childGroups, path]
+  })
+
+  return withGroups
 }
 
 export function retargetStrategyToTopMostFragmentLikeElement(
   canvasState: InteractionCanvasState,
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const targetsWithoutDescedants = flattenSelection(targets)
+  const targetsWithoutDescedants = flattenSelection(canvasState.startingMetadata, targets)
 
   return optionallyReplacePathWithFragmentLikeParentRecursive(
     canvasState.startingMetadata,
