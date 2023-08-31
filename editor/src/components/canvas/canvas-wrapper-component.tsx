@@ -37,6 +37,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
+import { RemixNavigationBar } from '../editor/remix-navigation-bar'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -180,6 +181,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           <CanvasToolbar />
           <CanvasStrategyPicker />
           <StrategyIndicator />
+          <RemixNavigationBar />
         </FlexRow>
         {/* The error overlays are deliberately the last here so they hide other canvas UI */}
         {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
