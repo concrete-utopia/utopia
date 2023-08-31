@@ -314,9 +314,9 @@ export const flattenSelection = memoize(flattenSelectionInner, {
 // No need to include descendants in multiselection when dragging
 // Note: this maybe slow when there are lot of selected views
 function flattenSelectionInner(selectedViews: Array<ElementPath>): Array<ElementPath> {
-  const filteredTargets = selectedViews.filter((view) => {
-    return selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
-  })
+  const filteredTargets = selectedViews.filter((view) =>
+    selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView)),
+  )
 
   return filteredTargets.length === selectedViews.length ? selectedViews : filteredTargets
 }
