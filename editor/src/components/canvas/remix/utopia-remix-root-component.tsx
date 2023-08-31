@@ -37,8 +37,6 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     'UtopiaRemixRootComponent remixData',
   )
 
-  const h = useHistory()
-
   const basePath = props[UTOPIA_PATH_KEY]
 
   const routeModules = React.useMemo(() => {
