@@ -2,7 +2,11 @@ import { createModifiedProject } from '../../../sample-projects/sample-project-u
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { createRouteManifestFromProjectContents } from './remix-utils'
+import {
+  DefaultFutureConfig,
+  createRouteManifestFromProjectContents,
+  getRoutesFromRouteManifest,
+} from './remix-utils'
 
 const storyboardFileContent = `
 import * as React from 'react';
@@ -29,7 +33,7 @@ describe('Route manifest', () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
       ['src/root.js']: '',
-      ['src/_index.js']: '',
+      ['src/routes/_index.js']: '',
       ['src/routes/posts.$postId.js']: '',
       ['src/routes/posts._index.js']: '',
     })
@@ -73,6 +77,18 @@ describe('Route manifest', () => {
         hasLoader: false,
         hasCatchBoundary: false,
         hasErrorBoundary: false,
+      },
+      'routes/_index': {
+        file: 'routes/_index.js',
+        hasAction: false,
+        hasCatchBoundary: false,
+        hasErrorBoundary: false,
+        hasLoader: false,
+        id: 'routes/_index',
+        index: true,
+        module: '/src/routes/_index.js',
+        parentId: 'root',
+        path: undefined,
       },
     })
   })
@@ -208,5 +224,103 @@ describe('Route manifest', () => {
         hasErrorBoundary: false,
       },
     })
+  })
+})
+
+describe('Routes', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
+  it('Parses the routes from a simple project', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: storyboardFileContent,
+      ['src/root.js']: '',
+      ['src/routes/_index.js']: '',
+      ['src/routes/posts.$postId.js']: '',
+      ['src/routes/posts._index.js']: '',
+    })
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixManifest = createRouteManifestFromProjectContents(
+      renderResult.getEditorState().editor.projectContents,
+    )
+    expect(remixManifest).not.toBeNull()
+    const remixRoutes = getRoutesFromRouteManifest(remixManifest!, DefaultFutureConfig)
+
+    expect(remixRoutes).toHaveLength(1)
+    expect(remixRoutes[0]).toEqual(
+      expect.objectContaining({ id: 'root', path: '', index: undefined }),
+    )
+    expect(remixRoutes[0].children).toHaveLength(3)
+    expect(remixRoutes[0]!.children![0]).toEqual(
+      expect.objectContaining({
+        id: 'routes/posts.$postId',
+        path: 'posts/:postId',
+        index: undefined,
+      }),
+    )
+    expect(remixRoutes[0]!.children![1]).toEqual(
+      expect.objectContaining({ id: 'routes/posts._index', path: 'posts', index: true }),
+    )
+    expect(remixRoutes[0]!.children![2]).toEqual(
+      expect.objectContaining({ id: 'routes/_index', path: undefined, index: true }),
+    )
+  })
+  it('Parses the routes from the Remix Blog Tutorial project files', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: storyboardFileContent,
+      ['src/root.js']: '',
+      ['src/routes/_index.js']: '',
+      ['src/routes/healthcheck.js']: '',
+      ['src/routes/join.js']: '',
+      ['src/routes/logout.js']: '',
+      ['src/routes/notes._index.js']: '',
+      ['src/routes/notes.$noteId.js']: '',
+      ['src/routes/notes.new.js']: '',
+      ['src/routes/notes.js']: '',
+    })
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixManifest = createRouteManifestFromProjectContents(
+      renderResult.getEditorState().editor.projectContents,
+    )
+
+    expect(remixManifest).not.toBeNull()
+    const remixRoutes = getRoutesFromRouteManifest(remixManifest!, DefaultFutureConfig)
+
+    expect(remixRoutes).toHaveLength(1)
+    expect(remixRoutes[0]).toEqual(
+      expect.objectContaining({ id: 'root', path: '', index: undefined }),
+    )
+
+    expect(remixRoutes[0].children).toHaveLength(5)
+    expect(remixRoutes[0]!.children![0]).toEqual(
+      expect.objectContaining({
+        id: 'routes/healthcheck',
+        path: 'healthcheck',
+        index: undefined,
+      }),
+    )
+    expect(remixRoutes[0]!.children![1]).toEqual(
+      expect.objectContaining({ id: 'routes/_index', path: undefined, index: true }),
+    )
+    expect(remixRoutes[0]!.children![2]).toEqual(
+      expect.objectContaining({ id: 'routes/logout', path: 'logout', index: undefined }),
+    )
+    expect(remixRoutes[0]!.children![3]).toEqual(
+      expect.objectContaining({ id: 'routes/notes', path: 'notes', index: undefined }),
+    )
+    expect(remixRoutes[0]!.children![4]).toEqual(
+      expect.objectContaining({ id: 'routes/join', path: 'join', index: undefined }),
+    )
+
+    expect(remixRoutes[0]!.children![3].children).toHaveLength(3)
+    expect(remixRoutes[0]!.children![3].children![0]).toEqual(
+      expect.objectContaining({ id: 'routes/notes.$noteId', path: ':noteId', index: undefined }),
+    )
+    expect(remixRoutes[0]!.children![3].children![1]).toEqual(
+      expect.objectContaining({ id: 'routes/notes._index', path: undefined, index: true }),
+    )
+    expect(remixRoutes[0]!.children![3].children![2]).toEqual(
+      expect.objectContaining({ id: 'routes/notes.new', path: 'new', index: undefined }),
+    )
   })
 })
