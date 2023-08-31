@@ -32,6 +32,7 @@ import { PRODUCTION_ENV } from '../../common/env-vars'
 import { emptySet } from '../../core/shared/set-utils'
 import { fastForEach } from '../../core/shared/utils'
 import { codeNeedsPrinting, codeNeedsParsing } from '../../core/workers/common/project-file-utils'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function parseResultToWorkerUpdates(fileResult: ParseOrPrintResult): WorkerUpdate {
   switch (fileResult.type) {
@@ -142,6 +143,7 @@ export function getFilesToUpdate(
   let filesToUpdate: Array<ParseOrPrint> = []
   let forciblyParsedFiles: Array<string> = []
   let existingUIDs: Set<string> = emptySet()
+  const shouldStripUids = PRODUCTION_ENV || !isFeatureEnabled('Debug - Print UIDs')
   walkContentsTree(projectContents, (fullPath, file) => {
     if (isTextFile(file)) {
       if (
@@ -152,7 +154,7 @@ export function getFilesToUpdate(
           createPrintAndReparseFile(
             fullPath,
             file.fileContents.parsed,
-            PRODUCTION_ENV,
+            shouldStripUids,
             file.versionNumber,
           ),
         )

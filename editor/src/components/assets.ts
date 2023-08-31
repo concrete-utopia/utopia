@@ -508,6 +508,17 @@ export function getContentsTreeFileFromElements(
   tree: ProjectContentTreeRoot,
   pathElements: ReadonlyArray<string>,
 ): ProjectFile | null {
+  const projectContentsTree = getContentsTreeFromElements(tree, pathElements)
+  if (projectContentsTree == null) {
+    return null
+  }
+  return getProjectFileFromTree(projectContentsTree)
+}
+
+export function getContentsTreeFromElements(
+  tree: ProjectContentTreeRoot,
+  pathElements: ReadonlyArray<string>,
+): ProjectContentsTree | null {
   if (pathElements.length === 0) {
     throw new Error(`Invalid pathElements.`)
   } else {
@@ -519,7 +530,7 @@ export function getContentsTreeFileFromElements(
         return null
       } else {
         if (index === pathElements.length - 1) {
-          return getProjectFileFromTree(treePart)
+          return treePart
         } else {
           if (treePart.type === 'PROJECT_CONTENT_DIRECTORY') {
             workingTree = treePart.children
@@ -544,6 +555,13 @@ export function packageJsonFileFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): ProjectFile | null {
   return getProjectFileByFilePath(projectContents, '/package.json')
+}
+
+export function getContentsTreeFromPath(
+  tree: ProjectContentTreeRoot,
+  path: string,
+): ProjectContentsTree | null {
+  return getContentsTreeFromElements(tree, getProjectContentKeyPathElements(path))
 }
 
 export function addFileToProjectContents(
