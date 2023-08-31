@@ -1992,18 +1992,6 @@ export const UPDATE_FNS = {
           action.mode.editedText,
         )
       ) {
-        const metadataToLog = MetadataUtils.findElementByElementPath(
-          editor.jsxMetadata,
-          action.mode.editedText,
-        )
-        console.log(
-          'metadataToLog',
-          Object.keys(editor.domMetadata).length,
-          Object.keys(editor.spyMetadata).length,
-          Object.keys(editor.jsxMetadata).length,
-          JSON.stringify(metadataToLog, null, 2),
-        )
-
         // If the target of text edit mode isn't editable, then ignore the requested change.
         console.error(`Invalid target for text edit mode: ${EP.toString(action.mode.editedText)}`)
         return editor
@@ -3622,15 +3610,6 @@ export const UPDATE_FNS = {
     }
   },
   UPDATE_FROM_WORKER: (action: UpdateFromWorker, editor: EditorModel): EditorModel => {
-    console.log(
-      'UPDATE_FROM_WORKER',
-      action.updates.map((update) => {
-        return {
-          updateType: update.type,
-          filename: update.filePath,
-        }
-      }),
-    )
     let workingProjectContents: ProjectContentTreeRoot = editor.projectContents
     let anyParsedUpdates: boolean = false
 

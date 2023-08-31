@@ -1596,7 +1596,6 @@ describe('Use the text editor', () => {
 describe('SWITCH_EDITOR_MODE', () => {
   describe('TextEditMode', () => {
     it('should be permitted for something that is text editable', async () => {
-      console.log('START OF TEST')
       const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
       await editor.dispatch(
         [
@@ -1611,7 +1610,6 @@ describe('SWITCH_EDITOR_MODE', () => {
         ],
         true,
       )
-      console.log('END OF TEST')
       expect(editor.getEditorState().editor.mode.type).toEqual('textEdit')
     })
     it('should not be permitted for something that is not text editable', async () => {

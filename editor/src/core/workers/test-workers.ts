@@ -5,10 +5,7 @@ import {
 } from './linter/linter-worker'
 import type { LinterWorker, ParserPrinterWorker, WatchdogWorker } from './workers'
 import { handleMessage as handleParserPrinterMessage } from './parser-printer/parser-printer-worker'
-import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
-import { BundlerWorker } from './bundler-bridge'
 import type { ParsePrintFilesRequest, ParsePrintResultMessage } from './common/worker-types'
-import { createParsePrintFilesRequest, ParseOrPrint } from './common/worker-types'
 
 export class FakeParserPrinterWorker implements ParserPrinterWorker {
   messageListeners: Array<(ev: MessageEvent) => any> = []
@@ -22,7 +19,6 @@ export class FakeParserPrinterWorker implements ParserPrinterWorker {
   }
 
   receiveMessage = (data: ParsePrintResultMessage): void => {
-    console.log('FakeParserPrinterWorker', data.type)
     this.messageListeners.forEach((l) => {
       l(new MessageEvent('message', { data: data }))
     })

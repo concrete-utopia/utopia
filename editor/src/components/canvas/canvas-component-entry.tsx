@@ -198,7 +198,6 @@ export class CanvasErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.log('componentDidCatch', error)
     const fancyError = processErrorWithSourceMap(null, this.props.filePath, error, true)
     this.props.reportError(this.props.filePath, asErrorObject(fancyError), errorInfo)
   }

@@ -63,17 +63,6 @@ export function processWorkerUpdates(
   projectContents: ProjectContentTreeRoot,
   workerUpdates: Array<WorkerUpdate>,
 ): ProcessWorkerUpdatesResult {
-  if (
-    getHighlightBoundsFromParseResult == null ||
-    updateParsedTextFileHighlightBounds == null ||
-    textFileContents == null ||
-    EditorActions == null ||
-    codeNeedsPrinting == null ||
-    codeNeedsParsing == null ||
-    walkContentsTree == null
-  ) {
-    console.log('SOMETHING IS NULL WHEN IT SHOULD NOT BE.')
-  }
   let anyParsedUpdates: boolean = false
   let workingProjectContents: ProjectContentTreeRoot = projectContents
   for (const fileUpdate of workerUpdates) {

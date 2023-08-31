@@ -9,7 +9,6 @@ import {
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
 import type { UtopiaTsWorkers, FileContent, ParsePrintFilesRequest } from './common/worker-types'
-import { createParsePrintFilesRequest, ParseOrPrint } from './common/worker-types'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
@@ -24,15 +23,6 @@ export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {
   }
 
   sendParsePrintMessage(request: ParsePrintFilesRequest): void {
-    console.log(
-      'sendParsePrintMessage',
-      request.type,
-      JSON.stringify(
-        request.files.map((f) => {
-          return { requestType: f.type, filename: f.filename }
-        }),
-      ),
-    )
     this.parserPrinterWorker.sendParsePrintMessage(request)
   }
 
