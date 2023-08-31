@@ -200,7 +200,7 @@ import type {
   UNSAFE_RouteModules as RouteModules,
 } from '@remix-run/react'
 import type {
-  RouteModulesWithFilePaths,
+  RouteIdsToModuleCreators,
   RouteModulesWithRelativePaths,
 } from '../../canvas/remix/remix-utils'
 import {
@@ -2232,7 +2232,7 @@ export interface RemixStaticRoutingTable {
 export interface RemixDerivedData {
   futureConfig: FutureConfig
   assetsManifest: AssetsManifest
-  routeModules: RouteModulesWithFilePaths
+  routeModuleCreators: RouteIdsToModuleCreators
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routes: Array<DataRouteObject>
   routingTable: RemixStaticRoutingTable
@@ -2754,64 +2754,17 @@ function createRemixDerivedData(
 
   const assetsManifest = createAssetsManifest(routeManifest)
 
-  const require = curriedRequireFn(projectContents)
-  const resolve = curriedResolveFn(projectContents)
-
   const metadataCtx = {
     current: {
       spyValues: { metadata: spyContainer.current, allElementProps: propsContainer.current },
     },
   }
 
-  const customRequireFn = (importOrigin: string, toImport: string) => {
-    if (CreateRemixDerivedDataRefs.resolvedFiles.current[importOrigin] == null) {
-      CreateRemixDerivedDataRefs.resolvedFiles.current[importOrigin] = []
-    }
-    let resolvedFromThisOrigin = CreateRemixDerivedDataRefs.resolvedFiles.current[importOrigin]
-
-    const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback
-    const filePathResolveResult = alreadyResolved
-      ? left<string, string>('Already resolved')
-      : resolve(importOrigin, toImport)
-
-    forEachRight(filePathResolveResult, (filepath) =>
-      CreateRemixDerivedDataRefs.resolvedFileNames.current.push(filepath),
-    )
-
-    const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
-      resolvedFromThisOrigin,
-      toImport,
-      projectContents,
-      customRequireFn,
-      CreateRemixDerivedDataRefs.mutableContext,
-      CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
-      '/src/root.js',
-      {},
-      [],
-      [],
-      metadataCtx,
-      NO_OP,
-      false,
-      filePathResolveResult,
-      null,
-    )
-    return foldEither(
-      () => {
-        // We did not find a ParseSuccess, fallback to standard require Fn
-        return require(importOrigin, toImport, false)
-      },
-      (scope) => {
-        // Return an artificial exports object that contains our ComponentRendererComponents
-        return scope
-      },
-      resolvedParseSuccess,
-    )
-  }
-
   const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
     routeManifest,
     defaultFutureConfig,
-    customRequireFn,
+    curriedRequireFn,
+    curriedResolveFn,
     metadataCtx,
     projectContents,
     CreateRemixDerivedDataRefs.mutableContext,
@@ -2822,14 +2775,14 @@ function createRemixDerivedData(
     return null
   }
 
-  const { routeModules, routes, routeModulesToRelativePaths, routingTable } =
+  const { routeModuleCreators, routes, routeModulesToRelativePaths, routingTable } =
     routesAndModulesFromManifestResult
 
   return {
     futureConfig: defaultFutureConfig,
     routes: routes,
     assetsManifest: assetsManifest,
-    routeModules: routeModules,
+    routeModuleCreators: routeModuleCreators,
     routeModulesToRelativePaths: routeModulesToRelativePaths,
     routingTable: routingTable,
   }

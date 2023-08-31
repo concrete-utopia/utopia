@@ -5,14 +5,14 @@ import type { UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
 
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 
-import { Substores, useEditorState } from '../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { PathPropHOC } from './remix-utils'
+import { PathPropHOC, getDefaultExportNameAndUidFromFile } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { appendTwoPaths } from '../canvas-utils'
 import { atom, useSetAtom } from 'jotai'
@@ -31,37 +31,65 @@ export interface UtopiaRemixRootComponentProps {
 }
 
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
-  const remixDerivedDataRef = useEditorState(
+  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+
+  const routes = useEditorState(
     Substores.derived,
-    (store) => store.derived.remixData,
-    'UtopiaRemixRootComponent remixData',
+    (store) => store.derived.remixData?.routes ?? [],
+    'UtopiaRemixRootComponent routes',
+  )
+
+  const defaultExports = useEditorState(
+    Substores.derived,
+    (store) => {
+      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
+      return Object.values(routeModuleCreators).map(
+        // FIXME Saving required as this doesn't update with unsaved content?
+        (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
+      )
+    },
+    '',
   )
 
   const basePath = props[UTOPIA_PATH_KEY]
 
   const routeModules = React.useMemo(() => {
-    if (remixDerivedDataRef == null) {
+    const defaultExportsIgnored = defaultExports // Forcibly update the routeModules only when the default exports have changed
+
+    if (remixDerivedDataRef.current == null) {
       return null
     }
 
     const routeModulesResult: RouteModules = {}
-    for (const [key, value] of Object.entries(remixDerivedDataRef.routeModules)) {
+    for (const [key, value] of Object.entries(remixDerivedDataRef.current.routeModuleCreators)) {
+      const nameAndUid = getDefaultExportNameAndUidFromFile(
+        projectContentsRef.current,
+        value.filePath,
+      )
+      if (nameAndUid == null) {
+        continue
+      }
+
       const relativePath =
-        remixDerivedDataRef.routeModulesToRelativePaths[value.filePath].relativePath
+        remixDerivedDataRef.current.routeModulesToRelativePaths[value.filePath].relativePath
+
+      const defaultComponent = (componentProps: any) =>
+        value
+          .executionScopeCreator(projectContentsRef.current)
+          .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
       routeModulesResult[key] = {
         ...value,
-        default: PathPropHOC(value.default, EP.toString(appendTwoPaths(basePath, relativePath))),
+        default: PathPropHOC(defaultComponent, EP.toString(appendTwoPaths(basePath, relativePath))),
       }
     }
 
     return routeModulesResult
-  }, [basePath, remixDerivedDataRef])
+  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
 
-  const router = React.useMemo(
-    () => optionalMap(createMemoryRouter, remixDerivedDataRef?.routes),
-    [remixDerivedDataRef],
-  )
+  // The router always needs to be updated otherwise new routes won't work without a refresh
+  const router = React.useMemo(() => optionalMap(createMemoryRouter, routes), [routes])
 
   let uiJsxCanvasContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
@@ -94,11 +122,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     })
   }, [router, setNavigationAtom, uiJsxCanvasContext])
 
-  if (remixDerivedDataRef == null || router == null || routeModules == null) {
+  if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null
   }
 
-  const { assetsManifest, futureConfig } = remixDerivedDataRef
+  const { assetsManifest, futureConfig } = remixDerivedDataRef.current
 
   return (
     <RemixContext.Provider

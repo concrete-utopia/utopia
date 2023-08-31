@@ -10,7 +10,7 @@ import type {
 } from '@remix-run/react'
 
 import type { Either } from '../../../core/shared/either'
-import { foldEither, left, right } from '../../../core/shared/either'
+import { foldEither, forEachRight, left, right } from '../../../core/shared/either'
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import type { ProjectContentFile, ProjectContentTreeRoot, ProjectContentsTree } from '../../assets'
 import { getProjectFileByFilePath } from '../../assets'
@@ -33,7 +33,9 @@ import type {
 } from '../../../core/shared/project-file-types'
 import type { RouteModule, RouteModules } from '@remix-run/react/dist/routeModules'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
+import { attemptToResolveParsedComponents } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import type { UtopiaRemixRootComponentProps } from './utopia-remix-root-component'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
@@ -46,6 +48,7 @@ import { flatRoutes } from './from-remix/flat-routes'
 import type { DataRouteWithFilePath, EntryRouteWithFileMeta } from './from-remix/client-routes'
 import { createClientRoutes, groupRoutesByParentId } from './from-remix/client-routes'
 import type { RemixStaticRoutingTable } from '../../editor/store/editor-state'
+import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 
 const ROOT_DIR = '/src'
 
@@ -210,8 +213,17 @@ export interface RouteModulesWithFilePaths {
   [routeId: string]: RouteModuleWithFilePath
 }
 
+export interface RouteModuleCreator {
+  filePath: string
+  executionScopeCreator: (projectContents: ProjectContentTreeRoot) => ExecutionScope
+}
+
+export interface RouteIdsToModuleCreators {
+  [routeId: string]: RouteModuleCreator
+}
+
 export interface GetRoutesAndModulesFromManifestResult {
-  routeModules: RouteModulesWithFilePaths
+  routeModuleCreators: RouteIdsToModuleCreators
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routingTable: RemixStaticRoutingTable
@@ -220,7 +232,8 @@ export interface GetRoutesAndModulesFromManifestResult {
 export function getRoutesAndModulesFromManifest(
   routeManifest: RouteManifestWithContents,
   futureConfig: FutureConfig,
-  customRequire: (importOrigin: string, toImport: string) => any,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+  curriedResolveFn: CurriedResolveFn,
   metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
@@ -228,7 +241,7 @@ export function getRoutesAndModulesFromManifest(
     MapLike<MapLike<ComponentRendererComponent>>
   >,
 ): GetRoutesAndModulesFromManifestResult | null {
-  const routeModules: RouteModulesWithFilePaths = {}
+  const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixStaticRoutingTable = {}
 
   const rootJsFile = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
@@ -261,9 +274,10 @@ export function getRoutesAndModulesFromManifest(
   )
 
   Object.values(routeManifest).forEach((route) => {
-    const { defaultExport, loader, action, rootComponentUid } = getRemixExportsOfModule(
+    const { executionScopeCreator, loader, action, rootComponentUid } = getRemixExportsOfModule(
       route.filePath,
-      customRequire,
+      curriedRequireFn,
+      curriedResolveFn,
       metadataContext,
       projectContents,
       mutableContextRef,
@@ -271,9 +285,9 @@ export function getRoutesAndModulesFromManifest(
     )
 
     addLoaderAndActionToRoute(routes, route.id, loader, action)
-    routeModules[route.id] = {
+    routeModuleCreators[route.id] = {
       filePath: route.filePath,
-      default: defaultExport,
+      executionScopeCreator: executionScopeCreator,
     }
 
     routingTable[rootComponentUid] = route.filePath
@@ -282,7 +296,7 @@ export function getRoutesAndModulesFromManifest(
   RemixRoutingTableGLOBAL.current = routingTable
 
   return {
-    routeModules,
+    routeModuleCreators,
     routes,
     routeModulesToRelativePaths,
     routingTable,
@@ -291,7 +305,8 @@ export function getRoutesAndModulesFromManifest(
 
 function getRemixExportsOfModule(
   filename: string,
-  customRequire: (importOrigin: string, toImport: string) => any,
+  curriedRequireFn: CurriedUtopiaRequireFn,
+  curriedResolveFn: CurriedResolveFn,
   metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
   mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
@@ -299,38 +314,85 @@ function getRemixExportsOfModule(
     MapLike<MapLike<ComponentRendererComponent>>
   >,
 ): {
-  defaultExport: (props: any) => JSX.Element
+  executionScopeCreator: (innerProjectContents: ProjectContentTreeRoot) => ExecutionScope
   loader: LoaderFunction | undefined
   action: ActionFunction | undefined
   rootComponentUid: string
 } {
-  const executionScope = createExecutionScope(
-    filename,
-    customRequire,
-    mutableContextRef,
-    topLevelComponentRendererComponents,
-    projectContents,
-    filename,
-    {},
-    [],
-    [],
-    metadataContext,
-    NO_OP,
-    false,
-    null,
-  )
+  const executionScopeCreator = (innerProjectContents: ProjectContentTreeRoot) => {
+    let resolvedFiles: MapLike<Array<string>> = {}
+    let resolvedFileNames: Array<string> = ['/src/root.js']
+
+    const requireFn = curriedRequireFn(innerProjectContents)
+    const resolve = curriedResolveFn(innerProjectContents)
+
+    const customRequire = (importOrigin: string, toImport: string) => {
+      if (resolvedFiles[importOrigin] == null) {
+        resolvedFiles[importOrigin] = []
+      }
+      let resolvedFromThisOrigin = resolvedFiles[importOrigin]
+
+      const alreadyResolved = resolvedFromThisOrigin.includes(toImport) // We're inside a cyclic dependency, so trigger the below fallback     const filePathResolveResult = alreadyResolved
+        ? left<string, string>('Already resolved')
+        : resolve(importOrigin, toImport)
+
+      forEachRight(alreadyResolved, (filepath) => resolvedFileNames.push(filepath))
+
+      const resolvedParseSuccess: Either<string, MapLike<any>> = attemptToResolveParsedComponents(
+        resolvedFromThisOrigin,
+        toImport,
+        innerProjectContents,
+        customRequire,
+        mutableContextRef,
+        topLevelComponentRendererComponents,
+        '/src/root.js',
+        {},
+        [],
+        [],
+        metadataContext,
+        NO_OP,
+        false,
+        alreadyResolved,
+        null,
+      )
+      return foldEither(
+        () => {
+          // We did not find a ParseSuccess, fallback to standard require Fn
+          return requireFn(importOrigin, toImport, false)
+        },
+        (scope) => {
+          // Return an artificial exports object that contains our ComponentRendererComponents
+          return scope
+        },
+        resolvedParseSuccess,
+      )
+    }
+    return createExecutionScope(
+      filename,
+      customRequire,
+      mutableContextRef,
+      topLevelComponentRendererComponents,
+      innerProjectContents,
+      filename,
+      {},
+      [],
+      [],
+      metadataContext,
+      NO_OP,
+      false,
+      null,
+    )
+  }
+
+  const executionScope = executionScopeCreator(projectContents)
 
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
-  invariant(nameAndUid, 'a default export should be provided')
-
-  // console.log('nameAndUid.name', filename, executionScope.scope)
-  const fallbackElement = () => <React.Fragment />
 
   return {
-    defaultExport: executionScope.scope[nameAndUid.name] ?? fallbackElement,
+    executionScopeCreator: executionScopeCreator,
     loader: executionScope.scope['loader'] as LoaderFunction | undefined,
     action: executionScope.scope['action'] as ActionFunction | undefined,
-    rootComponentUid: nameAndUid.uid,
+    rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
   }
 }
 
