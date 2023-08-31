@@ -24,7 +24,6 @@ export var storyboard = (
   </Storyboard>
 );
 `
-
 describe('Remix content', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Renders the remix container with placeholder text', async () => {
@@ -38,7 +37,6 @@ describe('Remix content', () => {
   })
 })
 
-setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
 describe('Remix content with feature switch off', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', false)
   it('Doesnt render the remix container with feature switch off', async () => {

@@ -32,8 +32,8 @@ import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { Toast } from '../common/notices'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
-import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
-import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
+import { ConfirmRevertDialog } from '../filebrowser/confirm-revert-dialog'
+import { ConfirmRevertAllDialog } from '../filebrowser/confirm-revert-all-dialog'
 import { PreviewColumn } from '../preview/preview-pane'
 import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
@@ -467,14 +467,14 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
         return <ConfirmOverwriteDialog dispatch={dispatch} files={modal.files} />
       case 'file-revert':
         return (
-          <ConfirmRevertDialogProps
+          <ConfirmRevertDialog
             dispatch={dispatch}
             status={modal.status}
             filePath={modal.filePath}
           />
         )
       case 'file-revert-all':
-        return <ConfirmRevertAllDialogProps dispatch={dispatch} />
+        return <ConfirmRevertAllDialog dispatch={dispatch} />
       case 'disconnect-github-project':
         if (currentBranch != null) {
           return <ConfirmDisconnectBranchDialog dispatch={dispatch} branchName={currentBranch} />

@@ -745,6 +745,7 @@ function useGetStoryboardRoot(
     | undefined
 
   const storyboardRootJsxComponent = topLevelElementsMap.get(BakedInStoryboardVariableName)
+
   const validPaths =
     storyboardRootJsxComponent == null
       ? []
