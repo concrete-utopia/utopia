@@ -1,4 +1,3 @@
-import { DataRouteObject } from 'react-router'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
