@@ -1,10 +1,11 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
-import { StoryboardFilePath } from '../../editor/store/editor-state'
+import { CreateRemixDerivedDataRefs, StoryboardFilePath } from '../../editor/store/editor-state'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   DefaultFutureConfig,
   createRouteManifestFromProjectContents,
+  getRoutesAndRouteModulesFromManifest,
   getRoutesFromRouteManifest,
 } from './remix-utils'
 
@@ -322,5 +323,227 @@ describe('Routes', () => {
     expect(remixRoutes[0]!.children![3].children![2]).toEqual(
       expect.objectContaining({ id: 'routes/notes.new', path: 'new', index: undefined }),
     )
+  })
+})
+
+describe('Route modules', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
+  it('Parses the route modules from a simple project', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: storyboardFileContent,
+      ['src/root.js']: `import * as React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function App() {
+        return (
+          <div
+            style={{
+              backgroundColor: '#a5c0db',
+              width: '100%',
+              height: '100%',
+              contain: 'layout',
+            }}
+            data-uid='bf5'
+          >
+            <div
+              data-uid='d4d'
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'flex-end',
+                fontSize: '8px',
+                fontWeight: 700,
+                paddingTop: 0,
+                paddingRight: 0,
+                paddingBottom: 0,
+                paddingLeft: 0,
+              }}
+            >
+              Root.js
+            </div>
+            <Outlet data-uid='11c' />
+          </div>
+        )
+      }      
+`,
+      ['src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+      
+      export default function Index() {
+        return (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 24,
+              padding: '0px 8px',
+            }}
+          >
+            <span
+              style={{
+                fontSize: '40px',
+                fontWeight: 700,
+                fontStyle: 'normal',
+                color: 'rgb(0, 0, 0, 1)',
+              }}
+              data-uid='ttt'
+            >
+              Beaches
+            </span>
+            <div
+              style={{
+                backgroundColor: '#e6e6e6',
+                width: '100%',
+                height: 79,
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: 26,
+              }}
+              data-uid='419'
+            >
+              <Link
+                style={{
+                  wordBreak: 'break-word',
+                  color: 'rgb(255, 251, 251, 1)',
+                  contain: 'layout',
+                  fontSize: '20px',
+                  width: 'max-content',
+                  height: 'max-content',
+                  fontWeight: 700,
+                }}
+                to='/posts'
+              >
+                Check avaliable beaches
+              </Link>
+            </div>
+          </div>
+        )
+      }
+      
+`,
+      ['src/routes/posts.$postId.js']: '',
+      ['src/routes/posts._index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+      import { json, useLoaderData } from 'react-router'
+      
+      export function loader() {
+        return json({
+          beaches: [
+            {
+              id: 1,
+              name: 'La Digue',
+              src:
+                'https://source.unsplash.com/jPmurJKSL_0/600x800',
+            },
+            {
+              id: 2,
+              name: 'McWay Falls',
+              src:
+                'https://source.unsplash.com/07mSKrzKiRw/600x800',
+            },
+          ],
+        })
+      }
+      
+      export default function Posts() {
+        const { beaches } = useLoaderData()
+        return (
+          <div
+            style={{
+              padding: '10px',
+              backgroundColor: 'white',
+              height: '100%',
+            }}
+            data-uid='289'
+          >
+            <span
+              style={{
+                fontSize: '30px',
+                fontWeight: 700,
+                fontStyle: 'normal',
+                marginBottom: 20,
+                display: 'inline-block',
+              }}
+              data-uid='8b1'
+            >
+              Beaches near you
+            </span>
+            {beaches.map(({ id, name, src }) => (
+              <div
+                style={{
+                  width: '100%',
+                  height: 'max-content',
+                  display: 'flex',
+                  flexDirection: 'row',
+                  gap: 26,
+                  padding: '15px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 20,
+                  border: '1px solid black',
+                  marginBottom: '10px',
+                }}
+                data-uid='1b9'
+              >
+                <img
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    width: 77,
+                    height: 75,
+                    contain: 'layout',
+                    borderRadius: 20,
+                  }}
+                  src={src}
+                  data-uid='824'
+                />
+                <span
+                  style={{
+                    wordBreak: 'break-word',
+                    width: 110,
+                    height: 33,
+                    contain: 'layout',
+                  }}
+                  data-uid='97f'
+                >
+                  <Link to={\`\${id}\`} data-uid='5bb'>
+                    {name}
+                  </Link>
+                </span>
+              </div>
+            ))}
+          </div>
+        )
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const editor = renderResult.getEditorState().editor
+    const remixManifest = createRouteManifestFromProjectContents(editor.projectContents)
+
+    const spyContainer = { current: {} }
+    const propsContainer = { current: {} }
+
+    const metadataCtx = {
+      current: {
+        spyValues: { metadata: spyContainer.current, allElementProps: propsContainer.current },
+      },
+    }
+
+    const routesAndRouteModules = getRoutesAndRouteModulesFromManifest(
+      remixManifest!,
+      DefaultFutureConfig,
+      editor.codeResultCache.curriedRequireFn,
+      editor.codeResultCache.curriedResolveFn,
+      metadataCtx,
+      editor.projectContents,
+      CreateRemixDerivedDataRefs.mutableContext,
+      CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
+    )
+
+    expect(routesAndRouteModules).not.toBeNull()
   })
 })

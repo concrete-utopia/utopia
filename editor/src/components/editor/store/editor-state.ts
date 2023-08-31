@@ -175,6 +175,8 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
+import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2184,6 +2186,10 @@ export function isSyntheticNavigatorEntry(entry: NavigatorEntry): entry is Synth
 export const syntheticNavigatorEntryOptic: Optic<NavigatorEntry, SyntheticNavigatorEntry> =
   fromTypeGuard(isSyntheticNavigatorEntry)
 
+export interface RemixStaticRoutingTable {
+  [rootElementUid: string]: string /* file path */
+}
+
 export interface DerivedState {
   navigatorTargets: Array<NavigatorEntry>
   visibleNavigatorTargets: Array<NavigatorEntry>
@@ -2631,6 +2637,18 @@ export function deriveState(
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
 
   return sanitizedDerivedState
+}
+
+export const CreateRemixDerivedDataRefs: {
+  mutableContext: { current: MutableUtopiaCtxRefData }
+  topLevelComponentRendererComponents: { current: MapLike<MapLike<ComponentRendererComponent>> }
+  resolvedFiles: { current: MapLike<Array<string>> }
+  resolvedFileNames: { current: Array<string> }
+} = {
+  mutableContext: { current: {} },
+  topLevelComponentRendererComponents: { current: {} },
+  resolvedFiles: { current: {} },
+  resolvedFileNames: { current: [] },
 }
 
 export function createCanvasModelKILLME(

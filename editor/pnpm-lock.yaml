@@ -261,7 +261,7 @@ specifiers:
   react-merge-refs: 1.0.0
   react-onclickoutside: 6.9.0
   react-popper: 2.2.3
-  react-router: ^6.15.0
+  react-router: 6.15.0
   react-select: 3.1.0
   react-select-event: ^5.5.1
   react-spring: 9.0.0-rc.3
