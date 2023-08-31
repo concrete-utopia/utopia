@@ -160,10 +160,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
         return emptyStrategyApplicationResult
       }
 
-      const filteredSelectedElements = flattenSelection(
-        canvasState.startingMetadata,
-        selectedElements,
-      )
+      const filteredSelectedElements = flattenSelection(selectedElements)
       const originalBoundingBox = getMultiselectBounds(
         canvasState.startingMetadata,
         filteredSelectedElements,
@@ -378,7 +375,7 @@ function paddingValueIndicatorProps(
   interactionSession: InteractionSession | null,
   selectedElement: ElementPath,
 ): FloatingIndicatorProps | null {
-  const filteredSelectedElements = flattenSelection(canvasState.startingMetadata, [selectedElement])
+  const filteredSelectedElements = flattenSelection([selectedElement])
 
   if (
     interactionSession == null ||

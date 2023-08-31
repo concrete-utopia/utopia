@@ -46,10 +46,7 @@ export function absoluteDuplicateStrategy(
   }
 
   const isDragging = interactionSession.interactionData.drag != null
-  const flattenedSelectionForMultiSelect = flattenSelection(
-    canvasState.startingMetadata,
-    selectedElements,
-  )
+  const flattenedSelectionForMultiSelect = flattenSelection(selectedElements)
 
   if (!isApplicable(canvasState, flattenedSelectionForMultiSelect)) {
     return null

@@ -63,10 +63,7 @@ export function baseFlexReparentToAbsoluteStrategy(
       ],
       fitness: fitness,
       apply: (strategyLifecycle) => {
-        const filteredSelectedElements = flattenSelection(
-          canvasState.startingMetadata,
-          selectedElements,
-        )
+        const filteredSelectedElements = flattenSelection(selectedElements)
         return ifAllowedToReparent(
           canvasState,
           canvasState.startingMetadata,

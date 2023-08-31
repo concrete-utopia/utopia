@@ -29,7 +29,7 @@ export function relativeMoveStrategy(
   if (selectedElements.length === 0) {
     return null
   }
-  const filteredSelectedElements = flattenSelection(canvasState.startingMetadata, selectedElements)
+  const filteredSelectedElements = flattenSelection(selectedElements)
   const last = filteredSelectedElements[filteredSelectedElements.length - 1]
   const metadata = MetadataUtils.findElementByElementPath(canvasState.startingMetadata, last)
   if (

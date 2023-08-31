@@ -22,14 +22,13 @@ export function absoluteMoveStrategy(
   interactionSession: InteractionSession | null,
 ): MoveStrategy | null {
   const originalTargets = flattenSelection(
-    canvasState.startingMetadata,
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
   const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   const isApplicable =
     retargetedTargets.length > 0 &&
-    flattenSelection(canvasState.startingMetadata, retargetedTargets).every((element) => {
+    flattenSelection(retargetedTargets).every((element) => {
       const elementMetadata = MetadataUtils.findElementByElementPath(
         canvasState.startingMetadata,
         element,

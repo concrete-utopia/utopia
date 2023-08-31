@@ -16,33 +16,39 @@ export function retargetStrategyToChildrenOfFragmentLikeElements(
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
-  const targetsWithoutDescedants = flattenSelection(canvasState.startingMetadata, targets)
+  const targetsWithoutDescedants = flattenSelection(targets)
 
-  const withFragmentsReplaced = replaceFragmentLikePathsWithTheirChildrenRecursive(
+  return replaceFragmentLikePathsWithTheirChildrenRecursive(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
     targetsWithoutDescedants,
   )
+}
 
-  const withGroups = withFragmentsReplaced.flatMap((path) => {
-    if (treatElementAsGroupLike(canvasState.startingMetadata, path)) {
-      return path
+// Return a list of paths for the children of all the given paths which are groups, unless the path is a group itself.
+export function getChildGroupsForNonGroupParents(
+  metadata: ElementInstanceMetadataMap,
+  paths: Array<ElementPath>,
+): Array<ElementPath> {
+  let result: ElementPath[] = []
+  for (const path of paths) {
+    if (!treatElementAsGroupLike(metadata, path)) {
+      for (const child of MetadataUtils.getChildrenUnordered(metadata, path)) {
+        if (treatElementAsGroupLikeFromMetadata(child)) {
+          result.push(child.elementPath)
+        }
+      }
     }
-    const childGroups = MetadataUtils.getChildrenUnordered(canvasState.startingMetadata, path)
-      .filter(treatElementAsGroupLikeFromMetadata)
-      .map((element) => element.elementPath)
-    return [...childGroups, path]
-  })
-
-  return withGroups
+  }
+  return result
 }
 
 export function retargetStrategyToTopMostFragmentLikeElement(
   canvasState: InteractionCanvasState,
 ): Array<ElementPath> {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
-  const targetsWithoutDescedants = flattenSelection(canvasState.startingMetadata, targets)
+  const targetsWithoutDescedants = flattenSelection(targets)
 
   return optionallyReplacePathWithFragmentLikeParentRecursive(
     canvasState.startingMetadata,

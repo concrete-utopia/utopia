@@ -278,7 +278,7 @@ export function getEscapeHatchCommands(
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const selectedElements = flattenSelection(canvasState.startingMetadata, _selectedElements)
+  const selectedElements = flattenSelection(_selectedElements)
   if (selectedElements.length === 0) {
     return { commands: [], intendedBounds: [] }
   }
