@@ -428,16 +428,12 @@ function getRemixExportsOfModule(
   const executionScope = executionScopeCreator(projectContents)
 
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
-  invariant(nameAndUid, 'a default export should be provided')
-
-  // console.log('nameAndUid.name', filename, executionScope.scope)
-  const fallbackElement = () => <React.Fragment />
 
   return {
     executionScopeCreator: executionScopeCreator,
     loader: executionScope.scope['loader'] as LoaderFunction | undefined,
     action: executionScope.scope['action'] as ActionFunction | undefined,
-    rootComponentUid: nameAndUid.uid,
+    rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
   }
 }
 
@@ -509,7 +505,9 @@ function getRouteModulesWithPaths(
   }
 
   const topLevelElement = getDefaultExportedTopLevelElement(file)
-  invariant(topLevelElement, 'Route module should provide a default export')
+  if (topLevelElement == null) {
+    return {}
+  }
 
   const pathPartToOutlet = findPathToOutlet(topLevelElement)
   const isLeafModule = pathPartToOutlet == null
