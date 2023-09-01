@@ -1,6 +1,5 @@
 /* eslint-disable */
-
-// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/8779b24d0e51cc49a887d16afab9789557b80124/packages/remix-dev/config/routes.ts
+import * as path from 'path'
 
 /**
  * A route that was created using `defineRoutes` or created conventionally from
@@ -172,7 +171,7 @@ export function createRouteId(file: string) {
 }
 
 export function normalizeSlashes(file: string) {
-  return file.split('\\').join('/')
+  return file.split(path.win32.sep).join('/')
 }
 
 function stripFileExtension(file: string) {

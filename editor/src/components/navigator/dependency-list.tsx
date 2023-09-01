@@ -22,7 +22,10 @@ import {
   checkPackageVersionExists,
 } from '../editor/npm-dependency/npm-dependency'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
-import { DefaultPackagesList } from '../editor/store/editor-state'
+import {
+  DefaultPackagesList,
+  packageJsonFileFromProjectContents,
+} from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { DependencyListItems } from './dependency-list-items'
 import { fetchNodeModules } from '../../core/es-modules/package-manager/fetch-packages'
@@ -42,7 +45,6 @@ import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { useDispatch } from '../editor/store/dispatch-context'
-import { packageJsonFileFromProjectContents } from '../assets'
 
 type DependencyListProps = {
   editorDispatch: EditorDispatch

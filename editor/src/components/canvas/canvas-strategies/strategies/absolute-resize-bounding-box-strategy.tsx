@@ -35,10 +35,10 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
   supportsAbsoluteResize,
-  getRetargetedTargetsForResize,
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
+import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from './group-helpers'
 import type { EnsureFramePointsExist } from './resize-strategy-helpers'
@@ -52,7 +52,9 @@ export function absoluteResizeBoundingBoxStrategy(
   const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
-  const retargetedTargets = getRetargetedTargetsForResize(canvasState)
+  const retargetedTargets = flattenSelection(
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
+  )
 
   if (
     retargetedTargets.length === 0 ||

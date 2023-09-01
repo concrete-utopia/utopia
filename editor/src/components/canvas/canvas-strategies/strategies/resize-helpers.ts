@@ -38,11 +38,6 @@ import {
 import type { InteractionCanvasState } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { honoursPropsPosition, honoursPropsSize } from './absolute-utils'
-import {
-  retargetStrategyToChildrenOfFragmentLikeElements,
-  getChildGroupsForNonGroupParents,
-} from './fragment-like-helpers'
-import { flattenSelection } from './shared-move-strategies-helpers'
 
 export type AbsolutePin = 'left' | 'top' | 'right' | 'bottom' | 'width' | 'height'
 
@@ -437,17 +432,4 @@ function extendRectangleToAspectRatio(
       })
     }
   }
-}
-
-export function getRetargetedTargetsForResize(
-  canvasState: InteractionCanvasState,
-): Array<ElementPath> {
-  const withFragmentsExpanded = flattenSelection(
-    retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
-  )
-  const withChildGroups = getChildGroupsForNonGroupParents(
-    canvasState.startingMetadata,
-    withFragmentsExpanded,
-  )
-  return [...withFragmentsExpanded, ...withChildGroups]
 }

@@ -1,9 +1,4 @@
-import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
-import {
-  getProjectContentsChecksums,
-  packageJsonFileFromProjectContents,
-  walkContentsTreeAsync,
-} from '../../../../components/assets'
+import { getProjectContentsChecksums, walkContentsTreeAsync } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
@@ -16,6 +11,7 @@ import type {
   GithubOperation,
   GithubRepo,
 } from '../../../../components/editor/store/editor-state'
+import { packageJsonFileFromProjectContents } from '../../../../components/editor/store/editor-state'
 import type { BuiltInDependencies } from '../../../es-modules/package-manager/built-in-dependencies-list'
 import { refreshDependencies } from '../../dependencies'
 import type { RequestedNpmDependency } from '../../npm-dependency-types'
@@ -30,7 +26,6 @@ import {
   runGithubOperation,
   saveGithubAsset,
 } from '../helpers'
-import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 
 async function saveAssetsToProject(
   githubRepo: GithubRepo,
@@ -65,7 +60,6 @@ async function saveAssetsToProject(
 }
 
 export async function updateProjectWithBranchContent(
-  workers: UtopiaTsWorkers,
   dispatch: EditorDispatch,
   projectID: string,
   githubRepo: GithubRepo,
@@ -102,17 +96,10 @@ export async function updateProjectWithBranchContent(
             newGithubData.branches = null
           }
 
-          // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
-          // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-          const parsedProjectContents = await updateProjectContentsWithParseResults(
-            workers,
-            responseBody.branch.content,
-          )
-
           // Save assets to the server from Github.
           await saveAssetsToProject(githubRepo, projectID, responseBody.branch, dispatch)
 
-          const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
+          const packageJson = packageJsonFileFromProjectContents(responseBody.branch.content)
           if (packageJson != null && isTextFile(packageJson)) {
             await refreshDependencies(
               dispatch,
@@ -132,8 +119,8 @@ export async function updateProjectWithBranchContent(
                 branchName,
                 true,
               ),
-              updateProjectContents(parsedProjectContents),
-              updateBranchContents(parsedProjectContents),
+              updateProjectContents(responseBody.branch.content),
+              updateBranchContents(responseBody.branch.content),
               showToast(
                 notice(
                   `Github: Updated the project with the content from ${branchName}`,

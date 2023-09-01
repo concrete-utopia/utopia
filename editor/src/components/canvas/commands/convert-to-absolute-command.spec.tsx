@@ -9,7 +9,7 @@ import {
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { convertToAbsolute, runConvertToAbsolute } from './convert-to-absolute-command'
 import { isJSXElement } from '../../../core/shared/element-template'
@@ -19,7 +19,6 @@ describe('convertToAbsolute', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 

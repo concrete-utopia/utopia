@@ -66,7 +66,7 @@ import {
 import { assertNever, fastForEach } from '../shared/utils'
 import {
   getComponentsFromTopLevelElements,
-  isRemixSceneAgainstImports as isRemixSceneAgainstImports,
+  isRemixContainerAgainstImports,
   isSceneAgainstImports,
 } from './project-file-utils'
 import type { GetJSXAttributeResult } from '../shared/jsx-attributes'
@@ -143,14 +143,14 @@ export function isSceneElement(
   }
 }
 
-export function isRemixSceneElement(
+export function isRemixContainerElement(
   element: JSXElementChild,
   filePath: string,
   projectContents: ProjectContentTreeRoot,
 ): boolean {
   const file = getProjectFileByFilePath(projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    return isRemixSceneAgainstImports(element, file.fileContents.parsed.imports)
+    return isRemixContainerAgainstImports(element, file.fileContents.parsed.imports)
   } else {
     return false
   }

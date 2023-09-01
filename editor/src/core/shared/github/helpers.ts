@@ -1,6 +1,5 @@
 import { mergeDiff3 } from 'node-diff3'
 import { createSelector } from 'reselect'
-import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { HEADERS, MODE } from '../../../common/server'
@@ -47,7 +46,6 @@ import {
 import type { UtopiaStoreAPI } from '../../../components/editor/store/store-hook'
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { propOrNull } from '../object-utils'
-import { updateProjectContentsWithParseResults } from '../parser-projectcontents-utils'
 import type { ProjectFile } from '../project-file-types'
 import {
   isTextFile,
@@ -63,6 +61,7 @@ import { getBranchChecksums } from './operations/get-branch-checksums'
 import { getBranchesForGithubRepository } from './operations/list-branches'
 import { updatePullRequestsForBranch } from './operations/list-pull-requests-for-branch'
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
+import { updateProjectAgainstGithub } from './operations/update-against-branch'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -439,28 +438,22 @@ export function githubFileChangesToList(
   ].sort(sortByFilename)
 }
 
-export async function revertAllGithubFiles(
-  workers: UtopiaTsWorkers,
+export function revertAllGithubFiles(
   branchContents: ProjectContentTreeRoot | null,
-): Promise<Array<EditorAction>> {
+): Array<EditorAction> {
   let actions: Array<EditorAction> = []
   if (branchContents != null) {
-    const parsedBranchContents = await updateProjectContentsWithParseResults(
-      workers,
-      branchContents,
-    )
-    actions.push(updateProjectContents(parsedBranchContents))
+    actions.push(updateProjectContents(branchContents))
   }
   return actions
 }
 
-export async function revertGithubFile(
-  workers: UtopiaTsWorkers,
+export function revertGithubFile(
   status: GithubFileStatus,
   filename: string,
   projectContents: ProjectContentTreeRoot,
   branchContents: ProjectContentTreeRoot | null,
-): Promise<Array<EditorAction>> {
+): Array<EditorAction> {
   let actions: Array<EditorAction> = []
   if (branchContents != null) {
     switch (status) {
@@ -469,11 +462,7 @@ export async function revertGithubFile(
         break
       case 'deleted':
       case 'modified':
-        const parsedBranchContents = await updateProjectContentsWithParseResults(
-          workers,
-          branchContents,
-        )
-        const previousFile = getProjectFileByFilePath(parsedBranchContents, filename)
+        const previousFile = getProjectFileByFilePath(branchContents, filename)
         if (previousFile != null) {
           const newTree = addFileToProjectContents(projectContents, filename, previousFile)
           actions.push(updateProjectContents(newTree))

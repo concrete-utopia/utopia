@@ -34,18 +34,18 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run build
+      pnpm install
+      pnpm run build
     '')
     (pkgs.writeScriptBin "install-editor" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)
-      ${pnpm}/bin/pnpm install
+      pnpm install
       install-utopia-api
       update-vscode-build-extension
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install
+      pnpm install
     '')
     (pkgs.writeScriptBin "install-editor-ci" ''
       #!/usr/bin/env bash
@@ -53,13 +53,13 @@ let
       install-utopia-api
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install
+      pnpm install
     '')
     (pkgs.writeScriptBin "install-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
+      pnpm install
     '')
     (pkgs.writeScriptBin "install-website-editor-ci" ''
       #!/usr/bin/env bash
@@ -71,25 +71,25 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm test
+      pnpm test
     '')
     (pkgs.writeScriptBin "test-editor-watch" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm test-watch
+      pnpm test-watch
     '')
     (pkgs.writeScriptBin "test-utopia-api" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-api
-      ${pnpm}/bin/pnpm test
+      pnpm test
     '')
     (pkgs.writeScriptBin "test-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      # ${pnpm}/bin/pnpm test
+      # pnpm test
     '')
     (pkgs.writeScriptBin "test-editor-all" ''
       #!/usr/bin/env bash
@@ -101,55 +101,55 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run check
+      pnpm run check
     '')
     (pkgs.writeScriptBin "check-editor-ci" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run check-ci
+      pnpm run check-ci
     '')
     (pkgs.writeScriptBin "check-editor-code" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run check-code
+      pnpm run check-code
     '')
     (pkgs.writeScriptBin "check-editor-jest" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run test-ci
+      pnpm run test-ci
     '')
     (pkgs.writeScriptBin "check-editor-karma" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run test-browser
+      pnpm run test-browser
     '')
     (pkgs.writeScriptBin "check-editor-karma-shard-1" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run test-browser-shard-1
+      pnpm run test-browser-shard-1
     '')
     (pkgs.writeScriptBin "check-editor-karma-shard-2" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run test-browser-shard-2
+      pnpm run test-browser-shard-2
     '')
     (pkgs.writeScriptBin "test-editor-browser" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run test-browser
+      pnpm run test-browser
     '')
     (pkgs.writeScriptBin "test-editor-browser-debug" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run test-browser-debug
+      pnpm run test-browser-debug
     '')
     (pkgs.writeScriptBin "check-editor-all-ci" ''
       #!/usr/bin/env bash
@@ -193,24 +193,24 @@ let
       set -e
       install-editor-ci
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
+      pnpm install
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run staging-print-json
+      pnpm run staging-print-json
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run build
+      pnpm install
+      pnpm run build
     '')
     (pkgs.writeScriptBin "build-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       build-utopia-vscode-common
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run build
+      pnpm install
+      pnpm run build
     '')
     (pkgs.writeScriptBin "update-vscode-build-extension" ''
       #!/usr/bin/env bash
@@ -242,15 +242,15 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
-      ${pnpm}/bin/pnpm install --unsafe-perm
-      ${pnpm}/bin/pnpm run build
+      pnpm install --unsafe-perm
+      pnpm run build
     '')
       (pkgs.writeScriptBin "run-puppeteer-test" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/puppeteer-tests
-      ${pnpm}/bin/pnpm install --unsafe-perm
-      PUPPETEER_EXECUTABLE_PATH=${pkgs.google-chrome}/bin/google-chrome-stable ${pnpm}/bin/pnpm run performance-test
+      pnpm install --unsafe-perm
+      PUPPETEER_EXECUTABLE_PATH=${pkgs.google-chrome}/bin/google-chrome-stable pnpm run performance-test
     '')
   ];
 
@@ -305,44 +305,44 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm run watch-tsc
+      pnpm run watch-tsc
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm}/bin/pnpm run move-fast-and-break-things
+      RUN_COMPILER=true pnpm run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-hmr" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm}/bin/pnpm run dev-fast
+      RUN_COMPILER=true pnpm run dev-fast
     '')
     (pkgs.writeScriptBin "watch-editor-no-compile" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=false ${pnpm}/bin/pnpm run move-fast-and-break-things
+      RUN_COMPILER=false pnpm run move-fast-and-break-things
     '')
     (pkgs.writeScriptBin "watch-editor-performance" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm}/bin/pnpm run performance-test
+      RUN_COMPILER=true pnpm run performance-test
     '')
     (pkgs.writeScriptBin "watch-editor-cowboy-danger-hot" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      RUN_COMPILER=true ${pnpm}/bin/pnpm run move-fast-and-break-things-hot
+      RUN_COMPILER=true pnpm run move-fast-and-break-things-hot
     '')
     (pkgs.writeScriptBin "watch-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
-      BROWSER=none ${pnpm}/bin/pnpm run dev
+      pnpm install
+      BROWSER=none pnpm run dev
     '')
   ];
 
@@ -439,28 +439,28 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}/bin/yarn
-      ${yarn}/bin/yarn run make-patch
+      yarn
+      yarn run make-patch
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-common" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-common
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run watch-dev
+      pnpm install
+      pnpm run watch-dev
     '')
     (pkgs.writeScriptBin "watch-utopia-vscode-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/utopia-vscode-extension
-      ${pnpm}/bin/pnpm install
-      ${pnpm}/bin/pnpm run watch-dev
+      pnpm install
+      pnpm run watch-dev
     '')
     (pkgs.writeScriptBin "pull-extension" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/vscode-build
-      ${yarn}/bin/yarn run pull-utopia-extension
+      yarn run pull-utopia-extension
     '')
     (pkgs.writeScriptBin "watch-vscode-build-extension-only" ''
       #!/usr/bin/env bash
@@ -472,47 +472,6 @@ let
 
   # For the useful scripts in our dev environments
   customDevScripts = [
-    (pkgs.writeScriptBin "check-tool-versions" ''
-      #! /usr/bin/env nix-shell
-      #! nix-shell -p "haskellPackages.ghcWithPackages (pkgs: with pkgs; [async process])" -i runhaskell
-
-      import Control.Concurrent.Async
-      import Control.Monad
-      import Data.Foldable
-      import Data.List
-      import Data.Monoid
-      import System.Exit
-      import System.Process
-
-      expectedToolVersions :: [(String, [String], [String])]
-      expectedToolVersions =
-        [ ("pnpm", ["--version"], ["7.14.2"])
-        , ("yarn", ["--version"], ["1.22.19"])
-        , ("ghc", ["--version"], ["The Glorious Glasgow Haskell Compilation System, version 9.0.2"])
-        , ("cabal", ["--version"], ["cabal-install version 3.8.1.0", "compiled using version 3.8.1.0 of the Cabal library "])
-        ]
-
-      checkVersion :: (String, [String], [String]) -> IO All
-      checkVersion (executable, arguments, expectedOutput) = do
-        let commandToRun = unwords (executable : arguments)
-        output <- readProcess "nix-shell" ["--run", commandToRun] ""
-        let actualOutput = lines output
-        let correctVersion = actualOutput == expectedOutput
-        unless correctVersion $ do
-          putStrLn ("Error when checking the version of " <> executable)
-          putStrLn "Expected:"
-          traverse_ putStrLn expectedOutput
-          putStrLn "Received:"
-          traverse_ putStrLn actualOutput
-        pure $ All correctVersion
-
-      main :: IO ()
-      main = do 
-        results <- mapConcurrently checkVersion expectedToolVersions
-        let result = getAll $ mconcat results
-        when result $ putStrLn "All tools are the correct version."
-        if result then exitSuccess else exitFailure
-    '')
     (pkgs.writeScriptBin "stop-dev" ''
       #!/usr/bin/env bash
       # Kill nodemon because it just seems to keep running.
@@ -524,8 +483,6 @@ let
     (pkgs.writeScriptBin "start-minimal" ''
       #!/usr/bin/env bash
       stop-dev
-      set -e
-      check-tool-versions
       tmux new-session -s utopia-dev \; \
         set -g default-terminal "xterm-256color" \; \
         set-option -g mouse on \; \
@@ -557,7 +514,6 @@ let
         echo "A GITHUB_TOKEN is required when running the full Utopia build. Please see the readme for instructions."
         exit 1
       else
-        check-tool-versions
         build-vscode-with-extension
         install-editor
         start-minimal
@@ -566,8 +522,6 @@ let
     (pkgs.writeScriptBin "start-minimal-webpack" ''
       #!/usr/bin/env bash
       stop-dev
-      set -e
-      check-tool-versions
       tmux new-session -s utopia-dev \; \
         set -g default-terminal "xterm-256color" \; \
         set-option -g mouse on \; \
@@ -594,7 +548,6 @@ let
       #!/usr/bin/env bash
       stop-dev
       set -e
-      check-tool-versions
       build-vscode-with-extension
       install-editor
       start-minimal-webpack
@@ -609,16 +562,16 @@ let
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/editor
-      ${pnpm}/bin/pnpm install --unsafe-perm
-      ${pnpm}/bin/pnpm run production
+      pnpm install --unsafe-perm
+      pnpm run production
     '')
     # CRA for whatever reason will automatically fail on CI for any warnings, so we need to prefix with `CI=false`. Urgh. https://github.com/facebook/create-react-app/issues/3657
     (pkgs.writeScriptBin "build-website" ''
       #!/usr/bin/env bash
       set -e
       cd $(${pkgs.git}/bin/git rev-parse --show-toplevel)/website-next
-      ${pnpm}/bin/pnpm install
-      CI=false ${pnpm}/bin/pnpm run export
+      pnpm install
+      CI=false pnpm run export
     '')
     (pkgs.writeScriptBin "build-server" ''
       #!/usr/bin/env bash

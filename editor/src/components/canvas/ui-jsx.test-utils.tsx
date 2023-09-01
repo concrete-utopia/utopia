@@ -141,8 +141,6 @@ import { fromField } from '../../core/shared/optics/optic-creators'
 import type { DuplicateUIDsResult } from '../../core/model/get-unique-ids'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { carryDispatchResultFields } from './editor-dispatch-flow'
-import type { FeatureName } from '../../utils/feature-switches'
-import { setFeatureEnabled } from '../../utils/feature-switches'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -223,14 +221,6 @@ function formatAllCodeInModel(model: PersistentModel): PersistentModel {
   )
 }
 
-type StartingFeatureSwitches = Partial<{
-  [F in FeatureName]: boolean
-}>
-
-export const DefaultStartingFeatureSwitches: StartingFeatureSwitches = {
-  'Debug - Print UIDs': true,
-}
-
 export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
@@ -239,7 +229,6 @@ export async function renderTestEditorWithCode(
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode),
     awaitFirstDomReport,
-    DefaultStartingFeatureSwitches,
     undefined,
     strategiesToUse,
   )
@@ -253,7 +242,6 @@ export async function renderTestEditorWithProjectContent(
   return renderTestEditorWithModel(
     persistentModelForProjectContents(projectContent),
     awaitFirstDomReport,
-    DefaultStartingFeatureSwitches,
     undefined,
     strategiesToUse,
     loginState,
@@ -263,14 +251,10 @@ export async function renderTestEditorWithProjectContent(
 export async function renderTestEditorWithModel(
   rawModel: PersistentModel,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
-  startingFeatureSwitches: StartingFeatureSwitches = DefaultStartingFeatureSwitches,
   mockBuiltInDependencies?: BuiltInDependencies,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
   loginState: LoginState = notLoggedIn,
 ): Promise<EditorRenderResult> {
-  for (const [key, value] of Object.entries(startingFeatureSwitches)) {
-    setFeatureEnabled(key as FeatureName, value)
-  }
   const model = formatAllCodeInModel(rawModel)
   const renderCountBaseline = renderCount
   let recordedActions: Array<EditorAction> = []

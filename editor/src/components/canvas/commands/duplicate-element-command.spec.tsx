@@ -3,7 +3,6 @@ import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
-  DefaultStartingFeatureSwitches,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   renderTestEditorWithModel,
@@ -16,7 +15,6 @@ describe('runDuplicateElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 
@@ -54,7 +52,6 @@ describe('runDuplicateElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 

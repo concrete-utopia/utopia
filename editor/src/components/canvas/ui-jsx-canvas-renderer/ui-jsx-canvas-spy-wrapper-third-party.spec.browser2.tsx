@@ -2,7 +2,7 @@
 import * as MockReactThreeFiber from '@react-three/fiber'
 import * as mockWithEditorPackageJSON from '../../../../package.json'
 
-import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import type { ParsedTextFile } from '../../../core/shared/project-file-types'
 import {
   textFile,
@@ -137,7 +137,6 @@ async function renderTestProject() {
   const renderTestResult = await renderTestEditorWithModel(
     updatedProject,
     'await-first-dom-report',
-    DefaultStartingFeatureSwitches,
     builtInDependencies,
   )
   // Pause to let R3F do what it needs to do.

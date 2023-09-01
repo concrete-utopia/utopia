@@ -3,7 +3,7 @@ import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { childInsertionPath } from '../../editor/store/insertion-path'
-import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { reparentElement, runReparentElement } from './reparent-element-command'
 
@@ -12,7 +12,6 @@ describe('runReparentElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 
@@ -64,7 +63,6 @@ describe('runReparentElement', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 

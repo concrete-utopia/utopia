@@ -55,7 +55,11 @@ import type {
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from '../../guideline'
 import type { InteractionCanvasState, StrategyApplicationResult } from '../canvas-strategy-types'
-import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
+import {
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
+} from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import type { AbsolutePin } from './resize-helpers'
 import type { FlexDirection } from '../../../inspector/common/css-utils'

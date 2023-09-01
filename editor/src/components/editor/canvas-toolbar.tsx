@@ -330,7 +330,6 @@ export const CanvasToolbar = React.memo(() => {
               iconType='refresh'
               iconCategory='semantic'
               onClick={resetCanvasCallback}
-              keepActiveInLiveMode
             />
           </Tooltip>
 
@@ -339,7 +338,6 @@ export const CanvasToolbar = React.memo(() => {
               iconType='navigator-larger'
               iconCategory='semantic'
               onClick={toggleNavigatorVisible}
-              keepActiveInLiveMode
             />
           </Tooltip>
           <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
@@ -347,7 +345,6 @@ export const CanvasToolbar = React.memo(() => {
               iconType='inspector-larger'
               iconCategory='semantic'
               onClick={toggleInspectorVisible}
-              keepActiveInLiveMode
             />
           </Tooltip>
           <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
@@ -355,7 +352,6 @@ export const CanvasToolbar = React.memo(() => {
               iconType='codymccodeface-larger'
               iconCategory='semantic'
               onClick={toggleCodeEditorVisible}
-              keepActiveInLiveMode
             />
           </Tooltip>
         </FlexRow>

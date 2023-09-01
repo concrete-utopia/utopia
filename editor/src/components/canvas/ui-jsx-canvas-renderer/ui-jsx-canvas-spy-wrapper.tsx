@@ -99,6 +99,8 @@ export function addFakeSpyEntry(
   }
 }
 
+export type RemixRendererComponentType = 'remix-container' | 'outlet' | 'not-a-renderer-component'
+
 export function buildSpyWrappedElement(
   jsx: JSXElementChild,
   finalProps: any,

@@ -9,6 +9,7 @@ import {
   createWatchdogTerminateMessage,
 } from './watchdog-worker'
 import type { UtopiaTsWorkers, FileContent, ParsePrintFilesRequest } from './common/worker-types'
+import { createParsePrintFilesRequest, ParseOrPrint } from './common/worker-types'
 import type { ProjectContentTreeRoot } from '../../components/assets'
 
 export class UtopiaTsWorkersImplementation implements UtopiaTsWorkers {

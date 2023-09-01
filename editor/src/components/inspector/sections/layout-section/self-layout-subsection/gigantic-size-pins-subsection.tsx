@@ -22,18 +22,19 @@ import type { SelfLayoutTab } from './self-layout-subsection'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   NumberInput,
+  Icons,
   FlexColumn,
   SimpleNumberInput,
+  useColorTheme,
 } from '../../../../../uuiui'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
+import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 import { unless } from '../../../../../utils/react-conditionals'
 import type { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
-import { FlexCol } from 'utopia-api'
-import { treatElementAsGroupLike } from '../../../../canvas/canvas-strategies/strategies/group-helpers'
-import { useEditorState, Substores } from '../../../../editor/store/store-hook'
+import { FlexCol, FlexRow } from 'utopia-api'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -453,30 +454,10 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
   const firstYAxisControl: React.ReactElement = pinsLayoutNumberControl('left')
   const secondYAxisControl: React.ReactElement = pinsLayoutNumberControl('right')
 
-  const selectionContainsGroups = useEditorState(
-    Substores.metadata,
-    (store) =>
-      store.editor.selectedViews.some((path) =>
-        treatElementAsGroupLike(store.editor.jsxMetadata, path),
-      ),
-    'OtherPinsRow selectionContainsGroups',
-  )
-
   return (
-    <UIGridRow
-      alignItems='start'
-      padded={true}
-      variant={
-        selectionContainsGroups
-          ? '<-auto-><----------1fr--------->'
-          : '<-auto->|20px|<----------1fr--------->'
-      }
-    >
+    <UIGridRow alignItems='start' padded={true} variant='<-auto->|20px|<----------1fr--------->'>
       <PinControls resetPins={resetPinsFn} framePins={framePins} togglePin={togglePin} />
-      {unless(
-        selectionContainsGroups,
-        <WidthHeightRow togglePin={togglePin} framePins={framePins} />,
-      )}
+      <WidthHeightRow togglePin={togglePin} framePins={framePins} />
       <FlexColumn style={{ gap: 8 }}>
         <UIGridRow
           padded={false}

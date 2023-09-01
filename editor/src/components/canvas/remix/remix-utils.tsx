@@ -1,7 +1,10 @@
 import React from 'react'
-import type { ActionFunction, LoaderFunction } from 'react-router'
+import type { ActionFunction, DataRouteObject, LoaderFunction } from 'react-router'
 import { Outlet } from 'react-router'
 import type {
+  UNSAFE_RouteManifest as RouteManifest,
+  UNSAFE_EntryRoute as EntryRoute,
+  UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_AssetsManifest as AssetsManifest,
   UNSAFE_RemixContextObject as RemixContextObject,
 } from '@remix-run/react'
@@ -9,6 +12,7 @@ import type {
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left, right } from '../../../core/shared/either'
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
+import type { ProjectContentFile, ProjectContentTreeRoot, ProjectContentsTree } from '../../assets'
 import { getProjectFileByFilePath } from '../../assets'
 import type {
   JSXElementChild,
@@ -40,21 +44,11 @@ import * as EP from '../../../core/shared/element-path'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { MapLike } from 'typescript'
 import { pathPartsFromJSXElementChild } from '../../../core/model/element-template-utils'
+import { flatRoutes } from './from-remix/flat-routes'
+import type { DataRouteWithFilePath, EntryRouteWithFileMeta } from './from-remix/client-routes'
+import { createClientRoutes, groupRoutesByParentId } from './from-remix/client-routes'
 import type { RemixStaticRoutingTable } from '../../editor/store/editor-state'
 import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
-
-import type {
-  UNSAFE_FutureConfig as FutureConfig,
-  UNSAFE_EntryRoute as EntryRoute,
-  UNSAFE_RouteManifest as RouteManifest,
-} from '@remix-run/react'
-import type { ProjectContentTreeRoot } from '../../assets'
-import { getContentsTreeFromPath } from '../../assets'
-import type { FileOps } from '../../../third-party/remix/flat-routes'
-import { flatRoutes } from '../../../third-party/remix/flat-routes'
-import type { ConfigRoute } from '../../../third-party/remix/routes'
-import type { DataRouteObject } from 'react-router'
-import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 
 const ROOT_DIR = '/src'
 
@@ -62,8 +56,11 @@ export const RemixRoutingTableGLOBAL: { current: RemixStaticRoutingTable | null 
   current: null,
 }
 
+export type RouteManifestWithContents = RouteManifest<EntryRouteWithFileMeta>
+
 export function invariant<T>(value: T | null | undefined, message: string): asserts value is T {
   if (value == null) {
+    console.error(`Invariant error: ${message}`)
     throw new Error(message)
   }
 }
@@ -177,6 +174,37 @@ export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
   return <Wrapped {...propsWithPath} />
 }
 
+export function createRouteManifestFromProjectContents(
+  projectContents: ProjectContentTreeRoot,
+): RouteManifestWithContents | null {
+  const routesFromFlatRoutes = flatRoutes(ROOT_DIR, projectContents)
+  if (routesFromFlatRoutes == null) {
+    return null
+  }
+  const routes = {
+    ...routesFromFlatRoutes,
+    root: { path: '', id: 'root', file: 'root.js', parentId: '' },
+  }
+
+  let resultRoutes: RouteManifestWithContents = {}
+  for (let route of Object.values(routes)) {
+    // this still feels temporary, probably we should the hasAction and the hasLoader up properly from projectContents,
+    // but it is not used for anything, and we get the action/loader/default exports of the modules manually later.
+    resultRoutes[route.id] = {
+      ...route,
+      parentId: route.parentId ?? 'root',
+      module: '',
+      hasAction: false,
+      hasLoader: false,
+      hasCatchBoundary: false,
+      hasErrorBoundary: false,
+      filePath: `${ROOT_DIR}/${route.file}`,
+    }
+  }
+
+  return resultRoutes
+}
+
 export interface RouteModuleWithFilePath extends RouteModule {
   filePath: string
 }
@@ -202,7 +230,7 @@ export interface GetRoutesAndModulesFromManifestResult {
 }
 
 export function getRoutesAndModulesFromManifest(
-  routeManifest: RouteManifest<EntryRoute>,
+  routeManifest: RouteManifestWithContents,
   futureConfig: FutureConfig,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
@@ -227,7 +255,7 @@ export function getRoutesAndModulesFromManifest(
   }
 
   const routesByParentId = groupRoutesByParentId(routeManifest)
-  const routes: DataRouteObject[] = createClientRoutes(
+  const routes: DataRouteWithFilePath[] = createClientRoutes(
     routeManifest,
     {},
     futureConfig,
@@ -241,14 +269,13 @@ export function getRoutesAndModulesFromManifest(
 
   const routeModulesToRelativePaths = getRouteModulesWithPaths(
     projectContents,
-    routeManifest,
     routes[0],
     EP.emptyElementPath,
   )
 
   Object.values(routeManifest).forEach((route) => {
     const { executionScopeCreator, loader, action, rootComponentUid } = getRemixExportsOfModule(
-      route.module,
+      route.filePath,
       curriedRequireFn,
       curriedResolveFn,
       metadataContext,
@@ -259,11 +286,11 @@ export function getRoutesAndModulesFromManifest(
 
     addLoaderAndActionToRoute(routes, route.id, loader, action)
     routeModuleCreators[route.id] = {
-      filePath: route.module,
+      filePath: route.filePath,
       executionScopeCreator: executionScopeCreator,
     }
 
-    routingTable[rootComponentUid] = route.module
+    routingTable[rootComponentUid] = route.filePath
   })
 
   RemixRoutingTableGLOBAL.current = routingTable
@@ -401,15 +428,10 @@ export interface RouteModulesWithRelativePaths {
 
 function getRouteModulesWithPaths(
   projectContents: ProjectContentTreeRoot,
-  routeManifest: RouteManifest<EntryRoute>,
-  route: DataRouteObject,
+  route: DataRouteWithFilePath,
   pathSoFar: ElementPath,
 ): RouteModulesWithRelativePaths {
-  const filePathForRoute = routeManifest[route.id]?.module
-  if (filePathForRoute == null) {
-    return {}
-  }
-  const file = getProjectFileByFilePath(projectContents, filePathForRoute)
+  const file = getProjectFileByFilePath(projectContents, route.filePath)
   if (file == null || file.type !== 'TEXT_FILE') {
     return {}
   }
@@ -425,7 +447,7 @@ function getRouteModulesWithPaths(
   let routeModulesWithBasePaths: RouteModulesWithRelativePaths = {
     [route.id]: {
       relativePath: pathSoFar,
-      filePath: filePathForRoute,
+      filePath: route.filePath,
     },
   }
 
@@ -437,7 +459,7 @@ function getRouteModulesWithPaths(
   const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
 
   for (const child of children) {
-    const paths = getRouteModulesWithPaths(projectContents, routeManifest, child, pathForChildren)
+    const paths = getRouteModulesWithPaths(projectContents, child, pathForChildren)
     for (const [filePath, path] of Object.entries(paths)) {
       routeModulesWithBasePaths[filePath] = path
     }
@@ -460,91 +482,4 @@ function addLoaderAndActionToRoute(
       addLoaderAndActionToRoute(route.children ?? [], routeId, loader, action)
     }
   })
-}
-
-export const DefaultFutureConfig: FutureConfig = {
-  v2_dev: true,
-  unstable_postcss: false,
-  unstable_tailwind: false,
-  v2_errorBoundary: false,
-  v2_headers: false,
-  v2_meta: false,
-  v2_normalizeFormMethod: false,
-  v2_routeConvention: true,
-}
-
-// This is necessary to create a simple node.fs-like implementation for Utopia projectContents, which
-// can be used by the Remix functions to parse the routes
-export function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): FileOps {
-  return {
-    existsSync: (file: string): boolean => getContentsTreeFromPath(projectContents, file) != null,
-    readdirSync: (dir: string): Array<string> => {
-      const projectDir = getContentsTreeFromPath(projectContents, dir)
-      let entries =
-        projectDir != null && projectDir.type === 'PROJECT_CONTENT_DIRECTORY'
-          ? Object.values(projectDir.children).map((tree) => tree.fullPath)
-          : []
-      return entries
-    },
-    isDirectory: (file: string): boolean => {
-      const projectFile = getContentsTreeFromPath(projectContents, file)
-      return projectFile != null && projectFile.type === 'PROJECT_CONTENT_DIRECTORY'
-    },
-    isFile: (file: string): boolean => {
-      const projectFile = getContentsTreeFromPath(projectContents, file)
-      return projectFile != null && projectFile.type === 'PROJECT_CONTENT_FILE'
-    },
-  }
-}
-
-export function createRouteManifestFromProjectContents(
-  projectContents: ProjectContentTreeRoot,
-): RouteManifest<EntryRoute> | null {
-  const routesFromRemix = (() => {
-    try {
-      return flatRoutes(ROOT_DIR, projectContentsToFileOps(projectContents))
-    } catch (e) {
-      return null
-    }
-  })()
-
-  if (routesFromRemix == null) {
-    return null
-  }
-  return patchRemixRoutes(routesFromRemix)
-}
-
-function patchRemixRoutes(routesFromRemix: RouteManifest<ConfigRoute> | null) {
-  const routesFromRemixWithRoot: RouteManifest<ConfigRoute> = {
-    ...routesFromRemix,
-    root: { path: '', id: 'root', file: 'root.js', parentId: '' },
-  }
-
-  const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
-    // Maybe we should fill hasAction and hasLoader properly, but it is not used for anything
-    acc[route.id] = {
-      ...route,
-      parentId: route.parentId ?? 'root',
-      module: `${ROOT_DIR}/${route.file}`,
-      hasAction: false,
-      hasLoader: false,
-      hasCatchBoundary: false,
-      hasErrorBoundary: false,
-    }
-    return acc
-  }, {} as RouteManifest<EntryRoute>)
-
-  return resultRoutes
-}
-
-export function getRoutesFromRouteManifest(
-  routeManifest: RouteManifest<EntryRoute>,
-  futureConfig: FutureConfig,
-): DataRouteObject[] {
-  const routesByParentId = groupRoutesByParentId(routeManifest)
-  try {
-    return createClientRoutes(routeManifest, {}, futureConfig, '', routesByParentId)
-  } catch (e) {
-    return []
-  }
 }

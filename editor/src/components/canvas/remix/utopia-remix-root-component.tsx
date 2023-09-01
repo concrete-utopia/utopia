@@ -81,7 +81,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
           .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
       routeModulesResult[key] = {
-        // ...value,
+        ...value,
         default: PathPropHOC(defaultComponent, EP.toString(appendTwoPaths(basePath, relativePath))),
       }
     }

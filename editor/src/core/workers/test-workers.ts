@@ -5,7 +5,10 @@ import {
 } from './linter/linter-worker'
 import type { LinterWorker, ParserPrinterWorker, WatchdogWorker } from './workers'
 import { handleMessage as handleParserPrinterMessage } from './parser-printer/parser-printer-worker'
+import { handleMessage as handleTSWorkerMessage } from './ts/ts-worker'
+import { BundlerWorker } from './bundler-bridge'
 import type { ParsePrintFilesRequest, ParsePrintResultMessage } from './common/worker-types'
+import { createParsePrintFilesRequest, ParseOrPrint } from './common/worker-types'
 
 export class FakeParserPrinterWorker implements ParserPrinterWorker {
   messageListeners: Array<(ev: MessageEvent) => any> = []

@@ -4,11 +4,7 @@ import {
   codeNeedsParsing,
   codeNeedsPrinting,
 } from '../../../core/workers/common/project-file-utils'
-import type {
-  ParseOrPrint,
-  ParseOrPrintResult,
-  UtopiaTsWorkers,
-} from '../../../core/workers/common/worker-types'
+import type { ParseOrPrint, UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import {
   createParseFile,
   createPrintAndReparseFile,
@@ -80,10 +76,6 @@ import { arrayOfPathsEqual, removePathsWithDeadUIDs } from '../../../core/shared
 import { notice } from '../../../components/common/notice'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { updateSimpleLocks } from '../../../core/shared/element-locking'
-import {
-  getFilesToUpdate,
-  parseResultToWorkerUpdates,
-} from '../../../core/shared/parser-projectcontents-utils'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -254,18 +246,69 @@ function maybeRequestModelUpdate(
   parseOrPrintFinished: Promise<boolean>
   forciblyParsedFiles: Array<string>
 } {
-  // Get the files to update that need sending over to the worker.
-  const { filesToUpdate, forciblyParsedFiles, existingUIDs } = getFilesToUpdate(
-    projectContents,
-    forceParseFiles,
-  )
+  // Walk the project contents to see if anything needs to be sent across.
+  let filesToUpdate: Array<ParseOrPrint> = []
+  let forciblyParsedFiles: Array<string> = []
+  let existingUIDs: Set<string> = emptySet()
+  walkContentsTree(projectContents, (fullPath, file) => {
+    if (isTextFile(file)) {
+      if (
+        codeNeedsPrinting(file.fileContents.revisionsState) &&
+        isParseSuccess(file.fileContents.parsed)
+      ) {
+        filesToUpdate.push(
+          createPrintAndReparseFile(
+            fullPath,
+            file.fileContents.parsed,
+            PRODUCTION_ENV,
+            file.versionNumber,
+          ),
+        )
+      } else if (codeNeedsParsing(file.fileContents.revisionsState)) {
+        const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
+          ? file.fileContents.parsed
+          : file.lastParseSuccess
+        filesToUpdate.push(
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
+        )
+      } else if (forceParseFiles.includes(fullPath)) {
+        forciblyParsedFiles.push(fullPath)
+        const lastParseSuccess = isParseSuccess(file.fileContents.parsed)
+          ? file.fileContents.parsed
+          : file.lastParseSuccess
+        filesToUpdate.push(
+          createParseFile(fullPath, file.fileContents.code, lastParseSuccess, file.versionNumber),
+        )
+      } else if (isParseSuccess(file.fileContents.parsed)) {
+        const uidsFromFile = Object.keys(file.fileContents.parsed.fullHighlightBounds)
+        fastForEach(uidsFromFile, (uid) => existingUIDs.add(uid))
+      }
+    }
+  })
 
   // Should anything need to be sent across, do so here.
   if (filesToUpdate.length > 0) {
     const parseFinished = getParseResult(workers, filesToUpdate, existingUIDs)
       .then((parseResult) => {
         const updates = parseResult.map((fileResult) => {
-          return parseResultToWorkerUpdates(fileResult)
+          switch (fileResult.type) {
+            case 'parsefileresult':
+              return EditorActions.workerParsedUpdate(
+                fileResult.filename,
+                fileResult.parseResult,
+                fileResult.versionNumber,
+              )
+            case 'printandreparseresult':
+              return EditorActions.workerCodeAndParsedUpdate(
+                fileResult.filename,
+                fileResult.printResult,
+                fileResult.parseResult,
+                fileResult.versionNumber,
+              )
+            default:
+              const _exhaustiveCheck: never = fileResult
+              throw new Error(`Unhandled file result ${JSON.stringify(fileResult)}`)
+          }
         })
 
         dispatch([EditorActions.mergeWithPrevUndo([EditorActions.updateFromWorker(updates)])])

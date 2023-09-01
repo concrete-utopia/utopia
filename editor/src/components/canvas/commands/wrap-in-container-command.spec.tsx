@@ -10,7 +10,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { runWrapInContainerCommand, wrapInContainerCommand } from './wrap-in-container-command'
 
@@ -30,7 +30,6 @@ describe('wrapInContainerCommand', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 
@@ -65,7 +64,6 @@ describe('wrapInContainerCommand', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 
@@ -104,7 +102,6 @@ describe('wrapInContainerCommand', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
-      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 
