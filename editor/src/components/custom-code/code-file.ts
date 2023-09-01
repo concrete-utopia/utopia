@@ -428,8 +428,6 @@ export function normalisePathSuccessOrThrowError(
   }
 }
 
-type RemixRouteLookupState = 'outside-remix-container' | RemixRouteLookup
-
 export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,

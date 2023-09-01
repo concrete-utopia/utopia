@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { RouterProvider, createMemoryRouter } from 'react-router'
-import type { UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
+import type { Location, UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
 
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 
@@ -21,9 +21,11 @@ interface RemixNavigationContext {
   forward: () => void
   back: () => void
   home: () => void
-  pathname: string
+  location: Location
 }
 
+// TODO: should be refactored so that this can accomodate multiple contexts
+// thinking { [pathToUtopiaRemixRootComponent]: RemixNavigationContext }
 export const RemixNavigationAtom = atom<RemixNavigationContext | null>(null)
 
 export interface UtopiaRemixRootComponentProps {
@@ -71,8 +73,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         continue
       }
 
-      const relativePath =
-        remixDerivedDataRef.current.routeModulesToRelativePaths[value.filePath].relativePath
+      const relativePath = remixDerivedDataRef.current.routeModulesToRelativePaths[key].relativePath
 
       const defaultComponent = (componentProps: any) =>
         value
@@ -91,36 +92,19 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   // The router always needs to be updated otherwise new routes won't work without a refresh
   const router = React.useMemo(() => optionalMap(createMemoryRouter, routes), [routes])
 
-  let uiJsxCanvasContext: UiJsxCanvasContextData = forceNotNull(
-    `Missing UiJsxCanvasCtxAtom provider`,
-    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
-  )
-
   const setNavigationAtom = useSetAtom(RemixNavigationAtom)
 
   React.useLayoutEffect(() => {
-    if (router != null) {
-      setNavigationAtom({
-        forward: () => void router.navigate(1),
-        back: () => void router.navigate(-1),
-        home: () => void router.navigate('/'),
-        pathname: router.state.location.pathname,
-      })
-    }
-  })
-
-  React.useLayoutEffect(() => {
     return router?.subscribe((n) => {
-      uiJsxCanvasContext.current.spyValues.metadata = {}
       ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current = true
       setNavigationAtom({
         forward: () => void router.navigate(1),
         back: () => void router.navigate(-1),
         home: () => void router.navigate('/'),
-        pathname: n.location.pathname,
+        location: n.location,
       })
     })
-  }, [router, setNavigationAtom, uiJsxCanvasContext])
+  }, [router, routes, setNavigationAtom])
 
   if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null

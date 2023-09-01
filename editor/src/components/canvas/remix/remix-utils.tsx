@@ -420,9 +420,9 @@ export function findPathToOutlet(element: JSXElementChild): ElementPathPart | nu
 }
 
 export interface RouteModulesWithRelativePaths {
-  [filePath: string]: {
+  [routeId: string]: {
     relativePath: ElementPath
-    isLeafModule: boolean
+    filePath: string
   }
 }
 
@@ -445,9 +445,9 @@ function getRouteModulesWithPaths(
   const pathPartToOutlet = findPathToOutlet(topLevelElement)
   const isLeafModule = pathPartToOutlet == null
   let routeModulesWithBasePaths: RouteModulesWithRelativePaths = {
-    [route.filePath]: {
+    [route.id]: {
       relativePath: pathSoFar,
-      isLeafModule: isLeafModule,
+      filePath: route.filePath,
     },
   }
 

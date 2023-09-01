@@ -55,7 +55,7 @@ export const RemixNavigationBar = React.memo(() => {
       <div
         style={{ backgroundColor: '#f2f3f4', borderRadius: 10, padding: '4px 12px', minWidth: 20 }}
       >
-        {navigationControls.pathname}
+        {navigationControls.location.pathname}
       </div>
     </FlexRow>
   )

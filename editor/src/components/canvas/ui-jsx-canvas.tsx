@@ -71,6 +71,7 @@ import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+import type { RemixValidPathsGenerationContext } from './canvas-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
@@ -89,6 +90,9 @@ import {
 import { forceNotNull } from '../../core/shared/optional-utils'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 import { useRefEditorState } from '../editor/store/store-hook'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
+import { matchRoutes } from 'react-router'
 
 applyUIDMonkeyPatch()
 
@@ -470,9 +474,22 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
-  const remixRoutesToBasePathsRef = useRefEditorState(
-    (editor) => editor.derived.remixData?.routeModulesToRelativePaths ?? {},
-  )
+  const remixDerivedDataRef = useRefEditorState((editor) => editor.derived.remixData)
+
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+
+  const remixPathValidationContext: RemixValidPathsGenerationContext =
+    remixDerivedDataRef.current == null
+      ? { type: 'disabled' }
+      : {
+          type: 'active',
+          routeModulesToRelativePaths: remixDerivedDataRef.current.routeModulesToRelativePaths,
+          currentlyRenderedRouteModules:
+            matchRoutes(
+              remixDerivedDataRef.current.routes,
+              remixNavigationState?.location ?? '/',
+            )?.map((p) => p.route) ?? [],
+        }
 
   const {
     StoryboardRootComponent,
@@ -487,7 +504,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     projectContentsForRequireFn,
     uiFilePath,
     resolve,
-    remixRoutesToBasePathsRef.current,
+    remixPathValidationContext,
   )
 
   clearSpyCollectorInvalidPaths(rootValidPathsSet, metadataContext)
@@ -731,7 +748,7 @@ function useGetStoryboardRoot(
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-  routeModulesWithBasePath: RouteModulesWithRelativePaths,
+  remixValidPathsGenerationContext: RemixValidPathsGenerationContext,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootElementPath: ElementPath
@@ -754,7 +771,7 @@ function useGetStoryboardRoot(
           projectContents,
           uiFilePath,
           resolve,
-          routeModulesWithBasePath,
+          remixValidPathsGenerationContext,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(
     validPaths[0] ?? EP.emptyElementPath,
