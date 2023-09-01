@@ -12,6 +12,8 @@ export type FeatureName =
   | 'Performance Test Triggers'
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
+  | 'Remix support'
+  | 'Debug - Print UIDs'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -24,6 +26,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Performance Test Triggers',
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
+  'Remix support',
+  'Debug - Print UIDs',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -36,6 +40,8 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
+  'Remix support': false,
+  'Debug - Print UIDs': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

@@ -1,4 +1,7 @@
 /* eslint-disable */
+
+// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/8779b24d0e51cc49a887d16afab9789557b80124/packages/remix-dev/config/routesConvention.ts
+
 import path from 'path-browserify'
 
 export const routeModuleExts = ['.js', '.jsx', '.ts', '.tsx', '.md', '.mdx']
@@ -18,8 +21,3 @@ export function isSegmentSeparator(checkChar: string | undefined) {
   if (!checkChar) return false
   return ['/', '.'].includes(checkChar)
 }
-
-/*
-eslint
-  no-loop-func: "off",
-*/

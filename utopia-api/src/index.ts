@@ -5,7 +5,7 @@ export * from './primitives/flex-views'
 export * from './primitives/rectangle'
 export * from './primitives/ellipse'
 export * from './primitives/scene'
-export * from './primitives/remix-container'
+export * from './primitives/remix-scene'
 export * from './primitives/storyboard'
 
 export * from './helpers/helper-functions'

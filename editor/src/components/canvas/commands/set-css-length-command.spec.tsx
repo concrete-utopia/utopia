@@ -11,7 +11,11 @@ import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-s
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { cssPixelLength } from '../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
-import { renderTestEditorWithCode, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import {
+  DefaultStartingFeatureSwitches,
+  renderTestEditorWithCode,
+  renderTestEditorWithModel,
+} from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import type { SetCssLengthProperty } from './set-css-length-command'
 import {
@@ -26,6 +30,7 @@ describe('setCssLengthProperty', () => {
     const renderResult = await renderTestEditorWithModel(
       complexDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
+      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 

@@ -44,7 +44,7 @@ import {
   isGithubUpdating,
   persistentModelForProjectContents,
 } from '../../../editor/store/editor-state'
-import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
 import { Block } from './block'
 import { Ellipsis, GithubFileChangesList } from './github-file-changes-list'
@@ -819,6 +819,9 @@ const PullRequestButton = () => {
 }
 
 const BranchNotLoadedBlock = () => {
+  const workersRef = useRefEditorState((store) => {
+    return store.workers
+  })
   const dispatch = useDispatch()
   const { branchName, branches, branchLoaded, githubOperations, githubRepo } = useEditorState(
     Substores.github,
@@ -849,6 +852,7 @@ const BranchNotLoadedBlock = () => {
   const loadFromBranch = React.useCallback(() => {
     if (githubRepo != null && branchName != null) {
       void updateProjectWithBranchContent(
+        workersRef.current,
         dispatch,
         forceNotNull('Should have a project ID by now.', projectID),
         githubRepo,
@@ -858,7 +862,15 @@ const BranchNotLoadedBlock = () => {
         builtInDependencies,
       )
     }
-  }, [dispatch, githubRepo, branchName, currentDependencies, builtInDependencies, projectID])
+  }, [
+    workersRef,
+    dispatch,
+    githubRepo,
+    branchName,
+    currentDependencies,
+    builtInDependencies,
+    projectID,
+  ])
 
   const isANewBranch = React.useMemo(() => {
     if (branches == null) {

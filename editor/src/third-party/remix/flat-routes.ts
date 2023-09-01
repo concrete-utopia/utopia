@@ -1,6 +1,8 @@
 /* eslint-disable */
 
-// Copy pasted from remix and rewrote to use utopia projectContents instead of node.fs
+// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/8779b24d0e51cc49a887d16afab9789557b80124/packages/remix-dev/config/flat-routes.ts
+// Instead of the 'fs' module (which is not usable in the browser and not compatible with the utopia file system), a
+// FileOps object needs to be injected, which contains the necessary file system functions.
 
 import path from 'path-browserify'
 import { makeRe } from 'minimatch'
@@ -16,7 +18,15 @@ import {
   paramPrefixChar,
   routeModuleExts,
 } from './routes-convention'
-import { ProjectContentTreeRoot, getContentsTreeFromPath } from '../../../assets'
+
+// This is necessary to create a simple node.fs-like implementation for Utopia projectContents, which
+// can be used by the Remix functions to parse the routes
+export interface FileOps {
+  existsSync: (file: string) => boolean
+  readdirSync: (dir: string) => Array<string>
+  isDirectory: (file: string) => boolean
+  isFile: (file: string) => boolean
+}
 
 const PrefixLookupTrieEndSymbol = Symbol('PrefixLookupTrieEndSymbol')
 type PrefixLookupNode = {
@@ -74,40 +84,37 @@ class PrefixLookupTrie {
 
 export function flatRoutes(
   appDirectory: string,
-  projectContents: ProjectContentTreeRoot,
+  fs: FileOps,
   ignoredFilePatterns: string[] = [],
   prefix = 'routes',
-): RouteManifest | null {
+) {
   let ignoredFileRegex = ignoredFilePatterns
     .map((re) => makeRe(re))
     .filter((re: any): re is RegExp => !!re)
   let routesDir = path.join(appDirectory, prefix)
 
-  let rootRoute = findConfig(appDirectory, 'root', routeModuleExts, projectContents)
+  let rootRoute = findConfig(appDirectory, 'root', routeModuleExts, fs)
 
   if (!rootRoute) {
-    return null
+    throw new Error(`Could not find a root route module in the app directory: ${appDirectory}`)
   }
 
-  if (getContentsTreeFromPath(projectContents, rootRoute) == null) {
-    return null
+  if (!fs.existsSync(rootRoute)) {
+    throw new Error(
+      `Could not find the routes directory: ${routesDir}. Did you forget to create it?`,
+    )
   }
 
-  const routesProjectDir = getContentsTreeFromPath(projectContents, routesDir)
-  let entries =
-    routesProjectDir != null && routesProjectDir.type === 'PROJECT_CONTENT_DIRECTORY'
-      ? Object.values(routesProjectDir.children)
-      : []
+  // Only read the routes directory
+  let entries = fs.readdirSync(routesDir)
 
   let routes: string[] = []
-  for (let entry of entries) {
-    let filepath = entry.fullPath
-
+  for (let filepath of entries) {
     let route: string | null = null
     // If it's a directory, don't recurse into it, instead just look for a route module
-    if (entry.type === 'PROJECT_CONTENT_DIRECTORY') {
-      route = findRouteModuleForFolder(appDirectory, filepath, ignoredFileRegex, projectContents)
-    } else if (entry.type === 'PROJECT_CONTENT_FILE') {
+    if (fs.isDirectory(filepath)) {
+      route = findRouteModuleForFolder(appDirectory, filepath, ignoredFileRegex, fs)
+    } else if (fs.isFile(filepath)) {
       route = findRouteModuleForFile(appDirectory, filepath, ignoredFileRegex)
     }
 
@@ -296,14 +303,14 @@ function findRouteModuleForFolder(
   appDirectory: string,
   filepath: string,
   ignoredFileRegex: RegExp[],
-  projectContents: ProjectContentTreeRoot,
+  fs: FileOps,
 ): string | null {
   let relativePath = path.relative(appDirectory, filepath)
   let isIgnored = ignoredFileRegex.some((regex) => regex.test(relativePath))
   if (isIgnored) return null
 
-  let routeRouteModule = findConfig(filepath, 'route', routeModuleExts, projectContents)
-  let routeIndexModule = findConfig(filepath, 'index', routeModuleExts, projectContents)
+  let routeRouteModule = findConfig(filepath, 'route', routeModuleExts, fs)
+  let routeIndexModule = findConfig(filepath, 'index', routeModuleExts, fs)
 
   // if both a route and index module exist, throw a conflict error
   // preferring the route module over the index module
@@ -523,13 +530,12 @@ export function findConfig(
   dir: string,
   basename: string,
   extensions: string[],
-  projectContents: ProjectContentTreeRoot,
+  fse: FileOps,
 ): string | undefined {
   for (let ext of extensions) {
     let name = basename + ext
     let file = path.join(dir, name)
-    const projectFile = getContentsTreeFromPath(projectContents, file)
-    if (projectFile != null) return file
+    if (fse.existsSync(file)) return file
   }
 
   return undefined
