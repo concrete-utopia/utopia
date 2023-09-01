@@ -494,11 +494,7 @@ export class Editor {
               this.storedState.unpatchedEditor.projectContents
             const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
-              [
-                EditorActions.transientActions([
-                  EditorActions.mergeWithPrevUndo([EditorActions.trueUpGroups(trueUps)]),
-                ]),
-              ],
+              [EditorActions.trueUpGroups(trueUps)],
               this.storedState,
               this.spyCollector,
             )
