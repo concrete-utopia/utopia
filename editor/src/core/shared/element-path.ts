@@ -89,7 +89,7 @@ function removePathsFromElementPathCacheWithDeadUIDs(existingUIDs: Set<string>):
   return removedPaths
 }
 
-export function removePathsWithDeadUIDs(existingUIDs: Set<string>) {
+export function removePathsWithDeadUIDs(existingUIDs: Set<string>): void {
   const removedPaths = removePathsFromElementPathCacheWithDeadUIDs(existingUIDs)
 
   fastForEach(Object.keys(globalPathStringToPathCache), (stringifiedPath) => {

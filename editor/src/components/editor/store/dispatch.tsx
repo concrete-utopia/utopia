@@ -620,8 +620,14 @@ function editorChangesShouldTriggerSave(oldState: EditorState, newState: EditorS
 let cullElementPathCacheTimeoutId: number | undefined = undefined
 const CullElementPathCacheTimeout = 1000
 let lastProjectContents: ProjectContentTreeRoot = {}
-export function setLastProjectContentsForTesting(projectContents: ProjectContentTreeRoot) {
+export function setLastProjectContentsForTesting(projectContents: ProjectContentTreeRoot): void {
   lastProjectContents = projectContents
+}
+
+export function killElementPathCacheCallback(): void {
+  if (cullElementPathCacheTimeoutId != null) {
+    window.cancelIdleCallback(cullElementPathCacheTimeoutId)
+  }
 }
 
 function maybeCullElementPathCache(
@@ -633,9 +639,7 @@ function maybeCullElementPathCache(
     // Updates from the worker indicate that paths might have changed, so schedule a
     // cache cull for the next time the browser is idle
     if (typeof window.requestIdleCallback !== 'undefined') {
-      if (cullElementPathCacheTimeoutId != null) {
-        window.cancelIdleCallback(cullElementPathCacheTimeoutId)
-      }
+      killElementPathCacheCallback()
 
       cullElementPathCacheTimeoutId = window.requestIdleCallback(cullElementPathCache)
     } else {
@@ -648,7 +652,7 @@ function maybeCullElementPathCache(
   }
 }
 
-function cullElementPathCache() {
+export function cullElementPathCache(): void {
   const allExistingUids = getAllUniqueUids(lastProjectContents).allIDs
   removePathsWithDeadUIDs(new Set(allExistingUids))
 }
