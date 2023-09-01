@@ -1,6 +1,5 @@
 import * as json5 from 'json5'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   findJSXElementChildAtPath,
   removeJSXElementChild,
@@ -86,6 +85,7 @@ import type { KeysPressed } from '../../../utils/keyboard'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
   getProjectFileByFilePath,
@@ -148,7 +148,6 @@ import { v4 as UUID } from 'uuid'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ConditionalCase } from '../../../core/model/conditionals'
-import { getConditionalClausePathFromMetadata } from '../../../core/model/conditionals'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import type { FileResult } from '../../../core/shared/file-utils'
 import type {
@@ -175,8 +174,6 @@ import type {
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import type { PersistenceMachine } from '../persistence/persistence'
-import type { InsertionPath } from './insertion-path'
-import { childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
@@ -204,6 +201,7 @@ import type {
   RouteModulesWithRelativePaths,
 } from '../../canvas/remix/remix-utils'
 import {
+  DefaultFutureConfig,
   createAssetsManifest,
   createRouteManifestFromProjectContents,
   getRoutesAndModulesFromManifest,
@@ -2715,7 +2713,7 @@ export function deriveState(
   return sanitizedDerivedState
 }
 
-const CreateRemixDerivedDataRefs: {
+export const CreateRemixDerivedDataRefs: {
   mutableContext: { current: MutableUtopiaCtxRefData }
   topLevelComponentRendererComponents: { current: MapLike<MapLike<ComponentRendererComponent>> }
   resolvedFiles: { current: MapLike<Array<string>> }
@@ -2725,17 +2723,6 @@ const CreateRemixDerivedDataRefs: {
   topLevelComponentRendererComponents: { current: {} },
   resolvedFiles: { current: {} },
   resolvedFileNames: { current: [] },
-}
-
-const defaultFutureConfig: FutureConfig = {
-  v2_dev: true,
-  unstable_postcss: false,
-  unstable_tailwind: false,
-  v2_errorBoundary: false,
-  v2_headers: false,
-  v2_meta: false,
-  v2_normalizeFormMethod: false,
-  v2_routeConvention: true,
 }
 
 // Problem: passing these via args breaks the memo
@@ -2762,7 +2749,7 @@ function createRemixDerivedData(
 
   const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
     routeManifest,
-    defaultFutureConfig,
+    DefaultFutureConfig,
     curriedRequireFn,
     curriedResolveFn,
     metadataCtx,
@@ -2779,7 +2766,7 @@ function createRemixDerivedData(
     routesAndModulesFromManifestResult
 
   return {
-    futureConfig: defaultFutureConfig,
+    futureConfig: DefaultFutureConfig,
     routes: routes,
     assetsManifest: assetsManifest,
     routeModuleCreators: routeModuleCreators,
@@ -3074,12 +3061,6 @@ export const DefaultPackageJson = {
   dependencies: {
     ...defaultDependencies,
   },
-}
-
-export function packageJsonFileFromProjectContents(
-  projectContents: ProjectContentTreeRoot,
-): ProjectFile | null {
-  return getProjectFileByFilePath(projectContents, '/package.json')
 }
 
 export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {

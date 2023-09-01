@@ -47,7 +47,6 @@ import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
-import type { RemixRendererComponentType } from './ui-jsx-canvas-spy-wrapper'
 import {
   addFakeSpyEntry,
   buildSpyWrappedElement,
@@ -66,7 +65,8 @@ import {
   isUtopiaCommentFlagConditional,
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
-import { RemixContainerComponent } from './remix-container-component'
+import { RemixSceneComponent } from './remix-scene-component'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -734,15 +734,19 @@ function renderJSXElement(
     elementFromImport === elementInScope // Ensures this is not a user defined component with the same name.
 
   const elementIsScene = isElementImportedFromModule('utopia-api', 'Scene')
-  const elementIsRemixContainer = isElementImportedFromModule('utopia-api', 'RemixContainer')
+  const elementIsRemixScene = isElementImportedFromModule('utopia-api', 'RemixScene')
 
-  const elementOrScam = elementIsScene
-    ? SceneComponent
-    : elementIsRemixContainer
-    ? RemixContainerComponent
-    : elementFromScopeOrImport
+  const element = (() => {
+    if (elementIsScene) {
+      return SceneComponent
+    }
+    if (isFeatureEnabled('Remix support') && elementIsRemixScene) {
+      return RemixSceneComponent
+    }
+    return elementFromScopeOrImport
+  })()
 
-  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : elementOrScam
+  const FinalElement = elementIsIntrinsic ? jsx.name.baseVariable : element
   const FinalElementOrFragment = elementIsFragment ? React.Fragment : FinalElement
 
   let elementProps = { key: key, ...passthroughProps }

@@ -48,7 +48,7 @@ import {
   getIndexInParent,
   generateUidWithExistingComponents,
   insertJSXElementChildren,
-  isRemixContainerElement,
+  isRemixSceneElement,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -73,7 +73,6 @@ import {
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
-  isRemixContainerAgainstImports,
 } from '../../core/model/project-file-utils'
 import type { Either } from '../../core/shared/either'
 import {
@@ -2020,8 +2019,8 @@ function getValidElementPathsFromElement(
 
     let paths = [path]
 
-    const isRemixContainer = isRemixContainerElement(element, filePath, projectContents)
-    if (remixValidPathsGenerationContext.type === 'active' && isRemixContainer) {
+    const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
+    if (remixValidPathsGenerationContext.type === 'active' && isRemixScene) {
       function makeValidPathsFromModule(
         routeModulePath: string,
         parentPathInner: ElementPath,

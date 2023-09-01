@@ -16,7 +16,11 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import type { ProjectFile } from '../../../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../../../core/shared/project-file-types'
 import { simpleDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import { getPrintedUiJsCodeWithoutUIDs, renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import {
+  DefaultStartingFeatureSwitches,
+  getPrintedUiJsCodeWithoutUIDs,
+  renderTestEditorWithModel,
+} from '../ui-jsx.test-utils'
 import { deleteElement } from './delete-element-command'
 
 describe('runDeleteElement', () => {
@@ -24,6 +28,7 @@ describe('runDeleteElement', () => {
     const renderResult = await renderTestEditorWithModel(
       simpleDefaultProjectPreParsed(),
       'dont-await-first-dom-report',
+      DefaultStartingFeatureSwitches,
       createBuiltInDependenciesList(null),
     )
 

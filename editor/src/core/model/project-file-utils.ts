@@ -150,11 +150,8 @@ export function isSceneAgainstImports(element: JSXElementChild, imports: Imports
   return isGivenUtopiaAPIElement(element, imports, 'Scene')
 }
 
-export function isRemixContainerAgainstImports(
-  element: JSXElementChild,
-  imports: Imports,
-): boolean {
-  return isGivenUtopiaAPIElement(element, imports, 'RemixContainer')
+export function isRemixSceneAgainstImports(element: JSXElementChild, imports: Imports): boolean {
+  return isGivenUtopiaAPIElement(element, imports, 'RemixScene')
 }
 
 export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {

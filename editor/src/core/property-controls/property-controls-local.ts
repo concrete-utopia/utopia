@@ -5,13 +5,13 @@ import type {
   PropertyControls,
 } from 'utopia-api/core'
 import type { ProjectContentTreeRoot } from '../../components/assets'
+import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type {
   ComponentDescriptorWithName,
   ComponentInfo,
   PropertyControlsInfo,
 } from '../../components/custom-code/code-file'
 import { dependenciesFromPackageJson } from '../../components/editor/npm-dependency/npm-dependency'
-import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
 import { parseControlDescription } from './property-controls-parser'
 import type { ParseResult } from '../../utils/value-parser-utils'
 import {

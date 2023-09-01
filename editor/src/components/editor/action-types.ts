@@ -646,9 +646,11 @@ export interface WorkerCodeAndParsedUpdate {
   versionNumber: number
 }
 
+export type WorkerUpdate = WorkerParsedUpdate | WorkerCodeAndParsedUpdate
+
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
+  updates: Array<WorkerUpdate>
 }
 
 export interface ClearParseOrPrintInFlight {

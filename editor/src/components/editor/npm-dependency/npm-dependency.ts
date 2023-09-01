@@ -22,10 +22,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import Utils from '../../../utils/utils'
 import type { EditorState } from '../store/editor-state'
-import {
-  packageJsonFileFromProjectContents,
-  updatePackageJsonInEditorState,
-} from '../store/editor-state'
+import { updatePackageJsonInEditorState } from '../store/editor-state'
 import { pluck } from '../../../core/shared/array-utils'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { Substores, useEditorState } from '../store/store-hook'
@@ -34,6 +31,7 @@ import { resolvedDependencyVersions } from '../../../core/third-party/third-part
 import { deepFreeze } from '../../../utils/deep-freeze'
 import * as Semver from 'semver'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { packageJsonFileFromProjectContents } from '../../assets'
 import * as npa from 'npm-package-arg'
 import * as GitHost from 'hosted-git-info'
 import { importDefault, importStar } from '../../../core/es-modules/commonjs-interop'
