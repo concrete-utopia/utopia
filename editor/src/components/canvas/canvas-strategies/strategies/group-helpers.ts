@@ -29,7 +29,11 @@ import {
   jsxAttributesFromMap,
   jsxElementWithoutUID,
 } from '../../../../core/shared/element-template'
-import { boundingRectangleArray, isFiniteRectangle } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  isNotNullFiniteRectangle,
+  sizesEqual,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -529,28 +533,21 @@ export function groupChildrenThatNeedTrueuingUp(
     if (!treatElementAsGroupLikeFromMetadata(group)) {
       continue
     }
-    const groupFrame = group.localFrame
-    if (groupFrame == null || !isFiniteRectangle(groupFrame)) {
-      continue
-    }
 
-    const children = MetadataUtils.getChildrenUnordered(metadata, group.elementPath)
-    if (children.length === 0) {
+    if (!isNotNullFiniteRectangle(group.localFrame)) {
       continue
     }
+    const children = MetadataUtils.getChildrenUnordered(metadata, group.elementPath)
     const childrenFrames = mapDropNulls(
-      (c) => (c != null && isFiniteRectangle(c) ? c : null),
+      (c) => (isNotNullFiniteRectangle(c) ? c : null),
       children.map((c) => c.localFrame),
     )
-    const boundingRectangle = boundingRectangleArray(childrenFrames)
-    if (boundingRectangle == null) {
+    const childrenBoundingRect = boundingRectangleArray(childrenFrames)
+    if (childrenBoundingRect == null) {
       continue
     }
 
-    if (
-      boundingRectangle.width !== groupFrame.width ||
-      boundingRectangle.height !== groupFrame.height
-    ) {
+    if (!sizesEqual(childrenBoundingRect, group.localFrame)) {
       for (const child of children) {
         results.push(trueUpElementChanged(child.elementPath))
       }

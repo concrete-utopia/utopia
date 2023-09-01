@@ -54,10 +54,7 @@ import {
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
-import {
-  trueUpChildrenOfElementChanged,
-  trueUpElementChanged,
-} from '../../../editor/store/editor-state'
+import { trueUpElementChanged } from '../../../editor/store/editor-state'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
