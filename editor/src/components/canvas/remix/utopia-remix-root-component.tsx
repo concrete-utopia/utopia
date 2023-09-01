@@ -64,7 +64,9 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     }
 
     const routeModulesResult: RouteModules = {}
-    for (const [key, value] of Object.entries(remixDerivedDataRef.current.routeModuleCreators)) {
+    for (const [routeId, value] of Object.entries(
+      remixDerivedDataRef.current.routeModuleCreators,
+    )) {
       const nameAndUid = getDefaultExportNameAndUidFromFile(
         projectContentsRef.current,
         value.filePath,
@@ -73,14 +75,15 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         continue
       }
 
-      const relativePath = remixDerivedDataRef.current.routeModulesToRelativePaths[key].relativePath
+      const relativePath =
+        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePath
 
       const defaultComponent = (componentProps: any) =>
         value
           .executionScopeCreator(projectContentsRef.current)
           .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
-      routeModulesResult[key] = {
+      routeModulesResult[routeId] = {
         ...value,
         default: PathPropHOC(defaultComponent, EP.toString(appendTwoPaths(basePath, relativePath))),
       }

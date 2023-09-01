@@ -1,13 +1,13 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useState } from 'react'
 import type { GithubFileStatus } from '../../core/shared/github/helpers'
 import { revertGithubFile } from '../../core/shared/github/helpers'
 import { Dialog, FormButton } from '../../uuiui'
 import type { EditorDispatch } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
-import { Substores, useEditorState } from '../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 
 interface ConfirmRevertDialogProps {
   dispatch: EditorDispatch
@@ -15,18 +15,31 @@ interface ConfirmRevertDialogProps {
   status: GithubFileStatus | null
 }
 
-export const ConfirmRevertDialogProps: React.FunctionComponent<
+export const ConfirmRevertDialog: React.FunctionComponent<
   React.PropsWithChildren<ConfirmRevertDialogProps>
 > = (props) => {
   const hide = React.useCallback(() => {
     props.dispatch([EditorActions.hideModal()], 'everyone')
   }, [props])
+  const [dialogDisabled, setDialogDisabled] = React.useState(false)
   return (
     <Dialog
       title='Revert changes'
       content={<DialogBody {...props} />}
-      defaultButton={<AcceptButton {...props} />}
-      secondaryButton={<CancelButton {...props} />}
+      defaultButton={
+        <AcceptButton
+          {...props}
+          dialogDisabled={dialogDisabled}
+          setDialogDisabled={setDialogDisabled}
+        />
+      }
+      secondaryButton={
+        <CancelButton
+          {...props}
+          dialogDisabled={dialogDisabled}
+          setDialogDisabled={setDialogDisabled}
+        />
+      }
       closeCallback={hide}
     />
   )
@@ -43,9 +56,17 @@ const DialogBody: React.FunctionComponent<React.PropsWithChildren<ConfirmRevertD
   </React.Fragment>
 )
 
-const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRevertDialogProps>> = (
-  props,
-) => {
+interface ConfirmRevertAcceptButtonProps extends ConfirmRevertDialogProps {
+  dialogDisabled: boolean
+  setDialogDisabled: (disabled: boolean) => void
+}
+
+const AcceptButton: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmRevertAcceptButtonProps>
+> = (props) => {
+  const workersRef = useRefEditorState((state) => {
+    return state.workers
+  })
   const projectContents = useEditorState(
     Substores.projectContents,
     (store) => store.editor.projectContents,
@@ -60,23 +81,48 @@ const AcceptButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRever
     if (props.status == null) {
       return
     }
-    const actions = revertGithubFile(props.status, props.filePath, projectContents, branchContents)
-    props.dispatch([...actions, EditorActions.hideModal()], 'everyone')
-  }, [props, projectContents, branchContents])
+    if (!props.dialogDisabled) {
+      props.setDialogDisabled(true)
+      void revertGithubFile(
+        workersRef.current,
+        props.status,
+        props.filePath,
+        projectContents,
+        branchContents,
+      )
+        .then((actions) => {
+          props.dispatch([...actions, EditorActions.hideModal()], 'everyone')
+        })
+        .finally(() => {
+          props.setDialogDisabled(false)
+        })
+    }
+  }, [workersRef, props, projectContents, branchContents])
 
   return (
-    <FormButton primary danger onClick={clickButton}>
+    <FormButton primary danger onClick={clickButton} disabled={props.dialogDisabled}>
       Revert
     </FormButton>
   )
 }
 
-const CancelButton: React.FunctionComponent<React.PropsWithChildren<ConfirmRevertDialogProps>> = (
-  props,
-) => {
+interface ConfirmRevertCancelButtonProps extends ConfirmRevertDialogProps {
+  dialogDisabled: boolean
+  setDialogDisabled: (disabled: boolean) => void
+}
+
+const CancelButton: React.FunctionComponent<
+  React.PropsWithChildren<ConfirmRevertCancelButtonProps>
+> = (props) => {
   const clickButton = React.useCallback(() => {
-    props.dispatch([EditorActions.hideModal()], 'everyone')
+    if (!props.dialogDisabled) {
+      props.dispatch([EditorActions.hideModal()], 'everyone')
+    }
   }, [props])
 
-  return <FormButton onClick={clickButton}>Cancel</FormButton>
+  return (
+    <FormButton onClick={clickButton} disabled={props.dialogDisabled}>
+      Cancel
+    </FormButton>
+  )
 }

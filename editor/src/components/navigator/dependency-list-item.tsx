@@ -16,6 +16,7 @@ import {
 import { MenuProvider, MomentumContextMenu } from '../../uuiui-deps'
 import { handleKeyDown } from '../editor/global-shortcuts'
 import type { DependencyPackageDetails } from '../editor/store/editor-state'
+import { unless } from '../../utils/react-conditionals'
 
 interface DependencyListItemProps {
   packageDetails: DependencyPackageDetails
@@ -213,8 +214,6 @@ export const DependencyListItem: React.FunctionComponent<
               '.dependency-item:hover &': {
                 display: 'block',
               },
-              marginLeft: 4,
-              marginTop: 4,
             }}
           >
             <Icons.ExternalLinkSmaller />
@@ -226,6 +225,22 @@ export const DependencyListItem: React.FunctionComponent<
             flexShrink: 0,
           }}
         >
+          {unless(
+            isDefault,
+            <FlexRow
+              css={{
+                display: 'none',
+                '.dependency-item:hover &': {
+                  display: 'block',
+                },
+                cursor: 'pointer',
+              }}
+              // eslint-disable-next-line react/jsx-no-bind
+              onClick={() => removeDependency(name)}
+            >
+              <Icons.Cross tooltipText={`Remove ${name}`} />
+            </FlexRow>,
+          )}
           {versionFieldNode}
         </FlexRow>
       </FlexRow>
