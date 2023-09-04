@@ -11,17 +11,20 @@ import {
 } from '../../core/shared/atom-with-pub-sub'
 import type { Size, WindowPoint, WindowRectangle } from '../../core/shared/math-utils'
 import {
+  boundingRectangleArray,
   rectContainsPoint,
   rectContainsPointInclusive,
   rectanglesEqual,
   windowPoint,
   windowRectangle,
+  zeroWindowRect,
 } from '../../core/shared/math-utils'
 import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-state'
-import { mapArrayToDictionary, mapDropNulls, stripNulls } from '../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
 import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import { when } from '../../utils/react-conditionals'
 import type { Direction } from 're-resizable/lib/resizer'
+import { usePrevious } from '../editor/hook-utils'
 
 const TitleHeight = 28
 export type Menu = 'inspector' | 'navigator'
@@ -68,143 +71,180 @@ const SizeConstraints: {
 }
 
 type PanelName = 'leftMenu1' | 'leftMenu2' | 'rightMenu1' | 'rightMenu2'
-const Panels: Array<PanelName> = ['leftMenu1', 'leftMenu2', 'rightMenu1', 'rightMenu2']
-
-// TODO store menu/pane height
 interface PanelData {
-  menuOrPane: Menu | Pane
-  height: number | null
+  name: Menu | Pane
+  type: 'menu' | 'pane'
+  frame: WindowRectangle
+  location: PanelName
+  locationInColumn: number
 }
-const DefaultPanels: {
-  [key in PanelName]: Array<PanelData>
-} = {
-  leftMenu1: [{ menuOrPane: 'code-editor', height: null }],
-  leftMenu2: [{ menuOrPane: 'navigator', height: null }],
-  rightMenu1: [{ menuOrPane: 'inspector', height: null }],
-  rightMenu2: [],
-}
+
+const DefaultPanels: Array<PanelData> = [
+  {
+    name: 'code-editor',
+    type: 'pane',
+    frame: windowRectangle({ x: 0, y: 0, width: 500, height: 600 }),
+    location: 'leftMenu1',
+    locationInColumn: 0,
+  },
+  {
+    name: 'navigator',
+    type: 'menu',
+    frame: windowRectangle({ x: 0, y: 0, width: LeftPaneDefaultWidth, height: 0 }),
+    location: 'leftMenu2',
+    locationInColumn: 0,
+  },
+  {
+    name: 'inspector',
+    type: 'menu',
+    frame: windowRectangle({ x: 0, y: 0, width: 255, height: 0 }),
+    location: 'rightMenu1',
+    locationInColumn: 0,
+  },
+]
 
 const DefaultSizes: { [key in PanelName]: WindowRectangle } = {
-  leftMenu1: windowRectangle({ x: 0, y: 0, width: 500, height: 600 }),
-  leftMenu2: windowRectangle({ x: 0, y: 0, width: LeftPaneDefaultWidth, height: 0 }),
-  rightMenu1: windowRectangle({ x: 0, y: 0, width: 255, height: 0 }),
-  rightMenu2: windowRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+  leftMenu1: zeroWindowRect,
+  leftMenu2: zeroWindowRect,
+  rightMenu1: zeroWindowRect,
+  rightMenu2: zeroWindowRect,
 }
 export const FloatingPanelSizesAtom = atomWithPubSub({
   key: 'FloatingPanelSizesAtom',
   defaultValue: DefaultSizes,
 })
 
-function isMenuContainingPanel(menusOrPanes: Array<PanelData>): boolean {
-  return menusOrPanes.some(
-    (value) => value.menuOrPane === 'inspector' || value.menuOrPane === 'navigator',
-  )
+function isMenuContainingPanel(panelData: Array<PanelData>): boolean {
+  return panelData.some((value) => value.type === 'menu')
 }
 
 export const FloatingPanelsContainer = React.memo(() => {
-  const [panelsData, setPanelsData] =
-    React.useState<{ [key in PanelName]: Array<PanelData> }>(DefaultPanels)
+  const [panelsData, setPanelsData] = React.useState<Array<PanelData>>(DefaultPanels)
+
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
+  const prevCanvasSize = usePrevious(canvasSize)
+
+  // TODO fix this to have correct canvas toolbar and arrow positions!
   const [panelFrames, setPanelFrames] =
     usePubSubAtom<{ [key in PanelName]: WindowRectangle }>(FloatingPanelSizesAtom)
 
   const getUpdatedPanelSizes = React.useCallback(
-    (
-      currentPanelsData: { [key in PanelName]: Array<PanelData> },
-      currentFrames: { [key in PanelName]: WindowRectangle },
-    ) => {
-      return mapArrayToDictionary(
-        Panels,
-        (p) => p,
-        (p, i) => {
-          let height = canvasSize.height
-          if (!isMenuContainingPanel(currentPanelsData[p]) && currentPanelsData[p].length === 1) {
-            // code pane!
-            const codeEditorHeight = currentPanelsData[p][0].height ?? canvasSize.height
-            height = Math.min(canvasSize.height, codeEditorHeight)
-          }
-          let width = currentFrames[p].width
-          if (currentPanelsData[p].length === 0) {
-            width = 0
-          } else {
-            if (currentFrames[p].width === 0) {
-              // give default size to panel
-              width = SizeConstraints[currentPanelsData[p][0].menuOrPane].defaultSize.width
-            } else {
-              const possibleConstraints = mapDropNulls(
-                (v) => SizeConstraints[v.menuOrPane].resize,
-                currentPanelsData[p],
-              )
-              const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth))
-              const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth))
-              if (currentFrames[p].width > maxWidth || currentFrames[p].width < minWidth) {
-                width = maxWidth // TODO maybe some of the default widths?
-              }
-            }
-          }
+    (currentPanelsData: Array<PanelData>) => {
+      return currentPanelsData.map((panel) => {
+        const panelsInColumn = currentPanelsData.filter((d) => d.location === panel.location)
+        let height = canvasSize.height
+        let width = panel.frame.width
 
-          return windowRectangle({
-            x: currentFrames[p].x,
-            y: currentFrames[p].y,
+        if (!isMenuContainingPanel(panelsInColumn) && panelsInColumn.length === 1) {
+          height = Math.min(canvasSize.height, SizeConstraints['code-editor'].defaultSize.height)
+          width = SizeConstraints['code-editor'].defaultSize.width
+        }
+        if (isMenuContainingPanel(panelsInColumn)) {
+          height = canvasSize.height / panelsInColumn.length
+        }
+
+        if (panelsInColumn.find((d) => d.name === 'inspector') != null) {
+          width = SizeConstraints['inspector'].defaultSize.width
+        } else if (panelsInColumn.find((d) => d.name === 'navigator') != null) {
+          width = SizeConstraints['navigator'].defaultSize.width
+        }
+
+        return {
+          ...panel,
+          frame: windowRectangle({
+            x: panel.frame.x,
+            y: panel.frame.y,
             width: width,
             height: height,
-          })
-        },
-      )
+          }),
+        }
+      })
     },
     [canvasSize],
   )
 
   const getUpdatedPanelPositions = React.useCallback(
-    (
-      currentPanelsData: { [key in PanelName]: Array<PanelData> },
-      currentFrames: { [key in PanelName]: WindowRectangle },
-    ) => {
-      const withPanelSizeUpdates = getUpdatedPanelSizes(currentPanelsData, currentFrames)
-      return mapArrayToDictionary(
-        Panels,
-        (p) => p,
-        (p, i) => {
-          let x = 0
-          switch (p) {
-            case 'leftMenu2':
-              x =
-                withPanelSizeUpdates.leftMenu1.width +
-                (currentPanelsData.leftMenu1.length > 0 ? GapBetweenPanels : 0)
-              break
-            case 'rightMenu1':
-              x =
-                canvasSize.width -
-                withPanelSizeUpdates.rightMenu1.width -
-                withPanelSizeUpdates.rightMenu2.width -
-                (currentPanelsData.rightMenu2.length > 0 ? GapBetweenPanels : 0)
-              break
-            case 'rightMenu2':
-              x = canvasSize.width - withPanelSizeUpdates.rightMenu2.width
-              break
-            default:
-              break
+    (currentPanelsData: Array<PanelData>) => {
+      return currentPanelsData.map((panel) => {
+        const panelsInColumn = currentPanelsData.filter((d) => d.location === panel.location)
+        const y = panelsInColumn.reduce((working, current) => {
+          if (current.locationInColumn < panel.locationInColumn) {
+            return working + current.frame.height
           }
+          return working
+        }, 0)
 
-          return windowRectangle({
+        let x = 0
+        switch (panel.location) {
+          case 'leftMenu1':
+            x = GapBetweenPanels
+            break
+          case 'leftMenu2':
+            x =
+              (currentPanelsData.find((v) => v.location === 'leftMenu1')?.frame.width ?? 0) +
+              GapBetweenPanels * 2
+            break
+          case 'rightMenu1':
+            const otherRightMenu = currentPanelsData.find((v) => v.location === 'rightMenu2')
+            x =
+              canvasSize.width -
+              panel.frame.width -
+              GapBetweenPanels * 2 -
+              (otherRightMenu?.frame.width ?? 0)
+            break
+          case 'rightMenu2':
+            x = canvasSize.width - panel.frame.width - GapBetweenPanels
+            break
+          default:
+            break
+        }
+
+        return {
+          ...panel,
+          frame: windowRectangle({
             x: x,
-            y: 0,
-            width: withPanelSizeUpdates[p].width,
-            height: withPanelSizeUpdates[p].height,
-          })
-        },
-      )
+            y: y,
+            width: panel.frame.width,
+            height: panel.frame.height,
+          }),
+        }
+      })
     },
-    [canvasSize, getUpdatedPanelSizes],
+    [canvasSize],
+  )
+
+  const getUpdatedPanelSizesAndPositions = React.useCallback(
+    (currentPanelsData: Array<PanelData>) => {
+      const withPanelSizeUpdates = getUpdatedPanelSizes(currentPanelsData)
+      const withPositionsUpdated = getUpdatedPanelPositions(withPanelSizeUpdates)
+      return withPositionsUpdated
+    },
+    [getUpdatedPanelSizes, getUpdatedPanelPositions],
   )
 
   const updateColumn = React.useCallback(
-    (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => {
+    (draggedMenuOrPane: Menu | Pane, draggedPanel: PanelName, newPosition: WindowPoint) => {
       const { newPanel, switchWithPanel } = ((): {
         newPanel: PanelName | null
         switchWithPanel: PanelName | null
       } => {
         const EdgeDropAreaWidth = 60
+        const leftColumn = panelsData.filter((data) => data.location === 'leftMenu1')
+        const leftColumn2 = panelsData.filter((data) => data.location === 'leftMenu2')
+        const rightColumn = panelsData.filter((data) => data.location === 'rightMenu1')
+        const rightColumn2 = panelsData.filter((data) => data.location === 'rightMenu2')
+
+        const leftColumnFrame =
+          boundingRectangleArray(leftColumn.map((data) => data.frame)) ?? zeroWindowRect
+        const leftColumn2Frame =
+          boundingRectangleArray(leftColumn2.map((data) => data.frame)) ?? zeroWindowRect
+        const rightColumnFrame =
+          boundingRectangleArray(rightColumn.map((data) => data.frame)) ??
+          windowRectangle({ x: canvasSize.width, y: 0, width: 0, height: canvasSize.height })
+        const rightColumn2Frame =
+          boundingRectangleArray(rightColumn2.map((data) => data.frame)) ??
+          windowRectangle({ x: canvasSize.width, y: 0, width: 0, height: canvasSize.height })
+
         const outerDropAreas: Array<{
           targetPanel: PanelName
           frame: WindowRectangle
@@ -223,7 +263,7 @@ export const FloatingPanelsContainer = React.memo(() => {
           {
             targetPanel: 'leftMenu2',
             frame: windowRectangle({
-              x: panelFrames.leftMenu2.x + panelFrames.leftMenu2.width,
+              x: leftColumnFrame.x + leftColumnFrame.width,
               y: 0,
               width: 80,
               height: canvasSize.height,
@@ -233,7 +273,7 @@ export const FloatingPanelsContainer = React.memo(() => {
           {
             targetPanel: 'rightMenu1',
             frame: windowRectangle({
-              x: panelFrames.rightMenu1.x - 80,
+              x: rightColumnFrame.x - 80,
               y: 0,
               width: 80,
               height: canvasSize.height,
@@ -243,12 +283,12 @@ export const FloatingPanelsContainer = React.memo(() => {
           {
             targetPanel: 'rightMenu2',
             frame: windowRectangle({
-              x: panelFrames.rightMenu2.x + panelFrames.rightMenu2.width - EdgeDropAreaWidth, //GapBetweenPanels,
+              x: rightColumn2Frame.x + rightColumn2Frame.width - EdgeDropAreaWidth, //GapBetweenPanels,
               y: 0,
               width:
                 canvasSize.width -
-                panelFrames.rightMenu2.x +
-                panelFrames.rightMenu2.width +
+                rightColumn2Frame.x +
+                rightColumn2Frame.width +
                 EdgeDropAreaWidth, //GapBetweenPanels,
               height: canvasSize.height,
             }),
@@ -264,18 +304,16 @@ export const FloatingPanelsContainer = React.memo(() => {
         if (droppedToOutsideOfAColumn != null) {
           if (
             droppedToOutsideOfAColumn.targetPanel === 'leftMenu1' &&
-            panelsData.leftMenu1.length > 0 &&
-            (panelsData.leftMenu2.length === 0 ||
-              (currentPanel === 'leftMenu2' && panelsData.leftMenu2.length === 1))
+            leftColumn.length > 0 &&
+            (leftColumn2.length === 0 || (draggedPanel === 'leftMenu2' && leftColumn2.length === 1))
           ) {
             // dragging to far left when something is already there
             shouldSwitchPanel = 'leftMenu2'
           }
           if (
             droppedToOutsideOfAColumn.targetPanel === 'leftMenu2' &&
-            panelsData.leftMenu2.length > 0 &&
-            (panelsData.leftMenu1.length === 0 ||
-              (currentPanel === 'leftMenu1' && panelsData.leftMenu1.length === 1))
+            leftColumn2.length > 0 &&
+            (leftColumn.length === 0 || (draggedPanel === 'leftMenu1' && leftColumn.length === 1))
           ) {
             // dragging to the right of the left panel 2
             shouldSwitchPanel = 'leftMenu1'
@@ -283,9 +321,9 @@ export const FloatingPanelsContainer = React.memo(() => {
 
           if (
             droppedToOutsideOfAColumn.targetPanel === 'rightMenu1' &&
-            panelsData.rightMenu1.length > 0 &&
-            (panelsData.rightMenu2.length === 0 ||
-              (currentPanel === 'rightMenu2' && panelsData.rightMenu2.length === 1))
+            rightColumn.length > 0 &&
+            (rightColumn2.length === 0 ||
+              (draggedPanel === 'rightMenu2' && rightColumn2.length === 1))
           ) {
             // dragging to the left of the right panel 1
             shouldSwitchPanel = 'rightMenu2'
@@ -293,9 +331,9 @@ export const FloatingPanelsContainer = React.memo(() => {
 
           if (
             droppedToOutsideOfAColumn.targetPanel === 'rightMenu2' &&
-            panelsData.rightMenu2.length > 0 &&
-            (panelsData.rightMenu1.length === 0 ||
-              (currentPanel === 'rightMenu1' && panelsData.rightMenu1.length === 1))
+            rightColumn2.length > 0 &&
+            (rightColumn.length === 0 ||
+              (draggedPanel === 'rightMenu1' && rightColumn.length === 1))
           ) {
             // dragging to far right when something is already there
             shouldSwitchPanel = 'rightMenu1'
@@ -309,50 +347,50 @@ export const FloatingPanelsContainer = React.memo(() => {
 
         return {
           newPanel:
-            (Panels.reverse() as Array<PanelName>).find((name) =>
-              rectContainsPoint(panelFrames[name], newPosition),
-            ) ?? null,
+            panelsData.find((panel) => {
+              if (panel.frame == null) {
+                return null
+              }
+              return rectContainsPoint(panel.frame, newPosition)
+            })?.location ?? null,
           switchWithPanel: null,
         }
       })()
 
-      if (newPanel != null && (currentPanel != newPanel || switchWithPanel != null)) {
-        const remainingMenusAndPanes = panelsData[currentPanel]
-          .filter((panelData) => panelData.menuOrPane !== menuOrPane)
-          .map((v) => ({ ...v, height: null }))
+      const currentPanelData = panelsData.find((v) => v.name === draggedMenuOrPane)
+      if (
+        currentPanelData != null &&
+        newPanel != null &&
+        (draggedPanel != newPanel || switchWithPanel != null)
+      ) {
+        const columnData = panelsData.filter((d) => d.location === newPanel)
+        const updatedPanelData = panelsData.map((panel) => {
+          if (panel.name === draggedMenuOrPane) {
+            return {
+              ...panel,
+              location: newPanel,
+              locationInColumn: columnData.length,
+            }
+          } else if (panel.location === newPanel && switchWithPanel != null) {
+            return { ...panel, location: switchWithPanel }
+          } else if (draggedPanel === panel.location) {
+            return {
+              ...panel,
+              locationInColumn:
+                panel.locationInColumn > currentPanelData.locationInColumn
+                  ? panel.locationInColumn - 1
+                  : panel.locationInColumn,
+            }
+          } else {
+            return panel
+          }
+        })
 
-        if (switchWithPanel != null) {
-          const newPanelsData = {
-            ...panelsData,
-            [currentPanel]: remainingMenusAndPanes,
-            [switchWithPanel]: panelsData[newPanel].filter(
-              (panelData) => panelData.menuOrPane !== menuOrPane,
-            ),
-            [newPanel]: [{ menuOrPane: menuOrPane, height: null }],
-          }
-          setPanelsData(newPanelsData)
-
-          const newFrameData = {
-            ...panelFrames,
-            [switchWithPanel]: panelFrames[newPanel],
-            [newPanel]: panelFrames[switchWithPanel],
-          }
-          const updatedPanelPositions = getUpdatedPanelPositions(newPanelsData, newFrameData)
-          setPanelFrames(updatedPanelPositions)
-        } else {
-          const newPanelsData = {
-            ...panelsData,
-            [newPanel]: [
-              ...panelsData[newPanel].map((v) => ({ menuOrPane: v.menuOrPane, height: null })),
-              { menuOrPane: menuOrPane, height: null },
-            ],
-            [currentPanel]: remainingMenusAndPanes,
-          }
-          setPanelsData(newPanelsData)
-        }
+        const panelDataWithPositionsUpdated = getUpdatedPanelSizesAndPositions(updatedPanelData)
+        setPanelsData(panelDataWithPositionsUpdated)
       }
     },
-    [panelFrames, panelsData, setPanelsData, canvasSize, setPanelFrames, getUpdatedPanelPositions],
+    [canvasSize, panelsData, setPanelsData, getUpdatedPanelSizesAndPositions],
   )
 
   const updateSize = React.useCallback(
@@ -364,108 +402,108 @@ export const FloatingPanelsContainer = React.memo(() => {
       height: number,
     ) => {
       if (direction === 'left' || direction === 'right') {
-        let frame = panelFrames[currentPanel]
-        frame.width = width
-        const updatedPanelFrames = {
-          ...panelFrames,
-          [currentPanel]: frame,
-        }
-        const withUpdatedPositions = getUpdatedPanelPositions(panelsData, updatedPanelFrames)
-        setPanelFrames(withUpdatedPositions)
+        const newPanelsData = panelsData.map((data) => {
+          if (currentPanel === data.location) {
+            return {
+              ...data,
+              frame: windowRectangle({
+                x: data.frame.x,
+                y: data.frame.y,
+                width: width,
+                height: data.frame.height,
+              }),
+            }
+          } else {
+            return data
+          }
+        })
+        const withAdjustedPositions = getUpdatedPanelPositions(newPanelsData)
+        setPanelsData(withAdjustedPositions)
       } else {
-        const newPanelsData = {
-          ...panelsData,
-          [currentPanel]: panelsData[currentPanel].map((v) => {
-            if (menuOrPane === v.menuOrPane) {
-              return { menuOrPane: menuOrPane, height: height }
-            } else {
-              const remainingSpace =
-                canvasSize.height -
-                height -
-                (panelsData[currentPanel].length + 1) * GapBetweenPanels
-              const newHeight = remainingSpace / (panelsData[currentPanel].length - 1)
+        const panelsInColumn = panelsData.filter((d) => d.location === currentPanel)
+        const newPanelsData = panelsData.map((data) => {
+          if (currentPanel === data.location) {
+            if (menuOrPane === data.name) {
               return {
-                menuOrPane: v.menuOrPane,
-                height: newHeight,
+                ...data,
+                frame: windowRectangle({
+                  x: data.frame.x,
+                  y: data.frame.y,
+                  width: data.frame.width,
+                  height: height,
+                }),
+              }
+            } else {
+              // fill remaining space
+              const remainingSpace =
+                canvasSize.height - height - (panelsInColumn.length + 1) * GapBetweenPanels
+              const newHeight = remainingSpace / (panelsInColumn.length - 1)
+              return {
+                ...data,
+                frame: windowRectangle({
+                  x: data.frame.x,
+                  y: data.frame.y,
+                  width: data.frame.width,
+                  height: newHeight,
+                }),
               }
             }
-          }),
-        }
-        setPanelsData(newPanelsData)
+          } else {
+            return data
+          }
+        })
+        const withAdjustedPositions = getUpdatedPanelPositions(newPanelsData)
+        setPanelsData(withAdjustedPositions)
       }
     },
-    [panelFrames, panelsData, setPanelFrames, setPanelsData, getUpdatedPanelPositions, canvasSize],
+    [panelsData, setPanelsData, canvasSize, getUpdatedPanelPositions],
   )
 
+  // on canvassize change the menu sizes reset to default now
   React.useEffect(() => {
-    const framesWithUpdatedPosition = getUpdatedPanelPositions(panelsData, panelFrames)
     if (
-      (Object.keys(framesWithUpdatedPosition) as Array<PanelName>).some(
-        (name) => !rectanglesEqual(framesWithUpdatedPosition[name], panelFrames[name]),
-      )
+      prevCanvasSize?.width === canvasSize.width &&
+      prevCanvasSize?.height === canvasSize.height
     ) {
-      setPanelFrames(framesWithUpdatedPosition)
+      return undefined
     }
-  }, [canvasSize, panelsData, panelFrames, getUpdatedPanelPositions, setPanelFrames])
+    const updatedPanelsData = getUpdatedPanelSizesAndPositions(panelsData)
+    if (
+      updatedPanelsData.some((data, i) => {
+        const originalFrame = panelsData[i].frame
+        if (data.frame == null || originalFrame == null) {
+          return true
+        }
+        return !rectanglesEqual(data.frame, originalFrame)
+      })
+    ) {
+      setPanelsData(updatedPanelsData)
+    }
+  }, [canvasSize, prevCanvasSize, panelsData, setPanelsData, getUpdatedPanelSizesAndPositions])
 
   return (
     <>
-      <FloatingPanel
-        key={'leftMenu1'}
-        panelName={'leftMenu1'}
-        frame={panelFrames.leftMenu1}
-        menusAndPanes={panelsData.leftMenu1}
-        onResizeStop={updateSize}
-        updateColumn={updateColumn}
-        alignment='left'
-      />
-      <FloatingPanel
-        key={'leftMenu2'}
-        panelName={'leftMenu2'}
-        frame={panelFrames.leftMenu2}
-        menusAndPanes={panelsData.leftMenu2}
-        onResizeStop={updateSize}
-        updateColumn={updateColumn}
-        alignment='left'
-      />
-      <FloatingPanel
-        key={'rightMenu1'}
-        panelName={'rightMenu1'}
-        frame={panelFrames.rightMenu1}
-        menusAndPanes={panelsData.rightMenu1}
-        onResizeStop={updateSize}
-        updateColumn={updateColumn}
-        alignment='right'
-      />
-      <FloatingPanel
-        key={'rightMenu2'}
-        panelName={'rightMenu2'}
-        frame={panelFrames.rightMenu2}
-        menusAndPanes={panelsData.rightMenu2}
-        onResizeStop={updateSize}
-        updateColumn={updateColumn}
-        alignment='right'
-      />
-      {/* {Panels.map((key, i) => (
+      {panelsData.map((data, i) => (
         <FloatingPanel
-          key={key}
-          panelName={key}
-          position={positions[key]}
-          menusAndPanes={panelsData[key].menusAndPanes}
-          size={panelsData[key].size}
-          updateMenuSize={updateSize}
+          key={data.name}
+          type={data.type}
+          name={data.name}
+          frame={data.frame}
+          panelLocation={data.location}
+          columnData={panelsData.filter((d) => d.location === data.location)}
+          onResizeStop={updateSize}
           updateColumn={updateColumn}
         />
-      ))} */}
+      ))}
     </>
   )
 })
 
 interface FloatingPanelProps {
-  panelName: PanelName
-  menusAndPanes: Array<PanelData>
+  name: Menu | Pane
+  type: 'menu' | 'pane'
   frame: WindowRectangle
-  alignment: 'left' | 'right'
+  panelLocation: PanelName
   updateColumn: (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => void
   onResizeStop: (
     menuOrPane: Menu | Pane,
@@ -474,26 +512,12 @@ interface FloatingPanelProps {
     width: number,
     height: number,
   ) => void
+  columnData: Array<PanelData>
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
-  const { alignment, panelName, menusAndPanes, frame, updateColumn, onResizeStop } = props
+  const { columnData, panelLocation, name, frame, updateColumn, onResizeStop } = props
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
-
-  const horizontalPosition = React.useMemo(() => {
-    if (alignment === 'right') {
-      return { right: canvasSize.width - frame.x - frame.width }
-    }
-    return { left: frame.x }
-  }, [canvasSize, frame, alignment])
-
-  const panelHeight = React.useMemo(() => {
-    if (isMenuContainingPanel(menusAndPanes)) {
-      return `calc(100% - ${GapBetweenPanels * 2}px)`
-    } else {
-      return `min(calc(100% - ${GapBetweenPanels * 2}px), ${frame.height}px)`
-    }
-  }, [menusAndPanes, frame])
 
   const [isDraggingOrResizing, setIsDraggingOrResizing] = React.useState<Menu | Pane | null>(null)
   const onDragStart = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
@@ -504,45 +528,54 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     },
     [setIsDraggingOrResizing],
   )
+  const onDrag = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
+    (menuOrPane: Menu | Pane) => {
+      return (e, data) => {
+        // show highlights!
+      }
+    },
+    [],
+  )
 
   const onDragStop = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
     (menuOrPane: Menu | Pane) => {
       return (e, data) => {
         updateColumn(
           menuOrPane,
-          panelName,
+          panelLocation,
           windowPoint({ x: (e as any).clientX, y: (e as any).clientY }),
         )
         setIsDraggingOrResizing(null)
       }
     },
-    [panelName, updateColumn, setIsDraggingOrResizing],
+    [panelLocation, updateColumn, setIsDraggingOrResizing],
   )
 
   const resizeMinMaxSnap = React.useMemo(() => {
-    const possibleConstraints = mapDropNulls(
-      (v) => SizeConstraints[v.menuOrPane].resize,
-      menusAndPanes,
-    )
+    const possibleConstraints = mapDropNulls((v) => SizeConstraints[v.name].resize, columnData)
     const minWidth = Math.max(...possibleConstraints.map((v) => v.minWidth), 20)
     const maxWidth = Math.min(...possibleConstraints.map((v) => v.maxWidth), canvasSize.width)
     const snap = stripNulls(possibleConstraints.map((v) => v.snap))[0] // TODO what happens if there are multiple conflicting snapping menus
 
     return { minWidth, maxWidth, snap }
-  }, [menusAndPanes, canvasSize])
+  }, [columnData, canvasSize])
 
   const resizeStopEventHandler = React.useCallback<
     (menuOrPane: Menu | Pane, direction: Direction, width: number, height: number) => void
   >(
     (menuOrPane: Menu | Pane, direction: Direction, width: number, height: number) =>
-      onResizeStop(menuOrPane, panelName, direction, width, height),
-    [panelName, onResizeStop],
+      onResizeStop(menuOrPane, panelLocation, direction, width, height),
+    [panelLocation, onResizeStop],
   )
 
-  const menuHeight = React.useMemo(
-    () =>
-      (canvasSize.height - (menusAndPanes.length + 1) * GapBetweenPanels) / menusAndPanes.length,
-    [menusAndPanes, canvasSize],
+  const defaultMenuHeight = React.useMemo(
+    () => (canvasSize.height - (columnData.length + 1) * GapBetweenPanels) / columnData.length,
+    [columnData, canvasSize],
+  )
+
+  const alignment = React.useMemo(
+    () => (panelLocation === 'leftMenu1' || panelLocation === 'leftMenu2' ? 'left' : 'right'),
+    [panelLocation],
   )
 
   const resizeConfig = React.useMemo(
@@ -550,127 +583,75 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       enable: {
         left: alignment === 'right',
         right: alignment === 'left',
-        bottom: !isMenuContainingPanel(menusAndPanes) || menusAndPanes.length > 1,
+        bottom: !isMenuContainingPanel(columnData) || columnData.length > 1,
       },
       minWidth: resizeMinMaxSnap.minWidth,
       maxWidth: resizeMinMaxSnap.maxWidth,
       minHeight: TitleHeight,
-      maxHeight: canvasSize.height - menusAndPanes.length * TitleHeight,
+      maxHeight: canvasSize.height - columnData.length * TitleHeight,
       snap: resizeMinMaxSnap.snap,
     }),
-    [alignment, canvasSize, resizeMinMaxSnap, menusAndPanes],
+    [alignment, canvasSize, resizeMinMaxSnap, columnData],
   )
 
-  const draggableCommonProps = React.useMemo(
-    () => ({
-      position: { x: 0, y: 0 }, // this is needed to control the position
-      handle: '.handle',
-    }),
-    [],
-  )
+  const draggablePanelComponent = (() => {
+    switch (name) {
+      case 'code-editor':
+        return (
+          <CodeEditorPane
+            resizableConfig={resizeConfig}
+            width={frame.width}
+            height={frame.height ?? defaultMenuHeight}
+            onResizeStop={resizeStopEventHandler}
+            setIsResizing={setIsDraggingOrResizing}
+            small={isMenuContainingPanel(columnData)}
+          />
+        )
+      case 'inspector':
+        return (
+          <ResizableRightPane
+            resizableConfig={resizeConfig}
+            onResizeStop={resizeStopEventHandler}
+            setIsResizing={setIsDraggingOrResizing}
+            width={frame.width}
+            height={frame.height ?? defaultMenuHeight}
+          />
+        )
+      case 'navigator':
+        return (
+          <LeftPaneComponent
+            resizableConfig={resizeConfig}
+            onResizeStop={resizeStopEventHandler}
+            setIsResizing={setIsDraggingOrResizing}
+            width={frame.width}
+            height={frame.height ?? defaultMenuHeight}
+          />
+        )
+      default:
+        return null
+    }
+  })()
 
   return (
     <>
-      <div
-        className={panelName}
-        id={`floating-panel-${panelName}`}
-        style={{
-          position: 'absolute',
-          height: panelHeight,
-          top: frame.y,
-          margin: 10,
-          ...horizontalPosition, // left: x or right: y
-        }}
+      <Draggable
+        handle='.handle'
+        position={{ x: frame.x, y: frame.y }}
+        key={name}
+        onStop={onDragStop(name)}
+        onDrag={onDrag(name)}
+        onStart={onDragStart(name)}
       >
-        {menusAndPanes.map((value, i) => {
-          switch (value.menuOrPane) {
-            case 'code-editor':
-              return (
-                <Draggable
-                  {...draggableCommonProps}
-                  key='code-editor'
-                  onStop={onDragStop('code-editor')}
-                  onStart={onDragStart('code-editor')}
-                >
-                  <div
-                    style={{
-                      width: '100%',
-                      height: value.height ?? menuHeight,
-                      marginTop: i >= 1 ? GapBetweenPanels : 0,
-                      position: isDraggingOrResizing === 'code-editor' ? 'relative' : undefined,
-                      zIndex: isDraggingOrResizing === 'code-editor' ? 999 : undefined,
-                    }}
-                  >
-                    <CodeEditorPane
-                      resizableConfig={resizeConfig}
-                      width={frame.width}
-                      height={value.height ?? menuHeight}
-                      onResizeStop={resizeStopEventHandler}
-                      setIsResizing={setIsDraggingOrResizing}
-                      small={isMenuContainingPanel(menusAndPanes)}
-                    />
-                  </div>
-                </Draggable>
-              )
-            case 'inspector':
-              return (
-                <Draggable
-                  {...draggableCommonProps}
-                  key='inspector'
-                  onStop={onDragStop('inspector')}
-                  onStart={onDragStart('inspector')}
-                >
-                  <div
-                    style={{
-                      width: '100%',
-                      height: value.height ?? menuHeight,
-                      marginTop: i >= 1 ? GapBetweenPanels : 0,
-                      position: isDraggingOrResizing === 'inspector' ? 'relative' : undefined,
-                      zIndex: isDraggingOrResizing === 'inspector' ? 999 : undefined,
-                    }}
-                  >
-                    <ResizableRightPane
-                      resizableConfig={resizeConfig}
-                      onResizeStop={resizeStopEventHandler}
-                      setIsResizing={setIsDraggingOrResizing}
-                      width={frame.width}
-                      height={value.height ?? menuHeight}
-                    />
-                  </div>
-                </Draggable>
-              )
-            case 'navigator':
-              return (
-                <Draggable
-                  {...draggableCommonProps}
-                  key='navigator'
-                  onStop={onDragStop('navigator')}
-                  onStart={onDragStart('navigator')}
-                >
-                  <div
-                    style={{
-                      width: '100%',
-                      height: value.height ?? menuHeight,
-                      marginTop: i >= 1 ? GapBetweenPanels : 0,
-                      position: isDraggingOrResizing === 'navigator' ? 'relative' : undefined,
-                      zIndex: isDraggingOrResizing === 'navigator' ? 999 : undefined,
-                    }}
-                  >
-                    <LeftPaneComponent
-                      resizableConfig={resizeConfig}
-                      onResizeStop={resizeStopEventHandler}
-                      setIsResizing={setIsDraggingOrResizing}
-                      width={frame.width}
-                      height={value.height ?? menuHeight}
-                    />
-                  </div>
-                </Draggable>
-              )
-            default:
-              return null
-          }
-        })}
-      </div>
+        <div
+          style={{
+            position: 'absolute',
+            marginTop: GapBetweenPanels,
+            zIndex: isDraggingOrResizing === name ? 999 : undefined,
+          }}
+        >
+          {draggablePanelComponent}
+        </div>
+      </Draggable>
       {when(
         isDraggingOrResizing != null,
         <style>{`
