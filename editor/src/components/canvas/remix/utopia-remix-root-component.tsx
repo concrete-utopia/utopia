@@ -98,6 +98,19 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const setNavigationAtom = useSetAtom(RemixNavigationAtom)
 
   React.useLayoutEffect(() => {
+    if (router == null) {
+      return
+    }
+
+    setNavigationAtom({
+      forward: () => void router.navigate(1),
+      back: () => void router.navigate(-1),
+      home: () => void router.navigate('/'),
+      location: router.state.location,
+    })
+  }, [router, setNavigationAtom])
+
+  React.useLayoutEffect(() => {
     return router?.subscribe((n) => {
       ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current = true
       setNavigationAtom({
