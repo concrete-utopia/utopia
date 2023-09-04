@@ -877,12 +877,12 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
       {when(
         props.codeItemType === 'remix-scene',
-        <Icn category='element' type='output' color='main' width={18} height={18} />,
+        <Icn category='component' type='remix-scene' color='main' width={18} height={18} />,
       )}
 
       {when(
         props.codeItemType === 'remix-outlet',
-        <Icn category='element' type='polygon' color='main' width={18} height={18} />,
+        <Icn category='component' type='remix-outlet' color='main' width={18} height={18} />,
       )}
 
       <ItemLabel
