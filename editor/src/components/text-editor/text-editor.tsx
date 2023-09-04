@@ -467,7 +467,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,
     onKeyPress: stopPropagation,
-    onClick: stopPropagation,
+    onClick: stopPropagationAndPreventDefault,
     onContextMenu: stopPropagation,
     onMouseDown: stopPropagation,
     onMouseEnter: stopPropagation,
@@ -549,6 +549,11 @@ async function setSelectionToOffset(
 }
 
 function stopPropagation(e: React.UIEvent | React.ClipboardEvent) {
+  e.stopPropagation()
+}
+
+function stopPropagationAndPreventDefault(e: React.UIEvent | React.ClipboardEvent) {
+  e.preventDefault()
   e.stopPropagation()
 }
 
