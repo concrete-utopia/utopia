@@ -23,11 +23,11 @@ import type {
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import { hasElementsWithin } from '../../../core/shared/element-template'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, NodeModules } from '../../../core/shared/project-file-types'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useKeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
 import type { IcnColor, IcnProps } from '../../../uuiui'
-import { FlexRow, useColorTheme, UtopiaTheme } from '../../../uuiui'
+import { FlexRow, Icn, Icons, useColorTheme, UtopiaTheme } from '../../../uuiui'
 import type { ThemeObject } from '../../../uuiui/styles/theme/theme-helpers'
 import { isEntryAConditionalSlot } from '../../canvas/canvas-utils'
 import type { EditorAction, EditorDispatch } from '../../editor/action-types'
@@ -36,6 +36,7 @@ import * as MetaActions from '../../editor/actions/meta-actions'
 import type { ElementWarnings, NavigatorEntry } from '../../editor/store/editor-state'
 import {
   defaultElementWarnings,
+  getOpenUIJSFileKey,
   isConditionalClauseNavigatorEntry,
   isInvalidOverrideNavigatorEntry,
   isRegularNavigatorEntry,
@@ -57,6 +58,12 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
+import { normalisePathToUnderlyingTarget } from '../../custom-code/code-file'
+import type { ProjectContentTreeRoot } from '../../assets'
+import {
+  isRemixOutletElement,
+  isRemixSceneElement,
+} from '../../../core/model/element-template-utils'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -390,7 +397,7 @@ const elementWarningsSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-type CodeItemType = 'conditional' | 'map' | 'code' | 'none'
+type CodeItemType = 'conditional' | 'map' | 'code' | 'none' | 'remix-scene' | 'remix-outlet'
 
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
@@ -520,7 +527,7 @@ export const NavigatorItem: React.FunctionComponent<
   const isDynamic = isGenerated || containsExpressions || isConditionalDynamicBranch
 
   const codeItemType: CodeItemType = useEditorState(
-    Substores.metadata,
+    Substores.fullStore,
     (store) => {
       if (!isRegularNavigatorEntry(props.navigatorEntry)) {
         return 'none'
@@ -529,6 +536,26 @@ export const NavigatorItem: React.FunctionComponent<
         store.editor.jsxMetadata,
         props.navigatorEntry.elementPath,
       )
+      if (elementMetadata != null) {
+        const isRemixScene = isInstanceRemixScene(
+          elementMetadata,
+          store.editor.projectContents,
+          store.editor.nodeModules.files,
+          getOpenUIJSFileKey(store.editor) ?? '',
+        )
+        if (isRemixScene) {
+          return 'remix-scene'
+        }
+        const isRemixOutlet = isInstanceOutlet(
+          elementMetadata,
+          store.editor.projectContents,
+          store.editor.nodeModules.files,
+          getOpenUIJSFileKey(store.editor) ?? '',
+        )
+        if (isRemixOutlet) {
+          return 'remix-outlet'
+        }
+      }
       if (MetadataUtils.isConditionalFromMetadata(elementMetadata)) {
         return 'conditional'
       }
@@ -837,13 +864,25 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
       }}
     >
       {unless(
-        props.navigatorEntry.type === 'CONDITIONAL_CLAUSE',
+        props.navigatorEntry.type === 'CONDITIONAL_CLAUSE' ||
+          props.codeItemType === 'remix-scene' ||
+          props.codeItemType === 'remix-outlet',
         <LayoutIcon
           key={`layout-type-${props.label}`}
           navigatorEntry={props.navigatorEntry}
           color={props.iconColor}
           elementWarnings={props.elementWarnings}
         />,
+      )}
+
+      {when(
+        props.codeItemType === 'remix-scene',
+        <Icn category='element' type='output' color='main' width={18} height={18} />,
+      )}
+
+      {when(
+        props.codeItemType === 'remix-outlet',
+        <Icn category='element' type='polygon' color='main' width={18} height={18} />,
       )}
 
       <ItemLabel
@@ -872,4 +911,52 @@ function elementContainsExpressions(
   pathTrees: ElementPathTrees,
 ): boolean {
   return MetadataUtils.isGeneratedTextFromMetadata(path, pathTrees, metadata)
+}
+
+function isInstanceRemixScene(
+  instance: ElementInstanceMetadata,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openUIJSFilePath: string,
+): boolean {
+  if (instance.element.type === 'LEFT') {
+    return false
+  }
+
+  const result = normalisePathToUnderlyingTarget(
+    projectContents,
+    nodeModules,
+    openUIJSFilePath,
+    instance.elementPath,
+  )
+
+  if (result.type !== 'NORMALISE_PATH_SUCCESS') {
+    return false
+  }
+
+  return isRemixSceneElement(instance.element.value, result.filePath, projectContents)
+}
+
+function isInstanceOutlet(
+  instance: ElementInstanceMetadata,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openUIJSFilePath: string,
+): boolean {
+  if (instance.element.type === 'LEFT') {
+    return false
+  }
+
+  const result = normalisePathToUnderlyingTarget(
+    projectContents,
+    nodeModules,
+    openUIJSFilePath,
+    instance.elementPath,
+  )
+
+  if (result.type !== 'NORMALISE_PATH_SUCCESS') {
+    return false
+  }
+
+  return isRemixOutletElement(instance.element.value, result.filePath, projectContents)
 }

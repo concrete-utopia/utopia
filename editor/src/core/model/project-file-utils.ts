@@ -154,6 +154,31 @@ export function isRemixSceneAgainstImports(element: JSXElementChild, imports: Im
   return isGivenUtopiaAPIElement(element, imports, 'RemixScene')
 }
 
+export function isRemixOutletAgainstImports(element: JSXElementChild, imports: Imports): boolean {
+  if (!isJSXElement(element)) {
+    return false
+  }
+
+  const utopiaAPI = imports['@remix-run/react']
+  if (utopiaAPI == null) {
+    return false
+  }
+
+  if (PP.depth(element.name.propertyPath) === 0) {
+    for (const fromWithin of utopiaAPI.importedFromWithin) {
+      if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
+        return true
+      }
+    }
+    return false
+  }
+
+  return (
+    utopiaAPI.importedAs === element.name.baseVariable &&
+    PP.isSameProperty(element.name.propertyPath, 'Outlet')
+  )
+}
+
 export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMetadata): boolean {
   return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
 }
