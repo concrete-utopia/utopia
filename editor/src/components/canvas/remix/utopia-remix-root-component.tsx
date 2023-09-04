@@ -12,7 +12,11 @@ import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { PathPropHOC, getDefaultExportNameAndUidFromFile } from './remix-utils'
+import {
+  PathPropHOC,
+  getDefaultExportNameAndUidFromFile,
+  getProjectUrlWithRemixRoute,
+} from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { appendTwoPaths } from '../canvas-utils'
 import { atom, useSetAtom } from 'jotai'
@@ -102,6 +106,12 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       return
     }
 
+    window.history.replaceState(
+      { route: router.state.location.pathname },
+      '',
+      getProjectUrlWithRemixRoute(window.location.pathname, router.state.location.pathname),
+    )
+
     setNavigationAtom({
       forward: () => void router.navigate(1),
       back: () => void router.navigate(-1),
@@ -112,6 +122,12 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   React.useLayoutEffect(() => {
     return router?.subscribe((n) => {
+      window.history.replaceState(
+        { route: router.state.location.pathname },
+        '',
+        getProjectUrlWithRemixRoute(window.location.pathname, router.state.location.pathname),
+      )
+
       setNavigationAtom({
         forward: () => void router.navigate(1),
         back: () => void router.navigate(-1),

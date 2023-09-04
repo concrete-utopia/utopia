@@ -549,3 +549,12 @@ export function getRoutesFromRouteManifest(
     return []
   }
 }
+
+export function getProjectUrlWithRemixRoute(currentPath: string, route: string): string {
+  const basePathRegex = /(\/p\/[^\/]+)\//
+  const basePath = basePathRegex.exec(currentPath)?.[1]
+  if (basePath == null) {
+    return currentPath
+  }
+  return basePath + route
+}
