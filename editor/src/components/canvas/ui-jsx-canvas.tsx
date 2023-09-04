@@ -102,10 +102,6 @@ export const ElementsToRerenderGLOBAL: { current: ElementsToRerender } = {
   current: 'rerender-all-elements',
 }
 
-export const ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME: { current: boolean } = {
-  current: false,
-}
-
 export type SpyValues = {
   metadata: ElementInstanceMetadataMap
   allElementProps: AllElementProps

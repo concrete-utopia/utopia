@@ -9,7 +9,7 @@ import { Substores, useEditorState, useRefEditorState } from '../../editor/store
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME, UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
+import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { PathPropHOC, getDefaultExportNameAndUidFromFile } from './remix-utils'
@@ -112,7 +112,6 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   React.useLayoutEffect(() => {
     return router?.subscribe((n) => {
-      ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current = true
       setNavigationAtom({
         forward: () => void router.navigate(1),
         back: () => void router.navigate(-1),
