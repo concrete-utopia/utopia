@@ -261,7 +261,7 @@ specifiers:
   react-merge-refs: 1.0.0
   react-onclickoutside: 6.9.0
   react-popper: 2.2.3
-  react-router: ^6.15.0
+  react-router: 6.14.2
   react-select: 3.1.0
   react-select-event: ^5.5.1
   react-spring: 9.0.0-rc.3
@@ -421,7 +421,7 @@ dependencies:
   react-merge-refs: 1.0.0
   react-onclickoutside: 6.9.0_ef5jwxihqo6n7gxfmzogljlgcm
   react-popper: 2.2.3_luamgza7xv6i2k5kfnj4s4czvu
-  react-router: 6.15.0_react@18.1.0
+  react-router: 6.14.2_react@18.1.0
   react-select: 3.1.0_t5nmcyzy5uxlteq6gsp6gbc254_ef5jwxihqo6n7gxfmzogljlgcm
   react-spring: 9.0.0-rc.3_5vzz734aui5gu3jm6wlduec5ym
   react-syntax-highlighter: 12.2.1_react@18.1.0
@@ -3497,11 +3497,6 @@ packages:
   /@remix-run/router/1.7.2:
     resolution: {integrity: sha512-7Lcn7IqGMV+vizMPoEl5F0XDshcdDYtMI6uJLQdQz5CfZAwy3vvGKYSUk789qndt5dEC4HfSjviSYlSoHGL2+A==}
     engines: {node: '>=14'}
-    dev: false
-
-  /@remix-run/router/1.8.0:
-    resolution: {integrity: sha512-mrfKqIHnSZRyIzBcanNJmVQELTnX+qagEDlcKO90RgRBVOZGSGvZKeDihTRfWcqoDn5N/NkUcwWTccnpN18Tfg==}
-    engines: {node: '>=14.0.0'}
     dev: false
 
   /@remixproject/plugin-api/0.3.38:
@@ -14753,16 +14748,6 @@ packages:
       react: '>=16.8'
     dependencies:
       '@remix-run/router': 1.7.2
-      react: 18.1.0_47cciibm4ysmleigs33s763fqu
-    dev: false
-
-  /react-router/6.15.0_react@18.1.0:
-    resolution: {integrity: sha512-NIytlzvzLwJkCQj2HLefmeakxxWHWAP+02EGqWEZy+DgfHHKQMUoBBjUQLOtFInBMhWtb3hiUy6MfFgwLjXhqg==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      react: '>=16.8'
-    dependencies:
-      '@remix-run/router': 1.8.0
       react: 18.1.0_47cciibm4ysmleigs33s763fqu
     dev: false
 
