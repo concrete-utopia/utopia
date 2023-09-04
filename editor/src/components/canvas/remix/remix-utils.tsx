@@ -550,11 +550,15 @@ export function getRoutesFromRouteManifest(
   }
 }
 
-export function getProjectUrlWithRemixRoute(currentPath: string, route: string): string {
+export function getProjectUrlWithRemixRoute(
+  currentPath: string,
+  elementPath: ElementPath,
+  route: string,
+): string {
   const basePathRegex = /(\/p\/[^\/]+)\//
   const basePath = basePathRegex.exec(currentPath)?.[1]
-  if (basePath == null) {
+  if (basePath == null || route === '/') {
     return currentPath
   }
-  return basePath + route
+  return `${basePath}/${EP.toUid(elementPath)}${route}`
 }

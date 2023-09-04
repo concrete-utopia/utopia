@@ -109,7 +109,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     window.history.replaceState(
       { route: router.state.location.pathname },
       '',
-      getProjectUrlWithRemixRoute(window.location.pathname, router.state.location.pathname),
+      getProjectUrlWithRemixRoute(
+        window.location.pathname,
+        basePath,
+        router.state.location.pathname,
+      ),
     )
 
     setNavigationAtom({
@@ -118,14 +122,18 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       home: () => void router.navigate('/'),
       location: router.state.location,
     })
-  }, [router, setNavigationAtom])
+  }, [router, basePath, setNavigationAtom])
 
   React.useLayoutEffect(() => {
     return router?.subscribe((n) => {
       window.history.replaceState(
         { route: router.state.location.pathname },
         '',
-        getProjectUrlWithRemixRoute(window.location.pathname, router.state.location.pathname),
+        getProjectUrlWithRemixRoute(
+          window.location.pathname,
+          basePath,
+          router.state.location.pathname,
+        ),
       )
 
       setNavigationAtom({
@@ -135,7 +143,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         location: n.location,
       })
     })
-  }, [router, routes, setNavigationAtom])
+  }, [router, basePath, routes, setNavigationAtom])
 
   if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null
