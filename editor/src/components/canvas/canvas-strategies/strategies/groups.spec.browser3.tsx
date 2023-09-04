@@ -1,3 +1,5 @@
+import '../../../../templates/editor-entry-point'
+
 /* eslint jest/expect-expect: ["warn", { "assertFunctionNames": ["expect", "assertStylePropsSet"] }] */
 import { getSimpleAttributeAtPath } from '../../../../core/model/element-metadata-utils'
 import {

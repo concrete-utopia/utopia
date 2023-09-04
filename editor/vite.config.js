@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => {
         port: 8088,
       },
     },
-    base: '/editor/',
+    // base: '/src/',
     resolve: {
       alias: {
         'worker-imports': join(__dirname, 'src/core/workers/vite-worker-import-utils.ts'),

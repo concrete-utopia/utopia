@@ -16,14 +16,15 @@
     "noImplicitThis": true,
     "strictNullChecks": true,
     "alwaysStrict": true,
-    "jsx": "react",
+    "jsx": "preserve",
     "strict": true,
     "skipLibCheck": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
     "paths": {
       "worker-imports": ["src/core/workers/worker-import-utils.ts"]
-    }
+    },
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules"]
 }
