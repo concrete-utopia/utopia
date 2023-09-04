@@ -22,6 +22,7 @@ import * as EP from '../../core/shared/element-path'
 import { getPathsOnDomElement } from '../../core/shared/uid-utils'
 import Canvas, { TargetSearchType } from './canvas'
 import type { CanvasPositions } from './canvas-types'
+import { CanvasContainerID } from './canvas-types'
 import type { AllElementProps } from '../editor/store/editor-state'
 import Utils from '../../utils/utils'
 import { memoize } from '../../core/shared/memoize'
@@ -217,7 +218,7 @@ export function getValidTargetAtPoint(
   if (point == null) {
     return null
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = canvasElementsUnderPoint(point.x, point.y)
   const parentSceneValidPathsCache = new Map()
   const pointOnCanvas = windowToCanvasCoordinates(
     canvasScale,
@@ -243,7 +244,7 @@ export function getAllTargetsAtPoint(
   if (point == null) {
     return []
   }
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = canvasElementsUnderPoint(point.x, point.y)
   const pointOnCanvas = windowToCanvasCoordinates(
     canvasScale,
     canvasOffset,
@@ -391,7 +392,7 @@ function getSelectionOrFirstTargetAtPoint(
   }
 
   const parentSceneValidPathsCache = new Map()
-  const elementsUnderPoint = document.elementsFromPoint(point.x, point.y)
+  const elementsUnderPoint = canvasElementsUnderPoint(point.x, point.y)
   const validPathsSet =
     validElementPathsForLookup === 'no-filter'
       ? 'no-filter'
@@ -570,4 +571,59 @@ export function canvasPointToWindowPoint(
   } else {
     throw new Error('calling screenToElementCoordinates() before being mounted')
   }
+}
+
+// Alternative to calling `document.elementsFromPoint`, which includes the text content of the elements
+// and not just the bounds of the element itself.
+export function canvasElementsUnderPoint(x: number, y: number): Array<Element> {
+  let result: Array<Element> = []
+  const canvasContainer = document.getElementById(CanvasContainerID)
+  if (canvasContainer != null) {
+    function addElementIfRelevant(element: Element): void {
+      const bounds = element.getBoundingClientRect()
+      if (
+        bounds.x <= x &&
+        x <= bounds.x + bounds.width &&
+        bounds.y <= y &&
+        y <= bounds.y + bounds.height
+      ) {
+        // Regular bounds check, location is inside the element itself.
+        result.push(element)
+      } else {
+        for (const childNode of element.childNodes) {
+          if (childNode.nodeType === Node.TEXT_NODE) {
+            const range = document.createRange()
+            range.selectNode(childNode)
+            for (const textRect of range.getClientRects()) {
+              if (
+                textRect.x <= x &&
+                x <= textRect.x + textRect.width &&
+                textRect.y <= y &&
+                y <= textRect.y + textRect.height
+              ) {
+                // Text content bounds check, location is inside the bounds of text contained within an element.
+                result.push(element)
+                break
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function processElement(element: Element): void {
+      // Depth first search.
+      for (const child of element.children) {
+        processElement(child)
+      }
+      // Now check if this should be included.
+      addElementIfRelevant(element)
+    }
+
+    for (const child of canvasContainer.children) {
+      // Check the immediate children of the `canvas-container` element.
+      processElement(child)
+    }
+  }
+  return result
 }
