@@ -1956,7 +1956,7 @@ export function getValidElementPaths(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-  remixValidPathsGenerationContext: RemixValidPathsGenerationContext,
+  remixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
@@ -2009,7 +2009,7 @@ function getValidElementPathsFromElement(
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-  remixValidPathsGenerationContext: RemixValidPathsGenerationContext,
+  remixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
     const uid = getUtopiaID(element)
@@ -2021,7 +2021,8 @@ function getValidElementPathsFromElement(
     let paths = [path]
 
     const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
-    if (remixValidPathsGenerationContext.type === 'active' && isRemixScene) {
+    const remixPathGenerationContext = remixValidPathsGenerationContext(path)
+    if (remixPathGenerationContext.type === 'active' && isRemixScene) {
       function makeValidPathsFromModule(
         routeModulePath: string,
         parentPathInner: ElementPath,
@@ -2056,9 +2057,9 @@ function getValidElementPathsFromElement(
         return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
       }
 
-      for (const route of remixValidPathsGenerationContext.currentlyRenderedRouteModules) {
+      for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
         const { relativePath, filePath: filePathOfRouteModule } =
-          remixValidPathsGenerationContext.routeModulesToRelativePaths[route.id]
+          remixPathGenerationContext.routeModulesToRelativePaths[route.id]
         const basePath = appendTwoPaths(path, relativePath)
         makeValidPathsFromModule(filePathOfRouteModule, basePath)
       }

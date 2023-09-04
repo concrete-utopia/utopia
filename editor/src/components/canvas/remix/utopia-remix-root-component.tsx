@@ -17,6 +17,8 @@ import * as EP from '../../../core/shared/element-path'
 import { appendTwoPaths } from '../canvas-utils'
 import { atom, useSetAtom } from 'jotai'
 
+type RouterType = ReturnType<typeof createMemoryRouter>
+
 interface RemixNavigationContext {
   forward: () => void
   back: () => void
@@ -24,9 +26,12 @@ interface RemixNavigationContext {
   location: Location
 }
 
-// TODO: should be refactored so that this can accomodate multiple contexts
-// thinking { [pathToUtopiaRemixRootComponent]: RemixNavigationContext }
-export const RemixNavigationAtom = atom<RemixNavigationContext | null>(null)
+interface RemixNavigationAtomData {
+  [pathString: string]: RemixNavigationContext
+}
+
+export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
+export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
@@ -95,31 +100,37 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   // The router always needs to be updated otherwise new routes won't work without a refresh
   const router = React.useMemo(() => optionalMap(createMemoryRouter, routes), [routes])
 
-  const setNavigationAtom = useSetAtom(RemixNavigationAtom)
+  const setNavigationData = useSetAtom(RemixNavigationAtom)
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+
+  const updateNavigationData = React.useCallback(
+    (routerr: RouterType, location: Location) => {
+      setNavigationData((navigationData) => ({
+        ...navigationData,
+        [EP.toString(basePath)]: {
+          forward: () => void routerr.navigate(1),
+          back: () => void routerr.navigate(-1),
+          home: () => void routerr.navigate('/'),
+          location: location,
+        },
+      }))
+      setActiveRemixScene(basePath)
+    },
+    [basePath, setActiveRemixScene, setNavigationData],
+  )
 
   React.useLayoutEffect(() => {
-    if (router == null) {
-      return
+    if (router != null) {
+      updateNavigationData(router, router.state.location)
     }
-
-    setNavigationAtom({
-      forward: () => void router.navigate(1),
-      back: () => void router.navigate(-1),
-      home: () => void router.navigate('/'),
-      location: router.state.location,
-    })
-  }, [router, setNavigationAtom])
+  }, [router, updateNavigationData])
 
   React.useLayoutEffect(() => {
-    return router?.subscribe((n) => {
-      setNavigationAtom({
-        forward: () => void router.navigate(1),
-        back: () => void router.navigate(-1),
-        home: () => void router.navigate('/'),
-        location: n.location,
-      })
-    })
-  }, [router, routes, setNavigationAtom])
+    if (router != null) {
+      return router?.subscribe((newState) => updateNavigationData(router, newState.location))
+    }
+    return
+  }, [router, updateNavigationData])
 
   if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null

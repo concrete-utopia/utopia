@@ -205,9 +205,22 @@ export const MetadataUtils = {
       element.importInfo.exportedName === 'Scene'
     )
   },
+  isProbablyRemixSceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element != null &&
+      element.importInfo != null &&
+      isImportedOrigin(element.importInfo) &&
+      element.importInfo.filePath === 'utopia-api' &&
+      element.importInfo.exportedName === 'RemixScene'
+    )
+  },
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
+  },
+  isProbablyRemixScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
   },
   isSceneWithOneChild(
     jsxMetadata: ElementInstanceMetadataMap,

@@ -1,12 +1,18 @@
 import { useAtom } from 'jotai'
 import React from 'react'
-import { RemixNavigationAtom } from '../canvas/remix/utopia-remix-root-component'
+import {
+  ActiveRemixSceneAtom,
+  RemixNavigationAtom,
+} from '../canvas/remix/utopia-remix-root-component'
 import { Substores, useEditorState } from './store/store-hook'
 import { FlexColumn, FlexRow, Icn, Tooltip, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
+import * as EP from '../../core/shared/element-path'
 
 export const RemixNavigationBar = React.memo(() => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
+  const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
+
   const isLiveMode = useEditorState(
     Substores.restOfEditor,
     (_) => _.editor.mode.type === 'live',
@@ -14,11 +20,22 @@ export const RemixNavigationBar = React.memo(() => {
   )
   const theme = useColorTheme()
 
-  const forward = React.useCallback(() => navigationControls?.forward(), [navigationControls])
-  const back = React.useCallback(() => navigationControls?.back(), [navigationControls])
-  const home = React.useCallback(() => navigationControls?.home(), [navigationControls])
+  const forward = React.useCallback(
+    () => navigationControls[EP.toString(activeRemixScene)]?.forward(),
+    [activeRemixScene, navigationControls],
+  )
+  const back = React.useCallback(
+    () => navigationControls[EP.toString(activeRemixScene)]?.back(),
+    [activeRemixScene, navigationControls],
+  )
+  const home = React.useCallback(
+    () => navigationControls[EP.toString(activeRemixScene)]?.home(),
+    [activeRemixScene, navigationControls],
+  )
 
-  if (!isLiveMode || navigationControls == null) {
+  const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname
+
+  if (!isLiveMode || navigationControls == null || pathname == null) {
     return null
   }
 
@@ -55,7 +72,7 @@ export const RemixNavigationBar = React.memo(() => {
       <div
         style={{ backgroundColor: '#f2f3f4', borderRadius: 10, padding: '4px 12px', minWidth: 20 }}
       >
-        {navigationControls.location.pathname}
+        {pathname}
       </div>
     </FlexRow>
   )

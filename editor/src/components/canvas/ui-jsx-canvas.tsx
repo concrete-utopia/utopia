@@ -474,7 +474,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
-  const remixPathValidationContext: RemixValidPathsGenerationContext =
+  const remixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext =>
     remixDerivedDataRef.current == null
       ? { type: 'disabled' }
       : {
@@ -483,7 +483,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
           currentlyRenderedRouteModules:
             matchRoutes(
               remixDerivedDataRef.current.routes,
-              remixNavigationState?.location ?? '/',
+              remixNavigationState[EP.toString(path)]?.location ?? '/',
             )?.map((p) => p.route) ?? [],
         }
 
@@ -744,7 +744,7 @@ function useGetStoryboardRoot(
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
-  remixValidPathsGenerationContext: RemixValidPathsGenerationContext,
+  remixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootElementPath: ElementPath

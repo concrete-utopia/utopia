@@ -65,6 +65,7 @@ import {
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
 import { ElementsOutsideVisibleAreaIndicators } from './elements-outside-visible-area'
+import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -497,6 +498,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
         {when(
           isSelectMode(editorMode),
           <SceneLabelControl
+            maybeHighlightOnHover={maybeHighlightOnHover}
+            maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+          />,
+        )}
+        {when(
+          isSelectMode(editorMode),
+          <RemixSceneLabelControl
             maybeHighlightOnHover={maybeHighlightOnHover}
             maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
           />,
