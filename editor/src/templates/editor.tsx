@@ -273,7 +273,10 @@ export class Editor {
 
     this.lowPriorityStore = lowPriorityStore
 
-    this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreHook)
+    this.domWalkerMutableState = createDomWalkerMutableState(
+      this.utopiaStoreHook,
+      this.boundDispatch,
+    )
 
     void renderRootEditor()
 
@@ -449,7 +452,8 @@ export class Editor {
       let entireUpdateFinished = dispatchResult.entireUpdateFinished
 
       const shouldRunDOMWalker =
-        !dispatchResult.nothingChanged || ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current === true
+        !dispatchResult.nothingChanged ||
+        dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
 
       if (shouldRunDOMWalker) {
         ForceRerunDOMWalkerGLOBAL_SPIKE_KILLME.current = false

@@ -90,6 +90,7 @@ import type {
   RenameStyleSelector,
   ResetPins,
   ResizeInterfaceDesignerCodePane,
+  RunDOMWalker,
   SaveAsset,
   SaveCurrentFile,
   SaveDOMReport,
@@ -1117,6 +1118,12 @@ export function saveDOMReport(
     elementMetadata: elementMetadata,
     cachedPaths: cachedPaths,
     invalidatedPaths: invalidatedPaths,
+  }
+}
+
+export function runDOMWalker(): RunDOMWalker {
+  return {
+    action: 'RUN_DOM_WALKER',
   }
 }
 
