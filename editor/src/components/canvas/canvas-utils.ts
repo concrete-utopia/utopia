@@ -2057,6 +2057,11 @@ function getValidElementPathsFromElement(
         return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
       }
 
+      /**
+       * The null check is here to guard against the case when a route with children is missing an outlet
+       * that would render the children
+       */
+
       for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
         const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
         if (entry != null) {
