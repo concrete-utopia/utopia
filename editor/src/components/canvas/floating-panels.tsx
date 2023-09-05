@@ -491,7 +491,7 @@ export const FloatingPanelsContainer = React.memo(() => {
           frame={data.frame}
           panelLocation={data.location}
           columnData={panelsData.filter((d) => d.location === data.location)}
-          onResizeStop={updateSize}
+          onResize={updateSize}
           updateColumn={updateColumn}
         />
       ))}
@@ -505,7 +505,7 @@ interface FloatingPanelProps {
   frame: WindowRectangle
   panelLocation: PanelName
   updateColumn: (menuOrPane: Menu | Pane, currentPanel: PanelName, newPosition: WindowPoint) => void
-  onResizeStop: (
+  onResize: (
     menuOrPane: Menu | Pane,
     currentPanel: PanelName,
     direction: Direction,
@@ -516,7 +516,7 @@ interface FloatingPanelProps {
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
-  const { columnData, panelLocation, name, frame, updateColumn, onResizeStop } = props
+  const { columnData, panelLocation, name, frame, updateColumn, onResize } = props
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
 
   const [isDraggingOrResizing, setIsDraggingOrResizing] = React.useState<Menu | Pane | null>(null)
@@ -560,12 +560,12 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     return { minWidth, maxWidth, snap }
   }, [columnData, canvasSize])
 
-  const resizeStopEventHandler = React.useCallback<
+  const resizeEventHandler = React.useCallback<
     (menuOrPane: Menu | Pane, direction: Direction, width: number, height: number) => void
   >(
     (menuOrPane: Menu | Pane, direction: Direction, width: number, height: number) =>
-      onResizeStop(menuOrPane, panelLocation, direction, width, height),
-    [panelLocation, onResizeStop],
+      onResize(menuOrPane, panelLocation, direction, width, height),
+    [panelLocation, onResize],
   )
 
   const defaultMenuHeight = React.useMemo(
@@ -602,7 +602,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
             resizableConfig={resizeConfig}
             width={frame.width}
             height={frame.height ?? defaultMenuHeight}
-            onResizeStop={resizeStopEventHandler}
+            onResize={resizeEventHandler}
             setIsResizing={setIsDraggingOrResizing}
             small={isMenuContainingPanel(columnData)}
           />
@@ -611,7 +611,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         return (
           <ResizableRightPane
             resizableConfig={resizeConfig}
-            onResizeStop={resizeStopEventHandler}
+            onResize={resizeEventHandler}
             setIsResizing={setIsDraggingOrResizing}
             width={frame.width}
             height={frame.height ?? defaultMenuHeight}
@@ -621,7 +621,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         return (
           <LeftPaneComponent
             resizableConfig={resizeConfig}
-            onResizeStop={resizeStopEventHandler}
+            onResize={resizeEventHandler}
             setIsResizing={setIsDraggingOrResizing}
             width={frame.width}
             height={frame.height ?? defaultMenuHeight}

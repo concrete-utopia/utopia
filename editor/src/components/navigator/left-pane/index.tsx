@@ -32,6 +32,8 @@ import type { ResizeCallback } from 're-resizable'
 import { PanelTitleBar } from '../../canvas/floating-panels'
 import type { Menu, Pane } from '../../canvas/floating-panels'
 import type { Direction } from 're-resizable/lib/resizer'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
+import { when } from '../../../utils/react-conditionals'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -47,13 +49,13 @@ export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 interface LeftPaneComponentProps {
   width: number
   height: number
-  onResizeStop: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
+  onResize: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
   setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
   resizableConfig: ResizableProps
 }
 
 export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
-  const { onResizeStop, setIsResizing, width, height } = props
+  const { onResize, setIsResizing, width, height } = props
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -93,22 +95,29 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
+  const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
-      onResizeStop('navigator', _direction, _ref?.clientWidth, _ref?.clientHeight)
-      setIsResizing(null)
+      if (isFeatureEnabled('Draggable Floating Panels')) {
+        onResize('navigator', _direction, _ref?.clientWidth, _ref?.clientHeight)
+        setIsResizing(null)
+      } else {
+        setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
+      }
     },
-    [onResizeStop, setIsResizing],
+    [onResize, setIsResizing, setLeftPanelWidth],
   )
   const onLeftPanelResize = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
-      const newWidth = _ref?.clientWidth
-      const newHeight = _ref?.clientHeight
-      if (newWidth != null && newHeight != null) {
-        onResizeStop('navigator', _direction, newWidth, newHeight)
+      if (isFeatureEnabled('Draggable Floating Panels')) {
+        const newWidth = _ref?.clientWidth
+        const newHeight = _ref?.clientHeight
+        if (newWidth != null && newHeight != null) {
+          onResize('navigator', _direction, newWidth, newHeight)
+        }
       }
     },
-    [onResizeStop],
+    [onResize],
   )
   const onResizeStart = React.useCallback(() => {
     setIsResizing('navigator')
@@ -131,12 +140,12 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
         onResize={onLeftPanelResize}
         onResizeStart={onResizeStart}
         defaultSize={{
-          width: width,
+          width: isFeatureEnabled('Draggable Floating Panels') ? width : leftPanelWidth,
           height: '100%',
         }}
         size={{
-          width: width,
-          height: height,
+          width: isFeatureEnabled('Draggable Floating Panels') ? width : leftPanelWidth,
+          height: isFeatureEnabled('Draggable Floating Panels') ? height : '100%',
         }}
         style={{
           overscrollBehavior: 'contain',
@@ -149,7 +158,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
         }}
         {...props.resizableConfig}
       >
-        <PanelTitleBar />
+        {when(isFeatureEnabled('Draggable Floating Panels'), <PanelTitleBar />)}
         <div
           id={LeftPaneComponentId}
           className='leftPane'
