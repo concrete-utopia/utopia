@@ -51,7 +51,7 @@ import { getContentsTreeFromPath } from '../../assets'
 import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
-import type { DataRouteObject, LoaderFunction, ActionFunction } from 'react-router'
+import type { DataRouteObject, LoaderFunction, ActionFunction, Location } from 'react-router'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 
 const ROOT_DIR = '/src'
@@ -548,4 +548,24 @@ export function getRoutesFromRouteManifest(
   } catch (e) {
     return []
   }
+}
+
+export function setRouteInBrowserUrl(rootPath: ElementPath, route: Location) {
+  window.history.replaceState(
+    { route: route.pathname },
+    '',
+    getProjectUrlWithRemixRoute(window.location.href, rootPath, route.pathname),
+  )
+}
+
+function getProjectUrlWithRemixRoute(
+  location: string,
+  elementPath: ElementPath,
+  route: string,
+): string {
+  var url = new URL(location)
+  url.searchParams.set('remix-root', EP.toUid(elementPath))
+  url.searchParams.set('route', route)
+  url.search = decodeURIComponent(url.search)
+  return url.href
 }

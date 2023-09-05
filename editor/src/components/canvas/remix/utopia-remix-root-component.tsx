@@ -12,7 +12,11 @@ import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
-import { PathPropHOC, getDefaultExportNameAndUidFromFile } from './remix-utils'
+import {
+  PathPropHOC,
+  getDefaultExportNameAndUidFromFile,
+  setRouteInBrowserUrl,
+} from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { appendTwoPaths } from '../canvas-utils'
 import { atom, useSetAtom } from 'jotai'
@@ -105,6 +109,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const updateNavigationData = React.useCallback(
     (routerr: RouterType, location: Location) => {
+      setRouteInBrowserUrl(basePath, routerr.state.location)
       setNavigationData((navigationData) => ({
         ...navigationData,
         [EP.toString(basePath)]: {
