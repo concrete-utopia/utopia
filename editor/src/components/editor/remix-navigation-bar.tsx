@@ -9,6 +9,7 @@ import { FlexColumn, FlexRow, Icn, Tooltip, UtopiaTheme, useColorTheme } from '.
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
 
+// FIXME: unused
 export const RemixNavigationBar = React.memo(() => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)

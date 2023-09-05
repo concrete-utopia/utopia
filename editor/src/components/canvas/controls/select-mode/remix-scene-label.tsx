@@ -56,22 +56,12 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
-  const sceneHasSingleChild = useEditorState(
-    Substores.metadata,
-    (store) => {
-      const subTree = getSubTree(store.editor.elementPathTree, props.target)
-      if (subTree == null) {
-        return false
-      } else {
-        return subTree.children.length === 1
-      }
-    },
-    'RemixSceneLabel sceneHasSingleChild',
-  )
-
   const [navigationData] = useAtom(RemixNavigationAtom)
 
-  const label = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
+  const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
+  const isIndexRoute = currentPath === '/'
+
+  const label = isIndexRoute ? '(home)' : currentPath
 
   const forward = React.useCallback(
     () => navigationData[EP.toString(props.target)]?.forward(),
@@ -111,8 +101,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
-  const paddingY = scaledFontSize / 7
-  const paddingX = scaledFontSize / 7
+  const paddingY = scaledFontSize / 3
   const offsetY = scaledFontSize
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
@@ -202,11 +191,11 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     }
   }, [onMouseUp])
 
+  // TODO: icon scaling
   const highlightColor = colorTheme.fg9.value
-  const selectedColor = colorTheme.verySubduedForeground.value
-  const backgroundColor = isSelected ? selectedColor : highlightColor
+  const backgroundColor = colorTheme.white.value
   const boxShadowWidth = 1.5 / scale
-  const boxShadow = `0px 0px 0px ${boxShadowWidth}px ${backgroundColor}`
+  const boxShadow = `0px 0px 0px ${boxShadowWidth}px ${highlightColor}`
 
   if (frame != null && isFiniteRectangle(frame)) {
     return (
@@ -220,16 +209,13 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: sceneHasSingleChild
-              ? colorTheme.componentPurple.value
-              : colorTheme.subduedForeground.value,
+            color: isIndexRoute ? colorTheme.subduedForeground.value : colorTheme.textColor.value,
             position: 'absolute',
-            fontWeight: 600,
             left: frame.x,
             bottom: -frame.y + offsetY,
             width: frame.width,
             paddingLeft: offsetX,
-            paddingTop: paddingX,
+            paddingTop: paddingY,
             paddingBottom: paddingY,
             fontFamily:
               '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
@@ -265,9 +251,14 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
             />
           </Tooltip>
           <Tooltip title={'Home'}>
-            <span style={{ fontSize: 22, cursor: 'pointer' }} onClick={home}>
-              🏠
-            </span>
+            <Icn
+              type='icon-semantic-home'
+              color='main'
+              width={18}
+              height={18}
+              style={{ cursor: 'pointer' }}
+              onMouseDown={home}
+            />
           </Tooltip>
           <div
             style={{
@@ -275,6 +266,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               borderRadius: 10,
               padding: '4px 12px',
               minWidth: 20,
+              fontSize: 12 / scale,
             }}
           >
             {label}

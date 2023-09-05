@@ -66,6 +66,7 @@ import {
 import { useSelectionArea } from './selection-area-hooks'
 import { ElementsOutsideVisibleAreaIndicators } from './elements-outside-visible-area'
 import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
+import { NO_OP } from '../../../core/shared/utils'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -173,7 +174,29 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
 
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
-    return null
+    return (
+      <div
+        style={{
+          pointerEvents: 'none',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          transform: 'translate3d(0, 0, 0)',
+          width: `100%`,
+          height: `100%`,
+          zoom: canvasControlProps.scale >= 1 ? `${canvasControlProps.scale * 100}%` : 1,
+          cursor: props.cursor,
+          visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
+        }}
+      >
+        <div style={{ pointerEvents: 'none', position: 'relative', width: '100%', height: '100%' }}>
+          <RemixSceneLabelControl
+            maybeHighlightOnHover={NO_OP}
+            maybeClearHighlightsOnHoverEnd={NO_OP}
+          />
+        </div>
+      </div>
+    )
   } else if (isTextEditMode(canvasControlProps.editorMode)) {
     return <TextEditCanvasOverlay cursor={props.cursor} />
   } else {
