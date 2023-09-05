@@ -124,7 +124,11 @@ export function getSelectionColor(
   autoFocusedPaths: Array<ElementPath>,
   colorTheme: any,
 ): string {
-  if (EP.isInsideFocusedComponent(path, autoFocusedPaths)) {
+  const parentComponent = EP.getContainingComponent(path)
+  if (
+    EP.isInsideFocusedComponent(path, autoFocusedPaths) &&
+    !MetadataUtils.isProbablyRemixOutlet(metadata, parentComponent)
+  ) {
     if (MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)) {
       return colorTheme.canvasSelectionFocusableChild.value
     } else {

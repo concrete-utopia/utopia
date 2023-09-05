@@ -301,9 +301,16 @@ function useStyleFullyVisible(
           }
         })
 
+        const parentComponent = EP.getContainingComponent(path)
+        const isInRemixOutlet = MetadataUtils.isProbablyRemixOutlet(
+          store.editor.jsxMetadata,
+          parentComponent,
+        )
+
         let isInsideFocusedComponent =
-          EP.isFocused(store.editor.focusedElementPath, path) ||
-          EP.isInsideFocusedComponent(path, autoFocusedPaths)
+          !isInRemixOutlet &&
+          (EP.isFocused(store.editor.focusedElementPath, path) ||
+            EP.isInsideFocusedComponent(path, autoFocusedPaths))
 
         return (
           isStoryboardChild ||
