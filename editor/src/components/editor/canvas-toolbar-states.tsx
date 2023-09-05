@@ -3,14 +3,26 @@ import { useGetDragStrategyIndicatorFlags } from '../canvas/controls/select-mode
 import { RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState } from './store/store-hook'
 
+// This is the data structure that governs the Canvas Toolbar's submenus and active buttons
 type ToolbarMode =
-  | { primary: 'edit'; secondary: 'nothing-selected' | 'move' | 'selected' | 'other-strategy' }
+  | { primary: 'edit'; secondary: 'nothing-selected' | 'selected' | 'strategy-active' }
   | { primary: 'text'; secondary: 'target' | 'inserting' | 'write' }
-  | { primary: 'insert'; secondary: 'floating-menu' | 'insert-sidebar' | 'target' | 'inserting' }
+  | {
+      primary: 'insert'
+      secondary: {
+        type: 'insert-options'
+        divInsertionActive: boolean
+        imageInsertionActive: boolean
+        buttonInsertionActive: boolean
+        conditionalInsertionActive: boolean
+        floatingInsertMenuOpen: boolean
+        insertSidebarOpen: boolean
+      }
+    }
   | { primary: 'play' }
   | { primary: 'zoom' }
 
-export function useToolbarMode(): ToolbarMode {
+export function useToolbarMode(toolbarInsertMode: boolean): ToolbarMode {
   const editorMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode,
@@ -62,17 +74,42 @@ export function useToolbarMode(): ToolbarMode {
   }
 
   // Insert Mode (sans text insertion)
-  if (editorMode.type === 'insert') {
-    if (dragStrategyFlags?.dragStarted) {
-      return { primary: 'insert', secondary: 'inserting' }
+  if (
+    toolbarInsertMode ||
+    editorMode.type === 'insert' ||
+    floatingInsertMenu === 'insert' ||
+    rightMenuTab === RightMenuTab.Insert
+  ) {
+    const insertionTargetDiv =
+      editorMode.type === 'insert' &&
+      editorMode.subjects.some(
+        (subject) =>
+          subject.element.name.baseVariable === 'div' &&
+          // if the insertionSubjectWrapper is not null, this is either a conditional or a fragment insertion
+          subject.insertionSubjectWrapper == null,
+      )
+    const insertionTargetImage =
+      editorMode.type === 'insert' &&
+      editorMode.subjects.some((subject) => subject.element.name.baseVariable === 'img')
+    const insertionTargetButton =
+      editorMode.type === 'insert' &&
+      editorMode.subjects.some((subject) => subject.element.name.baseVariable === 'button')
+    const insertionTargetConditional =
+      editorMode.type === 'insert' &&
+      editorMode.subjects.some((subject) => subject.insertionSubjectWrapper === 'conditional')
+
+    return {
+      primary: 'insert',
+      secondary: {
+        type: 'insert-options',
+        divInsertionActive: insertionTargetDiv,
+        imageInsertionActive: insertionTargetImage,
+        buttonInsertionActive: insertionTargetButton,
+        conditionalInsertionActive: insertionTargetConditional,
+        floatingInsertMenuOpen: floatingInsertMenu === 'insert',
+        insertSidebarOpen: rightMenuTab === RightMenuTab.Insert,
+      },
     }
-    return { primary: 'insert', secondary: 'target' }
-  }
-  if (floatingInsertMenu === 'insert') {
-    return { primary: 'insert', secondary: 'floating-menu' }
-  }
-  if (rightMenuTab === RightMenuTab.Insert) {
-    return { primary: 'insert', secondary: 'insert-sidebar' }
   }
 
   // Live Mode
@@ -90,10 +127,7 @@ export function useToolbarMode(): ToolbarMode {
   }
 
   if (dragStrategyFlags?.dragStarted) {
-    if (dragStrategyFlags.indicatorFlags.showIndicator) {
-      return { primary: 'edit', secondary: 'move' }
-    }
-    return { primary: 'edit', secondary: 'other-strategy' }
+    return { primary: 'edit', secondary: 'strategy-active' }
   }
 
   if (editorMode.type === 'select') {

@@ -832,12 +832,7 @@ export function dragToMoveIndicatorFlags(
   }
 }
 
-export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(
-  false,
-  'static',
-  'none',
-  false,
-)
+export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(false, 'none', 'none', false)
 export interface DragToMoveIndicatorFlags {
   showIndicator: boolean
   dragType: 'absolute' | 'static' | 'none'

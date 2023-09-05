@@ -55,20 +55,21 @@ export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
   const theme = useColorTheme()
 
-  const canvasToolbarMode = useToolbarMode()
+  const [forcedInsertMode, setForceInsertMode] = React.useState(false)
+
+  const toggleInsertButtonClicked = React.useCallback(() => {
+    setForceInsertMode((value) => !value)
+  }, [])
+
+  const canvasToolbarMode = useToolbarMode(forcedInsertMode)
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
-  const divInsertion = useCheckInsertModeForElementType('div')
   const insertDivCallback = useEnterDrawToInsertForDiv()
-  const imgInsertion = useCheckInsertModeForElementType('img')
   const insertImgCallback = useEnterDrawToInsertForImage()
-  const textInsertion = useCheckInsertModeForElementType('span', { textEdit: true })
   const insertTextCallback = useEnterTextEditMode()
-  const buttonInsertion = useCheckInsertModeForElementType('button')
   const insertButtonCallback = useEnterDrawToInsertForButton()
-  const conditionalInsertion = useCheckInsertModeForElementType('div', { wrapInConditional: true })
   const insertConditionalCallback = useEnterDrawToInsertForConditional()
 
   const insertMenuMode = useEditorState(
@@ -309,85 +310,40 @@ export const CanvasToolbar = React.memo(() => {
               ></div>
             ))}
           </div>
-          <Tooltip title='Select' placement='bottom'>
+          <Tooltip title='Edit' placement='bottom'>
             <InsertModeButton
               iconType='pointer'
               iconCategory='tools'
+              primary={canvasToolbarMode.primary === 'edit'}
               onClick={clickSelectModeButton}
             />
           </Tooltip>
-          <Tooltip title='Insert text' placement='bottom'>
+          <Tooltip title='Insert or Edit Text' placement='bottom'>
             <InsertModeButton
               iconType='pure-text'
-              primary={textInsertion}
+              primary={canvasToolbarMode.primary === 'text'}
               onClick={insertTextCallback}
             />
           </Tooltip>
-          {/* <Tooltip title='Insert div' placement='bottom'>
-          <InsertModeButton iconType='view' primary={divInsertion} onClick={insertDivCallback} />
-        </Tooltip>
-        <Tooltip title='Insert image' placement='bottom'>
-          <InsertModeButton iconType='image' primary={imgInsertion} onClick={insertImgCallback} />
-        </Tooltip> */}
-          <Tooltip title='Insert button' placement='bottom'>
+          <Tooltip title='Insert...' placement='bottom'>
             <InsertModeButton
               iconType='plusbutton-larger'
               iconCategory='semantic'
-              primary={buttonInsertion}
-              onClick={insertButtonCallback}
+              primary={canvasToolbarMode.primary === 'insert'}
+              onClick={toggleInsertButtonClicked}
             />
           </Tooltip>
-          {/* 
-        <Tooltip title='Choose and insert a component' placement='bottom'>
-          <InsertModeButton
-            iconType='componentinstance'
-            primary={insertMenuMode === 'insert'}
-            onClick={openFloatingInsertMenuCallback}
-          />
-        </Tooltip>
-        <Tooltip title='Insert conditional' placement='bottom'>
-          <InsertModeButton
-            testid={InsertConditionalButtonTestId}
-            iconType='conditional'
-            primary={conditionalInsertion}
-            onClick={insertConditionalCallback}
-          />
-        </Tooltip>
-        <Tooltip title='Open insert menu' placement='bottom'>
-          <InsertModeButton
-            iconType='dotdotdot'
-            iconCategory='semantic'
-            primary={insertMenuSelected}
-            onClick={selectInsertMenuPane}
-          />
-        </Tooltip>
-         */}
           <Tooltip title='Toggle Live Mode' placement='bottom'>
             <InsertModeButton
               iconType='playbutton'
               iconCategory='semantic'
-              primary={isLiveMode}
+              primary={canvasToolbarMode.primary === 'play'}
               onClick={toggleLiveMode}
               keepActiveInLiveMode
             />
           </Tooltip>
-          {/* <Tooltip title='Zoom in' placement='bottom'>
-        <InsertModeButton
-          iconType='magnifyingglass-plus'
-          iconCategory='semantic'
-          onClick={zoomIn}
-        />
-      </Tooltip>
-      <Tooltip title='Zoom out' placement='bottom'>
-        <InsertModeButton
-          iconType='magnifyingglass-minus'
-          iconCategory='semantic'
-          onClick={zoomOut}
-        />
-      </Tooltip> */}
           <Separator />
           <Tooltip title='Zoom to 100%' placement='bottom'>
-            {/* TODO make this a number input control */}
             <SquareButton
               highlight
               style={{
@@ -465,8 +421,58 @@ export const CanvasToolbar = React.memo(() => {
             </>,
           )}
           {when(
-            canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'move',
+            canvasToolbarMode.primary === 'edit' &&
+              canvasToolbarMode.secondary === 'strategy-active',
             <StrategyIndicator />,
+          )}
+          {/* Insert Mode */}
+          {canvasToolbarMode.primary === 'insert' && ( // sorry Sean but I need to narrow the type of canvasToolbarMode.primary here :)
+            <>
+              <Tooltip title='Insert div' placement='bottom'>
+                <InsertModeButton
+                  iconType='view'
+                  primary={canvasToolbarMode.secondary.divInsertionActive}
+                  onClick={insertDivCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Insert image' placement='bottom'>
+                <InsertModeButton
+                  iconType='image'
+                  primary={canvasToolbarMode.secondary.imageInsertionActive}
+                  onClick={insertImgCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Insert button' placement='bottom'>
+                <InsertModeButton
+                  iconType='clickable'
+                  primary={canvasToolbarMode.secondary.buttonInsertionActive}
+                  onClick={insertButtonCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Insert conditional' placement='bottom'>
+                <InsertModeButton
+                  testid={InsertConditionalButtonTestId}
+                  iconType='conditional'
+                  primary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                  onClick={insertConditionalCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Choose and insert a component' placement='bottom'>
+                <InsertModeButton
+                  iconType='componentinstance'
+                  primary={canvasToolbarMode.secondary.floatingInsertMenuOpen}
+                  onClick={openFloatingInsertMenuCallback}
+                />
+              </Tooltip>
+              <Tooltip title='Open insert menu' placement='bottom'>
+                <InsertModeButton
+                  iconType='dotdotdot'
+                  iconCategory='semantic'
+                  primary={canvasToolbarMode.secondary.insertSidebarOpen}
+                  onClick={selectInsertMenuPane}
+                />
+              </Tooltip>
+            </>
           )}
         </FlexRow>
       </FlexColumn>

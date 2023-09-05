@@ -36,7 +36,7 @@ export const StrategyIndicator = React.memo(() => {
   const indicatorFlagsInfo = useGetDragStrategyIndicatorFlags()
 
   if (indicatorFlagsInfo == null) {
-    return null
+    // return null
   }
 
   return (
@@ -50,14 +50,12 @@ export const StrategyIndicator = React.memo(() => {
         backgroundColor: colorTheme.bg0.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
-        opacity:
-          indicatorFlagsInfo.dragStarted && indicatorFlagsInfo.indicatorFlags.showIndicator ? 1 : 0,
       }}
       data-testid='drag-strategy-indicator'
     >
-      <MoveIndicatorItem dragType={indicatorFlagsInfo.indicatorFlags.dragType} />
-      <ReparentIndicatorItem status={indicatorFlagsInfo.indicatorFlags.reparent} />
-      <AncestorIndicatorItem enabled={indicatorFlagsInfo.indicatorFlags.ancestor} />
+      <MoveIndicatorItem dragType={indicatorFlagsInfo?.indicatorFlags.dragType ?? 'none'} />
+      <ReparentIndicatorItem status={indicatorFlagsInfo?.indicatorFlags.reparent ?? 'none'} />
+      <AncestorIndicatorItem enabled={indicatorFlagsInfo?.indicatorFlags.ancestor ?? false} />
     </FlexRow>
   )
 })
@@ -113,7 +111,7 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
           color: props.dragType === 'none' ? colorTheme.fg8.value : colorTheme.fg2.value,
         }}
       >
-        {props.dragType === 'static' ? 'Reorder' : 'Move'}
+        {props.dragType === 'static' ? 'cica??' : 'Move'}
       </div>
     </FlexColumn>
   )
