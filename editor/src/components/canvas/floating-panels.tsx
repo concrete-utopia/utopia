@@ -140,7 +140,9 @@ export const FloatingPanelsContainer = React.memo(() => {
           width = SizeConstraints['code-editor'].defaultSize.width
         }
         if (isMenuContainingPanel(panelsInColumn)) {
-          height = canvasSize.height / panelsInColumn.length
+          height =
+            canvasSize.height / panelsInColumn.length -
+            (GapBetweenPanels * panelsInColumn.length - 1)
         }
 
         if (panelsInColumn.find((d) => d.name === 'inspector') != null) {
@@ -169,7 +171,9 @@ export const FloatingPanelsContainer = React.memo(() => {
         const panelsInColumn = currentPanelsData.filter((d) => d.location === panel.location)
         const y = panelsInColumn.reduce((working, current) => {
           if (current.locationInColumn < panel.locationInColumn) {
-            return working + current.frame.height
+            return (
+              working + current.frame.height + GapBetweenPanels * (current.locationInColumn + 1)
+            )
           }
           return working
         }, 0)
