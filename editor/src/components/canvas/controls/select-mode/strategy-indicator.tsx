@@ -8,11 +8,13 @@ import {
   UtopiaTheme,
 } from '../../../../uuiui'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
+import type { DragToMoveIndicatorFlags } from '../../../editor/store/editor-state'
 
-const StrategyIndicatorWidth = 240
-export const StrategyIndicator = React.memo(() => {
-  const colorTheme = useColorTheme()
-  const indicatorFlagsInfo = useEditorState(
+export function useGetDragStrategyIndicatorFlags(): {
+  indicatorFlags: DragToMoveIndicatorFlags
+  dragStarted: boolean
+} | null {
+  return useEditorState(
     Substores.canvas,
     (store) => {
       if (store.editor.canvas.interactionSession?.interactionData.type === 'DRAG') {
@@ -24,8 +26,14 @@ export const StrategyIndicator = React.memo(() => {
         return null
       }
     },
-    'StrategyIndicator',
+    'useGetStrategyIndicatorFlags',
   )
+}
+
+const StrategyIndicatorWidth = 240
+export const StrategyIndicator = React.memo(() => {
+  const colorTheme = useColorTheme()
+  const indicatorFlagsInfo = useGetDragStrategyIndicatorFlags()
 
   if (indicatorFlagsInfo == null) {
     return null

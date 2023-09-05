@@ -39,6 +39,7 @@ import { Substores, useEditorState, useRefEditorState } from './store/store-hook
 import { togglePanel } from './actions/action-creators'
 import { defaultTransparentViewElement } from './defaults'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import { useGetToolbarMode } from './canvas-toolbar-states'
 
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
@@ -169,6 +170,8 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
+  const toolbarMode = useGetToolbarMode()
+
   return (
     <FlexColumn
       id={CanvasToolbarId}
@@ -227,7 +230,6 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Insert</header>
@@ -284,7 +286,6 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
-
       {/* ------------------------------------ */}
       <FlexColumn style={{ padding: 4 }}>
         <header style={{ paddingLeft: 4, fontSize: 10, fontWeight: 500 }}>Organise</header>
@@ -350,6 +351,7 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </FlexRow>
       </FlexColumn>
+      {toolbarMode.primary} - {(toolbarMode as any)['secondary']}
     </FlexColumn>
   )
 })
