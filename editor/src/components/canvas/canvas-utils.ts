@@ -2058,10 +2058,12 @@ function getValidElementPathsFromElement(
       }
 
       for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
-        const { relativePath, filePath: filePathOfRouteModule } =
-          remixPathGenerationContext.routeModulesToRelativePaths[route.id]
-        const basePath = appendTwoPaths(path, relativePath)
-        makeValidPathsFromModule(filePathOfRouteModule, basePath)
+        const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
+        if (entry != null) {
+          const { relativePath, filePath: filePathOfRouteModule } = entry
+          const basePath = appendTwoPaths(path, relativePath)
+          makeValidPathsFromModule(filePathOfRouteModule, basePath)
+        }
       }
 
       return paths
