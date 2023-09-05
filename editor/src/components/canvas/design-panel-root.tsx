@@ -42,7 +42,7 @@ import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { NO_OP } from '../../core/shared/utils'
-import { TitleBarEmpty, TitleBarUserProfile } from '../titlebar/title-bar'
+import { TitleBarEmpty, TitleBarUserProfile, TitleHeight } from '../titlebar/title-bar'
 
 interface NumberSize {
   width: number
@@ -483,7 +483,12 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
           justifyContent: 'stretch',
         }}
       >
-        <div style={{ display: 'flex', height: props.small ? (height - 28) / 0.7 - 32 : '100%' }}>
+        <div
+          style={{
+            display: 'flex',
+            height: props.small ? (height - TitleHeight) / 0.7 - 32 : '100%',
+          }}
+        >
           {when(codeEditorEnabled, <CodeEditorWrapper />)}
         </div>
         <ConsoleAndErrorsPane />
