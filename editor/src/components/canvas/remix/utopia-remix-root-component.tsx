@@ -115,11 +115,25 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     return routeModulesResult
   }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
 
-  // The router always needs to be updated otherwise new routes won't work without a refresh
-  const router = React.useMemo(() => optionalMap(createMemoryRouter, routes), [routes])
-
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+
+  const currentLocation = navigationData[EP.toString(basePath)]?.location
+  const currentLocationRef = React.useRef(currentLocation)
+  currentLocationRef.current = currentLocation
+
+  // The router always needs to be updated otherwise new routes won't work without a refresh
+  // We need to create the new router with the current location in the initial entries to
+  // prevent it thinking that it is rendering '/'
+  const router = React.useMemo(() => {
+    if (routes == null) {
+      return null
+    }
+
+    const initialEntries =
+      currentLocationRef.current == null ? undefined : [currentLocationRef.current]
+    return createMemoryRouter(routes, { initialEntries: initialEntries })
+  }, [currentLocationRef, routes])
 
   const updateNavigationData = React.useCallback(
     (routerr: RouterType, location: Location) => {
