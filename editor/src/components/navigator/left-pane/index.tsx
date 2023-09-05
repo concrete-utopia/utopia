@@ -34,6 +34,7 @@ import type { Menu, Pane } from '../../canvas/floating-panels'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
+import { TitleBarProjectTitle } from '../../titlebar/title-bar'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -158,7 +159,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
         }}
         {...props.resizableConfig}
       >
-        {when(isFeatureEnabled('Draggable Floating Panels'), <PanelTitleBar />)}
+        {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarProjectTitle />)}
         <div
           id={LeftPaneComponentId}
           className='leftPane'

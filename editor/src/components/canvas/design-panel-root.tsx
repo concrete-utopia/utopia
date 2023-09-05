@@ -42,6 +42,7 @@ import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { NO_OP } from '../../core/shared/utils'
+import { TitleBarEmpty, TitleBarUserProfile } from '../titlebar/title-bar'
 
 interface NumberSize {
   width: number
@@ -358,7 +359,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
       onResizeStop={onResizeStop}
       {...props.resizableConfig}
     >
-      {when(isFeatureEnabled('Draggable Floating Panels'), <PanelTitleBar />)}
+      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarUserProfile />)}
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
@@ -468,7 +469,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       }}
       {...resizableConfig}
     >
-      {when(isFeatureEnabled('Draggable Floating Panels'), <PanelTitleBar />)}
+      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarEmpty />)}
       <div
         style={{
           transformOrigin: 'top left',

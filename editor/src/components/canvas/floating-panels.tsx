@@ -25,8 +25,8 @@ import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import { when } from '../../utils/react-conditionals'
 import type { Direction } from 're-resizable/lib/resizer'
 import { usePrevious } from '../editor/hook-utils'
+import { TitleHeight } from '../titlebar/title-bar'
 
-const TitleHeight = 28
 export type Menu = 'inspector' | 'navigator'
 export type Pane = 'code-editor' | 'preview'
 export const GapBetweenPanels = 10
@@ -56,7 +56,7 @@ const SizeConstraints: {
   navigator: {
     resize: {
       minWidth: 240,
-      maxWidth: 300,
+      maxWidth: 350,
       snap: null,
     },
     defaultSize: { width: LeftPaneDefaultWidth, height: 0 },
@@ -664,23 +664,5 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         `}</style>,
       )}
     </>
-  )
-})
-
-export const PanelTitleBar = React.memo(() => {
-  const colorTheme = useColorTheme()
-  return (
-    <div
-      className='handle'
-      style={{
-        height: TitleHeight,
-        width: '100%',
-        backgroundColor: colorTheme.fg8.value,
-        lineHeight: `${TitleHeight}px`,
-        paddingLeft: 10,
-      }}
-    >
-      draggable title
-    </div>
   )
 })
