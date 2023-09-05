@@ -368,7 +368,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         (draggedPanel != newPanel || switchWithPanel != null)
       ) {
         const columnData = panelsData.filter((d) => d.location === newPanel)
-        const updatedPanelData = panelsData.map((panel) => {
+        let updatedPanelData = panelsData.map((panel) => {
           if (panel.name === draggedMenuOrPane) {
             return {
               ...panel,
@@ -387,6 +387,26 @@ export const FloatingPanelsContainer = React.memo(() => {
             }
           } else {
             return panel
+          }
+        })
+
+        // Readjust the locationInColumn values to have them start at zero and increment by 1.
+        updatedPanelData.sort(
+          (firstPanel, secondPanel) => firstPanel.locationInColumn - secondPanel.locationInColumn,
+        )
+        let locationInColumnMap: Map<PanelName, number> = new Map()
+        updatedPanelData = updatedPanelData.map((panelData) => {
+          const currentLocationInColumnValue = locationInColumnMap.get(panelData.location)
+          const newLocationInColumn =
+            currentLocationInColumnValue == null ? 0 : currentLocationInColumnValue + 1
+          locationInColumnMap.set(panelData.location, newLocationInColumn)
+          if (panelData.locationInColumn === newLocationInColumn) {
+            return panelData
+          } else {
+            return {
+              ...panelData,
+              locationInColumn: newLocationInColumn,
+            }
           }
         })
 
