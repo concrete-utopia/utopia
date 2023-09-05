@@ -449,6 +449,15 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isFocusedComponent',
   )
 
+  const isInsideRemixOutlet = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const parentComponent = EP.getContainingComponent(navigatorEntry.elementPath)
+      return MetadataUtils.isProbablyRemixOutlet(store.editor.jsxMetadata, parentComponent)
+    },
+    'NavigatorItem isInsideRemixOutlet',
+  )
+
   const elementWarnings = useEditorState(
     Substores.derived,
     (store) => elementWarningsSelector(store, props.navigatorEntry),
@@ -613,7 +622,9 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isInsideComponent =
-    EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) || isFocusedComponent
+    !isInsideRemixOutlet &&
+    (EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) ||
+      isFocusedComponent)
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 

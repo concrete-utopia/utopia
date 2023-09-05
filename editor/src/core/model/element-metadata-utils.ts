@@ -214,6 +214,15 @@ export const MetadataUtils = {
       element.importInfo.exportedName === 'RemixScene'
     )
   },
+  isProbablyRemixOutletFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element != null &&
+      element.importInfo != null &&
+      isImportedOrigin(element.importInfo) &&
+      element.importInfo.filePath === '@remix-run/react' &&
+      element.importInfo.exportedName === 'Outlet'
+    )
+  },
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
@@ -221,6 +230,10 @@ export const MetadataUtils = {
   isProbablyRemixScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
+  },
+  isProbablyRemixOutlet(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata)
   },
   isSceneWithOneChild(
     jsxMetadata: ElementInstanceMetadataMap,
