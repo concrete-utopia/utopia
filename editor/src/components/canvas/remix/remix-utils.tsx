@@ -551,14 +551,13 @@ export function getRoutesFromRouteManifest(
 }
 
 export function getProjectUrlWithRemixRoute(
-  currentPath: string,
+  location: string,
   elementPath: ElementPath,
   route: string,
 ): string {
-  const basePathRegex = /(\/p\/[^\/]+)\//
-  const basePath = basePathRegex.exec(currentPath)?.[1]
-  if (basePath == null || route === '/') {
-    return currentPath
-  }
-  return `${basePath}/${EP.toUid(elementPath)}${route}`
+  var url = new URL(location)
+  url.searchParams.set('remix-root', EP.toUid(elementPath))
+  url.searchParams.set('route', route)
+  url.search = decodeURIComponent(url.search)
+  return url.href
 }
