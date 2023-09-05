@@ -91,8 +91,8 @@ const DefaultPanels: Array<PanelData> = [
     name: 'navigator',
     type: 'menu',
     frame: windowRectangle({ x: 0, y: 0, width: LeftPaneDefaultWidth, height: 0 }),
-    location: 'leftMenu2',
-    locationInColumn: 0,
+    location: 'leftMenu1',
+    locationInColumn: 1,
   },
   {
     name: 'inspector',
