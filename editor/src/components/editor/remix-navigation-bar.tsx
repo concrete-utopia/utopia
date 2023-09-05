@@ -55,10 +55,24 @@ export const RemixNavigationBar = React.memo(() => {
       onClick={stopPropagation}
     >
       <Tooltip title={'Back'}>
-        <Icn type='icon-semantic-back' color='main' width={18} height={18} />
+        <Icn
+          type='icon-semantic-back'
+          color='main'
+          width={18}
+          height={18}
+          onMouseDown={back}
+          style={{ cursor: 'pointer' }}
+        />
       </Tooltip>
       <Tooltip title={'Forward'}>
-        <Icn type='icon-semantic-fwd' color='main' width={18} height={18} />
+        <Icn
+          type='icon-semantic-fwd'
+          color='main'
+          width={18}
+          height={18}
+          onMouseDown={forward}
+          style={{ cursor: 'pointer' }}
+        />
       </Tooltip>
       <Tooltip title={'Home'}>
         <span style={{ fontSize: 22, cursor: 'pointer' }} onClick={home}>

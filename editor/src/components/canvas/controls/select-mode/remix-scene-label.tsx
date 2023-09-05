@@ -245,10 +245,24 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           }}
         >
           <Tooltip title={'Back'}>
-            <Icn type='icon-semantic-back' color='main' width={18} height={18} />
+            <Icn
+              type='icon-semantic-back'
+              color='main'
+              width={18}
+              height={18}
+              onMouseDown={back}
+              style={{ cursor: 'pointer' }}
+            />
           </Tooltip>
           <Tooltip title={'Forward'}>
-            <Icn type='icon-semantic-fwd' color='main' width={18} height={18} />
+            <Icn
+              type='icon-semantic-fwd'
+              color='main'
+              width={18}
+              height={18}
+              style={{ cursor: 'pointer' }}
+              onMouseDown={forward}
+            />
           </Tooltip>
           <Tooltip title={'Home'}>
             <span style={{ fontSize: 22, cursor: 'pointer' }} onClick={home}>
