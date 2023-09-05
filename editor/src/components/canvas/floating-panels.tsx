@@ -103,11 +103,9 @@ const DefaultPanels: Array<PanelData> = [
   },
 ]
 
-const DefaultSizes: { [key in PanelName]: WindowRectangle } = {
-  leftMenu1: zeroWindowRect,
-  leftMenu2: zeroWindowRect,
-  rightMenu1: zeroWindowRect,
-  rightMenu2: zeroWindowRect,
+const DefaultSizes = {
+  left: 0,
+  right: 0,
 }
 export const FloatingPanelSizesAtom = atomWithPubSub({
   key: 'FloatingPanelSizesAtom',
@@ -125,8 +123,43 @@ export const FloatingPanelsContainer = React.memo(() => {
   const prevCanvasSize = usePrevious(canvasSize)
 
   // TODO fix this to have correct canvas toolbar and arrow positions!
-  const [panelFrames, setPanelFrames] =
-    usePubSubAtom<{ [key in PanelName]: WindowRectangle }>(FloatingPanelSizesAtom)
+  const [columnFrames, setColumnFrames] = usePubSubAtom<{ left: number; right: number }>(
+    FloatingPanelSizesAtom,
+  )
+
+  const setColumnFramesFromPanelsData = React.useCallback(
+    (latestPanelsData: Array<PanelData>) => {
+      const leftColumnFrame =
+        boundingRectangleArray(
+          latestPanelsData
+            .filter((data) => data.location === 'leftMenu1')
+            .map((data) => data.frame),
+        ) ?? zeroWindowRect
+      const left2ColumnFrame =
+        boundingRectangleArray(
+          latestPanelsData
+            .filter((data) => data.location === 'leftMenu2')
+            .map((data) => data.frame),
+        ) ?? zeroWindowRect
+      const rightColumnFrame =
+        boundingRectangleArray(
+          latestPanelsData
+            .filter((data) => data.location === 'rightMenu1')
+            .map((data) => data.frame),
+        ) ?? zeroWindowRect
+      const right2ColumnFrame =
+        boundingRectangleArray(
+          latestPanelsData
+            .filter((data) => data.location === 'rightMenu2')
+            .map((data) => data.frame),
+        ) ?? zeroWindowRect
+      setColumnFrames({
+        left: leftColumnFrame.x + leftColumnFrame.width + left2ColumnFrame.width + GapBetweenPanels,
+        right: rightColumnFrame.width + right2ColumnFrame.width + GapBetweenPanels,
+      })
+    },
+    [setColumnFrames],
+  )
 
   const getUpdatedPanelSizes = React.useCallback(
     (currentPanelsData: Array<PanelData>) => {
@@ -412,9 +445,16 @@ export const FloatingPanelsContainer = React.memo(() => {
 
         const panelDataWithPositionsUpdated = getUpdatedPanelSizesAndPositions(updatedPanelData)
         setPanelsData(panelDataWithPositionsUpdated)
+        setColumnFramesFromPanelsData(panelDataWithPositionsUpdated)
       }
     },
-    [canvasSize, panelsData, setPanelsData, getUpdatedPanelSizesAndPositions],
+    [
+      canvasSize,
+      panelsData,
+      setPanelsData,
+      getUpdatedPanelSizesAndPositions,
+      setColumnFramesFromPanelsData,
+    ],
   )
 
   const updateSize = React.useCallback(
@@ -443,6 +483,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         })
         const withAdjustedPositions = getUpdatedPanelPositions(newPanelsData)
         setPanelsData(withAdjustedPositions)
+        setColumnFramesFromPanelsData(withAdjustedPositions)
       } else {
         const panelsInColumn = panelsData.filter((d) => d.location === currentPanel)
         const newPanelsData = panelsData.map((data) => {
@@ -478,9 +519,16 @@ export const FloatingPanelsContainer = React.memo(() => {
         })
         const withAdjustedPositions = getUpdatedPanelPositions(newPanelsData)
         setPanelsData(withAdjustedPositions)
+        setColumnFramesFromPanelsData(withAdjustedPositions)
       }
     },
-    [panelsData, setPanelsData, canvasSize, getUpdatedPanelPositions],
+    [
+      panelsData,
+      setPanelsData,
+      canvasSize,
+      getUpdatedPanelPositions,
+      setColumnFramesFromPanelsData,
+    ],
   )
 
   // menus fill the available space
@@ -500,9 +548,17 @@ export const FloatingPanelsContainer = React.memo(() => {
         })
       ) {
         setPanelsData(updatedPanelsData)
+        setColumnFramesFromPanelsData(updatedPanelsData)
       }
     }
-  }, [canvasSize, prevCanvasSize, panelsData, setPanelsData, getUpdatedPanelSizesAndPositions])
+  }, [
+    canvasSize,
+    prevCanvasSize,
+    panelsData,
+    setPanelsData,
+    getUpdatedPanelSizesAndPositions,
+    setColumnFramesFromPanelsData,
+  ])
 
   return (
     <>

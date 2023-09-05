@@ -38,6 +38,7 @@ import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
 import { FloatingPanelSizesAtom, GapBetweenPanels } from './floating-panels'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -105,6 +106,7 @@ export const CanvasWrapperComponent = React.memo(() => {
   const scale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, 'scale')
 
   const leftPanelWidthAtom = usePubSubAtomReadOnly(LeftPanelWidthAtom, AlwaysTrue)
+  const columnSize = usePubSubAtomReadOnly(FloatingPanelSizesAtom, AlwaysTrue)
   const leftPanelWidth = React.useMemo(
     () => (isNavigatorOverCanvas ? leftPanelWidthAtom + 10 : 0),
     [leftPanelWidthAtom, isNavigatorOverCanvas],
@@ -166,7 +168,9 @@ export const CanvasWrapperComponent = React.memo(() => {
           height: '100%',
           transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
           pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
-          left: leftPanelWidth + codeEditorWidth,
+          left: isFeatureEnabled('Draggable Floating Panels')
+            ? columnSize.left
+            : leftPanelWidth + codeEditorWidth,
         }}
       >
         <FlexRow
