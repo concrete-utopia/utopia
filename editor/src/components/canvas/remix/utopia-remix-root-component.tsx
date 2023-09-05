@@ -125,10 +125,10 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   )
 
   React.useLayoutEffect(() => {
-    if (router != null) {
+    if (router != null && navigationData[EP.toString(basePath)] == null) {
       updateNavigationData(router, router.state.location)
     }
-  }, [router, updateNavigationData])
+  }, [router, navigationData, basePath, updateNavigationData])
 
   React.useLayoutEffect(() => {
     if (router != null) {
