@@ -245,6 +245,13 @@ export const MetadataUtils = {
       MetadataUtils.getChildrenPathsOrdered(jsxMetadata, pathTree, path).length === 1
     )
   },
+  isInsideRemixSceneOrOutlet(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+    const parentComponent = EP.getContainingComponent(path)
+    return (
+      MetadataUtils.isProbablyRemixOutlet(jsxMetadata, parentComponent) ||
+      MetadataUtils.isProbablyRemixScene(jsxMetadata, parentComponent)
+    )
+  },
   parentIsSceneWithOneChild(
     jsxMetadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
