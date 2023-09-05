@@ -459,25 +459,24 @@ export const FloatingPanelsContainer = React.memo(() => {
     [panelsData, setPanelsData, canvasSize, getUpdatedPanelPositions],
   )
 
-  // on canvassize change the menu sizes reset to default now
+  // menus fill the available space
   React.useEffect(() => {
     if (
-      prevCanvasSize?.width === canvasSize.width &&
-      prevCanvasSize?.height === canvasSize.height
+      prevCanvasSize?.width !== canvasSize.width ||
+      prevCanvasSize?.height !== canvasSize.height
     ) {
-      return undefined
-    }
-    const updatedPanelsData = getUpdatedPanelSizesAndPositions(panelsData)
-    if (
-      updatedPanelsData.some((data, i) => {
-        const originalFrame = panelsData[i].frame
-        if (data.frame == null || originalFrame == null) {
-          return true
-        }
-        return !rectanglesEqual(data.frame, originalFrame)
-      })
-    ) {
-      setPanelsData(updatedPanelsData)
+      const updatedPanelsData = getUpdatedPanelSizesAndPositions(panelsData)
+      if (
+        updatedPanelsData.some((data, i) => {
+          const originalFrame = panelsData[i].frame
+          if (data.frame == null || originalFrame == null) {
+            return true
+          }
+          return !rectanglesEqual(data.frame, originalFrame)
+        })
+      ) {
+        setPanelsData(updatedPanelsData)
+      }
     }
   }, [canvasSize, prevCanvasSize, panelsData, setPanelsData, getUpdatedPanelSizesAndPositions])
 
