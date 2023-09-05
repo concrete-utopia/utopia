@@ -1,10 +1,16 @@
 import type { CSSProperties } from 'react'
+import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
+import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import {
   MetadataUtils,
   getZIndexOrderedViewsWithoutDirectChildren,
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
+import {
+  removeMarginProperties,
+  removePaddingProperties,
+} from '../../../../core/model/margin-and-padding'
 import { arrayAccumulate, mapDropNulls } from '../../../../core/shared/array-utils'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -13,11 +19,14 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXAttributes,
+  JSXConditionalExpression,
   JSXElement,
+  JSXElementChild,
   JSXElementLike,
 } from '../../../../core/shared/element-template'
 import {
   emptyComments,
+  isJSXConditionalExpression,
   isJSXElement,
   isJSXElementLike,
   isJSXFragment,
@@ -37,6 +46,7 @@ import type {
 import {
   boundingRectangleArray,
   canvasRectangleToLocalRectangle,
+  canvasVector,
   forceFiniteRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
@@ -45,10 +55,18 @@ import {
   zeroCanvasPoint,
   zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
+import {
+  fromField,
+  fromTypeGuard,
+  traverseArray,
+} from '../../../../core/shared/optics/optic-creators'
+import { modify } from '../../../../core/shared/optics/optic-utilities'
 import { forceNotNull, optionalMap } from '../../../../core/shared/optional-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import { assertNever } from '../../../../core/shared/utils'
+import { styleStringInArray } from '../../../../utils/common-constants'
 import type { Absolute } from '../../../../utils/utils'
 import { absolute, back } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
@@ -56,7 +74,10 @@ import { notice } from '../../../common/notice'
 import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types'
 import { applyCommandsAction, showToast } from '../../../editor/actions/action-creators'
 import type { AllElementProps, NavigatorEntry } from '../../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../../editor/store/editor-state'
+import {
+  trueUpChildrenOfElementChanged,
+  trueUpElementChanged,
+} from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
   commonInsertionPathFromArray,
@@ -65,7 +86,6 @@ import {
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { cssPixelLength, isCSSNumber } from '../../../inspector/common/css-utils'
 import {
-  detectFillHugFixedState,
   isHugFromStyleAttribute,
   nukeAllAbsolutePositioningPropsCommands,
   nukeSizingPropsForAxisCommand,
@@ -83,18 +103,17 @@ import {
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
+import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import {
   getElementFragmentLikeType,
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
 } from './fragment-like-helpers'
+import { isEmptyGroup } from './group-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
-import { updateSelectedViews } from '../../commands/update-selected-views-command'
-import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
-import { styleStringInArray } from '../../../../utils/common-constants'
-import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
-import { isEmptyGroup, treatElementAsGroupLike } from './group-helpers'
+import { createMoveCommandsForElement } from './shared-move-strategies-helpers'
+import { getConditionalActiveCase } from '../../../../core/model/conditionals'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -309,6 +328,11 @@ export function convertFragmentToGroup(
   }
 
   const { children, uid } = element.element.value
+  // Remove the margins from the children.
+  const toPropsOptic = traverseArray<JSXElementChild>()
+    .compose(fromTypeGuard(isJSXElement))
+    .compose(fromField('props'))
+  const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
 
   const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
@@ -349,7 +373,7 @@ export function convertFragmentToGroup(
             emptyComments,
           ),
         }),
-        children,
+        childrenWithoutMargins,
       ),
       {
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
@@ -566,7 +590,49 @@ export function convertFrameToGroup(
   }
 
   const { children, uid, props } = instance.element.value
-  const elementToAdd = jsxElement('Group', uid, props, children)
+  // Remove the padding properties from the parent.
+  const propsWithoutPadding = removePaddingProperties(props)
+  // Remove the margin properties for the children of the newly created group.
+  const toPropsOptic = traverseArray<JSXElementChild>()
+    .compose(fromTypeGuard(isJSXElement))
+    .compose(fromField('props'))
+  const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
+  const elementToAdd = jsxElement('Group', uid, propsWithoutPadding, childrenWithoutMargins)
+
+  // Any margin may result in a shift when that margin is gone, so this shifts
+  // in the opposite direction.
+  const moveChildrenCommands = arrayAccumulate<CanvasCommand>((workingArray) => {
+    for (const child of childrenWithoutMargins) {
+      const targetPath = EP.appendToPath(elementPath, child.uid)
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, targetPath)
+      if (elementMetadata != null) {
+        const globalFrame = elementMetadata.globalFrame
+        const localFrame = elementMetadata.localFrame
+        const canvasMargin = elementMetadata.specialSizeMeasurements.margin
+        if (
+          (globalFrame == null || isFiniteRectangle(globalFrame)) &&
+          (localFrame == null || isFiniteRectangle(localFrame))
+        ) {
+          const shiftLeftBy = canvasMargin.left ?? 0
+          const shiftTopBy = canvasMargin.top ?? 0
+          if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
+            workingArray.push(
+              ...createMoveCommandsForElement(
+                elementMetadata.element.value,
+                targetPath,
+                targetPath,
+                canvasVector({ x: shiftLeftBy, y: shiftTopBy }),
+                localFrame,
+                globalFrame,
+                elementMetadata.specialSizeMeasurements.immediateParentBounds,
+                elementMetadata.specialSizeMeasurements.parentFlexDirection,
+              ).commands,
+            )
+          }
+        }
+      }
+    }
+  })
 
   return [
     deleteElement('always', elementPath),
@@ -574,7 +640,8 @@ export function convertFrameToGroup(
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: GroupImport,
     }),
-    queueGroupTrueUp([trueUpElementChanged(childInstances[0].elementPath)]), // TODO change this to trueUpChildrenOfElementChanged(elementPath)
+    ...moveChildrenCommands,
+    queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
   ]
 }
 
@@ -613,6 +680,27 @@ export function convertGroupToFrameCommands(
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
     }),
   ]
+}
+
+export type GroupChildElement = JSXElementLike | JSXConditionalExpression
+
+export function elementCanBeAGroupChild(
+  element: JSXElementChild | null,
+  elementPath: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+): element is GroupChildElement {
+  if (element == null) {
+    return false
+  }
+  if (isJSXElementLike(element)) {
+    return true
+  }
+  if (isJSXConditionalExpression(element)) {
+    const activeBranch = getConditionalActiveCase(elementPath, element, jsxMetadata)
+    const branch = activeBranch === 'true-case' ? element.whenTrue : element.whenFalse
+    return elementCanBeAGroupChild(branch, EP.appendToPath(elementPath, branch.uid), jsxMetadata)
+  }
+  return false
 }
 
 export function groupConversionCommands(
@@ -680,13 +768,15 @@ export function createWrapInGroupActions(
     return showToast(notice("Root elements can't be wrapped into other elements", 'ERROR'))
   }
 
-  const anyTargetIsNotJSXElement = orderedActionTargets.some(
-    (e) => !isJSXElementLike(MetadataUtils.getJsxElementChildFromMetadata(metadata, e)),
-  )
-  if (anyTargetIsNotJSXElement) {
-    return showToast(
-      notice('Only simple JSX Elements can be wrapped into Groups for now 🙇', 'ERROR'),
+  const allTargetsCanBeGroupChildren = orderedActionTargets.every((path) => {
+    return elementCanBeAGroupChild(
+      MetadataUtils.getJsxElementChildFromMetadata(metadata, path),
+      path,
+      metadata,
     )
+  })
+  if (!allTargetsCanBeGroupChildren) {
+    return showToast(notice('Not all targets can be wrapped into a Group', 'ERROR'))
   }
 
   const anyTargetIsAnEmptyGroup = orderedActionTargets.some((e) => isEmptyGroup(metadata, e))
@@ -712,24 +802,71 @@ export function createWrapInGroupActions(
     ),
   )
 
-  const childComponents: Array<{ element: JSXElementLike; metadata: ElementInstanceMetadata }> =
-    orderedActionTargets.map((p) => {
+  const elementPropsOptic = fromTypeGuard<JSXElementLike, JSXElement>(isJSXElement).compose(
+    fromField('props'),
+  )
+
+  function removeMarginsFromGroupChildElement(
+    element: GroupChildElement,
+    elementMetadata: ElementInstanceMetadata,
+  ) {
+    switch (element.type) {
+      case 'JSX_ELEMENT':
+      case 'JSX_FRAGMENT':
+        // Remove any margin properties from the child.
+        const elementLike = modify(elementPropsOptic, removeMarginProperties, element)
+        return {
+          element: elementLike,
+          metadata: elementMetadata,
+        }
+
+      case 'JSX_CONDITIONAL_EXPRESSION':
+        // Remove any margin properties from the branches.
+        const conditionalWithUpdatedWhenTrue = modify(
+          fromField<JSXConditionalExpression, 'whenTrue'>('whenTrue')
+            .compose(fromTypeGuard(isJSXElement))
+            .compose(fromField('props')),
+          removeMarginProperties,
+          element,
+        )
+        const conditional = modify(
+          fromField<JSXConditionalExpression, 'whenFalse'>('whenFalse')
+            .compose(fromTypeGuard(isJSXElement))
+            .compose(fromField('props')),
+          removeMarginProperties,
+          conditionalWithUpdatedWhenTrue,
+        )
+        return {
+          element: conditional,
+          metadata: elementMetadata,
+        }
+      default:
+        assertNever(element)
+    }
+  }
+
+  const childComponents: Array<{
+    element: GroupChildElement
+    metadata: ElementInstanceMetadata
+  }> = orderedActionTargets.map(
+    (p): { element: GroupChildElement; metadata: ElementInstanceMetadata } => {
       const foundMetadata = MetadataUtils.findElementByElementPath(metadata, p)
       const element = foundMetadata?.element
       if (
         foundMetadata == null ||
         element == null ||
         isLeft(element) ||
-        !isJSXElementLike(element.value)
+        !elementCanBeAGroupChild(element.value, p, metadata)
       ) {
         throw new Error(
           `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
             p,
-          )} was null or Left or not JSXElement`,
+          )} cannot be a group child`,
         )
       }
-      return { element: element.value, metadata: foundMetadata }
-    })
+      return removeMarginsFromGroupChildElement(element.value, foundMetadata)
+    },
+  )
 
   // delete all reparented elements first to avoid UID clashes
   const deleteCommands = orderedActionTargets.map((e) => deleteElement('always', e))
@@ -818,6 +955,7 @@ export function createWrapInGroupActions(
 
         acc.push(
           ...createPinChangeCommandsForElementBecomingGroupChild(
+            metadata,
             foundMetadata,
             expectedPathInsideGroup,
             globalBoundingBoxOfAllElementsToBeWrapped,
@@ -840,6 +978,7 @@ export function createWrapInGroupActions(
 }
 
 export function createPinChangeCommandsForElementBecomingGroupChild(
+  jsxMetadata: ElementInstanceMetadataMap,
   elementMetadata: ElementInstanceMetadata | null,
   expectedPath: ElementPath,
   globalBoundingBoxOfAllElementsToBeWrapped: CanvasRectangle,
@@ -848,24 +987,54 @@ export function createPinChangeCommandsForElementBecomingGroupChild(
   if (
     elementMetadata == null ||
     isLeft(elementMetadata.element) ||
-    !isJSXElement(elementMetadata.element.value)
+    !elementCanBeAGroupChild(
+      elementMetadata.element.value,
+      elementMetadata.elementPath,
+      jsxMetadata,
+    )
   ) {
     throw new Error(
       `Invariant violation: ElementInstanceMetadata.element found for ${EP.toString(
         expectedPath,
-      )} was null or Left or not JSXElement`,
+      )} cannot be a group child`,
     )
   }
+
   const childLocalRect: LocalRectangle = canvasRectangleToLocalRectangle(
     forceFiniteRectangle(elementMetadata.globalFrame),
     globalBoundingBoxOfAllElementsToBeWrapped,
   )
-  return commandsForPinChangeCommandForElementBecomingGroup(
-    expectedPath,
-    elementMetadata.element.value.props,
-    childLocalRect,
-    newLocalRectangleForGroup,
-  )
+  switch (elementMetadata.element.value.type) {
+    case 'JSX_ELEMENT':
+      return commandsForPinChangeCommandForElementBecomingGroup(
+        expectedPath,
+        elementMetadata.element.value.props,
+        childLocalRect,
+        newLocalRectangleForGroup,
+      )
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      const activeBranch = getConditionalActiveCase(
+        elementMetadata.elementPath,
+        elementMetadata.element.value,
+        jsxMetadata,
+      )
+      const branch =
+        activeBranch === 'true-case'
+          ? elementMetadata.element.value.whenTrue
+          : elementMetadata.element.value.whenFalse
+      return isJSXElement(branch)
+        ? commandsForPinChangeCommandForElementBecomingGroup(
+            expectedPath,
+            branch.props,
+            childLocalRect,
+            newLocalRectangleForGroup,
+          )
+        : []
+    case 'JSX_FRAGMENT':
+      return []
+    default:
+      assertNever(elementMetadata.element.value)
+  }
 }
 
 /**

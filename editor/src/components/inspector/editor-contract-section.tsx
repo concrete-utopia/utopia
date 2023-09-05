@@ -277,6 +277,7 @@ export const EditorContractDropdown = React.memo(() => {
 
   return (
     <PopupList
+      id={'editor-contract-popup-list'}
       value={currentValue}
       options={Options}
       onSubmitValue={onChange}

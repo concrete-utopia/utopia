@@ -154,7 +154,7 @@ import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/sce
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
-import { getContentsTreeFileFromString } from '../assets'
+import { getProjectFileByFilePath } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
@@ -900,6 +900,10 @@ export function isEdgePositionAVerticalEdge(edgePosition: EdgePosition): boolean
 
 export function isEdgePositionOnSide(edgePosition: EdgePosition): boolean {
   return edgePosition.x === 0.5 || edgePosition.y === 0.5
+}
+
+export function isEdgePositionEqualTo(a: EdgePosition, b: EdgePosition): boolean {
+  return a.x === b.x && a.y === b.y
 }
 
 export const SnappingThreshold = 5
@@ -1910,7 +1914,7 @@ export function getParseSuccessForFilePath(
   filePath: string,
   projectContents: ProjectContentTreeRoot,
 ): GetParseSuccessResult {
-  const projectFile = getContentsTreeFileFromString(projectContents, filePath)
+  const projectFile = getProjectFileByFilePath(projectContents, filePath)
   if (
     projectFile != null &&
     isTextFile(projectFile) &&

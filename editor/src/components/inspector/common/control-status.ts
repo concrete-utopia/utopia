@@ -166,10 +166,10 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'multiselect-controlled':
       case 'multiselect-mixed-simple-or-unset':
         interactive = true
-        mainColor = colorTheme.primary.value
-        secondaryColor = colorTheme.primary.value
-        trackColor = colorTheme.primary.value
-        strokePrimaryColor = colorTheme.primary.value
+        mainColor = colorTheme.dynamicBlue.value
+        secondaryColor = colorTheme.dynamicBlue.value
+        trackColor = colorTheme.dynamicBlue.value
+        strokePrimaryColor = colorTheme.dynamicBlue.value
         showContent = true
         break
       case 'trivial-default':
@@ -209,17 +209,17 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = Utils.mapArrayTo
       case 'off':
         set = false
         interactive = false
-        mainColor = colorTheme.fg9.value
-        secondaryColor = colorTheme.fg9.value
-        trackColor = colorTheme.fg9.value
+        mainColor = colorTheme.fg7.value
+        secondaryColor = colorTheme.fg7.value
+        trackColor = colorTheme.fg7.value
         showContent = false
         unsettable = false
         break
       case 'disabled':
       case 'multiselect-disabled':
         interactive = false
-        mainColor = colorTheme.fg9.value
-        secondaryColor = colorTheme.fg9.value
+        mainColor = colorTheme.fg7.value
+        secondaryColor = colorTheme.fg7.value
         backgroundColor = 'transparent'
         segmentSelectorColor = 'transparent'
         trackColor = 'transparent'

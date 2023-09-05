@@ -1,7 +1,7 @@
 import type { MapLike } from 'typescript'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../components/assets'
 import {
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   isProjectContentFile,
   walkContentsTree,
   zipContentsTree,
@@ -30,7 +30,7 @@ export function getDirectReverseDependencies(
               switch (successResult.file.type) {
                 case 'ES_CODE_FILE':
                   // Check if the file is part of the project.
-                  if (getContentsTreeFileFromString(projectContents, successResult.path) != null) {
+                  if (getProjectFileByFilePath(projectContents, successResult.path) != null) {
                     // Dependency, so record the connection.
                     result = addToMapOfArraysUnique(result, successResult.path, fullPath)
                   }

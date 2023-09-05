@@ -5,6 +5,14 @@ import type { EdgePosition } from '../../canvas-types'
 import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 
+export function getResizeControl(
+  renderResult: EditorRenderResult,
+  edgePosition: EdgePosition,
+): HTMLElement | null {
+  const testIdOfControl = `resize-control-${edgePosition.x}-${edgePosition.y}`
+  return renderResult.renderedDOM.queryByTestId(testIdOfControl)
+}
+
 export async function resizeElement(
   renderResult: EditorRenderResult,
   dragDelta: Delta,
@@ -14,11 +22,9 @@ export async function resizeElement(
     midDragCallback?: () => Promise<void>
   } = {},
 ): Promise<void> {
-  const canvasControl = renderResult.renderedDOM.queryByTestId(
-    `resize-control-${edgePosition.x}-${edgePosition.y}`,
-  )
+  const canvasControl = getResizeControl(renderResult, edgePosition)
   if (canvasControl == null) {
-    return
+    throw new Error(`Could not find canvas control.`)
   }
 
   const resizeCornerBounds = canvasControl.getBoundingClientRect()

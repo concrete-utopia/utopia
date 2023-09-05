@@ -22,19 +22,18 @@ import type { SelfLayoutTab } from './self-layout-subsection'
 import {
   useWrappedEmptyOrUnknownOnSubmitValue,
   NumberInput,
-  SquareButton,
-  Icons,
   FlexColumn,
   SimpleNumberInput,
-  useColorTheme,
 } from '../../../../../uuiui'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'
 import { isNotUnsetOrDefault } from '../../../common/control-status'
 import { usePropControlledStateV2 } from '../../../common/inspector-utils'
 import { useContextSelector } from 'use-context-selector'
-import { isFeatureEnabled } from '../../../../../utils/feature-switches'
 import { unless } from '../../../../../utils/react-conditionals'
 import type { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
+import { FlexCol } from 'utopia-api'
+import { treatElementAsGroupLike } from '../../../../canvas/canvas-strategies/strategies/group-helpers'
+import { useEditorState, Substores } from '../../../../editor/store/store-hook'
 
 interface PinsLayoutNumberControlProps {
   label: string
@@ -320,7 +319,7 @@ const PinControls = React.memo((props: PinControlsProps) => {
         framePoints={props.framePins}
         controlStatus='simple'
         handlePinMouseDown={props.togglePin}
-        style={{ paddingTop: 7 }}
+        name='positioncontrols'
       />
     </InspectorContextMenuWrapper>
   )
@@ -337,8 +336,6 @@ function flexLayoutNumberControl(label: string, layoutProp: LayoutFlexElementNum
 function flexStyleNumberControl(label: string, styleProp: StyleLayoutNumberProp) {
   return <FlexStyleNumberControl label={label} styleProp={styleProp} />
 }
-
-const spacingButton = <SquareButton />
 
 export const AspectRatioLockButtonTestId = 'AspectRatioLockButton'
 
@@ -359,23 +356,17 @@ const WidthHeightRow = React.memo((props: WidthHeightRowProps) => {
   }, [togglePin])
 
   return (
-    <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
-      <div
-        id='width-height-row-toggles'
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-        }}
-      >
-        <PinWidthControl framePins={framePins} toggleWidth={toggleWidth} controlStatus='simple' />
-        <PinHeightControl
-          framePins={framePins}
-          toggleHeight={toggleHeight}
-          controlStatus='simple'
-        />
-      </div>
-    </UIGridRow>
+    <FlexCol
+      id='width-height-row-toggles'
+      style={{
+        justifyContent: 'flex-start',
+        gap: 8,
+      }}
+      css={undefined}
+    >
+      <PinWidthControl framePins={framePins} toggleWidth={toggleWidth} controlStatus='simple' />
+      <PinHeightControl framePins={framePins} toggleHeight={toggleHeight} controlStatus='simple' />
+    </FlexCol>
   )
 })
 
@@ -390,11 +381,9 @@ const MinimumsRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={minimumsProps}>Minimum</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         {flexStyleNumberControl('W', 'minWidth')}
-        {spacingButton}
         {flexStyleNumberControl('H', 'minHeight')}
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -411,11 +400,9 @@ const MaximumsRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={maximumsProps}>Maximum</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         {flexStyleNumberControl('W', 'maxWidth')}
-        {spacingButton}
         {flexStyleNumberControl('H', 'maxHeight')}
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -432,11 +419,9 @@ const FlexWidthHeightRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexWidthHeightProps}>Size</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         {flexLayoutNumberControl('W', 'width')}
-        {spacingButton}
         {flexLayoutNumberControl('H', 'height')}
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -453,11 +438,9 @@ const FlexGrowShrinkRow = React.memo(() => {
   return (
     <UIGridRow padded={true} variant='<---1fr--->|------172px-------|'>
       <PropertyLabel target={flexGrowShrinkProps}>Flex</PropertyLabel>
-      <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      <UIGridRow padded={false} variant='<--1fr--><--1fr-->'>
         <FlexShorthandNumberControl label='G' styleProp='flexGrow' />
-        {spacingButton}
         <FlexShorthandNumberControl label='S' styleProp='flexShrink' />
-        {spacingButton}
       </UIGridRow>
     </UIGridRow>
   )
@@ -470,26 +453,46 @@ const OtherPinsRow = React.memo((props: PinControlsProps) => {
   const firstYAxisControl: React.ReactElement = pinsLayoutNumberControl('left')
   const secondYAxisControl: React.ReactElement = pinsLayoutNumberControl('right')
 
+  const selectionContainsGroups = useEditorState(
+    Substores.metadata,
+    (store) =>
+      store.editor.selectedViews.some((path) =>
+        treatElementAsGroupLike(store.editor.jsxMetadata, path),
+      ),
+    'OtherPinsRow selectionContainsGroups',
+  )
+
   return (
     <UIGridRow
       alignItems='start'
       padded={true}
-      variant='<---1fr--->|------172px-------|'
-      style={{ height: undefined }}
+      variant={
+        selectionContainsGroups
+          ? '<-auto-><----------1fr--------->'
+          : '<-auto->|20px|<----------1fr--------->'
+      }
     >
       <PinControls resetPins={resetPinsFn} framePins={framePins} togglePin={togglePin} />
-      <FlexColumn>
-        <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+      {unless(
+        selectionContainsGroups,
+        <WidthHeightRow togglePin={togglePin} framePins={framePins} />,
+      )}
+      <FlexColumn style={{ gap: 8 }}>
+        <UIGridRow
+          padded={false}
+          variant='<--1fr--><--1fr-->'
+          style={{ minHeight: undefined, gap: 4 }}
+        >
           {firstXAxisControl}
-          {spacingButton}
           {firstYAxisControl}
-          {spacingButton}
         </UIGridRow>
-        <UIGridRow padded={false} variant='|--67px--||16px||--67px--||16px|'>
+        <UIGridRow
+          padded={false}
+          variant='<--1fr--><--1fr-->'
+          style={{ minHeight: undefined, gap: 4 }}
+        >
           {secondXAxisControl}
-          {spacingButton}
           {secondYAxisControl}
-          {spacingButton}
         </UIGridRow>
       </FlexColumn>
     </UIGridRow>
@@ -518,23 +521,22 @@ export const GiganticSizePinsSubsection = React.memo((props: GiganticSizePinsSub
   const { resetAllPins, framePins, togglePin } = usePinToggling()
 
   return (
-    <div>
-      <WidthHeightRow togglePin={togglePin} framePins={framePins} />
+    <FlexCol css={{ gap: 8, paddingBottom: 8 }}>
       {minMaxToggled ? (
-        <>
+        <div>
           <MinimumsRow />
           <MaximumsRow />
-        </>
+        </div>
       ) : null}
       {layoutType === 'flex' ? (
-        <>
+        <div>
           <FlexGrowShrinkRow />
           <FlexWidthHeightRow />
-        </>
+        </div>
       ) : null}
       {layoutType === 'absolute' ? (
         <OtherPinsRow resetPins={resetAllPins} framePins={framePins} togglePin={togglePin} />
       ) : null}
-    </div>
+    </FlexCol>
   )
 })

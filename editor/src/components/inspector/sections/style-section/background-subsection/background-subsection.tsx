@@ -349,14 +349,14 @@ export const BackgroundSubsection = React.memo(() => {
               onMouseDown={onUnsetSubsectionValues}
               data-testid={'inspector-background-remove-all'}
             >
-              <Icons.Cross color={propertyStatus.controlled ? 'primary' : 'secondary'} />
+              <Icons.Cross color={propertyStatus.controlled ? 'dynamic' : 'secondary'} />
             </SquareButton>
             <SquareButton highlight onMouseDown={insertBackgroundLayerMouseDown}>
               <Icn
                 style={{ paddingTop: 1 }}
                 category='semantic'
                 type='plus'
-                color={propertyStatus.controlled ? 'primary' : 'secondary'}
+                color={propertyStatus.controlled ? 'dynamic' : 'secondary'}
                 width={16}
                 height={16}
               />

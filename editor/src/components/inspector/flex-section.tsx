@@ -16,6 +16,7 @@ import { SpacedPackedControl } from './spaced-packed-control'
 import { ThreeBarControl } from './three-bar-control'
 import { FlexGapControl } from './sections/layout-section/flex-container-subsection/flex-container-controls'
 import { FlexContainerControls } from './sections/layout-section/flex-container-subsection/flex-container-subsection'
+import { FlexCol } from 'utopia-api'
 
 const areElementsFlexContainersSelector = createSelector(
   metadataSelector,
@@ -35,25 +36,31 @@ export const FlexSection = React.memo(() => {
       <AddRemoveLayouSystemControl />
       {when(
         allElementsInFlexLayout,
-        <>
+        <FlexCol css={{ gap: 10 }}>
           <UIGridRow padded={true} variant='<-------------1fr------------->'>
             <DisabledFlexGroupPicker
               layoutSystem={null}
               providesCoordinateSystemForChildren={false}
             />
           </UIGridRow>
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <FlexDirectionToggle />
+          <UIGridRow padded variant='<--1fr--><--1fr-->'>
+            <UIGridRow padded={false} variant='<-------------1fr------------->'>
+              <NineBlockControl />
+              <ThreeBarControl />
+            </UIGridRow>
+            <FlexCol css={{ gap: 10 }}>
+              <FlexDirectionToggle />
+              <FlexContainerControls seeMoreVisible={true} />
+              <FlexGapControl />
+            </FlexCol>
+          </UIGridRow>
+          <UIGridRow padded={false} variant='<-------------1fr------------->'>
             <SpacedPackedControl />
           </UIGridRow>
-          <UIGridRow padded variant='<-------------1fr------------->'>
-            <NineBlockControl />
-            <ThreeBarControl />
+          <UIGridRow padded={false} variant='<-------------1fr------------->'>
+            <PaddingRow />
           </UIGridRow>
-          <PaddingRow />
-          <FlexGapControl />
-          <FlexContainerControls seeMoreVisible={true} />
-        </>,
+        </FlexCol>,
       )}
     </div>
   )

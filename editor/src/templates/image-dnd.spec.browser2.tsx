@@ -1,7 +1,7 @@
 import Sinon from 'sinon'
 import { loggedInUser } from '../common/user'
 import type { ProjectContentTreeRoot } from '../components/assets'
-import { getContentsTreeFileFromString } from '../components/assets'
+import { getProjectFileByFilePath } from '../components/assets'
 import { RegisteredCanvasStrategies } from '../components/canvas/canvas-strategies/canvas-strategies'
 import { CanvasControlsContainerID } from '../components/canvas/controls/new-canvas-controls'
 import {
@@ -401,7 +401,7 @@ describe('image drag and drop', () => {
       const expectedFileName = `${fileItemTargetFolder}/stuff.png`
 
       const filenameCorrected = correctProjectContentsPath(expectedFileName)
-      const fileContent = getContentsTreeFileFromString(
+      const fileContent = getProjectFileByFilePath(
         editor.getEditorState().editor.projectContents,
         filenameCorrected,
       )
@@ -462,7 +462,7 @@ describe('image drag and drop', () => {
       const expectedFileName = `${fileItemTargetFolder}/hello.png`
 
       const filenameCorrected = correctProjectContentsPath(expectedFileName)
-      const fileContent = getContentsTreeFileFromString(
+      const fileContent = getProjectFileByFilePath(
         editor.getEditorState().editor.projectContents,
         filenameCorrected,
       )

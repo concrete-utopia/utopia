@@ -13,6 +13,8 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
   | 'Draggable Floating Panels'
+  | 'Remix support'
+  | 'Debug - Print UIDs'
 
 export const AllFeatureNames: FeatureName[] = [
   // 'Dragging Reparents By Default', // Removing this option so that we can experiment on this later
@@ -26,6 +28,8 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
   'Draggable Floating Panels',
+  'Remix support',
+  'Debug - Print UIDs',
 ]
 
 let FeatureSwitches: { [feature in FeatureName]: boolean } = {
@@ -39,6 +43,8 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Draggable Floating Panels': false,
+  'Remix support': false,
+  'Debug - Print UIDs': false,
 }
 
 function settingKeyForName(featureName: FeatureName): string {

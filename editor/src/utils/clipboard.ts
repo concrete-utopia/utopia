@@ -32,7 +32,7 @@ import * as json5 from 'json5'
 import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
 import type { ProjectContentTreeRoot } from '../components/assets'
-import { getContentsTreeFileFromString } from '../components/assets'
+import { getProjectFileByFilePath } from '../components/assets'
 import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
@@ -337,10 +337,7 @@ export function createClipboardDataFromSelection(
       target,
     )
     const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
-    const projectFile = getContentsTreeFileFromString(
-      editor.projectContents,
-      targetPathSuccess.filePath,
-    )
+    const projectFile = getProjectFileByFilePath(editor.projectContents, targetPathSuccess.filePath)
     if (
       projectFile != null &&
       isTextFile(projectFile) &&

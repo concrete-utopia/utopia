@@ -111,7 +111,7 @@ export const SpacedPackedControl = React.memo(() => {
       onMouseEnter={onMouseEnterWithPaddingControls}
       onMouseLeave={onMouseLeave}
       padded={true}
-      variant='<---1fr--->|------172px-------|'
+      variant='<---1fr--->|------150px-------|'
     >
       Spacing
       <OptionChainControl

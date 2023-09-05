@@ -176,10 +176,11 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   removeFromProjectContents,
   treeToContents,
   walkContentsTreeForParseSuccess,
@@ -412,7 +413,6 @@ import {
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
   modifyUnderlyingTargetElement,
-  packageJsonFileFromProjectContents,
   persistentModelFromEditorModel,
   removeElementAtPath,
   StoryboardFilePath,
@@ -592,17 +592,20 @@ import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
   isEmptyGroup,
+  isMaybeGroupForWrapping,
   isInvalidGroupState,
   treatElementAsGroupLike,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   createPinChangeCommandsForElementInsertedIntoGroup,
   createPinChangeCommandsForElementBecomingGroupChild,
+  elementCanBeAGroupChild,
 } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1492,7 +1495,7 @@ export const UPDATE_FNS = {
         )
       },
     )
-    const storyboardFile = getContentsTreeFileFromString(parsedProjectFiles, StoryboardFilePath)
+    const storyboardFile = getProjectFileByFilePath(parsedProjectFiles, StoryboardFilePath)
     const openFilePath = storyboardFile != null ? StoryboardFilePath : null
     initVSCodeBridge(parsedProjectFiles, dispatch, openFilePath)
 
@@ -2206,6 +2209,25 @@ export const UPDATE_FNS = {
           )
         }
 
+        if (
+          isMaybeGroupForWrapping(
+            action.whatToWrapWith.element,
+            action.whatToWrapWith.importsToAdd,
+          ) &&
+          orderedActionTargets.some((path) => {
+            return !elementCanBeAGroupChild(
+              MetadataUtils.getJsxElementChildFromMetadata(editor.jsxMetadata, path),
+              path,
+              editor.jsxMetadata,
+            )
+          })
+        ) {
+          return UPDATE_FNS.ADD_TOAST(
+            showToast(notice('Not all targets can be wrapped into a Group', 'ERROR')),
+            editor,
+          )
+        }
+
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
@@ -2404,6 +2426,7 @@ export const UPDATE_FNS = {
                   return foldAndApplyCommandsSimple(
                     result.editor,
                     createPinChangeCommandsForElementBecomingGroupChild(
+                      workingEditor.jsxMetadata,
                       child,
                       result.newPath,
                       parentFrame,
@@ -3256,7 +3279,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    const possiblyAnImage = getContentsTreeFileFromString(editor.projectContents, action.imagePath)
+    const possiblyAnImage = getProjectFileByFilePath(editor.projectContents, action.imagePath)
     if (possiblyAnImage != null && isImageFile(possiblyAnImage)) {
       const newUID = generateUidWithExistingComponents(editor.projectContents)
       const imageURL = imagePathURL(action.imagePath)
@@ -3432,7 +3455,7 @@ export const UPDATE_FNS = {
             filename: newPath,
           }
         }
-        const oldContent = getContentsTreeFileFromString(editor.projectContents, oldPath)
+        const oldContent = getProjectFileByFilePath(editor.projectContents, oldPath)
         if (oldContent != null && (isImageFile(oldContent) || isAssetFile(oldContent))) {
           // Update assets.
           if (isLoggedIn(userState.loginState) && editor.id != null) {
@@ -3489,14 +3512,14 @@ export const UPDATE_FNS = {
   ): EditorModel => {
     if (
       !action.addIfNotInFiles &&
-      getContentsTreeFileFromString(editor.projectContents, action.filePath) == null
+      getProjectFileByFilePath(editor.projectContents, action.filePath) == null
     ) {
       return editor
     }
 
     const { file } = action
 
-    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    const existing = getProjectFileByFilePath(editor.projectContents, action.filePath)
     const updatedFile = updateFileIfPossible(file, existing)
 
     if (updatedFile === 'cant-update') {
@@ -3609,7 +3632,7 @@ export const UPDATE_FNS = {
     // files ends up stale only the model in one of them gets updated which clashes with the UIDs in
     // the old version of the other.
     for (const fileUpdate of action.updates) {
-      const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
+      const existing = getProjectFileByFilePath(editor.projectContents, fileUpdate.filePath)
       if (existing != null && isTextFile(existing)) {
         anyParsedUpdates = true
         const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
@@ -3619,67 +3642,11 @@ export const UPDATE_FNS = {
       }
     }
 
-    for (const fileUpdate of action.updates) {
-      const existing = getContentsTreeFileFromString(editor.projectContents, fileUpdate.filePath)
-      if (existing != null && isTextFile(existing)) {
-        anyParsedUpdates = true
-        let updatedFile: TextFile
-        let updatedContents: ParsedTextFile
-        let code: string
-        const updateIsStale = fileUpdate.versionNumber < existing.versionNumber
-        switch (fileUpdate.type) {
-          case 'WORKER_PARSED_UPDATE': {
-            code = existing.fileContents.code
-            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-            updatedContents = updateParsedTextFileHighlightBounds(
-              fileUpdate.parsed,
-              highlightBounds,
-            )
-            break
-          }
-          case 'WORKER_CODE_AND_PARSED_UPDATE':
-            code = fileUpdate.code
-            const highlightBounds = getHighlightBoundsFromParseResult(fileUpdate.parsed)
-            // Because this will print and reparse, we need to be careful of changes to the parsed
-            // model that have happened since we requested this update
-            updatedContents = updateIsStale
-              ? existing.fileContents.parsed
-              : updateParsedTextFileHighlightBounds(fileUpdate.parsed, highlightBounds)
-            break
-          default:
-            const _exhaustiveCheck: never = fileUpdate
-            throw new Error(`Invalid file update: ${fileUpdate}`)
-        }
+    // Apply the updates to the projectContents.
+    const updateResult = processWorkerUpdates(workingProjectContents, action.updates)
+    anyParsedUpdates = anyParsedUpdates || updateResult.anyParsedUpdates
+    workingProjectContents = updateResult.projectContents
 
-        if (updateIsStale) {
-          // if the received file is older than the existing, we still allow it to update the other side,
-          // but we don't bump the revision state.
-          updatedFile = textFile(
-            textFileContents(code, updatedContents, existing.fileContents.revisionsState),
-            existing.lastSavedContents,
-            isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            existing.versionNumber,
-          )
-        } else {
-          updatedFile = textFile(
-            textFileContents(code, updatedContents, RevisionsState.BothMatch),
-            existing.lastSavedContents,
-            isParseSuccess(updatedContents) ? updatedContents : existing.lastParseSuccess,
-            existing.versionNumber,
-          )
-        }
-
-        workingProjectContents = addFileToProjectContents(
-          workingProjectContents,
-          fileUpdate.filePath,
-          updatedFile,
-        )
-      } else {
-        // The worker shouldn't be recreating deleted files or reformated files
-        console.error(`Worker thread is trying to update an invalid file ${fileUpdate.filePath}`)
-        return editor
-      }
-    }
     if (anyParsedUpdates) {
       // Clear any cached paths since UIDs will have been regenerated and property paths may no longer exist
       // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
@@ -3706,7 +3673,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const existing = getContentsTreeFileFromString(editor.projectContents, action.filePath)
+    const existing = getProjectFileByFilePath(editor.projectContents, action.filePath)
 
     const manualSave = action.unsavedContent == null
     const code = action.unsavedContent ?? action.savedContent
@@ -3791,7 +3758,7 @@ export const UPDATE_FNS = {
     derived: DerivedState,
     userState: UserState,
   ): EditorModel => {
-    const file = getContentsTreeFileFromString(editor.projectContents, action.filename)
+    const file = getProjectFileByFilePath(editor.projectContents, action.filename)
 
     // Don't delete package.json, otherwise it will bring about the end of days.
     if (file == null || action.filename === 'package.json') {
@@ -3968,7 +3935,7 @@ export const UPDATE_FNS = {
       }
     }, targetsToTrueUp)
     const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
-      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata', 'wrap'),
+      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata'),
     ])
     return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
   },
@@ -5055,7 +5022,7 @@ export const UPDATE_FNS = {
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const packageJsonFile = getContentsTreeFileFromString(editor.projectContents, '/package.json')
+    const packageJsonFile = getProjectFileByFilePath(editor.projectContents, '/package.json')
     const currentNpmDeps = dependenciesFromPackageJson(packageJsonFile, 'regular-only')
 
     void findLatestVersion('tailwindcss').then((tailwindResult) => {
@@ -5096,7 +5063,7 @@ export const UPDATE_FNS = {
     })
 
     let updatedProjectContents = editor.projectContents
-    if (getContentsTreeFileFromString(editor.projectContents, TailwindConfigPath) == null) {
+    if (getProjectFileByFilePath(editor.projectContents, TailwindConfigPath) == null) {
       updatedProjectContents = addFileToProjectContents(
         editor.projectContents,
         TailwindConfigPath,
@@ -5104,7 +5071,7 @@ export const UPDATE_FNS = {
       )
     }
 
-    if (getContentsTreeFileFromString(editor.projectContents, PostCSSPath) == null) {
+    if (getProjectFileByFilePath(editor.projectContents, PostCSSPath) == null) {
       updatedProjectContents = addFileToProjectContents(
         updatedProjectContents,
         PostCSSPath,
@@ -5620,7 +5587,7 @@ function saveFileInProjectContents(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
 ): ProjectContentTreeRoot {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
+  const file = getProjectFileByFilePath(projectContents, filePath)
   if (file == null) {
     return projectContents
   } else {

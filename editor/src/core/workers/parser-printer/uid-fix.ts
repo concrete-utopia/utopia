@@ -20,6 +20,7 @@ import type {
   TopLevelElement,
   UtopiaJSXComponent,
 } from '../../shared/element-template'
+import { isArbitraryJSBlock, isUtopiaJSXComponent } from '../../shared/element-template'
 import {
   emptyComments,
   getJSXAttribute,
@@ -263,15 +264,32 @@ export function fixTopLevelElementsUIDs(
   newElements: Array<TopLevelElement>,
   fixUIDsState: FixUIDsState,
 ): Array<TopLevelElement> {
-  return fixArrayElements(
-    null,
-    (oldElement, newElement) => {
-      return fixTopLevelElementUIDs(oldElement, newElement, fixUIDsState)
-    },
-    oldElements,
-    newElements,
-    fixUIDsState,
-  )
+  // Collate all the top level elements that have UID values, because those are the ones
+  // of interest, the rest wont have any UID updates applied to them.
+  function topLevelElementHasUID(topLevelElement: TopLevelElement): boolean {
+    return isArbitraryJSBlock(topLevelElement) || isUtopiaJSXComponent(topLevelElement)
+  }
+  const oldElementsWithUIDs = oldElements.filter(topLevelElementHasUID)
+
+  // Assuming that the old top level elements (with UIDs) are in the same order
+  // as in the new result, this should match those up.
+  let oldElementWithUIDIndex: number = 0
+  return newElements.map((newElement) => {
+    if (topLevelElementHasUID(newElement)) {
+      // As this is an entity with a UID, fix it against the one at a position
+      // which lines up with this one.
+      const result = fixTopLevelElementUIDs(
+        oldElementsWithUIDs[oldElementWithUIDIndex],
+        newElement,
+        fixUIDsState,
+      )
+      oldElementWithUIDIndex++
+      return result
+    } else {
+      // Otherwise just return the new value as is.
+      return newElement
+    }
+  })
 }
 
 export function fixTopLevelElementUIDs(

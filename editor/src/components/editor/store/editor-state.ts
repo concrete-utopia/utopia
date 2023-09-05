@@ -1,6 +1,5 @@
 import * as json5 from 'json5'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   findJSXElementChildAtPath,
   removeJSXElementChild,
@@ -79,9 +78,10 @@ import type { KeysPressed } from '../../../utils/keyboard'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
-  getContentsTreeFileFromString,
+  getProjectFileByFilePath,
   getProjectContentsChecksums,
 } from '../../assets'
 import type {
@@ -135,7 +135,6 @@ import { v4 as UUID } from 'uuid'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ConditionalCase } from '../../../core/model/conditionals'
-import { getConditionalClausePathFromMetadata } from '../../../core/model/conditionals'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import type { FileResult } from '../../../core/shared/file-utils'
 import type {
@@ -162,8 +161,6 @@ import type {
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import type { PersistenceMachine } from '../persistence/persistence'
-import type { InsertionPath } from './insertion-path'
-import { childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
@@ -1626,12 +1623,12 @@ export function getOpenFile(model: EditorState): ProjectFile | null {
   if (openFile == null) {
     return null
   } else {
-    return getContentsTreeFileFromString(model.projectContents, openFile)
+    return getProjectFileByFilePath(model.projectContents, openFile)
   }
 }
 
 export function getFileForName(filePath: string, model: EditorState): ProjectFile | null {
-  return getContentsTreeFileFromString(model.projectContents, filePath)
+  return getProjectFileByFilePath(model.projectContents, filePath)
 }
 
 export function getOpenTextFileKey(model: EditorState): string | null {
@@ -1639,7 +1636,7 @@ export function getOpenTextFileKey(model: EditorState): string | null {
   if (openFilename == null) {
     return null
   } else {
-    const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
+    const projectFile = getProjectFileByFilePath(model.projectContents, openFilename)
     if (projectFile != null && isTextFile(projectFile)) {
       return openFilename
     } else {
@@ -1666,7 +1663,7 @@ export function getOpenUIJSFileKey(model: EditorState): string | null {
   if (openFilename == null) {
     return null
   } else {
-    const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
+    const projectFile = getProjectFileByFilePath(model.projectContents, openFilename)
     if (isParsedTextFile(projectFile)) {
       return openFilename
     } else {
@@ -1685,7 +1682,7 @@ export function getOpenUIJSFile(model: EditorState): TextFile | null {
   if (openFilename == null) {
     return null
   } else {
-    const projectFile = getContentsTreeFileFromString(model.projectContents, openFilename)
+    const projectFile = getProjectFileByFilePath(model.projectContents, openFilename)
     if (isParsedTextFile(projectFile)) {
       return projectFile
     } else {
@@ -1790,7 +1787,7 @@ function getImportedUtopiaJSXComponents(
   resolve: ResolveFn,
   pathsToFilter: string[],
 ): Array<UtopiaJSXComponent> {
-  const file = getContentsTreeFileFromString(projectContents, filePath)
+  const file = getProjectFileByFilePath(projectContents, filePath)
   if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
     let resolvedFilePaths: Array<string> = []
     for (const toImport of Object.keys(file.fileContents.parsed.imports)) {
@@ -2924,12 +2921,6 @@ export const DefaultPackageJson = {
   },
 }
 
-export function packageJsonFileFromProjectContents(
-  projectContents: ProjectContentTreeRoot,
-): ProjectFile | null {
-  return getContentsTreeFileFromString(projectContents, '/package.json')
-}
-
 export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {
   const packageJsonFile = packageJsonFileFromProjectContents(editor.projectContents)
   if (packageJsonFile != null && isTextFile(packageJsonFile)) {
@@ -2963,7 +2954,7 @@ export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<str
     isRight(parsedFilePath) && typeof parsedFilePath.value === 'string'
       ? parsedFilePath.value
       : 'public/index.html'
-  const indexHtml = getContentsTreeFileFromString(editor.projectContents, `/${filePath}`)
+  const indexHtml = getProjectFileByFilePath(editor.projectContents, `/${filePath}`)
   if (indexHtml != null && isTextFile(indexHtml)) {
     return right(indexHtml)
   } else {
@@ -3177,7 +3168,7 @@ export function getHighlightBoundsForFile(
   editor: EditorState,
   fullPath: string,
 ): HighlightBoundsForUids | null {
-  const file = getContentsTreeFileFromString(editor.projectContents, fullPath)
+  const file = getProjectFileByFilePath(editor.projectContents, fullPath)
   if (file != null && isTextFile(file)) {
     if (isParseSuccess(file.fileContents.parsed)) {
       return getHighlightBoundsFromParseResult(file.fileContents.parsed)
@@ -3247,7 +3238,7 @@ export function modifyParseSuccessAtPath(
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
 ): EditorState {
-  const projectFile = getContentsTreeFileFromString(editor.projectContents, filePath)
+  const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
     const parsedFileContents = projectFile.fileContents.parsed
     if (isParseSuccess(parsedFileContents)) {

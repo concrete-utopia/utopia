@@ -800,7 +800,7 @@ export function rectSizeToVector<C extends CoordinateMarker>(sizeOfVector: Size)
   } as Point<C>
 }
 
-const roundToNearestWhole = (x: number) => roundTo(x, 0)
+export const roundToNearestWhole = (x: number) => roundTo(x, 0)
 
 export function roundRectangleToNearestWhole<C extends CoordinateMarker>(
   rectangle: Rectangle<C>,
@@ -892,6 +892,10 @@ export function roundTo(number: number, digits: number = 0): number {
   const multiplicator = Math.pow(10, digits)
   const n = parseFloat((number * multiplicator).toFixed(11))
   return Math.round(n) / multiplicator
+}
+
+export function roundUpToNearestHalf(numberToRound: number): number {
+  return Math.ceil(numberToRound * 2) / 2
 }
 
 export function roundToNearestHalf(n: number): number {

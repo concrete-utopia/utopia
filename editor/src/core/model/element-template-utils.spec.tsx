@@ -1,6 +1,6 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectElementAtPathHasMatchingUID*", "expectElementFoundNull"] }] */
 
-import { getContentsTreeFileFromString } from '../../components/assets'
+import { getProjectFileByFilePath } from '../../components/assets'
 import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromParseSuccess,
@@ -1146,7 +1146,7 @@ describe('insertJSXElementChildren', () => {
       makeTestProjectCodeWithSnippet(snippet),
     ).projectContents
 
-    const file = getContentsTreeFileFromString(projectContents, StoryboardFilePath)
+    const file = getProjectFileByFilePath(projectContents, StoryboardFilePath)
 
     if (file?.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
       throw new Error('failed parsing the test project file')
@@ -1607,7 +1607,7 @@ describe('transformJSXComponentAtPath', () => {
 
     // console.log(JSON.stringify(projectContents))
 
-    const file = getContentsTreeFileFromString(projectContents, StoryboardFilePath)
+    const file = getProjectFileByFilePath(projectContents, StoryboardFilePath)
 
     if (file?.type !== 'TEXT_FILE' || file.lastParseSuccess == null) {
       throw new Error('failed parsing the test project file')

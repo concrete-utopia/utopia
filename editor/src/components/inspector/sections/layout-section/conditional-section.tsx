@@ -374,11 +374,10 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
               onKeyUp={onExpressionKeyUp}
               onBlur={onUpdateExpression}
               css={{
-                ...UtopiaStyles.fontStyles.monospaced,
                 textAlign: 'left',
                 fontWeight: 600,
-                background: colorTheme.bg2.value,
                 height: 26,
+                ...UtopiaStyles.fontStyles.monospaced,
               }}
             />
           </UIGridRow>
