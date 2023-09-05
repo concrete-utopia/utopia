@@ -19,7 +19,7 @@ import {
 } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { appendTwoPaths } from '../canvas-utils'
-import { atom, useSetAtom } from 'jotai'
+import { atom, useAtom, useSetAtom } from 'jotai'
 
 type RouterType = ReturnType<typeof createMemoryRouter>
 
@@ -104,14 +104,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   // The router always needs to be updated otherwise new routes won't work without a refresh
   const router = React.useMemo(() => optionalMap(createMemoryRouter, routes), [routes])
 
-  const setNavigationData = useSetAtom(RemixNavigationAtom)
+  const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
 
   const updateNavigationData = React.useCallback(
     (routerr: RouterType, location: Location) => {
       setRouteInBrowserUrl(basePath, routerr.state.location)
-      setNavigationData((navigationData) => ({
-        ...navigationData,
+      setNavigationData((current) => ({
+        ...current,
         [EP.toString(basePath)]: {
           forward: () => void routerr.navigate(1),
           back: () => void routerr.navigate(-1),
@@ -142,6 +142,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   }
 
   const { assetsManifest, futureConfig } = remixDerivedDataRef.current
+
+  const locationToRestore = navigationData[EP.toString(basePath)]?.location.pathname
+  if (locationToRestore != null && locationToRestore !== router.state.location.pathname) {
+    void router.navigate(locationToRestore)
+  }
 
   return (
     <RemixContext.Provider

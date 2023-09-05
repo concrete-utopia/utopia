@@ -43,6 +43,8 @@ import { forceNotNull } from '../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 import type { UiJsxCanvasContextData } from '../canvas/ui-jsx-canvas'
 import { UiJsxCanvasCtxAtom } from '../canvas/ui-jsx-canvas'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from '../canvas/remix/utopia-remix-root-component'
 
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
@@ -161,10 +163,18 @@ export const CanvasToolbar = React.memo(() => {
     usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
   )
 
+  // Hack: reset the remix location when resetting the canvas
+  const [navigationData] = useAtom(RemixNavigationAtom)
+  const resetRemixApps = React.useCallback(
+    () => Object.values(navigationData).forEach((navData) => navData.home()),
+    [navigationData],
+  )
+
   const resetCanvasCallback = React.useCallback(() => {
     uiJsxCanvasContext.current.spyValues.metadata = {}
+    resetRemixApps()
     dispatch([resetCanvas()])
-  }, [dispatch, uiJsxCanvasContext])
+  }, [dispatch, resetRemixApps, uiJsxCanvasContext])
 
   const toggleCodeEditorVisible = React.useCallback(
     () => dispatch([togglePanel('codeEditor')]),
