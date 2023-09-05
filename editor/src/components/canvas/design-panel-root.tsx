@@ -36,7 +36,7 @@ import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import { FloatingPanelsContainer, PanelTitleBar } from './floating-panels'
+import { FloatingPanelsContainer } from './floating-panels'
 import type { Menu, Pane } from './floating-panels'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
@@ -457,7 +457,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       onResize={onResize}
       className='resizableFlexColumnCanvasCode'
       style={{
-        display: interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+        display: props.small ? 'block' : interfaceDesigner.codePaneVisible ? 'flex' : 'none',
         width: isFeatureEnabled('Draggable Floating Panels')
           ? interfaceDesigner.codePaneWidth
           : undefined,

@@ -7,7 +7,7 @@ import { Button } from '../../uuiui'
 import { colorTheme } from '../../uuiui'
 
 interface TitleButtonProps {
-  onMouseDown: (e: React.MouseEvent<HTMLDivElement>) => void
+  onMouseDown?: (e: React.MouseEvent<HTMLDivElement>) => void
   onClick: () => void
   color?: string
   testId?: string
