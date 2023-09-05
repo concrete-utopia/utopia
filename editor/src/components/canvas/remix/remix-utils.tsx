@@ -10,6 +10,7 @@ import { foldEither, forEachRight, left, right } from '../../../core/shared/eith
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import { getProjectFileByFilePath } from '../../assets'
 import type {
+  ElementInstanceMetadataMap,
   JSXElementChild,
   TopLevelElement,
   UtopiaJSXComponent,
