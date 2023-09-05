@@ -610,7 +610,9 @@ function lookupRemixRouteModule(
   path: ElementPath,
 ): { filePath: string; remainingElementPath: ElementPath } | null {
   // TODO: remove when the routing table is passed dowm from `editor`
-  invariant(RemixRoutingTableGLOBAL.current, 'RemixRoutingTableGLOBAL should be initialized')
+  if (RemixRoutingTableGLOBAL.current == null) {
+    return null
+  }
 
   let result: { filePath: string; remainingElementPath: ElementPath } | null = null
   let currentPathParts = [...path.parts]
