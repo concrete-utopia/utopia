@@ -41,9 +41,23 @@ export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
 
+function useCanvasMountCountIncreased(canvasMountCount: number): boolean {
+  const canvasMountCountRef = React.useRef(canvasMountCount)
+  const increased = canvasMountCount !== canvasMountCountRef.current
+  canvasMountCountRef.current = canvasMountCount
+  return increased
+}
+
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+
+  const canvasMountCount = useEditorState(
+    Substores.canvas,
+    (s) => s.editor.canvas.mountCount,
+    'UtopiaRemixRootComponent canvasMountCount',
+  )
+  const canvasMountCountIncreased = useCanvasMountCountIncreased(canvasMountCount)
 
   const routes = useEditorState(
     Substores.derived,
@@ -144,7 +158,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const { assetsManifest, futureConfig } = remixDerivedDataRef.current
 
   const locationToRestore = navigationData[EP.toString(basePath)]?.location.pathname
-  if (locationToRestore != null && locationToRestore !== router.state.location.pathname) {
+  if (
+    locationToRestore != null &&
+    locationToRestore !== router.state.location.pathname &&
+    canvasMountCountIncreased
+  ) {
     void router.navigate(locationToRestore)
   }
 
