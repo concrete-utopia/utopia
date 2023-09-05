@@ -8,6 +8,8 @@ import type {
   JSXElementChild,
   TopLevelElement,
 } from '../../shared/element-template'
+import { isUtopiaJSXComponent } from '../../shared/element-template'
+import { unparsedCode } from '../../shared/element-template'
 import {
   emptyComments,
   isJSXElement,
@@ -41,6 +43,13 @@ import {
   getAllUniqueUIdsFromElementChild,
 } from '../../../core/model/get-unique-ids'
 import { contentsToTree } from '../../../components/assets'
+import {
+  fromField,
+  fromTypeGuard,
+  notNull,
+  traverseArray,
+} from '../../../core/shared/optics/optic-creators'
+import { modify } from '../../../core/shared/optics/optic-utilities'
 
 function asParseSuccessOrNull(file: ParsedTextFile): ParseSuccess | null {
   return isParseSuccess(file) ? file : null
@@ -123,6 +132,45 @@ function lintAndParseAndValidateResult(
 }
 
 describe('fixParseSuccessUIDs', () => {
+  it('handles some repositioning of entities', () => {
+    const modifiedBaseFile = modify(
+      fromTypeGuard(isParseSuccess).compose(fromField('topLevelElements')),
+      (topLevelElements) => {
+        const updatedTopLevelElements = modify(
+          traverseArray<TopLevelElement>()
+            .compose(fromTypeGuard(isUtopiaJSXComponent))
+            .compose(fromField('rootElement'))
+            .compose(fromField('uid')),
+          (uid) => {
+            return uid + 'suffix'
+          },
+          topLevelElements,
+        )
+        return [
+          unparsedCode('// Some nonsense that should do nothing.'),
+          ...updatedTopLevelElements,
+        ]
+      },
+      baseFile,
+    )
+    const parsedFile = lintAndParseAndValidateResult(
+      'test.js',
+      baseFileContents,
+      asParseSuccessOrNull(modifiedBaseFile),
+      emptySet(),
+      'trim-bounds',
+    )
+    expect(getUidTree(parsedFile)).toEqual(getUidTree(modifiedBaseFile))
+    expect(getUidTree(parsedFile)).toMatchInlineSnapshot(`
+      "4edsuffix
+        865
+      434suffix
+        112
+      storyboardsuffix
+        scene
+          component"
+    `)
+  })
   it('handles a newly inserted component at the start of the file', () => {
     const initialParse = lintAndParseAndValidateResult(
       'test.js',
