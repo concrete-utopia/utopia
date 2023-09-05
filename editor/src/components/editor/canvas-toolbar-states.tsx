@@ -4,13 +4,13 @@ import { RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState } from './store/store-hook'
 
 type ToolbarMode =
-  | { primary: 'edit'; secondary: 'move' | 'select' | 'other-strategy' }
+  | { primary: 'edit'; secondary: 'nothing-selected' | 'move' | 'selected' | 'other-strategy' }
   | { primary: 'text'; secondary: 'target' | 'inserting' | 'write' }
   | { primary: 'insert'; secondary: 'floating-menu' | 'insert-sidebar' | 'target' | 'inserting' }
   | { primary: 'play' }
   | { primary: 'zoom' }
 
-export function useGetToolbarMode(): ToolbarMode {
+export function useToolbarMode(): ToolbarMode {
   const editorMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode,
@@ -31,6 +31,12 @@ export function useGetToolbarMode(): ToolbarMode {
     Substores.restOfEditor,
     (store) => store.editor.keysPressed,
     'useGetToolbarMode keysPressed',
+  )
+
+  const nothingSelected = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.length === 0,
+    'useGetToolbarMode nothingSelected',
   )
 
   // If Z is held, the EditorCanvas's zoom behavior takes precendence, sort of like a secret Editor Mode
@@ -75,8 +81,12 @@ export function useGetToolbarMode(): ToolbarMode {
   }
 
   // Edit Mode
+  if (nothingSelected) {
+    return { primary: 'edit', secondary: 'nothing-selected' }
+  }
+
   if (floatingInsertMenu === 'convert' || floatingInsertMenu === 'wrap') {
-    return { primary: 'edit', secondary: 'select' }
+    return { primary: 'edit', secondary: 'selected' }
   }
 
   if (dragStrategyFlags?.dragStarted) {
@@ -87,8 +97,8 @@ export function useGetToolbarMode(): ToolbarMode {
   }
 
   if (editorMode.type === 'select') {
-    return { primary: 'edit', secondary: 'select' }
+    return { primary: 'edit', secondary: 'selected' }
   }
 
-  return { primary: 'edit', secondary: 'select' } // fallback - for now
+  return { primary: 'edit', secondary: 'nothing-selected' } // fallback - for now
 }
