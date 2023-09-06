@@ -174,8 +174,8 @@ export const FloatingPanelsContainer = React.memo(() => {
         }
         if (isMenuContainingPanel(panelsInColumn)) {
           height =
-            canvasSize.height / panelsInColumn.length -
-            (GapBetweenPanels * panelsInColumn.length - 1)
+            (canvasSize.height - GapBetweenPanels * (panelsInColumn.length + 1)) /
+            panelsInColumn.length
         }
 
         if (panelsInColumn.find((d) => d.name === 'inspector') != null) {
@@ -665,8 +665,8 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     [panelLocation],
   )
 
-  const resizeConfig = React.useMemo(
-    () => ({
+  const resizeConfig = React.useMemo(() => {
+    return {
       enable: {
         left: alignment === 'right',
         right: alignment === 'left',
@@ -675,11 +675,13 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       minWidth: resizeMinMaxSnap.minWidth,
       maxWidth: resizeMinMaxSnap.maxWidth,
       minHeight: TitleHeight,
-      maxHeight: canvasSize.height - columnData.length * TitleHeight,
+      maxHeight:
+        !isMenuContainingPanel(columnData) || columnData.length > 1
+          ? canvasSize.height - columnData.length * TitleHeight
+          : undefined,
       snap: resizeMinMaxSnap.snap,
-    }),
-    [alignment, canvasSize, resizeMinMaxSnap, columnData],
-  )
+    }
+  }, [alignment, canvasSize, resizeMinMaxSnap, columnData])
 
   const draggablePanelComponent = (() => {
     switch (name) {
