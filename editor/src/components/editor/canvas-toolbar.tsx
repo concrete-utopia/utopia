@@ -371,10 +371,10 @@ export const CanvasToolbar = React.memo(() => {
         <FlexRow
           data-testid='canvas-toolbar-submenu'
           style={{
-            position: 'relative',
             alignItems: 'start',
-            left: 15,
-            minHeight: 32,
+            marginLeft: 15,
+            height: 32,
+            overflow: 'hidden',
             backgroundColor: '#f9f9f9',
             borderRadius: '0px 10px 10px 10px',
             boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
