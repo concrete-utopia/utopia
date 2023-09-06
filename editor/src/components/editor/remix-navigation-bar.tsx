@@ -47,7 +47,7 @@ export const RemixNavigationBar = React.memo(() => {
         alignItems: 'center',
         backgroundColor: theme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.shadows.medium}`,
         pointerEvents: 'initial',
         userSelect: 'none',
         padding: 10,
