@@ -481,7 +481,7 @@ export const FloatingPanelsContainer = React.memo(() => {
             return {
               ...panel,
               location: newPanel,
-              locationInColumn: columnData.length,
+              locationInColumn: panel.name === 'navigator' ? -1 : columnData.length, // TODO fix this nicely
             }
           } else if (panel.location === newPanel && switchWithPanel != null) {
             return { ...panel, location: switchWithPanel }
@@ -520,8 +520,8 @@ export const FloatingPanelsContainer = React.memo(() => {
 
         // Put the entries in the same order by name.
         updatedPanelData = [
-          ...updatedPanelData.filter((p) => p.name === 'code-editor'),
           ...updatedPanelData.filter((p) => p.name === 'navigator'),
+          ...updatedPanelData.filter((p) => p.name === 'code-editor'),
           ...updatedPanelData.filter((p) => p.name === 'inspector'),
           ...updatedPanelData.filter((p) => p.name === 'preview'),
         ]
