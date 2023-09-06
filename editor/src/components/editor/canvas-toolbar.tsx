@@ -369,13 +369,14 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
         </div>
         <FlexRow
+          data-testid='canvas-toolbar-submenu'
           style={{
             position: 'relative',
+            alignItems: 'start',
             left: 15,
-            height: 32,
+            minHeight: 32,
             backgroundColor: '#f9f9f9',
             borderRadius: '0px 10px 10px 10px',
-            overflow: 'hidden',
             boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
             pointerEvents: 'initial',
             zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one

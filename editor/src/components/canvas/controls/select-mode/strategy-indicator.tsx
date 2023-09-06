@@ -42,14 +42,7 @@ export const StrategyIndicator = React.memo(() => {
   return (
     <FlexRow
       style={{
-        ...UtopiaStyles.popup,
         pointerEvents: 'none',
-        padding: '10px',
-        alignItems: 'center',
-        gap: 8,
-        backgroundColor: colorTheme.bg0.value,
-        borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
       }}
       data-testid='drag-strategy-indicator'
     >
@@ -71,17 +64,14 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
       <FlexRow style={{ gap: 4 }}>
         <div
           style={{
-            backgroundColor:
-              props.dragType === 'absolute' ? colorTheme.primary.value : colorTheme.bg0.value,
             padding: 4,
-            borderRadius: 10,
           }}
         >
-          <VisibilityWrapper visible={props.dragType === 'absolute'}>
-            <ModalityIcons.MoveAbsolute color={'on-highlight-main'} />
-          </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'static'}>
-            <ModalityIcons.MoveAbsolute color={'main'} />
+            <ModalityIcons.MoveAbsolute color={'on-highlight-secondary'} />
+          </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType === 'absolute'}>
+            <ModalityIcons.MoveAbsolute color={'primary'} />
           </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'none'}>
             <ModalityIcons.MoveAbsolute color={'subdued'} />
@@ -89,17 +79,14 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
         </div>
         <div
           style={{
-            backgroundColor:
-              props.dragType === 'static' ? colorTheme.primary.value : colorTheme.bg0.value,
             padding: 4,
-            borderRadius: 10,
           }}
         >
-          <VisibilityWrapper visible={props.dragType === 'static'}>
-            <ModalityIcons.Reorder color={'on-highlight-main'} />
-          </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'absolute'}>
-            <ModalityIcons.Reorder color={'main'} />
+            <ModalityIcons.Reorder color={'on-highlight-secondary'} />
+          </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType === 'static'}>
+            <ModalityIcons.Reorder color={'primary'} />
           </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'none'}>
             <ModalityIcons.Reorder color={'subdued'} />
@@ -111,7 +98,7 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
           color: props.dragType === 'none' ? colorTheme.fg8.value : colorTheme.fg2.value,
         }}
       >
-        {props.dragType === 'static' ? 'cica??' : 'Move'}
+        {props.dragType === 'static' ? 'Reorder' : 'Move'}
       </div>
     </FlexColumn>
   )
@@ -127,12 +114,10 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
       <div
         style={{
           padding: 4,
-          borderRadius: 10,
-          backgroundColor: props.enabled ? colorTheme.primary.value : 'transparent',
         }}
       >
         <VisibilityWrapper visible={props.enabled}>
-          <ModalityIcons.Magic color={'on-highlight-main'} />
+          <ModalityIcons.Magic color={'primary'} />
         </VisibilityWrapper>
         <VisibilityWrapper visible={!props.enabled}>
           <ModalityIcons.Magic color={'subdued'} />
@@ -154,22 +139,11 @@ interface ReparentIndicatorItemProps {
 }
 const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }) => {
   const colorTheme = useColorTheme()
-  const iconBackgroundColorFromStatus: string = React.useMemo(() => {
-    switch (status) {
-      case 'same-component':
-        return colorTheme.primary.value
-      case 'different-component':
-        return colorTheme.component.value
-      case 'none':
-      default:
-        return 'transparent'
-    }
-  }, [status, colorTheme])
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
-      <div style={{ padding: 4, borderRadius: 10, backgroundColor: iconBackgroundColorFromStatus }}>
+      <div style={{ padding: 4 }}>
         <VisibilityWrapper visible={status !== 'none'}>
-          <ModalityIcons.Reparent color={'on-highlight-main'} />
+          <ModalityIcons.Reparent color={'primary'} />
         </VisibilityWrapper>
         <VisibilityWrapper visible={status === 'none'}>
           <ModalityIcons.Reparent color={'subdued'} />
