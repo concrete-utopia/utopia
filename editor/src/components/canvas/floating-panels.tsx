@@ -116,8 +116,158 @@ function isMenuContainingPanel(panelData: Array<PanelData>): boolean {
   return panelData.some((value) => value.type === 'menu')
 }
 
+function findDropAreaBeforeAfterColumn(
+  newPosition: WindowPoint,
+  panelsData: Array<PanelData>,
+  canvasSize: Size,
+  draggedPanel: PanelName,
+): { newPanel: PanelName; switchWithPanel: PanelName | null } | null {
+  const EdgeDropAreaWidth = 60
+  const leftColumn = panelsData.filter((data) => data.location === 'leftMenu1')
+  const leftColumn2 = panelsData.filter((data) => data.location === 'leftMenu2')
+  const rightColumn = panelsData.filter((data) => data.location === 'rightMenu1')
+  const rightColumn2 = panelsData.filter((data) => data.location === 'rightMenu2')
+
+  const leftColumnFrame =
+    boundingRectangleArray(leftColumn.map((data) => data.frame)) ?? zeroWindowRect
+  const leftColumn2Frame =
+    boundingRectangleArray(leftColumn2.map((data) => data.frame)) ?? zeroWindowRect
+  const rightColumnFrame =
+    boundingRectangleArray(rightColumn.map((data) => data.frame)) ??
+    windowRectangle({ x: canvasSize.width, y: 0, width: 0, height: canvasSize.height })
+  const rightColumn2Frame =
+    boundingRectangleArray(rightColumn2.map((data) => data.frame)) ??
+    windowRectangle({ x: canvasSize.width, y: 0, width: 0, height: canvasSize.height })
+
+  const outerDropAreas: Array<{
+    targetPanel: PanelName
+    frame: WindowRectangle
+  }> = [
+    // between the left edge and the first left menu
+    {
+      targetPanel: 'leftMenu1',
+      frame: windowRectangle({
+        x: 0,
+        y: 0,
+        width: EdgeDropAreaWidth, //GapBetweenPanels,
+        height: canvasSize.height,
+      }),
+    },
+    // right side of the left menu
+    {
+      targetPanel: 'leftMenu2',
+      frame: windowRectangle({
+        x: leftColumnFrame.x + leftColumnFrame.width,
+        y: 0,
+        width: 80,
+        height: canvasSize.height,
+      }),
+    },
+    // left side of the right menu
+    {
+      targetPanel: 'rightMenu1',
+      frame: windowRectangle({
+        x: rightColumnFrame.x - 80,
+        y: 0,
+        width: 80,
+        height: canvasSize.height,
+      }),
+    },
+    // between the right edge and the last right menu
+    {
+      targetPanel: 'rightMenu2',
+      frame: windowRectangle({
+        x: rightColumn2Frame.x + rightColumn2Frame.width - EdgeDropAreaWidth, //GapBetweenPanels,
+        y: 0,
+        width: canvasSize.width - rightColumn2Frame.x + rightColumn2Frame.width + EdgeDropAreaWidth, //GapBetweenPanels,
+        height: canvasSize.height,
+      }),
+    },
+  ]
+
+  const dropTargetOutside =
+    outerDropAreas.find((area) => rectContainsPointInclusive(area.frame, newPosition))
+      ?.targetPanel ?? null
+  if (dropTargetOutside != null) {
+    return {
+      newPanel: dropTargetOutside,
+      switchWithPanel: shouldSwitchColumnsOnDropOutsideColumn(
+        dropTargetOutside,
+        draggedPanel,
+        panelsData,
+      ),
+    }
+  }
+  return null
+}
+
+function shouldSwitchColumnsOnDropOutsideColumn(
+  dropTargetPanel: PanelName | null,
+  draggedPanel: PanelName,
+  panelsData: Array<PanelData>,
+): PanelName | null {
+  // maybe switch with existing panels if dragging to edge or when dropped to the side of a column
+
+  if (dropTargetPanel != null) {
+    const leftColumn = panelsData.filter((data) => data.location === 'leftMenu1')
+    const leftColumn2 = panelsData.filter((data) => data.location === 'leftMenu2')
+    const rightColumn = panelsData.filter((data) => data.location === 'rightMenu1')
+    const rightColumn2 = panelsData.filter((data) => data.location === 'rightMenu2')
+    if (
+      dropTargetPanel === 'leftMenu1' &&
+      leftColumn.length > 0 &&
+      (leftColumn2.length === 0 || (draggedPanel === 'leftMenu2' && leftColumn2.length === 1))
+    ) {
+      // dragging to far left when something is already there
+      return 'leftMenu2'
+    }
+    if (
+      dropTargetPanel === 'leftMenu2' &&
+      leftColumn2.length > 0 &&
+      (leftColumn.length === 0 || (draggedPanel === 'leftMenu1' && leftColumn.length === 1))
+    ) {
+      // dragging to the right of the left panel 2
+      return 'leftMenu1'
+    }
+
+    if (
+      dropTargetPanel === 'rightMenu1' &&
+      rightColumn.length > 0 &&
+      (rightColumn2.length === 0 || (draggedPanel === 'rightMenu2' && rightColumn2.length === 1))
+    ) {
+      // dragging to the left of the right panel 1
+      return 'rightMenu2'
+    }
+
+    if (
+      dropTargetPanel === 'rightMenu2' &&
+      rightColumn2.length > 0 &&
+      (rightColumn.length === 0 || (draggedPanel === 'rightMenu1' && rightColumn.length === 1))
+    ) {
+      // dragging to far right when something is already there
+      return 'rightMenu1'
+    }
+  }
+  return null
+}
+
+function findDropAreaInsideColumn(
+  newPosition: WindowPoint,
+  panelsData: Array<PanelData>,
+): PanelName | null {
+  return (
+    panelsData.find((panel) => {
+      if (panel.frame == null) {
+        return null
+      }
+      return rectContainsPoint(panel.frame, newPosition)
+    })?.location ?? null
+  )
+}
+
 export const FloatingPanelsContainer = React.memo(() => {
   const [panelsData, setPanelsData] = React.useState<Array<PanelData>>(DefaultPanels)
+  const [highlight, setHighlight] = React.useState<WindowRectangle | null>(null)
 
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
   const prevCanvasSize = usePrevious(canvasSize)
@@ -126,6 +276,7 @@ export const FloatingPanelsContainer = React.memo(() => {
   const [columnFrames, setColumnFrames] = usePubSubAtom<{ left: number; right: number }>(
     FloatingPanelSizesAtom,
   )
+  const colorTheme = useColorTheme()
 
   const setColumnFramesFromPanelsData = React.useCallback(
     (latestPanelsData: Array<PanelData>) => {
@@ -265,131 +416,22 @@ export const FloatingPanelsContainer = React.memo(() => {
         newPanel: PanelName | null
         switchWithPanel: PanelName | null
       } => {
-        const EdgeDropAreaWidth = 60
-        const leftColumn = panelsData.filter((data) => data.location === 'leftMenu1')
-        const leftColumn2 = panelsData.filter((data) => data.location === 'leftMenu2')
-        const rightColumn = panelsData.filter((data) => data.location === 'rightMenu1')
-        const rightColumn2 = panelsData.filter((data) => data.location === 'rightMenu2')
-
-        const leftColumnFrame =
-          boundingRectangleArray(leftColumn.map((data) => data.frame)) ?? zeroWindowRect
-        const leftColumn2Frame =
-          boundingRectangleArray(leftColumn2.map((data) => data.frame)) ?? zeroWindowRect
-        const rightColumnFrame =
-          boundingRectangleArray(rightColumn.map((data) => data.frame)) ??
-          windowRectangle({ x: canvasSize.width, y: 0, width: 0, height: canvasSize.height })
-        const rightColumn2Frame =
-          boundingRectangleArray(rightColumn2.map((data) => data.frame)) ??
-          windowRectangle({ x: canvasSize.width, y: 0, width: 0, height: canvasSize.height })
-
-        const outerDropAreas: Array<{
-          targetPanel: PanelName
-          frame: WindowRectangle
-        }> = [
-          // between the left edge and the first left menu
-          {
-            targetPanel: 'leftMenu1',
-            frame: windowRectangle({
-              x: 0,
-              y: 0,
-              width: EdgeDropAreaWidth, //GapBetweenPanels,
-              height: canvasSize.height,
-            }),
-          },
-          // right side of the left menu
-          {
-            targetPanel: 'leftMenu2',
-            frame: windowRectangle({
-              x: leftColumnFrame.x + leftColumnFrame.width,
-              y: 0,
-              width: 80,
-              height: canvasSize.height,
-            }),
-          },
-          // left side of the right menu
-          {
-            targetPanel: 'rightMenu1',
-            frame: windowRectangle({
-              x: rightColumnFrame.x - 80,
-              y: 0,
-              width: 80,
-              height: canvasSize.height,
-            }),
-          },
-          // between the right edge and the last right menu
-          {
-            targetPanel: 'rightMenu2',
-            frame: windowRectangle({
-              x: rightColumn2Frame.x + rightColumn2Frame.width - EdgeDropAreaWidth, //GapBetweenPanels,
-              y: 0,
-              width:
-                canvasSize.width -
-                rightColumn2Frame.x +
-                rightColumn2Frame.width +
-                EdgeDropAreaWidth, //GapBetweenPanels,
-              height: canvasSize.height,
-            }),
-          },
-        ]
-
-        const droppedToOutsideOfAColumn = outerDropAreas.find((area) =>
-          rectContainsPointInclusive(area.frame, newPosition),
+        setHighlight(null)
+        const droppedToOutsideOfAColumn = findDropAreaBeforeAfterColumn(
+          newPosition,
+          panelsData,
+          canvasSize,
+          draggedPanel,
         )
-
-        // maybe switch with existing panels if dragging to edge or when dropped to the side of a column
-        let shouldSwitchPanel: PanelName | null = null
         if (droppedToOutsideOfAColumn != null) {
-          if (
-            droppedToOutsideOfAColumn.targetPanel === 'leftMenu1' &&
-            leftColumn.length > 0 &&
-            (leftColumn2.length === 0 || (draggedPanel === 'leftMenu2' && leftColumn2.length === 1))
-          ) {
-            // dragging to far left when something is already there
-            shouldSwitchPanel = 'leftMenu2'
-          }
-          if (
-            droppedToOutsideOfAColumn.targetPanel === 'leftMenu2' &&
-            leftColumn2.length > 0 &&
-            (leftColumn.length === 0 || (draggedPanel === 'leftMenu1' && leftColumn.length === 1))
-          ) {
-            // dragging to the right of the left panel 2
-            shouldSwitchPanel = 'leftMenu1'
-          }
-
-          if (
-            droppedToOutsideOfAColumn.targetPanel === 'rightMenu1' &&
-            rightColumn.length > 0 &&
-            (rightColumn2.length === 0 ||
-              (draggedPanel === 'rightMenu2' && rightColumn2.length === 1))
-          ) {
-            // dragging to the left of the right panel 1
-            shouldSwitchPanel = 'rightMenu2'
-          }
-
-          if (
-            droppedToOutsideOfAColumn.targetPanel === 'rightMenu2' &&
-            rightColumn2.length > 0 &&
-            (rightColumn.length === 0 ||
-              (draggedPanel === 'rightMenu1' && rightColumn.length === 1))
-          ) {
-            // dragging to far right when something is already there
-            shouldSwitchPanel = 'rightMenu1'
-          }
-
           return {
-            newPanel: droppedToOutsideOfAColumn.targetPanel,
-            switchWithPanel: shouldSwitchPanel,
+            newPanel: droppedToOutsideOfAColumn.newPanel,
+            switchWithPanel: droppedToOutsideOfAColumn.switchWithPanel,
           }
         }
 
         return {
-          newPanel:
-            panelsData.find((panel) => {
-              if (panel.frame == null) {
-                return null
-              }
-              return rectContainsPoint(panel.frame, newPosition)
-            })?.location ?? null,
+          newPanel: findDropAreaInsideColumn(newPosition, panelsData),
           switchWithPanel: null,
         }
       })()
@@ -539,6 +581,61 @@ export const FloatingPanelsContainer = React.memo(() => {
     ],
   )
 
+  const showHighlight = React.useCallback(
+    (newPosition: WindowPoint, draggedPanel: PanelName) => {
+      const shouldDropOutsideOfColumn = findDropAreaBeforeAfterColumn(
+        newPosition,
+        panelsData,
+        canvasSize,
+        draggedPanel,
+      )
+
+      if (
+        shouldDropOutsideOfColumn != null &&
+        draggedPanel === 'leftMenu1' &&
+        shouldDropOutsideOfColumn.newPanel === 'leftMenu1' &&
+        shouldDropOutsideOfColumn.switchWithPanel != null
+      ) {
+        const targetFrame = panelsData.find(
+          (v) => v.location === shouldDropOutsideOfColumn.newPanel,
+        )?.frame
+        if (targetFrame != null) {
+          const x = shouldDropOutsideOfColumn.newPanel.includes('1')
+            ? targetFrame.x
+            : targetFrame.x + targetFrame.width
+          setHighlight(
+            windowRectangle({
+              x: x - GapBetweenPanels / 2,
+              y: GapBetweenPanels,
+              width: 2,
+              height: canvasSize.height - GapBetweenPanels,
+            }),
+          )
+          return
+        }
+      }
+
+      // TODO fix this!
+      // const isAboveColumn = findDropAreaInsideColumn(newPosition, panelsData)
+      // if (isAboveColumn != null && draggedPanel != isAboveColumn) {
+      //   const lastPanel = panelsData
+      //     .filter((v) => v.location === isAboveColumn)
+      //     .sort((first, second) => second.locationInColumn - first.locationInColumn)[0]
+      //   if (lastPanel != null) {
+      //     setHighlight(
+      //       windowRectangle({
+      //         x: lastPanel.frame.x,
+      //         y: lastPanel.frame.y + lastPanel.frame.height + GapBetweenPanels / 2,
+      //         width: lastPanel.frame.width,
+      //         height: 2,
+      //       }),
+      //     )
+      //   }
+      // }
+    },
+    [panelsData, canvasSize, setHighlight],
+  )
+
   // menus fill the available space
   React.useEffect(() => {
     if (
@@ -580,8 +677,22 @@ export const FloatingPanelsContainer = React.memo(() => {
           columnData={panelsData.filter((d) => d.location === data.location)}
           onResize={updateSize}
           updateColumn={updateColumn}
+          onMenuDrag={showHighlight}
         />
       ))}
+      {when(
+        highlight != null,
+        <div
+          style={{
+            position: 'absolute',
+            top: highlight?.y,
+            left: highlight?.x,
+            width: highlight?.width,
+            height: highlight?.height,
+            backgroundColor: colorTheme.brandNeonGreen.value,
+          }}
+        ></div>,
+      )}
     </>
   )
 })
@@ -599,11 +710,12 @@ interface FloatingPanelProps {
     width: number,
     height: number,
   ) => void
+  onMenuDrag: (newPosition: WindowPoint, draggedPanel: PanelName) => void
   columnData: Array<PanelData>
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
-  const { columnData, panelLocation, name, frame, updateColumn, onResize } = props
+  const { columnData, panelLocation, name, frame, updateColumn, onResize, onMenuDrag } = props
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
 
   const [isDraggingOrResizing, setIsDraggingOrResizing] = React.useState<Menu | Pane | null>(null)
@@ -617,11 +729,9 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   )
   const onDrag = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
     (menuOrPane: Menu | Pane) => {
-      return (e, data) => {
-        // show highlights!
-      }
+      return (e, data) => onMenuDrag(windowPoint({ x: data.x, y: data.y }), panelLocation)
     },
-    [],
+    [onMenuDrag, panelLocation],
   )
 
   const onDragStop = React.useCallback<(menuOrPane: Menu | Pane) => DraggableEventHandler>(
