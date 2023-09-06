@@ -61,10 +61,10 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
   const colorTheme = useColorTheme()
   return (
     <FlexColumn style={{ alignItems: 'center', flex: 1.5 }}>
-      <FlexRow style={{ gap: 4 }}>
+      <FlexRow style={{}}>
         <div
           style={{
-            padding: 4,
+            padding: 7,
           }}
         >
           <VisibilityWrapper visible={props.dragType === 'absolute'}>
@@ -79,7 +79,7 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
         </div>
         <div
           style={{
-            padding: 4,
+            padding: 7,
           }}
         >
           <VisibilityWrapper visible={props.dragType === 'static'}>
@@ -96,6 +96,9 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
       <div
         style={{
           color: props.dragType === 'none' ? colorTheme.fg8.value : colorTheme.fg2.value,
+          fontSize: 6,
+          lineHeight: 1,
+          paddingBottom: 4,
         }}
       >
         {props.dragType === 'static' ? 'Reorder' : 'Move'}
@@ -113,7 +116,7 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
     <FlexColumn style={{ alignItems: 'center' }}>
       <div
         style={{
-          padding: 4,
+          padding: 7,
         }}
       >
         <VisibilityWrapper visible={props.enabled}>
@@ -126,6 +129,9 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
       <div
         style={{
           color: props.enabled ? colorTheme.fg2.value : colorTheme.fg8.value,
+          fontSize: 6,
+          lineHeight: 1,
+          paddingBottom: 4,
         }}
       >
         Ancestor
@@ -141,7 +147,7 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
   const colorTheme = useColorTheme()
   return (
     <FlexColumn style={{ alignItems: 'center' }}>
-      <div style={{ padding: 4 }}>
+      <div style={{ padding: 7 }}>
         <VisibilityWrapper visible={status !== 'none'}>
           <ModalityIcons.Reparent color={'primary'} />
         </VisibilityWrapper>
@@ -152,6 +158,9 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
       <div
         style={{
           color: status === 'none' ? colorTheme.fg8.value : colorTheme.fg2.value,
+          fontSize: 6,
+          lineHeight: 1,
+          paddingBottom: 4,
         }}
       >
         Reparent
