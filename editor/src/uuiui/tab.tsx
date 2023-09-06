@@ -53,7 +53,6 @@ export const TabComponent: React.FunctionComponent<React.PropsWithChildren<TabCo
     }
 
     const selectionHandlingStyle = {
-      boxShadow: selected ? `inset 0px 2px 0px 0px ${colorTheme.dynamicBlue.value}` : undefined,
       color: hasErrorMessages
         ? colorTheme.errorForeground.value
         : colorTheme.tabSelectedForeground.value,

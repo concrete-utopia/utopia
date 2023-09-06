@@ -352,7 +352,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         overflow: 'hidden',
         backgroundColor: colorTheme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
       }}
       onResizeStart={onResizeStart}
       onResize={onResize}
@@ -464,7 +464,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         position: 'relative',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         flexDirection: 'column',
       }}
       {...resizableConfig}

@@ -41,7 +41,7 @@ export const StrategyIndicator = React.memo(() => {
         gap: 8,
         backgroundColor: colorTheme.bg0.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         opacity:
           indicatorFlagsInfo.dragStarted && indicatorFlagsInfo.indicatorFlags.showIndicator ? 1 : 0,
       }}

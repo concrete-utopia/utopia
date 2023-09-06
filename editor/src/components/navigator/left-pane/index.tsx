@@ -151,7 +151,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           overscrollBehavior: 'contain',
           backgroundColor: colorTheme.leftPaneBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
