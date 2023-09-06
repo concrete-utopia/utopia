@@ -128,6 +128,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'REMOVE_FILE_CONFLICT':
     case 'CLEAR_POST_ACTION_SESSION':
     case 'START_POST_ACTION_SESSION':
+    case 'TRUNCATE_HISTORY':
       return true
 
     case 'TRUE_UP_GROUPS':
