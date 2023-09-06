@@ -540,6 +540,8 @@ function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
 }
 
 const LockedOverlay = React.memo(() => {
+  const colorTheme = useColorTheme()
+
   const githubOperations = useEditorState(
     Substores.github,
     (store) => store.editor.githubOperations.filter((op) => githubOperationLocksEditor(op)),
@@ -594,7 +596,7 @@ const LockedOverlay = React.memo(() => {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: '#00000016',
+        backgroundColor: '#00000033',
         zIndex: 30,
         transition: 'all .1s ease-in-out',
         display: 'flex',
@@ -614,7 +616,8 @@ const LockedOverlay = React.memo(() => {
             opacity: 1,
             fontSize: 12,
             fontWeight: 500,
-            background: '#fff',
+            background: colorTheme.contextMenuBackground.value,
+            border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,
             boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
