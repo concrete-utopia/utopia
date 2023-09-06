@@ -178,7 +178,7 @@ export const CanvasToolbar = React.memo(() => {
         width: 64,
         backgroundColor: theme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-        boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         pointerEvents: 'initial',
       }}
       onMouseDown={stopPropagation}

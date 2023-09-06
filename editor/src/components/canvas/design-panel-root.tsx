@@ -232,7 +232,7 @@ const ResizableRightPane = React.memo(() => {
           overflow: 'hidden',
           backgroundColor: colorTheme.inspectorBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         }}
         snap={{
           x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
@@ -326,7 +326,7 @@ const CodeEditorPane = React.memo(() => {
           justifyContent: 'stretch',
           alignItems: 'stretch',
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         }}
       >
         {when(codeEditorEnabled, <CodeEditorWrapper />)}
