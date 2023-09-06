@@ -6,9 +6,8 @@ import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { IS_BROWSER_TEST_DEBUG, IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { IS_BROWSER_TEST_DEBUG } from '../../common/env-vars'
 import { projectURLForProject } from '../../core/shared/utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -42,12 +41,11 @@ import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import {
-  emptyGithubSettings,
   githubOperationLocksEditor,
+  githubOperationPrettyName,
   LeftMenuTab,
-  LeftPaneDefaultWidth,
 } from './store/editor-state'
-import { Substores, useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
 import { when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
@@ -542,17 +540,13 @@ function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
 }
 
 const LockedOverlay = React.memo(() => {
-  const leftMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'EditorComponentInner leftMenuExpanded',
+  const githubOperations = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubOperations.filter((op) => githubOperationLocksEditor(op)),
+    'EditorComponentInner githubOperations',
   )
 
-  const editorLocked = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
-    'EditorComponentInner editorLocked',
-  )
+  const editorLocked = React.useMemo(() => githubOperations.length > 0, [githubOperations])
 
   const refreshingDependencies = useEditorState(
     Substores.restOfEditor,
@@ -573,6 +567,16 @@ const LockedOverlay = React.memo(() => {
     return editorLocked || refreshingDependencies
   }, [editorLocked, refreshingDependencies])
 
+  const dialogContent = React.useMemo((): string | null => {
+    if (refreshingDependencies) {
+      return 'Refreshing dependencies…'
+    }
+    if (githubOperations.length > 0) {
+      return `${githubOperationPrettyName(githubOperations[0])}…`
+    }
+    return null
+  }, [refreshingDependencies, githubOperations])
+
   if (!locked) {
     return null
   }
@@ -587,23 +591,24 @@ const LockedOverlay = React.memo(() => {
       style={{
         position: 'fixed',
         top: 0,
-        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: '#00000044',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#00000016',
         zIndex: 30,
         transition: 'all .1s ease-in-out',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        cursor: 'wait',
       }}
       css={css`
         animation: ${anim} 0.3s ease-in-out;
       `}
     >
       {when(
-        refreshingDependencies,
+        dialogContent != null,
         <div
           style={{
             opacity: 1,
@@ -612,9 +617,10 @@ const LockedOverlay = React.memo(() => {
             background: '#fff',
             padding: 30,
             borderRadius: 2,
+            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
           }}
         >
-          Updating dependencies…
+          {dialogContent}
         </div>,
       )}
     </div>
