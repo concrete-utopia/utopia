@@ -323,7 +323,6 @@ export const CodeEditorTabPane = React.memo<CodeEditorTabPaneProps>(
       >
         <UIRow
           style={{
-            borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
             alignItems: 'stretch',
             height: 32,
           }}
