@@ -945,10 +945,7 @@ export const MetadataUtils = {
             EP.isStoryboardPath(instance.elementPath)
             ? 'supportsChildren'
             : 'doesNotSupportChildren'
-        } else if (MetadataUtils.isProbablyRemixOutletFromMetadata(instance)) {
-          return 'doesNotSupportChildren'
-        }
-        {
+        } else {
           return MetadataUtils.targetUsesProperty(projectContents, instance, 'children')
             ? 'supportsChildren'
             : 'doesNotSupportChildren'
