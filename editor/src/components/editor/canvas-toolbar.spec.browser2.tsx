@@ -12,7 +12,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
-import { InsertConditionalButtonTestId } from './canvas-toolbar'
+import { InsertConditionalButtonTestId, InsertMenuButtonTestId } from './canvas-toolbar'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -86,6 +86,12 @@ describe('canvas toolbar', () => {
     })
 
     FOR_TESTS_setNextGeneratedUids(['new-div'])
+
+    const insertMenuButton = editor.renderedDOM.getByTestId(InsertMenuButtonTestId)
+    await mouseClickAtPoint(
+      insertMenuButton,
+      getDomRectCenter(insertMenuButton.getBoundingClientRect()),
+    )
 
     const insertConditionalButton = editor.renderedDOM.getByTestId(InsertConditionalButtonTestId)
     const insertConditionalButtonRect = insertConditionalButton.getBoundingClientRect()

@@ -47,6 +47,7 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 
+export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
 export const CanvasToolbarId = 'canvas-toolbar'
@@ -327,6 +328,7 @@ export const CanvasToolbar = React.memo(() => {
           </Tooltip>
           <Tooltip title='Insert...' placement='bottom'>
             <InsertModeButton
+              testid={InsertMenuButtonTestId}
               iconType='plusbutton-larger'
               iconCategory='semantic'
               primary={canvasToolbarMode.primary === 'insert'}
