@@ -33,7 +33,7 @@ const lightBase = {
 
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),
-  bg2: createUtopiColor('lch(97.0 0.01 0)'),
+  bg2: createUtopiColor('lch(98.0 0.01 0)'),
   bg3: createUtopiColor('hsl(0,0%,94%)'),
   bg4: createUtopiColor('hsl(0,0%,92%)'),
   bg5: createUtopiColor('hsl(0,0%,90%)'),
