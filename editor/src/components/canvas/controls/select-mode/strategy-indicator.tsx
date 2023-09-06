@@ -67,14 +67,14 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
             padding: 4,
           }}
         >
-          <VisibilityWrapper visible={props.dragType === 'static'}>
-            <ModalityIcons.MoveAbsolute color={'on-highlight-secondary'} />
-          </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'absolute'}>
             <ModalityIcons.MoveAbsolute color={'primary'} />
           </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType === 'static'}>
+            <ModalityIcons.MoveAbsolute color={'main'} />
+          </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'none'}>
-            <ModalityIcons.MoveAbsolute color={'subdued'} />
+            <ModalityIcons.MoveAbsolute color={'main'} />
           </VisibilityWrapper>
         </div>
         <div
@@ -82,14 +82,14 @@ const MoveIndicatorItem = React.memo<MoveIndicatorItemProps>((props) => {
             padding: 4,
           }}
         >
-          <VisibilityWrapper visible={props.dragType === 'absolute'}>
-            <ModalityIcons.Reorder color={'on-highlight-secondary'} />
-          </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'static'}>
             <ModalityIcons.Reorder color={'primary'} />
           </VisibilityWrapper>
+          <VisibilityWrapper visible={props.dragType === 'absolute'}>
+            <ModalityIcons.Reorder color={'main'} />
+          </VisibilityWrapper>
           <VisibilityWrapper visible={props.dragType === 'none'}>
-            <ModalityIcons.Reorder color={'subdued'} />
+            <ModalityIcons.Reorder color={'main'} />
           </VisibilityWrapper>
         </div>
       </FlexRow>
@@ -120,7 +120,7 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
           <ModalityIcons.Magic color={'primary'} />
         </VisibilityWrapper>
         <VisibilityWrapper visible={!props.enabled}>
-          <ModalityIcons.Magic color={'subdued'} />
+          <ModalityIcons.Magic color={'main'} />
         </VisibilityWrapper>
       </div>
       <div
@@ -146,7 +146,7 @@ const ReparentIndicatorItem = React.memo<ReparentIndicatorItemProps>(({ status }
           <ModalityIcons.Reparent color={'primary'} />
         </VisibilityWrapper>
         <VisibilityWrapper visible={status === 'none'}>
-          <ModalityIcons.Reparent color={'subdued'} />
+          <ModalityIcons.Reparent color={'main'} />
         </VisibilityWrapper>
       </div>
       <div
