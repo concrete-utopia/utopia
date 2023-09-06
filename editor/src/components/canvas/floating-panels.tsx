@@ -328,9 +328,38 @@ export const FloatingPanelsContainer = React.memo(() => {
           width = SizeConstraints['code-editor'].defaultSize.width
         }
         if (isMenuContainingPanel(panelsInColumn)) {
-          height =
-            (canvasSize.height - GapBetweenPanels * (panelsInColumn.length + 1)) /
-            panelsInColumn.length
+          if (panelsInColumn.length == 2) {
+            const panelNamesInColumn = panelsInColumn.map((v) => v.name)
+            if (
+              panelNamesInColumn.includes('navigator') &&
+              panelNamesInColumn.includes('code-editor')
+            ) {
+              if (panel.name === 'code-editor') {
+                height = canvasSize.height / 3 - GapBetweenPanels * 2
+              } else {
+                height = (canvasSize.height * 2) / 3 - GapBetweenPanels * 2
+              }
+            } else if (
+              panelNamesInColumn.includes('navigator') &&
+              panelNamesInColumn.includes('inspector')
+            ) {
+              if (panel.name === 'navigator') {
+                height = canvasSize.height / 3 - GapBetweenPanels * 2
+              } else {
+                height = (canvasSize.height * 2) / 3 - GapBetweenPanels * 2
+              }
+            } else {
+              if (panel.name === 'code-editor') {
+                height = canvasSize.height / 3 - GapBetweenPanels * 2
+              } else {
+                height = (canvasSize.height * 2) / 3 - GapBetweenPanels * 2
+              }
+            }
+          } else {
+            height =
+              (canvasSize.height - GapBetweenPanels * (panelsInColumn.length + 1)) /
+              panelsInColumn.length
+          }
         }
 
         if (panelsInColumn.find((d) => d.name === 'inspector') != null) {
