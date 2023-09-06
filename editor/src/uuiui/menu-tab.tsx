@@ -34,21 +34,20 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
     const baseStyle = {
       padding: '4px 6px',
       transition: 'all .05s ease-in-out',
-      '&:hover': {
-        backgroundColor: colorTheme.tabHoveredBackground.value,
-        boxShadow: `inset 0px -2px 0px 0px ${colorTheme.dynamicBlue.value}`,
-      },
       cursor: 'pointer',
       flexGrow: 1,
       justifyContent: 'center',
+      fontWeight: 500,
+      '&:hover': {
+        opacity: 1,
+      },
     }
 
     const selectionHandlingStyle = {
-      boxShadow: selected ? `inset 0px -2px 0px 0px ${colorTheme.dynamicBlue.value}` : undefined,
       color: hasErrorMessages
         ? colorTheme.errorForeground.value
         : colorTheme.tabSelectedForeground.value,
-      fontWeight: selected ? 500 : undefined,
+      opacity: selected ? 1 : 0.4,
     }
 
     return (

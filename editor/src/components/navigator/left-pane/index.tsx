@@ -131,8 +131,8 @@ export const LeftPaneComponent = React.memo(() => {
             backgroundColor: colorTheme.inspectorBackground.value,
             borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
             overflow: 'scroll',
-            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
             height: '100%',
+            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           }}
         >
           <div

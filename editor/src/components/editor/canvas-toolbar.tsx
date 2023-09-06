@@ -209,7 +209,7 @@ export const CanvasToolbar = React.memo(() => {
             backgroundColor: theme.inspectorBackground.value,
             borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
             overflow: 'hidden',
-            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             pointerEvents: 'initial',
             display: 'flex',
             flexDirection: 'row',

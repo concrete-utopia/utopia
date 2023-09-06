@@ -620,7 +620,7 @@ const LockedOverlay = React.memo(() => {
             border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,
-            boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           }}
         >
           {dialogContent}
