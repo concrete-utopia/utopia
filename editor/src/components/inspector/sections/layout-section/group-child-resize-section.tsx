@@ -171,9 +171,7 @@ export const GroupChildResizeSection = React.memo(() => {
           <span>Resizing</span>
         </FlexRow>
       </InspectorSubsectionHeader>
-      <div
-        style={{ display: 'flex', gap: 10, paddingLeft: 10, paddingRight: 0, paddingBottom: 10 }}
-      >
+      <div style={{ display: 'flex', gap: 10, paddingLeft: 8, paddingRight: 0, paddingBottom: 8 }}>
         <PinControl
           handlePinMouseDown={handlePinMouseDown}
           framePoints={framePoints}

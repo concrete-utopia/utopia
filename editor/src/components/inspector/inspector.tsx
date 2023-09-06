@@ -351,7 +351,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'RootElementIndicator aRootElementIsSelected',
   )
 
-  const allSelecteElementsdAreChildrenOfAGroup = useEditorState(
+  const allSelectedElementsdAreChildrenOfAGroup = useEditorState(
     Substores.metadata,
     (store) =>
       store.editor.selectedViews.length > 0 &&
@@ -419,16 +419,16 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 {when(multiselectedContract === 'fragment', <FragmentSection />)}
                 {unless(
                   multiselectedContract === 'fragment',
-                  // Position and Sizing sections are shown if Frame or Group is selected
-                  <>
-                    <PositionSection
-                      hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-                    />
-                    <SizingSection />
-                  </>,
+                  <PositionSection
+                    hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                  />,
                 )}
                 {when(
-                  multiselectedContract === 'frame' && allSelecteElementsdAreChildrenOfAGroup,
+                  multiselectedContract !== 'fragment' && !allSelectedElementsdAreChildrenOfAGroup,
+                  <SizingSection />,
+                )}
+                {when(
+                  multiselectedContract !== 'fragment' && allSelectedElementsdAreChildrenOfAGroup,
                   <GroupChildResizeSection />,
                 )}
                 {unless(
