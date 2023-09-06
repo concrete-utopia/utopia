@@ -7061,9 +7061,13 @@ export var storyboard = (
         [deleteView(EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:root/foo'))],
         true,
       )
+      expect(renderResult.getEditorState().history.next.length).toBe(0)
+      expect(renderResult.getEditorState().history.previous.length).toBe(2)
 
       // truncate the stack
       await renderResult.dispatch([truncateHistory()], true)
+      expect(renderResult.getEditorState().history.next.length).toBe(0)
+      expect(renderResult.getEditorState().history.previous.length).toBe(0)
 
       // try to undo, nothing happens
       await renderResult.dispatch([undo()], true)
@@ -7074,6 +7078,8 @@ export var storyboard = (
           </div>
         `),
       )
+      expect(renderResult.getEditorState().history.next.length).toBe(0)
+      expect(renderResult.getEditorState().history.previous.length).toBe(0)
     })
   })
 })
