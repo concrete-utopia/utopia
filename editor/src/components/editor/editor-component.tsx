@@ -53,6 +53,7 @@ import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const liveModeToastId = 'play-mode-toast'
 
