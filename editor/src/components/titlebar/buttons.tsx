@@ -7,6 +7,7 @@ import { Button } from '../../uuiui'
 import { colorTheme } from '../../uuiui'
 
 interface TitleButtonProps {
+  onMouseDown?: (e: React.MouseEvent<HTMLDivElement>) => void
   onClick: () => void
   color?: string
   testId?: string
@@ -46,6 +47,7 @@ export const SquareButton: React.FC<React.PropsWithChildren<TitleButtonProps>> =
 }
 
 export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = ({
+  onMouseDown,
   onClick,
   color,
   children,
@@ -63,6 +65,7 @@ export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = 
   return (
     <ButtonEl
       onClick={onClick}
+      onMouseDown={onMouseDown}
       css={{
         '&:hover': {
           background: color,

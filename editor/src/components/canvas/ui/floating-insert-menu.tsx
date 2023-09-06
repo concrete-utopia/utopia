@@ -671,7 +671,7 @@ export var FloatingMenu = React.memo(() => {
           width: 280,
           height: 280,
           overflow: 'hidden',
-          boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         }}
       >
         <div

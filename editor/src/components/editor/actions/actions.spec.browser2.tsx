@@ -15,7 +15,15 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
-import { deleteSelected, selectComponents, unwrapElements, wrapInElement } from './action-creators'
+import {
+  deleteSelected,
+  deleteView,
+  selectComponents,
+  truncateHistory,
+  undo,
+  unwrapElements,
+  wrapInElement,
+} from './action-creators'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementPaste } from '../action-types'
 import type { InsertionPath } from '../store/insertion-path'
@@ -7028,6 +7036,50 @@ export var storyboard = (
       )
       await renderResult.getDispatchFollowUpActionsFinished()
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([makeTargetPath('aaa')])
+    })
+  })
+
+  describe('TRUNCATE_HISTORY', () => {
+    it('truncates history', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div data-uid='foo' style={{ position: 'absolute', top: 10, left: 10, background: 'red', width: 50, height: 50 }} />
+            <div data-uid='bar' style={{ position: 'absolute', top: 10, left: 100, background: 'blue', width: 50, height: 50}} />
+            <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 50, background: 'green', width: 50, height: 50}} />
+          </div>
+        `),
+        'await-first-dom-report',
+      )
+
+      // these go into the undo stack
+      await renderResult.dispatch(
+        [deleteView(EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:root/bar'))],
+        true,
+      )
+      await renderResult.dispatch(
+        [deleteView(EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:root/foo'))],
+        true,
+      )
+      expect(renderResult.getEditorState().history.next.length).toBe(0)
+      expect(renderResult.getEditorState().history.previous.length).toBe(2)
+
+      // truncate the stack
+      await renderResult.dispatch([truncateHistory()], true)
+      expect(renderResult.getEditorState().history.next.length).toBe(0)
+      expect(renderResult.getEditorState().history.previous.length).toBe(0)
+
+      // try to undo, nothing happens
+      await renderResult.dispatch([undo()], true)
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+          <div data-uid='root'>
+            <div data-uid='baz' style={{ position: 'absolute', top: 100, left: 50, background: 'green', width: 50, height: 50}} />
+          </div>
+        `),
+      )
+      expect(renderResult.getEditorState().history.next.length).toBe(0)
+      expect(renderResult.getEditorState().history.previous.length).toBe(0)
     })
   })
 })
