@@ -4462,10 +4462,9 @@ export const UPDATE_FNS = {
     }
   },
   TRUNCATE_HISTORY: (editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
-    const newHistory = History.init(editorStore.unpatchedEditor, editorStore.unpatchedDerived)
     return {
       ...editorStore,
-      history: newHistory,
+      history: History.init(editorStore.unpatchedEditor, editorStore.unpatchedDerived),
     }
   },
   MARK_VSCODE_BRIDGE_READY: (action: MarkVSCodeBridgeReady, editor: EditorModel): EditorModel => {
