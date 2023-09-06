@@ -2587,6 +2587,9 @@ export const UPDATE_FNS = {
   TOGGLE_PANE: (action: TogglePane, editor: EditorModel): EditorModel => {
     switch (action.target) {
       case 'leftmenu':
+        if (isFeatureEnabled('Draggable Floating Panels')) {
+          return editor
+        }
         return {
           ...editor,
           leftMenu: {
@@ -2595,6 +2598,9 @@ export const UPDATE_FNS = {
           },
         }
       case 'rightmenu':
+        if (isFeatureEnabled('Draggable Floating Panels')) {
+          return editor
+        }
         return {
           ...editor,
           rightMenu: {
@@ -2668,6 +2674,9 @@ export const UPDATE_FNS = {
         }
 
       case 'codeEditor':
+        if (isFeatureEnabled('Draggable Floating Panels')) {
+          return editor
+        }
         return updateCodeEditorVisibility(editor, !editor.interfaceDesigner.codePaneVisible)
       case 'canvas':
       case 'misccodeeditor':
@@ -2922,11 +2931,16 @@ export const UPDATE_FNS = {
       ? UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor)
       : editor
 
+    const shouldHideCodePaneOnResize = targetWidth < hideWidth ? false : true
+    const codePaneVisible = isFeatureEnabled('Draggable Floating Panels')
+      ? true
+      : shouldHideCodePaneOnResize
+
     return {
       ...updatedEditor,
       interfaceDesigner: {
         ...editor.interfaceDesigner,
-        codePaneVisible: targetWidth < hideWidth ? false : true,
+        codePaneVisible: codePaneVisible,
         codePaneWidth: targetWidth < hideWidth ? minWidth : targetWidth,
       },
     }

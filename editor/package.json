@@ -188,6 +188,7 @@
     "react-dnd": "16.0.0",
     "react-dnd-html5-backend": "16.0.0",
     "react-dom": "18.1.0",
+    "react-draggable": "4.4.5",
     "react-error-overlay": "git://github.com/concrete-utopia/react-error-overlay.git#201980990d653e821f36ab4f921a4f83588a8a42",
     "react-helmet": "6.1.0",
     "react-highlight-words": "0.17.0",

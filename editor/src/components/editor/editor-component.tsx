@@ -47,12 +47,13 @@ import {
 } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
-import { when } from '../../utils/react-conditionals'
+import { unless, when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -360,7 +361,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           <LowPriorityStoreProvider>
             {(isChrome as boolean) ? null : <BrowserInfoBar />}
             <LoginStatusBar />
-            <TitleBar />
+            {unless(isFeatureEnabled('Draggable Floating Panels'), <TitleBar />)}
           </LowPriorityStoreProvider>
 
           <SimpleFlexRow
