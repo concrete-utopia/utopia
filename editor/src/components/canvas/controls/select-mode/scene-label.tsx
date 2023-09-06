@@ -220,14 +220,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             width: frame.width,
             paddingLeft: offsetX,
             paddingBottom: paddingY,
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+            fontFamily: 'Utopian-Inter',
             fontSize: scaledFontSize,
             lineHeight: `${scaledLineHeight}px`,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            boxShadow: boxShadow,
             borderRadius: borderRadius,
             backgroundColor: backgroundColor,
           }}
