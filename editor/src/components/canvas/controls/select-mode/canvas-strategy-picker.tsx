@@ -95,7 +95,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               gap: 4,
               background: colorTheme.bg0.value,
               borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
-              boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.panelShadowColor}`,
+              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             }}
           >
             {allApplicableStrategies?.map(({ strategy, name }, index) => {
