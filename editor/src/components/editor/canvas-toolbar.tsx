@@ -398,7 +398,7 @@ export const CanvasToolbar = React.memo(() => {
                 onClick={openFloatingConvertMenuCallback}
               />
             </Tooltip>
-            <Tooltip
+            {/* <Tooltip
               title='Toggle between absolute and static positioning (X)' // help I need better copy
               placement='bottom'
             >
@@ -406,9 +406,9 @@ export const CanvasToolbar = React.memo(() => {
                 iconType='position-absolute' // TODO this needs an icon!
                 iconCategory='layout/systems'
                 size={16}
-                onClick={openFloatingConvertMenuCallback}
+                onClick={openFloatingConvertMenuCallback} // TODO this needs a callback?
               />
-            </Tooltip>
+            </Tooltip> */}
           </FlexRow>,
         )}
         {when(

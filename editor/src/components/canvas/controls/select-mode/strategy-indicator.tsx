@@ -42,7 +42,16 @@ export const StrategyIndicator = React.memo(() => {
   return (
     <FlexRow
       style={{
-        pointerEvents: 'none',
+        marginLeft: 15,
+        padding: '0 8px',
+        height: 32,
+        gap: 10,
+        overflow: 'hidden',
+        backgroundColor: colorTheme.bg2.value,
+        borderRadius: '0px 10px 10px 10px',
+        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        pointerEvents: 'initial',
+        zIndex: -1,
       }}
       data-testid='drag-strategy-indicator'
     >
@@ -117,7 +126,7 @@ interface IndicatorItemProps {
 const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
   const colorTheme = useColorTheme()
   return (
-    <FlexRow style={{ alignItems: 'center' }}>
+    <FlexRow style={{ alignItems: 'center', paddingRight: 8 }}>
       <div
         style={{
           padding: 7,
@@ -126,14 +135,10 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
         <VisibilityWrapper visible={props.enabled}>
           <ModalityIcons.Magic color={'main'} />
         </VisibilityWrapper>
-        <VisibilityWrapper visible={!props.enabled}>
-          <ModalityIcons.Magic color={'subdued'} />
-        </VisibilityWrapper>
       </div>
       <div
         style={{
-          color: props.enabled ? colorTheme.fg2.value : colorTheme.fg8.value,
-          width: 145,
+          color: colorTheme.fg1.value,
         }}
       >
         {props.enabled ? 'Affects Ancestor' : 'Does not affect Ancestor'}
