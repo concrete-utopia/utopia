@@ -320,7 +320,11 @@ export const FloatingPanelsContainer = React.memo(() => {
         let width = panel.frame.width
 
         if (!isMenuContainingPanel(panelsInColumn) && panelsInColumn.length === 1) {
-          height = Math.min(canvasSize.height, SizeConstraints['code-editor'].defaultSize.height)
+          if (panel.location === 'leftMenu1' || panel.location === 'rightMenu2') {
+            height = canvasSize.height
+          } else {
+            height = Math.min(canvasSize.height, SizeConstraints['code-editor'].defaultSize.height)
+          }
           width = SizeConstraints['code-editor'].defaultSize.width
         }
         if (isMenuContainingPanel(panelsInColumn)) {
@@ -787,7 +791,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       minHeight: TitleHeight,
       maxHeight:
         !isMenuContainingPanel(columnData) || columnData.length > 1
-          ? canvasSize.height - columnData.length * TitleHeight
+          ? canvasSize.height - (columnData.length * TitleHeight) / 2 // what happens here?
           : undefined,
       snap: resizeMinMaxSnap.snap,
     }
