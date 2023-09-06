@@ -28,6 +28,7 @@ interface RemixNavigationContext {
   back: () => void
   home: () => void
   location: Location
+  entries: Array<Location>
 }
 
 interface RemixNavigationAtomData {
@@ -41,23 +42,9 @@ export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
 
-function useCanvasMountCountIncreased(canvasMountCount: number): boolean {
-  const canvasMountCountRef = React.useRef(canvasMountCount)
-  const increased = canvasMountCount !== canvasMountCountRef.current
-  canvasMountCountRef.current = canvasMountCount
-  return increased
-}
-
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-
-  const canvasMountCount = useEditorState(
-    Substores.canvas,
-    (s) => s.editor.canvas.mountCount,
-    'UtopiaRemixRootComponent canvasMountCount',
-  )
-  const canvasMountCountIncreased = useCanvasMountCountIncreased(canvasMountCount)
 
   const routes = useEditorState(
     Substores.derived,
@@ -118,9 +105,9 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
 
-  const currentLocation = navigationData[EP.toString(basePath)]?.location
-  const currentLocationRef = React.useRef(currentLocation)
-  currentLocationRef.current = currentLocation
+  const currentEntries = navigationData[EP.toString(basePath)]?.entries
+  const currentEntriesRef = React.useRef(currentEntries)
+  currentEntriesRef.current = currentEntries
 
   // The router always needs to be updated otherwise new routes won't work without a refresh
   // We need to create the new router with the current location in the initial entries to
@@ -130,23 +117,33 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       return null
     }
 
-    const initialEntries =
-      currentLocationRef.current == null ? undefined : [currentLocationRef.current]
+    const initialEntries = currentEntriesRef.current == null ? undefined : currentEntriesRef.current
     return createMemoryRouter(routes, { initialEntries: initialEntries })
-  }, [currentLocationRef, routes])
+  }, [currentEntriesRef, routes])
 
   const updateNavigationData = React.useCallback(
     (routerr: RouterType, location: Location) => {
       setRouteInBrowserUrl(basePath, routerr.state.location)
-      setNavigationData((current) => ({
-        ...current,
-        [EP.toString(basePath)]: {
-          forward: () => void routerr.navigate(1),
-          back: () => void routerr.navigate(-1),
-          home: () => void routerr.navigate('/'),
-          location: location,
-        },
-      }))
+      setNavigationData((current) => {
+        const key = EP.toString(basePath)
+        const existingEntries = current[key]?.entries ?? []
+
+        const updatedEntries =
+          existingEntries.at(-1)?.pathname === location.pathname
+            ? existingEntries
+            : existingEntries.concat(location)
+
+        return {
+          ...current,
+          [EP.toString(basePath)]: {
+            forward: () => void routerr.navigate(1),
+            back: () => void routerr.navigate(-1),
+            home: () => void routerr.navigate('/'),
+            location: location,
+            entries: updatedEntries,
+          },
+        }
+      })
       setActiveRemixScene(basePath)
     },
     [basePath, setActiveRemixScene, setNavigationData],
@@ -170,15 +167,6 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   }
 
   const { assetsManifest, futureConfig } = remixDerivedDataRef.current
-
-  const locationToRestore = navigationData[EP.toString(basePath)]?.location.pathname
-  if (
-    locationToRestore != null &&
-    locationToRestore !== router.state.location.pathname &&
-    canvasMountCountIncreased
-  ) {
-    void router.navigate(locationToRestore)
-  }
 
   return (
     <RemixContext.Provider
