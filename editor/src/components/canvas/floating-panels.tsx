@@ -414,7 +414,7 @@ export const FloatingPanelsContainer = React.memo(() => {
             x =
               canvasSize.width -
               panel.frame.width -
-              GapBetweenPanels * 2 -
+              (otherRightMenu == null ? GapBetweenPanels : GapBetweenPanels * 2) -
               (otherRightMenu?.frame.width ?? 0)
             break
           case 'rightMenu2':
