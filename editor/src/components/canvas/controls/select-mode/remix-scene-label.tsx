@@ -101,7 +101,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
-  const paddingY = scaledFontSize
+  const paddingY = scaledFontSize / 2
   const offsetY = scaledFontSize
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
@@ -231,18 +231,20 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           }}
         >
           <Tooltip title={'Back'}>
-            <span style={{ cursor: 'pointer', fontSize: 20 / scale }} onMouseDown={back}>
-              〈
+            <span style={{ cursor: 'pointer', fontSize: 16 / scale }} onMouseDown={back}>
+              〱
             </span>
           </Tooltip>
-          <span style={{ fontSize: 20 / scale }}>{'\u00a0'}</span>
           <Tooltip title={'Forward'}>
-            <span style={{ cursor: 'pointer', fontSize: 20 / scale }} onMouseDown={forward}>
-              〉
+            <span
+              style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
+              onMouseDown={forward}
+            >
+              〱
             </span>
           </Tooltip>
           <Tooltip title={'Home'}>
-            <span style={{ cursor: 'pointer', fontSize: 20 / scale }} onMouseDown={home}>
+            <span style={{ cursor: 'pointer', fontSize: 16 / scale }} onMouseDown={home}>
               ／
             </span>
           </Tooltip>
