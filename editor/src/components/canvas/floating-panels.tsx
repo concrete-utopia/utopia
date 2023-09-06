@@ -116,6 +116,7 @@ function isMenuContainingPanel(panelData: Array<PanelData>): boolean {
   return panelData.some((value) => value.type === 'menu')
 }
 
+// helper function to figure out if the user drops a menu next to a column
 function findDropAreaBeforeAfterColumn(
   newPosition: WindowPoint,
   panelsData: Array<PanelData>,
@@ -251,6 +252,7 @@ function shouldSwitchColumnsOnDropOutsideColumn(
   return null
 }
 
+// helper function to find the column where the user drops a menu
 function findDropAreaInsideColumn(
   newPosition: WindowPoint,
   panelsData: Array<PanelData>,
@@ -272,12 +274,12 @@ export const FloatingPanelsContainer = React.memo(() => {
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
   const prevCanvasSize = usePrevious(canvasSize)
 
-  // TODO fix this to have correct canvas toolbar and arrow positions!
   const [columnFrames, setColumnFrames] = usePubSubAtom<{ left: number; right: number }>(
     FloatingPanelSizesAtom,
   )
   const colorTheme = useColorTheme()
 
+  // sets the left and right edges for other canvas elements like canvas toolbar
   const setColumnFramesFromPanelsData = React.useCallback(
     (latestPanelsData: Array<PanelData>) => {
       const leftColumnFrame =
@@ -312,6 +314,7 @@ export const FloatingPanelsContainer = React.memo(() => {
     [setColumnFrames],
   )
 
+  // update panel size to default, for example on drop and on browser resize
   const getUpdatedPanelSizes = React.useCallback(
     (currentPanelsData: Array<PanelData>) => {
       return currentPanelsData.map((panel) => {
@@ -382,6 +385,7 @@ export const FloatingPanelsContainer = React.memo(() => {
     [canvasSize],
   )
 
+  // update menu positions based on their sizes and locations
   const getUpdatedPanelPositions = React.useCallback(
     (currentPanelsData: Array<PanelData>) => {
       return currentPanelsData.map((panel) => {
@@ -443,6 +447,7 @@ export const FloatingPanelsContainer = React.memo(() => {
     [getUpdatedPanelSizes, getUpdatedPanelPositions],
   )
 
+  // when a menu is dropped in or next to a column
   const updateColumn = React.useCallback(
     (draggedMenuOrPane: Menu | Pane, draggedPanel: PanelName, newPosition: WindowPoint) => {
       const { newPanel, switchWithPanel } = ((): {
@@ -540,6 +545,7 @@ export const FloatingPanelsContainer = React.memo(() => {
     ],
   )
 
+  // when resizing a menu it effects other elements in the same column and the top/left position in the next column
   const updateSize = React.useCallback(
     (
       menuOrPane: Menu | Pane,
@@ -614,6 +620,7 @@ export const FloatingPanelsContainer = React.memo(() => {
     ],
   )
 
+  // TODO this is really not ready here, only works when dragging from left menu to outside of left menu
   const showHighlight = React.useCallback(
     (newPosition: WindowPoint, draggedPanel: PanelName) => {
       const shouldDropOutsideOfColumn = findDropAreaBeforeAfterColumn(
