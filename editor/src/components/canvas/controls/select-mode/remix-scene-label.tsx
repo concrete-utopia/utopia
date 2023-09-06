@@ -101,7 +101,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
-  const paddingY = scaledFontSize / 3
+  const paddingY = scaledFontSize
   const offsetY = scaledFontSize
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
@@ -227,46 +227,31 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
             boxShadow: boxShadow,
             borderRadius: borderRadius,
             backgroundColor: backgroundColor,
-            gap: 8,
+            gap: 12 / scale,
           }}
         >
           <Tooltip title={'Back'}>
-            <Icn
-              type='icon-semantic-back'
-              color='main'
-              width={18}
-              height={18}
-              onMouseDown={back}
-              style={{ cursor: 'pointer' }}
-            />
+            <span style={{ cursor: 'pointer', fontSize: 20 / scale }} onMouseDown={back}>
+              〈
+            </span>
           </Tooltip>
+          <span style={{ fontSize: 20 / scale }}>{'\u00a0'}</span>
           <Tooltip title={'Forward'}>
-            <Icn
-              type='icon-semantic-fwd'
-              color='main'
-              width={18}
-              height={18}
-              style={{ cursor: 'pointer' }}
-              onMouseDown={forward}
-            />
+            <span style={{ cursor: 'pointer', fontSize: 20 / scale }} onMouseDown={forward}>
+              〉
+            </span>
           </Tooltip>
           <Tooltip title={'Home'}>
-            <Icn
-              type='icon-semantic-home'
-              color='main'
-              width={18}
-              height={18}
-              style={{ cursor: 'pointer' }}
-              onMouseDown={home}
-            />
+            <span style={{ cursor: 'pointer', fontSize: 20 / scale }} onMouseDown={home}>
+              ／
+            </span>
           </Tooltip>
           <div
             style={{
               backgroundColor: '#f2f3f4',
-              borderRadius: 10,
-              padding: '4px 12px',
-              minWidth: 20,
-              fontSize: 12 / scale,
+              borderRadius: 10 / scale,
+              padding: `${4 / scale}px ${12 / scale}px`,
+              fontSize: 14 / scale,
             }}
           >
             {label}
