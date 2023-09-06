@@ -56,6 +56,11 @@ export function useToolbarMode(toolbarInsertMode: boolean): ToolbarMode {
     return { primary: 'zoom' }
   }
 
+  // Live Mode
+  if (editorMode.type === 'live') {
+    return { primary: 'play' }
+  }
+
   // Text Edit Mode (info partially stored in editor.mode InsertMode)
   if (
     editorMode.type === 'insert' &&
@@ -110,11 +115,6 @@ export function useToolbarMode(toolbarInsertMode: boolean): ToolbarMode {
         insertSidebarOpen: rightMenuTab === RightMenuTab.Insert,
       },
     }
-  }
-
-  // Live Mode
-  if (editorMode.type === 'live') {
-    return { primary: 'play' }
   }
 
   // Edit Mode

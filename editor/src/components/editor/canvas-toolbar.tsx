@@ -62,6 +62,16 @@ export const CanvasToolbar = React.memo(() => {
     setForceInsertMode((value) => !value)
   }, [])
 
+  React.useEffect(() => {
+    const turnOffForcedInsertMode = () => {
+      setForceInsertMode(false)
+    }
+    window.addEventListener('click', turnOffForcedInsertMode)
+    return function cleanup() {
+      window.removeEventListener('click', turnOffForcedInsertMode)
+    }
+  }, [])
+
   const canvasToolbarMode = useToolbarMode(forcedInsertMode)
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
