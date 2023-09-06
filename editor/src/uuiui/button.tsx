@@ -45,14 +45,14 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
   color: props.primary ? 'white' : 'inherit',
   //TODO Nested ternaries
   background: props.primary
-    ? colorTheme.denimBlue.value
+    ? colorTheme.primary.value
     : props.spotlight
     ? colorTheme.buttonBackground.value
     : undefined,
   '&:hover': {
     background:
       props.primary && props.highlight
-        ? colorTheme.denimBlue.value
+        ? colorTheme.primary.value
         : props.highlight
         ? colorTheme.buttonHoverBackground.value
         : 'transparent',
