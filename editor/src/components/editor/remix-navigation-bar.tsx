@@ -35,6 +35,9 @@ export const RemixNavigationBar = React.memo(() => {
   )
 
   const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname
+  const isIndexRoute = pathname === '/'
+
+  const label = isIndexRoute ? '(home)' : pathname
 
   if (!isLiveMode || navigationControls == null || pathname == null) {
     return null
@@ -50,40 +53,38 @@ export const RemixNavigationBar = React.memo(() => {
         boxShadow: `3px 4px 10px 0px ${UtopiaTheme.panelStyles.shadows.medium}`,
         pointerEvents: 'initial',
         userSelect: 'none',
-        padding: 10,
+        padding: 4,
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
     >
       <Tooltip title={'Back'}>
-        <Icn
-          type='icon-semantic-back'
-          color='main'
-          width={18}
-          height={18}
-          onMouseDown={back}
-          style={{ cursor: 'pointer' }}
-        />
+        <span style={{ cursor: 'pointer', fontSize: 16 }} onMouseDown={back}>
+          〱
+        </span>
       </Tooltip>
       <Tooltip title={'Forward'}>
-        <Icn
-          type='icon-semantic-fwd'
-          color='main'
-          width={18}
-          height={18}
+        <span
+          style={{ cursor: 'pointer', fontSize: 16, transform: 'scale(-1, 1)' }}
           onMouseDown={forward}
-          style={{ cursor: 'pointer' }}
-        />
+        >
+          〱
+        </span>
       </Tooltip>
       <Tooltip title={'Home'}>
-        <span style={{ fontSize: 22, cursor: 'pointer' }} onClick={home}>
-          🏠
+        <span style={{ cursor: 'pointer', fontSize: 16 }} onMouseDown={home}>
+          ／
         </span>
       </Tooltip>
       <div
-        style={{ backgroundColor: '#f2f3f4', borderRadius: 10, padding: '4px 12px', minWidth: 20 }}
+        style={{
+          backgroundColor: '#f2f3f4',
+          borderRadius: 10,
+          padding: `${4}px ${12}px`,
+          fontSize: 14,
+        }}
       >
-        {pathname}
+        {label}
       </div>
     </FlexRow>
   )

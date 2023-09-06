@@ -52,6 +52,7 @@ import { RemixNavigationAtom } from '../canvas/remix/utopia-remix-root-component
 import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
+import { RemixNavigationBar } from './remix-navigation-bar'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -506,6 +507,13 @@ export const CanvasToolbar = React.memo(() => {
                 />
               </Tooltip>
             </>
+          )}
+          {/* Live Mode */}
+          {when(
+            canvasToolbarMode.primary === 'play',
+            <>
+              <RemixNavigationBar />
+            </>,
           )}
         </FlexRow>
       </FlexColumn>
