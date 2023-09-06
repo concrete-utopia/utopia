@@ -862,6 +862,10 @@ export interface UpdateText {
   textProp: TextProp
 }
 
+export interface TruncateHistory {
+  action: 'TRUNCATE_HISTORY'
+}
+
 export interface SetFocusedElement {
   action: 'SET_FOCUSED_ELEMENT'
   focusedElementPath: ElementPath | null
@@ -1207,6 +1211,7 @@ export type EditorAction =
   | ClearPostActionSession
   | StartPostActionSession
   | FromVSCodeAction
+  | TruncateHistory
 
 export type DispatchPriority =
   | 'everyone'

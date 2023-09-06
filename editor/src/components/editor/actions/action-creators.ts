@@ -217,6 +217,7 @@ import type {
   ScrollToElementBehaviour,
   OpenCodeEditor,
   SetMapCountOverride,
+  TruncateHistory,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1361,6 +1362,12 @@ export function updateText(target: ElementPath, text: string, textProp: TextProp
     target: target,
     text: text,
     textProp: textProp,
+  }
+}
+
+export function truncateHistory(): TruncateHistory {
+  return {
+    action: 'TRUNCATE_HISTORY',
   }
 }
 

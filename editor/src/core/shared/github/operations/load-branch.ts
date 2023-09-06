@@ -8,6 +8,7 @@ import { notice } from '../../../../components/common/notice'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
   showToast,
+  truncateHistory,
   updateBranchContents,
   updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
@@ -134,6 +135,7 @@ export async function updateProjectWithBranchContent(
               ),
               updateProjectContents(parsedProjectContents),
               updateBranchContents(parsedProjectContents),
+              truncateHistory(),
               showToast(
                 notice(
                   `Github: Updated the project with the content from ${branchName}`,

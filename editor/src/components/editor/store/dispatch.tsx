@@ -143,6 +143,10 @@ function processAction(
     working = UPDATE_FNS.UPDATE_TEXT(action, working)
   }
 
+  if (action.action === 'TRUNCATE_HISTORY') {
+    working = UPDATE_FNS.TRUNCATE_HISTORY(working)
+  }
+
   if (action.action === 'START_POST_ACTION_SESSION') {
     working = runExecuteStartPostActionMenuAction(action, working)
   }
