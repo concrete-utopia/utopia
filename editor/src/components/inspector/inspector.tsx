@@ -88,7 +88,6 @@ import {
   treatElementAsGroupLike,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { FlexCol } from 'utopia-api'
-import { GroupChildResizeSection } from './sections/layout-section/group-child-resize-section'
 
 export interface ElementPathElement {
   name?: string
@@ -419,17 +418,12 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 {when(multiselectedContract === 'fragment', <FragmentSection />)}
                 {unless(
                   multiselectedContract === 'fragment',
-                  <PositionSection
-                    hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-                  />,
-                )}
-                {when(
-                  multiselectedContract !== 'fragment' && !allSelectedElementsdAreChildrenOfAGroup,
-                  <SizingSection />,
-                )}
-                {when(
-                  multiselectedContract !== 'fragment' && allSelectedElementsdAreChildrenOfAGroup,
-                  <GroupChildResizeSection />,
+                  <>
+                    <PositionSection
+                      hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                    />
+                    <SizingSection />
+                  </>,
                 )}
                 {unless(
                   multiselectedContract === 'fragment' || multiselectedContract === 'group',
