@@ -311,22 +311,21 @@ export type GithubOperation =
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
     case 'commitAndPush':
-      return 'Saving to Github'
+      return 'Saving to GitHub'
     case 'listBranches':
-      return 'Listing branches'
+      return 'Listing branches from GitHub'
     case 'loadBranch':
-      return 'Loading branch'
+      return 'Loading branch from GitHub'
     case 'loadRepositories':
       return 'Loading Repositories'
     case 'updateAgainstBranch':
-      return 'Updating'
+      return 'Updating against branch from GitHub'
     case 'listPullRequestsForBranch':
-      return 'Listing pull requests'
+      return 'Listing GitHub pull requests'
     case 'saveAsset':
-      return 'Saving asset to Github'
+      return 'Saving asset to GitHub'
     default:
-      const _exhaustiveCheck: never = op
-      return 'Unknown operation' // this should never happen
+      assertNever(op)
   }
 }
 
