@@ -184,7 +184,6 @@ export const CanvasWrapperComponent = React.memo(() => {
         >
           <CanvasToolbar />
           <CanvasStrategyPicker />
-          <StrategyIndicator />
         </FlexRow>
         {/* The error overlays are deliberately the last here so they hide other canvas UI */}
         {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
