@@ -21,6 +21,7 @@ import CanvasActions from '../canvas/canvas-actions'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import type { EditorAction } from './action-types'
 import {
+  applyCommandsAction,
   openFloatingInsertMenu,
   resetCanvas,
   setPanelVisibility,
@@ -46,6 +47,7 @@ import { generateUidWithExistingComponents } from '../../core/model/element-temp
 import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
+import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -74,6 +76,7 @@ export const CanvasToolbar = React.memo(() => {
 
   const canvasToolbarMode = useToolbarMode(forcedInsertMode)
 
+  const editorStateRef = useRefEditorState((store) => store.editor)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
@@ -123,6 +126,20 @@ export const CanvasToolbar = React.memo(() => {
       }),
     ])
   }, [dispatch, selectedViewsRef, projectContentsRef])
+
+  const toggleAbsolutePositioningCallback = React.useCallback(() => {
+    const editorState = editorStateRef.current
+    const commands = toggleAbsolutePositioningCommands(
+      editorState.jsxMetadata,
+      editorState.allElementProps,
+      editorState.elementPathTree,
+      editorState.selectedViews,
+    )
+    if (commands.length === 0) {
+      return
+    }
+    dispatch([applyCommandsAction(commands)])
+  }, [dispatch, editorStateRef])
 
   const clickSelectModeButton = React.useCallback(() => {
     dispatch([switchEditorMode(EditorModes.selectMode())])
@@ -398,7 +415,7 @@ export const CanvasToolbar = React.memo(() => {
                 onClick={openFloatingConvertMenuCallback}
               />
             </Tooltip>
-            {/* <Tooltip
+            <Tooltip
               title='Toggle between absolute and static positioning (X)' // help I need better copy
               placement='bottom'
             >
@@ -406,9 +423,9 @@ export const CanvasToolbar = React.memo(() => {
                 iconType='position-absolute' // TODO this needs an icon!
                 iconCategory='layout/systems'
                 size={16}
-                onClick={openFloatingConvertMenuCallback} // TODO this needs a callback?
+                onClick={toggleAbsolutePositioningCallback}
               />
-            </Tooltip> */}
+            </Tooltip>
           </FlexRow>,
         )}
         {when(

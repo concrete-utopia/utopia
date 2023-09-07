@@ -69,7 +69,10 @@ import { getFallbackControlStatusForProperty } from './common/control-status'
 import type { AllElementProps, ElementProps } from '../editor/store/editor-state'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
-import { convertGroupToFrameCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  convertGroupToFrameCommands,
+  groupConversionCommands,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -1047,4 +1050,55 @@ export function isFixedHugFillEqual(
       const _exhaustiveCheck: never = a.fixedHugFill
       throw new Error(`Unknown type in FixedHugFill ${JSON.stringify(a.fixedHugFill)}`)
   }
+}
+
+export function toggleAbsolutePositioningCommands(
+  jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
+  selectedViews: Array<ElementPath>,
+): Array<CanvasCommand> {
+  const commands = selectedViews.flatMap((elementPath) => {
+    const maybeGroupConversionCommands = groupConversionCommands(
+      jsxMetadata,
+      allElementProps,
+      elementPathTree,
+      elementPath,
+    )
+
+    if (maybeGroupConversionCommands != null) {
+      return maybeGroupConversionCommands
+    }
+
+    const element = MetadataUtils.findElementByElementPath(jsxMetadata, elementPath)
+    if (element == null) {
+      return []
+    }
+
+    if (
+      MetadataUtils.isFragmentFromMetadata(element) ||
+      MetadataUtils.isConditionalFromMetadata(element)
+    ) {
+      return []
+    }
+
+    if (MetadataUtils.isPositionAbsolute(element)) {
+      return [
+        ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+        ...(isIntrinsicallyInlineElement(element)
+          ? [
+              ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
+              setProperty('always', elementPath, PP.create('style', 'display'), 'inline-block'),
+            ]
+          : []),
+      ]
+    } else {
+      return [
+        ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
+        ...addPositionAbsoluteTopLeft(jsxMetadata, elementPath),
+      ]
+    }
+  })
+
+  return commands
 }
