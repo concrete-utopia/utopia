@@ -60,7 +60,8 @@ export const CanvasToolbar = React.memo(() => {
 
   const [forcedInsertMode, setForceInsertMode] = React.useState(false)
 
-  const toggleInsertButtonClicked = React.useCallback(() => {
+  const toggleInsertButtonClicked = React.useCallback((e: React.MouseEvent<Element>) => {
+    e.stopPropagation()
     setForceInsertMode((value) => !value)
   }, [])
 
@@ -312,8 +313,6 @@ export const CanvasToolbar = React.memo(() => {
             flexDirection: 'row',
             padding: '0 8px',
           }}
-          onMouseDown={stopPropagation}
-          onClick={stopPropagation}
         >
           <Tooltip title='Edit' placement='bottom'>
             <InsertModeButton
