@@ -2,16 +2,10 @@ import React from 'react'
 
 import { RouterProvider, createMemoryRouter } from 'react-router'
 import type { Location, UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
-
-import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
-
+import { RemixContext } from '@remix-run/react/dist/components'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
-import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
-import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
-import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import {
   PathPropHOC,
   getDefaultExportNameAndUidFromFile,
@@ -176,13 +170,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         future: futureConfig,
       }}
     >
-      {/* <UtopiaRemixRootErrorBoundary location={location}> */}
       <RouterProvider
         router={router}
         fallbackElement={null}
         future={{ v7_startTransition: true }}
       />
-      {/* </UtopiaRemixRootErrorBoundary> */}
     </RemixContext.Provider>
   )
 })

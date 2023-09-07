@@ -8,7 +8,6 @@ import { RouteModules } from '@remix-run/react/dist/routeModules'
 import { DataRouteObject, ShouldRevalidateFunction } from 'react-router'
 import { RemixRoute, RemixRouteError } from '@remix-run/react/dist/components'
 import invariant from './invariant'
-import { UtopiaRemixRoute } from '../../components/canvas/remix/remix-utils'
 
 export interface RouteManifest<Route> {
   [routeId: string]: Route
@@ -116,7 +115,7 @@ export function createClientRoutes(
 
     let dataRoute: DataRouteObject = {
       caseSensitive: route.caseSensitive,
-      element: <UtopiaRemixRoute id={route.id} />,
+      element: <RemixRoute id={route.id} />,
       errorElement: hasErrorBoundary ? <RemixRouteError id={route.id} /> : undefined,
       id: route.id,
       index: route.index,

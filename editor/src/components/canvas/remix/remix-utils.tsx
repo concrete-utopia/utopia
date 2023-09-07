@@ -1,45 +1,27 @@
 import React from 'react'
-import { Outlet } from 'react-router'
-import type {
-  UNSAFE_AssetsManifest as AssetsManifest,
-  UNSAFE_RemixContextObject as RemixContextObject,
-} from '@remix-run/react'
-
+import type { UNSAFE_AssetsManifest as AssetsManifest } from '@remix-run/react'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left, right } from '../../../core/shared/either'
-import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import { getProjectFileByFilePath } from '../../assets'
-import type {
-  ElementInstanceMetadataMap,
-  JSXElementChild,
-  TopLevelElement,
-  UtopiaJSXComponent,
-} from '../../../core/shared/element-template'
-import {
-  getJSXElementNameAsString,
-  isUtopiaJSXComponent,
-  jsxElementName,
-  jsxElementNameEquals,
-} from '../../../core/shared/element-template'
+import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
+import { jsxElementName, jsxElementNameEquals } from '../../../core/shared/element-template'
 import type {
   ElementPath,
   ElementPathPart,
   ExportDefaultFunctionOrClass,
   TextFile,
 } from '../../../core/shared/project-file-types'
-import type { RouteModule, RouteModules } from '@remix-run/react/dist/routeModules'
+import type { RouteModule } from '@remix-run/react/dist/routeModules'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { attemptToResolveParsedComponents } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
-import type { UtopiaRemixRootComponentProps } from './utopia-remix-root-component'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { MapLike } from 'typescript'
-import { pathPartsFromJSXElementChild } from '../../../core/model/element-template-utils'
 import type { RemixStaticRoutingTable } from '../../editor/store/editor-state'
 import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 import type {
@@ -69,47 +51,6 @@ export function invariant<T>(value: T | null | undefined, message: string): asse
     throw new Error(message)
   }
 }
-
-// Not exported from Remix
-// FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
-function useRemixContext(): RemixContextObject {
-  let context = React.useContext(RemixContext)
-  invariant(context, 'You must render this element inside a <Remix> element')
-  return context
-}
-
-interface UtopiaRemixRouteProps {
-  id: string
-}
-
-// Not exported from Remix
-// FIXME: either find where this component is export from remix, submit PR to export it, or leave it as is
-export const UtopiaRemixRoute = React.memo(({ id }: UtopiaRemixRouteProps) => {
-  let { routeModules, future } = useRemixContext()
-  invariant(
-    routeModules,
-    "Cannot initialize 'routeModules'. This normally occurs when you have server code in your client modules.\n" +
-      'Check this link for more details:\nhttps://remix.run/pages/gotchas#server-code-in-client-bundles',
-  )
-
-  let { default: Component, ErrorBoundary, CatchBoundary } = routeModules[id]
-
-  // Default Component to Outlet if we expose boundary UI components
-  if (
-    Component == null &&
-    (ErrorBoundary != null || (!future.v2_errorBoundary && CatchBoundary != null))
-  ) {
-    Component = Outlet
-  }
-
-  invariant(
-    Component,
-    `Route "${id}" has no component! Please go add a \`default\` export in the route module file.\n` +
-      'If you were trying to navigate or submit to a resource route, use `<a>` instead of `<Link>` or `<Form reloadDocument>`.',
-  )
-
-  return <Component />
-})
 
 export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest {
   return {
