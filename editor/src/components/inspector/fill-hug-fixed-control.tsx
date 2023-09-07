@@ -7,7 +7,12 @@ import { optionalMap } from '../../core/shared/optional-utils'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever } from '../../core/shared/utils'
 import { NumberInput, PopupList, useColorTheme, UtopiaTheme } from '../../uuiui'
-import type { SelectOption } from '../../uuiui-deps'
+import type {
+  ControlStatus,
+  ControlStyles,
+  OnSubmitValueOrUnknownOrEmpty,
+  SelectOption,
+} from '../../uuiui-deps'
 import { getControlStyles, InspectorRowHoverCSS } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -37,12 +42,11 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import * as EP from '../../core/shared/element-path'
 import * as PP from '../../core/shared/property-path'
+import type { GridRowVariant } from './widgets/ui-grid-row'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { useContextSelector } from 'use-context-selector'
-import { InspectorPropsContext, stylePropPathMappingFn } from './common/property-path-hooks'
 import { mapDropNulls, safeIndex, uniqBy } from '../../core/shared/array-utils'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
-import { unless, when } from '../../utils/react-conditionals'
+import { when } from '../../utils/react-conditionals'
 import type { LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
@@ -108,17 +112,6 @@ const fixedHugFillOptionsSelector = createSelector(
 )
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
-  const widthProp = React.useMemo(() => {
-    return [stylePropPathMappingFn('width', targetPath)]
-  }, [targetPath])
-
-  const heightProp = React.useMemo(() => {
-    return [stylePropPathMappingFn('height', targetPath)]
-  }, [targetPath])
-
   const options = useEditorState(
     Substores.metadata,
     fixedHugFillOptionsSelector,
@@ -384,11 +377,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ],
   )
 
-  const editorRef = useRefEditorState((store) => ({
-    selectedViews: store.editor.selectedViews,
-    allElementProps: store.editor.allElementProps,
-  }))
-
   const groupChildConstraints = useEditorState(
     Substores.metadata,
     (store) => ({
@@ -431,12 +419,12 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
       return setGroupChildConstraint(
         dispatch,
         'toggle',
-        editorRef.current.selectedViews,
-        editorRef.current.allElementProps,
+        selectedViewsRef.current,
+        allElementPropsRef.current,
         dimension,
       )
     },
-    [dispatch, editorRef],
+    [dispatch, selectedViewsRef, allElementPropsRef],
   )
 
   const framePoints: FramePinsInfo = React.useMemo(() => {
@@ -485,94 +473,93 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
             name='group-child-controls'
           />,
         )}
-        <div>
-          <UIGridRow
-            padded={false}
-            variant={
-              groupChildrenSelectedRef.current
-                ? '|--67px--|<--------1fr-------->'
-                : '<--1fr--><--1fr-->'
-            }
-            css={InspectorRowHoverCSS}
-          >
-            <NumberInput
-              labelInner={'W'}
-              id={FillFixedHugControlId('width')}
-              testId={FillFixedHugControlId('width')}
-              value={widthValue}
-              onSubmitValue={onAdjustWidth}
-              onTransientSubmitValue={onAdjustWidth}
-              onForcedSubmitValue={onAdjustWidth}
-              controlStatus={widthInputControlStatus}
-              numberType={pickNumberType(widthCurrentValue.fixedHugFill)}
-              incrementControls={true}
-              stepSize={1}
-              minimum={0}
-              maximum={Infinity}
-              defaultUnitToHide={null}
-              focusOnMount={false}
-            />
-            {unless(
-              groupChildrenSelectedRef.current,
-              <PopupList
-                value={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? undefined}
-                options={options}
-                onSubmitValue={onSubmitFixedFillHugType['width']}
-                controlStyles={widthControlStyles}
-              />,
-            )}
-            {when(
-              groupChildrenSelectedRef.current,
-              <GroupConstraintSelect dimension='width' type={groupChildConstraints.width} />,
-            )}
-          </UIGridRow>
-          <UIGridRow
-            padded={false}
-            variant={
-              groupChildrenSelectedRef.current
-                ? '|--67px--|<--------1fr-------->'
-                : '<--1fr--><--1fr-->'
-            }
-            css={InspectorRowHoverCSS}
-          >
-            <NumberInput
-              labelInner={'H'}
-              id={FillFixedHugControlId('height')}
-              testId={FillFixedHugControlId('height')}
-              value={heightValue}
-              onSubmitValue={onAdjustHeight}
-              onTransientSubmitValue={onAdjustHeight}
-              onForcedSubmitValue={onAdjustHeight}
-              controlStatus={heightInputControlStatus}
-              numberType={pickNumberType(heightCurrentValue.fixedHugFill)}
-              incrementControls={true}
-              stepSize={1}
-              minimum={0}
-              maximum={Infinity}
-              defaultUnitToHide={null}
-              focusOnMount={false}
-            />
-            {unless(
-              groupChildrenSelectedRef.current,
-              <PopupList
-                value={
-                  optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? undefined
-                }
-                options={options}
-                onSubmitValue={onSubmitFixedFillHugType['height']}
-                controlStyles={heightControlStyles}
-              />,
-            )}
-            {when(
-              groupChildrenSelectedRef.current,
-              <GroupConstraintSelect dimension='height' type={groupChildConstraints.height} />,
-            )}
-          </UIGridRow>
-        </div>
+        <FlexCol css={{ gap: 0 }}>
+          <DimensionRow
+            dimension='width'
+            groupChild={groupChildrenSelectedRef.current}
+            onAdjust={onAdjustWidth}
+            value={widthValue}
+            controlStatus={widthInputControlStatus}
+            numberType={pickNumberType(widthCurrentValue.fixedHugFill)}
+            constraint={groupChildConstraints.width}
+            selectOption={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? null}
+            onSubmitValue={onSubmitFixedFillHugType['width']}
+            controlStyles={widthControlStyles}
+          />
+          <DimensionRow
+            dimension='height'
+            groupChild={groupChildrenSelectedRef.current}
+            onAdjust={onAdjustHeight}
+            value={heightValue}
+            controlStatus={heightInputControlStatus}
+            numberType={pickNumberType(heightCurrentValue.fixedHugFill)}
+            constraint={groupChildConstraints.height}
+            selectOption={optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? null}
+            onSubmitValue={onSubmitFixedFillHugType['height']}
+            controlStyles={heightControlStyles}
+          />
+        </FlexCol>
       </UIGridRow>
     </FlexCol>
   )
 })
+
+const DimensionRow = React.memo(
+  (props: {
+    dimension: 'width' | 'height'
+    groupChild: boolean
+    onAdjust: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+    value: CSSNumber | null
+    controlStatus: ControlStatus
+    numberType: CSSNumberType
+    constraint: GroupChildConstraintOptionType | 'mixed'
+    selectOption: SelectOption | null
+    onSubmitValue: (option: SelectOption) => void
+    controlStyles: ControlStyles
+  }) => {
+    const gridTemplate = React.useMemo((): GridRowVariant => {
+      return props.groupChild ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
+    }, [props.groupChild])
+
+    const labelInner = React.useMemo(() => {
+      return props.dimension.charAt(0).toUpperCase()
+    }, [props.dimension])
+
+    return (
+      <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
+        <NumberInput
+          labelInner={labelInner}
+          id={FillFixedHugControlId(props.dimension)}
+          testId={FillFixedHugControlId(props.dimension)}
+          value={props.value}
+          onSubmitValue={props.onAdjust}
+          onTransientSubmitValue={props.onAdjust}
+          onForcedSubmitValue={props.onAdjust}
+          controlStatus={props.controlStatus}
+          numberType={props.numberType}
+          incrementControls={true}
+          stepSize={1}
+          minimum={0}
+          maximum={Infinity}
+          defaultUnitToHide={null}
+          focusOnMount={false}
+        />
+        {props.groupChild ? (
+          <GroupConstraintSelect dimension={props.dimension} type={props.constraint} />
+        ) : (
+          <PopupList
+            value={props.selectOption ?? undefined}
+            options={options}
+            onSubmitValue={props.onSubmitValue}
+            controlStyles={props.controlStyles}
+          />
+        )}
+      </UIGridRow>
+    )
+  },
+)
+
+DimensionRow.displayName = 'DimensionRow'
 
 const GroupConstraintSelect = React.memo(
   ({
