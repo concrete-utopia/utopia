@@ -8,8 +8,8 @@ import {
   jsxElementName,
   setJSXAttributesAttribute,
 } from '../core/shared/element-template'
-import { isImageFile } from '../core/model/project-file-utils'
 import type { ProjectContents, ElementPath } from '../core/shared/project-file-types'
+import { isImageFile } from '../core/shared/project-file-types'
 import Utils from '../utils/utils'
 import type { Size, CanvasRectangle, CanvasPoint } from '../core/shared/math-utils'
 import { canvasRectangle } from '../core/shared/math-utils'

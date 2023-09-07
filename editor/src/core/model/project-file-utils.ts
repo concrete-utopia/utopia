@@ -498,50 +498,12 @@ export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boo
   )
 }
 
-export function imageFile(
-  imageType: string | undefined,
-  base64: string | undefined,
-  width: number | undefined,
-  height: number | undefined,
-  hash: number,
-): ImageFile {
-  return {
-    type: 'IMAGE_FILE',
-    imageType: imageType,
-    base64: base64,
-    width: width,
-    height: height,
-    hash: hash,
-  }
-}
-
-export function assetFile(base64: string | undefined): AssetFile {
-  return {
-    type: 'ASSET_FILE',
-    base64: base64,
-  }
-}
-
-export function directory(): Directory {
-  return {
-    type: 'DIRECTORY',
-  }
-}
-
 export function sameTextFile(first: ProjectFile, second: ProjectFile): boolean {
   if (isTextFile(first) && isTextFile(second)) {
     return first.fileContents === second.fileContents
   } else {
     return false
   }
-}
-
-export function isImageFile(projectFile: ProjectFile): projectFile is ImageFile {
-  return projectFile.type === 'IMAGE_FILE'
-}
-
-export function isDirectory(projectFile: ProjectFile): projectFile is Directory {
-  return projectFile.type === 'DIRECTORY'
 }
 
 // A layer over the mime-types library which means we can shim in things we need.
