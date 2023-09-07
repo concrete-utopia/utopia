@@ -1,10 +1,6 @@
 import type {
-  UNSAFE_RouteManifest as RouteManifest,
-  UNSAFE_EntryRoute as EntryRoute,
   UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_AssetsManifest as AssetsManifest,
-  UNSAFE_RemixContextObject as RemixContextObject,
-  UNSAFE_RouteModules as RouteModules,
 } from '@remix-run/react'
 import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import type { MapLike } from 'typescript'
@@ -21,6 +17,7 @@ import {
   getRoutesAndModulesFromManifest,
 } from '../../canvas/remix/remix-utils'
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 
 export interface RemixStaticRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -61,6 +58,9 @@ const defaultFutureConfig: FutureConfig = {
 // Problem: passing these via args breaks the memo
 export const spyContainer = { current: {} }
 export const propsContainer = { current: {} }
+export const fileBlobsContainer = { current: {} }
+export const displayNoneInstancesContainer = { current: [] as ElementPath[] }
+export const hiddenInstancesContainer = { current: [] as ElementPath[] }
 
 export function createRemixDerivedData(
   projectContents: ProjectContentTreeRoot,
@@ -89,6 +89,9 @@ export function createRemixDerivedData(
     projectContents,
     CreateRemixDerivedDataRefs.mutableContext,
     CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
+    fileBlobsContainer.current,
+    displayNoneInstancesContainer.current,
+    hiddenInstancesContainer.current,
   )
 
   if (routesAndModulesFromManifestResult == null) {

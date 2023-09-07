@@ -176,7 +176,14 @@ import {
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixDerivedData } from './remix-derived-data'
-import { createRemixDerivedData, propsContainer, spyContainer } from './remix-derived-data'
+import {
+  createRemixDerivedData,
+  displayNoneInstancesContainer,
+  fileBlobsContainer,
+  hiddenInstancesContainer,
+  propsContainer,
+  spyContainer,
+} from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2618,6 +2625,9 @@ export function deriveState(
   // FIXME remix spike: these break the memo if they're passed as args, but I couldn't figure out the right memo in `moize`
   spyContainer.current = editor.spyMetadata
   propsContainer.current = editor.allElementProps
+  fileBlobsContainer.current = editor.canvas.base64Blobs
+  hiddenInstancesContainer.current = editor.hiddenInstances
+  displayNoneInstancesContainer.current = editor.displayNoneInstances
 
   const createRemixDerivedDataMemo =
     cacheKey === 'patched'

@@ -37,6 +37,7 @@ import { isRemixOutletAgainstImports } from '../../../core/model/project-file-ut
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 
 const ROOT_DIR = '/src'
 
@@ -369,6 +370,9 @@ function getRemixExportsOfModule(
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
+  fileBlobs: CanvasBase64Blobs,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
 ): {
   executionScopeCreator: (innerProjectContents: ProjectContentTreeRoot) => ExecutionScope
   loader: LoaderFunction | undefined
@@ -430,13 +434,13 @@ function getRemixExportsOfModule(
       topLevelComponentRendererComponents,
       innerProjectContents,
       filename,
-      {}, // TODO for this PR, don't merge as long as this is here
-      [], // TODO for this PR, don't merge as long as this is here
-      [], // TODO for this PR, don't merge as long as this is here
+      fileBlobs,
+      hiddenInstances,
+      displayNoneInstances,
       metadataContext,
-      NO_OP, // TODO for this PR, don't merge as long as this is here
-      false, // TODO for this PR, don't merge as long as this is here
-      null, // TODO for this PR, don't merge as long as this is here
+      NO_OP,
+      false,
+      null,
     )
   }
 
@@ -462,6 +466,9 @@ export function getRoutesAndModulesFromManifest(
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
+  fileBlobs: CanvasBase64Blobs,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixStaticRoutingTable = {}
@@ -505,6 +512,9 @@ export function getRoutesAndModulesFromManifest(
       projectContents,
       mutableContextRef,
       topLevelComponentRendererComponents,
+      fileBlobs,
+      hiddenInstances,
+      displayNoneInstances,
     )
 
     addLoaderAndActionToRoute(routes, route.id, loader, action)
