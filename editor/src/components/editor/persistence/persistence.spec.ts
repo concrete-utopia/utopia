@@ -35,7 +35,7 @@ let localProjects: { [key: string]: LocalProject<PersistentModel> } = {}
 
 const base64Contents = 'data:asset/xyz;base64,SomeBase64'
 const mockAssetFileWithBase64 = assetFile(base64Contents, gitBlobChecksumFromBase64(base64Contents))
-const AssetFileWithoutBase64 = assetFile(undefined, gitBlobChecksumFromText('undefined'))
+const AssetFileWithoutBase64 = assetFile(undefined, gitBlobChecksumFromBase64(base64Contents))
 
 const ProjectName = 'Project Name'
 const BaseModel = createPersistentModel()
@@ -608,7 +608,7 @@ describe('Forking a project', () => {
       projectContents: addFileToProjectContents(
         startProject.projectContents,
         AssetFileName,
-        assetFile(base64Contents, 'aaaaaaa'),
+        assetFile(base64Contents, gitBlobChecksumFromBase64(base64Contents)),
       ),
     })
     expect(capturedData.updatedFiles[AssetFileName]).toEqual(mockAssetFileWithBase64)
