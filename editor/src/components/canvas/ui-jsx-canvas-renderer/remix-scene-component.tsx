@@ -1,11 +1,14 @@
 import React from 'react'
 import { UtopiaRemixRootComponent } from '../remix/utopia-remix-root-component'
 import { UtopiaStyles, useColorTheme } from '../../../uuiui'
+import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import * as EP from '../../../core/shared/element-path'
 
 export const REMIX_SCENE_TESTID = 'remix-scene'
 
 export interface RemixSceneProps {
   style?: React.CSSProperties
+  [UTOPIA_PATH_KEY]?: string
 }
 
 export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<RemixSceneProps>) => {
@@ -24,9 +27,14 @@ export const RemixSceneComponent = React.memo((props: React.PropsWithChildren<Re
     ...style,
   }
 
+  const pathString = props[UTOPIA_PATH_KEY]
+  if (pathString == null) {
+    throw new Error('Cannot render `UtopiaRemixRootComponent` without a path prop')
+  }
+
   return (
     <div data-testid={REMIX_SCENE_TESTID} {...remainingProps} style={sceneStyle}>
-      <UtopiaRemixRootComponent />
+      <UtopiaRemixRootComponent data-path={EP.fromString(pathString)} />
     </div>
   )
 })

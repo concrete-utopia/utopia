@@ -1126,3 +1126,7 @@ export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null
   }
   return fromString(path.parts[0][0])
 }
+
+export function appendTwoPaths(base: ElementPath, other: ElementPath): ElementPath {
+  return elementPath([...base.parts, ...other.parts])
+}

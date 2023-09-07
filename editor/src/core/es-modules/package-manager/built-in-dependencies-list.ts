@@ -15,6 +15,8 @@ import type { EditorDispatch } from '../../../components/editor/action-types'
 import type { EditorState } from '../../../components/editor/store/editor-state'
 import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
 import { UtopiaApiGroup } from './group-component'
+import * as RemixRunReact from '@remix-run/react'
+import * as ReactRouter from 'react-router'
 
 applyUIDMonkeyPatch()
 
@@ -85,5 +87,11 @@ export function createBuiltInDependenciesList(
       EmotionStyled,
       editorPackageJSON.dependencies['@emotion/styled'],
     ),
+    builtInDependency(
+      '@remix-run/react',
+      RemixRunReact,
+      editorPackageJSON.dependencies['@remix-run/react'],
+    ),
+    builtInDependency('react-router', ReactRouter, editorPackageJSON.dependencies['react-router']),
   ]
 }

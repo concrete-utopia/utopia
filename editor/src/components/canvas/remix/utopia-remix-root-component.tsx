@@ -1,66 +1,110 @@
+import { RemixContext } from '@remix-run/react/dist/components'
+import type { RouteModules } from '@remix-run/react/dist/routeModules'
 import React from 'react'
-import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
-import { DefaultFutureConfig } from './remix-utils'
-import {
-  RemixErrorBoundary,
-  V2_RemixRootDefaultErrorBoundary,
-} from '@remix-run/react/dist/errorBoundaries'
-import { RouterProvider, createMemoryRouter } from 'react-router'
+import { createMemoryRouter, RouterProvider } from 'react-router'
+import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
+import { getDefaultExportNameAndUidFromFile, PathPropHOC } from './remix-utils'
+import * as EP from '../../../core/shared/element-path'
 
-// TODO temporary, we need the real manifest
-const dummyManifest = {
-  entry: {
-    imports: [],
-    module: '',
-  },
-  routes: {
-    root: {
-      hasAction: false,
-      hasCatchBoundary: false,
-      hasErrorBoundary: false,
-      hasLoader: false,
-      id: 'root',
-      imports: [],
-      module: '/',
-      path: '',
-    },
-  },
-  url: '',
-  version: '',
+export interface UtopiaRemixRootComponentProps {
+  [UTOPIA_PATH_KEY]: ElementPath
 }
 
-// TODO temporary, this is just a placeholder until we have the real content
-const DummyRemixPlaceholder = React.memo(() => <div>Remix content is coming soon</div>)
+export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
+  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
-// TODO temporary, we need the real routes
-const dummyRoutes = [
-  {
-    path: '/',
-    element: <DummyRemixPlaceholder />,
-    children: [],
-  },
-]
+  const routes = useEditorState(
+    Substores.derived,
+    (store) => store.derived.remixData?.routes ?? [],
+    'UtopiaRemixRootComponent routes',
+  )
 
-export const UtopiaRemixRootComponent = React.memo(() => {
-  const router = React.useMemo(() => createMemoryRouter(dummyRoutes), [])
+  const defaultExports = useEditorState(
+    Substores.derived,
+    (store) => {
+      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
+      return Object.values(routeModuleCreators).map(
+        // FIXME Saving required as this doesn't update with unsaved content?
+        (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
+      )
+    },
+    '',
+  )
 
-  let [location] = React.useState(router.state.location)
+  const basePath = props[UTOPIA_PATH_KEY]
+
+  const routeModules = React.useMemo(() => {
+    const defaultExportsIgnored = defaultExports // Forcibly update the routeModules only when the default exports have changed
+
+    if (remixDerivedDataRef.current == null) {
+      return null
+    }
+
+    const routeModulesResult: RouteModules = {}
+    for (const [routeId, value] of Object.entries(
+      remixDerivedDataRef.current.routeModuleCreators,
+    )) {
+      const nameAndUid = getDefaultExportNameAndUidFromFile(
+        projectContentsRef.current,
+        value.filePath,
+      )
+      if (nameAndUid == null) {
+        continue
+      }
+
+      const relativePath =
+        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePath
+
+      const defaultComponent = (componentProps: any) =>
+        value
+          .executionScopeCreator(projectContentsRef.current)
+          .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
+
+      routeModulesResult[routeId] = {
+        ...value,
+        default: PathPropHOC(
+          defaultComponent,
+          EP.toString(EP.appendTwoPaths(basePath, relativePath)),
+        ),
+      }
+    }
+
+    return routeModulesResult
+  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+
+  // The router always needs to be updated otherwise new routes won't work without a refresh
+  // We need to create the new router with the current location in the initial entries to
+  // prevent it thinking that it is rendering '/'
+  const router = React.useMemo(() => {
+    if (routes == null) {
+      return null
+    }
+
+    return createMemoryRouter(routes)
+  }, [routes])
+
+  if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
+    return null
+  }
+
+  const { assetsManifest, futureConfig } = remixDerivedDataRef.current
 
   return (
     <RemixContext.Provider
       value={{
-        manifest: dummyManifest,
-        routeModules: {},
-        future: DefaultFutureConfig,
+        manifest: assetsManifest,
+        routeModules: routeModules,
+        future: futureConfig,
       }}
     >
-      <RemixErrorBoundary location={location} component={V2_RemixRootDefaultErrorBoundary}>
-        <RouterProvider
-          router={router}
-          fallbackElement={null}
-          future={{ v7_startTransition: true }}
-        />
-      </RemixErrorBoundary>
+      <RouterProvider
+        router={router}
+        fallbackElement={null}
+        future={{ v7_startTransition: true }}
+      />
     </RemixContext.Provider>
   )
 })

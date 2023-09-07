@@ -980,6 +980,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
+    remixData: poppedDerived.remixData,
   }
 }
 
