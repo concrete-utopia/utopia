@@ -112,12 +112,6 @@ const fixedHugFillOptionsSelector = createSelector(
 )
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const options = useEditorState(
-    Substores.metadata,
-    fixedHugFillOptionsSelector,
-    'FillHugFixedControl options',
-  )
-
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
@@ -453,10 +447,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     }
   }, [groupChildConstraints])
 
-  if (options == null) {
-    return null
-  }
-
   const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
   const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
 
@@ -476,27 +466,31 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         <FlexCol css={{ gap: 0 }}>
           <DimensionRow
             dimension='width'
-            groupChild={groupChildrenSelectedRef.current}
-            onAdjust={onAdjustWidth}
-            value={widthValue}
-            controlStatus={widthInputControlStatus}
-            numberType={pickNumberType(widthCurrentValue.fixedHugFill)}
-            constraint={groupChildConstraints.width}
-            selectOption={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? null}
-            onSubmitValue={onSubmitFixedFillHugType['width']}
-            controlStyles={widthControlStyles}
+            dimensionValue={widthValue}
+            dimensionControlStatus={widthInputControlStatus}
+            dimensionNumberType={pickNumberType(widthCurrentValue.fixedHugFill)}
+            fixedHugSelectOption={
+              optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? null
+            }
+            fixedHugControlStyles={widthControlStyles}
+            onAdjustDimension={onAdjustWidth}
+            onSubmitFixedHug={onSubmitFixedFillHugType['width']}
+            isGroupChild={groupChildrenSelectedRef.current}
+            groupChildConstraint={groupChildConstraints.width}
           />
           <DimensionRow
             dimension='height'
-            groupChild={groupChildrenSelectedRef.current}
-            onAdjust={onAdjustHeight}
-            value={heightValue}
-            controlStatus={heightInputControlStatus}
-            numberType={pickNumberType(heightCurrentValue.fixedHugFill)}
-            constraint={groupChildConstraints.height}
-            selectOption={optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? null}
-            onSubmitValue={onSubmitFixedFillHugType['height']}
-            controlStyles={heightControlStyles}
+            dimensionValue={heightValue}
+            dimensionControlStatus={heightInputControlStatus}
+            dimensionNumberType={pickNumberType(heightCurrentValue.fixedHugFill)}
+            fixedHugSelectOption={
+              optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? null
+            }
+            fixedHugControlStyles={heightControlStyles}
+            onAdjustDimension={onAdjustHeight}
+            onSubmitFixedHug={onSubmitFixedFillHugType['height']}
+            isGroupChild={groupChildrenSelectedRef.current}
+            groupChildConstraint={groupChildConstraints.height}
           />
         </FlexCol>
       </UIGridRow>
@@ -505,38 +499,55 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 })
 
 const DimensionRow = React.memo(
-  (props: {
+  ({
+    dimension,
+    dimensionValue,
+    dimensionControlStatus,
+    dimensionNumberType,
+    fixedHugSelectOption,
+    fixedHugControlStyles,
+    onAdjustDimension,
+    onSubmitFixedHug,
+    isGroupChild,
+    groupChildConstraint,
+  }: {
     dimension: 'width' | 'height'
-    groupChild: boolean
-    onAdjust: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
-    value: CSSNumber | null
-    controlStatus: ControlStatus
-    numberType: CSSNumberType
-    constraint: GroupChildConstraintOptionType | 'mixed'
-    selectOption: SelectOption | null
-    onSubmitValue: (option: SelectOption) => void
-    controlStyles: ControlStyles
+    dimensionValue: CSSNumber | null
+    dimensionControlStatus: ControlStatus
+    dimensionNumberType: CSSNumberType
+    fixedHugSelectOption: SelectOption | null
+    fixedHugControlStyles: ControlStyles
+    onAdjustDimension: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+    onSubmitFixedHug: (option: SelectOption) => void
+    isGroupChild: boolean
+    groupChildConstraint: GroupChildConstraintOptionType | 'mixed'
   }) => {
+    const fixedHugFillOptions = useEditorState(
+      Substores.metadata,
+      fixedHugFillOptionsSelector,
+      'DimensionRow options',
+    )
+
     const gridTemplate = React.useMemo((): GridRowVariant => {
-      return props.groupChild ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
-    }, [props.groupChild])
+      return isGroupChild ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
+    }, [isGroupChild])
 
     const labelInner = React.useMemo(() => {
-      return props.dimension.charAt(0).toUpperCase()
-    }, [props.dimension])
+      return dimension.charAt(0).toUpperCase()
+    }, [dimension])
 
     return (
       <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
         <NumberInput
           labelInner={labelInner}
-          id={FillFixedHugControlId(props.dimension)}
-          testId={FillFixedHugControlId(props.dimension)}
-          value={props.value}
-          onSubmitValue={props.onAdjust}
-          onTransientSubmitValue={props.onAdjust}
-          onForcedSubmitValue={props.onAdjust}
-          controlStatus={props.controlStatus}
-          numberType={props.numberType}
+          id={FillFixedHugControlId(dimension)}
+          testId={FillFixedHugControlId(dimension)}
+          value={dimensionValue}
+          onSubmitValue={onAdjustDimension}
+          onTransientSubmitValue={onAdjustDimension}
+          onForcedSubmitValue={onAdjustDimension}
+          controlStatus={dimensionControlStatus}
+          numberType={dimensionNumberType}
           incrementControls={true}
           stepSize={1}
           minimum={0}
@@ -544,14 +555,14 @@ const DimensionRow = React.memo(
           defaultUnitToHide={null}
           focusOnMount={false}
         />
-        {props.groupChild ? (
-          <GroupConstraintSelect dimension={props.dimension} type={props.constraint} />
+        {isGroupChild ? (
+          <GroupConstraintSelect dimension={dimension} type={groupChildConstraint} />
         ) : (
           <PopupList
-            value={props.selectOption ?? undefined}
-            options={options}
-            onSubmitValue={props.onSubmitValue}
-            controlStyles={props.controlStyles}
+            value={fixedHugSelectOption ?? undefined}
+            options={fixedHugFillOptions}
+            onSubmitValue={onSubmitFixedHug}
+            controlStyles={fixedHugControlStyles}
           />
         )}
       </UIGridRow>
@@ -620,7 +631,7 @@ const GroupConstraintSelect = React.memo(
         id={`group-child-resize-${dimension}`}
         onSubmitValue={onSubmitValue}
         value={listValue}
-        options={options}
+        options={groupChildConstraintOptions}
         style={{ position: 'relative' }}
         containerMode={type === 'constrained' ? 'default' : 'showBorderOnHover'}
         controlStyles={{
@@ -706,6 +717,9 @@ const allElementsAreGroupChildren = createSelector(
   (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
   (metadata, pathTrees, selectedViews): boolean => {
+    if (selectedViews.length === 0) {
+      return false
+    }
     function elementOrAnyChildGroup(path: ElementPath) {
       return treatElementAsGroupLike(metadata, EP.parentPath(path))
     }
@@ -734,7 +748,7 @@ const groupChildConstraintOptionValues = {
   mixed: { value: 'mixed', label: 'Mixed' },
 }
 
-const options: Array<SelectOption> = [
+const groupChildConstraintOptions: Array<SelectOption> = [
   groupChildConstraintOptionValues.constrained,
   groupChildConstraintOptionValues.notConstrained,
 ]
