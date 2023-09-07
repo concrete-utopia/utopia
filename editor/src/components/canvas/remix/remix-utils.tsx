@@ -191,6 +191,7 @@ export function getRoutesAndModulesFromManifest(
 
   Object.values(routeManifest).forEach((route) => {
     const { executionScopeCreator, loader, action, rootComponentUid } = getRemixExportsOfModule(
+      route.id,
       route.module,
       curriedRequireFn,
       curriedResolveFn,
@@ -220,6 +221,7 @@ export function getRoutesAndModulesFromManifest(
 }
 
 function getRemixExportsOfModule(
+  routeId: string,
   filename: string,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
@@ -304,9 +306,15 @@ function getRemixExportsOfModule(
 
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
 
+  // If a Remix error boundary is rendered, it won't be cleared unless the module is re-evaluated,
+  // but when there is an error boundary this only seems to happen if there is a loader for the route.
+  // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
+  // we only ever pass in an empty object for the `routeModules` and never mutate it
+  const defaultLoader = routeId === 'root' ? undefined : () => null
+
   return {
     executionScopeCreator: executionScopeCreator,
-    loader: executionScope.scope['loader'] as LoaderFunction | undefined,
+    loader: executionScope.scope['loader'] ?? (defaultLoader as LoaderFunction | undefined),
     action: executionScope.scope['action'] as ActionFunction | undefined,
     rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
   }
