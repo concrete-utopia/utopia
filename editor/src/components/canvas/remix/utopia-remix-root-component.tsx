@@ -32,13 +32,47 @@ interface RemixNavigationAtomData {
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
 export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 
+function useGetRouteModules(basePath: ElementPath) {
+  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+  const projectContents = useEditorState(
+    Substores.projectContents,
+    (s) => s.editor.projectContents,
+    'useGetRouteModules projectContents',
+  )
+  if (remixDerivedDataRef.current == null) {
+    return null
+  }
+
+  const routeModulesResult: RouteModules = {}
+  for (const [routeId, value] of Object.entries(remixDerivedDataRef.current.routeModuleCreators)) {
+    const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, value.filePath)
+    if (nameAndUid == null) {
+      continue
+    }
+
+    const relativePath =
+      remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePath
+
+    const defaultComponent = (componentProps: any) =>
+      value.executionScopeCreator(projectContents).scope[nameAndUid.name]?.(componentProps) ?? (
+        <React.Fragment />
+      )
+
+    routeModulesResult[routeId] = {
+      ...value,
+      default: PathPropHOC(defaultComponent, EP.toString(appendTwoPaths(basePath, relativePath))),
+    }
+  }
+
+  return routeModulesResult
+}
+
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
 
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
   const routes = useEditorState(
     Substores.derived,
@@ -46,55 +80,8 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     'UtopiaRemixRootComponent routes',
   )
 
-  const defaultExports = useEditorState(
-    Substores.derived,
-    (store) => {
-      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
-      return Object.values(routeModuleCreators).map(
-        // FIXME Saving required as this doesn't update with unsaved content?
-        (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
-      )
-    },
-    '',
-  )
-
   const basePath = props[UTOPIA_PATH_KEY]
-
-  const routeModules = React.useMemo(() => {
-    const defaultExportsIgnored = defaultExports // Forcibly update the routeModules only when the default exports have changed
-
-    if (remixDerivedDataRef.current == null) {
-      return null
-    }
-
-    const routeModulesResult: RouteModules = {}
-    for (const [routeId, value] of Object.entries(
-      remixDerivedDataRef.current.routeModuleCreators,
-    )) {
-      const nameAndUid = getDefaultExportNameAndUidFromFile(
-        projectContentsRef.current,
-        value.filePath,
-      )
-      if (nameAndUid == null) {
-        continue
-      }
-
-      const relativePath =
-        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePath
-
-      const defaultComponent = (componentProps: any) =>
-        value
-          .executionScopeCreator(projectContentsRef.current)
-          .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
-
-      routeModulesResult[routeId] = {
-        ...value,
-        default: PathPropHOC(defaultComponent, EP.toString(appendTwoPaths(basePath, relativePath))),
-      }
-    }
-
-    return routeModulesResult
-  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+  const routeModules = useGetRouteModules(basePath)
 
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
