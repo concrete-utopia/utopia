@@ -242,7 +242,7 @@ export const CanvasToolbar = React.memo(() => {
           }}
         >
           <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               iconType='navigator-larger'
               iconCategory='semantic'
               onClick={toggleNavigatorVisible}
@@ -265,7 +265,7 @@ export const CanvasToolbar = React.memo(() => {
           }}
         >
           <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               iconType='codymccodeface-larger'
               iconCategory='semantic'
               onClick={toggleCodeEditorVisible}
@@ -288,7 +288,7 @@ export const CanvasToolbar = React.memo(() => {
           }}
         >
           <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               iconType='inspector-larger'
               iconCategory='semantic'
               onClick={toggleInspectorVisible}
@@ -311,7 +311,7 @@ export const CanvasToolbar = React.memo(() => {
           }}
         >
           <Tooltip title='Edit' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               iconType='pointer'
               iconCategory='tools'
               primary={canvasToolbarMode.primary === 'edit'}
@@ -319,14 +319,14 @@ export const CanvasToolbar = React.memo(() => {
             />
           </Tooltip>
           <Tooltip title='Insert or Edit Text' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               iconType='pure-text'
               primary={canvasToolbarMode.primary === 'text'}
               onClick={insertTextCallback}
             />
           </Tooltip>
           <Tooltip title='Insert...' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               testid={InsertMenuButtonTestId}
               iconType='plusbutton-larger'
               iconCategory='semantic'
@@ -335,7 +335,7 @@ export const CanvasToolbar = React.memo(() => {
             />
           </Tooltip>
           <Tooltip title='Toggle Live Mode' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               iconType='playbutton'
               iconCategory='semantic'
               primary={canvasToolbarMode.primary === 'play'}
@@ -360,7 +360,7 @@ export const CanvasToolbar = React.memo(() => {
             </SquareButton>
           </Tooltip>
           <Tooltip title='Reset Canvas' placement='bottom'>
-            <InsertModeButton
+            <CanvasToolbarButton
               iconType='refresh'
               iconCategory='semantic'
               onClick={resetCanvasCallback}
@@ -392,10 +392,10 @@ export const CanvasToolbar = React.memo(() => {
             }}
           >
             <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
-              <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
+              <CanvasToolbarButton iconType='group-open' onClick={wrapInGroupCallback} />
             </Tooltip>
             <Tooltip title='Wrap selection in an element' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='designtool-larger'
                 iconCategory='semantic'
                 primary={insertMenuMode === 'wrap'}
@@ -403,7 +403,7 @@ export const CanvasToolbar = React.memo(() => {
               />
             </Tooltip>
             <Tooltip title='Converts an element or component into another (C)' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='convertobject'
                 iconCategory='semantic'
                 primary={insertMenuMode === 'convert'}
@@ -414,7 +414,7 @@ export const CanvasToolbar = React.memo(() => {
               title='Toggle between absolute and static positioning (X)' // help I need better copy
               placement='bottom'
             >
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='position-absolute' // TODO this needs an icon!
                 iconCategory='layout/systems'
                 size={16}
@@ -445,28 +445,28 @@ export const CanvasToolbar = React.memo(() => {
             }}
           >
             <Tooltip title='Insert div' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='view'
                 primary={canvasToolbarMode.secondary.divInsertionActive}
                 onClick={insertDivCallback}
               />
             </Tooltip>
             <Tooltip title='Insert image' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='image'
                 primary={canvasToolbarMode.secondary.imageInsertionActive}
                 onClick={insertImgCallback}
               />
             </Tooltip>
             <Tooltip title='Insert button' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='clickable'
                 primary={canvasToolbarMode.secondary.buttonInsertionActive}
                 onClick={insertButtonCallback}
               />
             </Tooltip>
             <Tooltip title='Insert conditional' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 testid={InsertConditionalButtonTestId}
                 iconType='conditional'
                 primary={canvasToolbarMode.secondary.conditionalInsertionActive}
@@ -474,14 +474,14 @@ export const CanvasToolbar = React.memo(() => {
               />
             </Tooltip>
             <Tooltip title='Choose and insert a component' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='componentinstance'
                 primary={canvasToolbarMode.secondary.floatingInsertMenuOpen}
                 onClick={openFloatingInsertMenuCallback}
               />
             </Tooltip>
             <Tooltip title='Open insert menu' placement='bottom'>
-              <InsertModeButton
+              <CanvasToolbarButton
                 iconType='dotdotdot'
                 iconCategory='semantic'
                 primary={canvasToolbarMode.secondary.insertSidebarOpen}
@@ -505,7 +505,7 @@ interface InsertModeButtonProps {
   onClick: (event: React.MouseEvent<Element>) => void
   size?: number
 }
-const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+const CanvasToolbarButton = React.memo((props: InsertModeButtonProps) => {
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
   const canvasInLiveMode = useEditorState(
