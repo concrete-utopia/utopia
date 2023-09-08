@@ -172,15 +172,6 @@ export const CanvasToolbar = React.memo(() => {
     'CanvasToolbar zoomLevel',
   )
 
-  const zoomIn = React.useCallback(
-    () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
-    [dispatch, zoomLevel],
-  )
-  const zoomOut = React.useCallback(
-    () => dispatch([CanvasActions.zoom(Utils.decreaseScale(zoomLevel))]),
-    [dispatch, zoomLevel],
-  )
-
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
 
   const isLiveMode = useEditorState(
