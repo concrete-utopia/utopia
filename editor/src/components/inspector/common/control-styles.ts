@@ -1,7 +1,30 @@
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import type { IcnColor } from '../../../uuiui'
 import { colorTheme } from '../../../uuiui'
-import type { ControlStatus, ControlStyles } from './control-status'
+import type { ControlStatus } from './control-status'
+
+export interface ControlStyles {
+  fontStyle: string
+  fontWeight: number
+  mainColor: string
+  secondaryColor: string
+  borderColor: string
+  backgroundColor: string
+  focusedBackgroundColor: string
+  strokePrimaryColor: string
+  strokeSecondaryColor: string
+  strokeTertiaryColor: string
+  segmentSelectorColor: string
+  set: boolean
+  interactive: boolean
+  mixed: boolean
+  unknown: boolean
+  trackColor: string
+  railColor: string
+  showContent: boolean
+  unsettable: boolean
+  iconColor: IcnColor
+}
 
 export const AllControlStatuses: Array<ControlStatus> = [
   'off',

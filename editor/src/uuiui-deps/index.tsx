@@ -8,11 +8,8 @@ import * as _utils_star from '../utils/utils'
 import * as _user from '../common/user'
 import * as _common_utils from '../core/shared/utils'
 import * as _math_utils from '../core/shared/math-utils'
-import type {
-  ControlStyles,
-  ControlStatus,
-  PropertyStatus,
-} from '../components/inspector/common/control-status'
+import type { ControlStatus, PropertyStatus } from '../components/inspector/common/control-status'
+import type { ControlStyles } from '../components/inspector/common/control-styles'
 import {
   isControlledStatus,
   getControlStatusFromPropertyStatus,

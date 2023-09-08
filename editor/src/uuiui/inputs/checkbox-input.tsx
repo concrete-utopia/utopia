@@ -3,7 +3,8 @@
 import composeRefs from '@seznam/compose-react-refs'
 import React from 'react'
 import { jsx } from '@emotion/react'
-import type { ControlStatus, ControlStyles } from '../../components/inspector/common/control-status'
+import type { ControlStatus } from '../../components/inspector/common/control-status'
+import type { ControlStyles } from '../../components/inspector/common/control-styles'
 import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 

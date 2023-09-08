@@ -12,31 +12,7 @@ import { isLeft, isRight, right, defaultEither } from '../../../core/shared/eith
 import type { ParsedCSSProperties, ParsedPropertiesKeys } from './css-utils'
 import type { MultiselectAtProps, MultiselectAtStringProps } from './property-path-hooks'
 import * as PP from '../../../core/shared/property-path'
-import type { IcnColor } from '../../../uuiui'
 import { getSimpleAttributeAtPath } from '../../../core/model/element-metadata-utils'
-
-export interface ControlStyles {
-  fontStyle: string
-  fontWeight: number
-  mainColor: string
-  secondaryColor: string
-  borderColor: string
-  backgroundColor: string
-  focusedBackgroundColor: string
-  strokePrimaryColor: string
-  strokeSecondaryColor: string
-  strokeTertiaryColor: string
-  segmentSelectorColor: string
-  set: boolean
-  interactive: boolean
-  mixed: boolean
-  unknown: boolean
-  trackColor: string
-  railColor: string
-  showContent: boolean
-  unsettable: boolean
-  iconColor: IcnColor
-}
 
 export type ControlStatus =
   | 'off' // nothing is selected on the canvas
