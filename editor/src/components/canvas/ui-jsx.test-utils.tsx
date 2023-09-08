@@ -530,7 +530,7 @@ export async function renderTestEditorWithModel(
     patchedStoreFromFullStore(initialEditorStore, 'canvas-store'),
   )
 
-  const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook)
+  const domWalkerMutableState = createDomWalkerMutableState(canvasStoreHook, asyncTestDispatch)
 
   const lowPriorityStoreHook: UtopiaStoreAPI = createStoresAndState(
     patchedStoreFromFullStore(initialEditorStore, 'low-priority-store'),

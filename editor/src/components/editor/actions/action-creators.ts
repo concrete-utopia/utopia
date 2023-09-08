@@ -217,6 +217,7 @@ import type {
   OpenCodeEditor,
   SetMapCountOverride,
   TruncateHistory,
+  RunDOMWalker,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1118,6 +1119,12 @@ export function saveDOMReport(
     elementMetadata: elementMetadata,
     cachedPaths: cachedPaths,
     invalidatedPaths: invalidatedPaths,
+  }
+}
+
+export function runDOMWalker(): RunDOMWalker {
+  return {
+    action: 'RUN_DOM_WALKER',
   }
 }
 
