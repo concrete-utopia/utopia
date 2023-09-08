@@ -1552,6 +1552,50 @@ export var storyboard = (
         `),
       )
     })
+    it('resizes groups correctly when pinned to the side of a parent, when resizing the parent', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 200, height: 150 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 50, top: 33, height: 89, right: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 56, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 50, height: 56, background: 'blue', top: 33, left: 100 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+        'await-first-dom-report',
+      )
+
+      const target = EP.fromString('storyboard/div')
+
+      await renderResult.dispatch([selectComponents([target], false)], true)
+
+      await resizeElement(renderResult, { x: -50, y: 0 }, EdgePositionBottomRight, emptyModifiers)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 150, height: 150 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 38, top: 33, height: 89, right: 109, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 38, height: 56, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 38, height: 56, background: 'blue', top: 33, left: 75 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+      )
+    })
   })
 })
 

@@ -1,4 +1,5 @@
 import { createSelector } from 'reselect'
+import { packageJsonFileFromProjectContents } from '../../components/assets'
 import type { EditorDispatch } from '../../components/editor/action-types'
 import {
   setPackageStatus,
@@ -10,7 +11,6 @@ import {
   dependenciesFromPackageJsonContents,
 } from '../../components/editor/npm-dependency/npm-dependency'
 import type { EditorStorePatched } from '../../components/editor/store/editor-state'
-import { packageJsonFileFromProjectContents } from '../../components/editor/store/editor-state'
 import type { BuiltInDependencies } from '../es-modules/package-manager/built-in-dependencies-list'
 import { fetchNodeModules } from '../es-modules/package-manager/fetch-packages'
 import type { RequestedNpmDependency } from './npm-dependency-types'

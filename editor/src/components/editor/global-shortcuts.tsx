@@ -140,6 +140,7 @@ import {
   isIntrinsicallyInlineElement,
   setElementTopLeft,
   nukeSizingPropsForAxisCommand,
+  toggleAbsolutePositioningCommands,
 } from '../inspector/inspector-common'
 import type { CSSProperties } from 'react'
 import { setProperty } from '../canvas/commands/set-property-command'
@@ -938,56 +939,12 @@ export function handleKeyDown(
           return []
         }
 
-        const commands = editor.selectedViews.flatMap((elementPath) => {
-          const maybeGroupConversionCommands = groupConversionCommands(
-            editor.jsxMetadata,
-            editor.allElementProps,
-            editor.elementPathTree,
-            elementPath,
-          )
-
-          if (maybeGroupConversionCommands != null) {
-            return maybeGroupConversionCommands
-          }
-
-          const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, elementPath)
-          if (element == null) {
-            return []
-          }
-
-          if (
-            MetadataUtils.isFragmentFromMetadata(element) ||
-            MetadataUtils.isConditionalFromMetadata(element)
-          ) {
-            return []
-          }
-
-          if (MetadataUtils.isPositionAbsolute(element)) {
-            return [
-              ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-              ...(isIntrinsicallyInlineElement(element)
-                ? [
-                    ...sizeToVisualDimensions(
-                      editor.jsxMetadata,
-                      editor.elementPathTree,
-                      elementPath,
-                    ),
-                    setProperty(
-                      'always',
-                      elementPath,
-                      PP.create('style', 'display'),
-                      'inline-block',
-                    ),
-                  ]
-                : []),
-            ]
-          } else {
-            return [
-              ...sizeToVisualDimensions(editor.jsxMetadata, editor.elementPathTree, elementPath),
-              ...addPositionAbsoluteTopLeft(editor.jsxMetadata, elementPath),
-            ]
-          }
-        })
+        const commands = toggleAbsolutePositioningCommands(
+          editor.jsxMetadata,
+          editor.allElementProps,
+          editor.elementPathTree,
+          editor.selectedViews,
+        )
 
         if (commands.length === 0) {
           return []

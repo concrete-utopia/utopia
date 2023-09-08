@@ -96,7 +96,7 @@ describe('elements outside visible area', () => {
       const points = indicatorPoints(targetPath, ['left'])
       expect(points).not.toBeNull()
       expect(points?.top).toBeGreaterThan(180)
-      expect(points?.left).toBeGreaterThan(300)
+      expect(points?.left).toBeLessThan(300)
     })
     it('shows the indicator on the right side', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -315,7 +315,7 @@ describe('elements outside visible area', () => {
       const pointsBar = indicatorPoints(bar, ['left'])
       expect(pointsBar).not.toBeNull()
       expect(pointsBar?.top).toBeGreaterThan(50)
-      expect(pointsBar?.left).toBeGreaterThan(300)
+      expect(pointsBar?.left).toBeLessThan(300)
     })
     it('shows a single indicator for clustered elements', async () => {
       const renderResult = await renderTestEditorWithCode(

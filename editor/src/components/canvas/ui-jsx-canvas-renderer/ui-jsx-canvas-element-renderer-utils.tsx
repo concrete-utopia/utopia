@@ -65,7 +65,7 @@ import {
   isUtopiaCommentFlagConditional,
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
-import { RemixContainerComponent } from './remix-container-component'
+import { RemixSceneComponent } from './remix-scene-component'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
@@ -734,14 +734,14 @@ function renderJSXElement(
     elementFromImport === elementInScope // Ensures this is not a user defined component with the same name.
 
   const elementIsScene = isElementImportedFromModule('utopia-api', 'Scene')
-  const elementIsRemixContainer = isElementImportedFromModule('utopia-api', 'RemixContainer')
+  const elementIsRemixScene = isElementImportedFromModule('utopia-api', 'RemixScene')
 
   const element = (() => {
     if (elementIsScene) {
       return SceneComponent
     }
-    if (isFeatureEnabled('Remix support') && elementIsRemixContainer) {
-      return RemixContainerComponent
+    if (isFeatureEnabled('Remix support') && elementIsRemixScene) {
+      return RemixSceneComponent
     }
     return elementFromScopeOrImport
   })()

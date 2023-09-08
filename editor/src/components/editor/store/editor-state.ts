@@ -1,6 +1,5 @@
 import * as json5 from 'json5'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import type { InsertChildAndDetails } from '../../../core/model/element-template-utils'
 import {
   findJSXElementChildAtPath,
   removeJSXElementChild,
@@ -79,6 +78,7 @@ import type { KeysPressed } from '../../../utils/keyboard'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
   getProjectFileByFilePath,
@@ -135,7 +135,6 @@ import { v4 as UUID } from 'uuid'
 import { getNavigatorTargets } from '../../../components/navigator/navigator-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ConditionalCase } from '../../../core/model/conditionals'
-import { getConditionalClausePathFromMetadata } from '../../../core/model/conditionals'
 import { UTOPIA_LABEL_KEY } from '../../../core/model/utopia-constants'
 import type { FileResult } from '../../../core/shared/file-utils'
 import type {
@@ -162,8 +161,6 @@ import type {
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canvas/guideline'
 import type { PersistenceMachine } from '../persistence/persistence'
-import type { InsertionPath } from './insertion-path'
-import { childInsertionPath, conditionalClauseInsertionPath } from './insertion-path'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
@@ -314,22 +311,21 @@ export type GithubOperation =
 export function githubOperationPrettyName(op: GithubOperation): string {
   switch (op.name) {
     case 'commitAndPush':
-      return 'Saving to Github'
+      return 'Saving to GitHub'
     case 'listBranches':
-      return 'Listing branches'
+      return 'Listing branches from GitHub'
     case 'loadBranch':
-      return 'Loading branch'
+      return 'Loading branch from GitHub'
     case 'loadRepositories':
       return 'Loading Repositories'
     case 'updateAgainstBranch':
-      return 'Updating'
+      return 'Updating against branch from GitHub'
     case 'listPullRequestsForBranch':
-      return 'Listing pull requests'
+      return 'Listing GitHub pull requests'
     case 'saveAsset':
-      return 'Saving asset to Github'
+      return 'Saving asset to GitHub'
     default:
-      const _exhaustiveCheck: never = op
-      return 'Unknown operation' // this should never happen
+      assertNever(op)
   }
 }
 
@@ -835,12 +831,7 @@ export function dragToMoveIndicatorFlags(
   }
 }
 
-export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(
-  false,
-  'static',
-  'none',
-  false,
-)
+export const emptyDragToMoveIndicatorFlags = dragToMoveIndicatorFlags(false, 'none', 'none', false)
 export interface DragToMoveIndicatorFlags {
   showIndicator: boolean
   dragType: 'absolute' | 'static' | 'none'
@@ -2922,12 +2913,6 @@ export const DefaultPackageJson = {
   dependencies: {
     ...defaultDependencies,
   },
-}
-
-export function packageJsonFileFromProjectContents(
-  projectContents: ProjectContentTreeRoot,
-): ProjectFile | null {
-  return getProjectFileByFilePath(projectContents, '/package.json')
 }
 
 export function getPackageJsonFromEditorState(editor: EditorState): Either<string, any> {

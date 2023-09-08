@@ -646,9 +646,11 @@ export interface WorkerCodeAndParsedUpdate {
   versionNumber: number
 }
 
+export type WorkerUpdate = WorkerParsedUpdate | WorkerCodeAndParsedUpdate
+
 export interface UpdateFromWorker {
   action: 'UPDATE_FROM_WORKER'
-  updates: Array<WorkerParsedUpdate | WorkerCodeAndParsedUpdate>
+  updates: Array<WorkerUpdate>
 }
 
 export interface ClearParseOrPrintInFlight {
@@ -854,6 +856,10 @@ export interface UpdateText {
   target: ElementPath
   text: string
   textProp: TextProp
+}
+
+export interface TruncateHistory {
+  action: 'TRUNCATE_HISTORY'
 }
 
 export interface SetFocusedElement {
@@ -1200,6 +1206,7 @@ export type EditorAction =
   | ClearPostActionSession
   | StartPostActionSession
   | FromVSCodeAction
+  | TruncateHistory
 
 export type DispatchPriority =
   | 'everyone'

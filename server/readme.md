@@ -65,7 +65,7 @@ use nix
 
 export GITHUB_OAUTH_CLIENT_ID=
 export GITHUB_OAUTH_CLIENT_SECRET=
-export GITHUB_OATH_REDIRECT_URL=http://localhost:8000/v1/github/authentication/finish
+export GITHUB_OAUTH_REDIRECT_URL=http://localhost:8000/v1/github/authentication/finish
 ```
 
 Finally restart your environment, which if running locally might mean running something like `direnv allow` to permit the new settings to apply before rerunning `start-minimal` for instance to start your local environment.

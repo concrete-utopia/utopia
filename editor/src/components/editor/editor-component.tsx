@@ -6,9 +6,8 @@ import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
-import { IS_BROWSER_TEST_DEBUG, IS_TEST_ENVIRONMENT } from '../../common/env-vars'
+import { IS_BROWSER_TEST_DEBUG } from '../../common/env-vars'
 import { projectURLForProject } from '../../core/shared/utils'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import Keyboard from '../../utils/keyboard'
 import { Modifier } from '../../utils/modifiers'
 import {
@@ -32,8 +31,8 @@ import { DesignPanelRoot } from '../canvas/design-panel-root'
 import { Toast } from '../common/notices'
 import { ConfirmDeleteDialog } from '../filebrowser/confirm-delete-dialog'
 import { ConfirmOverwriteDialog } from '../filebrowser/confirm-overwrite-dialog'
-import { ConfirmRevertDialogProps } from '../filebrowser/confirm-revert-dialog'
-import { ConfirmRevertAllDialogProps } from '../filebrowser/confirm-revert-all-dialog'
+import { ConfirmRevertDialog } from '../filebrowser/confirm-revert-dialog'
+import { ConfirmRevertAllDialog } from '../filebrowser/confirm-revert-all-dialog'
 import { PreviewColumn } from '../preview/preview-pane'
 import TitleBar from '../titlebar/title-bar'
 import * as EditorActions from './actions/action-creators'
@@ -42,19 +41,19 @@ import { editorIsTarget, handleKeyDown, handleKeyUp } from './global-shortcuts'
 import { BrowserInfoBar, LoginStatusBar } from './notification-bar'
 import { applyShortcutConfigurationToDefaults } from './shortcut-definitions'
 import {
-  emptyGithubSettings,
   githubOperationLocksEditor,
+  githubOperationPrettyName,
   LeftMenuTab,
-  LeftPaneDefaultWidth,
 } from './store/editor-state'
-import { Substores, useEditorState, useRefEditorState, UtopiaStoreAPI } from './store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { ConfirmDisconnectBranchDialog } from '../filebrowser/confirm-branch-disconnect'
-import { when } from '../../utils/react-conditionals'
+import { unless, when } from '../../utils/react-conditionals'
 import { LowPriorityStoreProvider } from './store/store-context-providers'
 import { useDispatch } from './store/dispatch-context'
 import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
+import { isFeatureEnabled } from '../../utils/feature-switches'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -362,7 +361,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           <LowPriorityStoreProvider>
             {(isChrome as boolean) ? null : <BrowserInfoBar />}
             <LoginStatusBar />
-            <TitleBar />
+            {unless(isFeatureEnabled('Draggable Floating Panels'), <TitleBar />)}
           </LowPriorityStoreProvider>
 
           <SimpleFlexRow
@@ -467,14 +466,14 @@ const ModalComponent = React.memo((): React.ReactElement<any> | null => {
         return <ConfirmOverwriteDialog dispatch={dispatch} files={modal.files} />
       case 'file-revert':
         return (
-          <ConfirmRevertDialogProps
+          <ConfirmRevertDialog
             dispatch={dispatch}
             status={modal.status}
             filePath={modal.filePath}
           />
         )
       case 'file-revert-all':
-        return <ConfirmRevertAllDialogProps dispatch={dispatch} />
+        return <ConfirmRevertAllDialog dispatch={dispatch} />
       case 'disconnect-github-project':
         if (currentBranch != null) {
           return <ConfirmDisconnectBranchDialog dispatch={dispatch} branchName={currentBranch} />
@@ -542,17 +541,15 @@ function handleEventNoop(e: React.MouseEvent | React.KeyboardEvent) {
 }
 
 const LockedOverlay = React.memo(() => {
-  const leftMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'EditorComponentInner leftMenuExpanded',
+  const colorTheme = useColorTheme()
+
+  const githubOperations = useEditorState(
+    Substores.github,
+    (store) => store.editor.githubOperations.filter((op) => githubOperationLocksEditor(op)),
+    'EditorComponentInner githubOperations',
   )
 
-  const editorLocked = useEditorState(
-    Substores.github,
-    (store) => store.editor.githubOperations.some((op) => githubOperationLocksEditor(op)),
-    'EditorComponentInner editorLocked',
-  )
+  const editorLocked = React.useMemo(() => githubOperations.length > 0, [githubOperations])
 
   const refreshingDependencies = useEditorState(
     Substores.restOfEditor,
@@ -573,6 +570,16 @@ const LockedOverlay = React.memo(() => {
     return editorLocked || refreshingDependencies
   }, [editorLocked, refreshingDependencies])
 
+  const dialogContent = React.useMemo((): string | null => {
+    if (refreshingDependencies) {
+      return 'Refreshing dependencies…'
+    }
+    if (githubOperations.length > 0) {
+      return `${githubOperationPrettyName(githubOperations[0])}…`
+    }
+    return null
+  }, [refreshingDependencies, githubOperations])
+
   if (!locked) {
     return null
   }
@@ -587,34 +594,37 @@ const LockedOverlay = React.memo(() => {
       style={{
         position: 'fixed',
         top: 0,
-        left: leftMenuExpanded ? LeftPaneDefaultWidth : 0,
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: '#00000044',
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: '#00000033',
         zIndex: 30,
         transition: 'all .1s ease-in-out',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        cursor: 'wait',
       }}
       css={css`
         animation: ${anim} 0.3s ease-in-out;
       `}
     >
       {when(
-        refreshingDependencies,
+        dialogContent != null,
         <div
           style={{
             opacity: 1,
             fontSize: 12,
             fontWeight: 500,
-            background: '#fff',
+            background: colorTheme.contextMenuBackground.value,
+            border: `1px solid ${colorTheme.neutralBorder.value}`,
             padding: 30,
             borderRadius: 2,
+            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           }}
         >
-          Updating dependencies…
+          {dialogContent}
         </div>,
       )}
     </div>
