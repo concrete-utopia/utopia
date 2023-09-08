@@ -467,6 +467,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     onKeyDown: onKeyDown,
     onKeyUp: stopPropagation,
     onKeyPress: stopPropagation,
+    // preventDefault is necessary to make sure we don't navigate away when click on anchor elements
+    // It seems click events are not necessary for other built-in text editing functionality
+    // (e.g. setting cursor position, drag to select, etc.), if it turns out to be a problem later,
+    // we may revisit this decision
     onClick: stopPropagationAndPreventDefault,
     onContextMenu: stopPropagation,
     onMouseDown: stopPropagation,
@@ -483,7 +487,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
   const filteredPassthroughProps = filterEventHandlerProps(passthroughProps)
 
-  return React.createElement(component, filteredPassthroughProps, <span {...editorProps} />)
+  return React.createElement(
+    component,
+    filteredPassthroughProps,
+    <span data-testid={TextEditorSpanId} {...editorProps} />,
+  )
 })
 
 async function setSelectionToOffset(
