@@ -25,6 +25,7 @@ import {
   setFollowSelectionConfig,
   setVSCodeTheme,
   toVSCodeExtensionMessage,
+  transientUpdate,
   updateDecorationsMessage,
   writeProjectFileChange,
 } from 'utopia-vscode-common'
@@ -168,6 +169,10 @@ export function sendMessage(message: FromUtopiaToVSCodeMessage) {
 
 export function sendOpenFileMessage(filePath: string) {
   sendMessage(toVSCodeExtensionMessage(openFileMessage(filePath)))
+}
+
+export function sendTransientUpdateMessage(filePath: string, checksum: string) {
+  sendMessage(toVSCodeExtensionMessage(transientUpdate(filePath, checksum)))
 }
 
 export function sendSetFollowSelectionEnabledMessage(enabled: boolean) {

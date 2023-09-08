@@ -32,6 +32,7 @@ import {
 import { UtopiaFSExtension } from './utopia-fs'
 import { fromUtopiaURI } from './path-utils'
 import type { TextDocumentChangeEvent, TextDocumentWillSaveEvent, Uri } from 'vscode'
+import sha1 from 'jssha'
 
 const FollowSelectionConfigKey = 'utopia.editor.followSelection.enabled'
 
@@ -114,6 +115,7 @@ function watchForUnsavedContentChangesFromFS(utopiaFS: UtopiaFSExtension) {
 
 let dirtyFiles: Set<string> = new Set()
 let incomingFileChanges: Set<string> = new Set()
+let transientUpdates: Set<string> = new Set()
 
 interface UpdateDirtyContentChange {
   type: 'UPDATE_DIRTY_CONTENT'
@@ -256,6 +258,14 @@ async function runPendingSubscriptionChanges(): Promise<void> {
 
 setTimeout(runPendingSubscriptionChanges, SUBSCRIPTION_POLLING_TIMEOUT)
 
+function transientUpdateKey(filePath: string, checksum: string): string {
+  return `${filePath}::${checksum}`
+}
+
+function sha1Checksum(text: string): string {
+  return new sha1('SHA-1', 'TEXT', { encoding: 'UTF8' }).update(text).getHash('HEX')
+}
+
 function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: string) {
   function isUtopiaDocument(document: vscode.TextDocument): boolean {
     return document.uri.scheme === projectID
@@ -263,6 +273,17 @@ function watchForChangesFromVSCode(context: vscode.ExtensionContext, projectID: 
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.reason === vscode.TextDocumentChangeReason.Undo) {
+        const key = transientUpdateKey(
+          event.document.fileName,
+          sha1Checksum(event.document.getText()),
+        )
+        if (transientUpdates.has(key)) {
+          transientUpdates.delete(key)
+          vscode.commands.executeCommand('undo')
+          return
+        }
+      }
       if (isUtopiaDocument(event.document)) {
         const resource = event.document.uri
         if (resource.scheme === projectID) {
@@ -374,6 +395,9 @@ function initMessaging(context: vscode.ExtensionContext, workspaceRootUri: vscod
         break
       case 'UTOPIA_READY':
         sendMessage(vsCodeReady())
+        break
+      case 'TRANSIENT_UPDATE':
+        transientUpdates.add(transientUpdateKey(message.filePath, message.sha1Checksum))
         break
       default:
         const _exhaustiveCheck: never = message

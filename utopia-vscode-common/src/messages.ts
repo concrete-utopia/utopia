@@ -1,4 +1,4 @@
-import { UtopiaVSCodeConfig } from './utopia-vscode-config'
+import type { UtopiaVSCodeConfig } from './utopia-vscode-config'
 
 export interface OpenFileMessage {
   type: 'OPEN_FILE'
@@ -9,6 +9,20 @@ export function openFileMessage(filePath: string): OpenFileMessage {
   return {
     type: 'OPEN_FILE',
     filePath: filePath,
+  }
+}
+
+export interface TransientUpdate {
+  type: 'TRANSIENT_UPDATE'
+  filePath: string
+  sha1Checksum: string
+}
+
+export function transientUpdate(filePath: string, sha1Checksum: string): TransientUpdate {
+  return {
+    type: 'TRANSIENT_UPDATE',
+    filePath: filePath,
+    sha1Checksum: sha1Checksum,
   }
 }
 
@@ -141,6 +155,7 @@ export type ToVSCodeMessageNoAccumulated =
   | SetFollowSelectionConfig
   | SetVSCodeTheme
   | UtopiaReady
+  | TransientUpdate
 
 export interface AccumulatedToVSCodeMessage {
   type: 'ACCUMULATED_TO_VSCODE_MESSAGE'
@@ -163,6 +178,14 @@ export function isOpenFileMessage(message: unknown): message is OpenFileMessage 
     typeof message === 'object' &&
     !Array.isArray(message) &&
     (message as OpenFileMessage).type === 'OPEN_FILE'
+  )
+}
+
+export function isTransientUpdateMessage(message: unknown): message is TransientUpdate {
+  return (
+    typeof message === 'object' &&
+    !Array.isArray(message) &&
+    (message as TransientUpdate).type === 'TRANSIENT_UPDATE'
   )
 }
 
@@ -234,6 +257,7 @@ export function parseToVSCodeMessage(unparsed: string): ToVSCodeMessage {
     isSetFollowSelectionConfig(message) ||
     isSetVSCodeTheme(message) ||
     isUtopiaReadyMessage(message) ||
+    isTransientUpdateMessage(message) ||
     isAccumulatedToVSCodeMessage(message)
   ) {
     return message

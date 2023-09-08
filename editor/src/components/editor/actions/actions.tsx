@@ -171,12 +171,12 @@ import {
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
-import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils, { absolute } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
-import { packageJsonFileFromProjectContents } from '../../assets'
+import { getSHA1ChecksumInner, packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
   contentsToTree,
@@ -457,6 +457,7 @@ import {
   sendSelectedElement,
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
+  sendTransientUpdateMessage,
 } from '../../../core/vscode/vscode-bridge'
 import type { CopyData } from '../../../utils/clipboard'
 import {
@@ -3905,6 +3906,9 @@ export const UPDATE_FNS = {
     const targetsToTrueUp = action.targets.flatMap((trueUpTarget) => {
       return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
     })
+    if (targetsToTrueUp.length === 0) {
+      return editor
+    }
     const canvasFrameAndTargets: Array<CanvasFrameAndTarget> = mapDropNulls((element) => {
       const globalFrame = MetadataUtils.findElementByElementPath(
         editor.jsxMetadata,
@@ -3921,6 +3925,13 @@ export const UPDATE_FNS = {
     const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
       pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata'),
     ])
+    const filename = editor.canvas.openFile?.filename
+    if (filename != null) {
+      const file = getProjectFileByFilePath(editor.projectContents, filename)
+      if (file != null && file.type === 'TEXT_FILE') {
+        sendTransientUpdateMessage(filename, getSHA1ChecksumInner(file.fileContents.code))
+      }
+    }
     return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
   },
   // NB: this can only update attribute values and part of attribute value,
