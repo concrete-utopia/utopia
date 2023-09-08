@@ -18,6 +18,8 @@ import {
 } from '../../canvas/remix/remix-utils'
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
 import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { AllElementProps, CanvasBase64Blobs } from './editor-state'
 
 export interface RemixStaticRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -55,15 +57,13 @@ const defaultFutureConfig: FutureConfig = {
   v2_routeConvention: true,
 }
 
-// Problem: passing these via args breaks the memo
-export const spyContainer = { current: {} }
-export const propsContainer = { current: {} }
-export const fileBlobsContainer = { current: {} }
-export const displayNoneInstancesContainer = { current: [] as ElementPath[] }
-export const hiddenInstancesContainer = { current: [] as ElementPath[] }
-
 export function createRemixDerivedData(
   projectContents: ProjectContentTreeRoot,
+  spyMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  fileBlobs: CanvasBase64Blobs,
+  displayNoneInstances: Array<ElementPath>,
+  hiddenInstances: Array<ElementPath>,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
 ): RemixDerivedData | null {
@@ -76,7 +76,7 @@ export function createRemixDerivedData(
 
   const metadataCtx = {
     current: {
-      spyValues: { metadata: spyContainer.current, allElementProps: propsContainer.current },
+      spyValues: { metadata: spyMetadata, allElementProps: allElementProps },
     },
   }
 
@@ -89,9 +89,9 @@ export function createRemixDerivedData(
     projectContents,
     CreateRemixDerivedDataRefs.mutableContext,
     CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
-    fileBlobsContainer.current,
-    displayNoneInstancesContainer.current,
-    hiddenInstancesContainer.current,
+    fileBlobs,
+    displayNoneInstances,
+    hiddenInstances,
   )
 
   if (routesAndModulesFromManifestResult == null) {

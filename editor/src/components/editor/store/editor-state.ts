@@ -176,14 +176,7 @@ import {
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixDerivedData } from './remix-derived-data'
-import {
-  createRemixDerivedData,
-  displayNoneInstancesContainer,
-  fileBlobsContainer,
-  hiddenInstancesContainer,
-  propsContainer,
-  spyContainer,
-} from './remix-derived-data'
+import { createRemixDerivedData } from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2590,13 +2583,9 @@ function deriveCacheableStateInner(
 const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 
-const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
-  maxSize: 1,
-})
+const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
 
-const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
-  maxSize: 1,
-})
+const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
 
 export function deriveState(
   editor: EditorState,
@@ -2622,22 +2611,16 @@ export function deriveState(
     editor.navigator.hiddenInNavigator,
   )
 
-  // FIXME remix spike: these break the memo if they're passed as args, but I couldn't figure out the right memo in `moize`
-  spyContainer.current = editor.spyMetadata
-  propsContainer.current = editor.allElementProps
-  fileBlobsContainer.current = editor.canvas.base64Blobs
-  hiddenInstancesContainer.current = editor.hiddenInstances
-  displayNoneInstancesContainer.current = editor.displayNoneInstances
-
   const createRemixDerivedDataMemo =
-    cacheKey === 'patched'
-      ? patchedCreateRemixDerivedDataMemo
-      : cacheKey === 'unpatched'
-      ? unpatchedCreateRemixDerivedDataMemo
-      : assertNever(cacheKey)
+    cacheKey === 'patched' ? patchedCreateRemixDerivedDataMemo : unpatchedCreateRemixDerivedDataMemo
 
   const remixDerivedData = createRemixDerivedDataMemo(
     editor.projectContents,
+    editor.spyMetadata,
+    editor.allElementProps,
+    editor.canvas.base64Blobs,
+    editor.hiddenInstances,
+    editor.displayNoneInstances,
     editor.codeResultCache.curriedRequireFn,
     editor.codeResultCache.curriedResolveFn,
   )
