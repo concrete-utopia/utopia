@@ -1,5 +1,3 @@
-import React from 'react'
-
 import type {
   UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_EntryRoute as EntryRoute,
@@ -532,12 +530,4 @@ export function getRoutesAndModulesFromManifest(
     routeModulesToRelativePaths,
     routingTable,
   }
-}
-
-export const PathPropHOC = (Wrapped: any, path: string) => (props: any) => {
-  const propsWithPath = {
-    [UTOPIA_PATH_KEY]: path,
-    ...props,
-  }
-  return <Wrapped {...propsWithPath} />
 }
