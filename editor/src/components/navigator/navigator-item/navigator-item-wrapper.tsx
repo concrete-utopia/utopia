@@ -103,6 +103,7 @@ export const labelSelector = createCachedSelector(
   (store: MetadataSubstate) => store.editor.elementPathTree,
   (metadata, elementMetadata, allElementProps, pathTrees) => {
     if (elementMetadata == null) {
+      // "Element" with ghost emoji.
       return 'Element 👻'
     }
     return MetadataUtils.getElementLabelFromMetadata(
