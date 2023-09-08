@@ -175,15 +175,9 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import type { RemixDerivedData } from './remix-derived-data'
-import {
-  createRemixDerivedData,
-  displayNoneInstancesContainer,
-  fileBlobsContainer,
-  hiddenInstancesContainer,
-  propsContainer,
-  spyContainer,
-} from './remix-derived-data'
+import type { CreateRemixDerivedDataParams, RemixDerivedData } from './remix-derived-data'
+import { createRemixDerivedData } from './remix-derived-data'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2592,6 +2586,8 @@ const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSi
 
 const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
   maxSize: 1,
+  equals: (a: CreateRemixDerivedDataParams, b: CreateRemixDerivedDataParams) =>
+    shallowEqual(a.projectContents, b.projectContents),
 })
 
 const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
@@ -2622,13 +2618,6 @@ export function deriveState(
     editor.navigator.hiddenInNavigator,
   )
 
-  // FIXME remix spike: these break the memo if they're passed as args, but I couldn't figure out the right memo in `moize`
-  spyContainer.current = editor.spyMetadata
-  propsContainer.current = editor.allElementProps
-  fileBlobsContainer.current = editor.canvas.base64Blobs
-  hiddenInstancesContainer.current = editor.hiddenInstances
-  displayNoneInstancesContainer.current = editor.displayNoneInstances
-
   const createRemixDerivedDataMemo =
     cacheKey === 'patched'
       ? patchedCreateRemixDerivedDataMemo
@@ -2636,11 +2625,16 @@ export function deriveState(
       ? unpatchedCreateRemixDerivedDataMemo
       : assertNever(cacheKey)
 
-  const remixDerivedData = createRemixDerivedDataMemo(
-    editor.projectContents,
-    editor.codeResultCache.curriedRequireFn,
-    editor.codeResultCache.curriedResolveFn,
-  )
+  const remixDerivedData = createRemixDerivedDataMemo({
+    projectContents: editor.projectContents,
+    spyMetadata: editor.spyMetadata,
+    allElementProps: editor.allElementProps,
+    fileBlobs: editor.canvas.base64Blobs,
+    hiddenInstances: editor.hiddenInstances,
+    displayNoneInstances: editor.displayNoneInstances,
+    curriedRequireFn: editor.codeResultCache.curriedRequireFn,
+    curriedResolveFn: editor.codeResultCache.curriedResolveFn,
+  })
 
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
