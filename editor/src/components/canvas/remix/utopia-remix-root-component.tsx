@@ -80,7 +80,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   // We need to create the new router with the current location in the initial entries to
   // prevent it thinking that it is rendering '/'
   const router = React.useMemo(() => {
-    if (routes == null) {
+    if (routes == null || routes.length === 0) {
       return null
     }
 
