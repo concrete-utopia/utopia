@@ -12,7 +12,7 @@ import { setProp_UNSAFE, unsetProperty } from '../../../editor/actions/action-cr
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
-import { getControlStyles } from '../../common/control-status'
+import { getControlStyles } from '../../common/control-styles'
 import { PinControl } from '../../controls/pin-control'
 import type { SelectOption } from '../../controls/select-control'
 import type { FramePinsInfo } from '../../common/layout-property-path-hooks'

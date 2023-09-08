@@ -4,7 +4,7 @@ import React from 'react'
 import { css, jsx } from '@emotion/react'
 
 import { UtopiaTheme } from '../../../uuiui'
-import { getControlStyles } from '../common/control-status'
+import { getControlStyles } from '../common/control-styles'
 
 /**
  * the Grid Templates avaliable to use in GridRow.

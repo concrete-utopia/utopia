@@ -23,8 +23,8 @@ import {
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
   getControlStatusFromPropertyStatus,
-  getControlStyles,
 } from '../../../components/inspector/common/control-status'
+import { getControlStyles } from '../../../components/inspector/common/control-styles'
 import type {
   ParsedCSSProperties,
   ParsedCSSPropertiesKeys,

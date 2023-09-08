@@ -4,7 +4,7 @@ import composeRefs from '@seznam/compose-react-refs'
 import React from 'react'
 import { jsx } from '@emotion/react'
 import type { ControlStatus, ControlStyles } from '../../components/inspector/common/control-status'
-import { getControlStyles } from '../../components/inspector/common/control-status'
+import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 
 export interface CheckboxInputProps extends React.InputHTMLAttributes<HTMLInputElement> {

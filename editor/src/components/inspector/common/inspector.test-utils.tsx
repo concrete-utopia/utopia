@@ -29,7 +29,7 @@ import {
 import * as EP from '../../../core/shared/element-path'
 import { InspectorContextProvider } from '../inspector'
 import type { PropertyStatus } from './control-status'
-import { getControlStyles } from './control-status'
+import { getControlStyles } from './control-styles'
 import type { InspectorInfo } from './property-path-hooks'
 import { ScenePathForTestUiJsFile } from '../../../core/model/test-ui-js-file.test-utils'
 import type { Frame } from 'utopia-api/core'

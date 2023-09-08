@@ -1,7 +1,7 @@
 import React from 'react'
 import Utils from '../../../utils/utils'
 import type { ControlStatus, ControlStyles } from '../common/control-status'
-import { getControlStyles } from '../common/control-status'
+import { getControlStyles } from '../common/control-styles'
 import { FramePoint } from 'utopia-api/core'
 import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'

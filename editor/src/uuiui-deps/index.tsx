@@ -15,11 +15,11 @@ import type {
 } from '../components/inspector/common/control-status'
 import {
   isControlledStatus,
-  getControlStyles,
   getControlStatusFromPropertyStatus,
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
 } from '../components/inspector/common/control-status'
+import { getControlStyles } from '../components/inspector/common/control-styles'
 import * as _react_performance from '../utils/react-performance'
 import * as CSSUtils from '../components/inspector/common/css-utils'
 import * as EitherUtils from '../core/shared/either'
