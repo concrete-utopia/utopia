@@ -28,12 +28,52 @@ describe('Remix content', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Renders the remix container with placeholder text', async () => {
     const project = createModifiedProject({
-      [StoryboardFilePath]: storyboardFileContent,
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div>
+            This is root!
+            <Outlet />
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <h1>Hello Remix!</h1>
+      }
+      `,
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
-    const remixScene = await renderResult.renderedDOM.findByTestId(REMIX_SCENE_TESTID)
+    const [remixScene] = await renderResult.renderedDOM.findAllByTestId(REMIX_SCENE_TESTID)
+    expect(remixScene).toBeDefined()
 
-    expect(remixScene.textContent).toEqual('Remix content is coming soon')
+    const [rootText] = await renderResult.renderedDOM.findAllByText('This is root!')
+    expect(rootText).toBeDefined()
+
+    const [indexText] = await renderResult.renderedDOM.findAllByText('Hello Remix!')
+    expect(indexText).toBeDefined()
   })
 })
 
