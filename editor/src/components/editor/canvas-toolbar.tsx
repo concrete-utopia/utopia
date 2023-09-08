@@ -142,9 +142,14 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([applyCommandsAction(commands)])
   }, [dispatch, editorStateRef])
 
-  const clickSelectModeButton = React.useCallback(() => {
-    dispatch([switchEditorMode(EditorModes.selectMode())])
-  }, [dispatch])
+  const clickSelectModeButton = React.useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation()
+      setForceInsertMode(false)
+      dispatch([switchEditorMode(EditorModes.selectMode())])
+    },
+    [dispatch],
+  )
 
   const insertMenuSelected = useEditorState(
     Substores.restOfEditor,
