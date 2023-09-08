@@ -28,11 +28,10 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     (store) => {
       const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
       return Object.values(routeModuleCreators).map(
-        // FIXME Saving required as this doesn't update with unsaved content?
         (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
       )
     },
-    '',
+    'UtopiaRemixRootComponent defaultExports',
   )
 
   const basePath = props[UTOPIA_PATH_KEY]
