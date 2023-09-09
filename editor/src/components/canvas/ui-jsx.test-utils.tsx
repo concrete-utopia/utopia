@@ -146,6 +146,7 @@ import { setFeatureEnabled } from '../../utils/feature-switches'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
+  'on' in process &&
   process.on('unhandledRejection', (reason, promise) => {
     console.warn(
       'Unhandled promise rejection:',
