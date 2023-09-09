@@ -1,7 +1,7 @@
-import * as MimeTypes from 'mime-types'
+// import * as MimeTypes from 'mime-types'
 import pathParse from 'path-parse'
 import * as PP from '../shared/property-path'
-import { isText } from 'istextorbinary'
+// import { isText } from 'istextorbinary'
 import { intrinsicHTMLElementNamesAsStrings } from '../shared/dom-utils'
 import Utils from '../../utils/utils'
 import type {
@@ -554,7 +554,7 @@ export function mimeTypeLookup(filename: string): string | false {
   } else if (filename.endsWith('.jsx')) {
     return 'application/x-jsx'
   } else {
-    return MimeTypes.lookup(filename)
+    return 'application/x-jsx' // MimeTypes.lookup(filename) FIX ME FIXME
   }
 }
 
@@ -571,7 +571,9 @@ export function fileTypeFromFileName(
   if (filename == null) {
     return null
   }
-  if (isText(filename)) {
+  // eslint-disable-next-line no-constant-condition
+  if (false) {
+    // FIXME FIXME isText(filename)) { FIXME FIXME
     return 'TEXT_FILE'
   } else {
     const mimeType = mimeTypeLookup(filename)

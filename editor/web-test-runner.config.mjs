@@ -1,5 +1,13 @@
+import { rollupAdapter } from '@web/dev-server-rollup'
+import commonjs from '@rollup/plugin-commonjs'
 import { esbuildPlugin } from '@web/dev-server-esbuild'
 import { puppeteerLauncher } from '@web/test-runner-puppeteer'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import nodePolyfills from 'rollup-plugin-polyfill-node'
+import json from '@rollup/plugin-json'
+
+console.log('nodeResolve', nodeResolve)
+
 import vite from 'vite-web-test-runner-plugin'
 
 export default {
@@ -41,7 +49,11 @@ export default {
   //   </html>
   // `,
   plugins: [
-    esbuildPlugin({ ts: true, tsx: true }),
+    rollupAdapter(nodeResolve({ browser: true, preferBuiltins: false })),
+    rollupAdapter(nodePolyfills()),
+    rollupAdapter(commonjs()),
+    rollupAdapter(json()),
+    esbuildPlugin({ ts: true, tsx: true, json: true }),
     // vite(),
   ],
 }

@@ -108,7 +108,7 @@ import type { StateHistory } from '../history'
 
 import { dynamicPathToStaticPath, toUid } from '../../../core/shared/element-path'
 
-import * as friendlyWords from 'friendly-words'
+// import * as friendlyWords from 'friendly-words'
 import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { ProjectIDPlaceholderPrefix, defaultConfig } from 'utopia-vscode-common'
 import { loginNotYetKnown } from '../../../common/user'
@@ -2272,10 +2272,10 @@ export function mergePersistentModel(
 }
 
 export function createNewProjectName(): string {
-  const friendlyWordsPredicate =
-    friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
-  const friendlyWordsObject =
-    friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
+  const friendlyWordsPredicate = 'cica'
+  // friendlyWords.predicates[Math.floor(Math.random() * friendlyWords.predicates.length)]
+  const friendlyWordsObject = 'kutya'
+  // friendlyWords.objects[Math.floor(Math.random() * friendlyWords.objects.length)]
   return `${friendlyWordsPredicate}-${friendlyWordsObject}`
 }
 
