@@ -125,6 +125,7 @@
     "@web/dev-server": "^0.3.1",
     "@web/dev-server-esbuild": "^0.4.1",
     "@web/test-runner": "^0.17.1",
+    "@web/test-runner-commands": "^0.8.0",
     "@web/test-runner-puppeteer": "^0.14.0",
     "ajv": "6.4.0",
     "anser": "2.1.0",

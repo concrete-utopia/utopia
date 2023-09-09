@@ -135,6 +135,7 @@ specifiers:
   '@web/dev-server': ^0.3.1
   '@web/dev-server-esbuild': ^0.4.1
   '@web/test-runner': ^0.17.1
+  '@web/test-runner-commands': ^0.8.0
   '@web/test-runner-puppeteer': ^0.14.0
   '@welldone-software/why-did-you-render': 5.0.0-rc.1
   ajv: 6.4.0
@@ -355,6 +356,7 @@ dependencies:
   '@web/dev-server': 0.3.1
   '@web/dev-server-esbuild': 0.4.1
   '@web/test-runner': 0.17.1_typescript@4.6.4
+  '@web/test-runner-commands': 0.8.0
   '@web/test-runner-puppeteer': 0.14.0_typescript@4.6.4
   ajv: 6.4.0
   anser: 2.1.0

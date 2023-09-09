@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => {
     plugins: [
       viteExternalsPlugin({
         domtoimage: 'domtoimage',
+        '/__web-dev-server__web-socket.js': '/__web-dev-server__web-socket.js',
       }),
       isDevEnv && react(),
       injectHtml({
@@ -22,8 +23,8 @@ export default defineConfig(({ mode }) => {
         },
       }),
     ],
-    root: './src/templates',
-    publicDir: '../../resources/editor',
+    // root: './src/templates',
+    publicDir: './resources',
     server: {
       port: 8088,
       host: '0.0.0.0',
@@ -42,10 +43,11 @@ export default defineConfig(({ mode }) => {
         port: 8088,
       },
     },
-    // base: '/src/',
+    // base: '/editor/',
     resolve: {
       alias: {
         'worker-imports': join(__dirname, 'src/core/workers/vite-worker-import-utils.ts'),
+        fs: 'browserfs',
       },
     },
     define: {
@@ -64,7 +66,7 @@ export default defineConfig(({ mode }) => {
       // "react/jsx-runtime" potentially being an undiscoverable dependency, meaning it won't be
       // optimised, leading to a runtime error that "module is not defined"
       // https://github.com/vitejs/vite/issues/6215
-      include: ['react/jsx-runtime'],
+      include: ['react/jsx-runtime', '/__web-dev-server__web-socket.js'],
     },
     build: {
       target: 'esnext',
