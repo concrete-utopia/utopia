@@ -11,11 +11,11 @@ import '../utils/feature-switches'
 
 // Fire off server requests that later block, to improve initial load on slower connections. These will still block,
 // but this gives us a chance to cache the result first
-import { getLoginState } from '../common/server'
-import { triggerHashedAssetsUpdate, preloadPrioritizedAssets } from '../utils/hashed-assets'
+// import { getLoginState } from '../common/server'
+// import { triggerHashedAssetsUpdate, preloadPrioritizedAssets } from '../utils/hashed-assets'
 
-void getLoginState('no-cache')
-void triggerHashedAssetsUpdate().then(() => preloadPrioritizedAssets())
+// void getLoginState('no-cache')
+// void triggerHashedAssetsUpdate().then(() => preloadPrioritizedAssets())
 
 import { addStyleSheetToPage } from '../core/shared/dom-utils'
 import { STATIC_BASE_URL } from '../common/env-vars'
@@ -37,4 +37,4 @@ import { applyUIDMonkeyPatch } from '../utils/canvas-react-utils'
 applyUIDMonkeyPatch()
 
 // eslint-disable-next-line
-const EditorRunner = new Editor()
+// const EditorRunner = new Editor()
