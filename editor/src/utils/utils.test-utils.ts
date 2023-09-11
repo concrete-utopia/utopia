@@ -150,7 +150,7 @@ export function createEditorStates(selectedViews: ElementPath[] = []): {
     }),
     selectedViews: selectedViews,
   }
-  const derivedState = deriveState(editor, null)
+  const derivedState = deriveState(editor, null, 'unpatched', () => null)
   const componentMetadata = createFakeMetadataForEditor(editor)
   return {
     editor: {

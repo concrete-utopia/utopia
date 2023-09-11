@@ -426,7 +426,6 @@ import {
   ConditionalClauseNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
-  deriveState,
   DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'

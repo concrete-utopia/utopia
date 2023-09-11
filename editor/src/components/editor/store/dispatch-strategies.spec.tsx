@@ -75,7 +75,7 @@ function createEditorStore(
   }
 
   emptyEditorState.canvas.interactionSession = interactionSessionWithMetadata
-  const derivedState = deriveState(emptyEditorState, null)
+  const derivedState = deriveState(emptyEditorState, null, 'unpatched', () => null)
 
   const history = History.init(emptyEditorState, derivedState)
 

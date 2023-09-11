@@ -201,7 +201,7 @@ export function renderCanvasReturnResultAndError(
     return {
       ...store,
       editor: updatedEditor,
-      derived: deriveState(updatedEditor, store.derived),
+      derived: deriveState(updatedEditor, store.derived, 'unpatched', () => null),
     }
   })
 

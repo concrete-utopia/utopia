@@ -302,7 +302,7 @@ describe('SET_PROP', () => {
 })
 
 describe('SET_CANVAS_FRAMES', () => {
-  const derivedState = deriveState(testEditor, null)
+  const derivedState = deriveState(testEditor, null, 'unpatched', () => null)
   it('Updates the frame of the child correctly', () => {
     const action = setCanvasFrames(
       [
@@ -1337,7 +1337,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const derivedState = deriveState(editorState, null)
+    const derivedState = deriveState(editorState, null, 'unpatched', () => null)
     const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState).toBe(editorState)
   })
@@ -1374,7 +1374,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const derivedState = deriveState(editorState, null)
+    const derivedState = deriveState(editorState, null, 'unpatched', () => null)
     const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState.focusedElementPath).toEqual(pathToFocus)
   })

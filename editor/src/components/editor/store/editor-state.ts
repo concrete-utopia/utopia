@@ -2583,14 +2583,11 @@ function deriveCacheableStateInner(
 const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 
-const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
-
-const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
-
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
   cacheKey: 'patched' | 'unpatched' = 'unpatched',
+  createRemixDerivedDataMemo: any,
 ): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
@@ -2610,9 +2607,6 @@ export function deriveState(
     editor.navigator.collapsedViews,
     editor.navigator.hiddenInNavigator,
   )
-
-  const createRemixDerivedDataMemo =
-    cacheKey === 'patched' ? patchedCreateRemixDerivedDataMemo : unpatchedCreateRemixDerivedDataMemo
 
   const remixDerivedData = createRemixDerivedDataMemo(
     editor.projectContents,

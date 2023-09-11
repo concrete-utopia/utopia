@@ -277,7 +277,7 @@ export async function renderTestEditorWithModel(
   let actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs = []
 
   let emptyEditorState = createEditorState(NO_OP)
-  const derivedState = deriveState(emptyEditorState, null)
+  const derivedState = deriveState(emptyEditorState, null, 'unpatched', () => null)
 
   const history = History.init(emptyEditorState, derivedState)
 

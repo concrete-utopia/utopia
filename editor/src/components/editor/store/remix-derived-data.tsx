@@ -20,6 +20,7 @@ import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { AllElementProps, CanvasBase64Blobs } from './editor-state'
+import { memoize } from '../../../core/shared/memoize'
 
 export interface RemixStaticRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -110,3 +111,7 @@ export function createRemixDerivedData(
     routingTable: routingTable,
   }
 }
+
+export const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
+
+export const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
