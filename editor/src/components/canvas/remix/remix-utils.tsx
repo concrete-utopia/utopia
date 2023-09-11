@@ -443,9 +443,10 @@ function getRemixExportsOfModule(
 
   return {
     executionScopeCreator: executionScopeCreator,
+    rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
+    // FIXME the executionScope should be created at the point where we use the loader and action like we do for the module's default export component
     loader: executionScope.scope['loader'] as LoaderFunction | undefined,
     action: executionScope.scope['action'] as ActionFunction | undefined,
-    rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
   }
 }
 export function getRoutesAndModulesFromManifest(
