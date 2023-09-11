@@ -166,12 +166,16 @@ export function getDefaultExportNameAndUidFromFile(
   filePath: string,
 ): { name: string; uid: string } | null {
   const file = getProjectFileByFilePath(projectContents, filePath)
-  if (file == null || file.type != 'TEXT_FILE' || file.lastParseSuccess == null) {
+  if (
+    file == null ||
+    file.type != 'TEXT_FILE' ||
+    file.fileContents.parsed.type !== 'PARSE_SUCCESS'
+  ) {
     return null
   }
 
   const defaultExportName =
-    file.lastParseSuccess.exportsDetail.find(
+    file.fileContents.parsed.exportsDetail.find(
       (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
     )?.name ?? null
 
@@ -179,7 +183,7 @@ export function getDefaultExportNameAndUidFromFile(
     return null
   }
 
-  const elementUid = file.lastParseSuccess.topLevelElements.find(
+  const elementUid = file.fileContents.parsed.topLevelElements.find(
     (t): t is UtopiaJSXComponent =>
       t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
   )?.rootElement.uid
