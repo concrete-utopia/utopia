@@ -34,7 +34,6 @@ import * as EP from '../../../core/shared/element-path'
 import { isRemixOutletAgainstImports } from '../../../core/model/project-file-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
-import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 
 const ROOT_DIR = '/src'
