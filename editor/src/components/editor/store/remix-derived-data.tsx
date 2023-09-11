@@ -79,7 +79,7 @@ export function createRemixDerivedData(
     projectContents,
     CreateRemixDerivedDataRefs.mutableContext,
     CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
-    CreateRemixDerivedDataRefs.routeModulesCache,
+    CreateRemixDerivedDataRefs.routeModulesCache.current,
     fileBlobs,
     displayNoneInstances,
     hiddenInstances,
