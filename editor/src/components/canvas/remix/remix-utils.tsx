@@ -31,7 +31,10 @@ import type { RemixStaticRoutingTable } from '../../editor/store/remix-derived-d
 import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { NO_OP, assertNever } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
-import { isRemixOutletAgainstImports } from '../../../core/model/project-file-utils'
+import {
+  isRemixOutletAgainstImports,
+  isRemixOutletElement,
+} from '../../../core/model/project-file-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
@@ -244,19 +247,6 @@ function findOutletAmongJSXElementChildren(
     }
   }
   return null
-}
-
-export function isRemixOutletElement(
-  element: JSXElementChild,
-  filePath: string,
-  projectContents: ProjectContentTreeRoot,
-): boolean {
-  const file = getProjectFileByFilePath(projectContents, filePath)
-  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
-    return isRemixOutletAgainstImports(element, file.fileContents.parsed.imports)
-  } else {
-    return false
-  }
 }
 
 function findPathToOutlet(
