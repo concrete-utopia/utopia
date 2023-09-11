@@ -163,13 +163,13 @@ export function isRemixOutletAgainstImports(element: JSXElementChild, imports: I
     return false
   }
 
-  const utopiaAPI = imports['@remix-run/react']
-  if (utopiaAPI == null) {
+  const remix = imports['@remix-run/react']
+  if (remix == null) {
     return false
   }
 
   if (PP.depth(element.name.propertyPath) === 0) {
-    for (const fromWithin of utopiaAPI.importedFromWithin) {
+    for (const fromWithin of remix.importedFromWithin) {
       if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
         return true
       }
@@ -178,7 +178,7 @@ export function isRemixOutletAgainstImports(element: JSXElementChild, imports: I
   }
 
   return (
-    utopiaAPI.importedAs === element.name.baseVariable &&
+    remix.importedAs === element.name.baseVariable &&
     PP.isSameProperty(element.name.propertyPath, 'Outlet')
   )
 }
