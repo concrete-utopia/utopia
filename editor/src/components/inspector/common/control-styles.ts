@@ -1,6 +1,6 @@
 import { mapArrayToDictionary } from '../../../core/shared/array-utils'
 import type { IcnColor } from '../../../uuiui'
-import { colorTheme } from '../../../uuiui'
+import { colorTheme } from '../../../uuiui/styles/theme'
 import type { ControlStatus } from './control-status'
 
 export interface ControlStyles {
