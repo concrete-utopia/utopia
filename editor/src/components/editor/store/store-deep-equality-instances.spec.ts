@@ -93,7 +93,6 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
   }
   const newSameValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'bbb']]))],
@@ -125,7 +124,6 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
   }
   const newDifferentValue: DerivedState = {
     navigatorTargets: [regularNavigatorEntry(EP.elementPath([['scene'], ['aaa', 'ddd']]))],
@@ -157,7 +155,6 @@ describe('DerivedStateKeepDeepEquality', () => {
         ),
       },
     },
-    remixData: null,
   }
   it('same reference returns the same reference', () => {
     const result = DerivedStateKeepDeepEquality()(oldValue, oldValue)

@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react'
 import type {
   UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_AssetsManifest as AssetsManifest,
@@ -20,6 +21,10 @@ import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { AllElementProps, CanvasBase64Blobs } from './editor-state'
+import { atom, useSetAtom } from 'jotai'
+import { Substores, useEditorState } from './store-hook'
+import { memoize } from '../../../core/shared/memoize'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export interface RemixStaticRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -67,6 +72,7 @@ export function createRemixDerivedData(
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
 ): RemixDerivedData | null {
+  // console.log('createRemixDerivedData')
   const routeManifest = createRouteManifestFromProjectContents(projectContents)
   if (routeManifest == null) {
     return null
@@ -101,6 +107,10 @@ export function createRemixDerivedData(
   const { routeModuleCreators, routes, routeModulesToRelativePaths, routingTable } =
     routesAndModulesFromManifestResult
 
+  if (routes.length === 0) {
+    return null
+  }
+
   return {
     futureConfig: defaultFutureConfig,
     routes: routes,
@@ -109,4 +119,99 @@ export function createRemixDerivedData(
     routeModulesToRelativePaths: routeModulesToRelativePaths,
     routingTable: routingTable,
   }
+}
+
+export const RemixDerivedDataAtom = atom<RemixDerivedData | null>(null)
+
+const createRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
+
+// const usePrevious = (value, initialValue) => {
+//   const ref = React.useRef(initialValue)
+//   React.useEffect(() => {
+//     ref.current = value
+//   })
+//   return ref.current
+// }
+
+// const useEffectDebugger = (effectHook, dependencies, dependencyNames = []) => {
+//   const previousDeps = usePrevious(dependencies, [])
+
+//   const changedDeps = dependencies.reduce((accum, dependency, index) => {
+//     if (dependency !== previousDeps[index]) {
+//       const keyName = dependencyNames[index] || index
+//       return {
+//         ...accum,
+//         [keyName]: {
+//           before: previousDeps[index],
+//           after: dependency,
+//         },
+//       }
+//     }
+
+//     return accum
+//   }, {})
+
+//   if (Object.keys(changedDeps).length) {
+//     console.log('[use-effect-debugger] ', changedDeps)
+//   }
+
+//   React.useEffect(effectHook, dependencies)
+// }
+
+export function useGenerateRemixDerivedData(): void {
+  const setRemixDerivedData = useSetAtom(RemixDerivedDataAtom)
+  const {
+    projectContents,
+    spyMetadata,
+    allElementProps,
+    fileBlobs,
+    hiddenInstances,
+    displayNoneInstances,
+    curriedRequireFn,
+    curriedResolveFn,
+  } = useEditorState(
+    Substores.fullStore,
+    (store) => ({
+      projectContents: store.editor.projectContents,
+      spyMetadata: store.editor.spyMetadata,
+      allElementProps: store.editor.allElementProps,
+      fileBlobs: store.editor.canvas.base64Blobs,
+      hiddenInstances: store.editor.hiddenInstances,
+      displayNoneInstances: store.editor.displayNoneInstances,
+      curriedRequireFn: store.editor.codeResultCache.curriedRequireFn,
+      curriedResolveFn: store.editor.codeResultCache.curriedResolveFn,
+    }),
+    'useRemixDerivedData projectContents',
+  )
+
+  // useEffectDebugger(() => {
+  //   console.log('useEffectDebugger')
+  // }, [
+  //   projectContents,
+  //   spyMetadata,
+  //   allElementProps,
+  //   fileBlobs,
+  //   hiddenInstances,
+  //   displayNoneInstances,
+  //   curriedRequireFn,
+  //   curriedResolveFn,
+  // ])
+
+  const remixDerivedData = createRemixDerivedDataMemo(
+    projectContents,
+    spyMetadata,
+    allElementProps,
+    fileBlobs,
+    hiddenInstances,
+    displayNoneInstances,
+    curriedRequireFn,
+    curriedResolveFn,
+  )
+
+  // console.log('useGenerateRemixDerivedData')
+
+  React.useEffect(
+    () => setRemixDerivedData(remixDerivedData),
+    [remixDerivedData, setRemixDerivedData],
+  )
 }

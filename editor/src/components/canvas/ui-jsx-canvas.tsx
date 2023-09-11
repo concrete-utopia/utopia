@@ -87,6 +87,7 @@ import {
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { useGenerateRemixDerivedData } from '../editor/store/remix-derived-data'
 
 applyUIDMonkeyPatch()
 
@@ -491,6 +492,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     uiFilePath,
     resolve,
   )
+
+  useGenerateRemixDerivedData()
 
   clearSpyCollectorInvalidPaths(rootValidPathsSet, metadataContext)
 

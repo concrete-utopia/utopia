@@ -1,38 +1,47 @@
-import { RemixContext } from '@remix-run/react/dist/components'
 import type { RouteModules } from '@remix-run/react/dist/routeModules'
+import { RemixContext } from '@remix-run/react/dist/components'
 import React from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
+import { useRefEditorState } from '../../editor/store/store-hook'
 import { getDefaultExportNameAndUidFromFile } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
+import type { RemixDerivedData } from '../../editor/store/remix-derived-data'
+import { RemixDerivedDataAtom } from '../../editor/store/remix-derived-data'
+import { atom, useAtom } from 'jotai'
 
 export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
 
+const remixDerivedDataRef: { current: RemixDerivedData | null } = { current: null }
+const RemixDerivedDataRefAtom = atom((get) => {
+  remixDerivedDataRef.current = get(RemixDerivedDataAtom)
+})
+
+const RemixRoutesAtom = atom((get) => get(RemixDerivedDataAtom)?.routes ?? null)
+const RemixRouteModuleCreators = atom((get) => get(RemixDerivedDataAtom)?.routeModuleCreators ?? {})
+
+let rerenders = 0
+
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
-  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+  const _ = useAtom(RemixDerivedDataRefAtom)
+
+  // console.log(`rerenders: ${rerenders}`)
+  // rerenders += 1
+
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
-  const routes = useEditorState(
-    Substores.derived,
-    (store) => store.derived.remixData?.routes ?? [],
-    'UtopiaRemixRootComponent routes',
-  )
+  const [routes] = useAtom(RemixRoutesAtom)
+  const [routeModuleCreators] = useAtom(RemixRouteModuleCreators)
 
-  const defaultExports = useEditorState(
-    Substores.derived,
-    (store) => {
-      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
-      return Object.values(routeModuleCreators).map(
-        (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
-      )
-    },
-    'UtopiaRemixRootComponent defaultExports',
-  )
+  const defaultExports = React.useMemo(() => {
+    return Object.values(routeModuleCreators).map(
+      (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
+    )
+  }, [projectContentsRef, routeModuleCreators])
 
   const basePath = props[UTOPIA_PATH_KEY]
 
@@ -73,13 +82,13 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     }
 
     return routeModulesResult
-  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+  }, [basePath, defaultExports, projectContentsRef])
 
   // The router always needs to be updated otherwise new routes won't work without a refresh
   // We need to create the new router with the current location in the initial entries to
   // prevent it thinking that it is rendering '/'
   const router = React.useMemo(() => {
-    if (routes == null || routes.length === 0) {
+    if (routes == null) {
       return null
     }
 

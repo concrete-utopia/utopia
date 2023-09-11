@@ -175,8 +175,6 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import type { RemixDerivedData } from './remix-derived-data'
-import { createRemixDerivedData } from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2188,7 +2186,6 @@ export interface DerivedState {
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
-  remixData: RemixDerivedData | null
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2200,7 +2197,6 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
-    remixData: null,
   }
 }
 
@@ -2583,10 +2579,6 @@ function deriveCacheableStateInner(
 const patchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSize: 1 })
 
-const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
-
-const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
-
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
@@ -2611,20 +2603,6 @@ export function deriveState(
     editor.navigator.hiddenInNavigator,
   )
 
-  const createRemixDerivedDataMemo =
-    cacheKey === 'patched' ? patchedCreateRemixDerivedDataMemo : unpatchedCreateRemixDerivedDataMemo
-
-  const remixDerivedData = createRemixDerivedDataMemo(
-    editor.projectContents,
-    editor.spyMetadata,
-    editor.allElementProps,
-    editor.canvas.base64Blobs,
-    editor.hiddenInstances,
-    editor.displayNoneInstances,
-    editor.codeResultCache.curriedRequireFn,
-    editor.codeResultCache.curriedResolveFn,
-  )
-
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
@@ -2642,7 +2620,6 @@ export function deriveState(
             editor.branchOriginContents,
             oldDerivedState?.branchOriginContentsChecksums ?? {},
           ),
-    remixData: remixDerivedData,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value
