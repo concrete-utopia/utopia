@@ -170,10 +170,15 @@ export interface GetRoutesAndModulesFromManifestResult {
   routingTable: RemixStaticRoutingTable
 }
 
+export interface DefaultExportWithNameAndUid {
+  name: string
+  uid: string
+}
+
 export function getDefaultExportNameAndUidFromFile(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
-): { name: string; uid: string } | null {
+): DefaultExportWithNameAndUid | null {
   const file = getProjectFileByFilePath(projectContents, filePath)
   if (file == null || file.type != 'TEXT_FILE' || file.lastParseSuccess == null) {
     return null
