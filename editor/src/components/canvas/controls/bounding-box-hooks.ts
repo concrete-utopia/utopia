@@ -66,12 +66,10 @@ function useBoundingBoxFromMetadataRef(
     })
 
     function getAdjustedBoundingBox(boundingBox: CanvasRectangle | null) {
-      if (boundingBox == null) {
-        return null
-      }
-      if (isMidInteraction.current) {
+      if (boundingBox == null || isMidInteraction.current) {
         return boundingBox
       }
+
       let adjustedBoundingBox = {
         x: boundingBox.x,
         y: boundingBox.y,
