@@ -9,19 +9,9 @@ import { getDefaultExportNameAndUidFromFile } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 
-export interface UtopiaRemixRootComponentProps {
-  [UTOPIA_PATH_KEY]: ElementPath
-}
-
-export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
+function useGetRouteModules(basePath: ElementPath) {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-
-  const routes = useEditorState(
-    Substores.derived,
-    (store) => store.derived.remixData?.routes ?? [],
-    'UtopiaRemixRootComponent routes',
-  )
 
   const defaultExports = useEditorState(
     Substores.derived,
@@ -31,12 +21,10 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
       )
     },
-    'UtopiaRemixRootComponent defaultExports',
+    '',
   )
 
-  const basePath = props[UTOPIA_PATH_KEY]
-
-  const routeModules = React.useMemo(() => {
+  return React.useMemo(() => {
     const defaultExportsIgnored = defaultExports // Forcibly update the routeModules only when the default exports have changed
 
     if (remixDerivedDataRef.current == null) {
@@ -74,6 +62,24 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
     return routeModulesResult
   }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+}
+
+export interface UtopiaRemixRootComponentProps {
+  [UTOPIA_PATH_KEY]: ElementPath
+}
+
+export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
+  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+
+  const routes = useEditorState(
+    Substores.derived,
+    (store) => store.derived.remixData?.routes ?? [],
+    'UtopiaRemixRootComponent routes',
+  )
+
+  const basePath = props[UTOPIA_PATH_KEY]
+
+  const routeModules = useGetRouteModules(basePath)
 
   // The router always needs to be updated otherwise new routes won't work without a refresh
   // We need to create the new router with the current location in the initial entries to
