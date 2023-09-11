@@ -56,6 +56,7 @@ import * as path from 'path'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 import { UPDATE_FNS } from '../editor/actions/actions'
 import { updateNodeModulesContents } from '../editor/actions/action-creators'
+import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
 
 export interface PartialCanvasProps {
   hiddenInstances: UiJsxCanvasProps['hiddenInstances']
@@ -201,7 +202,12 @@ export function renderCanvasReturnResultAndError(
     return {
       ...store,
       editor: updatedEditor,
-      derived: deriveState(updatedEditor, store.derived, 'unpatched', () => null),
+      derived: deriveState(
+        updatedEditor,
+        store.derived,
+        'unpatched',
+        unpatchedCreateRemixDerivedDataMemo,
+      ),
     }
   })
 

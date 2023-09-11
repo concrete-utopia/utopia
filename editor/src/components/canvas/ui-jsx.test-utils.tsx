@@ -143,6 +143,7 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { carryDispatchResultFields } from './editor-dispatch-flow'
 import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
+import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -277,7 +278,12 @@ export async function renderTestEditorWithModel(
   let actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs = []
 
   let emptyEditorState = createEditorState(NO_OP)
-  const derivedState = deriveState(emptyEditorState, null, 'unpatched', () => null)
+  const derivedState = deriveState(
+    emptyEditorState,
+    null,
+    'unpatched',
+    unpatchedCreateRemixDerivedDataMemo,
+  )
 
   const history = History.init(emptyEditorState, derivedState)
 

@@ -59,6 +59,7 @@ import {
 } from './dispatch-strategies'
 import type { EditorStoreFull } from './editor-state'
 import { createEditorState, deriveState } from './editor-state'
+import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
@@ -75,7 +76,12 @@ function createEditorStore(
   }
 
   emptyEditorState.canvas.interactionSession = interactionSessionWithMetadata
-  const derivedState = deriveState(emptyEditorState, null, 'unpatched', () => null)
+  const derivedState = deriveState(
+    emptyEditorState,
+    null,
+    'unpatched',
+    unpatchedCreateRemixDerivedDataMemo,
+  )
 
   const history = History.init(emptyEditorState, derivedState)
 

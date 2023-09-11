@@ -115,3 +115,5 @@ export function createRemixDerivedData(
 export const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
 
 export const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
+
+export type RemixDerivedDataFactory = typeof createRemixDerivedData
