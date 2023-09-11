@@ -24,7 +24,11 @@ import type {
   ExportDefaultFunctionOrClass,
   TextFile,
 } from '../../../core/shared/project-file-types'
-import { isTextFile, isParseSuccess } from '../../../core/shared/project-file-types'
+import {
+  isTextFile,
+  isParseSuccess,
+  isExportDefaultFunctionOrClass,
+} from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { RemixStaticRoutingTable } from '../../editor/store/remix-derived-data'
@@ -178,9 +182,7 @@ export function getDefaultExportNameAndUidFromFile(
   }
 
   const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(
-      (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
-    )?.name ?? null
+    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
 
   if (defaultExportName == null) {
     return null
@@ -203,9 +205,7 @@ export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChi
   }
 
   const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(
-      (e): e is ExportDefaultFunctionOrClass => e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS',
-    )?.name ?? null
+    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
 
   if (defaultExportName == null) {
     return null
