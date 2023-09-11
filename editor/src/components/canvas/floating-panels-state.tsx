@@ -399,7 +399,7 @@ export function findDropAreaInsideColumn(
 ): PanelName | null {
   for (const [location, panels] of Object.entries(panelState.panelContent)) {
     for (const panel of panels) {
-      if (panel.frame != null && rectContainsPoint(panel.frame, newPosition)) {
+      if (rectContainsPoint(panel.frame, newPosition)) {
         return location as PanelName
       }
     }
