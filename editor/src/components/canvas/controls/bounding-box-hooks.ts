@@ -49,6 +49,10 @@ function useBoundingBoxFromMetadataRef(
   const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
+  const isMidInteraction = useRefEditorState(
+    (store) => store.editor.canvas.interactionSession?.startedAt != null,
+  )
+
   const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)
   boundingBoxCallbackRef.current = boundingBoxCallback
 
@@ -64,6 +68,9 @@ function useBoundingBoxFromMetadataRef(
     function getAdjustedBoundingBox(boundingBox: CanvasRectangle | null) {
       if (boundingBox == null) {
         return null
+      }
+      if (isMidInteraction.current) {
+        return boundingBox
       }
       let adjustedBoundingBox = {
         x: boundingBox.x,
@@ -85,7 +92,7 @@ function useBoundingBoxFromMetadataRef(
     const boundingBox = getAdjustedBoundingBox(boundingRectangleArray(frames))
 
     boundingBoxCallbackRef.current(boundingBox, scaleRef.current)
-  }, [selectedElements, metadataRef, scaleRef])
+  }, [selectedElements, metadataRef, scaleRef, isMidInteraction])
 
   useSelectorWithCallback(
     Substores.metadata,
