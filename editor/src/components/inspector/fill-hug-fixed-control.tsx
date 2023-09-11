@@ -5,9 +5,14 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { intersection } from '../../core/shared/set-utils'
-import { assertNever, NO_OP } from '../../core/shared/utils'
-import { NumberInput, PopupList, UtopiaTheme } from '../../uuiui'
-import type { SelectOption } from '../../uuiui-deps'
+import { assertNever } from '../../core/shared/utils'
+import { NumberInput, PopupList, useColorTheme, UtopiaTheme } from '../../uuiui'
+import type {
+  ControlStatus,
+  ControlStyles,
+  OnSubmitValueOrUnknownOrEmpty,
+  SelectOption,
+} from '../../uuiui-deps'
 import { getControlStyles, InspectorRowHoverCSS } from '../../uuiui-deps'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -36,13 +41,20 @@ import type { MetadataSubstate } from '../editor/store/store-hook-substore-types
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import * as EP from '../../core/shared/element-path'
-import { FlexCol } from 'utopia-api'
+import * as PP from '../../core/shared/property-path'
+import type { GridRowVariant } from './widgets/ui-grid-row'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { PropertyLabel } from './widgets/property-label'
-import { useContextSelector } from 'use-context-selector'
-import { InspectorPropsContext, stylePropPathMappingFn } from './common/property-path-hooks'
-import { safeIndex } from '../../core/shared/array-utils'
+import { mapDropNulls, safeIndex, uniqBy } from '../../core/shared/array-utils'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
+import { when } from '../../utils/react-conditionals'
+import type { LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
+import type { AllElementProps } from '../editor/store/editor-state'
+import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
+import type { EditorDispatch, EditorAction } from '../editor/action-types'
+import { unsetProperty, setProp_UNSAFE } from '../editor/actions/action-creators'
+import { FlexCol } from 'utopia-api'
+import { PinControl } from './controls/pin-control'
+import type { FramePinsInfo } from './common/layout-property-path-hooks'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -100,23 +112,6 @@ const fixedHugFillOptionsSelector = createSelector(
 )
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const targetPath = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
-  const widthProp = React.useMemo(() => {
-    return [stylePropPathMappingFn('width', targetPath)]
-  }, [targetPath])
-
-  const heightProp = React.useMemo(() => {
-    return [stylePropPathMappingFn('height', targetPath)]
-  }, [targetPath])
-
-  const options = useEditorState(
-    Substores.metadata,
-    fixedHugFillOptionsSelector,
-    'FillHugFixedControl options',
-  )
-
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
@@ -124,6 +119,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const elementOrParentGroupRef = useRefEditorState(anySelectedElementGroupOrChildOfGroup)
+  const groupChildrenSelectedRef = useRefEditorState(allElementsAreGroupChildren)
 
   const widthCurrentValue = useEditorState(
     Substores.metadata,
@@ -375,68 +371,284 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ],
   )
 
-  if (options == null) {
-    return null
-  }
+  const groupChildConstraints = useEditorState(
+    Substores.metadata,
+    (store) => ({
+      width: checkGroupChildConstraint(
+        'width',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      height: checkGroupChildConstraint(
+        'height',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      top: checkGroupChildConstraint(
+        'top',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      left: checkGroupChildConstraint(
+        'left',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      bottom: checkGroupChildConstraint(
+        'bottom',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      right: checkGroupChildConstraint(
+        'right',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+    }),
+    'FillHugFixedControl constraints',
+  )
+
+  const handleGroupConstraintPinMouseDown = React.useCallback(
+    (dimension: LayoutPinnedProp) => {
+      return setGroupChildConstraint(
+        dispatch,
+        'toggle',
+        selectedViewsRef.current,
+        allElementPropsRef.current,
+        dimension,
+      )
+    },
+    [dispatch, selectedViewsRef, allElementPropsRef],
+  )
+
+  const framePoints: FramePinsInfo = React.useMemo(() => {
+    const ignore = { isPrimaryPosition: false, isRelativePosition: false }
+    return {
+      left: {
+        isPrimaryPosition: groupChildConstraints.left !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      top: {
+        isPrimaryPosition: groupChildConstraints.top !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      bottom: {
+        isPrimaryPosition: groupChildConstraints.bottom !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      right: {
+        isPrimaryPosition: groupChildConstraints.right !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      width: ignore,
+      height: ignore,
+      centerX: ignore,
+      centerY: ignore,
+    }
+  }, [groupChildConstraints])
 
   const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
   const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
 
   return (
     <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
-      <UIGridRow padded variant='|20px|<--1fr--><--1fr-->' css={InspectorRowHoverCSS}>
-        <PropertyLabel target={widthProp}>W</PropertyLabel>
-        <PopupList
-          value={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? undefined}
-          options={options}
-          onSubmitValue={onSubmitFixedFillHugType['width']}
-          controlStyles={widthControlStyles}
-        />
-        <NumberInput
-          id={FillFixedHugControlId('width')}
-          testId={FillFixedHugControlId('width')}
-          value={widthValue}
-          onSubmitValue={onAdjustWidth}
-          onTransientSubmitValue={onAdjustWidth}
-          onForcedSubmitValue={onAdjustWidth}
-          controlStatus={widthInputControlStatus}
-          numberType={pickNumberType(widthCurrentValue.fixedHugFill)}
-          incrementControls={true}
-          stepSize={1}
-          minimum={0}
-          maximum={Infinity}
-          defaultUnitToHide={null}
-          focusOnMount={false}
-        />
-      </UIGridRow>
-      <UIGridRow padded variant='|20px|<--1fr--><--1fr-->' css={InspectorRowHoverCSS}>
-        <PropertyLabel target={heightProp}>H</PropertyLabel>
-        <PopupList
-          value={optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? undefined}
-          options={options}
-          onSubmitValue={onSubmitFixedFillHugType['height']}
-          controlStyles={heightControlStyles}
-        />
-        <NumberInput
-          id={FillFixedHugControlId('height')}
-          testId={FillFixedHugControlId('height')}
-          value={heightValue}
-          onSubmitValue={onAdjustHeight}
-          onTransientSubmitValue={onAdjustHeight}
-          onForcedSubmitValue={onAdjustHeight}
-          controlStatus={heightInputControlStatus}
-          numberType={pickNumberType(heightCurrentValue.fixedHugFill)}
-          incrementControls={true}
-          stepSize={1}
-          minimum={0}
-          maximum={Infinity}
-          defaultUnitToHide={null}
-          focusOnMount={false}
-        />
+      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
+        {when(
+          groupChildrenSelectedRef.current,
+          <PinControl
+            handlePinMouseDown={handleGroupConstraintPinMouseDown}
+            framePoints={framePoints}
+            controlStatus='simple'
+            exclude={{ center: true }}
+            name='group-child-controls'
+          />,
+        )}
+        <FlexCol css={{ gap: 0 }}>
+          <DimensionRow
+            dimension='width'
+            dimensionValue={widthValue}
+            dimensionControlStatus={widthInputControlStatus}
+            dimensionNumberType={pickNumberType(widthCurrentValue.fixedHugFill)}
+            fixedHugSelectOption={
+              optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? null
+            }
+            fixedHugControlStyles={widthControlStyles}
+            onAdjustDimension={onAdjustWidth}
+            onSubmitFixedHug={onSubmitFixedFillHugType['width']}
+            isGroupChild={groupChildrenSelectedRef.current}
+            groupChildConstraint={groupChildConstraints.width}
+          />
+          <DimensionRow
+            dimension='height'
+            dimensionValue={heightValue}
+            dimensionControlStatus={heightInputControlStatus}
+            dimensionNumberType={pickNumberType(heightCurrentValue.fixedHugFill)}
+            fixedHugSelectOption={
+              optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? null
+            }
+            fixedHugControlStyles={heightControlStyles}
+            onAdjustDimension={onAdjustHeight}
+            onSubmitFixedHug={onSubmitFixedFillHugType['height']}
+            isGroupChild={groupChildrenSelectedRef.current}
+            groupChildConstraint={groupChildConstraints.height}
+          />
+        </FlexCol>
       </UIGridRow>
     </FlexCol>
   )
 })
+
+const DimensionRow = React.memo(
+  ({
+    dimension,
+    dimensionValue,
+    dimensionControlStatus,
+    dimensionNumberType,
+    fixedHugSelectOption,
+    fixedHugControlStyles,
+    onAdjustDimension,
+    onSubmitFixedHug,
+    isGroupChild,
+    groupChildConstraint,
+  }: {
+    dimension: 'width' | 'height'
+    dimensionValue: CSSNumber | null
+    dimensionControlStatus: ControlStatus
+    dimensionNumberType: CSSNumberType
+    fixedHugSelectOption: SelectOption | null
+    fixedHugControlStyles: ControlStyles
+    onAdjustDimension: OnSubmitValueOrUnknownOrEmpty<CSSNumber>
+    onSubmitFixedHug: (option: SelectOption) => void
+    isGroupChild: boolean
+    groupChildConstraint: GroupChildConstraintOptionType | 'mixed'
+  }) => {
+    const fixedHugFillOptions = useEditorState(
+      Substores.metadata,
+      fixedHugFillOptionsSelector,
+      'DimensionRow options',
+    )
+
+    const gridTemplate = React.useMemo((): GridRowVariant => {
+      return isGroupChild ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
+    }, [isGroupChild])
+
+    const labelInner = React.useMemo(() => {
+      return dimension.charAt(0).toUpperCase()
+    }, [dimension])
+
+    return (
+      <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
+        <NumberInput
+          labelInner={labelInner}
+          id={FillFixedHugControlId(dimension)}
+          testId={FillFixedHugControlId(dimension)}
+          value={dimensionValue}
+          onSubmitValue={onAdjustDimension}
+          onTransientSubmitValue={onAdjustDimension}
+          onForcedSubmitValue={onAdjustDimension}
+          controlStatus={dimensionControlStatus}
+          numberType={dimensionNumberType}
+          incrementControls={true}
+          stepSize={1}
+          minimum={0}
+          maximum={Infinity}
+          defaultUnitToHide={null}
+          focusOnMount={false}
+        />
+        {isGroupChild ? (
+          <GroupConstraintSelect dimension={dimension} type={groupChildConstraint} />
+        ) : (
+          <PopupList
+            value={fixedHugSelectOption ?? undefined}
+            options={fixedHugFillOptions}
+            onSubmitValue={onSubmitFixedHug}
+            controlStyles={fixedHugControlStyles}
+          />
+        )}
+      </UIGridRow>
+    )
+  },
+)
+
+DimensionRow.displayName = 'DimensionRow'
+
+const GroupConstraintSelect = React.memo(
+  ({
+    dimension,
+    type,
+  }: {
+    dimension: LayoutPinnedProp
+    type: GroupChildConstraintOptionType | 'mixed'
+  }) => {
+    const dispatch = useDispatch()
+    const colorTheme = useColorTheme()
+
+    const editorRef = useRefEditorState((store) => ({
+      selectedViews: store.editor.selectedViews,
+      allElementProps: store.editor.allElementProps,
+    }))
+
+    function optionFromType(value: GroupChildConstraintOptionType | 'mixed') {
+      switch (value) {
+        case 'constrained':
+          return groupChildConstraintOptionValues.constrained
+        case 'not-constrained':
+          return groupChildConstraintOptionValues.notConstrained
+        case 'mixed':
+          return groupChildConstraintOptionValues.mixed
+        default:
+          assertNever(value)
+      }
+    }
+
+    const listValue = React.useMemo(() => {
+      return optionFromType(type)
+    }, [type])
+
+    const mainColor = React.useMemo(() => {
+      switch (type) {
+        case 'constrained':
+          return colorTheme.brandNeonPink.value
+        case 'mixed':
+          return colorTheme.primary.value
+        case 'not-constrained':
+          return colorTheme.subduedForeground.value
+        default:
+          assertNever(type)
+      }
+    }, [type, colorTheme])
+
+    const onSubmitValue = React.useCallback(
+      (option: SelectOption) => {
+        return setGroupChildConstraint(
+          dispatch,
+          option.value,
+          editorRef.current.selectedViews,
+          editorRef.current.allElementProps,
+          dimension,
+        )
+      },
+      [dispatch, editorRef, dimension],
+    )
+
+    return (
+      <PopupList
+        id={`group-child-resize-${dimension}`}
+        onSubmitValue={onSubmitValue}
+        value={listValue}
+        options={groupChildConstraintOptions}
+        style={{ position: 'relative' }}
+        containerMode={type === 'constrained' ? 'default' : 'showBorderOnHover'}
+        controlStyles={{
+          ...getControlStyles('simple'),
+          mainColor: mainColor,
+        }}
+      />
+    )
+  },
+)
+
+GroupConstraintSelect.displayName = 'GroupConstraintSelect'
 
 function strategyForChangingFillFixedHugType(
   fixedValue: number,
@@ -504,3 +716,112 @@ const anySelectedElementGroupOrChildOfGroup = createSelector(
     return selectedViews.some(elementOrAnyChildGroup)
   },
 )
+
+const allElementsAreGroupChildren = createSelector(
+  metadataSelector,
+  (store: MetadataSubstate) => store.editor.elementPathTree,
+  selectedViewsSelector,
+  (metadata, pathTrees, selectedViews): boolean => {
+    if (selectedViews.length === 0) {
+      return false
+    }
+    function elementOrAnyChildGroup(path: ElementPath) {
+      return treatElementAsGroupLike(metadata, EP.parentPath(path))
+    }
+    return selectedViews.every(elementOrAnyChildGroup)
+  },
+)
+
+function checkGroupChildConstraint(
+  dimension: LayoutPinnedProp,
+  selectedViews: ElementPath[],
+  allElementProps: AllElementProps,
+): GroupChildConstraintOptionType | 'mixed' {
+  const constrained = selectedViews.filter((path) =>
+    getSafeGroupChildConstraintsArray(allElementProps, path).includes(dimension),
+  ).length
+  if (constrained === selectedViews.length) {
+    return 'constrained'
+  } else if (constrained === 0) {
+    return 'not-constrained'
+  } else {
+    return 'mixed'
+  }
+}
+
+const groupChildConstraintOptionValues = {
+  constrained: groupChildConstraintOption('constrained'),
+  notConstrained: groupChildConstraintOption('not-constrained'),
+  mixed: { value: 'mixed', label: 'Mixed' },
+}
+
+const groupChildConstraintOptions: Array<SelectOption> = [
+  groupChildConstraintOptionValues.constrained,
+  groupChildConstraintOptionValues.notConstrained,
+]
+
+type GroupChildConstraintOptionType = 'constrained' | 'not-constrained'
+
+function groupChildConstraintOption(type: GroupChildConstraintOptionType): SelectOption {
+  switch (type) {
+    case 'constrained':
+      return { value: 'constrained', label: 'Constrained' }
+    case 'not-constrained':
+      return { value: 'not-constrained', label: 'Unconstrained' }
+    default:
+      assertNever(type)
+  }
+}
+
+function getSafeGroupChildConstraintsArray(
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): any[] {
+  const value = allElementProps[EP.toString(path)]?.['data-constraints'] ?? []
+  if (!Array.isArray(value)) {
+    return []
+  }
+  return value
+}
+
+function setGroupChildConstraint(
+  dispatch: EditorDispatch,
+  option: GroupChildConstraintOptionType | 'toggle',
+  selectedViews: ElementPath[],
+  allElementProps: AllElementProps,
+  dimension: LayoutPinnedProp,
+) {
+  function makeNewProps(current: any[], mode: 'add' | 'remove'): any[] {
+    switch (mode) {
+      case 'add':
+        return [...current, dimension]
+      case 'remove':
+        return current.filter((other) => other !== dimension)
+      default:
+        assertNever(mode)
+    }
+  }
+  function getMode(): 'add' | 'remove' {
+    if (option !== 'toggle') {
+      return option === 'constrained' ? 'add' : 'remove'
+    }
+    const notAllContainDimension = selectedViews.some(
+      (path) => !getSafeGroupChildConstraintsArray(allElementProps, path).includes(dimension),
+    )
+    return notAllContainDimension ? 'add' : 'remove'
+  }
+  const mode = getMode()
+
+  const prop = PP.create('data-constraints')
+
+  const actions: EditorAction[] = mapDropNulls((path) => {
+    const constraints = getSafeGroupChildConstraintsArray(allElementProps, path)
+    const newProps = makeNewProps(constraints, mode)
+    const uniqueNewProps = uniqBy(newProps, (a, b) => a === b)
+    return uniqueNewProps.length === 0
+      ? unsetProperty(path, prop)
+      : setProp_UNSAFE(path, prop, jsExpressionValue(uniqueNewProps, emptyComments))
+  }, selectedViews)
+
+  dispatch(actions)
+}
