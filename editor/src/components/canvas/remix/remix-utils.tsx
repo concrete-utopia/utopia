@@ -450,6 +450,7 @@ export function getRoutesAndModulesFromManifest(
   topLevelComponentRendererComponents: React.MutableRefObject<
     MapLike<MapLike<ComponentRendererComponent>>
   >,
+  routeModulesCache: RouteModules,
   fileBlobs: CanvasBase64Blobs,
   hiddenInstances: Array<ElementPath>,
   displayNoneInstances: Array<ElementPath>,
@@ -470,7 +471,7 @@ export function getRoutesAndModulesFromManifest(
   const routesByParentId = groupRoutesByParentId(routeManifest)
   const routes: DataRouteObject[] = createClientRoutes(
     routeManifest,
-    {},
+    routeModulesCache,
     futureConfig,
     '',
     routesByParentId,

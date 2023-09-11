@@ -176,7 +176,6 @@ import {
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
-import { createRemixDerivedData } from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 

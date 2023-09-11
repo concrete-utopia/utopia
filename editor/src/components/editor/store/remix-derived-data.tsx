@@ -1,6 +1,7 @@
 import type {
   UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_AssetsManifest as AssetsManifest,
+  UNSAFE_RouteModules as RouteModules,
 } from '@remix-run/react'
 import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
 import type { MapLike } from 'typescript'
@@ -39,13 +40,11 @@ export interface RemixDerivedData {
 const CreateRemixDerivedDataRefs: {
   mutableContext: { current: MutableUtopiaCtxRefData }
   topLevelComponentRendererComponents: { current: MapLike<MapLike<ComponentRendererComponent>> }
-  resolvedFiles: { current: MapLike<Array<string>> }
-  resolvedFileNames: { current: Array<string> }
+  routeModulesCache: { current: RouteModules }
 } = {
   mutableContext: { current: {} },
   topLevelComponentRendererComponents: { current: {} },
-  resolvedFiles: { current: {} },
-  resolvedFileNames: { current: [] },
+  routeModulesCache: { current: {} },
 }
 
 export function createRemixDerivedData(
@@ -80,6 +79,7 @@ export function createRemixDerivedData(
     projectContents,
     CreateRemixDerivedDataRefs.mutableContext,
     CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
+    CreateRemixDerivedDataRefs.routeModulesCache,
     fileBlobs,
     displayNoneInstances,
     hiddenInstances,
