@@ -12,6 +12,7 @@ import type {
   RouteModulesWithRelativePaths,
 } from '../../canvas/remix/remix-utils'
 import {
+  DefaultFutureConfig,
   createAssetsManifest,
   createRouteManifestFromProjectContents,
   getRoutesAndModulesFromManifest,
@@ -47,17 +48,6 @@ const CreateRemixDerivedDataRefs: {
   resolvedFileNames: { current: [] },
 }
 
-const defaultFutureConfig: FutureConfig = {
-  v2_dev: true,
-  unstable_postcss: false,
-  unstable_tailwind: false,
-  v2_errorBoundary: false,
-  v2_headers: false,
-  v2_meta: false,
-  v2_normalizeFormMethod: false,
-  v2_routeConvention: true,
-}
-
 export function createRemixDerivedData(
   projectContents: ProjectContentTreeRoot,
   spyMetadata: ElementInstanceMetadataMap,
@@ -83,7 +73,7 @@ export function createRemixDerivedData(
 
   const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
     routeManifest,
-    defaultFutureConfig,
+    DefaultFutureConfig,
     curriedRequireFn,
     curriedResolveFn,
     metadataCtx,
@@ -103,7 +93,7 @@ export function createRemixDerivedData(
     routesAndModulesFromManifestResult
 
   return {
-    futureConfig: defaultFutureConfig,
+    futureConfig: DefaultFutureConfig,
     routes: routes,
     assetsManifest: assetsManifest,
     routeModuleCreators: routeModuleCreators,
