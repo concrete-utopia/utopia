@@ -258,7 +258,9 @@ export function createComponentRendererComponent(params: {
       }
     }
 
-    const buildResult = React.useRef<React.ReactElement | null>(null)
+    const buildResult = React.useRef<React.ReactElement | null>(
+      buildComponentRenderResult(utopiaJsxComponent.rootElement),
+    )
     if (shouldUpdate()) {
       buildResult.current = buildComponentRenderResult(utopiaJsxComponent.rootElement)
     }
