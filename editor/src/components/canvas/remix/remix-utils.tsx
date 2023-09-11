@@ -235,13 +235,13 @@ function addLoaderAndActionToRoutes(
   })
 }
 
-function findOutletAmongJSXElementChildren(
+function findAmongJSXElementChildren(
   parentUid: string,
-  isOutlet: (e: JSXElementChild) => boolean,
+  condition: (e: JSXElementChild) => boolean,
   children: JSXElementChild[],
 ): ElementPathPart | null {
   for (const child of children) {
-    const path = findPathToOutlet(isOutlet, child)
+    const path = findPathToJSXElementChild(condition, child)
     if (path != null) {
       return [parentUid, ...path]
     }
@@ -249,35 +249,35 @@ function findOutletAmongJSXElementChildren(
   return null
 }
 
-function findPathToOutlet(
-  isOutlet: (e: JSXElementChild) => boolean,
+function findPathToJSXElementChild(
+  condition: (e: JSXElementChild) => boolean,
   element: JSXElementChild,
 ): ElementPathPart | null {
-  if (isOutlet(element)) {
+  if (condition(element)) {
     return [element.uid]
   }
 
   switch (element.type) {
     case 'JSX_ELEMENT':
     case 'JSX_FRAGMENT':
-      return findOutletAmongJSXElementChildren(element.uid, isOutlet, element.children)
+      return findAmongJSXElementChildren(element.uid, condition, element.children)
     case 'JSX_CONDITIONAL_EXPRESSION':
-      return findOutletAmongJSXElementChildren(element.uid, isOutlet, [
+      return findAmongJSXElementChildren(element.uid, condition, [
         element.whenTrue,
         element.whenFalse,
       ])
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return findOutletAmongJSXElementChildren(
+      return findAmongJSXElementChildren(
         element.uid,
-        isOutlet,
+        condition,
         Object.values(element.elementsWithin),
       )
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
-      return findOutletAmongJSXElementChildren(
+      return findAmongJSXElementChildren(
         element.uid,
-        isOutlet,
+        condition,
         element.content.map((c) => c.value),
       )
     case 'ATTRIBUTE_FUNCTION_CALL':
@@ -313,7 +313,7 @@ function getRouteModulesWithPaths(
     return {}
   }
 
-  const pathPartToOutlet = findPathToOutlet(
+  const pathPartToOutlet = findPathToJSXElementChild(
     (e) => isRemixOutletElement(e, filePathForRouteObject, projectContents),
     topLevelElement,
   )
