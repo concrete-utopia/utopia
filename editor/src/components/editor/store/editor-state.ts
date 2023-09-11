@@ -175,7 +175,7 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import type { RemixDerivedData } from './remix-derived-data'
+import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
 import { createRemixDerivedData } from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
@@ -2586,8 +2586,8 @@ const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSi
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
-  cacheKey: 'patched' | 'unpatched' = 'unpatched',
-  createRemixDerivedDataMemo: any,
+  cacheKey: 'patched' | 'unpatched',
+  createRemixDerivedDataMemo: RemixDerivedDataFactory,
 ): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
