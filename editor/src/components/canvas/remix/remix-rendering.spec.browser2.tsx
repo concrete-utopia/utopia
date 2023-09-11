@@ -18,6 +18,7 @@ import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
+const RootTextContent = 'This is root!'
 
 const storyboardFileContent = `
 import * as React from 'react';
@@ -70,7 +71,7 @@ describe('Remix content', () => {
       export default function Root() {
         return (
           <div>
-            This is root!
+            ${RootTextContent}
             <Outlet />
           </div>
         )
@@ -127,7 +128,7 @@ describe('Remix content', () => {
       export default function Root() {
         return (
           <div>
-            This is root!
+            ${RootTextContent}
             <Outlet />
           </div>
         )
@@ -199,7 +200,7 @@ describe('Remix navigation', () => {
         export default function Root() {
           return (
             <div>
-              This is root!
+              ${RootTextContent}
               <Outlet />
             </div>
           )
@@ -255,7 +256,7 @@ async function expectRemixSceneToBeRendered(
   const [remixScene] = await editor.renderedDOM.findAllByTestId(REMIX_SCENE_TESTID)
   expect(remixScene).toBeDefined()
 
-  const [rootText] = await editor.renderedDOM.findAllByText('This is root!')
+  const [rootText] = await editor.renderedDOM.findAllByText(RootTextContent)
   expect(rootText).toBeDefined()
 
   const [indexText] = await editor.renderedDOM.findAllByText(textContent)
