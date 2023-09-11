@@ -418,6 +418,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                 {when(multiselectedContract === 'fragment', <FragmentSection />)}
                 {unless(
                   multiselectedContract === 'fragment',
+                  // Position and Sizing sections are shown if Frame or Group is selected
                   <>
                     <PositionSection
                       hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
