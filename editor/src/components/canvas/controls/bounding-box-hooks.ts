@@ -39,8 +39,8 @@ export function useBoundingBox<T = HTMLDivElement>(
   return controlRef
 }
 
-const MIN_RESIZE_BOX_SIZE = 25
-const SAFE_GAP = 6
+const MIN_RESIZE_CONTROL_BOX_SIZE = 25 // minimum dimension for w/h of a bounding box, if smaller the safe gaps will be applied
+const RESIZE_CONTROL_SAFE_GAP = 6 // safe gap applied when the dimension of an element is smaller than MIN_RESIZE_CONTROL_BOX_SIZE
 
 function useBoundingBoxFromMetadataRef(
   selectedElements: ReadonlyArray<ElementPath>,
@@ -78,12 +78,12 @@ function useBoundingBoxFromMetadataRef(
         width: boundingBox.width,
         height: boundingBox.height,
       }
-      const scaledSafeGap = SAFE_GAP / scaleRef.current
-      if (boundingBox.width < MIN_RESIZE_BOX_SIZE) {
+      const scaledSafeGap = RESIZE_CONTROL_SAFE_GAP / scaleRef.current
+      if (boundingBox.width < MIN_RESIZE_CONTROL_BOX_SIZE) {
         adjustedBoundingBox.x -= scaledSafeGap
         adjustedBoundingBox.width += scaledSafeGap * 2
       }
-      if (boundingBox.height < MIN_RESIZE_BOX_SIZE) {
+      if (boundingBox.height < MIN_RESIZE_CONTROL_BOX_SIZE) {
         adjustedBoundingBox.y -= scaledSafeGap
         adjustedBoundingBox.height += scaledSafeGap * 2
       }
