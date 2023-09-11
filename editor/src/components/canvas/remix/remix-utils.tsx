@@ -138,14 +138,6 @@ export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsM
   }
 }
 
-export type RouteModuleWithFilePath = RouteModule & {
-  filePath: string
-}
-
-export interface RouteModulesWithFilePaths {
-  [routeId: string]: RouteModuleWithFilePath
-}
-
 export interface RouteModuleCreator {
   filePath: string
   executionScopeCreator: (projectContents: ProjectContentTreeRoot) => ExecutionScope
