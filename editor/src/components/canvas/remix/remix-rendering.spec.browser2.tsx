@@ -1,16 +1,23 @@
-import { wait } from '../../../core/model/performance-scripts'
 import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
+import { switchEditorMode } from '../../editor/actions/action-creators'
+import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
-import { mouseDownAtPoint, mouseDragFromPointWithDelta } from '../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointWithDelta,
+} from '../event-helpers.test-utils'
 import { REMIX_SCENE_TESTID } from '../ui-jsx-canvas-renderer/remix-scene-component'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+
+const DefaultRouteTextContent = 'Hello Remix!'
 
 const storyboardFileContent = `
 import * as React from 'react';
@@ -72,7 +79,7 @@ describe('Remix content', () => {
       ['/src/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
-        return <h1>Hello Remix!</h1>
+        return <h1>${DefaultRouteTextContent}</h1>
       }
       `,
     })
@@ -129,7 +136,7 @@ describe('Remix content', () => {
       ['/src/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
-        return <h1>Hello Remix!</h1>
+        return <h1>${DefaultRouteTextContent}</h1>
       }
       `,
     })
@@ -164,6 +171,69 @@ describe('Remix content with feature switch off', () => {
   })
 })
 
+describe('Remix navigation', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
+  it('Can navigate to a different route', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+        import { RemixScene, Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard>
+            <RemixScene
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+              }}
+              data-label='Playground'
+            />
+          </Storyboard>
+        )
+        `,
+      ['/src/root.js']: `import React from 'react'
+        import { Outlet } from '@remix-run/react'
+        
+        export default function Root() {
+          return (
+            <div>
+              This is root!
+              <Outlet />
+            </div>
+          )
+        }
+        `,
+      ['/src/routes/_index.js']: `import React from 'react'
+        import { Link } from '@remix-run/react'
+  
+        export default function Index() {
+          return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
+        }
+        `,
+      ['/src/routes/about.js']: `import React from 'react'
+  
+        export default function About() {
+          return <h1>About</h1>
+        }
+        `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+
+    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+
+    await mouseClickAtPoint(targetElement, clickPoint)
+
+    await expectRemixSceneToBeRendered(renderResult, 'About')
+  })
+})
+
 async function dragElement(
   canvasControlsLayer: HTMLElement,
   startPoint: WindowPoint,
@@ -178,13 +248,16 @@ async function dragElement(
   })
 }
 
-async function expectRemixSceneToBeRendered(editor: EditorRenderResult) {
+async function expectRemixSceneToBeRendered(
+  editor: EditorRenderResult,
+  textContent: string = DefaultRouteTextContent,
+) {
   const [remixScene] = await editor.renderedDOM.findAllByTestId(REMIX_SCENE_TESTID)
   expect(remixScene).toBeDefined()
 
   const [rootText] = await editor.renderedDOM.findAllByText('This is root!')
   expect(rootText).toBeDefined()
 
-  const [indexText] = await editor.renderedDOM.findAllByText('Hello Remix!')
+  const [indexText] = await editor.renderedDOM.findAllByText(textContent)
   expect(indexText).toBeDefined()
 }
