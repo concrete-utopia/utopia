@@ -131,7 +131,7 @@ export function getRoutesFromRouteManifest(
 
 export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest {
   return {
-    entry: { imports: [], module: 'TODO' },
+    entry: { imports: [], module: '' },
     url: '/',
     version: '1',
     routes: routes,
