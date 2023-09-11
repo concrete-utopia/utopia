@@ -24,12 +24,24 @@ import { LeftPaneDefaultWidth } from '../editor/store/editor-state'
 export type Menu = 'inspector' | 'navigator'
 export type Pane = 'code-editor' | 'preview'
 
+export const allMenusAndPanels: Array<Menu | Pane> = [
+  'navigator',
+  'code-editor',
+  'inspector',
+  'preview',
+]
+
 export type PanelName = 'leftMenu1' | 'leftMenu2' | 'rightMenu1' | 'rightMenu2'
 
 export interface PanelData {
   name: Menu | Pane
   type: 'menu' | 'pane'
   frame: WindowRectangle
+}
+
+export interface PanelDataWithLocation extends PanelData {
+  location: PanelName
+  column: PanelColumn
 }
 
 export type PanelColumn = Array<PanelData>
@@ -156,7 +168,7 @@ export function updatePanelsToDefaultSizes(
 ): PanelState {
   let newPanelContent: PanelContent = emptyPanels().panelContent
   for (const [columnName, columnContent] of Object.entries(currentPanelState.panelContent)) {
-    columnContent.forEach((panel, panelIndex) => {
+    for (const panel of columnContent) {
       let height = canvasSize.height
       let width = panel.frame.width
 
@@ -225,7 +237,7 @@ export function updatePanelsToDefaultSizes(
           height: height,
         }),
       })
-    })
+    }
   }
   return {
     panelContent: newPanelContent,
@@ -563,35 +575,35 @@ export function dragPaneToNewPosition(
     (draggedPanel != newPanel || switchWithPanel != null)
   ) {
     let updatedPanelState: PanelState = currentPanelsData
+    // Move what is dragged.
+    const draggedContent = eitherToMaybe(
+      toFirst(panelStateToNamedPanelOptic(draggedMenuOrPane), updatedPanelState),
+    )
     if (switchWithPanel != null) {
-      // Swapping one column with another column.
+      // Swapping this content out with another panel.
       let updatedPanelContent: PanelContent = { ...updatedPanelState.panelContent }
       const toSwitchWithCurrentColumn = updatedPanelContent[switchWithPanel] ?? []
       updatedPanelContent[switchWithPanel] = updatedPanelContent[newPanel] ?? []
       updatedPanelContent[newPanel] = toSwitchWithCurrentColumn
       updatedPanelState = set(fromField('panelContent'), updatedPanelContent, updatedPanelState)
-    } else if (draggedPanel != newPanel) {
-      const draggedContent = eitherToMaybe(
-        toFirst(panelStateToNamedPanelOptic(draggedMenuOrPane), updatedPanelState),
+    }
+    if (draggedContent != null) {
+      // Remove the entry from where it was...
+      updatedPanelState = modify(
+        panelStateToPanelColumns,
+        (panelColumn) => {
+          return panelColumn.filter((content) => content !== draggedContent)
+        },
+        updatedPanelState,
       )
-      if (draggedContent != null) {
-        // Remove the entry from where it was...
-        updatedPanelState = modify(
-          panelStateToPanelColumns,
-          (panelColumn) => {
-            return panelColumn.filter((content) => content !== draggedContent)
-          },
-          updatedPanelState,
-        )
-        // ...Add the entry to where it should be.
-        updatedPanelState = modify(
-          panelStateToColumnOptic(newPanel),
-          (panelColumn) => {
-            return [...panelColumn, draggedContent]
-          },
-          updatedPanelState,
-        )
-      }
+      // ...Add the entry to where it should be.
+      updatedPanelState = modify(
+        panelStateToColumnOptic(newPanel),
+        (panelColumn) => {
+          return [...panelColumn, draggedContent]
+        },
+        updatedPanelState,
+      )
     }
 
     const panelDataWithPositionsUpdated = updatePanelPositionsBasedOnLocationAndSize(
@@ -602,4 +614,26 @@ export function dragPaneToNewPosition(
   } else {
     return currentPanelsData
   }
+}
+
+export function getOrderedPanelsForRendering(panelState: PanelState): Array<PanelDataWithLocation> {
+  let result: Array<PanelDataWithLocation> = []
+  function addPanel(panelName: PanelData['name']): void {
+    for (const [panelColumnKey, panelColumnValue] of Object.entries(panelState.panelContent)) {
+      for (const panel of panelColumnValue) {
+        if (panel.name === panelName) {
+          result.push({
+            ...panel,
+            location: panelColumnKey as PanelName,
+            column: panelColumnValue,
+          })
+          return
+        }
+      }
+    }
+  }
+  for (const panelName of allMenusAndPanels) {
+    addPanel(panelName)
+  }
+  return result
 }

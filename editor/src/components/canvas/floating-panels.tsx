@@ -9,49 +9,32 @@ import {
   usePubSubAtom,
   usePubSubAtomReadOnly,
 } from '../../core/shared/atom-with-pub-sub'
-import type { Size, WindowPoint, WindowRectangle } from '../../core/shared/math-utils'
+import type { WindowPoint, WindowRectangle } from '../../core/shared/math-utils'
 import {
   boundingRectangleArray,
-  rectContainsPoint,
-  rectContainsPointInclusive,
   rectanglesEqual,
   windowPoint,
   windowRectangle,
   zeroWindowRect,
 } from '../../core/shared/math-utils'
-import { CanvasSizeAtom, LeftPaneDefaultWidth } from '../editor/store/editor-state'
+import { CanvasSizeAtom } from '../editor/store/editor-state'
 import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
-import { UtopiaTheme, useColorTheme } from '../../uuiui'
+import { useColorTheme } from '../../uuiui'
 import { when } from '../../utils/react-conditionals'
 import type { Direction } from 're-resizable/lib/resizer'
 import { usePrevious } from '../editor/hook-utils'
 import { TitleHeight } from '../titlebar/title-bar'
 import type { Menu, Pane, PanelColumn, PanelName, PanelState } from './floating-panels-state'
+import { getOrderedPanelsForRendering } from './floating-panels-state'
 import { findDropAreaBeforeAfterColumn } from './floating-panels-state'
 import { dragPaneToNewPosition } from './floating-panels-state'
 import { updateSizeOfPanel } from './floating-panels-state'
-import { PanelContent, updatePanelPositionsBasedOnLocationAndSize } from './floating-panels-state'
+import { updatePanelPositionsBasedOnLocationAndSize } from './floating-panels-state'
 import { isMenuContainingPanel } from './floating-panels-state'
 import { updatePanelsToDefaultSizes } from './floating-panels-state'
 import { DefaultPanels } from './floating-panels-state'
 import { DefaultSizes } from './floating-panels-state'
 import { GapBetweenPanels, SizeConstraints } from './floating-panels-state'
-import {
-  PanelData,
-  panelStateToColumnOptic,
-  panelStateToNamedPanelOptic,
-} from './floating-panels-state'
-import { eitherToMaybe, foldEither } from '../../core/shared/either'
-import { modify, toFirst } from '../../core/shared/optics/optic-utilities'
-import {
-  filtered,
-  fromArrayIndex,
-  fromField,
-  fromObjectField,
-  objectValues,
-  traverseArray,
-} from '../../core/shared/optics/optic-creators'
-import { Optic } from '../../core/shared/optics/optics'
 
 export const FloatingPanelSizesAtom = atomWithPubSub({
   key: 'FloatingPanelSizesAtom',
@@ -256,24 +239,26 @@ export const FloatingPanelsContainer = React.memo(() => {
     setColumnFramesFromPanelsData,
   ])
 
+  const orderedPanels = React.useMemo(() => {
+    return getOrderedPanelsForRendering(panelsData)
+  }, [panelsData])
+
   return (
     <>
-      {Object.entries(panelsData.panelContent).map(([locationName, panelColumn]) => {
-        return panelColumn.map((pane) => {
-          return (
-            <FloatingPanel
-              key={pane.name}
-              type={pane.type}
-              name={pane.name}
-              frame={pane.frame}
-              panelLocation={locationName as PanelName}
-              columnData={panelColumn}
-              onResize={updateSize}
-              updateColumn={updateColumn}
-              onMenuDrag={showHighlight}
-            />
-          )
-        })
+      {orderedPanels.map((pane) => {
+        return (
+          <FloatingPanel
+            key={pane.name}
+            type={pane.type}
+            name={pane.name}
+            frame={pane.frame}
+            panelLocation={pane.location}
+            columnData={pane.column}
+            onResize={updateSize}
+            updateColumn={updateColumn}
+            onMenuDrag={showHighlight}
+          />
+        )
       })}
       {when(
         highlight != null,
