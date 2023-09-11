@@ -53,7 +53,7 @@ import {
 } from '../../../navigator/navigator-item/navigator-item-wrapper'
 import { getNavigatorTargets } from '../../../navigator/navigator-utils'
 import type { ControlStatus } from '../../common/control-status'
-import { getControlStyles } from '../../common/control-status'
+import { getControlStyles } from '../../common/control-styles'
 import { usePropControlledStateV2 } from '../../common/inspector-utils'
 import { ConditionalOverrideControl } from '../../controls/conditional-override-control'
 import { UIGridRow } from '../../widgets/ui-grid-row'

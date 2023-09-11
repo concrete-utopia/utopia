@@ -154,6 +154,48 @@ export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMeta
   return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
 }
 
+export function isRemixSceneAgainstImports(element: JSXElementChild, imports: Imports): boolean {
+  return isGivenUtopiaAPIElement(element, imports, 'RemixScene')
+}
+
+export function isRemixOutletAgainstImports(element: JSXElementChild, imports: Imports): boolean {
+  if (!isJSXElement(element)) {
+    return false
+  }
+
+  const remix = imports['@remix-run/react']
+  if (remix == null) {
+    return false
+  }
+
+  if (PP.depth(element.name.propertyPath) === 0) {
+    for (const fromWithin of remix.importedFromWithin) {
+      if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
+        return true
+      }
+    }
+    return false
+  }
+
+  return (
+    remix.importedAs === element.name.baseVariable &&
+    PP.isSameProperty(element.name.propertyPath, 'Outlet')
+  )
+}
+
+export function isRemixOutletElement(
+  element: JSXElementChild,
+  filePath: string,
+  projectContents: ProjectContentTreeRoot,
+): boolean {
+  const file = getProjectFileByFilePath(projectContents, filePath)
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return isRemixOutletAgainstImports(element, file.fileContents.parsed.imports)
+  } else {
+    return false
+  }
+}
+
 export function isEllipseAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Ellipse')
 }

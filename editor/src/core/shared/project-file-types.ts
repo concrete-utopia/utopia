@@ -256,6 +256,10 @@ export function exportDefaultFunctionOrClass(name: string | null): ExportDefault
   }
 }
 
+export function isExportDefaultFunctionOrClass(e: ExportDetail): e is ExportDefaultFunctionOrClass {
+  return e.type === 'EXPORT_DEFAULT_FUNCTION_OR_CLASS'
+}
+
 // const App = (…) { … }
 // export default App;
 export interface ExportIdentifier {

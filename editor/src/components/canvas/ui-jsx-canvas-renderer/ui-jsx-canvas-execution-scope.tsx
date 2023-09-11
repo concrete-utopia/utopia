@@ -31,6 +31,12 @@ import { emptySet } from '../../../core/shared/set-utils'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
+export interface ExecutionScope {
+  scope: MapLike<any>
+  topLevelJsxComponents: Map<string | null, UtopiaJSXComponent>
+  requireResult: MapLike<any>
+}
+
 export function createExecutionScope(
   filePath: string,
   customRequire: (importOrigin: string, toImport: string) => any,

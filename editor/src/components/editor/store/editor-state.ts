@@ -175,6 +175,7 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2186,6 +2187,7 @@ export interface DerivedState {
   elementWarnings: { [key: string]: ElementWarnings }
   projectContentsChecksums: FileChecksumsWithFile
   branchOriginContentsChecksums: FileChecksumsWithFile | null
+  remixData: RemixDerivedData | null
 }
 
 function emptyDerivedState(editor: EditorState): DerivedState {
@@ -2197,6 +2199,7 @@ function emptyDerivedState(editor: EditorState): DerivedState {
     elementWarnings: {},
     projectContentsChecksums: {},
     branchOriginContentsChecksums: {},
+    remixData: null,
   }
 }
 
@@ -2582,7 +2585,8 @@ const unpatchedDeriveCacheableState = memoize(deriveCacheableStateInner, { maxSi
 export function deriveState(
   editor: EditorState,
   oldDerivedState: DerivedState | null,
-  cacheKey: 'patched' | 'unpatched' = 'unpatched',
+  cacheKey: 'patched' | 'unpatched',
+  createRemixDerivedDataMemo: RemixDerivedDataFactory,
 ): DerivedState {
   const derivedState = oldDerivedState == null ? emptyDerivedState(editor) : oldDerivedState
 
@@ -2603,6 +2607,17 @@ export function deriveState(
     editor.navigator.hiddenInNavigator,
   )
 
+  const remixDerivedData = createRemixDerivedDataMemo(
+    editor.projectContents,
+    editor.spyMetadata,
+    editor.allElementProps,
+    editor.canvas.base64Blobs,
+    editor.hiddenInstances,
+    editor.displayNoneInstances,
+    editor.codeResultCache.curriedRequireFn,
+    editor.codeResultCache.curriedResolveFn,
+  )
+
   const derived: DerivedState = {
     navigatorTargets: navigatorTargets,
     visibleNavigatorTargets: visibleNavigatorTargets,
@@ -2620,6 +2635,7 @@ export function deriveState(
             editor.branchOriginContents,
             oldDerivedState?.branchOriginContentsChecksums ?? {},
           ),
+    remixData: remixDerivedData,
   }
 
   const sanitizedDerivedState = DerivedStateKeepDeepEquality()(derivedState, derived).value

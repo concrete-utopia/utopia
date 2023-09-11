@@ -17,7 +17,8 @@ import {
 } from '../../../../../uuiui/inputs/number-input'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues } from '../../../common/context-menu-items'
-import type { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type { ControlStatus } from '../../../common/control-status'
+import type { ControlStyles } from '../../../common/control-styles'
 import type {
   CSSDefault,
   CSSNumber,

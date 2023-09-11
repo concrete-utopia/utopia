@@ -84,6 +84,7 @@ import {
   getFilesToUpdate,
   parseResultToWorkerUpdates,
 } from '../../../core/shared/parser-projectcontents-utils'
+import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -195,7 +196,12 @@ function processAction(
       break
     case 'NEW':
     case 'LOAD':
-      const derivedState = deriveState(editorAfterNavigator, null)
+      const derivedState = deriveState(
+        editorAfterNavigator,
+        null,
+        'unpatched',
+        unpatchedCreateRemixDerivedDataMemo,
+      )
       newStateHistory = History.init(editorAfterNavigator, derivedState)
       break
     default:
@@ -818,7 +824,12 @@ function editorDispatchInner(
       // !! We completely skip creating a new derived state, since the editor state stayed the exact same
       frozenDerivedState = storedState.unpatchedDerived
     } else {
-      const derivedState = deriveState(frozenEditorState, storedState.unpatchedDerived)
+      const derivedState = deriveState(
+        frozenEditorState,
+        storedState.unpatchedDerived,
+        'unpatched',
+        unpatchedCreateRemixDerivedDataMemo,
+      )
       frozenDerivedState = optionalDeepFreeze(derivedState)
     }
 

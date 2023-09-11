@@ -6,7 +6,7 @@ import type { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
-import type { ControlStyles } from '../common/control-status'
+import type { ControlStyles } from '../common/control-styles'
 
 type PropertyLabelProps = {
   target: ReadonlyArray<PropertyPath>
