@@ -96,6 +96,8 @@ const gridTemplates = {
   },
 } as const
 
+export type GridRowVariant = keyof typeof gridTemplates
+
 export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> {
   /**
    * add a standard horizontal padding
@@ -109,7 +111,7 @@ export interface GridRowProps extends React.InputHTMLAttributes<HTMLDivElement> 
    * the 'type' of the GridRow is the key which lets you pick from the Grid Templates.
    * Please try to find the template you need before adding a new template to the list.
    */
-  variant: keyof typeof gridTemplates
+  variant: GridRowVariant
   /**
    * alignItems: default value is 'center'
    */

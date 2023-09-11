@@ -131,6 +131,7 @@ export function interactionFinished(
       domMetadata: storedState.patchedEditor.domMetadata,
       spyMetadata: storedState.patchedEditor.spyMetadata,
       jsxMetadata: storedState.patchedEditor.jsxMetadata,
+      elementPathTree: storedState.patchedEditor.elementPathTree,
     }
     return {
       unpatchedEditorState: newEditorState,
