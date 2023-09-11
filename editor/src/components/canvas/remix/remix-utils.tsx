@@ -219,7 +219,7 @@ export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChi
   )
 }
 
-function addLoaderAndActionToRoute(
+function addLoaderAndActionToRoutes(
   routes: DataRouteObject[],
   routeId: string,
   loader: LoaderFunction | undefined,
@@ -230,7 +230,7 @@ function addLoaderAndActionToRoute(
       route.action = action
       route.loader = loader
     } else {
-      addLoaderAndActionToRoute(route.children ?? [], routeId, loader, action)
+      addLoaderAndActionToRoutes(route.children ?? [], routeId, loader, action)
     }
   })
 }
@@ -502,7 +502,7 @@ export function getRoutesAndModulesFromManifest(
       displayNoneInstances,
     )
 
-    addLoaderAndActionToRoute(routes, route.id, loader, action)
+    addLoaderAndActionToRoutes(routes, route.id, loader, action)
     routeModuleCreators[route.id] = {
       filePath: route.module,
       executionScopeCreator: executionScopeCreator,
