@@ -364,7 +364,7 @@ const ResizeEdge = React.memo(
         }}
         onMouseDown={onEdgeMouseDown}
         onMouseMove={onMouseMove}
-        data-testid={`resize-control-${props.position.x}-${props.position.y}`}
+        data-testid={ResizePointTestId(props.position)}
       />
     )
   }),

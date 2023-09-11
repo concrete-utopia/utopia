@@ -4,6 +4,7 @@ import { fastForEach } from '../../../core/shared/utils'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  canvasRectangle,
   isFiniteRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
@@ -38,6 +39,9 @@ export function useBoundingBox<T = HTMLDivElement>(
   return controlRef
 }
 
+const MIN_RESIZE_BOX_SIZE = 25
+const SAFE_GAP = 6
+
 function useBoundingBoxFromMetadataRef(
   selectedElements: ReadonlyArray<ElementPath>,
   boundingBoxCallback: (boundingRectangle: CanvasRectangle | null, scale: number) => void,
@@ -57,7 +61,28 @@ function useBoundingBoxFromMetadataRef(
       }
     })
 
-    const boundingBox = boundingRectangleArray(frames)
+    function getAdjustedBoundingBox(boundingBox: CanvasRectangle | null) {
+      if (boundingBox == null) {
+        return null
+      }
+      let adjustedBoundingBox = {
+        x: boundingBox.x,
+        y: boundingBox.y,
+        width: boundingBox.width,
+        height: boundingBox.height,
+      }
+      const scaledSafeGap = SAFE_GAP / scaleRef.current
+      if (boundingBox.width < MIN_RESIZE_BOX_SIZE) {
+        adjustedBoundingBox.x -= scaledSafeGap
+        adjustedBoundingBox.width += scaledSafeGap * 2
+      }
+      if (boundingBox.height < MIN_RESIZE_BOX_SIZE) {
+        adjustedBoundingBox.y -= scaledSafeGap
+        adjustedBoundingBox.height += scaledSafeGap * 2
+      }
+      return canvasRectangle(adjustedBoundingBox)
+    }
+    const boundingBox = getAdjustedBoundingBox(boundingRectangleArray(frames))
 
     boundingBoxCallbackRef.current(boundingBox, scaleRef.current)
   }, [selectedElements, metadataRef, scaleRef])
