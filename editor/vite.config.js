@@ -1,3 +1,5 @@
+/// <reference types="vitest" />
+
 import { resolve, join } from 'path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -84,6 +86,15 @@ export default defineConfig(({ mode }) => {
         //   'vscode-inner': resolve(__dirname, 'src/vite/vscode-inner/index.html'),
         //   'vscode-outer': resolve(__dirname, 'src/vite/vscode-outer/index.html'),
         // },
+      },
+    },
+    test: {
+      include: ['../**/*.spec.browser3.ts*(x)'],
+      globals: true,
+      browser: {
+        name: 'chrome',
+        enabled: true,
+        headless: false,
       },
     },
   }
