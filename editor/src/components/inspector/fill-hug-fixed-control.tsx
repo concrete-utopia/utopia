@@ -589,11 +589,16 @@ const GroupConstraintSelect = React.memo(
     }))
 
     function optionFromType(value: GroupChildConstraintOptionType | 'mixed') {
-      return value === 'constrained'
-        ? groupChildConstraintOptionValues.constrained
-        : value === 'not-constrained'
-        ? groupChildConstraintOptionValues.notConstrained
-        : groupChildConstraintOptionValues.mixed
+      switch (value) {
+        case 'constrained':
+          return groupChildConstraintOptionValues.constrained
+        case 'not-constrained':
+          return groupChildConstraintOptionValues.notConstrained
+        case 'mixed':
+          return groupChildConstraintOptionValues.mixed
+        default:
+          assertNever(value)
+      }
     }
 
     const listValue = React.useMemo(() => {
@@ -735,11 +740,13 @@ function checkGroupChildConstraint(
   const constrained = selectedViews.filter((path) =>
     getSafeGroupChildConstraintsArray(allElementProps, path).includes(dimension),
   ).length
-  return constrained === selectedViews.length
-    ? 'constrained'
-    : constrained === 0
-    ? 'not-constrained'
-    : 'mixed'
+  if (constrained === selectedViews.length) {
+    return 'constrained'
+  } else if (constrained === 0) {
+    return 'not-constrained'
+  } else {
+    return 'mixed'
+  }
 }
 
 const groupChildConstraintOptionValues = {
