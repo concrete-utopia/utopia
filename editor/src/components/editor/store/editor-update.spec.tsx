@@ -9,15 +9,13 @@ import {
   jsxElementName,
 } from '../../../core/shared/element-template'
 import { findJSXElementChildAtPath } from '../../../core/model/element-template-utils'
-import {
-  directory,
-  getUtopiaJSXComponentsFromSuccess,
-} from '../../../core/model/project-file-utils'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import type {
   ElementPath,
   ProjectContents,
   StaticElementPath,
 } from '../../../core/shared/project-file-types'
+import { directory } from '../../../core/shared/project-file-types'
 import {
   isTextFile,
   esCodeFile,

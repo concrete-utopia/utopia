@@ -11,7 +11,6 @@ import {
 const storyboardFileContent = `
 import * as React from 'react';
 import Utopia, {
-  Scene,
   Storyboard,
   RemixScene,
 } from 'utopia-api';
@@ -27,15 +26,44 @@ export var storyboard = (
 );
 `
 
+const rootFileContent = `import React from 'react'
+import { Outlet } from '@remix-run/react'
+
+export default function Root() {
+  return (
+    <div>
+      This is root!
+      <Outlet />
+    </div>
+  )
+}`
+
+const routeFileContent = (text: string) => `import React from 'react'
+
+export default function Index() {
+  return <h1>${text}</h1>
+}
+`
+
+const routeFileContentWithOutlet = (text: string) => `import React from 'react'
+import { Outlet } from '@remix-run/react'
+export default function Index() {
+  return <div>
+    <h1>${text}</h1>
+    <Outlet />
+  </div>
+}
+`
+
 describe('Route manifest', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Parses the route manifest from a simple project', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['src/root.js']: '',
-      ['src/routes/_index.js']: '',
-      ['src/routes/posts.$postId.js']: '',
-      ['src/routes/posts._index.js']: '',
+      ['/src/root.js']: rootFileContent,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
+      ['/src/routes/posts.$postId.js']: routeFileContent('A specific post'),
+      ['/src/routes/posts._index.js']: routeFileContent('Posts'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
@@ -107,15 +135,15 @@ describe('Route manifest', () => {
   it('Parses the route manifest from the Remix Blog Tutorial project files', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['src/root.js']: '',
-      ['src/routes/_index.js']: '',
-      ['src/routes/healthcheck.js']: '',
-      ['src/routes/join.js']: '',
-      ['src/routes/logout.js']: '',
-      ['src/routes/notes._index.js']: '',
-      ['src/routes/notes.$noteId.js']: '',
-      ['src/routes/notes.new.js']: '',
-      ['src/routes/notes.js']: '',
+      ['/src/root.js']: rootFileContent,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
+      ['/src/routes/healthcheck.js']: routeFileContent("Stayin' alive"),
+      ['/src/routes/join.js']: routeFileContent('Join me, and together we can rule the galaxy'),
+      ['/src/routes/logout.js']: routeFileContent('Goodbye'),
+      ['/src/routes/notes.js']: routeFileContentWithOutlet('Notes'),
+      ['/src/routes/notes._index.js']: routeFileContent('Notes too'),
+      ['/src/routes/notes.$noteId.js']: routeFileContent('A specific note'),
+      ['/src/routes/notes.new.js']: routeFileContent('Dear diary'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
@@ -232,10 +260,10 @@ describe('Routes', () => {
   it('Parses the routes from a simple project', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['src/root.js']: '',
-      ['src/routes/_index.js']: '',
-      ['src/routes/posts.$postId.js']: '',
-      ['src/routes/posts._index.js']: '',
+      ['/src/root.js']: rootFileContent,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
+      ['/src/routes/posts.$postId.js']: routeFileContent('A specific post'),
+      ['/src/routes/posts._index.js']: routeFileContent('Posts'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
@@ -267,15 +295,15 @@ describe('Routes', () => {
   it('Parses the routes from the Remix Blog Tutorial project files', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['src/root.js']: '',
-      ['src/routes/_index.js']: '',
-      ['src/routes/healthcheck.js']: '',
-      ['src/routes/join.js']: '',
-      ['src/routes/logout.js']: '',
-      ['src/routes/notes._index.js']: '',
-      ['src/routes/notes.$noteId.js']: '',
-      ['src/routes/notes.new.js']: '',
-      ['src/routes/notes.js']: '',
+      ['/src/root.js']: rootFileContent,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
+      ['/src/routes/healthcheck.js']: routeFileContent("Stayin' alive"),
+      ['/src/routes/join.js']: routeFileContent('Join me, and together we can rule the galaxy'),
+      ['/src/routes/logout.js']: routeFileContent('Goodbye'),
+      ['/src/routes/notes._index.js']: routeFileContent('Notes too'),
+      ['/src/routes/notes.$noteId.js']: routeFileContent('A specific note'),
+      ['/src/routes/notes.new.js']: routeFileContent('Dear diary'),
+      ['/src/routes/notes.js']: routeFileContentWithOutlet('Notes'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 

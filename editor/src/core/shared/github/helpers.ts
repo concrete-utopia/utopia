@@ -48,7 +48,7 @@ import type { UtopiaStoreAPI } from '../../../components/editor/store/store-hook
 import { Substores, useEditorState } from '../../../components/editor/store/store-hook'
 import { propOrNull } from '../object-utils'
 import { updateProjectContentsWithParseResults } from '../parser-projectcontents-utils'
-import type { ProjectFile } from '../project-file-types'
+import type { ProjectFile, TextFile } from '../project-file-types'
 import {
   isTextFile,
   RevisionsState,
@@ -63,6 +63,8 @@ import { getBranchChecksums } from './operations/get-branch-checksums'
 import { getBranchesForGithubRepository } from './operations/list-branches'
 import { updatePullRequestsForBranch } from './operations/list-pull-requests-for-branch'
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
+import { set } from '../optics/optic-utilities'
+import { fromField } from '../optics/optic-creators'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -763,12 +765,16 @@ export function mergeProjectContentsTree(
         originContents.content.versionNumber,
         branchContents.content.versionNumber,
       )
-      const updatedTextFile = textFile(
-        textFileContents(mergedResult, unparsed, RevisionsState.CodeAhead),
-        null,
-        null,
-        latestVersion + 1,
-      )
+      const isBranchCode = mergedResult === branchCode
+      // Try to maintain the branch content, which will carry over any parsed content for it.
+      const updatedTextFile: TextFile = isBranchCode
+        ? set(fromField('versionNumber'), latestVersion + 1, branchContents.content)
+        : textFile(
+            textFileContents(mergedResult, unparsed, RevisionsState.CodeAhead),
+            null,
+            null,
+            latestVersion + 1,
+          )
 
       return withTreeConflicts(projectContentFile(fullPath, updatedTextFile), {})
     }

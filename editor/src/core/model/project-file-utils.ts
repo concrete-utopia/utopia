@@ -154,6 +154,48 @@ export function isSceneFromMetadata(elementInstanceMetadata: ElementInstanceMeta
   return isGivenUtopiaElementFromMetadata(elementInstanceMetadata, 'Scene')
 }
 
+export function isRemixSceneAgainstImports(element: JSXElementChild, imports: Imports): boolean {
+  return isGivenUtopiaAPIElement(element, imports, 'RemixScene')
+}
+
+export function isRemixOutletAgainstImports(element: JSXElementChild, imports: Imports): boolean {
+  if (!isJSXElement(element)) {
+    return false
+  }
+
+  const remix = imports['@remix-run/react']
+  if (remix == null) {
+    return false
+  }
+
+  if (PP.depth(element.name.propertyPath) === 0) {
+    for (const fromWithin of remix.importedFromWithin) {
+      if (fromWithin.alias === element.name.baseVariable && fromWithin.name === 'Outlet') {
+        return true
+      }
+    }
+    return false
+  }
+
+  return (
+    remix.importedAs === element.name.baseVariable &&
+    PP.isSameProperty(element.name.propertyPath, 'Outlet')
+  )
+}
+
+export function isRemixOutletElement(
+  element: JSXElementChild,
+  filePath: string,
+  projectContents: ProjectContentTreeRoot,
+): boolean {
+  const file = getProjectFileByFilePath(projectContents, filePath)
+  if (file != null && isTextFile(file) && isParseSuccess(file.fileContents.parsed)) {
+    return isRemixOutletAgainstImports(element, file.fileContents.parsed.imports)
+  } else {
+    return false
+  }
+}
+
 export function isEllipseAgainstImports(jsxElementName: JSXElementName, imports: Imports): boolean {
   return isGivenUtopiaAPIElementFromName(jsxElementName, imports, 'Ellipse')
 }
@@ -498,50 +540,12 @@ export function updateUiJsCode(file: TextFile, code: string, codeIsNowAhead: boo
   )
 }
 
-export function imageFile(
-  imageType: string | undefined,
-  base64: string | undefined,
-  width: number | undefined,
-  height: number | undefined,
-  hash: number,
-): ImageFile {
-  return {
-    type: 'IMAGE_FILE',
-    imageType: imageType,
-    base64: base64,
-    width: width,
-    height: height,
-    hash: hash,
-  }
-}
-
-export function assetFile(base64: string | undefined): AssetFile {
-  return {
-    type: 'ASSET_FILE',
-    base64: base64,
-  }
-}
-
-export function directory(): Directory {
-  return {
-    type: 'DIRECTORY',
-  }
-}
-
 export function sameTextFile(first: ProjectFile, second: ProjectFile): boolean {
   if (isTextFile(first) && isTextFile(second)) {
     return first.fileContents === second.fileContents
   } else {
     return false
   }
-}
-
-export function isImageFile(projectFile: ProjectFile): projectFile is ImageFile {
-  return projectFile.type === 'IMAGE_FILE'
-}
-
-export function isDirectory(projectFile: ProjectFile): projectFile is Directory {
-  return projectFile.type === 'DIRECTORY'
 }
 
 // A layer over the mime-types library which means we can shim in things we need.

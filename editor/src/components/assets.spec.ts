@@ -1,7 +1,7 @@
 import * as FastCheck from 'fast-check'
 import fastDeepEquals from 'fast-deep-equal'
-import { directory, isDirectory } from '../core/model/project-file-utils'
 import type { ProjectContents } from '../core/shared/project-file-types'
+import { directory, isDirectory } from '../core/shared/project-file-types'
 import { codeFile } from '../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from './assets'
 import {

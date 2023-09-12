@@ -17,14 +17,12 @@ import { getJSXAttributesAtPath } from '../../core/shared/jsx-attributes'
 import * as PP from '../../core/shared/property-path'
 import * as EP from '../../core/shared/element-path'
 import Utils from '../../utils/utils'
-import { isAspectRatioLockedNew } from '../aspect-ratio'
 import { setFocus } from '../common/actions'
 import type { Alignment, Distribution, EditorAction } from '../editor/action-types'
 import * as EditorActions from '../editor/actions/action-creators'
 import {
   alignSelectedViews,
   distributeSelectedViews,
-  setAspectRatioLock,
   setProp_UNSAFE,
   transientActions,
   unsetProperty,
@@ -70,14 +68,12 @@ import {
 } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
 import { LowPriorityStoreProvider } from '../editor/store/store-context-providers'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
 import { SizingSection } from './sizing-section'
 import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
-import { treatElementAsFragmentLike } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
 import { RootElementIndicator } from './controls/root-element-indicator'
@@ -85,10 +81,8 @@ import { CodeElementSection } from './sections/code-element-section'
 import {
   maybeInvalidGroupState,
   groupErrorToastAction,
-  treatElementAsGroupLike,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { FlexCol } from 'utopia-api'
-import { GroupChildResizeSection } from './sections/layout-section/group-child-resize-section'
 
 export interface ElementPathElement {
   name?: string
@@ -351,16 +345,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'RootElementIndicator aRootElementIsSelected',
   )
 
-  const allSelecteElementsdAreChildrenOfAGroup = useEditorState(
-    Substores.metadata,
-    (store) =>
-      store.editor.selectedViews.length > 0 &&
-      store.editor.selectedViews.every((path) =>
-        treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path)),
-      ),
-    'Inspector areGroupChildren',
-  )
-
   function renderInspectorContents() {
     return (
       <React.Fragment>
@@ -426,10 +410,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                     />
                     <SizingSection />
                   </>,
-                )}
-                {when(
-                  multiselectedContract === 'frame' && allSelecteElementsdAreChildrenOfAGroup,
-                  <GroupChildResizeSection />,
                 )}
                 {unless(
                   multiselectedContract === 'fragment' || multiselectedContract === 'group',

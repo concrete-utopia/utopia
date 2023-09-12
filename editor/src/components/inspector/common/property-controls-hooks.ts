@@ -43,8 +43,8 @@ import {
   calculatePropertyStatusForSelection,
   ControlStatus,
   getControlStatusFromPropertyStatus,
-  getControlStyles,
 } from './control-status'
+import { getControlStyles } from './control-styles'
 import {
   keepDeepReferenceEqualityIfPossible,
   useKeepReferenceEqualityIfPossible,

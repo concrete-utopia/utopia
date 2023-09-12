@@ -15,7 +15,7 @@ describe('history', () => {
         ...createEditorState(() => {}),
         id: 'testproject',
       }
-      const derivedState = deriveState(editorState, null)
+      const derivedState = deriveState(editorState, null, 'unpatched', () => null)
       const stateHistory = init(editorState, derivedState)
       const updatedStateHistory = add(stateHistory, editorState, derivedState, [
         { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },
@@ -35,7 +35,7 @@ describe('history', () => {
         ...createEditorState(() => {}),
         id: 'testproject',
       }
-      const derivedState = deriveState(editorState, null)
+      const derivedState = deriveState(editorState, null, 'unpatched', () => null)
       const stateHistory = init(editorState, derivedState)
       const updatedStateHistory = add(stateHistory, editorState, derivedState, [
         { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },
@@ -57,7 +57,7 @@ describe('history', () => {
         ...createEditorState(() => {}),
         id: 'testproject',
       }
-      const derivedState = deriveState(editorState, null)
+      const derivedState = deriveState(editorState, null, 'unpatched', () => null)
       const stateHistory = init(editorState, derivedState)
       const updatedStateHistory = add(stateHistory, editorState, derivedState, [
         { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },

@@ -8,15 +8,13 @@ import {
   thumbnailURL,
   userConfigURL,
 } from '../../common/server'
-import { assetFile, imageFile, isImageFile } from '../../core/model/project-file-utils'
-import { AssetFile, ImageFile, isAssetFile } from '../../core/shared/project-file-types'
 import type { PersistentModel, UserConfiguration } from './store/editor-state'
 import { emptyUserConfiguration } from './store/editor-state'
 import type { LoginState } from '../../uuiui-deps'
 import urljoin from 'url-join'
 import JSZip from 'jszip'
 import type { AssetFileWithFileName } from '../assets'
-import { inferGitBlobChecksum } from '../assets'
+import { gitBlobChecksumFromBuffer } from '../assets'
 import { isLoginLost, isNotLoggedIn } from '../../common/user'
 import { notice } from '../common/notice'
 import type { EditorDispatch } from './action-types'
@@ -249,7 +247,7 @@ async function saveAssetRequest(
     body: asset,
   })
   if (response.ok) {
-    return inferGitBlobChecksum(asset)
+    return gitBlobChecksumFromBuffer(asset)
   } else {
     throw new Error(`Save asset request failed (${response.status}): ${response.statusText}`)
   }

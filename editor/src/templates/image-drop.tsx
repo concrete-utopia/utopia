@@ -8,6 +8,7 @@ import { EditorModes, insertionSubject } from '../components/editor/editor-modes
 import type { ImageResult } from '../core/shared/file-utils'
 import type { CanvasPoint, Size } from '../core/shared/math-utils'
 import type { ElementPath } from '../core/shared/project-file-types'
+import { imageFile } from '../core/shared/project-file-types'
 import { fastForEach } from '../core/shared/utils'
 import { createDirectInsertImageActions, Clipboard } from '../utils/clipboard'
 import { imagePathURL } from '../common/server'
@@ -18,7 +19,7 @@ import type React from 'react'
 import type { CanvasPositions } from '../components/canvas/canvas-types'
 import type { AllElementProps, EditorState } from '../components/editor/store/editor-state'
 import { notDragging } from '../components/editor/store/editor-state'
-import { imageFile, uniqueProjectContentID } from '../core/model/project-file-utils'
+import { uniqueProjectContentID } from '../core/model/project-file-utils'
 import type { AssetToSave } from '../components/editor/server'
 import { notice } from '../components/common/notice'
 import { arrayToObject, mapDropNulls, stripNulls } from '../core/shared/array-utils'
@@ -204,6 +205,7 @@ function actionsForDroppedImage(
     image.size.width,
     image.size.height,
     image.hash,
+    image.gitBlobSha,
   )
 
   const { saveImageActions, src } = context.isUserLoggedIn
