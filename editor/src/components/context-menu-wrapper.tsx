@@ -25,6 +25,7 @@ export interface ContextMenuWrapperProps<T> {
   innerClassName?: string
   style?: React.CSSProperties
   providerStyle?: React.CSSProperties
+  testId?: string
 }
 
 export interface ContextMenuProps<T> {
@@ -214,6 +215,7 @@ export class InspectorContextMenuWrapper<T> extends ReactComponent<
     return (
       <div
         key={name}
+        data-testid={this.props.testId}
         className={name + ' ' + (this.props.className ?? '')}
         css={{
           width: '100%',
