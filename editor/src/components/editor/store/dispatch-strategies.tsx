@@ -54,6 +54,7 @@ import { PERFORMANCE_MARKS_ALLOWED } from '../../../common/env-vars'
 import { last } from '../../../core/shared/array-utils'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { isInsertMode } from '../editor-modes'
+import { patchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
 interface HandleStrategiesResult {
   unpatchedEditorState: EditorState
@@ -130,6 +131,7 @@ export function interactionFinished(
       domMetadata: storedState.patchedEditor.domMetadata,
       spyMetadata: storedState.patchedEditor.spyMetadata,
       jsxMetadata: storedState.patchedEditor.jsxMetadata,
+      elementPathTree: storedState.patchedEditor.elementPathTree,
     }
     return {
       unpatchedEditorState: newEditorState,
@@ -663,7 +665,12 @@ export function handleStrategies(
     window.performance.mark('strategies_derive_state')
   }
 
-  const patchedDerivedState = deriveState(patchedEditorWithMetadata, oldDerivedState, 'patched')
+  const patchedDerivedState = deriveState(
+    patchedEditorWithMetadata,
+    oldDerivedState,
+    'patched',
+    patchedCreateRemixDerivedDataMemo,
+  )
 
   if (MeasureDispatchTime) {
     window.performance.mark('strategies_end')

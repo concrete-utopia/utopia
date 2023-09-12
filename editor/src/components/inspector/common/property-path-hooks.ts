@@ -16,15 +16,16 @@ import {
 } from '../../../components/editor/store/store-hook'
 import type {
   ControlStatus,
-  ControlStyles,
   PropertyStatus,
 } from '../../../components/inspector/common/control-status'
+import type { ControlStyles } from '../../../components/inspector/common/control-styles'
+
 import {
   calculateMultiPropertyStatusForSelection,
   calculateMultiStringPropertyStatusForSelection,
   getControlStatusFromPropertyStatus,
-  getControlStyles,
 } from '../../../components/inspector/common/control-status'
+import { getControlStyles } from '../../../components/inspector/common/control-styles'
 import type {
   ParsedCSSProperties,
   ParsedCSSPropertiesKeys,

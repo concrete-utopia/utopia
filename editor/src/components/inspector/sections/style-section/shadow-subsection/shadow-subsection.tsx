@@ -16,7 +16,8 @@ import {
 import type { ContextMenuItem } from '../../../../context-menu-items'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { addOnUnsetValues, removeRow } from '../../../common/context-menu-items'
-import type { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type { ControlStatus } from '../../../common/control-status'
+import type { ControlStyles } from '../../../common/control-styles'
 import type {
   CSSBoxShadow,
   CSSBoxShadows,

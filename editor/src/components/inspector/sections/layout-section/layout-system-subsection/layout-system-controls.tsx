@@ -25,12 +25,7 @@ import {
   useSelectorWithCallback,
 } from '../../../../editor/store/store-hook'
 import { optionalAddOnUnsetValues } from '../../../common/context-menu-items'
-import {
-  ControlStatus,
-  ControlStyles,
-  getControlStatusFromPropertyStatus,
-  getControlStyles,
-} from '../../../common/control-status'
+import { getControlStyles } from '../../../common/control-styles'
 import type { CanvasControlWithProps } from '../../../common/inspector-atoms'
 import { useControlModeWithCycle } from '../../../common/inspector-utils'
 import { useInspectorInfoLonghandShorthand } from '../../../common/longhand-shorthand-hooks'

@@ -1627,6 +1627,32 @@ describe('SWITCH_EDITOR_MODE', () => {
   })
 })
 
+describe('Mouse behavior during text editing', () => {
+  const beforeUnloadCallback = () => {
+    throw new Error('Should not navigate away on click')
+  }
+  before(() => window.addEventListener('beforeunload', beforeUnloadCallback))
+  after(() => window.removeEventListener('beforeunload', beforeUnloadCallback))
+  // eslint-disable-next-line jest/expect-expect
+  it('Clicking on link does not navigate away', async () => {
+    const editor = await renderTestEditorWithCode(
+      projectWithSnippet(`<a href='hello' data-uid='link' data-testid='link'>Hello link</a>`),
+      'await-first-dom-report',
+    )
+    await enterTextEditMode(editor)
+
+    const textEditor = editor.renderedDOM.getByTestId(TextEditorSpanId)
+    const textEditorBounds = textEditor.getBoundingClientRect()
+    const textEditorCorner = {
+      x: textEditorBounds.x + 20,
+      y: textEditorBounds.y + 10,
+    }
+
+    await mouseClickAtPoint(textEditor, textEditorCorner)
+    // no expectation, we just need to avoid the error in beforeUnloadCallback
+  })
+})
+
 function textSpan(text: string, extraStyleProps?: { [prop: string]: string }): string {
   const styleProps = {
     position: 'absolute',

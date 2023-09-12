@@ -52,7 +52,7 @@ import {
   useGetPropertyControlsForSelectedComponents,
   useInspectorInfoForPropertyControl,
 } from '../../common/property-controls-hooks'
-import type { ControlStyles } from '../../common/control-status'
+import type { ControlStyles } from '../../common/control-styles'
 import { ControlStatus } from '../../common/control-status'
 import type { InspectorInfo } from '../../common/property-path-hooks'
 import { useArraySuperControl } from '../../controls/array-supercontrol'

@@ -3,7 +3,7 @@ import { v4 as UUID } from 'uuid'
 import type { PackageType } from '../core/shared/project-file-types'
 import type { AnyJson, JsonMap } from '../missing-types/json'
 import type { JsonSchema, PropSchema } from '../missing-types/json-schema'
-import type { ControlStyles } from '../components/inspector/common/control-status'
+import type { ControlStyles } from '../components/inspector/common/control-styles'
 import type { NormalisedFrame } from 'utopia-api/core'
 import { fastForEach, NO_OP } from '../core/shared/utils'
 import type {

@@ -22,7 +22,8 @@ import {
   isCSSBackgroundLayerWithBGSize,
 } from '../../../common/css-utils'
 import type { UseSubmitValueFactory } from '../../../common/property-path-hooks'
-import type { ControlStatus, ControlStyles } from '../../../common/control-status'
+import type { ControlStyles } from '../../../common/control-styles'
+import type { ControlStatus } from '../../../common/control-status'
 
 export interface BackgroundLayerProps {
   value: CSSBackgroundLayer
