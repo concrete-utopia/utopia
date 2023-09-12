@@ -89,6 +89,65 @@ describe('Remix content', () => {
     await expectRemixSceneToBeRendered(renderResult)
   })
 
+  it('Remix content has metadata', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remixscene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div data-uid='remixdiv'>${DefaultRouteTextContent}</div>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixDivMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remixscene:rootdiv/outlet:remixdiv'
+      ]
+
+    expect(remixDivMetadata).not.toBeUndefined()
+
+    expect(remixDivMetadata.globalFrame).toEqual({
+      height: 18.5,
+      width: 700,
+      x: 212,
+      y: 146.5,
+    })
+    expect(remixDivMetadata.textContent).toEqual(DefaultRouteTextContent + '\n')
+  })
+
   it('Remix content is rendered while a canvas interaction is in progress', async () => {
     const DraggedElementId = 'dragme'
     const project = createModifiedProject({
@@ -232,6 +291,93 @@ describe('Remix navigation', () => {
     await mouseClickAtPoint(targetElement, clickPoint)
 
     await expectRemixSceneToBeRendered(renderResult, 'About')
+  })
+
+  // TODO: enable when the dom walker updates on the mutation observer
+  xit('Remix navigation updates metadata', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remixscene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+
+      export default function Index() {
+        return <Link to='/about' data-testid='remix-link' data-uid='remixlink'>${DefaultRouteTextContent}</Link>
+      }
+      `,
+      ['/src/routes/about.js']: `import React from 'react'
+
+      export default function About() {
+        return <div data-uid='aboutdiv'>About</div>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixLinkMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remixscene:rootdiv/outlet:remixlink'
+      ]
+    expect(remixLinkMetadata).not.toBeUndefined()
+
+    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+
+    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+
+    await mouseClickAtPoint(targetElement, clickPoint)
+
+    const remixLinkMetadataAfterNavigation =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remixscene:rootdiv/outlet:remixlink'
+      ]
+    expect(remixLinkMetadataAfterNavigation).toBeUndefined()
+
+    const remixAboutDivMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remixscene:rootdiv/outlet:aboutdiv'
+      ]
+
+    expect(remixAboutDivMetadata).not.toBeUndefined()
+    expect(remixLinkMetadata.globalFrame).toEqual({
+      height: 18.5,
+      width: 87.5,
+      x: 294,
+      y: 128,
+    })
+    expect(remixLinkMetadata.textContent).toEqual('About\n')
   })
 })
 
