@@ -92,6 +92,7 @@ import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
 import type { EditorDispatch } from '../editor/action-types'
 import { runDOMWalker } from '../editor/actions/action-creators'
+import { isLiveMode } from '../editor/editor-modes'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -536,6 +537,11 @@ export function initDomWalkerObservers(
   editorStore: UtopiaStoreAPI,
   dispatch: EditorDispatch,
 ): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+  // Warning: These observers only trigger the DOM walker whilst in live mode to ensure metadata is up to date
+  // when interacting with the actual running application / components. There are likely edge cases where we
+  // also want these to trigger the DOM walker whilst in select mode, but if we find such a case we need to
+  // adequately assess the performance impact of doing so, and ideally find a way to only do so when the observed
+  // change was not triggered by a user interaction
   const resizeObserver = new ResizeObserver((entries: any) => {
     const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
@@ -553,7 +559,7 @@ export function initDomWalkerObservers(
           shouldRunDOMWalker = true
         }
       }
-      if (shouldRunDOMWalker) {
+      if (shouldRunDOMWalker && isLiveMode(editorStore.getState().editor.mode)) {
         dispatch([runDOMWalker()])
       }
     }
@@ -585,7 +591,7 @@ export function initDomWalkerObservers(
           }
         }
       }
-      if (shouldRunDOMWalker) {
+      if (shouldRunDOMWalker && isLiveMode(editorStore.getState().editor.mode)) {
         dispatch([runDOMWalker()])
       }
     }
