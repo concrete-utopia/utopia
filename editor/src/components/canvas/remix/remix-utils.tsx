@@ -249,7 +249,7 @@ function findAmongJSXElementChildren(
   return null
 }
 
-function findPathToJSXElementChild(
+export function findPathToJSXElementChild(
   condition: (e: JSXElementChild) => boolean,
   element: JSXElementChild,
 ): ElementPathPart | null {

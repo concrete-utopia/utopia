@@ -1,6 +1,7 @@
 import { RemixContext } from '@remix-run/react/dist/components'
 import type { RouteModules } from '@remix-run/react/dist/routeModules'
 import React from 'react'
+import type { Location } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -8,6 +9,24 @@ import { useRefEditorState, useEditorState, Substores } from '../../editor/store
 import { getDefaultExportNameAndUidFromFile } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
+import { atom, useAtom, useSetAtom } from 'jotai'
+
+type RouterType = ReturnType<typeof createMemoryRouter>
+
+interface RemixNavigationContext {
+  forward: () => void
+  back: () => void
+  home: () => void
+  location: Location
+  entries: Array<Location>
+}
+
+interface RemixNavigationAtomData {
+  [pathString: string]: RemixNavigationContext
+}
+
+export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
+export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 
 function useGetRouteModules(basePath: ElementPath) {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
@@ -81,6 +100,13 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const routeModules = useGetRouteModules(basePath)
 
+  const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+
+  const currentEntries = navigationData[EP.toString(basePath)]?.entries
+  const currentEntriesRef = React.useRef(currentEntries)
+  currentEntriesRef.current = currentEntries
+
   // The router always needs to be updated otherwise new routes won't work without a refresh
   // We need to create the new router with the current location in the initial entries to
   // prevent it thinking that it is rendering '/'
@@ -88,9 +114,51 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     if (routes == null || routes.length === 0) {
       return null
     }
-
+    const initialEntries = currentEntriesRef.current == null ? undefined : currentEntriesRef.current
     return createMemoryRouter(routes)
   }, [routes])
+
+  const updateNavigationData = React.useCallback(
+    (routerr: RouterType, location: Location) => {
+      setNavigationData((current) => {
+        const key = EP.toString(basePath)
+        const existingEntries = current[key]?.entries ?? []
+
+        const updatedEntries =
+          existingEntries.at(-1)?.pathname === location.pathname
+            ? existingEntries
+            : existingEntries.concat(location)
+
+        return {
+          ...current,
+          [EP.toString(basePath)]: {
+            forward: () => void routerr.navigate(1),
+            back: () => void routerr.navigate(-1),
+            home: () => void routerr.navigate('/'),
+            location: location,
+            entries: updatedEntries,
+          },
+        }
+      })
+      setActiveRemixScene(basePath)
+    },
+    [basePath, setActiveRemixScene, setNavigationData],
+  )
+
+  // initialize navigation data
+  React.useLayoutEffect(() => {
+    if (router != null && navigationData[EP.toString(basePath)] == null) {
+      updateNavigationData(router, router.state.location)
+    }
+  }, [router, navigationData, basePath, updateNavigationData])
+
+  // apply changes navigation data
+  React.useLayoutEffect(() => {
+    if (router != null) {
+      return router?.subscribe((newState) => updateNavigationData(router, newState.location))
+    }
+    return
+  }, [router, updateNavigationData])
 
   if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null

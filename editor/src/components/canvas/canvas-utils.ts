@@ -1,4 +1,4 @@
-import { NormalisedFrame } from 'utopia-api/core'
+import type { DataRouteObject } from 'react-router'
 import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   framePointForPinnedProp,
@@ -72,6 +72,8 @@ import {
 import {
   applyUtopiaJSXComponentsChanges,
   getUtopiaJSXComponentsFromSuccess,
+  isRemixOutletElement,
+  isRemixSceneElement,
 } from '../../core/model/project-file-utils'
 import type { Either } from '../../core/shared/either'
 import {
@@ -158,14 +160,11 @@ import { getProjectFileByFilePath } from '../assets'
 import { getAllTargetsAtPointAABB } from './dom-lookup'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { uniqBy } from '../../core/shared/array-utils'
-import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import type { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
-import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
@@ -179,9 +178,10 @@ import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/co
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
+import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
+import { findPathToJSXElementChild, getDefaultExportedTopLevelElement } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1934,6 +1934,16 @@ export function getParseSuccessForFilePath(
   }
 }
 
+export type RemixValidPathsGenerationContext =
+  | { type: 'disabled' }
+  | {
+      type: 'active'
+      routeModulesToRelativePaths: RouteModulesWithRelativePaths
+      // TODO: should be refactored so that this can accomodate multiple contexts
+      // thinking { [pathToUtopiaRemixRootComponent]: RemixNavigationContext }
+      currentlyRenderedRouteModules: Array<DataRouteObject>
+    }
+
 export function getValidElementPaths(
   focusedElementPath: ElementPath | null,
   topLevelElementName: string,
@@ -1941,6 +1951,7 @@ export function getValidElementPaths(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
@@ -1975,6 +1986,7 @@ export function getValidElementPaths(
           false,
           true,
           resolve,
+          getRemixValidPathsGenerationContext,
         )
       }
     }
@@ -1992,15 +2004,75 @@ function getValidElementPathsFromElement(
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
-    const isScene = isSceneElement(element, filePath, projectContents)
-    const isSceneWithOneChild = isScene && element.children.length === 1
     const uid = getUtopiaID(element)
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
     let paths = [path]
+
+    const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
+    const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
+    if (remixPathGenerationContext.type === 'active' && isRemixScene) {
+      function makeValidPathsFromModule(
+        routeModulePath: string,
+        parentPathInner: ElementPath,
+      ): ElementPath | null {
+        const file = getProjectFileByFilePath(projectContents, routeModulePath)
+        if (file == null || file.type !== 'TEXT_FILE') {
+          throw new Error(`${routeModulePath} should be a text file`)
+        }
+
+        const topLevelElement = getDefaultExportedTopLevelElement(file)
+
+        if (topLevelElement == null) {
+          throw new Error(`${routeModulePath} should have a top level element`)
+        }
+
+        paths.push(
+          ...getValidElementPathsFromElement(
+            focusedElementPath,
+            topLevelElement,
+            parentPathInner,
+            projectContents,
+            routeModulePath,
+            uiFilePath,
+            false,
+            true,
+            resolve,
+            getRemixValidPathsGenerationContext,
+          ),
+        )
+
+        const pathToOutlet = findPathToJSXElementChild(
+          (e) => isRemixOutletElement(e, filePath, projectContents),
+          topLevelElement,
+        )
+        return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
+      }
+
+      /**
+       * The null check is here to guard against the case when a route with children is missing an outlet
+       * that would render the children
+       */
+
+      for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
+        const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
+        if (entry != null) {
+          const { relativePath, filePath: filePathOfRouteModule } = entry
+          const basePath = EP.appendTwoPaths(path, relativePath)
+          makeValidPathsFromModule(filePathOfRouteModule, basePath)
+        }
+      }
+
+      return paths
+    }
+
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const isSceneWithOneChild = isScene && element.children.length === 1
+
     fastForEach(element.children, (c) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -2013,6 +2085,7 @@ function getValidElementPathsFromElement(
           isSceneWithOneChild,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2034,6 +2107,7 @@ function getValidElementPathsFromElement(
           projectContents,
           filePath,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     }
@@ -2075,6 +2149,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2097,6 +2172,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     })
