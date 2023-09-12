@@ -219,7 +219,11 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     (store) => {
       let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
       fastForEach(store.editor.selectedViews, (path) => {
-        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor)
+        const propertyControls = getPropertyControlsForTargetFromEditor(
+          path,
+          store.editor,
+          store.derived,
+        )
         if (propertyControls == null) {
           propertyControlsAndTargets.push({
             controls: emptyControls,

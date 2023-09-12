@@ -155,6 +155,7 @@ export const CanvasWrapperComponent = React.memo(() => {
         <EditorCanvas
           userState={userState}
           editor={editorState}
+          derived={derivedState}
           model={createCanvasModelKILLME(editorState, derivedState)}
           builtinDependencies={builtinDependencies}
           updateCanvasSize={updateCanvasSize}

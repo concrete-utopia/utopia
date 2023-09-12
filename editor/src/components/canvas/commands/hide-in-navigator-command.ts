@@ -1,6 +1,6 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction } from './commands'
 
 export interface HideInNavigatorCommand extends BaseCommand {
@@ -18,6 +18,7 @@ export function hideInNavigatorCommand(elements: Array<ElementPath>): HideInNavi
 
 export const runHideInNavigatorCommand: CommandFunction<HideInNavigatorCommand> = (
   editor: EditorState,
+  __: DerivedState,
   command: HideInNavigatorCommand,
 ) => {
   const editorStatePatch: EditorStatePatch = {

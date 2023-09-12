@@ -3,6 +3,7 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import type {
   AllElementProps,
+  DerivedState,
   EditorState,
   PastePostActionMenuData,
 } from '../components/editor/store/editor-state'
@@ -62,6 +63,7 @@ import type { Either } from '../core/shared/either'
 import { isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import type { RemixRoutingTable } from '../components/editor/store/remix-derived-data'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -124,6 +126,7 @@ export function setClipboardData(copyData: ClipboardDataPayload): void {
 
 function getJSXElementPasteActions(
   editor: EditorState,
+  derivedState: DerivedState,
   clipboardData: Array<CopyData>,
   canvasViewportCenter: CanvasPoint,
 ): Array<EditorAction> {
@@ -150,6 +153,7 @@ function getJSXElementPasteActions(
       originalContextElementPathTrees: clipboardFirstEntry.targetOriginalContextElementPathTrees,
     },
     editor.elementPathTree,
+    derivedState.remixData?.routingTable ?? null,
   )
 
   if (isLeft(target)) {
@@ -205,6 +209,7 @@ function getFilePasteActions(
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
   elementPathTree: ElementPathTrees,
+  remixRoutingTable: RemixRoutingTable | null,
 ): Array<EditorAction> {
   if (pastedFiles.length == 0) {
     return []
@@ -218,6 +223,7 @@ function getFilePasteActions(
     pasteTargetsToIgnore,
     { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
     elementPathTree,
+    remixRoutingTable,
   )
 
   if (isLeft(target)) {
@@ -260,13 +266,14 @@ function getFilePasteActions(
 
 export function getActionsForClipboardItems(
   editor: EditorState,
+  derivedState: DerivedState,
   canvasViewportCenter: CanvasPoint,
   clipboardData: Array<CopyData>,
   pastedFiles: Array<FileResult>,
   canvasScale: number,
 ): Array<EditorAction> {
   return [
-    ...getJSXElementPasteActions(editor, clipboardData, canvasViewportCenter),
+    ...getJSXElementPasteActions(editor, derivedState, clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
       editor.projectContents,
       editor.nodeModules.files,
@@ -278,6 +285,7 @@ export function getActionsForClipboardItems(
       editor.jsxMetadata,
       canvasScale,
       editor.elementPathTree,
+      derivedState.remixData?.routingTable ?? null,
     ),
   ]
 }
@@ -317,6 +325,7 @@ export function createDirectInsertImageActions(
 export function createClipboardDataFromSelection(
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
+  derivedState: DerivedState,
 ): {
   data: Array<CopyData>
   imageFilenames: Array<string>
@@ -335,6 +344,7 @@ export function createClipboardDataFromSelection(
       editor.nodeModules.files,
       openUIJSFileKey,
       target,
+      derivedState.remixData?.routingTable ?? null,
     )
     const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
     const projectFile = getProjectFileByFilePath(editor.projectContents, targetPathSuccess.filePath)
@@ -352,6 +362,7 @@ export function createClipboardDataFromSelection(
           target,
           editor.projectContents,
           editor.nodeModules.files,
+          derivedState.remixData?.routingTable ?? null,
           openUIJSFileKey,
           targetPathSuccess.filePath,
           builtInDependencies,
@@ -455,6 +466,7 @@ export function getTargetParentForPaste(
   pasteTargetsToIgnore: ElementPath[],
   copyData: ParsedCopyData,
   elementPathTree: ElementPathTrees,
+  remixRoutingTable: RemixRoutingTable | null,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
   const pastedElementNames = mapDropNulls(
     (element) => MetadataUtils.getJSXElementName(element.element),
@@ -499,6 +511,7 @@ export function getTargetParentForPaste(
       parentPath,
       projectContents,
       nodeModules,
+      remixRoutingTable,
       openFile,
       null,
       (_, element) => {
@@ -516,6 +529,7 @@ export function getTargetParentForPaste(
           targetPath,
           projectContents,
           nodeModules,
+          remixRoutingTable,
           openFile,
           metadata,
           elementPathTree,
@@ -593,6 +607,7 @@ export function getTargetParentForPaste(
       projectContents,
       metadata,
       nodeModules,
+      remixRoutingTable,
       openFile,
       parentTarget,
       elementPathTree,
@@ -609,6 +624,7 @@ export function getTargetParentForPaste(
       projectContents,
       metadata,
       nodeModules,
+      remixRoutingTable,
       openFile,
       parentOfSelected,
       elementPathTree,

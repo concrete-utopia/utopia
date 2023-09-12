@@ -19,7 +19,7 @@ import type {
   StaticElementPath,
   ElementPath,
 } from '../shared/project-file-types'
-import type { EditorState } from '../../components/editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../components/editor/store/editor-state'
 import {
   getOpenUIJSFileKey,
   withUnderlyingTarget,
@@ -29,6 +29,7 @@ import type { ProjectContentTreeRoot } from '../../components/assets'
 import { importedFromWhere } from '../../components/editor/import-utils'
 import { absolutePathFromRelativePath } from '../../utils/path-utils'
 import { getThirdPartyControlsIntrinsic } from './property-controls-local'
+import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
 
 export function propertyControlsForComponentInFile(
   componentName: string,
@@ -43,6 +44,7 @@ export function propertyControlsForComponentInFile(
 export function getPropertyControlsForTargetFromEditor(
   target: ElementPath,
   editor: EditorState,
+  derivedState: DerivedState,
 ): PropertyControls | null {
   const openFilePath = getOpenUIJSFileKey(editor)
   return getPropertyControlsForTarget(
@@ -51,6 +53,7 @@ export function getPropertyControlsForTargetFromEditor(
     openFilePath,
     editor.projectContents,
     editor.nodeModules.files,
+    derivedState.remixData?.routingTable ?? null,
   )
 }
 
@@ -60,11 +63,13 @@ export function getPropertyControlsForTarget(
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
+  remixRoutingTable: RemixRoutingTable | null,
 ): PropertyControls | null {
   return withUnderlyingTarget(
     target,
     projectContents,
     nodeModules,
+    remixRoutingTable,
     openFilePath,
     null,
     (

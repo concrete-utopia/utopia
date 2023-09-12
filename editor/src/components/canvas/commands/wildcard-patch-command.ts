@@ -1,4 +1,4 @@
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface WildcardPatch extends BaseCommand {
@@ -15,7 +15,8 @@ export function wildcardPatch(whenToRun: WhenToRun, patch: EditorStatePatch): Wi
 }
 
 export const runWildcardPatch: CommandFunction<WildcardPatch> = (
-  editorState: EditorState,
+  _: EditorState,
+  __: DerivedState,
   command: WildcardPatch,
 ) => {
   return {

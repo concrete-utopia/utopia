@@ -21,11 +21,13 @@ import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'
 import * as EP from '../../core/shared/element-path'
+import type { RemixRoutingTable } from './store/remix-derived-data'
 
 export function getRequiredImportsForElement(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
+  remixRoutingTable: RemixRoutingTable | null,
   openFile: string | null | undefined,
   targetFilePath: string,
   builtInDependencies: BuiltInDependencies,
@@ -34,6 +36,7 @@ export function getRequiredImportsForElement(
     target,
     projectContents,
     nodeModules,
+    remixRoutingTable,
     openFile,
     emptyImports(),
     (success, element, underlyingTarget, underlyingFilePath) => {

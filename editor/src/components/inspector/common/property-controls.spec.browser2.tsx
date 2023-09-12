@@ -165,6 +165,7 @@ describe('Automatically derived property controls', () => {
     const element = withUnderlyingTargetFromEditorState(
       EP.fromString('storyboard/scene/app'),
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       null,
       (_success, underlyingElement) => {
         return underlyingElement

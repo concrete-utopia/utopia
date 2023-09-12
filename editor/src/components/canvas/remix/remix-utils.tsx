@@ -31,7 +31,7 @@ import {
 } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
-import type { RemixStaticRoutingTable } from '../../editor/store/remix-derived-data'
+import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
 import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { NO_OP, assertNever } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
@@ -165,7 +165,7 @@ export interface GetRoutesAndModulesFromManifestResult {
   routeModuleCreators: RouteIdsToModuleCreators
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
-  routingTable: RemixStaticRoutingTable
+  routingTable: RemixRoutingTable
 }
 
 export function getDefaultExportNameAndUidFromFile(
@@ -456,7 +456,7 @@ export function getRoutesAndModulesFromManifest(
   displayNoneInstances: Array<ElementPath>,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
-  const routingTable: RemixStaticRoutingTable = {}
+  const routingTable: RemixRoutingTable = {}
 
   const rootJsFile = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
   if (rootJsFile == null || rootJsFile.type !== 'TEXT_FILE') {

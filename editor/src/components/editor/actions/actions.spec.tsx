@@ -81,6 +81,7 @@ import {
   editorModelFromPersistentModel,
   withUnderlyingTargetFromEditorState,
   ElementProps,
+  emptyDerivedState,
 } from '../store/editor-state'
 import { editorMoveTemplate, UPDATE_FNS } from './actions'
 import {
@@ -276,7 +277,11 @@ describe('SET_PROP', () => {
       PP.create('test', 'prop'),
       jsExpressionValue(100, emptyComments),
     )
-    const newEditor = UPDATE_FNS.SET_PROP(action, testEditor)
+    const newEditor = UPDATE_FNS.SET_PROP(
+      action,
+      testEditor,
+      deriveState(testEditor, null, 'unpatched', () => null),
+    )
     const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
@@ -453,6 +458,7 @@ xdescribe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa', 'bbb']),
       null,
       editor,
+      emptyDerivedState(editor),
       null,
       null,
     ).editor
@@ -498,6 +504,7 @@ xdescribe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       editor,
+      emptyDerivedState(editor),
       null,
       null,
     ).editor
@@ -547,6 +554,7 @@ xdescribe('moveTemplate', () => {
         height: 100,
       } as CanvasRectangle,
       editor,
+      emptyDerivedState(editor),
       null,
       null,
     ).editor
@@ -582,6 +590,7 @@ xdescribe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      emptyDerivedState(editor),
       null,
       null,
     ).editor
@@ -616,6 +625,7 @@ xdescribe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      emptyDerivedState(editor),
       null,
       null,
     ).editor
@@ -651,6 +661,7 @@ xdescribe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePathForTestUiJsFile, ['aaa']),
       null,
       editor,
+      emptyDerivedState(editor),
       null,
       null,
     ).editor
@@ -685,6 +696,7 @@ xdescribe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ccc']),
       null,
       editor,
+      emptyDerivedState(editor),
       null,
       null,
     ).editor
@@ -739,6 +751,7 @@ xdescribe('moveTemplate', () => {
       EP.appendNewElementPath(ScenePath1ForTestUiJsFile, ['ddd']),
       groupFrame,
       editor,
+      emptyDerivedState(editor),
       LayoutSystem.Group,
       null,
     ).editor
@@ -906,6 +919,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an element into the project with the given values', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -943,7 +962,7 @@ describe('INSERT_INSERTABLE', () => {
       null,
     )
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1013,6 +1032,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an element into the project with the given values, also adding style props', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -1050,7 +1075,7 @@ describe('INSERT_INSERTABLE', () => {
       null,
     )
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1121,6 +1146,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an img element into the project, also adding style props', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -1151,7 +1182,7 @@ describe('INSERT_INSERTABLE', () => {
 
     const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', null)
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1216,6 +1247,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an img element into the project, also adding style props, added at the back', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -1248,7 +1285,7 @@ describe('INSERT_INSERTABLE', () => {
       type: 'back',
     })
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1315,10 +1352,17 @@ describe('SET_FOCUSED_ELEMENT', () => {
   it('prevents focusing a non-focusable element', () => {
     const project = complexDefaultProjectPreParsed()
     let editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(editorState, null, 'unpatched', () => null)
     const pathToFocus = EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div')
     const underlyingElement = forceNotNull(
       'Should be able to find this.',
-      withUnderlyingTargetFromEditorState(pathToFocus, editorState, null, (_, element) => element),
+      withUnderlyingTargetFromEditorState(
+        pathToFocus,
+        editorState,
+        derivedState,
+        null,
+        (_, element) => element,
+      ),
     )
     const divElementMetadata = elementInstanceMetadata(
       pathToFocus,
@@ -1343,7 +1387,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const derivedState = deriveState(editorState, null, 'unpatched', () => null)
     const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState).toBe(editorState)
   })
@@ -1355,7 +1398,13 @@ describe('SET_FOCUSED_ELEMENT', () => {
     )
     const underlyingElement = forceNotNull(
       'Should be able to find this.',
-      withUnderlyingTargetFromEditorState(pathToFocus, editorState, null, (_, element) => element),
+      withUnderlyingTargetFromEditorState(
+        pathToFocus,
+        editorState,
+        deriveState(editorState, null, 'unpatched', unpatchedCreateRemixDerivedDataMemo),
+        null,
+        (_, element) => element,
+      ),
     )
     const cardElementMetadata = elementInstanceMetadata(
       pathToFocus,
