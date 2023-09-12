@@ -115,7 +115,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       return null
     }
     const initialEntries = currentEntriesRef.current == null ? undefined : currentEntriesRef.current
-    return createMemoryRouter(routes)
+    return createMemoryRouter(routes, { initialEntries: initialEntries })
   }, [routes])
 
   const updateNavigationData = React.useCallback(
