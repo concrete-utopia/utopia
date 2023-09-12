@@ -694,6 +694,7 @@ export function saveAsset(
   base64: string,
   hash: number,
   imageDetails: SaveImageDetails | null,
+  gitBlobSha: string,
 ): SaveAsset {
   return {
     action: 'SAVE_ASSET',
@@ -702,6 +703,7 @@ export function saveAsset(
     base64: base64,
     hash: hash,
     imageDetails: imageDetails,
+    gitBlobSha: gitBlobSha,
   }
 }
 

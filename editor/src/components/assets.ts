@@ -7,8 +7,8 @@ import type {
   AssetFile,
   ParseSuccess,
 } from '../core/shared/project-file-types'
+import { directory, isDirectory, isImageFile } from '../core/shared/project-file-types'
 import { isTextFile, isParseSuccess, isAssetFile } from '../core/shared/project-file-types'
-import { isDirectory, directory, isImageFile } from '../core/model/project-file-utils'
 import Utils from '../utils/utils'
 import { dropLeadingSlash } from './filebrowser/filepath-utils'
 import { assertNever, fastForEach } from '../core/shared/utils'
@@ -50,12 +50,20 @@ function getSHA1ChecksumInner(contents: string | Buffer): string {
 // Memoized because it can be called for the same piece of code more than once before the
 // checksum gets cached. For example in the canvas strategies and the regular dispatch flow, which don't share
 // those cached checksum objects.
-const getSHA1Checksum = memoize(getSHA1ChecksumInner, {
+export const getSHA1Checksum = memoize(getSHA1ChecksumInner, {
   maxSize: 10,
   equals: (first, second) => first === second,
 })
 
-export function inferGitBlobChecksum(buffer: Buffer): string {
+export function gitBlobChecksumFromBase64(base64: string): string {
+  return gitBlobChecksumFromBuffer(Buffer.from(base64, 'base64'))
+}
+
+export function gitBlobChecksumFromText(text: string): string {
+  return gitBlobChecksumFromBuffer(Buffer.from(text, 'utf8'))
+}
+
+export function gitBlobChecksumFromBuffer(buffer: Buffer): string {
   // This function returns the same SHA1 checksum string that git would return for the same contents.
   // Given the contents in the buffer variable, the final checksum is calculated by hashing
   // a string built as "<prefix><contents>". The prefix looks like "blob <contents_length_in_bytes><null_character>".
@@ -113,7 +121,7 @@ export function getProjectContentsChecksums(
           case 'TEXT_FILE':
             updatedChecksums[filename] = {
               file: file,
-              checksum: getSHA1Checksum(file.fileContents.code),
+              checksum: gitBlobChecksumFromText(file.fileContents.code),
             }
             break
           case 'ASSET_FILE':
@@ -126,7 +134,7 @@ export function getProjectContentsChecksums(
             } else if (file.base64 != undefined) {
               updatedChecksums[filename] = {
                 file: file,
-                checksum: getSHA1Checksum(file.base64),
+                checksum: gitBlobChecksumFromBase64(file.base64),
               }
             }
             break

@@ -39,6 +39,7 @@ import type {
   TextFileContents,
   Unparsed,
 } from '../../../core/shared/project-file-types'
+import { directory } from '../../../core/shared/project-file-types'
 import {
   assetFile,
   esCodeFile,
@@ -434,7 +435,6 @@ import type {
   ProjectContentTreeRoot,
 } from '../../assets'
 import { projectContentDirectory, projectContentFile } from '../../assets'
-import { directory } from '../../../core/model/project-file-utils'
 import { parsedJSONFailure } from '../../../core/workers/common/project-file-utils'
 import type {
   CodeResult,
@@ -3595,17 +3595,19 @@ export const FontSettingsKeepDeepEquality: KeepDeepEqualityCall<FontSettings> =
 export const FileDeleteModalKeepDeepEquality: KeepDeepEqualityCall<FileDeleteModal> =
   combine1EqualityCall((modal) => modal.filePath, StringKeepDeepEquality, fileDeleteModal)
 
-export const AssetResultKeepDeepEquality: KeepDeepEqualityCall<AssetResult> = combine3EqualityCalls(
+export const AssetResultKeepDeepEquality: KeepDeepEqualityCall<AssetResult> = combine4EqualityCalls(
   (result) => result.filename,
   StringKeepDeepEquality,
   (result) => result.base64Bytes,
   StringKeepDeepEquality,
   (result) => result.hash,
   NumberKeepDeepEquality,
+  (result) => result.gitBlobSha,
+  StringKeepDeepEquality,
   assetResult,
 )
 
-export const ImageResultKeepDeepEquality: KeepDeepEqualityCall<ImageResult> = combine5EqualityCalls(
+export const ImageResultKeepDeepEquality: KeepDeepEqualityCall<ImageResult> = combine6EqualityCalls(
   (result) => result.filename,
   StringKeepDeepEquality,
   (result) => result.base64Bytes,
@@ -3616,6 +3618,8 @@ export const ImageResultKeepDeepEquality: KeepDeepEqualityCall<ImageResult> = co
   StringKeepDeepEquality,
   (result) => result.hash,
   NumberKeepDeepEquality,
+  (result) => result.gitBlobSha,
+  StringKeepDeepEquality,
   imageResult,
 )
 

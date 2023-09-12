@@ -4,14 +4,15 @@ import { fastForEach, NO_OP } from '../../../core/shared/utils'
 import { createPersistentModel, delay } from '../../../utils/utils.test-utils'
 import { generateUID } from '../../../core/shared/uid-utils'
 import type { AssetFile, TextFile } from '../../../core/shared/project-file-types'
+import { assetFile } from '../../../core/shared/project-file-types'
 import { isAssetFile, ProjectFile } from '../../../core/shared/project-file-types'
 import type { AssetToSave, SaveProjectResponse, LoadProjectResponse } from '../server'
 import { localProjectKey } from '../../../common/persistence'
 import { MockUtopiaTsWorkers } from '../../../core/workers/workers'
 import type { AssetFileWithFileName } from '../../assets'
+import { gitBlobChecksumFromBase64, gitBlobChecksumFromText } from '../../assets'
 import { addFileToProjectContents, getProjectFileByFilePath } from '../../assets'
 import { forceNotNull } from '../../../core/shared/optional-utils'
-import { assetFile } from '../../../core/model/project-file-utils'
 import type {
   EditorAction,
   EditorDispatch,
@@ -33,8 +34,8 @@ let serverProjects: { [key: string]: PersistentModel } = {}
 let localProjects: { [key: string]: LocalProject<PersistentModel> } = {}
 
 const base64Contents = 'data:asset/xyz;base64,SomeBase64'
-const mockAssetFileWithBase64 = assetFile(base64Contents)
-const AssetFileWithoutBase64 = assetFile(undefined)
+const mockAssetFileWithBase64 = assetFile(base64Contents, gitBlobChecksumFromBase64(base64Contents))
+const AssetFileWithoutBase64 = assetFile(undefined, gitBlobChecksumFromBase64(base64Contents))
 
 const ProjectName = 'Project Name'
 const BaseModel = createPersistentModel()
@@ -607,7 +608,7 @@ describe('Forking a project', () => {
       projectContents: addFileToProjectContents(
         startProject.projectContents,
         AssetFileName,
-        assetFile(base64Contents),
+        assetFile(base64Contents, gitBlobChecksumFromBase64(base64Contents)),
       ),
     })
     expect(capturedData.updatedFiles[AssetFileName]).toEqual(mockAssetFileWithBase64)

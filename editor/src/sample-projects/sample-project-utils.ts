@@ -12,8 +12,8 @@ import {
   getSamplePreviewFile,
   getSamplePreviewHTMLFile,
 } from '../core/model/new-project-files'
-import { directory } from '../core/model/project-file-utils'
 import type { ProjectContents, TextFile } from '../core/shared/project-file-types'
+import { directory } from '../core/shared/project-file-types'
 import {
   codeFile,
   RevisionsState,

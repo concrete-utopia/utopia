@@ -1,3 +1,4 @@
+import { gitBlobChecksumFromBuffer } from '../../components/assets'
 import stringHash from 'string-hash'
 import type { Size } from './math-utils'
 import { size } from './math-utils'
@@ -9,6 +10,7 @@ export interface ImageResult {
   size: Size
   fileType: string
   hash: number
+  gitBlobSha: string
 }
 
 export function imageResult(
@@ -17,6 +19,7 @@ export function imageResult(
   imageSize: Size,
   fileType: string,
   hash: number,
+  gitBlobSha: string,
 ): ImageResult {
   return {
     type: 'IMAGE_RESULT',
@@ -25,6 +28,7 @@ export function imageResult(
     size: imageSize,
     fileType: fileType,
     hash: hash,
+    gitBlobSha: gitBlobSha,
   }
 }
 
@@ -33,14 +37,21 @@ export interface AssetResult {
   filename: string
   base64Bytes: string
   hash: number
+  gitBlobSha: string
 }
 
-export function assetResult(filename: string, base64Bytes: string, hash: number): AssetResult {
+export function assetResult(
+  filename: string,
+  base64Bytes: string,
+  hash: number,
+  gitBlobSha: string,
+): AssetResult {
   return {
     type: 'ASSET_RESULT',
     filename: filename,
     base64Bytes: base64Bytes,
     hash: hash,
+    gitBlobSha: gitBlobSha,
   }
 }
 
@@ -78,41 +89,81 @@ export function extractText(file: File): Promise<TextResult> {
   })
 }
 
-export function extractAsset(file: File): Promise<AssetResult> {
-  return new Promise((resolve, reject) => {
+export async function extractAsset(file: File): Promise<AssetResult> {
+  const base64ContentPromise: Promise<string> = new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = async () => {
-      const result = assetResultForBase64(file.name, reader.result as string)
-      resolve(result)
+      resolve(reader.result as string)
     }
     reader.onerror = (error) => {
       reject(error)
     }
     reader.readAsDataURL(file)
   })
+
+  return base64ContentPromise.then((base64String) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = async () => {
+        const result = assetResultForBase64(
+          file.name,
+          base64String,
+          gitBlobChecksumFromBuffer(Buffer.from(reader.result as ArrayBuffer)),
+        )
+        resolve(result)
+      }
+      reader.onerror = (error) => {
+        reject(error)
+      }
+      reader.readAsArrayBuffer(file)
+    })
+  })
 }
 
-export function assetResultForBase64(filename: string, base64: string): AssetResult {
+export function assetResultForBase64(
+  filename: string,
+  base64: string,
+  gitBlobSha: string,
+): AssetResult {
   const hash = stringHash(base64)
   return {
     type: 'ASSET_RESULT',
     filename: filename,
     base64Bytes: base64,
     hash: hash,
+    gitBlobSha: gitBlobSha,
   }
 }
 
-export function extractImage(file: File): Promise<ImageResult> {
-  return new Promise((resolve, reject) => {
+export async function extractImage(file: File): Promise<ImageResult> {
+  const base64ContentPromise: Promise<string> = new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = async () => {
-      const result = await imageResultForBase64(file.name, file.type, reader.result as string)
-      resolve(result)
+      resolve(reader.result as string)
     }
     reader.onerror = (error) => {
       reject(error)
     }
     reader.readAsDataURL(file)
+  })
+
+  return base64ContentPromise.then((base64String) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = async () => {
+        const result = await imageResultForBase64(
+          file.name,
+          file.type,
+          base64String,
+          Buffer.from(reader.result as ArrayBuffer),
+        )
+        resolve(result)
+      }
+      reader.onerror = (error) => {
+        reject(error)
+      }
+      reader.readAsArrayBuffer(file)
+    })
   })
 }
 
@@ -120,6 +171,7 @@ export async function imageResultForBase64(
   filename: string,
   fileType: string,
   base64: string,
+  buffer: Buffer,
 ): Promise<ImageResult> {
   const hash = stringHash(base64)
   const imageDataUrl: string = base64
@@ -138,6 +190,7 @@ export async function imageResultForBase64(
     size: imageSize,
     fileType: fileType,
     hash: hash,
+    gitBlobSha: gitBlobChecksumFromBuffer(buffer),
   }
 }
 

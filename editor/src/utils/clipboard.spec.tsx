@@ -8,9 +8,9 @@ import {
 import { createCodeFile } from '../components/custom-code/code-file.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
 import { DefaultPackageJson, StoryboardFilePath } from '../components/editor/store/editor-state'
-import { directory } from '../core/model/project-file-utils'
 import { BakedInStoryboardUID } from '../core/model/scene-utils'
 import type { ProjectContents } from '../core/shared/project-file-types'
+import { directory } from '../core/shared/project-file-types'
 import {
   RevisionsState,
   textFile,
