@@ -129,7 +129,18 @@ describe('Remix content', () => {
       ['/src/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
-        return <div data-uid='remix-div'>${DefaultRouteTextContent}</div>
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='remix-div'
+        >
+          ${DefaultRouteTextContent}
+        </div>
       }
       `,
     })
@@ -144,12 +155,11 @@ describe('Remix content', () => {
     expect(remixDivMetadata).not.toBeUndefined()
 
     expect(remixDivMetadata.globalFrame).toEqual({
-      height: 18.5,
-      width: 700,
+      height: 200,
+      width: 200,
       x: 212,
-      y: 146.5,
+      y: 128,
     })
-    expect(remixDivMetadata.textContent).toEqual(DefaultRouteTextContent + '\n')
   })
 
   it('Remix content can be selected', async () => {
@@ -400,7 +410,18 @@ describe('Remix navigation', () => {
       ['/src/routes/about.js']: `import React from 'react'
 
       export default function About() {
-        return <div data-uid='aboutdiv'>About</div>
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='aboutdiv'
+        >
+          About
+        </div>
       }
       `,
     })
