@@ -1,9 +1,13 @@
+import { toString } from '../../../core/shared/element-path'
 import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
+import {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
+} from '../../../utils/utils.test-utils'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
@@ -105,7 +109,7 @@ describe('Remix content', () => {
               top: 128,
             }}
             data-label='Playground'
-            data-uid='remixscene'
+            data-uid='remix-scene'
           />
         </Storyboard>
       )
@@ -125,7 +129,7 @@ describe('Remix content', () => {
       ['/src/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
-        return <div data-uid='remixdiv'>${DefaultRouteTextContent}</div>
+        return <div data-uid='remix-div'>${DefaultRouteTextContent}</div>
       }
       `,
     })
@@ -134,7 +138,7 @@ describe('Remix content', () => {
 
     const remixDivMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
-        'storyboard/remixscene:rootdiv/outlet:remixdiv'
+        'storyboard/remix-scene:rootdiv/outlet:remix-div'
       ]
 
     expect(remixDivMetadata).not.toBeUndefined()
@@ -146,6 +150,65 @@ describe('Remix content', () => {
       y: 146.5,
     })
     expect(remixDivMetadata.textContent).toEqual(DefaultRouteTextContent + '\n')
+  })
+
+  it('Remix content can be selected', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div data-uid='remix-route-root'>
+          <div data-uid='remix-div' data-testid='remix-div'>${DefaultRouteTextContent}</div>
+        </div>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const targetElement = renderResult.renderedDOM.getByTestId('remix-div')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+
+    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    await mouseClickAtPoint(canvasControlsLayer, clickPoint, { modifiers: cmdModifier })
+
+    expect(renderResult.getEditorState().editor.selectedViews).toHaveLength(1)
+
+    expect(toString(renderResult.getEditorState().editor.selectedViews[0])).toEqual(
+      'storyboard/remix-scene:rootdiv/outlet:remix-route-root/remix-div',
+    )
   })
 
   it('Remix content is rendered while a canvas interaction is in progress', async () => {
@@ -310,7 +373,7 @@ describe('Remix navigation', () => {
               top: 128,
             }}
             data-label='Playground'
-            data-uid='remixscene'
+            data-uid='remix-scene'
           />
         </Storyboard>
       )
@@ -346,7 +409,7 @@ describe('Remix navigation', () => {
 
     const remixLinkMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
-        'storyboard/remixscene:rootdiv/outlet:remixlink'
+        'storyboard/remix-scene:rootdiv/outlet:remixlink'
       ]
     expect(remixLinkMetadata).not.toBeUndefined()
 
@@ -361,13 +424,13 @@ describe('Remix navigation', () => {
 
     const remixLinkMetadataAfterNavigation =
       renderResult.getEditorState().editor.jsxMetadata[
-        'storyboard/remixscene:rootdiv/outlet:remixlink'
+        'storyboard/remix-scene:rootdiv/outlet:remixlink'
       ]
     expect(remixLinkMetadataAfterNavigation).toBeUndefined()
 
     const remixAboutDivMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
-        'storyboard/remixscene:rootdiv/outlet:aboutdiv'
+        'storyboard/remix-scene:rootdiv/outlet:aboutdiv'
       ]
 
     expect(remixAboutDivMetadata).not.toBeUndefined()
