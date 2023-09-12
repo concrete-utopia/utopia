@@ -15,6 +15,7 @@ import {
 } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
+import { SmallElementSize } from './select-mode/absolute-resize-control'
 
 interface NotNullRefObject<T> {
   readonly current: T
@@ -39,8 +40,7 @@ export function useBoundingBox<T = HTMLDivElement>(
   return controlRef
 }
 
-const MIN_RESIZE_CONTROL_BOX_SIZE = 25 // minimum dimension for w/h of a bounding box, if smaller the safe gaps will be applied
-const RESIZE_CONTROL_SAFE_GAP = 6 // safe gap applied when the dimension of an element is smaller than MIN_RESIZE_CONTROL_BOX_SIZE
+export const RESIZE_CONTROL_SAFE_GAP = 6 // safe gap applied when the dimension of an element is smaller than SmallElementSize
 
 function useBoundingBoxFromMetadataRef(
   selectedElements: ReadonlyArray<ElementPath>,
@@ -51,6 +51,13 @@ function useBoundingBoxFromMetadataRef(
 
   const isMidInteraction = useRefEditorState(
     (store) => store.editor.canvas.interactionSession?.startedAt != null,
+  )
+
+  const shouldApplySafeGap = React.useCallback(
+    (dimension: number): boolean => {
+      return !isMidInteraction.current && dimension <= SmallElementSize
+    },
+    [isMidInteraction],
   )
 
   const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)
@@ -66,7 +73,7 @@ function useBoundingBoxFromMetadataRef(
     })
 
     function getAdjustedBoundingBox(boundingBox: CanvasRectangle | null) {
-      if (boundingBox == null || isMidInteraction.current) {
+      if (boundingBox == null) {
         return boundingBox
       }
 
@@ -77,11 +84,11 @@ function useBoundingBoxFromMetadataRef(
         height: boundingBox.height,
       }
       const scaledSafeGap = RESIZE_CONTROL_SAFE_GAP / scaleRef.current
-      if (boundingBox.width < MIN_RESIZE_CONTROL_BOX_SIZE) {
+      if (shouldApplySafeGap(boundingBox.width)) {
         adjustedBoundingBox.x -= scaledSafeGap
         adjustedBoundingBox.width += scaledSafeGap * 2
       }
-      if (boundingBox.height < MIN_RESIZE_CONTROL_BOX_SIZE) {
+      if (shouldApplySafeGap(boundingBox.height)) {
         adjustedBoundingBox.y -= scaledSafeGap
         adjustedBoundingBox.height += scaledSafeGap * 2
       }
@@ -90,7 +97,7 @@ function useBoundingBoxFromMetadataRef(
     const boundingBox = getAdjustedBoundingBox(boundingRectangleArray(frames))
 
     boundingBoxCallbackRef.current(boundingBox, scaleRef.current)
-  }, [selectedElements, metadataRef, scaleRef, isMidInteraction])
+  }, [selectedElements, metadataRef, scaleRef, shouldApplySafeGap])
 
   useSelectorWithCallback(
     Substores.metadata,
