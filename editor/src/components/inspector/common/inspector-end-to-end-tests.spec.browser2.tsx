@@ -4,13 +4,13 @@ import { act, fireEvent, screen } from '@testing-library/react'
 import * as Prettier from 'prettier/standalone'
 import { PrettierConfig } from 'utopia-vscode-common'
 import { matchInlineSnapshotBrowser } from '../../../../test/karma-snapshots'
-import { directory } from '../../../core/model/project-file-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../core/model/scene-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath, ProjectContents } from '../../../core/shared/project-file-types'
+import { directory } from '../../../core/shared/project-file-types'
 import {
   RevisionsState,
   textFile,

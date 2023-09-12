@@ -1,5 +1,4 @@
 import { MajesticBrokerTestCaseCode } from '../../../test-cases/majestic-broker'
-import { directory, getComponentsFromTopLevelElements } from '../../model/project-file-utils'
 import {
   emptyComments,
   isJSExpressionMapOrOtherJavaScript,
@@ -12,6 +11,7 @@ import {
   utopiaJSXComponent,
 } from '../../shared/element-template'
 import type { ProjectContents } from '../../shared/project-file-types'
+import { directory } from '../../shared/project-file-types'
 import {
   codeFile,
   foldParsedTextFile,

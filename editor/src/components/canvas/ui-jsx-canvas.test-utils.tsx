@@ -45,7 +45,6 @@ import { CanvasErrorBoundary } from './canvas-component-entry'
 import { EditorStateContext, OriginalMainEditorStateContext } from '../editor/store/store-hook'
 import { getStoreHook } from '../inspector/common/inspector.test-utils'
 import { NO_OP } from '../../core/shared/utils'
-import { directory } from '../../core/model/project-file-utils'
 import type { ProjectContentTreeRoot } from '../assets'
 import { contentsToTree } from '../assets'
 import type { MapLike } from 'typescript'
@@ -56,6 +55,7 @@ import * as path from 'path'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 import { UPDATE_FNS } from '../editor/actions/actions'
 import { updateNodeModulesContents } from '../editor/actions/action-creators'
+import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
 
 export interface PartialCanvasProps {
   hiddenInstances: UiJsxCanvasProps['hiddenInstances']
@@ -201,7 +201,12 @@ export function renderCanvasReturnResultAndError(
     return {
       ...store,
       editor: updatedEditor,
-      derived: deriveState(updatedEditor, store.derived),
+      derived: deriveState(
+        updatedEditor,
+        store.derived,
+        'unpatched',
+        unpatchedCreateRemixDerivedDataMemo,
+      ),
     }
   })
 

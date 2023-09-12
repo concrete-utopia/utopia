@@ -122,6 +122,7 @@ import {
 import { createPerformanceMeasure } from '../components/editor/store/editor-dispatch-performance-logging'
 import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
+import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -201,7 +202,12 @@ export class Editor {
     startPreviewConnectedMonitoring(this.boundDispatch)
 
     let emptyEditorState = createEditorState(this.boundDispatch)
-    const derivedState = deriveState(emptyEditorState, null)
+    const derivedState = deriveState(
+      emptyEditorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const strategyState = createEmptyStrategyState({}, {}, {})
 

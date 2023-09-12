@@ -6,9 +6,9 @@ import {
   localProjectKey,
 } from '../../../common/persistence'
 import { checkProjectOwnership } from '../../../common/server'
-import { assetFile, imageFile, isImageFile } from '../../../core/model/project-file-utils'
 import { getFileExtension } from '../../../core/shared/file-utils'
 import type { AssetFile, ImageFile, ProjectFile } from '../../../core/shared/project-file-types'
+import { assetFile, imageFile, isImageFile } from '../../../core/shared/project-file-types'
 import { arrayContains } from '../../../core/shared/utils'
 import { addFileToProjectContents, getAllProjectAssetFiles } from '../../assets'
 import { getPNGBufferOfElementWithID } from '../screenshot-utils'
@@ -184,9 +184,9 @@ async function downloadAssets(
 
 function scrubBase64FromFile(file: ImageFile | AssetFile): ImageFile | AssetFile {
   if (isImageFile(file)) {
-    return imageFile(undefined, undefined, file.width, file.height, file.hash)
+    return imageFile(undefined, undefined, file.width, file.height, file.hash, file.gitBlobSha)
   } else {
-    return assetFile(undefined)
+    return assetFile(undefined, file.gitBlobSha)
   }
 }
 

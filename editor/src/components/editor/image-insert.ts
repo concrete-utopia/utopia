@@ -31,6 +31,7 @@ export function fileResultUploadAction(
         fileResult.base64Bytes,
         fileResult.hash,
         EditorActions.saveImageDetails(fileResult.size, afterSave),
+        fileResult.gitBlobSha,
       )
     }
     case 'ASSET_RESULT': {
@@ -45,6 +46,7 @@ export function fileResultUploadAction(
         fileResult.base64Bytes,
         fileResult.hash,
         null,
+        fileResult.gitBlobSha,
       )
     }
     case 'TEXT_RESULT': {
@@ -77,6 +79,7 @@ function handleImageSelected(
             result.base64Bytes,
             result.hash,
             EditorActions.saveImageDetails(result.size, afterSave),
+            result.gitBlobSha,
           )
           dispatch([saveImageAction], 'everyone')
         })

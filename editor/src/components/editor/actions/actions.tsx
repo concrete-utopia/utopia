@@ -25,14 +25,9 @@ import {
 import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
-  assetFile,
-  directory,
   fileTypeFromFileName,
   getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
-  imageFile,
-  isDirectory,
-  isImageFile,
   isImg,
   revertFile,
   saveFile,
@@ -147,15 +142,22 @@ import { requestedNpmDependency } from '../../../core/shared/npm-dependency-type
 import { arrayToMaybe, forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import type {
   ElementPath,
-  id,
   Imports,
   NodeModules,
-  ParsedTextFile,
   ParseSuccess,
   ProjectContents,
   ProjectFile,
   StaticElementPath,
   TextFile,
+} from '../../../core/shared/project-file-types'
+import {
+  assetFile,
+  directory,
+  id,
+  imageFile,
+  isImageFile,
+  isDirectory,
+  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -426,7 +428,6 @@ import {
   ConditionalClauseNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
-  deriveState,
   DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
@@ -980,6 +981,7 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
     elementWarnings: poppedDerived.elementWarnings,
     projectContentsChecksums: poppedDerived.projectContentsChecksums,
     branchOriginContentsChecksums: poppedDerived.branchOriginContentsChecksums,
+    remixData: poppedDerived.remixData,
   }
 }
 
@@ -3116,10 +3118,17 @@ export const UPDATE_FNS = {
     let projectFile: ProjectFile
     if (action.imageDetails == null) {
       // Assume stock ASSET_FILE case when there's no image details.
-      projectFile = assetFile(undefined)
+      projectFile = assetFile(undefined, action.gitBlobSha)
     } else {
       // Assume IMAGE_FILE otherwise.
-      projectFile = imageFile(action.fileType, undefined, width, height, action.hash)
+      projectFile = imageFile(
+        action.fileType,
+        undefined,
+        width,
+        height,
+        action.hash,
+        action.gitBlobSha,
+      )
     }
     actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true))
 
