@@ -54,8 +54,8 @@ function useBoundingBoxFromMetadataRef(
   )
 
   const shouldApplySafeGap = React.useCallback(
-    (dimension: number): boolean => {
-      return !isMidInteraction.current && dimension <= SmallElementSize
+    (dimension: number, scale: number): boolean => {
+      return !isMidInteraction.current && dimension <= SmallElementSize / scale
     },
     [isMidInteraction],
   )
@@ -84,11 +84,11 @@ function useBoundingBoxFromMetadataRef(
         height: boundingBox.height,
       }
       const scaledSafeGap = RESIZE_CONTROL_SAFE_GAP / scaleRef.current
-      if (shouldApplySafeGap(boundingBox.width)) {
+      if (shouldApplySafeGap(boundingBox.width, scaleRef.current)) {
         adjustedBoundingBox.x -= scaledSafeGap
         adjustedBoundingBox.width += scaledSafeGap * 2
       }
-      if (shouldApplySafeGap(boundingBox.height)) {
+      if (shouldApplySafeGap(boundingBox.height, scaleRef.current)) {
         adjustedBoundingBox.y -= scaledSafeGap
         adjustedBoundingBox.height += scaledSafeGap * 2
       }
