@@ -186,13 +186,14 @@ module.exports = {
     },
     {
       name: 'not-from-ts-to-tsx',
-      comment: 'Prevent a .ts file from pointing to a .tsx file.',
+      comment: 'Prevent a .worker.ts file from pointing to a .tsx file.',
       severity: 'error',
       from: {
-        path: '\\.ts$',
+        path: '\\worker.ts$',
         pathNot: ['built-in-dependencies-list.ts$'],
       },
       to: {
+        reachable: true,
         path: '\\.tsx$',
       },
     },
