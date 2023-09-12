@@ -456,13 +456,14 @@ export interface SaveImageDetails {
   afterSave: SaveImageSwitchMode | SaveImageDoNothing | SaveImageInsertWith | SaveImageReplace
 }
 
-export type SaveAsset = {
+export interface SaveAsset {
   action: 'SAVE_ASSET'
   fileName: string
   fileType: string
   base64: string
   hash: number
   imageDetails: SaveImageDetails | null
+  gitBlobSha: string
 }
 
 export type ResetPins = {

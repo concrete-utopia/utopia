@@ -199,6 +199,25 @@ export function forEachOf<S, A>(withOptic: Optic<S, A>, s: S, withEach: (a: A) =
   }
 }
 
+export function lengthOf<S, A>(withOptic: Optic<S, A>, s: S): number {
+  switch (withOptic.type) {
+    case 'ISO':
+      return 1
+    case 'LENS':
+      return 1
+    case 'PRISM':
+      return foldEither(
+        () => 0,
+        () => 1,
+        withOptic.from(s),
+      )
+    case 'TRAVERSAL':
+      return withOptic.from(s).length
+    default:
+      assertNever(withOptic)
+  }
+}
+
 // If we can obtain a value from `getFrom` using `getWithOptic`,
 // then attempt to set that value into `setInto` using `setWithOptic`.
 export function getAndSet<S1, S2, A2, A1 extends A2>(

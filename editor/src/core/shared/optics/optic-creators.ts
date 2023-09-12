@@ -79,6 +79,28 @@ export function fromArrayIndex<A>(index: number): Optic<Array<A>, A> {
   )
 }
 
+export function pairTupleFirst<A1, A2>(): Optic<[A1, A2], A1> {
+  return lens(
+    ([a1, _a2]) => {
+      return a1
+    },
+    ([_a1, a2], newA1) => {
+      return [newA1, a2]
+    },
+  )
+}
+
+export function pairTupleSecond<A1, A2>(): Optic<[A1, A2], A2> {
+  return lens(
+    ([_a1, a2]) => {
+      return a2
+    },
+    ([a1, _a2], newA2) => {
+      return [a1, newA2]
+    },
+  )
+}
+
 // Produces a traversal over an array, presenting each value of the array.
 export function traverseArray<A>(): Optic<Array<A>, A> {
   return traversal(
@@ -87,6 +109,39 @@ export function traverseArray<A>(): Optic<Array<A>, A> {
     },
     (array: Array<A>, modify: (a: A) => A) => {
       return array.map(modify)
+    },
+  )
+}
+
+// Produces a traversal over the values of an object.
+export function objectValues<A>(): Optic<{ [key: string]: A }, A> {
+  return traversal(
+    (s) => {
+      return Object.values(s)
+    },
+    (object: { [key: string]: A }, modify: (a: A) => A) => {
+      let result: { [key: string]: A } = {}
+      for (const [key, value] of Object.entries(object)) {
+        result[key] = modify(value)
+      }
+      return result
+    },
+  )
+}
+
+// Produces a traversal over the keys and values of an object.
+export function objectEntries<A>(): Optic<{ [key: string]: A }, [string, A]> {
+  return traversal(
+    (s) => {
+      return Object.entries(s)
+    },
+    (object: { [key: string]: A }, modify: (a: [string, A]) => [string, A]) => {
+      let result: { [key: string]: A } = {}
+      for (const entry of Object.entries(object)) {
+        const [key, value] = modify(entry)
+        result[key] = value
+      }
+      return result
     },
   )
 }

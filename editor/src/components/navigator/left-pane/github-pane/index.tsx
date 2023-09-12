@@ -427,6 +427,15 @@ const BranchBlock = () => {
 }
 
 const RemoteChangesBlock = () => {
+  const workersRef = useRefEditorState((store) => {
+    return store.workers
+  })
+  const projectIDRef = useRefEditorState((store) => {
+    return store.editor.id
+  })
+  const currentContentsRef = useRefEditorState((store) => {
+    return store.editor.projectContents
+  })
   const upstreamChanges = useEditorState(
     Substores.github,
     (store) => store.editor.githubData.upstreamChanges,
@@ -484,9 +493,17 @@ const RemoteChangesBlock = () => {
   )
   const triggerUpdateAgainstGithub = React.useCallback(() => {
     if (repo != null && branch != null && commit != null) {
-      void updateProjectAgainstGithub(dispatch, repo, branch, commit)
+      void updateProjectAgainstGithub(
+        workersRef.current,
+        dispatch,
+        repo,
+        branch,
+        commit,
+        forceNotNull('Should have a project ID by now.', projectIDRef.current),
+        currentContentsRef.current,
+      )
     }
-  }, [dispatch, repo, branch, commit])
+  }, [workersRef, dispatch, repo, branch, commit, projectIDRef, currentContentsRef])
   const githubAuthenticated = useEditorState(
     Substores.restOfStore,
     (store) => store.userState.githubState.authenticated,
@@ -822,6 +839,9 @@ const BranchNotLoadedBlock = () => {
   const workersRef = useRefEditorState((store) => {
     return store.workers
   })
+  const projectContentsRef = useRefEditorState((store) => {
+    return store.editor.projectContents
+  })
   const dispatch = useDispatch()
   const { branchName, branches, branchLoaded, githubOperations, githubRepo } = useEditorState(
     Substores.github,
@@ -860,6 +880,7 @@ const BranchNotLoadedBlock = () => {
         false,
         currentDependencies,
         builtInDependencies,
+        projectContentsRef.current,
       )
     }
   }, [
@@ -870,6 +891,7 @@ const BranchNotLoadedBlock = () => {
     currentDependencies,
     builtInDependencies,
     projectID,
+    projectContentsRef,
   ])
 
   const isANewBranch = React.useMemo(() => {

@@ -698,6 +698,10 @@ export function imageFile(
   }
 }
 
+export function isImageFile(projectFile: ProjectFile): projectFile is ImageFile {
+  return projectFile.type === 'IMAGE_FILE'
+}
+
 // Ensure this is kept up to date with clientmodel/lib/src/Utopia/ClientModel.hs.
 export interface AssetFile {
   type: 'ASSET_FILE'
@@ -719,6 +723,16 @@ export function isAssetFile(projectFile: ProjectFile | null): projectFile is Ass
 
 export interface Directory {
   type: 'DIRECTORY'
+}
+
+export function directory(): Directory {
+  return {
+    type: 'DIRECTORY',
+  }
+}
+
+export function isDirectory(projectFile: ProjectFile): projectFile is Directory {
+  return projectFile.type === 'DIRECTORY'
 }
 
 export type ProjectFile = TextFile | ImageFile | Directory | AssetFile

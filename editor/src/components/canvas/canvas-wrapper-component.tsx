@@ -37,7 +37,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-import { FloatingPanelSizesAtom, GapBetweenPanels } from './floating-panels'
+import { FloatingPanelSizesAtom } from './floating-panels'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {

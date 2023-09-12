@@ -6,7 +6,6 @@ import {
   getProjectContentKeyPathElements,
   ProjectContentFile,
 } from '../../../components/assets'
-import { isDirectory } from '../../../core/model/project-file-utils'
 import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type {
@@ -15,6 +14,7 @@ import type {
   ParseSuccess,
   StaticElementPath,
 } from '../../../core/shared/project-file-types'
+import { isDirectory } from '../../../core/shared/project-file-types'
 import { isParseSuccess, isTextFile, RevisionsState } from '../../../core/shared/project-file-types'
 import type { JSXElementChild } from '../../../core/shared/element-template'
 

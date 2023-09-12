@@ -1,4 +1,6 @@
 import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-types'
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
+import { getProjectFileByFilePath } from '../../../../components/assets'
 import {
   getProjectContentsChecksums,
   packageJsonFileFromProjectContents,
@@ -33,34 +35,50 @@ import {
 } from '../helpers'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 
-async function saveAssetsToProject(
+export async function saveAssetsToProject(
   githubRepo: GithubRepo,
   projectID: string,
   branchContent: BranchContent,
   dispatch: EditorDispatch,
+  currentProjectContents: ProjectContentTreeRoot,
 ): Promise<void> {
   await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
-    switch (projectFile.type) {
-      case 'IMAGE_FILE':
-        await saveGithubAsset(
-          githubRepo,
-          forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
-          projectID,
-          fullPath,
-          dispatch,
-        )
-        break
-      case 'ASSET_FILE':
-        await saveGithubAsset(
-          githubRepo,
-          forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
-          projectID,
-          fullPath,
-          dispatch,
-        )
-        break
-      default:
-      // Do nothing.
+    const alreadyExistingFile = getProjectFileByFilePath(currentProjectContents, fullPath)
+    // Only for these two types of project file (easing the typechecking of the subsequent check).
+    if (projectFile.type === 'IMAGE_FILE' || projectFile.type === 'ASSET_FILE') {
+      // Pre-requisites (only one needs to apply):
+      // 1. There's no already existing file with this filename.
+      // 2. The file type has changed.
+      // 3. The file has the same type, but the SHA is different.
+      if (
+        alreadyExistingFile == null ||
+        alreadyExistingFile.type !== projectFile.type ||
+        (alreadyExistingFile.type === projectFile.type &&
+          alreadyExistingFile.gitBlobSha !== projectFile.gitBlobSha)
+      ) {
+        switch (projectFile.type) {
+          case 'IMAGE_FILE':
+            await saveGithubAsset(
+              githubRepo,
+              forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+              projectID,
+              fullPath,
+              dispatch,
+            )
+            break
+          case 'ASSET_FILE':
+            await saveGithubAsset(
+              githubRepo,
+              forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+              projectID,
+              fullPath,
+              dispatch,
+            )
+            break
+          default:
+          // Do nothing.
+        }
+      }
     }
   })
 }
@@ -74,6 +92,7 @@ export async function updateProjectWithBranchContent(
   resetBranches: boolean,
   currentDeps: Array<RequestedNpmDependency>,
   builtInDependencies: BuiltInDependencies,
+  currentProjectContents: ProjectContentTreeRoot,
 ): Promise<void> {
   await runGithubOperation(
     {
@@ -111,7 +130,13 @@ export async function updateProjectWithBranchContent(
           )
 
           // Save assets to the server from Github.
-          await saveAssetsToProject(githubRepo, projectID, responseBody.branch, dispatch)
+          await saveAssetsToProject(
+            githubRepo,
+            projectID,
+            responseBody.branch,
+            dispatch,
+            currentProjectContents,
+          )
 
           const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
           if (packageJson != null && isTextFile(packageJson)) {

@@ -1,5 +1,4 @@
 import * as FastCheck from 'fast-check'
-import { directory, imageFile, isDirectory } from '../core/model/project-file-utils'
 import type {
   TextFile,
   Directory,
@@ -8,6 +7,7 @@ import type {
   ProjectFile,
   AssetFile,
 } from '../core/shared/project-file-types'
+import { directory, imageFile, isDirectory } from '../core/shared/project-file-types'
 import { codeFile, assetFile } from '../core/shared/project-file-types'
 import type {
   ProjectContentDirectory,
@@ -22,12 +22,12 @@ export function codeFileArbitrary(): FastCheck.Arbitrary<TextFile> {
 }
 
 export function remoteImageFileArbitrary(): FastCheck.Arbitrary<ImageFile> {
-  return FastCheck.constant(imageFile(undefined, undefined, 100, 100, 123456))
+  return FastCheck.constant(imageFile(undefined, undefined, 100, 100, 123456, 'aaaaaaa'))
 }
 
 export function localImageFileArbitrary(): FastCheck.Arbitrary<ImageFile> {
   return FastCheck.tuple(FastCheck.string(), FastCheck.string()).map(([imageType, base64]) =>
-    imageFile(imageType, base64, 100, 100, 123456),
+    imageFile(imageType, base64, 100, 100, 123456, 'bbbbbbbb'),
   )
 }
 

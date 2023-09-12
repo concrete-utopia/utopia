@@ -315,6 +315,7 @@ export function createDirectInsertImageActions(
           image.base64Bytes,
           image.hash,
           EditorActions.saveImageDetails(image.size, insertWith),
+          image.gitBlobSha,
         )
         return [saveImageAction]
       }, images),

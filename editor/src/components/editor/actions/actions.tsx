@@ -17,13 +17,8 @@ import {
 import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
-  assetFile,
-  directory,
   fileTypeFromFileName,
   getUtopiaJSXComponentsFromSuccess,
-  imageFile,
-  isDirectory,
-  isImageFile,
   saveFile,
   saveTextFileContents,
   switchToFileType,
@@ -119,6 +114,15 @@ import type {
   ProjectFile,
   StaticElementPath,
   TextFile,
+} from '../../../core/shared/project-file-types'
+import {
+  assetFile,
+  directory,
+  id,
+  imageFile,
+  isImageFile,
+  isDirectory,
+  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -3090,10 +3094,17 @@ export const UPDATE_FNS = {
     let projectFile: ProjectFile
     if (action.imageDetails == null) {
       // Assume stock ASSET_FILE case when there's no image details.
-      projectFile = assetFile(undefined)
+      projectFile = assetFile(undefined, action.gitBlobSha)
     } else {
       // Assume IMAGE_FILE otherwise.
-      projectFile = imageFile(action.fileType, undefined, width, height, action.hash)
+      projectFile = imageFile(
+        action.fileType,
+        undefined,
+        width,
+        height,
+        action.hash,
+        action.gitBlobSha,
+      )
     }
     actionsToRunAfterSave.push(updateFile(assetFilename, projectFile, true))
 
