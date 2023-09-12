@@ -21,31 +21,21 @@ import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-c
 import type {
   ElementPath,
   ElementPathPart,
-  ExportDefaultFunctionOrClass,
   TextFile,
 } from '../../../core/shared/project-file-types'
-import {
-  isTextFile,
-  isParseSuccess,
-  isExportDefaultFunctionOrClass,
-} from '../../../core/shared/project-file-types'
+import { isExportDefaultFunctionOrClass } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { RemixStaticRoutingTable } from '../../editor/store/remix-derived-data'
 import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import { NO_OP, assertNever } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
-import {
-  isRemixOutletAgainstImports,
-  isRemixOutletElement,
-} from '../../../core/model/project-file-utils'
+import { isRemixOutletElement } from '../../../core/model/project-file-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 
 const ROOT_DIR = '/src'
-
-type RouteModule = keyof RouteModules
 
 export type RouteManifestWithContents = RouteManifest<EntryRoute>
 
