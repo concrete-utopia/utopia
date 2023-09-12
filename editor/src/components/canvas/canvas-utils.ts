@@ -2023,13 +2023,13 @@ function getValidElementPathsFromElement(
       ): ElementPath | null {
         const file = getProjectFileByFilePath(projectContents, routeModulePath)
         if (file == null || file.type !== 'TEXT_FILE') {
-          throw new Error(`${routeModulePath} should be a text file`)
+          return null
         }
 
         const topLevelElement = getDefaultExportedTopLevelElement(file)
 
         if (topLevelElement == null) {
-          throw new Error(`${routeModulePath} should have a top level element`)
+          return null
         }
 
         paths.push(
