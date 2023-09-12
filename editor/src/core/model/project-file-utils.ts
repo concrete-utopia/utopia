@@ -27,6 +27,7 @@ import {
   textFileContents,
   forEachParseSuccess,
   isParseSuccess,
+  isExportDefaultFunctionOrClass,
 } from '../shared/project-file-types'
 import type {
   JSXElementChild,
@@ -841,4 +842,55 @@ export function getSavedCodeFromTextFile(file: TextFile): string {
 
 export function getUnsavedCodeFromTextFile(file: TextFile): string | null {
   return file.lastSavedContents == null ? null : file.fileContents.code
+}
+
+export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChild | null {
+  if (file.fileContents.parsed.type !== 'PARSE_SUCCESS') {
+    return null
+  }
+
+  const defaultExportName =
+    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
+
+  if (defaultExportName == null) {
+    return null
+  }
+
+  return (
+    file.fileContents.parsed.topLevelElements.find(
+      (t): t is UtopiaJSXComponent =>
+        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+    )?.rootElement ?? null
+  )
+}
+
+export function getDefaultExportNameAndUidFromFile(
+  projectContents: ProjectContentTreeRoot,
+  filePath: string,
+): { name: string; uid: string } | null {
+  const file = getProjectFileByFilePath(projectContents, filePath)
+  if (
+    file == null ||
+    file.type != 'TEXT_FILE' ||
+    file.fileContents.parsed.type !== 'PARSE_SUCCESS'
+  ) {
+    return null
+  }
+
+  const defaultExportName =
+    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
+
+  if (defaultExportName == null) {
+    return null
+  }
+
+  const elementUid = file.fileContents.parsed.topLevelElements.find(
+    (t): t is UtopiaJSXComponent =>
+      t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
+  )?.rootElement.uid
+  if (elementUid == null) {
+    return null
+  }
+
+  return { name: defaultExportName, uid: elementUid }
 }

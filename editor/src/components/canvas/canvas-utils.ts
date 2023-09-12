@@ -48,6 +48,7 @@ import {
   getIndexInParent,
   generateUidWithExistingComponents,
   insertJSXElementChildren,
+  findPathToJSXElementChild,
 } from '../../core/model/element-template-utils'
 import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -71,6 +72,7 @@ import {
 } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
+  getDefaultExportedTopLevelElement,
   getUtopiaJSXComponentsFromSuccess,
   isRemixOutletElement,
   isRemixSceneElement,
@@ -181,7 +183,6 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
-import { findPathToJSXElementChild, getDefaultExportedTopLevelElement } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {

@@ -18,22 +18,21 @@ import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { attemptToResolveParsedComponents } from '../ui-jsx-canvas'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import type {
-  ElementPath,
-  ElementPathPart,
-  TextFile,
-} from '../../../core/shared/project-file-types'
-import { isExportDefaultFunctionOrClass } from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { RemixStaticRoutingTable } from '../../editor/store/remix-derived-data'
-import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
+import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
-import { isRemixOutletElement } from '../../../core/model/project-file-utils'
+import {
+  getDefaultExportNameAndUidFromFile,
+  getDefaultExportedTopLevelElement,
+  isRemixOutletElement,
+} from '../../../core/model/project-file-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
+import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
 
 const ROOT_DIR = '/src'
 
@@ -158,57 +157,6 @@ export interface GetRoutesAndModulesFromManifestResult {
   routingTable: RemixStaticRoutingTable
 }
 
-export function getDefaultExportNameAndUidFromFile(
-  projectContents: ProjectContentTreeRoot,
-  filePath: string,
-): { name: string; uid: string } | null {
-  const file = getProjectFileByFilePath(projectContents, filePath)
-  if (
-    file == null ||
-    file.type != 'TEXT_FILE' ||
-    file.fileContents.parsed.type !== 'PARSE_SUCCESS'
-  ) {
-    return null
-  }
-
-  const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
-
-  if (defaultExportName == null) {
-    return null
-  }
-
-  const elementUid = file.fileContents.parsed.topLevelElements.find(
-    (t): t is UtopiaJSXComponent =>
-      t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-  )?.rootElement.uid
-  if (elementUid == null) {
-    return null
-  }
-
-  return { name: defaultExportName, uid: elementUid }
-}
-
-export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChild | null {
-  if (file.fileContents.parsed.type !== 'PARSE_SUCCESS') {
-    return null
-  }
-
-  const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
-
-  if (defaultExportName == null) {
-    return null
-  }
-
-  return (
-    file.fileContents.parsed.topLevelElements.find(
-      (t): t is UtopiaJSXComponent =>
-        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-    )?.rootElement ?? null
-  )
-}
-
 function addLoaderAndActionToRoutes(
   routes: DataRouteObject[],
   routeId: string,
@@ -223,63 +171,6 @@ function addLoaderAndActionToRoutes(
       addLoaderAndActionToRoutes(route.children ?? [], routeId, loader, action)
     }
   })
-}
-
-function findAmongJSXElementChildren(
-  parentUid: string,
-  condition: (e: JSXElementChild) => boolean,
-  children: JSXElementChild[],
-): ElementPathPart | null {
-  for (const child of children) {
-    const path = findPathToJSXElementChild(condition, child)
-    if (path != null) {
-      return [parentUid, ...path]
-    }
-  }
-  return null
-}
-
-export function findPathToJSXElementChild(
-  condition: (e: JSXElementChild) => boolean,
-  element: JSXElementChild,
-): ElementPathPart | null {
-  if (condition(element)) {
-    return [element.uid]
-  }
-
-  switch (element.type) {
-    case 'JSX_ELEMENT':
-    case 'JSX_FRAGMENT':
-      return findAmongJSXElementChildren(element.uid, condition, element.children)
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      return findAmongJSXElementChildren(element.uid, condition, [
-        element.whenTrue,
-        element.whenFalse,
-      ])
-    case 'JSX_MAP_EXPRESSION':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return findAmongJSXElementChildren(
-        element.uid,
-        condition,
-        Object.values(element.elementsWithin),
-      )
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      return findAmongJSXElementChildren(
-        element.uid,
-        condition,
-        element.content.map((c) => c.value),
-      )
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_VALUE':
-    case 'JSX_TEXT_BLOCK':
-      return null
-
-    default:
-      assertNever(element)
-  }
-
-  return null
 }
 
 function getRouteModulesWithPaths(

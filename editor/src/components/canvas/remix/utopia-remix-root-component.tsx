@@ -6,10 +6,10 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
-import { getDefaultExportNameAndUidFromFile } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
+import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
 
 type RouterType = ReturnType<typeof createMemoryRouter>
 
