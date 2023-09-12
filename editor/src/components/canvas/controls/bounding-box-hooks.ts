@@ -15,7 +15,6 @@ import {
 } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
-import { SmallElementSize } from './select-mode/absolute-resize-control'
 
 interface NotNullRefObject<T> {
   readonly current: T
@@ -40,6 +39,7 @@ export function useBoundingBox<T = HTMLDivElement>(
   return controlRef
 }
 
+export const SmallElementSize = 20
 export const RESIZE_CONTROL_SAFE_GAP = 6 // safe gap applied when the dimension of an element is smaller than SmallElementSize
 
 function useBoundingBoxFromMetadataRef(

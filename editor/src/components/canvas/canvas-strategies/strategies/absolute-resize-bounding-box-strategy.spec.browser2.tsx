@@ -53,7 +53,6 @@ import {
   SizeLabelTestId,
   ResizePointTestId,
   AbsoluteResizeControlTestId,
-  SmallElementSize,
 } from '../../controls/select-mode/absolute-resize-control'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import { AllFragmentLikeTypes } from './fragment-like-helpers'
@@ -67,7 +66,7 @@ import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 import { getResizeControl, resizeElement } from './absolute-resize.test-utils'
-import { RESIZE_CONTROL_SAFE_GAP } from '../../controls/bounding-box-hooks'
+import { RESIZE_CONTROL_SAFE_GAP, SmallElementSize } from '../../controls/bounding-box-hooks'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(

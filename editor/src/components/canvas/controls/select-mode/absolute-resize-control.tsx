@@ -33,7 +33,7 @@ import { createInteractionViaMouse } from '../../canvas-strategies/interaction-s
 import type { EdgePosition } from '../../canvas-types'
 import { CSSCursor } from '../../canvas-types'
 import { windowToCanvasCoordinates } from '../../dom-lookup'
-import { useBoundingBox } from '../bounding-box-hooks'
+import { SmallElementSize, useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
@@ -46,7 +46,6 @@ interface AbsoluteResizeControlProps {
 }
 
 export const SizeLabelTestId = 'SizeLabelTestId'
-export const SmallElementSize = 20
 
 function shouldUseSmallElementResizeControl(size: number, scale: number): boolean {
   return size <= SmallElementSize / scale
