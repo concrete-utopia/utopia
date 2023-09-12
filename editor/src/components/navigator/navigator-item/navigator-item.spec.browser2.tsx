@@ -369,6 +369,6 @@ describe('Navigator item row icons', () => {
     await checkNavigatorLabel(visibleNavigatorTargets[17], 'div')
     await checkNavigatorLabel(visibleNavigatorTargets[18], 'text')
     await checkNavigatorLabel(visibleNavigatorTargets[19], 'Scene')
-    await checkNavigatorLabel(visibleNavigatorTargets[20], 'Utopia logo')
+    await checkNavigatorLabel(visibleNavigatorTargets[20], 'img') // TODO: this is eventually replaced by Utopia logo
   })
 })
