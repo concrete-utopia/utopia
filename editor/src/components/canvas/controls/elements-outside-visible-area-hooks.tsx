@@ -4,8 +4,6 @@ import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { CanvasRectangle, WindowPoint, WindowRectangle } from '../../../core/shared/math-utils'
 import {
-  clamp,
-  distance,
   getRectCenter,
   isFiniteRectangle,
   offsetPoint,
@@ -13,42 +11,30 @@ import {
   windowRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import { CanvasToolbarId } from '../../editor/canvas-toolbar'
-import { LeftPaneDefaultWidth } from '../../editor/store/editor-state'
+import {
+  CanvasToolbarId,
+  ToolbarIndicatorElementsOutsideVisibleAreaId,
+} from '../../editor/canvas-toolbar'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
-import { useAtom } from 'jotai'
-import { InspectorWidthAtom } from '../../inspector/common/inspector-atoms'
-import { UtopiaTheme } from '../../../uuiui'
-import { canvasPanelOffsets } from '../canvas-utils'
-
-export const ElementOutisdeVisibleAreaIndicatorSize = 22 // px
-const minClusterDistance = 17 // px
-const topBarHeight = 40 // px
-const canvasToolbarSkew = topBarHeight + ElementOutisdeVisibleAreaIndicatorSize
 
 export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
 
 type ElementOutsideVisibleArea = {
   path: ElementPath
   rect: WindowRectangle
-  directions: ElementOutsideVisibleAreaDirection[]
 }
 
 export type ElementOutsideVisibleAreaIndicator = {
-  id: string
   path: ElementPath
-  position: WindowPoint
   angle: number
-  cluster: number
 }
 
 export function useElementsOutsideVisibleArea(
-  ref: React.MutableRefObject<HTMLDivElement | null>,
   localHighlightedViews: ElementPath[],
   localSelectedViews: ElementPath[],
 ): ElementOutsideVisibleAreaIndicator[] {
-  const bounds = ref.current?.getBoundingClientRect() ?? null
+  const bounds = document.getElementById('canvas-root')?.getBoundingClientRect()
   const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect() ?? null
 
   const storeRef = useRefEditorState((store) => ({
@@ -65,8 +51,6 @@ export function useElementsOutsideVisibleArea(
     (store) => store.editor.canvas.roundedCanvasOffset,
     'useElementsOutsideVisibleArea canvasOffset',
   )
-
-  const panelOffsets = canvasPanelOffsets()
 
   const elements = React.useMemo(() => {
     return uniqBy([...localSelectedViews, ...localHighlightedViews], EP.pathsEqual)
@@ -95,17 +79,10 @@ export function useElementsOutsideVisibleArea(
     return windowRectangle({
       x: bounds.x * scaleRatio,
       y: bounds.y * scaleRatio,
-      width: bounds.width * scaleRatio - panelOffsets.left - (panelOffsets.right + 20),
+      width: bounds.width * scaleRatio,
       height: bounds.height * scaleRatio,
     })
-  }, [bounds, panelOffsets, canvasScale])
-
-  const scaledCanvasAreaCenter = React.useMemo(() => {
-    if (scaledCanvasArea == null) {
-      return null
-    }
-    return getRectCenter(scaledCanvasArea)
-  }, [scaledCanvasArea])
+  }, [bounds, canvasScale])
 
   const elementsOutsideVisibleArea = React.useMemo(() => {
     return mapDropNulls((path: ElementPath): ElementOutsideVisibleArea | null => {
@@ -117,7 +94,7 @@ export function useElementsOutsideVisibleArea(
         return null
       }
 
-      const topLeftSkew = windowPoint({ x: -panelOffsets.left, y: 0 })
+      const topLeftSkew = windowPoint({ x: 0, y: 0 })
       const topLeftPoint = offsetPoint(
         canvasPointToWindowPoint(frame, canvasScale, canvasOffset),
         topLeftSkew,
@@ -137,88 +114,42 @@ export function useElementsOutsideVisibleArea(
       return {
         path: path,
         rect: elementRect,
-        directions: directions,
       }
     }, elements)
-  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString, panelOffsets])
+  }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString])
+
+  const getOriginPoint = React.useCallback((): WindowPoint => {
+    const fromRect = document
+      .getElementById(ToolbarIndicatorElementsOutsideVisibleAreaId)
+      ?.getBoundingClientRect()
+    return fromRect != null
+      ? windowPoint({
+          x: (fromRect.x + fromRect.width / 2) * canvasScale,
+          y: (fromRect.y + fromRect.height / 2) * canvasScale,
+        })
+      : windowPoint({ x: 0, y: 0 })
+  }, [canvasScale])
 
   return React.useMemo((): ElementOutsideVisibleAreaIndicator[] => {
-    if (
-      scaledCanvasArea == null ||
-      scaledCanvasAreaCenter == null ||
-      bounds == null ||
-      canvasToolbar == null
-    ) {
+    if (scaledCanvasArea == null || bounds == null || canvasToolbar == null) {
       return []
     }
-
+    const origin = getOriginPoint()
     const indicators: ElementOutsideVisibleAreaIndicator[] = []
-    for (const { rect, path, directions } of elementsOutsideVisibleArea) {
+    for (const { rect, path } of elementsOutsideVisibleArea) {
       // Map element to indicator
       const indicator: ElementOutsideVisibleAreaIndicator = {
-        id: getIndicatorId(path, directions),
         path: path,
-        cluster: 1,
-        angle: angleBetweenPoints(scaledCanvasAreaCenter, getRectCenter(rect)),
-        position: adjustPosition(
-          offsetPoint(
-            rect,
-            windowPoint({
-              x: rect.width / 2,
-              y: rect.height / 2,
-            }),
-          ),
-          directions,
-          scaledCanvasArea,
-          panelOffsets.left,
-          windowRectangle(canvasToolbar),
-        ),
+        angle: angleBetweenPoints(origin, getRectCenter(rect)),
       }
-
-      // Group the indicators into clusters
-      const index = indicators.findIndex((other) => {
-        const distanceBetween = distance(indicator.position, other.position)
-        return distanceBetween < minClusterDistance
-      })
-      if (index >= 0) {
-        indicators[index].cluster++
-      } else {
-        indicators.push(indicator)
-      }
+      indicators.push(indicator)
     }
     return indicators
-  }, [
-    elementsOutsideVisibleArea,
-    scaledCanvasArea,
-    scaledCanvasAreaCenter,
-    panelOffsets,
-    bounds,
-    canvasToolbar,
-  ])
+  }, [elementsOutsideVisibleArea, scaledCanvasArea, bounds, canvasToolbar, getOriginPoint])
 }
 
 function angleBetweenPoints(from: WindowPoint, to: WindowPoint): number {
   return Math.atan2(to.y - from.y, to.x - from.x) + Math.PI
-}
-
-type ElementOutsideVisibleAreaDirectionBaseValue = {
-  direction: ElementOutsideVisibleAreaDirection
-  baseValue: number
-}
-
-function getPositionAxisRelativeToDirection(
-  directions: ElementOutsideVisibleAreaDirection[],
-  currentValue: number,
-  min: ElementOutsideVisibleAreaDirectionBaseValue,
-  max: ElementOutsideVisibleAreaDirectionBaseValue,
-): number {
-  if (directions.includes(min.direction)) {
-    return min.baseValue
-  } else if (directions.includes(max.direction)) {
-    return max.baseValue
-  } else {
-    return clamp(min.baseValue, max.baseValue, currentValue)
-  }
 }
 
 function getOutsideDirections(
@@ -244,59 +175,4 @@ function getOutsideDirections(
     directions.push('right')
   }
   return directions
-}
-
-function adjustPosition(
-  position: WindowPoint,
-  directions: ElementOutsideVisibleAreaDirection[],
-  bounds: WindowRectangle,
-  navigatorWidth: number,
-  canvasToolbar: WindowRectangle | null,
-): WindowPoint {
-  const canvasToolbarOffset =
-    canvasToolbar != null &&
-    position.y <= canvasToolbar.height + canvasToolbarSkew &&
-    position.x < canvasToolbar.x + canvasToolbar.width
-      ? canvasToolbar.width + minClusterDistance
-      : 0
-
-  return windowPoint({
-    x: getPositionAxisRelativeToDirection(
-      directions,
-      position.x - bounds.x - ElementOutisdeVisibleAreaIndicatorSize / 2 + navigatorWidth,
-      {
-        direction: 'left',
-        baseValue:
-          (navigatorWidth > 0 ? navigatorWidth + ElementOutisdeVisibleAreaIndicatorSize : 0) +
-          canvasToolbarOffset,
-      },
-      {
-        direction: 'right',
-        baseValue: bounds.width - ElementOutisdeVisibleAreaIndicatorSize + navigatorWidth,
-      },
-    ),
-    y: getPositionAxisRelativeToDirection(
-      directions,
-      position.y - topBarHeight - ElementOutisdeVisibleAreaIndicatorSize / 2,
-      {
-        direction: 'top',
-        baseValue: 0,
-      },
-      {
-        direction: 'bottom',
-        baseValue: bounds.height - ElementOutisdeVisibleAreaIndicatorSize,
-      },
-    ),
-  })
-}
-
-export function getIndicatorId(
-  path: ElementPath,
-  directions: ElementOutsideVisibleAreaDirection[],
-): string {
-  return `indicator-${EP.toVarSafeComponentId(path)}-${directions.join('_')}`
-}
-
-export function getIndicatorClusterLabel(indicator: ElementOutsideVisibleAreaIndicator): string {
-  return indicator.cluster > 10 ? '10+' : `${indicator.cluster}`
 }
