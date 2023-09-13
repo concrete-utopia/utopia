@@ -1,9 +1,13 @@
+import * as EP from '../../../core/shared/element-path'
 import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
+import {
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+} from '../../../utils/utils.test-utils'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
@@ -12,6 +16,7 @@ import {
   mouseClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointWithDelta,
+  pressKey,
 } from '../event-helpers.test-utils'
 import { REMIX_SCENE_TESTID } from '../ui-jsx-canvas-renderer/remix-scene-component'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
@@ -232,6 +237,62 @@ describe('Remix navigation', () => {
     await mouseClickAtPoint(targetElement, clickPoint)
 
     await expectRemixSceneToBeRendered(renderResult, 'About')
+  })
+})
+
+// TODO re-enable when remix elements are part of the metadata
+xdescribe('Editing Remix content', () => {
+  it('set opacity on remix element', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-uid='rs'
+            data-label='Playground'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='root'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet' />
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <h1 data-uid='title'>${DefaultRouteTextContent}</h1>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const pathString = 'sb/rs:root/outlet:title'
+
+    await selectComponentsForTest(renderResult, [EP.fromString(pathString)])
+    await pressKey('3')
+    await pressKey('0')
+
+    const props = renderResult.getEditorState().editor.allElementProps[pathString]
+    expect(props['opacity']).toEqual('0.3')
   })
 })
 
