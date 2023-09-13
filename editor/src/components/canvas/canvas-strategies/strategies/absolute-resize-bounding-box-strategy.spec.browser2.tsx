@@ -1553,6 +1553,10 @@ export var storyboard = (
       )
     })
     describe('parent resize', () => {
+      /**
+       * In the following tests, the input groups are deliberately _not_ trued up, to make sure the resize actually
+       * does true them up even when coming from a misconfigured scenario.
+       */
       it('when the group is not pinned and positioned absolutely', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(`
