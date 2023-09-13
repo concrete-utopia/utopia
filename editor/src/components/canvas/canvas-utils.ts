@@ -1940,8 +1940,6 @@ export type RemixValidPathsGenerationContext =
   | {
       type: 'active'
       routeModulesToRelativePaths: RouteModulesWithRelativePaths
-      // TODO: should be refactored so that this can accomodate multiple contexts
-      // thinking { [pathToUtopiaRemixRootComponent]: RemixNavigationContext }
       currentlyRenderedRouteModules: Array<DataRouteObject>
     }
 
