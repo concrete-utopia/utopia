@@ -1,3 +1,4 @@
+import type { DataRouteObject } from 'react-router'
 import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   framePointForPinnedProp,
@@ -46,6 +47,7 @@ import {
   getIndexInParent,
   generateUidWithExistingComponents,
   insertJSXElementChildren,
+  findPathToJSXElementChild,
 } from '../../core/model/element-template-utils'
 import { getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -64,7 +66,10 @@ import type {
 import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
+  getDefaultExportedTopLevelElement,
   getUtopiaJSXComponentsFromSuccess,
+  isRemixOutletElement,
+  isRemixSceneElement,
 } from '../../core/model/project-file-utils'
 import type { Either } from '../../core/shared/either'
 import {
@@ -155,6 +160,7 @@ import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
 import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
+import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1935,6 +1941,14 @@ export function getParseSuccessForFilePath(
   }
 }
 
+export type RemixValidPathsGenerationContext =
+  | { type: 'inactive' }
+  | {
+      type: 'active'
+      routeModulesToRelativePaths: RouteModulesWithRelativePaths
+      currentlyRenderedRouteModules: Array<DataRouteObject>
+    }
+
 export function getValidElementPaths(
   focusedElementPath: ElementPath | null,
   topLevelElementName: string,
@@ -1942,6 +1956,7 @@ export function getValidElementPaths(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
@@ -1976,6 +1991,7 @@ export function getValidElementPaths(
           false,
           true,
           resolve,
+          getRemixValidPathsGenerationContext,
         )
       }
     }
@@ -1993,15 +2009,75 @@ function getValidElementPathsFromElement(
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
-    const isScene = isSceneElement(element, filePath, projectContents)
-    const isSceneWithOneChild = isScene && element.children.length === 1
     const uid = getUtopiaID(element)
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
     let paths = [path]
+
+    const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
+    const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
+    if (remixPathGenerationContext.type === 'active' && isRemixScene) {
+      function makeValidPathsFromModule(
+        routeModulePath: string,
+        parentPathInner: ElementPath,
+      ): ElementPath | null {
+        const file = getProjectFileByFilePath(projectContents, routeModulePath)
+        if (file == null || file.type !== 'TEXT_FILE') {
+          return null
+        }
+
+        const topLevelElement = getDefaultExportedTopLevelElement(file)
+
+        if (topLevelElement == null) {
+          return null
+        }
+
+        paths.push(
+          ...getValidElementPathsFromElement(
+            focusedElementPath,
+            topLevelElement,
+            parentPathInner,
+            projectContents,
+            routeModulePath,
+            uiFilePath,
+            false,
+            true,
+            resolve,
+            getRemixValidPathsGenerationContext,
+          ),
+        )
+
+        const pathToOutlet = findPathToJSXElementChild(
+          (e) => isRemixOutletElement(e, filePath, projectContents),
+          topLevelElement,
+        )
+        return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
+      }
+
+      /**
+       * The null check is here to guard against the case when a route with children is missing an outlet
+       * that would render the children
+       */
+
+      for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
+        const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
+        if (entry != null) {
+          const { relativePath, filePath: filePathOfRouteModule } = entry
+          const basePath = EP.appendTwoPaths(path, relativePath)
+          makeValidPathsFromModule(filePathOfRouteModule, basePath)
+        }
+      }
+
+      return paths
+    }
+
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const isSceneWithOneChild = isScene && element.children.length === 1
+
     fastForEach(element.children, (c) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -2014,6 +2090,7 @@ function getValidElementPathsFromElement(
           isSceneWithOneChild,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2035,6 +2112,7 @@ function getValidElementPathsFromElement(
           projectContents,
           filePath,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     }
@@ -2076,6 +2154,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2098,6 +2177,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     })

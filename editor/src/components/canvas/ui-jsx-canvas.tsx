@@ -71,6 +71,7 @@ import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
 import { createExecutionScope } from './ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { applyUIDMonkeyPatch } from '../../utils/canvas-react-utils'
+import type { RemixValidPathsGenerationContext } from './canvas-utils'
 import { getParseSuccessForFilePath, getValidElementPaths } from './canvas-utils'
 import { arrayEqualsByValue, fastForEach, NO_OP } from '../../core/shared/utils'
 import { useTwind } from '../../core/tailwind/tailwind'
@@ -87,6 +88,10 @@ import {
   getListOfEvaluatedFiles,
 } from '../../core/shared/code-exec-utils'
 import { forceNotNull } from '../../core/shared/optional-utils'
+import { useRefEditorState } from '../editor/store/store-hook'
+import { matchRoutes } from 'react-router'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 
 applyUIDMonkeyPatch()
 
@@ -304,13 +309,19 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
   evaluatedFileNames.current = [uiFilePath]
   React.useEffect(() => {
+    // FIXME: this setTimeout is a really fragile solution! `validateControlsToCheck` reads from global variables, and it is hard to guarantee that
+    // there is no race condition coming from changes from other rerenders.
+    // Now it is a little more stable because we capture the values of `resolvedFileNames` and `evaluatedFileNames`, but it would be better to make
+    // this less dependent on global variables and setTimeout.
+    const resolvedFileNamesLocal = [...resolvedFileNames.current]
+    const evaluatedFileNamesLocal = [...evaluatedFileNames.current]
     setTimeout(() => {
       // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
       void validateControlsToCheck(
         dispatch,
         propertyControlsInfo,
-        resolvedFileNames.current,
-        evaluatedFileNames.current,
+        resolvedFileNamesLocal,
+        evaluatedFileNamesLocal,
       )
     }, 0)
   })
@@ -477,6 +488,23 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const topLevelElementsMap = useKeepReferenceEqualityIfPossible(new Map(topLevelJsxComponents))
 
+  const remixDerivedDataRef = useRefEditorState((editor) => editor.derived.remixData)
+
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
+
+  const getRemixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext =>
+    remixDerivedDataRef.current == null
+      ? { type: 'inactive' }
+      : {
+          type: 'active',
+          routeModulesToRelativePaths: remixDerivedDataRef.current.routeModulesToRelativePaths,
+          currentlyRenderedRouteModules:
+            matchRoutes(
+              remixDerivedDataRef.current.routes,
+              remixNavigationState[EP.toString(path)]?.location ?? '/',
+            )?.map((p) => p.route) ?? [],
+        }
+
   const {
     StoryboardRootComponent,
     rootValidPathsArray,
@@ -490,6 +518,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     projectContentsForRequireFn,
     uiFilePath,
     resolve,
+    getRemixPathValidationContext,
   )
 
   clearSpyCollectorInvalidPaths(rootValidPathsSet, metadataContext)
@@ -733,6 +762,7 @@ function useGetStoryboardRoot(
   projectContents: ProjectContentTreeRoot,
   uiFilePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): {
   StoryboardRootComponent: ComponentRendererComponent | undefined
   storyboardRootElementPath: ElementPath
@@ -756,6 +786,7 @@ function useGetStoryboardRoot(
           projectContents,
           uiFilePath,
           resolve,
+          getRemixValidPathsGenerationContext,
         )
   const storyboardRootElementPath = useKeepReferenceEqualityIfPossible(
     validPaths[0] ?? EP.emptyElementPath,
