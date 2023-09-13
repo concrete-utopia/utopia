@@ -559,8 +559,9 @@ describe('Remix navigation', () => {
   })
 })
 
-// TODO re-enable when remix elements are part of the metadata
-xdescribe('Editing Remix content', () => {
+describe('Editing Remix content', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
+
   it('set opacity on remix element', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
@@ -597,7 +598,7 @@ xdescribe('Editing Remix content', () => {
       ['/src/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
-        return <h1 data-uid='title'>${DefaultRouteTextContent}</h1>
+        return <h1 data-uid='title' data-testid='title'>${DefaultRouteTextContent}</h1>
       }
       `,
     })
@@ -610,8 +611,8 @@ xdescribe('Editing Remix content', () => {
     await pressKey('3')
     await pressKey('0')
 
-    const props = renderResult.getEditorState().editor.allElementProps[pathString]
-    expect(props['opacity']).toEqual('0.3')
+    const titleElement = renderResult.renderedDOM.getByTestId('title')
+    expect(titleElement.style.opacity).toEqual('0.3')
   })
 })
 
