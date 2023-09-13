@@ -90,6 +90,9 @@ import type {
 import { shallowEqual } from '../../core/shared/equality-utils'
 import { pick } from '../../core/shared/object-utils'
 import { getFlexAlignment, getFlexJustifyContent, MaxContent } from '../inspector/inspector-common'
+import type { EditorDispatch } from '../editor/action-types'
+import { runDOMWalker } from '../editor/actions/action-creators'
+import { isLiveMode } from '../editor/editor-modes'
 
 const MutationObserverConfig = { attributes: true, childList: true, subtree: true }
 const ObserversAvailable = (window as any).MutationObserver != null && ResizeObserver != null
@@ -293,6 +296,7 @@ export interface DomWalkerMutableStateData {
 
 export function createDomWalkerMutableState(
   editorStoreApi: UtopiaStoreAPI,
+  dispatch: EditorDispatch,
 ): DomWalkerMutableStateData {
   const mutableData: DomWalkerMutableStateData = {
     invalidatedPaths: emptySet(),
@@ -303,7 +307,7 @@ export function createDomWalkerMutableState(
     resizeObserver: null as any,
   }
 
-  const observers = initDomWalkerObservers(mutableData, editorStoreApi)
+  const observers = initDomWalkerObservers(mutableData, editorStoreApi, dispatch)
   mutableData.mutationObserver = observers.mutationObserver
   mutableData.resizeObserver = observers.resizeObserver
 
@@ -531,7 +535,13 @@ function selectCanvasInteractionHappening(store: EditorStorePatched): boolean {
 export function initDomWalkerObservers(
   domWalkerMutableState: DomWalkerMutableStateData,
   editorStore: UtopiaStoreAPI,
+  dispatch: EditorDispatch,
 ): { resizeObserver: ResizeObserver; mutationObserver: MutationObserver } {
+  // Warning: These observers only trigger the DOM walker whilst in live mode to ensure metadata is up to date
+  // when interacting with the actual running application / components. There are likely edge cases where we
+  // also want these to trigger the DOM walker whilst in select mode, but if we find such a case we need to
+  // adequately assess the performance impact of doing so, and ideally find a way to only do so when the observed
+  // change was not triggered by a user interaction
   const resizeObserver = new ResizeObserver((entries: any) => {
     const canvasInteractionHappening = selectCanvasInteractionHappening(editorStore.getState())
     const selectedViews = editorStore.getState().editor.selectedViews
@@ -541,11 +551,16 @@ export function initDomWalkerObservers(
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
       })
     } else {
+      let shouldRunDOMWalker = false
       for (let entry of entries) {
         const sceneID = findParentScene(entry.target)
         if (sceneID != null) {
           domWalkerMutableState.invalidatedPaths.add(sceneID) // warning this invalidates the entire scene instead of just the observed element.
+          shouldRunDOMWalker = true
         }
+      }
+      if (shouldRunDOMWalker && isLiveMode(editorStore.getState().editor.mode)) {
+        dispatch([runDOMWalker()])
       }
     }
   })
@@ -560,6 +575,7 @@ export function initDomWalkerObservers(
         domWalkerMutableState.invalidatedPaths.add(EP.toString(v))
       })
     } else {
+      let shouldRunDOMWalker = false
       for (let mutation of mutations) {
         if (
           mutation.attributeName === 'style' ||
@@ -570,9 +586,13 @@ export function initDomWalkerObservers(
             const sceneID = findParentScene(mutation.target)
             if (sceneID != null) {
               domWalkerMutableState.invalidatedPaths.add(sceneID) // warning this invalidates the entire scene instead of just the observed element.
+              shouldRunDOMWalker = true
             }
           }
         }
+      }
+      if (shouldRunDOMWalker && isLiveMode(editorStore.getState().editor.mode)) {
+        dispatch([runDOMWalker()])
       }
     }
   })

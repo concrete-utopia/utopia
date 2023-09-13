@@ -24,11 +24,14 @@ import {
   clearSelection,
   duplicateSelected,
   setProp_UNSAFE,
+  switchEditorMode,
 } from '../editor/actions/action-creators'
 import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { CanvasControlsContainerID } from './controls/new-canvas-controls'
-import { slightlyOffsetPointBecauseVeryWeirdIssue } from '../../utils/utils.test-utils'
-import { mouseDownAtPoint, mouseMoveToPoint, mouseUpAtPoint } from './event-helpers.test-utils'
+import { slightlyOffsetPointBecauseVeryWeirdIssue, wait } from '../../utils/utils.test-utils'
+import { mouseClickAtPoint, mouseDownAtPoint, mouseMoveToPoint } from './event-helpers.test-utils'
+import { EditorModes } from '../editor/editor-modes'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 disableStoredStateforTests()
 
@@ -403,6 +406,166 @@ describe('Capturing closest offset parent', () => {
     expect(
       EP.toString(metadataOfInnerElement.specialSizeMeasurements.closestOffsetParentPath),
     ).toBe(expectedClosestOffsetParent)
+  })
+})
+
+describe('Observing runtime changes', () => {
+  const changingProjectCode = `
+    import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+
+    const App = (props) => {
+      const [showDiv, setShowDiv] = React.useState(false)
+
+      return (
+        <div
+          style={{ width: '100%', height: '100%' }}
+          data-uid='app-root'
+        >
+          <div
+            style={{
+              backgroundColor: 'lightblue',
+              position: 'absolute',
+              left: 49,
+              top: 59,
+              width: 200,
+              height: 44,
+              textAlign: 'center',
+            }}
+            onMouseUp={() => {
+              setTimeout(() => setShowDiv(true), 0) // setTimeout so that this happens after we handle mouse events
+            }}
+            data-uid='button'
+            data-testid='click-me'
+          >
+            Click me
+          </div>
+          {
+            // @utopia/uid=conditional
+            showDiv ? (
+            <div
+              style={{
+                backgroundColor: 'lightblue',
+                position: 'absolute',
+                left: 49,
+                top: 150,
+                width: 200,
+                height: 44,
+                textAlign: 'center',
+              }}
+              data-uid='target-div'
+              data-testid='target-div'
+            >
+              Hello!
+            </div>
+          ) : null}
+        </div>
+      )
+    }
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <Scene
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 532,
+            top: 66,
+            width: 296,
+            height: 457,
+          }}
+          data-uid='sc'
+        >
+          <App data-uid='app' />
+        </Scene>
+      </Storyboard>
+    )
+  `
+
+  it('Updates the metadata in live mode', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      changingProjectCode,
+      'await-first-dom-report',
+    )
+    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const targetPath = EP.fromString('sb/sc/app:app-root/conditional/target-div')
+
+    // Check no metadata for the target at the start
+    const metadataBefore = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      targetPath,
+    )
+    expect(metadataBefore).toBeNull()
+
+    const recordedActionsBefore = [...renderResult.getRecordedActions()]
+
+    const buttonToClick = renderResult.renderedDOM.getByTestId('click-me')
+    const buttonToClickBounds = buttonToClick.getBoundingClientRect()
+    const clickPoint = {
+      x: buttonToClickBounds.width / 2,
+      y: buttonToClickBounds.height / 2,
+    }
+
+    await mouseClickAtPoint(buttonToClick, clickPoint)
+    await wait(20)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const recordedActionsAfter = [...renderResult.getRecordedActions()]
+    const recordedActionsDuring = recordedActionsAfter.slice(recordedActionsBefore.length)
+
+    const runDomWalkerActions = recordedActionsDuring.filter((a) => a.action === 'RUN_DOM_WALKER')
+    expect(runDomWalkerActions.length).toEqual(2) // Both the resize observer and mutation observer will fire
+
+    // Check there is metadata for the target at the end
+    const metadataAfter = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      targetPath,
+    )
+    expect(metadataAfter).not.toBeNull()
+  })
+
+  it('Does not update the metadata in select mode', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      changingProjectCode,
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.fromString('sb/sc/app:app-root/conditional/target-div')
+
+    // Check no metadata for the target at the start
+    const metadataBefore = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      targetPath,
+    )
+    expect(metadataBefore).toBeNull()
+
+    const recordedActionsBefore = [...renderResult.getRecordedActions()]
+
+    const buttonToClick = renderResult.renderedDOM.getByTestId('click-me')
+    const buttonToClickBounds = buttonToClick.getBoundingClientRect()
+    const clickPoint = {
+      x: buttonToClickBounds.width / 2,
+      y: buttonToClickBounds.height / 2,
+    }
+
+    await mouseClickAtPoint(buttonToClick, clickPoint)
+    await wait(0)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const recordedActionsAfter = [...renderResult.getRecordedActions()]
+    const recordedActionsDuring = recordedActionsAfter.slice(recordedActionsBefore.length)
+
+    const runDomWalkerActions = recordedActionsDuring.filter((a) => a.action === 'RUN_DOM_WALKER')
+    expect(runDomWalkerActions.length).toEqual(0)
+
+    // Check there is still no metadata for the target at the end
+    const metadataAfter = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      targetPath,
+    )
+    expect(metadataAfter).toBeNull()
   })
 })
 

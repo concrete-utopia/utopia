@@ -70,6 +70,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SET_CODE_EDITOR_BUILD_ERRORS':
     case 'SET_CODE_EDITOR_LINT_ERRORS':
     case 'SAVE_DOM_REPORT':
+    case 'RUN_DOM_WALKER':
     case 'SET_FILEBROWSER_RENAMING_TARGET':
     case 'UPDATE_DUPLICATION_STATE':
     case 'CLEAR_IMAGE_FILE_BLOB':
