@@ -915,7 +915,7 @@ describe('canvas context menu', () => {
       const inactiveElementOptic = forElementOptic(conditionalPath)
         .compose(jsxConditionalExpressionOptic)
         .compose(conditionalWhenFalseOptic)
-      const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState().editor)
+      const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState())
       const testValuePath = EP.appendToPath(conditionalPath, inactiveElement.uid)
 
       await renderResult.dispatch(selectComponents([testValuePath], false), true)

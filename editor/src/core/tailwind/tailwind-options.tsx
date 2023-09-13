@@ -15,6 +15,7 @@ import {
   useEditorState,
   useRefEditorState,
 } from '../../components/editor/store/store-hook'
+import type { DerivedState } from '../../components/editor/store/editor-state'
 import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
 import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../components/assets'
@@ -234,12 +235,14 @@ function getJSXElementForTarget(
   openUIJSFileKey: string,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
+  derived: DerivedState,
 ): JSXElementChild | null {
   const underlyingTarget = normalisePathToUnderlyingTarget(
     projectContents,
     nodeModules,
     openUIJSFileKey,
     target,
+    derived.remixData?.routingTable ?? null,
   )
   const underlyingPath =
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey
@@ -303,6 +306,7 @@ export function useGetSelectedClasses(): {
             openUIJSFileKey,
             store.editor.projectContents,
             store.editor.nodeModules.files,
+            store.derived,
           ),
         )
       }

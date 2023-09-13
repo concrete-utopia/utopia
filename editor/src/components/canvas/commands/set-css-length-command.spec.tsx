@@ -6,7 +6,7 @@ import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { cssPixelLength } from '../../inspector/common/css-utils'
@@ -50,6 +50,7 @@ describe('setCssLengthProperty', () => {
 
     const result = runSetCssLengthProperty(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       setCSSPropertyCommand,
     )
 
@@ -60,6 +61,7 @@ describe('setCssLengthProperty', () => {
     const updatedHeightProp = withUnderlyingTargetFromEditorState(
       cardInstancePath,
       patchedEditor,
+      renderResult.getEditorState().derived,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {
@@ -92,10 +94,16 @@ describe('setCssLengthProperty', () => {
       'row',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
-    expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
-    expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'width'),
+    ).toBe(400)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'minWidth'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'maxWidth'),
+    ).toBeNull()
   })
 
   it('Setting height does not remove min-width and max-width props', async () => {
@@ -114,10 +122,16 @@ describe('setCssLengthProperty', () => {
       'row',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
-    expect(getStylePropForElement(result, targetPath, 'height')).toBe(400)
-    expect(getStylePropForElement(result, targetPath, 'minWidth')).toBe(50)
-    expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBe(150)
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'height'),
+    ).toBe(400)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'minWidth'),
+    ).toBe(50)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'maxWidth'),
+    ).toBe(150)
   })
 
   it('Setting width removes flex props if the parent is a horizontal flex', async () => {
@@ -145,14 +159,28 @@ describe('setCssLengthProperty', () => {
       'row',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
-    expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
-    expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flex')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flexGrow')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flexShrink')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flexBasis')).toBeNull()
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'width'),
+    ).toBe(400)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'minWidth'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'maxWidth'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flex'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flexGrow'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flexShrink'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flexBasis'),
+    ).toBeNull()
   })
 
   it('Setting width keeps flex props if the parent is a vertical flex', async () => {
@@ -180,14 +208,28 @@ describe('setCssLengthProperty', () => {
       'column',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
-    expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
-    expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flex')).not.toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flexGrow')).not.toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flexShrink')).not.toBeNull()
-    expect(getStylePropForElement(result, targetPath, 'flexBasis')).not.toBeNull()
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'width'),
+    ).toBe(400)
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'minWidth'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'maxWidth'),
+    ).toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flex'),
+    ).not.toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flexGrow'),
+    ).not.toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flexShrink'),
+    ).not.toBeNull()
+    expect(
+      getStylePropForElement(result, editor.getEditorState().derived, targetPath, 'flexBasis'),
+    ).not.toBeNull()
   })
 })
 
@@ -223,20 +265,25 @@ function projectWithChildStyle(
       `
 }
 
-function runCommandUpdateEditor(editor: EditorState, command: SetCssLengthProperty): EditorState {
-  const result = runSetCssLengthProperty(editor, command)
+function runCommandUpdateEditor(
+  store: EditorStorePatched,
+  command: SetCssLengthProperty,
+): EditorState {
+  const result = runSetCssLengthProperty(store.editor, store.derived, command)
 
-  return updateEditorStateWithPatches(editor, result.editorStatePatches)
+  return updateEditorStateWithPatches(store.editor, result.editorStatePatches)
 }
 
 function getStylePropForElement(
   editor: EditorState,
+  derived: DerivedState,
   elementPath: ElementPath,
   styleProp: keyof ParsedCSSProperties,
 ): number | null {
   return withUnderlyingTargetFromEditorState(
     elementPath,
     editor,
+    derived,
     null,
     (success, element, underlyingTarget, underlyingFilePath) => {
       if (isJSXElement(element)) {

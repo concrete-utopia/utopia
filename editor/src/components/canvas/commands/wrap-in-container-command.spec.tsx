@@ -8,15 +8,21 @@ import type {
 } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { runWrapInContainerCommand, wrapInContainerCommand } from './wrap-in-container-command'
 
 describe('wrapInContainerCommand', () => {
-  function getElement(path: ElementPath, state: EditorState) {
-    return withUnderlyingTargetFromEditorState(path, state, null, (_, element) => element)
+  function getElement(path: ElementPath, store: EditorStorePatched) {
+    return withUnderlyingTargetFromEditorState(
+      path,
+      store.editor,
+      store.derived,
+      null,
+      (_, element) => element,
+    )
   }
 
   function getPath(uid: string) {
@@ -38,19 +44,25 @@ describe('wrapInContainerCommand', () => {
 
     const targetPath = getPath('card-instance')
 
-    const originalElement = getElement(targetPath, editor)
+    const originalElement = getElement(targetPath, renderResult.getEditorState())
     expect(originalElement).not.toBeNull()
 
     const cmd = wrapInContainerCommand('always', targetPath, 'the-wrapper', 'fragment')
-    const result = runWrapInContainerCommand(editor, cmd)
+    const result = runWrapInContainerCommand(editor, renderResult.getEditorState().derived, cmd)
     const patchedEditor = updateEditorStateWithPatches(editor, result.editorStatePatches)
 
     const wrapperPath = EP.appendToPath(EP.parentPath(targetPath), 'the-wrapper')
 
-    const oldElement = getElement(targetPath, patchedEditor)
+    const oldElement = getElement(targetPath, {
+      ...renderResult.getEditorState(),
+      editor: patchedEditor,
+    })
     expect(oldElement).toBeNull()
 
-    const wrapper = getElement(wrapperPath, patchedEditor)
+    const wrapper = getElement(wrapperPath, {
+      ...renderResult.getEditorState(),
+      editor: patchedEditor,
+    })
     expect(wrapper).not.toBeNull()
     expect(wrapper?.type).toEqual('JSX_FRAGMENT')
 
@@ -73,19 +85,25 @@ describe('wrapInContainerCommand', () => {
 
     const targetPath = getPath('card-instance')
 
-    const originalElement = getElement(targetPath, editor)
+    const originalElement = getElement(targetPath, renderResult.getEditorState())
     expect(originalElement).not.toBeNull()
 
     const cmd = wrapInContainerCommand('always', targetPath, 'the-wrapper', 'conditional')
-    const result = runWrapInContainerCommand(editor, cmd)
+    const result = runWrapInContainerCommand(editor, renderResult.getEditorState().derived, cmd)
     const patchedEditor = updateEditorStateWithPatches(editor, result.editorStatePatches)
 
     const wrapperPath = EP.appendToPath(EP.parentPath(targetPath), 'the-wrapper')
 
-    const oldElement = getElement(targetPath, patchedEditor)
+    const oldElement = getElement(targetPath, {
+      ...renderResult.getEditorState(),
+      editor: patchedEditor,
+    })
     expect(oldElement).toBeNull()
 
-    const wrapper = getElement(wrapperPath, patchedEditor)
+    const wrapper = getElement(wrapperPath, {
+      ...renderResult.getEditorState(),
+      editor: patchedEditor,
+    })
     expect(wrapper).not.toBeNull()
     expect(wrapper?.type).toEqual('JSX_CONDITIONAL_EXPRESSION')
 
@@ -112,19 +130,25 @@ describe('wrapInContainerCommand', () => {
 
     const targetPath = getPath('THIS-DOES-NOT-EXIST')
 
-    const originalElement = getElement(targetPath, editor)
+    const originalElement = getElement(targetPath, renderResult.getEditorState())
     expect(originalElement).toBeNull()
 
     const cmd = wrapInContainerCommand('always', targetPath, 'the-wrapper', 'fragment')
-    const result = runWrapInContainerCommand(editor, cmd)
+    const result = runWrapInContainerCommand(editor, renderResult.getEditorState().derived, cmd)
     const patchedEditor = updateEditorStateWithPatches(editor, result.editorStatePatches)
 
     const wrapperPath = EP.appendToPath(EP.parentPath(targetPath), 'the-wrapper')
 
-    const oldElement = getElement(targetPath, patchedEditor)
+    const oldElement = getElement(targetPath, {
+      ...renderResult.getEditorState(),
+      editor: patchedEditor,
+    })
     expect(oldElement).toBeNull()
 
-    const wrapper = getElement(wrapperPath, patchedEditor)
+    const wrapper = getElement(wrapperPath, {
+      ...renderResult.getEditorState(),
+      editor: patchedEditor,
+    })
     expect(wrapper).toBeNull()
   })
 })

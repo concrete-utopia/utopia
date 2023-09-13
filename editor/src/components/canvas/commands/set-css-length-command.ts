@@ -12,8 +12,9 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState } from '../../editor/store/editor-state'
-import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
+import { deriveState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
 import type { CSSKeyword, CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import {
   cssPixelLength,
@@ -71,11 +72,13 @@ export function setCssLengthProperty(
 
 export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: SetCssLengthProperty,
 ) => {
   // in case of width or height change, delete min, max and flex props
   const editorStateWithPropsDeleted = deleteConflictingPropsForWidthHeight(
     editorState,
+    derivedState,
     command.target,
     command.property,
     command.parentFlexDirection,
@@ -85,6 +88,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
+    derivedState,
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
       if (isJSXElement(element)) {
@@ -152,9 +156,17 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     })
   }
 
+  const derivedStateWithPropsDeleted = deriveState(
+    editorStateWithPropsDeleted,
+    derivedState,
+    'patched',
+    patchedCreateRemixDerivedDataMemo,
+  )
+
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorStateWithPropsDeleted,
+    derivedStateWithPropsDeleted,
     command.target,
     propsToUpdate,
   )

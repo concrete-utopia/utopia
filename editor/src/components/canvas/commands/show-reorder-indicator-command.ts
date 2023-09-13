@@ -8,7 +8,7 @@ import {
 } from '../../../core/shared/math-utils'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { singleAxisAutoLayoutContainerDirections } from '../canvas-strategies/strategies/flow-reorder-helpers'
 import type { SiblingPosition } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import {
@@ -34,6 +34,7 @@ export function showReorderIndicator(target: ElementPath, index: number): ShowRe
 
 export const runShowReorderIndicator: CommandFunction<ShowReorderIndicator> = (
   editor: EditorState,
+  __: DerivedState,
   command: ShowReorderIndicator,
 ) => {
   const targetParent = MetadataUtils.findElementByElementPath(editor.jsxMetadata, command.target)

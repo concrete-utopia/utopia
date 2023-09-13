@@ -33,7 +33,6 @@ import {
   jsExpressionValue,
   getJSXElementNameAsString,
   isJSExpressionMapOrOtherJavaScript,
-  isJSXFragment,
   isUtopiaJSXComponent,
   emptyComments,
   jsxElementName,
@@ -50,7 +49,7 @@ import {
   insertJSXElementChildren,
   findPathToJSXElementChild,
 } from '../../core/model/element-template-utils'
-import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import { getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
@@ -64,12 +63,7 @@ import type {
   HighlightBoundsForUids,
   ExportsDetail,
 } from '../../core/shared/project-file-types'
-import {
-  ParseSuccess,
-  isParseSuccess,
-  isTextFile,
-  NodeModules,
-} from '../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
   getDefaultExportedTopLevelElement,
@@ -96,11 +90,8 @@ import Utils, {
 import type { CanvasPoint, CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
-  localRectangle,
-  LocalRectangle,
   nullIfInfinity,
 } from '../../core/shared/math-utils'
 import type {
@@ -108,24 +99,15 @@ import type {
   AllElementProps,
   ElementProps,
   NavigatorEntry,
+  DerivedState,
 } from '../editor/store/editor-state'
 import {
-  DerivedState,
-  OriginalCanvasAndLocalFrame,
   removeElementAtPath,
-  TransientCanvasState,
-  transientCanvasState,
-  transientFileState,
-  modifyUnderlyingTargetElement,
   modifyParseSuccessAtPath,
-  getOpenUIJSFileKey,
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
-  TransientFilesState,
-  forUnderlyingTargetFromEditorState,
-  TransientFileState,
-  ResizeOptions,
   isSyntheticNavigatorEntry,
+  deriveState,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -137,29 +119,24 @@ import type {
   EdgePosition,
   PinOrFlexFrameChange,
 } from './canvas-types'
-import { CSSCursor, flexResizeChange, pinFrameChange } from './canvas-types'
+import { flexResizeChange, pinFrameChange } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
   filterGuidelinesStaticAxis,
   oneGuidelinePerDimension,
 } from './controls/guideline-helpers'
-import {
-  determineElementsToOperateOnForDragging,
-  dragComponent,
-  extendSelectedViewsForInteraction,
-} from './controls/select-mode/move-utils'
+import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import type {
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from './guideline'
 import { cornerGuideline, Guidelines, xAxisGuideline, yAxisGuideline } from './guideline'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
+import { getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
-import { getAllTargetsAtPointAABB } from './dom-lookup'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
@@ -182,6 +159,7 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
+import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
@@ -270,10 +248,12 @@ function valueToUseForPin(
 
 export function updateFramesOfScenesAndComponents(
   editorState: EditorState,
+  derivedState: DerivedState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
 ): EditorState {
   let workingEditorState: EditorState = editorState
+  let workingDerivedState: DerivedState = derivedState
   let toastsToAdd: Array<Notice> = []
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
     const target = frameAndTarget.target
@@ -287,6 +267,7 @@ export function updateFramesOfScenesAndComponents(
     const element = withUnderlyingTargetFromEditorState(
       staticTarget,
       workingEditorState,
+      workingDerivedState,
       null,
       (success, underlyingElement) => underlyingElement,
     )
@@ -300,6 +281,7 @@ export function updateFramesOfScenesAndComponents(
     const parentElement = withUnderlyingTargetFromEditorState(
       staticParentPath,
       workingEditorState,
+      workingDerivedState,
       null,
       (success, underlyingElement) => underlyingElement,
     )
@@ -324,6 +306,7 @@ export function updateFramesOfScenesAndComponents(
           workingEditorState = modifyUnderlyingElementForOpenFile(
             originalTarget,
             workingEditorState,
+            workingDerivedState,
             (elem) => elem,
             (success, underlyingTarget) => {
               const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -619,6 +602,7 @@ export function updateFramesOfScenesAndComponents(
       workingEditorState = modifyUnderlyingElementForOpenFile(
         originalTarget,
         workingEditorState,
+        workingDerivedState,
         (elem) => {
           // Remove the pinning and flex props first...
           const propsToMaybeRemove: Array<LayoutPinnedProp | 'flexBasis'> =
@@ -670,7 +654,14 @@ export function updateFramesOfScenesAndComponents(
     workingEditorState = modifyUnderlyingElementForOpenFile(
       staticTarget,
       workingEditorState,
+      workingDerivedState,
       (attrs) => roundJSXElementLayoutValues(styleStringInArray, attrs),
+    )
+    workingDerivedState = deriveState(
+      workingEditorState,
+      workingDerivedState,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
     )
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
@@ -1347,6 +1338,7 @@ export function moveTemplate(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editorState: EditorState,
+  derivedState: DerivedState,
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
@@ -1371,11 +1363,13 @@ export function moveTemplate(
     return withUnderlyingTargetFromEditorState(
       target,
       editorState,
+      derivedState,
       noChanges(),
       (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
         return withUnderlyingTargetFromEditorState(
           newParentPath,
           editorState,
+          derivedState,
           noChanges(),
           (
             newParentSuccess,
@@ -1436,6 +1430,7 @@ export function moveTemplate(
                     newParentPath,
                     workingEditorState.projectContents,
                     workingEditorState.nodeModules.files,
+                    derivedState.remixData?.routingTable ?? null,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
@@ -1539,6 +1534,7 @@ export function moveTemplate(
 
                 workingEditorState = updateFramesOfScenesAndComponents(
                   workingEditorState,
+                  derivedState,
                   frameChanges,
                   parentFrame,
                 )
@@ -1699,6 +1695,7 @@ export function duplicate(
   paths: Array<ElementPath>,
   newParentPath: ElementPath | null,
   editor: EditorState,
+  derivedState: DerivedState,
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
   anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
@@ -1707,6 +1704,8 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
+  let workingDerivedState: DerivedState = derivedState
+
   const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
@@ -1716,6 +1715,7 @@ export function duplicate(
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
+      workingDerivedState,
       (elem) => elem,
       (success, underlyingInstancePath, underlyingFilePath) => {
         let utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
@@ -1848,6 +1848,12 @@ export function duplicate(
       ...workingEditorState,
       jsxMetadata: metadataUpdate(workingEditorState.jsxMetadata),
     }
+    workingDerivedState = deriveState(
+      workingEditorState,
+      workingDerivedState,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
   }
 
   return {

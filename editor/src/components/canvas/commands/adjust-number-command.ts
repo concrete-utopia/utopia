@@ -22,14 +22,16 @@ import {
   ProjectContentsTree,
   ProjectContentTreeRoot,
 } from '../../assets'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
+  deriveState,
   forUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { patchParseSuccessAtElementPath } from './patch-utils'
+import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
 
 export interface AdjustNumberProperty extends BaseCommand {
   type: 'ADJUST_NUMBER_PROPERTY'
@@ -75,6 +77,7 @@ export function adjustNumberInequalityCondition(
 
 export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: AdjustNumberProperty,
 ) => {
   // Handle updating the existing value, treating a value that can't be parsed
@@ -87,6 +90,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   const currentValue = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
+    derivedState,
     null,
     (success, element, underlyingTarget, underlyingFilePath) => {
       if (isJSXElement(element)) {
@@ -166,6 +170,7 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
     // Apply the update to the properties.
     const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
       editorState,
+      derivedState,
       command.target,
       propsToUpdate,
     )
@@ -181,12 +186,14 @@ export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
 
 export function applyValuesAtPath(
   editorState: EditorState,
+  derivedState: DerivedState,
   target: ElementPath,
   jsxValuesAndPathsToSet: ValueAtPath[],
 ): { editorStateWithChanges: EditorState; editorStatePatch: EditorStatePatch } {
   const workingEditorState = modifyUnderlyingElementForOpenFile(
     target,
     editorState,
+    derivedState,
     (element: JSXElement) => {
       return foldEither(
         () => {
@@ -203,16 +210,28 @@ export function applyValuesAtPath(
     },
   )
 
-  const editorStatePatch = patchParseSuccessAtElementPath(target, workingEditorState, (success) => {
-    return {
-      topLevelElements: {
-        $set: success.topLevelElements,
-      },
-      imports: {
-        $set: success.imports,
-      },
-    }
-  })
+  const workingDerivedState = deriveState(
+    workingEditorState,
+    derivedState,
+    'patched',
+    patchedCreateRemixDerivedDataMemo,
+  )
+
+  const editorStatePatch = patchParseSuccessAtElementPath(
+    target,
+    workingEditorState,
+    workingDerivedState,
+    (success) => {
+      return {
+        topLevelElements: {
+          $set: success.topLevelElements,
+        },
+        imports: {
+          $set: success.imports,
+        },
+      }
+    },
+  )
 
   return {
     editorStateWithChanges: workingEditorState,

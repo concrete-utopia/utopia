@@ -65,6 +65,7 @@ import {
   treatElementAsFragmentLike,
 } from '../fragment-like-helpers'
 import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
+import type { RemixRoutingTable } from '../../../../editor/store/remix-derived-data'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -79,11 +80,13 @@ export function getAbsoluteReparentPropertyChanges(
   targetStartingMetadata: ElementInstanceMetadataMap,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
+  remixRoutingTable: RemixRoutingTable | null,
   openFile: string | null | undefined,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getElementFromProjectContents(
     target,
     projectContents,
+    remixRoutingTable,
     openFile,
   )
 
@@ -319,6 +322,7 @@ export function getReparentPropertyChanges(
   currentMetadata: ElementInstanceMetadataMap,
   currentPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
+  remixRoutingTable: RemixRoutingTable | null,
   openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
@@ -343,6 +347,7 @@ export function getReparentPropertyChanges(
         originalContextMetadata,
         currentMetadata,
         projectContents,
+        remixRoutingTable,
         openFile,
       )
 
@@ -358,6 +363,7 @@ export function getReparentPropertyChanges(
           newParent,
           reparentStrategy,
           projectContents,
+          remixRoutingTable,
           openFile,
           [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
         ),
@@ -400,6 +406,7 @@ export function getReparentPropertyChanges(
           newParent,
           reparentStrategy,
           projectContents,
+          remixRoutingTable,
           openFile,
           [
             stripPinsConvertToVisualSize,

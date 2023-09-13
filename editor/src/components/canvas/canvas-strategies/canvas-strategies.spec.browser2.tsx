@@ -174,6 +174,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
         renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
@@ -223,6 +224,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
         renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
@@ -313,6 +315,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
         renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
@@ -362,6 +365,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
         renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,
@@ -411,6 +415,7 @@ describe('Strategy Fitness', () => {
       RegisteredCanvasStrategies,
       pickCanvasStateFromEditorState(
         renderResult.getEditorState().editor,
+        renderResult.getEditorState().derived,
         renderResult.getEditorState().builtInDependencies,
       ),
       interactionSession,

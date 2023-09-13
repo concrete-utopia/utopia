@@ -38,7 +38,7 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import type { IndexPosition } from '../../../utils/utils'
 import { absolute } from '../../../utils/utils'
 import type { EditorDispatch } from '../action-types'
-import type { EditorState } from '../store/editor-state'
+import type { DerivedState, EditorState } from '../store/editor-state'
 import { modifyUnderlyingTargetElement } from '../store/editor-state'
 import type { ConditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import {
@@ -58,6 +58,7 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export function unwrapConditionalClause(
   editor: EditorState,
+  derivedState: DerivedState,
   target: ElementPath,
   parentPath: ConditionalClauseInsertionPath,
 ): EditorState {
@@ -66,6 +67,7 @@ export function unwrapConditionalClause(
     parentPath.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
+    derivedState,
     (element) => element,
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -130,6 +132,7 @@ export function unwrapConditionalClause(
 }
 export function unwrapTextContainingConditional(
   editor: EditorState,
+  derived: DerivedState,
   target: ElementPath,
   dispatch: EditorDispatch,
 ): EditorState {
@@ -156,6 +159,7 @@ export function unwrapTextContainingConditional(
     targetParent,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
+    derived,
     (element) => element,
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -165,6 +169,7 @@ export function unwrapTextContainingConditional(
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,
+        derived.remixData?.routingTable ?? null,
         editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,
@@ -194,7 +199,7 @@ export function unwrapTextContainingConditional(
     },
   )
 
-  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated, dispatch)
+  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated, dispatch, derived)
 }
 
 export function isTextContainingConditional(
@@ -221,6 +226,7 @@ export function isTextContainingConditional(
 
 export function wrapElementInsertions(
   editor: EditorState,
+  derivedState: DerivedState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
   rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
@@ -274,7 +280,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -282,6 +288,7 @@ export function wrapElementInsertions(
         case 'CONDITIONAL_CLAUSE_INSERTION':
           const withTargetAdded = insertElementIntoJSXConditional(
             editor,
+            derivedState,
             staticTarget,
             elementToInsert,
             importsToAdd,
@@ -296,7 +303,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -304,6 +311,7 @@ export function wrapElementInsertions(
         case 'CONDITIONAL_CLAUSE_INSERTION':
           const withTargetAdded = insertElementIntoJSXConditional(
             editor,
+            derivedState,
             staticTarget,
             elementToInsert,
             importsToAdd,
@@ -318,7 +326,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -326,6 +334,7 @@ export function wrapElementInsertions(
         case 'CONDITIONAL_CLAUSE_INSERTION':
           const withTargetAdded = insertConditionalIntoConditionalClause(
             editor,
+            derivedState,
             staticTarget,
             elementToInsert,
             importsToAdd,
@@ -370,6 +379,7 @@ function findIndexPositionInParent(
 
 function insertElementIntoJSXConditional(
   editor: EditorState,
+  derivedState: DerivedState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXElement | JSXFragment,
   importsToAdd: Imports,
@@ -378,6 +388,7 @@ function insertElementIntoJSXConditional(
     staticTarget.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
+    derivedState,
     (element) => element,
     (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -421,6 +432,7 @@ function insertElementIntoJSXConditional(
 }
 function insertConditionalIntoConditionalClause(
   editor: EditorState,
+  derivedState: DerivedState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXConditionalExpression,
   importsToAdd: Imports,
@@ -429,6 +441,7 @@ function insertConditionalIntoConditionalClause(
     staticTarget.intendedParentPath,
     forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
+    derivedState,
     (element) => element,
     (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)

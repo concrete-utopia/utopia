@@ -10,6 +10,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier } from '../../../../utils/modifiers'
 import type { AllElementProps, EditorState } from '../../../editor/store/editor-state'
+import { emptyDerivedState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
@@ -103,6 +104,7 @@ function dragByPixels(
   const strategyResult = absoluteMoveStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
+      emptyDerivedState(editorState),
       createBuiltInDependenciesList(null),
       startingMetadata,
       startingAllElementProps,
@@ -115,6 +117,7 @@ function dragByPixels(
 
   const finalEditor = foldAndApplyCommands(
     editorState,
+    emptyDerivedState(editorState),
     editorState,
     [],
     strategyResult.commands,
