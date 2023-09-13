@@ -362,10 +362,10 @@ export function normalisePathSuccessOrThrowError(
 
 export function normalisePathToUnderlyingTarget(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  currentFilePath: string,
+  _nodeModules: NodeModules,
+  _currentFilePath: string,
   elementPath: ElementPath | null,
-  remixRoutingTable: RemixRoutingTable | null,
+  _remixRoutingTable: RemixRoutingTable | null,
 ): NormalisePathResult {
   if (elementPath == null || EP.isEmptyPath(elementPath)) {
     return normalisePathError('Empty element path')
