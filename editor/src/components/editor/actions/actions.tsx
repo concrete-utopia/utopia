@@ -998,6 +998,11 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         openUIJSFilePath,
         targetPath,
       )
+
+      if (underlyingTarget.type === 'NORMALISE_PATH_ELEMENT_NOT_FOUND') {
+        return working // The element has likely already been deleted
+      }
+
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
       function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {

@@ -1051,6 +1051,21 @@ export function dropFirstPathElement(path: ElementPath | null): DropFirstPathEle
   }
 }
 
+export function takeLastPartOfPath(path: ElementPath): ElementPath
+export function takeLastPartOfPath(path: null): null
+export function takeLastPartOfPath(path: ElementPath | null): ElementPath | null {
+  if (path == null) {
+    return null
+  }
+
+  if (path?.parts.length > 1) {
+    const lastPart = last(path.parts)!
+    return elementPath([lastPart])
+  }
+
+  return path
+}
+
 export function createBackwardsCompatibleScenePath(path: ElementPath): ElementPath {
   const firstPart = path.parts[0] ?? emptyElementPathPart
   return elementPath([firstPart.slice(0, 2)]) // we only return the FIRST TWO elements (storyboard, scene), this is a horrible, horrible hack

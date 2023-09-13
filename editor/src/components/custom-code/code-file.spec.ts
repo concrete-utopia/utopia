@@ -1,11 +1,9 @@
 import {
   generateCodeResultCache,
   incorporateBuildResult,
-  normalisePathEndsAtDependency,
-  normalisePathImportNotFound,
+  normalisePathElementNotFound,
   normalisePathSuccess,
   normalisePathToUnderlyingTarget,
-  normalisePathUnableToProceed,
 } from './code-file'
 import type { EmitFileResult, FileVersion } from '../../core/workers/ts/ts-worker'
 import {
@@ -477,7 +475,7 @@ describe('incorporateBuildResult', () => {
 
 describe('normalisePathToUnderlyingTarget', () => {
   const projectContents = defaultProjectContentsForNormalising()
-  it('handles finding the target within the same file', () => {
+  it('handles finding the target', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
       SampleNodeModules,
@@ -492,70 +490,25 @@ describe('normalisePathToUnderlyingTarget', () => {
     )
     expect(actualResult).toEqual(expectedResult)
   })
-  it('jumps across multiple files to reach the actual target', () => {
-    const actualResult = normalisePathToUnderlyingTarget(
-      projectContents,
-      SampleNodeModules,
-      StoryboardFilePath,
-      EP.fromString(
-        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
-      ),
-    )
-    const expectedResult = normalisePathSuccess(
-      EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
-      '/src/card.js',
-      getTextFileByPath(projectContents, '/src/card.js'),
-      EP.fromString('card-outer-div/card-inner-div'),
-    )
-    expect(actualResult).toEqual(expectedResult)
-  })
-  it('returns the same path because there are no hops to take', () => {
-    const actualResult = normalisePathToUnderlyingTarget(
-      projectContents,
-      SampleNodeModules,
-      '/src/card.js',
-      EP.fromString('card-outer-div/card-inner-div'),
-    )
-    const expectedResult = normalisePathSuccess(
-      EP.dynamicPathToStaticPath(EP.fromString('card-outer-div/card-inner-div')),
-      '/src/card.js',
-      getTextFileByPath(projectContents, '/src/card.js'),
-      EP.fromString('card-outer-div/card-inner-div'),
-    )
-    expect(actualResult).toEqual(expectedResult)
-  })
-  it('gives an error when a file does not exist', () => {
+  it('gives an error when the element path is empty', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
       SampleNodeModules,
       '/src/nonexistant.js',
-      EP.fromString('card-outer-div/card-inner-div'),
+      null,
     )
-    const expectedResult = normalisePathUnableToProceed('/src/nonexistant.js')
-    expect(actualResult).toEqual(expectedResult)
+    expect(actualResult.type).toEqual('NORMALISE_PATH_ERROR')
   })
-  it('returns existing parse result for unparsed code file', () => {
-    const actualResult = normalisePathToUnderlyingTarget(
-      projectContents,
-      SampleNodeModules,
-      '/utopia/unparsedstoryboard.js',
-      EP.fromString(
-        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-div',
-      ),
-    )
-    const expectedResult = normalisePathImportNotFound('app-entity')
-    expect(actualResult).toEqual(expectedResult)
-  })
-  it('handles hitting an external dependency', () => {
+  it('flags elements that can not be found', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
       SampleNodeModules,
       StoryboardFilePath,
-      EP.fromString(
-        'storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance:card-outer-div/card-inner-spring:spring-inner-div',
-      ),
+      EP.fromString('storyboard-entity/scene-1-entity/app-entity:non-existent'),
     )
-    const expectedResult = normalisePathEndsAtDependency('non-existant-dummy-library')
+    const expectedResult = normalisePathElementNotFound(
+      'storyboard-entity/scene-1-entity/app-entity:non-existent',
+    )
     expect(actualResult).toEqual(expectedResult)
   })
 })

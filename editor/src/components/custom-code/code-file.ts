@@ -1,71 +1,52 @@
-import Utils from '../../utils/utils'
-import type { EmitFileResult } from '../../core/workers/ts/ts-worker'
-import type { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
 import type {
-  NodeModules,
   ElementPath,
-  TextFile,
-  StaticElementPath,
-  ParseSuccess,
   Imports,
+  NodeModules,
+  StaticElementPath,
+  TextFile,
 } from '../../core/shared/project-file-types'
 import {
   esCodeFile,
-  ProjectContents,
-  isEsCodeFile,
-  isTextFile,
-  RevisionsState,
-  isParseSuccess,
   getParsedContentsFromTextFile,
+  isEsCodeFile,
+  isParseSuccess,
+  isTextFile,
 } from '../../core/shared/project-file-types'
+import type { RawSourceMap } from '../../core/workers/ts/ts-typings/RawSourceMap'
+import type { EmitFileResult } from '../../core/workers/ts/ts-worker'
+import Utils from '../../utils/utils'
 
-import type { EditorDispatch } from '../editor/action-types'
+import type { PropertyControls } from 'utopia-api/core'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { resolveModulePath } from '../../core/es-modules/package-manager/module-resolution'
 import type { EvaluationCache } from '../../core/es-modules/package-manager/package-manager'
 import { getCurriedEditorRequireFn } from '../../core/es-modules/package-manager/package-manager'
-import { assertNever, fastForEach } from '../../core/shared/utils'
-import { arrayToObject } from '../../core/shared/array-utils'
-import { objectMap } from '../../core/shared/object-utils'
-import type { ProjectContentTreeRoot } from '../assets'
-import { getProjectFileByFilePath, treeToContents } from '../assets'
+import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import type { Either } from '../../core/shared/either'
-import { isRight, left, right } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
 import type {
   ImportInfo,
   JSXConditionalExpressionWithoutUID,
-  JSXElement,
   JSXElementWithoutUID,
   JSXFragmentWithoutUID,
   UtopiaJSXComponent,
 } from '../../core/shared/element-template'
 import {
-  getJSXAttribute,
-  isIntrinsicElement,
-  modifiableAttributeIsAttributeOtherJavaScript,
+  clearJSXConditionalExpressionWithoutUIDUniqueIDs,
   clearJSXElementWithoutUIDUniqueIDs,
   clearJSXFragmentWithoutUIDUniqueIDs,
-  clearJSXConditionalExpressionWithoutUIDUniqueIDs,
 } from '../../core/shared/element-template'
-import { findElementWithUID } from '../../core/shared/uid-utils'
-import { importedFromWhere } from '../editor/import-utils'
-import {
-  resolveModule,
-  resolveModulePath,
-} from '../../core/es-modules/package-manager/module-resolution'
+import { objectMap } from '../../core/shared/object-utils'
 import { getTransitiveReverseDependencies } from '../../core/shared/project-contents-dependencies'
-import { optionalMap } from '../../core/shared/optional-utils'
-import { findJSXElementAtStaticPath } from '../../core/model/element-template-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../../core/model/project-file-utils'
+import { assertNever, fastForEach } from '../../core/shared/utils'
 import type {
+  ExportType,
   ExportsInfo,
   MultiFileBuildResult,
-  ExportType,
 } from '../../core/workers/common/worker-types'
-import { BuildType } from '../../core/workers/common/worker-types'
-import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
-import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
-import { ParseResult } from '../../utils/value-parser-utils'
-import type { PropertyControls } from 'utopia-api/core'
+import type { ProjectContentTreeRoot } from '../assets'
+import { getProjectFileByFilePath } from '../assets'
+import type { EditorDispatch } from '../editor/action-types'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -331,32 +312,6 @@ export function normalisePathSuccess(
   }
 }
 
-export interface NormalisePathEndsAtDependency {
-  type: 'NORMALISE_PATH_ENDS_AT_DEPENDENCY'
-  dependency: string
-}
-
-export function normalisePathEndsAtDependency(dependency: string): NormalisePathEndsAtDependency {
-  return {
-    type: 'NORMALISE_PATH_ENDS_AT_DEPENDENCY',
-    dependency: dependency,
-  }
-}
-
-export interface NormalisePathEndsAtIgnoredDependency {
-  type: 'NORMALISE_PATH_ENDS_AT_IGNORED_DEPENDENCY'
-  dependency: string
-}
-
-export function normalisePathEndsAtIgnoredDependency(
-  dependency: string,
-): NormalisePathEndsAtIgnoredDependency {
-  return {
-    type: 'NORMALISE_PATH_ENDS_AT_IGNORED_DEPENDENCY',
-    dependency: dependency,
-  }
-}
-
 export interface NormalisePathError {
   type: 'NORMALISE_PATH_ERROR'
   errorMessage: string
@@ -369,36 +324,23 @@ export function normalisePathError(errorMessage: string): NormalisePathError {
   }
 }
 
-export interface NormalisePathUnableToProceed {
-  type: 'NORMALISE_PATH_UNABLE_TO_PROCEED'
-  filePath: string
+export interface NormalisePathElementNotFound {
+  type: 'NORMALISE_PATH_ELEMENT_NOT_FOUND'
+  elementPathString: string
 }
 
-export function normalisePathUnableToProceed(filePath: string): NormalisePathUnableToProceed {
+export function normalisePathElementNotFound(
+  elementPathString: string,
+): NormalisePathElementNotFound {
   return {
-    type: 'NORMALISE_PATH_UNABLE_TO_PROCEED',
-    filePath: filePath,
-  }
-}
-
-export interface NormalisePathImportNotFound {
-  type: 'NORMALISE_PATH_IMPORT_NOT_FOUND'
-  notFound: string
-}
-
-export function normalisePathImportNotFound(notFound: string): NormalisePathImportNotFound {
-  return {
-    type: 'NORMALISE_PATH_IMPORT_NOT_FOUND',
-    notFound: notFound,
+    type: 'NORMALISE_PATH_ELEMENT_NOT_FOUND',
+    elementPathString: elementPathString,
   }
 }
 
 export type NormalisePathResult =
+  | NormalisePathElementNotFound
   | NormalisePathError
-  | NormalisePathUnableToProceed
-  | NormalisePathImportNotFound
-  | NormalisePathEndsAtDependency
-  | NormalisePathEndsAtIgnoredDependency
   | NormalisePathSuccess
 
 export function normalisePathSuccessOrThrowError(
@@ -407,18 +349,10 @@ export function normalisePathSuccessOrThrowError(
   switch (normalisePathResult.type) {
     case 'NORMALISE_PATH_SUCCESS':
       return normalisePathResult
+    case 'NORMALISE_PATH_ELEMENT_NOT_FOUND':
+      throw new Error(`Could not find element with path ${normalisePathResult.elementPathString}`)
     case 'NORMALISE_PATH_ERROR':
-      throw new Error(normalisePathResult.errorMessage)
-    case 'NORMALISE_PATH_IMPORT_NOT_FOUND':
-      throw new Error(`Could not find an import (${normalisePathResult.notFound}).`)
-    case 'NORMALISE_PATH_UNABLE_TO_PROCEED':
-      throw new Error(`Could not proceed past ${normalisePathResult.filePath}.`)
-    case 'NORMALISE_PATH_ENDS_AT_DEPENDENCY':
-      throw new Error(`Reached an external dependency ${normalisePathResult.dependency}.`)
-    case 'NORMALISE_PATH_ENDS_AT_IGNORED_DEPENDENCY':
-      throw new Error(
-        `Reached an external dependency that was ignored by the package.json browser field ${normalisePathResult.dependency}.`,
-      )
+      throw new Error(`Could not proceed: ${normalisePathResult.errorMessage}.`)
     default:
       const _exhaustiveCheck: never = normalisePathResult
       throw new Error(`Unhandled case ${JSON.stringify(normalisePathResult)}`)
@@ -431,162 +365,36 @@ export function normalisePathToUnderlyingTarget(
   currentFilePath: string,
   elementPath: ElementPath | null,
 ): NormalisePathResult {
-  const currentFile = getProjectFileByFilePath(projectContents, currentFilePath)
-  if (currentFile != null && isTextFile(currentFile)) {
-    if (isParseSuccess(currentFile.fileContents.parsed)) {
-      const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
-      const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
-      if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
-        // As the scene path is empty, there's no more traversing to do, the target is in this file.
-        return normalisePathSuccess(staticPath, currentFilePath, currentFile, elementPath)
-      } else {
-        const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
-        if (droppedPathPart.length === 0) {
-          return normalisePathError(
-            `Unable to handle empty scene path part for ${optionalMap(EP.toString, elementPath)}`,
-          )
-        } else {
-          // Now need to identify the element relating to the last part of the dropped scene path.
-          const lastDroppedPathPart = droppedPathPart[droppedPathPart.length - 1]
-
-          // Walk the parsed representation to find the element with the given uid.
-          const parsedContent = currentFile.fileContents.parsed
-          let targetElement: JSXElement | null = null
-          for (const topLevelElement of parsedContent.topLevelElements) {
-            const possibleTarget = findElementWithUID(topLevelElement, lastDroppedPathPart)
-            if (possibleTarget != null) {
-              targetElement = possibleTarget
-              break
-            }
-          }
-
-          // Identify where the component is imported from or if it's in the same file.
-          if (targetElement == null) {
-            return normalisePathImportNotFound(lastDroppedPathPart)
-          } else {
-            const nonNullTargetElement: JSXElement = targetElement
-
-            // Handle things like divs.
-            if (isIntrinsicElement(targetElement.name)) {
-              return normalisePathSuccess(
-                potentiallyDroppedFirstPathElementResult.newPath == null
-                  ? null
-                  : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
-                currentFilePath,
-                currentFile,
-                potentiallyDroppedFirstPathElementResult.newPath,
-              )
-            } else {
-              return lookupElementImport(
-                targetElement.name.baseVariable,
-                currentFilePath,
-                projectContents,
-                nodeModules,
-                nonNullTargetElement,
-                elementPath,
-                parsedContent,
-                potentiallyDroppedFirstPathElementResult,
-              )
-            }
-          }
-        }
-      }
-    } else {
-      return normalisePathUnableToProceed(currentFilePath)
-    }
-  } else {
-    return normalisePathUnableToProceed(currentFilePath)
+  if (elementPath == null || EP.isEmptyPath(elementPath)) {
+    return normalisePathError('Empty element path')
   }
-}
 
-function lookupElementImport(
-  elementBaseVariable: string,
-  currentFilePath: string,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  nonNullTargetElement: JSXElement,
-  elementPath: ElementPath | null,
-  parsedContent: ParseSuccess,
-  potentiallyDroppedFirstPathElementResult: EP.DropFirstPathElementResultType,
-): NormalisePathResult {
-  const importedFrom = importedFromWhere(
-    currentFilePath,
-    elementBaseVariable,
-    parsedContent.topLevelElements,
-    parsedContent.imports,
+  const staticPath = EP.dynamicPathToStaticPath(elementPath)
+  const lastPartOfPath = EP.takeLastPartOfPath(elementPath)
+
+  const allUidsWithFiles = getAllUniqueUids(projectContents)
+  const filePathFromUID = allUidsWithFiles.uidsToFilePaths[EP.toUid(staticPath)]
+  const fileFromUID =
+    filePathFromUID == null ? null : getProjectFileByFilePath(projectContents, filePathFromUID)
+
+  if (filePathFromUID == null || fileFromUID == null) {
+    return normalisePathElementNotFound(EP.toString(elementPath))
+  }
+
+  if (!isTextFile(fileFromUID) || !isParseSuccess(fileFromUID.fileContents.parsed)) {
+    // This shouldn't happen, since getAllUniqueUids only reads from parsed files, but we'll
+    // keep this here in case that changes
+    return normalisePathError(
+      `Error retrieving ${EP.toString(elementPath)} from file ${filePathFromUID}`,
+    )
+  }
+
+  return normalisePathSuccess(
+    EP.dynamicPathToStaticPath(lastPartOfPath),
+    filePathFromUID,
+    fileFromUID,
+    lastPartOfPath,
   )
-  if (importedFrom == null) {
-    return normalisePathImportNotFound(elementBaseVariable)
-  } else {
-    if (
-      importedFrom.type === 'IMPORTED_ORIGIN' &&
-      importedFrom.filePath === 'utopia-api' &&
-      importedFrom.exportedName === 'Scene'
-    ) {
-      // Navigate around the scene with the special case handling.
-      const componentAttr = getJSXAttribute(nonNullTargetElement.props, 'component')
-      if (componentAttr != null && modifiableAttributeIsAttributeOtherJavaScript(componentAttr)) {
-        return lookupElementImport(
-          componentAttr.javascript,
-          currentFilePath,
-          projectContents,
-          nodeModules,
-          nonNullTargetElement,
-          elementPath,
-          parsedContent,
-          potentiallyDroppedFirstPathElementResult,
-        )
-      } else {
-        return normalisePathError(
-          `Unable to handle Scene component definition for ${optionalMap(
-            EP.toString,
-            elementPath,
-          )}`,
-        )
-      }
-    } else {
-      const resolutionResult = resolveModule(
-        projectContents,
-        nodeModules,
-        currentFilePath,
-        importedFrom.filePath,
-      )
-      switch (resolutionResult.type) {
-        case 'RESOLVE_SUCCESS':
-          const successResult = resolutionResult.success
-          // Avoid drilling into node_modules because we can't do anything useful with
-          // the contents of files in there.
-          if (successResult.path.startsWith('/node_modules/')) {
-            const splitPath = successResult.path.split('/')
-            return normalisePathEndsAtDependency(splitPath[2])
-          } else {
-            switch (successResult.file.type) {
-              case 'ES_CODE_FILE':
-                return normalisePathToUnderlyingTarget(
-                  projectContents,
-                  nodeModules,
-                  successResult.path,
-                  potentiallyDroppedFirstPathElementResult.newPath,
-                )
-              case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
-                return normalisePathUnableToProceed(successResult.path)
-              default:
-                const _exhaustiveCheck: never = successResult.file
-                throw new Error(`Unhandled case ${JSON.stringify(successResult.file)}`)
-            }
-          }
-        case 'RESOLVE_NOT_PRESENT':
-          return normalisePathError(
-            `Unable to find resolve path at ${JSON.stringify(importedFrom)}`,
-          )
-        case 'RESOLVE_SUCCESS_IGNORE_MODULE':
-          return normalisePathEndsAtIgnoredDependency(importedFrom.filePath)
-        default:
-          const _exhaustiveCheck: never = resolutionResult
-          throw new Error(`Unhandled case ${JSON.stringify(resolutionResult)}`)
-      }
-    }
-  }
 }
 
 export function normalisePathToUnderlyingTargetForced(

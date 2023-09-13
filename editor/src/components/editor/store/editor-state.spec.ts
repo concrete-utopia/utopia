@@ -192,7 +192,7 @@ describe('modifyUnderlyingTarget', () => {
       "
     `)
   })
-  it('tries to change something in a nonsense template path', () => {
+  it('tries to change something with a nonsense element path', () => {
     const pathToElement = EP.fromString('moon-palace/living-room')
     const modifyCall = () =>
       modifyUnderlyingTargetElement(
@@ -211,28 +211,7 @@ describe('modifyUnderlyingTarget', () => {
           return jsxElement(element.name, element.uid, updatedAttributes, element.children)
         },
       )
-    expect(modifyCall).toThrowError(`Did not find element to transform moon-palace/living-room`)
-  })
-  it('tries to change something in a nonsense file path', () => {
-    const pathToElement = EP.fromString('app-outer-div/card-instance')
-    const modifyCall = () =>
-      modifyUnderlyingTargetElement(
-        pathToElement,
-        '/src/kitchen.js',
-        startingEditorModel,
-        (element) => {
-          if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
-            return element
-          }
-          const updatedAttributes = setJSXAttributesAttribute(
-            element.props,
-            'data-thing',
-            jsExpressionValue('a thing', emptyComments),
-          )
-          return jsxElement(element.name, element.uid, updatedAttributes, element.children)
-        },
-      )
-    expect(modifyCall).toThrowError(`Could not proceed past /src/kitchen.js.`)
+    expect(modifyCall).toThrowError(`Could not find element with path moon-palace/living-room`)
   })
 })
 
