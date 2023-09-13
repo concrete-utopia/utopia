@@ -1,7 +1,11 @@
 import { selectComponents } from '../../editor/actions/action-creators'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
-import { renderTestEditorWithModel } from '../../canvas/ui-jsx.test-utils'
+import {
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+  renderTestEditorWithModel,
+} from '../../canvas/ui-jsx.test-utils'
 import {
   StoryboardFilePath,
   withUnderlyingTargetFromEditorState,
@@ -16,7 +20,6 @@ import {
   getJSXAttribute,
   isJSXElement,
   jsExpressionValue,
-  jsxArrayValue,
   jsxAttributeNestedArraySimple,
   jsxAttributeNestedObjectSimple,
   jsxAttributesFromMap,
@@ -208,6 +211,54 @@ describe('Automatically derived property controls', () => {
       }
     } else {
       throw new Error('Was not a JSXElement.')
+    }
+  })
+  it('does not show inspector sections for ignored props', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <Group data-uid='g1'>
+          <div data-uid='d1' />
+          <Group data-uid='g2' data-constraints={['width', 'height']}>
+            <div data-uid='d2' />
+          </Group>
+          <Group data-uid='g3' data-showme={'test'}>
+            <div data-uid='d3' />
+          </Group>
+        </Group>
+      `),
+      'await-first-dom-report',
+    )
+
+    {
+      // don't show props that are in the ignore list
+      await renderResult.dispatch(
+        [
+          selectComponents(
+            [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:g1/g2')],
+            false,
+          ),
+        ],
+        true,
+      )
+      const dataConstraintsSection = renderResult.renderedDOM.queryByTestId(
+        'context-menu-for-data-constraints',
+      )
+      expect(dataConstraintsSection).toBeNull()
+    }
+
+    {
+      // show props that are not in the ignore list
+      await renderResult.dispatch(
+        [
+          selectComponents(
+            [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:g1/g3')],
+            false,
+          ),
+        ],
+        true,
+      )
+      const showmeSection = renderResult.renderedDOM.queryByTestId('context-menu-for-data-showme')
+      expect(showmeSection).not.toBeNull()
     }
   })
 })

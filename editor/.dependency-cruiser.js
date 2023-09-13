@@ -186,7 +186,7 @@ module.exports = {
     },
     {
       name: 'not-from-ts-to-tsx',
-      comment: 'Prevent a .ts file from pointing to a .tsx file.',
+      comment: 'Prevent a .worker.ts file from pointing to a .tsx file.',
       severity: 'error',
       from: {
         path: '\\worker.ts$',

@@ -213,6 +213,9 @@ type FullPropertyControlsAndTargets = {
 
 const emptyControls: PropertyControls = {}
 
+// if any of these keys is found as a prop name, it will be omitted from the property controls
+const ignoredPropNames: string[] = ['data-constraints']
+
 export function useGetPropertyControlsForSelectedComponents(): Array<FullPropertyControlsAndTargets> {
   const selectedPropertyControls = useEditorState(
     Substores.fullStore,
@@ -367,7 +370,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
         selectedElementsProps[EP.toString(element.elementPath)] ?? {},
       )
       fastForEach(Object.keys(elementProps), (propName) => {
-        if (!propertiesWithControls.includes(propName)) {
+        if (!propertiesWithControls.includes(propName) && !ignoredPropNames.includes(propName)) {
           detectedPropsAndValuesWithoutControls[propName] = elementProps[propName]
         }
       })

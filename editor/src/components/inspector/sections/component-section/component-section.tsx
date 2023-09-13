@@ -253,6 +253,7 @@ const RowForBaseControl = React.memo((props: RowForBaseControlProps) => {
   return (
     <InspectorContextMenuWrapper
       id={`context-menu-for-${propName}`}
+      testId={`context-menu-for-${propName}`}
       items={contextMenuItems}
       data={null}
     >
