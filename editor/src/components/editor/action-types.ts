@@ -703,6 +703,10 @@ export interface SaveDOMReport {
   invalidatedPaths: Array<string>
 }
 
+export interface RunDOMWalker {
+  action: 'RUN_DOM_WALKER'
+}
+
 export interface TrueUpGroups {
   action: 'TRUE_UP_GROUPS'
 }
@@ -1141,6 +1145,7 @@ export type EditorAction =
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
   | SaveDOMReport
+  | RunDOMWalker
   | TrueUpGroups
   | SetProp
   | SetFilebrowserRenamingTarget
