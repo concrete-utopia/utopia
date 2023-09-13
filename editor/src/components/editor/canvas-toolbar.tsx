@@ -518,6 +518,13 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
     'CanvasToolbar canvasInLiveMode',
   )
   const iconCategory = props.iconCategory ?? 'element'
+  const onClickHandler = React.useCallback(
+    (event: React.MouseEvent<Element>) => {
+      event.stopPropagation()
+      props.onClick(event)
+    },
+    [props],
+  )
 
   return (
     <SquareButton
@@ -525,7 +532,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       style={{ ...props.style, height: 32, width: 32 }}
       primary={primary}
       highlight
-      onClick={props.onClick}
+      onClick={onClickHandler}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
     >
       <Icn
