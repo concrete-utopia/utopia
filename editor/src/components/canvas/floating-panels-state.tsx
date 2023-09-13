@@ -256,7 +256,7 @@ export function updatePanelPositionsBasedOnLocationAndSize(
     columnContent.forEach((panel, panelIndex) => {
       const y = columnContent.reduce((working, current, currentIndex) => {
         if (currentIndex < panelIndex) {
-          return working + current.frame.height + GapBetweenPanels * (currentIndex + 1)
+          return working + current.frame.height + GapBetweenPanels
         }
         return working
       }, 0)
