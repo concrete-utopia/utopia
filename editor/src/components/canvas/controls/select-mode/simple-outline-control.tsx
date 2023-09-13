@@ -125,7 +125,7 @@ export function getSelectionColor(
 ): string {
   if (
     EP.isInsideFocusedComponent(path, autoFocusedPaths) &&
-    !MetadataUtils.isElementOfRemixSceneOrOutlet(metadata, path)
+    !MetadataUtils.isContainingComponentRemixSceneOrOutlet(metadata, path)
   ) {
     if (MetadataUtils.isAutomaticOrManuallyFocusableComponent(path, metadata, autoFocusedPaths)) {
       return colorTheme.canvasSelectionFocusableChild.value

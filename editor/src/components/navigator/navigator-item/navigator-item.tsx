@@ -295,7 +295,7 @@ function useStyleFullyVisible(
         })
 
         let isInsideFocusedComponent =
-          !MetadataUtils.isElementOfRemixSceneOrOutlet(store.editor.jsxMetadata, path) &&
+          !MetadataUtils.isContainingComponentRemixSceneOrOutlet(store.editor.jsxMetadata, path) &&
           (EP.isFocused(store.editor.focusedElementPath, path) ||
             EP.isInsideFocusedComponent(path, autoFocusedPaths))
 
@@ -515,10 +515,10 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditionalDynamicBranch',
   )
 
-  const isElementOfRemixSceneOrOutlet = useEditorState(
+  const isContainingComponentRemixSceneOrOutlet = useEditorState(
     Substores.metadata,
     (store) =>
-      MetadataUtils.isElementOfRemixSceneOrOutlet(
+      MetadataUtils.isContainingComponentRemixSceneOrOutlet(
         store.editor.jsxMetadata,
         navigatorEntry.elementPath,
       ),
@@ -597,7 +597,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isInsideComponent =
-    !isElementOfRemixSceneOrOutlet &&
+    !isContainingComponentRemixSceneOrOutlet &&
     (EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) ||
       isFocusedComponent)
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)

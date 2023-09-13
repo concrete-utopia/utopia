@@ -245,7 +245,7 @@ export const MetadataUtils = {
       MetadataUtils.getChildrenPathsOrdered(jsxMetadata, pathTree, path).length === 1
     )
   },
-  isElementOfRemixSceneOrOutlet(
+  isContainingComponentRemixSceneOrOutlet(
     jsxMetadata: ElementInstanceMetadataMap,
     path: ElementPath,
   ): boolean {
