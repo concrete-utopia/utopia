@@ -2,7 +2,7 @@
 /** @jsx jsx */
 import type { CSSObject } from '@emotion/react'
 import { jsx } from '@emotion/react'
-import React from 'react'
+import React, { useState } from 'react'
 import type {
   InputActionMeta,
   InputProps,
@@ -350,6 +350,15 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
     return beingInserted || (isActive && isFocused && currentlyBeingInserted == null)
   }, [component, currentlyBeingInserted, isFocused, isActive])
 
+  const [isHovered, setIsHovered] = useState(false)
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
   return (
     <div ref={props.innerRef} {...props.innerProps} style={{}}>
       <UIRow
@@ -357,21 +366,24 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         css={{
           borderRadius: 2,
           padding: 4,
-          background: isSelected ? colorTheme.dynamicBlue.value : undefined,
-          color: isSelected ? colorTheme.bg1.value : undefined,
-          // background: currentlyBeingInserted ? colorTheme.dynamicBlue.value : undefined,
-          // color: currentlyBeingInserted ? colorTheme.bg1.value : undefined,
+          color: isSelected ? colorTheme.bg1.value : colorTheme.fg1.value,
+          background: currentlyBeingInserted ? colorTheme.dynamicBlue.value : undefined,
           gap: 4,
           border: '1px solid transparent',
+          '&:hover': {
+            color: colorTheme.dynamicBlue.value,
+          },
         }}
         onMouseDown={insertItemOnMouseDown}
         onMouseUp={insertItemOnMouseUp}
+        onMouseEnter={setIsHoveredTrue}
+        onMouseLeave={setIsHoveredFalse}
         data-testid={`insert-item-${props.label}`}
       >
         <Icn
           category='element'
           type='component'
-          color={isSelected ? 'on-light-main' : 'main'}
+          color={isHovered ? 'primary' : isSelected ? 'on-light-main' : 'main'}
           width={18}
           height={18}
           style={{ transform: 'scale(0.8)' }}
