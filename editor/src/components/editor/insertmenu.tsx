@@ -366,13 +366,14 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         css={{
           borderRadius: 2,
           padding: 4,
-          color: isSelected ? colorTheme.bg1.value : colorTheme.fg1.value,
+          color: isHovered
+            ? colorTheme.dynamicBlue.value
+            : isSelected
+            ? colorTheme.bg1.value
+            : colorTheme.fg1.value,
           background: currentlyBeingInserted ? colorTheme.dynamicBlue.value : undefined,
           gap: 4,
           border: '1px solid transparent',
-          '&:hover': {
-            color: colorTheme.dynamicBlue.value,
-          },
         }}
         onMouseDown={insertItemOnMouseDown}
         onMouseUp={insertItemOnMouseUp}
