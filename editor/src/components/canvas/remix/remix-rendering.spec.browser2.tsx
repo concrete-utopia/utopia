@@ -460,8 +460,7 @@ describe('Remix navigation', () => {
     await expectRemixSceneToBeRendered(renderResult, 'About')
   })
 
-  // TODO: enable when the dom walker updates on the mutation observer
-  xit('Remix navigation updates metadata', async () => {
+  it('Remix navigation updates metadata', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
@@ -549,13 +548,12 @@ describe('Remix navigation', () => {
       ]
 
     expect(remixAboutDivMetadata).not.toBeUndefined()
-    expect(remixLinkMetadata.globalFrame).toEqual({
-      height: 18.5,
-      width: 87.5,
-      x: 294,
+    expect(remixAboutDivMetadata.globalFrame).toEqual({
+      height: 200,
+      width: 200,
+      x: 212,
       y: 128,
     })
-    expect(remixLinkMetadata.textContent).toEqual('About\n')
   })
 })
 
