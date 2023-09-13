@@ -433,7 +433,7 @@ describe('Observing runtime changes', () => {
               textAlign: 'center',
             }}
             onMouseUp={() => {
-              setTimeout(() => setShowDiv(true), 10) // setTimeout so that this happens after we handle mouse events
+              setTimeout(() => setShowDiv(true), 0) // setTimeout so that this happens after we handle mouse events
             }}
             data-uid='button'
             data-testid='click-me'
@@ -551,7 +551,7 @@ describe('Observing runtime changes', () => {
     }
 
     await mouseClickAtPoint(buttonToClick, clickPoint)
-    await wait(20)
+    await wait(0)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     const recordedActionsAfter = [...renderResult.getRecordedActions()]
