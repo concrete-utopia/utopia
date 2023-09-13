@@ -309,6 +309,10 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
   evaluatedFileNames.current = [uiFilePath]
   React.useEffect(() => {
+    // FIXME: this setTimeout is a really fragile solution! `validateControlsToCheck` reads from global variables, and it is hard to guarantee that
+    // there is no race condition coming from changes from other rerenders.
+    // Now it is a little more stable because we capture the values of `resolvedFileNames` and `evaluatedFileNames`, but it would be better to make
+    // this less dependent on global variables and setTimeout.
     const resolvedFileNamesLocal = [...resolvedFileNames.current]
     const evaluatedFileNamesLocal = [...evaluatedFileNames.current]
     setTimeout(() => {
