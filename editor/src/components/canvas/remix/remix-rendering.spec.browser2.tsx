@@ -1,13 +1,10 @@
-import { toString } from '../../../core/shared/element-path'
+import * as EP from '../../../core/shared/element-path'
 import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
-import {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly,
-  wait,
-} from '../../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
@@ -310,7 +307,7 @@ describe('Remix content', () => {
 
     expect(renderResult.getEditorState().editor.selectedViews).toHaveLength(1)
 
-    expect(toString(renderResult.getEditorState().editor.selectedViews[0])).toEqual(
+    expect(EP.toString(renderResult.getEditorState().editor.selectedViews[0])).toEqual(
       'storyboard/remix-scene:rootdiv/outlet:remix-route-root/remix-div',
     )
   })

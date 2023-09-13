@@ -205,9 +205,35 @@ export const MetadataUtils = {
       element.importInfo.exportedName === 'Scene'
     )
   },
+  isProbablyRemixSceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element != null &&
+      element.importInfo != null &&
+      isImportedOrigin(element.importInfo) &&
+      element.importInfo.filePath === 'utopia-api' &&
+      element.importInfo.exportedName === 'RemixScene'
+    )
+  },
+  isProbablyRemixOutletFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return (
+      element != null &&
+      element.importInfo != null &&
+      isImportedOrigin(element.importInfo) &&
+      element.importInfo.filePath === '@remix-run/react' &&
+      element.importInfo.exportedName === 'Outlet'
+    )
+  },
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
     return MetadataUtils.isProbablySceneFromMetadata(elementMetadata)
+  },
+  isProbablyRemixScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
+  },
+  isProbablyRemixOutlet(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata)
   },
   isSceneWithOneChild(
     jsxMetadata: ElementInstanceMetadataMap,
@@ -217,6 +243,16 @@ export const MetadataUtils = {
     return (
       MetadataUtils.isProbablyScene(jsxMetadata, path) &&
       MetadataUtils.getChildrenPathsOrdered(jsxMetadata, pathTree, path).length === 1
+    )
+  },
+  isElementOfRemixSceneOrOutlet(
+    jsxMetadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+  ): boolean {
+    const parentComponent = EP.getContainingComponent(path)
+    return (
+      MetadataUtils.isProbablyRemixOutlet(jsxMetadata, parentComponent) ||
+      MetadataUtils.isProbablyRemixScene(jsxMetadata, parentComponent)
     )
   },
   parentIsSceneWithOneChild(
