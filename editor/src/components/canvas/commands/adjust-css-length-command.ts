@@ -17,8 +17,9 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState } from '../../editor/store/editor-state'
-import { modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
+import { deriveState, modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
+import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
 import type { CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/common/css-utils'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -77,12 +78,14 @@ interface UpdatedPropsAndCommandDescription {
 
 export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProperties> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: AdjustCssLengthProperties,
 ) => {
   let commandDescriptions: Array<string> = []
   const updatedEditorState: EditorState = modifyUnderlyingForOpenFile(
     command.target,
     editorState,
+    derivedState,
     (element) => {
       if (isJSXElement(element)) {
         return command.properties.reduce((workingElement, property) => {
@@ -240,10 +243,18 @@ export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProper
         commandDescription: commandDescriptions.join('\n'),
       }
     } else {
+      const updatedDerivedState = deriveState(
+        updatedEditorState,
+        derivedState,
+        'patched',
+        patchedCreateRemixDerivedDataMemo,
+      )
+
       // Build the patch for the changes.
       const editorStatePatch = patchParseSuccessAtElementPath(
         command.target,
         updatedEditorState,
+        updatedDerivedState,
         (success) => {
           return {
             topLevelElements: {
@@ -430,6 +441,7 @@ export function deleteConflictingPropsForWidthHeightFromAttributes(
 
 export function deleteConflictingPropsForWidthHeight(
   editorState: EditorState,
+  derivedState: DerivedState,
   target: ElementPath,
   propertyPath: PropertyPath,
   parentFlexDirection: FlexDirection | null,
@@ -441,6 +453,7 @@ export function deleteConflictingPropsForWidthHeight(
 
   const { editorStateWithChanges: editorStateWithPropsDeleted } = deleteValuesAtPath(
     editorState,
+    derivedState,
     target,
     propertiesToDelete,
   )

@@ -1,5 +1,5 @@
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { EditorState } from '../../../components/editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../../components/editor/store/editor-state'
 import {
   modifyParseSuccessAtPath,
   modifyUnderlyingElementForOpenFile,
@@ -37,6 +37,7 @@ export function addImportsToFile(
 
 export const runAddImportsToFile: CommandFunction<AddImportsToFile> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: AddImportsToFile,
 ): CommandFunctionResult => {
   const editorStatePatch = patchParseSuccessAtFilePath(

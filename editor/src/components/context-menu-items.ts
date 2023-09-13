@@ -50,6 +50,7 @@ import {
 import { stripNulls } from '../core/shared/array-utils'
 import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
+import type { RemixRoutingTable } from './editor/store/remix-derived-data'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -66,6 +67,7 @@ export interface CanvasData {
   selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
+  remixRoutingTable: RemixRoutingTable | null
   nodeModules: NodeModules
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
@@ -394,6 +396,7 @@ export const unwrap: ContextMenuItem<CanvasData> = {
           data.projectContents,
           data.jsxMetadata,
           data.nodeModules,
+          data.remixRoutingTable,
           data.openFile,
           path,
           data.pathTrees,

@@ -11,7 +11,7 @@ import type { CanvasVector } from '../../core/shared/math-utils'
 import { canvasRectangle } from '../../core/shared/math-utils'
 import { updateFramesOfScenesAndComponents } from './canvas-utils'
 import { NO_OP } from '../../core/shared/utils'
-import { editorModelFromPersistentModel } from '../editor/store/editor-state'
+import { editorModelFromPersistentModel, emptyDerivedState } from '../editor/store/editor-state'
 import { complexDefaultProjectPreParsed } from '../../sample-projects/sample-project-utils.test-utils'
 
 describe('updateFramesOfScenesAndComponents - multi-file', () => {
@@ -29,7 +29,12 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
       { x: 60, y: 40 } as CanvasVector,
     )
 
-    const updatedProject = updateFramesOfScenesAndComponents(testProject, [pinChange], null)
+    const updatedProject = updateFramesOfScenesAndComponents(
+      testProject,
+      emptyDerivedState(testProject),
+      [pinChange],
+      null,
+    )
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
       "import * as React from 'react'
@@ -81,7 +86,12 @@ describe('updateFramesOfScenesAndComponents - multi-file', () => {
 
     const pinChange = pinMoveChange(targetPath, { x: 60, y: 40 } as CanvasVector)
 
-    const updatedProject = updateFramesOfScenesAndComponents(testProject, [pinChange], null)
+    const updatedProject = updateFramesOfScenesAndComponents(
+      testProject,
+      emptyDerivedState(testProject),
+      [pinChange],
+      null,
+    )
 
     expect(testPrintCodeFromEditorState(updatedProject, '/src/card.js')).toMatchInlineSnapshot(`
       "import * as React from 'react'
@@ -145,6 +155,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -180,6 +191,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -215,6 +227,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -260,6 +273,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -295,6 +309,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -330,6 +345,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -365,6 +381,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -400,6 +417,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -435,6 +453,7 @@ describe('updateFramesOfScenesAndComponents - singleResizeChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )
@@ -473,6 +492,7 @@ describe('updateFramesOfScenesAndComponents - pinFrameChange -', () => {
 
     const updatedProject = updateFramesOfScenesAndComponents(
       testProject,
+      emptyDerivedState(testProject),
       [pinChange],
       canvasRectangle({ x: 0, y: 0, width: 400, height: 400 }),
     )

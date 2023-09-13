@@ -10,6 +10,7 @@ import type { CanvasCommand } from '../commands/commands'
 import type { StrategyApplicationStatus } from './interaction-state'
 import { InteractionSession } from './interaction-state'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
 
 // TODO: fill this in, maybe make it an ADT for different strategies
 export interface CustomStrategyState {
@@ -90,6 +91,7 @@ export interface InteractionCanvasState {
   interactionTarget: InteractionTarget
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
+  remixRoutingTable: RemixRoutingTable | null
   builtInDependencies: BuiltInDependencies
   openFile: string | null | undefined
   scale: number

@@ -1,17 +1,9 @@
-import update, { Spec } from 'immutability-helper'
+import update from 'immutability-helper'
 import { applyUtopiaJSXComponentsChanges } from '../../../core/model/project-file-utils'
-import { drop } from '../../../core/shared/array-utils'
 import type { TopLevelElement, UtopiaJSXComponent } from '../../../core/shared/element-template'
 import type { Imports } from '../../../core/shared/project-file-types'
-import { RevisionsState } from '../../../core/shared/project-file-types'
-import { keepDeepReferenceEqualityIfPossible } from '../../../utils/react-performance'
-import {
-  getProjectContentKeyPathElements,
-  ProjectContentFile,
-  ProjectContentsTree,
-  ProjectContentTreeRoot,
-} from '../../assets'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { deriveState } from '../../editor/store/editor-state'
 import type { CommandDescription } from '../canvas-strategies/interaction-state'
 import type { AdjustCssLengthProperties } from './adjust-css-length-command'
 import { runAdjustCssLengthProperties } from './adjust-css-length-command'
@@ -92,13 +84,18 @@ import type { AddElements } from './add-elements-command'
 import { runAddElements } from './add-elements-command'
 import type { QueueGroupTrueUp } from './queue-group-true-up-command'
 import { runQueueGroupTrueUp } from './queue-group-true-up-command'
+import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
   commandDescription: string
 }
 
-export type CommandFunction<T> = (editorState: EditorState, command: T) => CommandFunctionResult
+export type CommandFunction<T> = (
+  editorState: EditorState,
+  derivedState: DerivedState,
+  command: T,
+) => CommandFunctionResult
 
 export type WhenToRun = 'mid-interaction' | 'always' | 'on-complete'
 
@@ -146,82 +143,88 @@ export type CanvasCommand =
 
 export function runCanvasCommand(
   editorState: EditorState,
+  derivedState: DerivedState,
   command: CanvasCommand,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult {
   switch (command.type) {
     case 'WILDCARD_PATCH':
-      return runWildcardPatch(editorState, command)
+      return runWildcardPatch(editorState, derivedState, command)
     case 'UPDATE_FUNCTION_COMMAND':
-      return runUpdateFunctionCommand(editorState, command, commandLifecycle)
+      return runUpdateFunctionCommand(editorState, derivedState, command, commandLifecycle)
     case 'STRATEGY_SWITCHED':
       return runStrategySwitchedCommand(command)
     case 'ADJUST_NUMBER_PROPERTY':
-      return runAdjustNumberProperty(editorState, command)
+      return runAdjustNumberProperty(editorState, derivedState, command)
     case 'ADJUST_CSS_LENGTH_PROPERTY':
-      return runAdjustCssLengthProperties(editorState, command)
+      return runAdjustCssLengthProperties(editorState, derivedState, command)
     case 'REPARENT_ELEMENT':
-      return runReparentElement(editorState, command)
+      return runReparentElement(editorState, derivedState, command)
     case 'DUPLICATE_ELEMENT':
-      return runDuplicateElement(editorState, command)
+      return runDuplicateElement(editorState, derivedState, command)
     case 'UPDATE_SELECTED_VIEWS':
-      return runUpdateSelectedViews(editorState, command)
+      return runUpdateSelectedViews(editorState, derivedState, command)
     case 'UPDATE_HIGHLIGHTED_VIEWS':
-      return runUpdateHighlightedViews(editorState, command)
+      return runUpdateHighlightedViews(editorState, derivedState, command)
     case 'SET_SNAPPING_GUIDELINES':
-      return runSetSnappingGuidelines(editorState, command)
+      return runSetSnappingGuidelines(editorState, derivedState, command)
     case 'CONVERT_TO_ABSOLUTE':
-      return runConvertToAbsolute(editorState, command)
+      return runConvertToAbsolute(editorState, derivedState, command)
     case 'SET_CSS_LENGTH_PROPERTY':
-      return runSetCssLengthProperty(editorState, command)
+      return runSetCssLengthProperty(editorState, derivedState, command)
     case 'REORDER_ELEMENT':
-      return runReorderElement(editorState, command)
+      return runReorderElement(editorState, derivedState, command)
     case 'SHOW_OUTLINE_HIGHLIGHT':
-      return runShowOutlineHighlight(editorState, command)
+      return runShowOutlineHighlight(editorState, derivedState, command)
     case 'SHOW_REORDER_INDICATOR':
-      return runShowReorderIndicator(editorState, command)
+      return runShowReorderIndicator(editorState, derivedState, command)
     case 'SET_CURSOR_COMMAND':
-      return runSetCursor(editorState, command)
+      return runSetCursor(editorState, derivedState, command)
     case 'SET_ELEMENTS_TO_RERENDER_COMMAND':
-      return runSetElementsToRerender(editorState, command)
+      return runSetElementsToRerender(editorState, derivedState, command)
     case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
-      return runAppendElementsToRerender(editorState, command)
+      return runAppendElementsToRerender(editorState, derivedState, command)
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
-      return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
+      return runPushIntendedBoundsAndUpdateGroups(
+        editorState,
+        derivedState,
+        command,
+        commandLifecycle,
+      )
     case 'DELETE_PROPERTIES':
-      return runDeleteProperties(editorState, command)
+      return runDeleteProperties(editorState, derivedState, command)
     case 'SET_PROPERTY':
-      return runSetProperty(editorState, command)
+      return runSetProperty(editorState, derivedState, command)
     case 'UPDATE_PROP_IF_EXISTS':
-      return runUpdatePropIfExists(editorState, command)
+      return runUpdatePropIfExists(editorState, derivedState, command)
     case 'ADD_IMPORTS_TO_FILE':
-      return runAddImportsToFile(editorState, command)
+      return runAddImportsToFile(editorState, derivedState, command)
     case 'ADD_TO_REPARENTED_TO_PATHS':
-      return runAddToReparentedToPaths(editorState, command)
+      return runAddToReparentedToPaths(editorState, derivedState, command)
     case 'INSERT_ELEMENT_INSERTION_SUBJECT':
-      return runInsertElementInsertionSubject(editorState, command)
+      return runInsertElementInsertionSubject(editorState, derivedState, command)
     case 'ADD_ELEMENT':
-      return runAddElement(editorState, command)
+      return runAddElement(editorState, derivedState, command)
     case 'ADD_ELEMENTS':
-      return runAddElements(editorState, command)
+      return runAddElements(editorState, derivedState, command)
     case 'HIGHLIGHT_ELEMENTS_COMMAND':
-      return runHighlightElementsCommand(editorState, command)
+      return runHighlightElementsCommand(editorState, derivedState, command)
     case 'CONVERT_CSS_PERCENT_TO_PX':
-      return runConvertCssPercentToPx(editorState, command)
+      return runConvertCssPercentToPx(editorState, derivedState, command)
     case 'HIDE_IN_NAVIGATOR_COMMAND':
-      return runHideInNavigatorCommand(editorState, command)
+      return runHideInNavigatorCommand(editorState, derivedState, command)
     case 'SHOW_TOAST_COMMAND':
       return runShowToastCommand(editorState, command, commandLifecycle)
     case 'ADD_CONTAIN_LAYOUT_IF_NEEDED':
-      return runAddContainLayoutIfNeeded(editorState, command)
+      return runAddContainLayoutIfNeeded(editorState, derivedState, command)
     case 'REARRANGE_CHILDREN':
-      return runRearrangeChildren(editorState, command)
+      return runRearrangeChildren(editorState, derivedState, command)
     case 'DELETE_ELEMENT':
-      return runDeleteElement(editorState, command)
+      return runDeleteElement(editorState, derivedState, command)
     case 'WRAP_IN_CONTAINER':
-      return runWrapInContainerCommand(editorState, command)
+      return runWrapInContainerCommand(editorState, derivedState, command)
     case 'QUEUE_GROUP_TRUE_UP':
-      return runQueueGroupTrueUp(editorState, command)
+      return runQueueGroupTrueUp(editorState, derivedState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
@@ -230,12 +233,13 @@ export function runCanvasCommand(
 
 export function foldAndApplyCommandsSimple(
   editorState: EditorState,
+  derivedState: DerivedState,
   commands: Array<CanvasCommand>,
 ): EditorState {
   const updatedEditorState = commands
     .filter((c) => c.whenToRun === 'always' || c.whenToRun === 'on-complete')
     .reduce((workingEditorState, command) => {
-      const patches = runCanvasCommand(workingEditorState, command, 'end-interaction')
+      const patches = runCanvasCommand(workingEditorState, derivedState, command, 'end-interaction')
       return updateEditorStateWithPatches(workingEditorState, patches.editorStatePatches)
     }, editorState)
 
@@ -244,6 +248,7 @@ export function foldAndApplyCommandsSimple(
 
 export function foldAndApplyCommandsInner(
   editorState: EditorState,
+  derivedState: DerivedState,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
   commandLifecycle: InteractionLifecycle,
@@ -254,6 +259,7 @@ export function foldAndApplyCommandsInner(
 } {
   let statePatches: Array<EditorStatePatch> = []
   let workingEditorState: EditorState = editorState
+  let workingDerivedState: DerivedState = derivedState
   let workingCommandDescriptions: Array<CommandDescription> = []
 
   function runCommand(command: CanvasCommand, shouldAccumulatePatches: boolean): void {
@@ -266,7 +272,12 @@ export function foldAndApplyCommandsInner(
 
     if (shouldRunCommand) {
       // Run the command with our current states.
-      const commandResult = runCanvasCommand(workingEditorState, command, commandLifecycle)
+      const commandResult = runCanvasCommand(
+        workingEditorState,
+        workingDerivedState,
+        command,
+        commandLifecycle,
+      )
       // Capture values from the result.
       const statePatch = commandResult.editorStatePatches
       // Apply the update to the editor state.
@@ -277,6 +288,12 @@ export function foldAndApplyCommandsInner(
         description: commandResult.commandDescription,
         transient: command.whenToRun === 'mid-interaction',
       })
+      workingDerivedState = deriveState(
+        workingEditorState,
+        workingDerivedState,
+        'patched',
+        patchedCreateRemixDerivedDataMemo,
+      )
     }
   }
 
@@ -292,6 +309,7 @@ export function foldAndApplyCommandsInner(
 
 export function foldAndApplyCommands(
   editorState: EditorState,
+  derivedState: DerivedState,
   priorPatchedState: EditorState,
   commandsToAccumulate: Array<CanvasCommand>,
   commands: Array<CanvasCommand>,
@@ -302,6 +320,7 @@ export function foldAndApplyCommands(
 } {
   const { statePatches, updatedEditorState, commandDescriptions } = foldAndApplyCommandsInner(
     editorState,
+    derivedState,
     commandsToAccumulate,
     commands,
     commandLifecycle,

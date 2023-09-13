@@ -17,12 +17,20 @@ function useGetHighlightableViewsForInsertMode() {
       openFile: store.editor.canvas.openFile?.filename ?? null,
       projectContents: store.editor.projectContents,
       nodeModules: store.editor.nodeModules.files,
+      remixRoutingTable: store.derived.remixData?.routingTable ?? null,
       resolve: resolveFn,
     }
   })
   return React.useCallback(() => {
-    const { componentMetadata, elementPathTree, mode, projectContents, nodeModules, openFile } =
-      storeRef.current
+    const {
+      componentMetadata,
+      elementPathTree,
+      mode,
+      projectContents,
+      nodeModules,
+      openFile,
+      remixRoutingTable,
+    } = storeRef.current
     if (isInsertMode(mode)) {
       const allPaths = MetadataUtils.getAllPaths(componentMetadata, elementPathTree)
       const insertTargets = allPaths.filter((path) => {
@@ -30,6 +38,7 @@ function useGetHighlightableViewsForInsertMode() {
           projectContents,
           componentMetadata,
           nodeModules,
+          remixRoutingTable,
           openFile,
           path,
           elementPathTree,

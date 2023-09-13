@@ -224,6 +224,7 @@ function findValidTargetsUnderPoint(
           projectContents,
           metadata,
           nodeModules,
+          canvasState.remixRoutingTable,
           openFile,
           target,
           elementPathTree,

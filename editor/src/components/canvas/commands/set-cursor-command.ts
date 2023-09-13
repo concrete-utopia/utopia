@@ -1,4 +1,4 @@
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { CSSCursor } from '../canvas-types'
 import type { BaseCommand, CommandFunction } from './commands'
 import { WhenToRun } from './commands'
@@ -18,6 +18,7 @@ export function setCursorCommand(value: CSSCursor | null): SetCursorCommand {
 
 export const runSetCursor: CommandFunction<SetCursorCommand> = (
   _: EditorState,
+  __: DerivedState,
   command: SetCursorCommand,
 ) => {
   const editorStatePatch: EditorStatePatch = {

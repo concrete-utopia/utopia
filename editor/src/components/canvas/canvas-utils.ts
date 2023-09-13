@@ -1,4 +1,4 @@
-import { NormalisedFrame } from 'utopia-api/core'
+import type { DataRouteObject } from 'react-router'
 import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   framePointForPinnedProp,
@@ -33,7 +33,6 @@ import {
   jsExpressionValue,
   getJSXElementNameAsString,
   isJSExpressionMapOrOtherJavaScript,
-  isJSXFragment,
   isUtopiaJSXComponent,
   emptyComments,
   jsxElementName,
@@ -48,8 +47,9 @@ import {
   getIndexInParent,
   generateUidWithExistingComponents,
   insertJSXElementChildren,
+  findPathToJSXElementChild,
 } from '../../core/model/element-template-utils'
-import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import { getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
@@ -63,15 +63,13 @@ import type {
   HighlightBoundsForUids,
   ExportsDetail,
 } from '../../core/shared/project-file-types'
-import {
-  ParseSuccess,
-  isParseSuccess,
-  isTextFile,
-  NodeModules,
-} from '../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
+  getDefaultExportedTopLevelElement,
   getUtopiaJSXComponentsFromSuccess,
+  isRemixOutletElement,
+  isRemixSceneElement,
 } from '../../core/model/project-file-utils'
 import type { Either } from '../../core/shared/either'
 import {
@@ -92,11 +90,8 @@ import Utils, {
 import type { CanvasPoint, CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
-  localRectangle,
-  LocalRectangle,
   nullIfInfinity,
 } from '../../core/shared/math-utils'
 import type {
@@ -104,24 +99,15 @@ import type {
   AllElementProps,
   ElementProps,
   NavigatorEntry,
+  DerivedState,
 } from '../editor/store/editor-state'
 import {
-  DerivedState,
-  OriginalCanvasAndLocalFrame,
   removeElementAtPath,
-  TransientCanvasState,
-  transientCanvasState,
-  transientFileState,
-  modifyUnderlyingTargetElement,
   modifyParseSuccessAtPath,
-  getOpenUIJSFileKey,
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
-  TransientFilesState,
-  forUnderlyingTargetFromEditorState,
-  TransientFileState,
-  ResizeOptions,
   isSyntheticNavigatorEntry,
+  deriveState,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -133,39 +119,31 @@ import type {
   EdgePosition,
   PinOrFlexFrameChange,
 } from './canvas-types'
-import { CSSCursor, flexResizeChange, pinFrameChange } from './canvas-types'
+import { flexResizeChange, pinFrameChange } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
   filterGuidelinesStaticAxis,
   oneGuidelinePerDimension,
 } from './controls/guideline-helpers'
-import {
-  determineElementsToOperateOnForDragging,
-  dragComponent,
-  extendSelectedViewsForInteraction,
-} from './controls/select-mode/move-utils'
+import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import type {
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from './guideline'
 import { cornerGuideline, Guidelines, xAxisGuideline, yAxisGuideline } from './guideline'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
+import { getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
-import { getAllTargetsAtPointAABB } from './dom-lookup'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { uniqBy } from '../../core/shared/array-utils'
-import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import type { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
-import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
@@ -179,9 +157,10 @@ import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/co
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
+import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
+import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -269,10 +248,12 @@ function valueToUseForPin(
 
 export function updateFramesOfScenesAndComponents(
   editorState: EditorState,
+  derivedState: DerivedState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
 ): EditorState {
   let workingEditorState: EditorState = editorState
+  let workingDerivedState: DerivedState = derivedState
   let toastsToAdd: Array<Notice> = []
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
     const target = frameAndTarget.target
@@ -286,6 +267,7 @@ export function updateFramesOfScenesAndComponents(
     const element = withUnderlyingTargetFromEditorState(
       staticTarget,
       workingEditorState,
+      workingDerivedState,
       null,
       (success, underlyingElement) => underlyingElement,
     )
@@ -299,6 +281,7 @@ export function updateFramesOfScenesAndComponents(
     const parentElement = withUnderlyingTargetFromEditorState(
       staticParentPath,
       workingEditorState,
+      workingDerivedState,
       null,
       (success, underlyingElement) => underlyingElement,
     )
@@ -323,6 +306,7 @@ export function updateFramesOfScenesAndComponents(
           workingEditorState = modifyUnderlyingElementForOpenFile(
             originalTarget,
             workingEditorState,
+            workingDerivedState,
             (elem) => elem,
             (success, underlyingTarget) => {
               const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -618,6 +602,7 @@ export function updateFramesOfScenesAndComponents(
       workingEditorState = modifyUnderlyingElementForOpenFile(
         originalTarget,
         workingEditorState,
+        workingDerivedState,
         (elem) => {
           // Remove the pinning and flex props first...
           const propsToMaybeRemove: Array<LayoutPinnedProp | 'flexBasis'> =
@@ -669,7 +654,14 @@ export function updateFramesOfScenesAndComponents(
     workingEditorState = modifyUnderlyingElementForOpenFile(
       staticTarget,
       workingEditorState,
+      workingDerivedState,
       (attrs) => roundJSXElementLayoutValues(styleStringInArray, attrs),
+    )
+    workingDerivedState = deriveState(
+      workingEditorState,
+      workingDerivedState,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
     )
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
@@ -1346,6 +1338,7 @@ export function moveTemplate(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editorState: EditorState,
+  derivedState: DerivedState,
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
@@ -1370,11 +1363,13 @@ export function moveTemplate(
     return withUnderlyingTargetFromEditorState(
       target,
       editorState,
+      derivedState,
       noChanges(),
       (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
         return withUnderlyingTargetFromEditorState(
           newParentPath,
           editorState,
+          derivedState,
           noChanges(),
           (
             newParentSuccess,
@@ -1435,6 +1430,7 @@ export function moveTemplate(
                     newParentPath,
                     workingEditorState.projectContents,
                     workingEditorState.nodeModules.files,
+                    derivedState.remixData?.routingTable ?? null,
                     workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
@@ -1538,6 +1534,7 @@ export function moveTemplate(
 
                 workingEditorState = updateFramesOfScenesAndComponents(
                   workingEditorState,
+                  derivedState,
                   frameChanges,
                   parentFrame,
                 )
@@ -1698,6 +1695,7 @@ export function duplicate(
   paths: Array<ElementPath>,
   newParentPath: ElementPath | null,
   editor: EditorState,
+  derivedState: DerivedState,
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
   anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
@@ -1706,6 +1704,8 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
+  let workingDerivedState: DerivedState = derivedState
+
   const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
@@ -1715,6 +1715,7 @@ export function duplicate(
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
+      workingDerivedState,
       (elem) => elem,
       (success, underlyingInstancePath, underlyingFilePath) => {
         let utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
@@ -1847,6 +1848,12 @@ export function duplicate(
       ...workingEditorState,
       jsxMetadata: metadataUpdate(workingEditorState.jsxMetadata),
     }
+    workingDerivedState = deriveState(
+      workingEditorState,
+      workingDerivedState,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
   }
 
   return {
@@ -1934,6 +1941,14 @@ export function getParseSuccessForFilePath(
   }
 }
 
+export type RemixValidPathsGenerationContext =
+  | { type: 'inactive' }
+  | {
+      type: 'active'
+      routeModulesToRelativePaths: RouteModulesWithRelativePaths
+      currentlyRenderedRouteModules: Array<DataRouteObject>
+    }
+
 export function getValidElementPaths(
   focusedElementPath: ElementPath | null,
   topLevelElementName: string,
@@ -1941,6 +1956,7 @@ export function getValidElementPaths(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
@@ -1975,6 +1991,7 @@ export function getValidElementPaths(
           false,
           true,
           resolve,
+          getRemixValidPathsGenerationContext,
         )
       }
     }
@@ -1992,15 +2009,75 @@ function getValidElementPathsFromElement(
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
-    const isScene = isSceneElement(element, filePath, projectContents)
-    const isSceneWithOneChild = isScene && element.children.length === 1
     const uid = getUtopiaID(element)
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
     let paths = [path]
+
+    const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
+    const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
+    if (remixPathGenerationContext.type === 'active' && isRemixScene) {
+      function makeValidPathsFromModule(
+        routeModulePath: string,
+        parentPathInner: ElementPath,
+      ): ElementPath | null {
+        const file = getProjectFileByFilePath(projectContents, routeModulePath)
+        if (file == null || file.type !== 'TEXT_FILE') {
+          return null
+        }
+
+        const topLevelElement = getDefaultExportedTopLevelElement(file)
+
+        if (topLevelElement == null) {
+          return null
+        }
+
+        paths.push(
+          ...getValidElementPathsFromElement(
+            focusedElementPath,
+            topLevelElement,
+            parentPathInner,
+            projectContents,
+            routeModulePath,
+            uiFilePath,
+            false,
+            true,
+            resolve,
+            getRemixValidPathsGenerationContext,
+          ),
+        )
+
+        const pathToOutlet = findPathToJSXElementChild(
+          (e) => isRemixOutletElement(e, filePath, projectContents),
+          topLevelElement,
+        )
+        return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
+      }
+
+      /**
+       * The null check is here to guard against the case when a route with children is missing an outlet
+       * that would render the children
+       */
+
+      for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
+        const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
+        if (entry != null) {
+          const { relativePath, filePath: filePathOfRouteModule } = entry
+          const basePath = EP.appendTwoPaths(path, relativePath)
+          makeValidPathsFromModule(filePathOfRouteModule, basePath)
+        }
+      }
+
+      return paths
+    }
+
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const isSceneWithOneChild = isScene && element.children.length === 1
+
     fastForEach(element.children, (c) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -2013,6 +2090,7 @@ function getValidElementPathsFromElement(
           isSceneWithOneChild,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2034,6 +2112,7 @@ function getValidElementPathsFromElement(
           projectContents,
           filePath,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     }
@@ -2075,6 +2154,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2097,6 +2177,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     })

@@ -6,7 +6,7 @@ import type {
   PropertyPathPart,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -49,11 +49,13 @@ export function setPropertyOmitNullProp<T extends PropertyPathPart>(
 
 export const runSetProperty: CommandFunction<SetProperty> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: SetProperty,
 ) => {
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorState,
+    derivedState,
     command.element,
     [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
   )

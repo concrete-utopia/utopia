@@ -23,6 +23,7 @@ import { filterMetadataForCopy } from '../../../../utils/clipboard'
 import type { ElementPaste } from '../../../editor/action-types'
 import type {
   AllElementProps,
+  DerivedState,
   EditorState,
   NavigatorReparentPostActionMenuData,
 } from '../../../editor/store/editor-state'
@@ -42,6 +43,7 @@ import { staticReparentAndUpdatePosition } from './post-action-paste'
 function getNavigatorReparentCommands(
   data: NavigatorReparentPostActionMenuData,
   editor: EditorState,
+  derivedState: DerivedState,
   builtInDependencies: BuiltInDependencies,
 ): Array<CanvasCommand> | null {
   const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
@@ -50,6 +52,7 @@ function getNavigatorReparentCommands(
     data.targetParent,
     editor.projectContents,
     editor.nodeModules.files,
+    derivedState.remixData?.routingTable ?? null,
     editor.canvas.openFile?.filename,
     editor.jsxMetadata,
     editor.elementPathTree,
@@ -121,6 +124,7 @@ function getNavigatorReparentCommands(
       openFile: editor.canvas.openFile?.filename ?? null,
       pasteTargetsToIgnore: [],
       projectContents: editor.projectContents,
+      remixRoutingTable: derivedState.remixData?.routingTable ?? null,
       startingMetadata: editor.jsxMetadata,
       startingElementPathTrees: editor.elementPathTree,
       startingAllElementProps: editor.allElementProps,
@@ -152,7 +156,7 @@ export const PropsPreservedNavigatorReparentPostActionChoice = (
   name: 'Reparent with variables preserved',
   id: PropsPreservedNavigatorReparentPostActionChoiceId,
   run: (editor, derived, builtInDependencies) =>
-    getNavigatorReparentCommands(data, editor, builtInDependencies),
+    getNavigatorReparentCommands(data, editor, derived, builtInDependencies),
 })
 
 export const PropsReplacedNavigatorReparentPostActionChoiceId =
@@ -187,7 +191,12 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
     name: 'Reparent with variables replaced',
     id: PropsReplacedNavigatorReparentPostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
-      const reparentCommands = getNavigatorReparentCommands(data, editor, builtInDependencies)
+      const reparentCommands = getNavigatorReparentCommands(
+        data,
+        editor,
+        derived,
+        builtInDependencies,
+      )
       if (reparentCommands == null) {
         return null
       }

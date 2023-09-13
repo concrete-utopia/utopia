@@ -15,7 +15,11 @@ import type {
   EditorState,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
-import { editorModelFromPersistentModel, StoryboardFilePath } from '../../editor/store/editor-state'
+import {
+  editorModelFromPersistentModel,
+  emptyDerivedState,
+  StoryboardFilePath,
+} from '../../editor/store/editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -199,7 +203,7 @@ function callPropertyControlsHook(
 
   const initialEditorStore: EditorStorePatched = {
     editor: editorState,
-    derived: null as any,
+    derived: emptyDerivedState(editorState),
     strategyState: null as any,
     history: null as any,
     userState: null as any,

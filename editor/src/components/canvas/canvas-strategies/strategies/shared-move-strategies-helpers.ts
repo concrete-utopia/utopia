@@ -180,6 +180,7 @@ export function getMoveCommandsForSelectedElement(
   const element: JSXElement | null = getElementFromProjectContents(
     selectedElement,
     canvasState.projectContents,
+    canvasState.remixRoutingTable,
     canvasState.openFile,
   )
 
@@ -289,21 +290,6 @@ export function getMultiselectBounds(
   }, selectedElements)
 
   return boundingRectangleArray(frames)
-}
-
-export function getFileOfElement(
-  target: ElementPath | null,
-  projectContents: ProjectContentTreeRoot,
-  openFile: string | null | undefined,
-): string | null {
-  return withUnderlyingTarget(
-    target,
-    projectContents,
-    {},
-    openFile,
-    null,
-    (_success, _element, _underlyingTarget, underlyingFilePath) => underlyingFilePath,
-  )
 }
 
 export const flattenSelection = memoize(flattenSelectionInner, {

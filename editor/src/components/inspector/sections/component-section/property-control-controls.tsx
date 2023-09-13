@@ -130,6 +130,7 @@ export const ExpressionInputPropertyControl = React.memo(
             store.editor.nodeModules.files,
             currentFilePath,
             selectedView,
+            store.derived.remixData?.routingTable ?? null,
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath
         })
@@ -249,6 +250,7 @@ export const ExpressionPopUpListPropertyControl = React.memo(
             store.editor.nodeModules.files,
             currentFilePath,
             selectedView,
+            store.derived.remixData?.routingTable ?? null,
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath
         })
