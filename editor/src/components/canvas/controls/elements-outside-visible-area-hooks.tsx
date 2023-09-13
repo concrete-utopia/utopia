@@ -11,10 +11,6 @@ import {
   windowRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import {
-  CanvasToolbarId,
-  ToolbarIndicatorElementsOutsideVisibleAreaId,
-} from '../../editor/canvas-toolbar'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 
@@ -27,15 +23,24 @@ type ElementOutsideVisibleArea = {
 
 export type ElementOutsideVisibleAreaIndicator = {
   path: ElementPath
-  angle: number
+  position: WindowPoint
+  selected: boolean
 }
 
-export function useElementsOutsideVisibleArea(
-  localHighlightedViews: ElementPath[],
-  localSelectedViews: ElementPath[],
-): ElementOutsideVisibleAreaIndicator[] {
-  const bounds = document.getElementById('canvas-root')?.getBoundingClientRect()
-  const canvasToolbar = document.getElementById(CanvasToolbarId)?.getBoundingClientRect() ?? null
+export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndicator[] {
+  const canvasBounds = document.getElementById('canvas-root')?.getBoundingClientRect()
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'useElementsOutsideVisibleArea selectedViews',
+  )
+
+  const highlightedViews = useEditorState(
+    Substores.highlightedHoveredViews,
+    (store) => store.editor.highlightedViews,
+    'useElementsOutsideVisibleArea highlightedViews',
+  )
 
   const storeRef = useRefEditorState((store) => ({
     jsxMetadata: store.editor.jsxMetadata,
@@ -53,8 +58,8 @@ export function useElementsOutsideVisibleArea(
   )
 
   const elements = React.useMemo(() => {
-    return uniqBy([...localSelectedViews, ...localHighlightedViews], EP.pathsEqual)
-  }, [localSelectedViews, localHighlightedViews])
+    return uniqBy([...selectedViews, ...highlightedViews], EP.pathsEqual)
+  }, [selectedViews, highlightedViews])
 
   const framesByPathString = React.useMemo(() => {
     const frames: { [key: string]: CanvasRectangle } = {}
@@ -72,17 +77,17 @@ export function useElementsOutsideVisibleArea(
   }, [storeRef, elements])
 
   const scaledCanvasArea = React.useMemo(() => {
-    if (bounds == null) {
+    if (canvasBounds == null) {
       return null
     }
     const scaleRatio = canvasScale > 1 ? canvasScale : 1
     return windowRectangle({
-      x: bounds.x * scaleRatio,
-      y: bounds.y * scaleRatio,
-      width: bounds.width * scaleRatio,
-      height: bounds.height * scaleRatio,
+      x: canvasBounds.x * scaleRatio,
+      y: canvasBounds.y * scaleRatio,
+      width: canvasBounds.width * scaleRatio,
+      height: canvasBounds.height * scaleRatio,
     })
-  }, [bounds, canvasScale])
+  }, [canvasBounds, canvasScale])
 
   const elementsOutsideVisibleArea = React.useMemo(() => {
     return mapDropNulls((path: ElementPath): ElementOutsideVisibleArea | null => {
@@ -118,37 +123,26 @@ export function useElementsOutsideVisibleArea(
     }, elements)
   }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString])
 
-  const getOriginPoint = React.useCallback((): WindowPoint => {
-    const fromRect = document
-      .getElementById(ToolbarIndicatorElementsOutsideVisibleAreaId)
-      ?.getBoundingClientRect()
-    return fromRect != null
-      ? windowPoint({
-          x: (fromRect.x + fromRect.width / 2) * canvasScale,
-          y: (fromRect.y + fromRect.height / 2) * canvasScale,
-        })
-      : windowPoint({ x: 0, y: 0 })
-  }, [canvasScale])
-
   return React.useMemo((): ElementOutsideVisibleAreaIndicator[] => {
-    if (scaledCanvasArea == null || bounds == null || canvasToolbar == null) {
+    if (scaledCanvasArea == null || canvasBounds == null) {
       return []
     }
-    const origin = getOriginPoint()
     const indicators: ElementOutsideVisibleAreaIndicator[] = []
     for (const { rect, path } of elementsOutsideVisibleArea) {
       // Map element to indicator
+      const target = getRectCenter(rect)
       const indicator: ElementOutsideVisibleAreaIndicator = {
         path: path,
-        angle: angleBetweenPoints(origin, getRectCenter(rect)),
+        position: target,
+        selected: EP.containsPath(path, selectedViews),
       }
       indicators.push(indicator)
     }
     return indicators
-  }, [elementsOutsideVisibleArea, scaledCanvasArea, bounds, canvasToolbar, getOriginPoint])
+  }, [elementsOutsideVisibleArea, scaledCanvasArea, canvasBounds, selectedViews])
 }
 
-function angleBetweenPoints(from: WindowPoint, to: WindowPoint): number {
+export function getIndicatorAngleToTarget(from: WindowPoint, to: WindowPoint): number {
   return Math.atan2(to.y - from.y, to.x - from.x) + Math.PI
 }
 

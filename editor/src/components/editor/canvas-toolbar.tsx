@@ -10,21 +10,17 @@ import {
   FlexColumn,
   FlexRow,
   Icn,
-  LargerIcons,
   SquareButton,
   Tooltip as TooltipWithoutSpanFixme,
   useColorTheme,
-  UtopiaStyles,
 } from '../../uuiui'
 import { Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
-import { stopPropagation } from '../inspector/common/inspector-utils'
 import type { EditorAction } from './action-types'
 import {
   applyCommandsAction,
   openFloatingInsertMenu,
   resetCanvas,
-  scrollToElement,
   setPanelVisibility,
   setRightMenuTab,
   switchEditorMode,
@@ -32,7 +28,6 @@ import {
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
-  useCheckInsertModeForElementType,
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForConditional,
   useEnterDrawToInsertForDiv,
@@ -49,14 +44,10 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
-import { useElementsOutsideVisibleArea } from '../canvas/controls/elements-outside-visible-area-hooks'
-import { useLocalSelectedHighlightedViews } from '../canvas/controls/new-canvas-controls'
-import type { ElementPath } from '../../core/shared/project-file-types'
+import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
-export const ToolbarIndicatorElementsOutsideVisibleAreaId =
-  'indicator-elements-outside-visible-area'
 export const CanvasToolbarId = 'canvas-toolbar'
 
 export const CanvasToolbar = React.memo(() => {
@@ -228,41 +219,6 @@ export const CanvasToolbar = React.memo(() => {
     [dispatch],
   )
 
-  const canvasControlProps = useEditorState(
-    Substores.fullStore,
-    (store) => ({
-      keysPressed: store.editor.keysPressed,
-      editorMode: store.editor.mode,
-      controls: store.derived.controls,
-      scale: store.editor.canvas.scale,
-      focusedPanel: store.editor.focusedPanel,
-      selectedViews: store.editor.selectedViews,
-      highlightedViews: store.editor.highlightedViews,
-      canvasScrollAnimation: store.editor.canvas.scrollAnimation,
-    }),
-    'NewCanvasControls',
-  )
-
-  const { localSelectedViews, localHighlightedViews } = useLocalSelectedHighlightedViews(
-    canvasControlProps.selectedViews,
-    canvasControlProps.highlightedViews,
-  )
-
-  const scrollTo = React.useCallback(
-    (path: ElementPath) => () => {
-      dispatch([scrollToElement(path, 'to-center')])
-    },
-    [dispatch],
-  )
-
-  const eova = useElementsOutsideVisibleArea(localHighlightedViews, localSelectedViews)
-  const outsideElement = React.useMemo(() => {
-    if (eova.length === 0) {
-      return null
-    }
-    return eova[0]
-  }, [eova])
-
   return (
     <div
       style={{
@@ -410,34 +366,7 @@ export const CanvasToolbar = React.memo(() => {
               onClick={resetCanvasCallback}
             />
           </Tooltip>
-          {outsideElement != null && (
-            <Tooltip title={`Scroll to element${eova.length > 1 ? 's' : ''}`} placement='bottom'>
-              <SquareButton
-                highlight
-                style={{
-                  textAlign: 'center',
-                  width: 'min-content',
-                  minWidth: 32,
-                  height: 32,
-                  padding: '0 8px',
-                  position: 'relative',
-                  color: colorTheme.primary.value,
-                }}
-                onClick={scrollTo(outsideElement.path)}
-              >
-                <div
-                  style={{
-                    transform: `rotate(${outsideElement.angle}rad)`,
-                    fontSize: 14,
-                    fontWeight: 800,
-                  }}
-                  id={ToolbarIndicatorElementsOutsideVisibleAreaId}
-                >
-                  ←
-                </div>
-              </SquareButton>
-            </Tooltip>
-          )}
+          <ElementsOutsideVisibleAreaIndicator />
         </div>
 
         {/* Edit Mode submenus */}
