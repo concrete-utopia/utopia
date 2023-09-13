@@ -162,6 +162,100 @@ describe('Remix content', () => {
     })
   })
 
+  it('Two remix scenes, both have metadata', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+           <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene-2'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='remix-div'
+        >
+          ${DefaultRouteTextContent}
+        </div>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixDivMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remix-scene:rootdiv/outlet:remix-div'
+      ]
+
+    expect(remixDivMetadata).not.toBeUndefined()
+
+    expect(remixDivMetadata.globalFrame).toEqual({
+      height: 200,
+      width: 200,
+      x: 212,
+      y: 128,
+    })
+
+    const remixDiv2Metadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remix-scene-2:rootdiv/outlet:remix-div'
+      ]
+
+    expect(remixDiv2Metadata).not.toBeUndefined()
+
+    expect(remixDiv2Metadata.globalFrame).toEqual({
+      height: 200,
+      width: 200,
+      x: 0,
+      y: 0,
+    })
+  })
+
   it('Remix content can be selected', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
