@@ -48,6 +48,7 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
+import { useState } from 'react'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -358,9 +359,14 @@ export const CanvasToolbar = React.memo(() => {
                 height: 32,
                 padding: '0 8px',
               }}
+              css={{
+                '&:hover': {
+                  color: colorTheme.dynamicBlue.value,
+                },
+              }}
               onClick={zoom100pct}
             >
-              {zoomLevel}x
+              {zoomLevel * 100}%
             </SquareButton>
           </Tooltip>
           <Tooltip title='Reset Canvas' placement='bottom'>
@@ -509,7 +515,9 @@ interface InsertModeButtonProps {
   onClick: (event: React.MouseEvent<Element>) => void
   size?: number
 }
+
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+  const [isHovered, setIsHovered] = useState(false)
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
   const canvasInLiveMode = useEditorState(
@@ -525,6 +533,13 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
     },
     [props],
   )
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
 
   return (
     <SquareButton
@@ -534,11 +549,15 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       highlight
       onClick={onClickHandler}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
+      onMouseEnter={setIsHoveredTrue}
+      onMouseLeave={setIsHoveredFalse}
     >
       <Icn
         category={iconCategory}
         type={props.iconType}
-        color={props.primary ? 'on-highlight-main' : 'main'}
+        color={
+          isHovered && !props.primary ? 'primary' : props.primary ? 'on-highlight-main' : 'main'
+        }
         width={props.size ?? 18}
         height={props.size ?? 18}
       />

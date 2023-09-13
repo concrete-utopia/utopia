@@ -49,14 +49,6 @@ export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
     : props.spotlight
     ? colorTheme.buttonBackground.value
     : undefined,
-  '&:hover': {
-    background:
-      props.primary && props.highlight
-        ? colorTheme.primary.value
-        : props.highlight
-        ? colorTheme.buttonHoverBackground.value
-        : 'transparent',
-  },
   '&:active': {
     outline: 'none',
     border: 'none',
