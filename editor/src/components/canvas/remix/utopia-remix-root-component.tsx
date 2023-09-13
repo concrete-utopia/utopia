@@ -119,7 +119,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   }, [routes])
 
   const updateNavigationData = React.useCallback(
-    (routerr: RouterType, location: Location) => {
+    (innerRouter: RouterType, location: Location) => {
       setNavigationData((current) => {
         const key = EP.toString(basePath)
         const existingEntries = current[key]?.entries ?? []
@@ -132,9 +132,9 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         return {
           ...current,
           [EP.toString(basePath)]: {
-            forward: () => void routerr.navigate(1),
-            back: () => void routerr.navigate(-1),
-            home: () => void routerr.navigate('/'),
+            forward: () => void innerRouter.navigate(1),
+            back: () => void innerRouter.navigate(-1),
+            home: () => void innerRouter.navigate('/'),
             location: location,
             entries: updatedEntries,
           },
