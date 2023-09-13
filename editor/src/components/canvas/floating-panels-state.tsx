@@ -169,14 +169,19 @@ export function updatePanelsToDefaultSizes(
   let newPanelContent: PanelContent = emptyPanels().panelContent
   for (const [columnName, columnContent] of Object.entries(currentPanelState.panelContent)) {
     for (const panel of columnContent) {
+      const gapsAndMargins = GapBetweenPanels * (columnContent.length + 1)
+      const canvasHeightWithoutMargins = canvasSize.height - gapsAndMargins
       let height = canvasSize.height
       let width = panel.frame.width
 
       if (!isMenuContainingPanel(columnContent) && columnContent.length === 1) {
         if (columnName === 'leftMenu1' || columnName === 'rightMenu2') {
-          height = canvasSize.height
+          height = canvasHeightWithoutMargins / columnContent.length
         } else {
-          height = Math.min(canvasSize.height, SizeConstraints['code-editor'].defaultSize.height)
+          height = Math.min(
+            canvasHeightWithoutMargins / columnContent.length,
+            SizeConstraints['code-editor'].defaultSize.height,
+          )
         }
         width = SizeConstraints['code-editor'].defaultSize.width
       }
@@ -188,30 +193,28 @@ export function updatePanelsToDefaultSizes(
             panelNamesInColumn.includes('code-editor')
           ) {
             if (panel.name === 'code-editor') {
-              height = canvasSize.height / 3 - GapBetweenPanels * 2
+              height = canvasHeightWithoutMargins / 3
             } else {
-              height = (canvasSize.height * 2) / 3 - GapBetweenPanels * 2
+              height = canvasHeightWithoutMargins * (2 / 3)
             }
           } else if (
             panelNamesInColumn.includes('navigator') &&
             panelNamesInColumn.includes('inspector')
           ) {
             if (panel.name === 'navigator') {
-              height = canvasSize.height / 3 - GapBetweenPanels * 2
+              height = canvasHeightWithoutMargins / 3
             } else {
-              height = (canvasSize.height * 2) / 3 - GapBetweenPanels * 2
+              height = canvasHeightWithoutMargins * (2 / 3)
             }
           } else {
             if (panel.name === 'code-editor') {
-              height = canvasSize.height / 3 - GapBetweenPanels * 2
+              height = canvasHeightWithoutMargins / 3
             } else {
-              height = (canvasSize.height * 2) / 3 - GapBetweenPanels * 2
+              height = canvasHeightWithoutMargins * (2 / 3)
             }
           }
         } else {
-          height =
-            (canvasSize.height - GapBetweenPanels * (columnContent.length + 1)) /
-            columnContent.length
+          height = canvasHeightWithoutMargins / columnContent.length
         }
       }
 
