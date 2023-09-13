@@ -8,7 +8,10 @@ import {
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
-import { getElementFromProjectContents } from '../../../editor/store/editor-state'
+import {
+  getElementFromProjectContents,
+  trueUpElementChanged,
+} from '../../../editor/store/editor-state'
 import type { EdgePosition } from '../../canvas-types'
 import { EdgePositionTop, EdgePositionLeft, EdgePositionTopLeft } from '../../canvas-types'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
@@ -35,7 +38,6 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
   supportsAbsoluteResize,
-  getRetargetedTargetsForResize,
 } from './resize-helpers'
 import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
@@ -44,6 +46,11 @@ import { treatElementAsGroupLike } from './group-helpers'
 import type { EnsureFramePointsExist } from './resize-strategy-helpers'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import {
+  getChildGroupsForNonGroupParents,
+  retargetStrategyToChildrenOfFragmentLikeElements,
+} from './fragment-like-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -52,8 +59,9 @@ export function absoluteResizeBoundingBoxStrategy(
   const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
-  const retargetedTargets = getRetargetedTargetsForResize(canvasState)
-
+  const retargetedTargets = flattenSelection(
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
+  )
   if (
     retargetedTargets.length === 0 ||
     !retargetedTargets.every((element) => {
@@ -99,6 +107,11 @@ export function absoluteResizeBoundingBoxStrategy(
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.activeControl.type === 'RESIZE_HANDLE'
       ) {
+        const childGroups = getChildGroupsForNonGroupParents(
+          canvasState.startingMetadata,
+          retargetedTargets,
+        )
+
         const edgePosition = interactionSession.activeControl.edgePosition
         if (interactionSession.interactionData.drag != null) {
           const drag = interactionSession.interactionData.drag
@@ -200,6 +213,7 @@ export function absoluteResizeBoundingBoxStrategy(
                   [{ target: selectedElement, frame: newFrame }],
                   'starting-metadata',
                 ),
+                queueGroupTrueUp(childGroups.map(trueUpElementChanged)),
               ]
             })
 

@@ -1586,9 +1586,29 @@ export var storyboard = (
           export var storyboard = (
             <Storyboard data-uid='storyboard'>
               <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 150, height: 150 }}>
-                <Group data-uid='group' style={{ position: 'absolute', left: 38, top: 33, height: 89, right: 109, background: 'white' }}>
-                  <div data-uid='foo' style={{ position: 'absolute', width: 38, height: 56, background: 'red', top: 0, left: 0 }} />
-                  <div data-uid='bar' style={{ position: 'absolute', width: 38, height: 56, background: 'blue', top: 33, left: 75 }} />
+                <Group data-uid='group' style={{ position: 'absolute', left: 50, top: 33, height: 89, right: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 13, height: 56, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 13, height: 56, background: 'blue', top: 33, left: 27 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+      )
+
+      await resizeElement(renderResult, { x: -150, y: 100 }, EdgePositionBottomLeft, emptyModifiers)
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: -50, top: 100, width: 300, height: 250 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 50, top: 33, height: 89, right: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 62, height: 56, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 62, height: 56, background: 'blue', top: 33, left: 128 }} />
                 </Group>
               </div>
             </Storyboard>
