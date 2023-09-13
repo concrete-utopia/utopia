@@ -69,7 +69,7 @@ export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
 export type ResizeStatus = 'disabled' | 'noninteractive' | 'enabled'
 
-export function useLocalSelectedHighlightedViews(
+function useLocalSelectedHighlightedViews(
   editorSelectedViews: ElementPath[],
   editorHighlightedViews: ElementPath[],
 ): {
