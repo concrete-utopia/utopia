@@ -400,6 +400,7 @@ function collectReparentCommands(
     canvasState.builtInDependencies,
     canvasState.projectContents,
     canvasState.nodeModules,
+    canvasState.remixRoutingTable,
     canvasState.openFile,
     pathToReparent(path),
     childInsertionPath(targetParent),
@@ -419,6 +420,7 @@ function filterPinsToSet(
   const element = getElementFromProjectContents(
     path,
     canvasState.projectContents,
+    canvasState.remixRoutingTable,
     canvasState.openFile,
   )
   if (element == null) {

@@ -1,4 +1,5 @@
 import type { EditorState } from '../../../editor/store/editor-state'
+import { emptyDerivedState } from '../../../editor/store/editor-state'
 import { elementPath } from '../../../../core/shared/element-path'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { getEditorState, makeTestProjectCodeWithSnippet } from '../../ui-jsx.test-utils'
@@ -78,6 +79,7 @@ function dragByPixelsIsApplicable(
     absoluteDuplicateStrategy(
       pickCanvasStateFromEditorStateWithMetadata(
         editorState,
+        emptyDerivedState(editorState),
         createBuiltInDependenciesList(null),
         metadata,
       ),

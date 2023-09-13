@@ -4,7 +4,11 @@ import { createBuiltInDependenciesList } from '../../../core/es-modules/package-
 import * as EP from '../../../core/shared/element-path'
 import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import {
+  deriveState,
+  emptyDerivedState,
+  withUnderlyingTargetFromEditorState,
+} from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import {
   DefaultStartingFeatureSwitches,
@@ -35,6 +39,7 @@ describe('adjustNumberProperty', () => {
     const originalLeftStyleProp = withUnderlyingTargetFromEditorState(
       cardInstancePath,
       originalEditorState,
+      emptyDerivedState(originalEditorState),
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {
@@ -60,6 +65,7 @@ describe('adjustNumberProperty', () => {
 
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       adjustNumberPropertyCommand,
     )
 
@@ -67,9 +73,11 @@ describe('adjustNumberProperty', () => {
       renderResult.getEditorState().editor,
       result.editorStatePatches,
     )
+
     const updatedLeftStyleProp = withUnderlyingTargetFromEditorState(
       cardInstancePath,
       patchedEditor,
+      emptyDerivedState(patchedEditor),
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {
@@ -114,6 +122,7 @@ describe('adjustNumberProperty', () => {
 
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       adjustNumberPropertyCommand,
     )
 
@@ -124,6 +133,7 @@ describe('adjustNumberProperty', () => {
     const updatedLeftStyleProp = withUnderlyingTargetFromEditorState(
       elementPath,
       patchedEditor,
+      emptyDerivedState(patchedEditor),
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {

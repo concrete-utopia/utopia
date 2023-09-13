@@ -157,6 +157,7 @@ import {
 } from '../../components/editor/store/insertion-path'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { treatElementAsGroupLikeFromMetadata } from '../../components/canvas/canvas-strategies/strategies/group-helpers'
+import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 
@@ -961,6 +962,7 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
     nodeModules: NodeModules,
+    remixRoutingTable: RemixRoutingTable | null,
     openFile: string | null | undefined,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
@@ -969,6 +971,7 @@ export const MetadataUtils = {
       projectContents,
       metadata,
       nodeModules,
+      remixRoutingTable,
       openFile,
       target,
       pathTree,
@@ -982,6 +985,7 @@ export const MetadataUtils = {
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
     nodeModules: NodeModules,
+    remixRoutingTable: RemixRoutingTable | null,
     openFile: string | null | undefined,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
@@ -996,6 +1000,7 @@ export const MetadataUtils = {
           target,
           projectContents,
           nodeModules,
+          remixRoutingTable,
           openFile,
           'doesNotSupportChildren',
           (_, element) => {

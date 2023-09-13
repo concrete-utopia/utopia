@@ -3,7 +3,11 @@ import {
   getElementPathFromInsertionPath,
   insertionPathToString,
 } from '../../editor/store/insertion-path'
-import type { EditorState, EditorStatePatch } from '../../../components/editor/store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  EditorStatePatch,
+} from '../../../components/editor/store/editor-state'
 import { forUnderlyingTargetFromEditorState } from '../../../components/editor/store/editor-state'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import type { JSXElementChild } from '../../../core/shared/element-template'
@@ -44,12 +48,14 @@ export function addElement(
 
 export const runAddElement: CommandFunction<AddElement> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: AddElement,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
     getElementPathFromInsertionPath(command.parentPath),
     editorState,
+    derivedState,
     (
       parentSuccess,
       _underlyingElementNewParent,

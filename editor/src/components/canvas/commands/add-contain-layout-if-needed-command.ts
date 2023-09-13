@@ -4,7 +4,7 @@ import { emptyComments, jsExpressionValue } from '../../../core/shared/element-t
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -26,6 +26,7 @@ export function addContainLayoutIfNeeded(
 
 export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeeded> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: AddContainLayoutIfNeeded,
 ) => {
   const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -41,7 +42,7 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
     }
   } else {
     // Apply the update to the properties.
-    const { editorStatePatch } = applyValuesAtPath(editorState, command.element, [
+    const { editorStatePatch } = applyValuesAtPath(editorState, derivedState, command.element, [
       { path: PP.create('style', 'contain'), value: jsExpressionValue('layout', emptyComments) },
     ])
 

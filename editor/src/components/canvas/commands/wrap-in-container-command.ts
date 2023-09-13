@@ -9,7 +9,7 @@ import {
   jsxFragment,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
   removeElementAtPath,
@@ -65,6 +65,7 @@ export function wrapInContainerCommand(
 
 export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> = (
   editor: EditorState,
+  derivedState: DerivedState,
   command: WrapInContainerCommand,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
@@ -72,6 +73,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
   forUnderlyingTargetFromEditorState(
     command.target,
     editor,
+    derivedState,
     (success, elementToWrap, _underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const withElementRemoved = removeElementAtPath(command.target, components)
@@ -96,6 +98,7 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
         targetParent,
         editor.projectContents,
         editor.nodeModules.files,
+        derivedState.remixData?.routingTable ?? null,
         editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,

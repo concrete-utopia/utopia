@@ -31,7 +31,11 @@ describe('runReparentElement', () => {
 
     const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
-    const result = runReparentElement(originalEditorState, reparentCommand)
+    const result = runReparentElement(
+      originalEditorState,
+      renderResult.getEditorState().derived,
+      reparentCommand,
+    )
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,
@@ -42,6 +46,7 @@ describe('runReparentElement', () => {
     const newElement = withUnderlyingTargetFromEditorState(
       newPath,
       patchedEditor,
+      renderResult.getEditorState().derived,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return element
@@ -51,6 +56,7 @@ describe('runReparentElement', () => {
     const oldElement = withUnderlyingTargetFromEditorState(
       targetPath,
       patchedEditor,
+      renderResult.getEditorState().derived,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return element
@@ -82,11 +88,16 @@ describe('runReparentElement', () => {
 
     const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
-    const result = runReparentElement(originalEditorState, reparentCommand)
+    const result = runReparentElement(
+      originalEditorState,
+      renderResult.getEditorState().derived,
+      reparentCommand,
+    )
 
     const oldFile = withUnderlyingTargetFromEditorState(
       targetPath,
       originalEditorState,
+      renderResult.getEditorState().derived,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return underlyingFilePath
@@ -102,6 +113,7 @@ describe('runReparentElement', () => {
     const { newElement, newFile } = withUnderlyingTargetFromEditorState(
       newPath,
       patchedEditor,
+      renderResult.getEditorState().derived,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return {
@@ -114,6 +126,7 @@ describe('runReparentElement', () => {
     const oldElement = withUnderlyingTargetFromEditorState(
       targetPath,
       patchedEditor,
+      renderResult.getEditorState().derived,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return element
