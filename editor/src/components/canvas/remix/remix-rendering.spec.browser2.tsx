@@ -1,5 +1,4 @@
 import * as EP from '../../../core/shared/element-path'
-import { toString } from '../../../core/shared/element-path'
 import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
@@ -312,7 +311,7 @@ describe('Remix content', () => {
 
     expect(renderResult.getEditorState().editor.selectedViews).toHaveLength(1)
 
-    expect(toString(renderResult.getEditorState().editor.selectedViews[0])).toEqual(
+    expect(EP.toString(renderResult.getEditorState().editor.selectedViews[0])).toEqual(
       'storyboard/remix-scene:rootdiv/outlet:remix-route-root/remix-div',
     )
   })
