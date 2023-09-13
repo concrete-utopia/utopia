@@ -494,7 +494,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const getRemixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext =>
     remixDerivedDataRef.current == null
-      ? { type: 'disabled' }
+      ? { type: 'inactive' }
       : {
           type: 'active',
           routeModulesToRelativePaths: remixDerivedDataRef.current.routeModulesToRelativePaths,

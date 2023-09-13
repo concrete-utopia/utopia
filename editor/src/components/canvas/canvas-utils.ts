@@ -1936,7 +1936,7 @@ export function getParseSuccessForFilePath(
 }
 
 export type RemixValidPathsGenerationContext =
-  | { type: 'disabled' }
+  | { type: 'inactive' }
   | {
       type: 'active'
       routeModulesToRelativePaths: RouteModulesWithRelativePaths
