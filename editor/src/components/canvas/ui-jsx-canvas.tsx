@@ -90,7 +90,7 @@ import {
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
-import { useAtomCallback } from 'jotai/utils'
+import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
 
 applyUIDMonkeyPatch()
@@ -484,9 +484,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
 
   const remixDerivedDataRef = useRefEditorState((editor) => editor.derived.remixData)
 
-  const remixNavigationState = useAtomCallback(
-    React.useCallback((get) => get(RemixNavigationAtom), []),
-  )
+  const [remixNavigationState] = useAtom(RemixNavigationAtom)
 
   const getRemixPathValidationContext = (path: ElementPath): RemixValidPathsGenerationContext =>
     remixDerivedDataRef.current == null
@@ -497,7 +495,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
           currentlyRenderedRouteModules:
             matchRoutes(
               remixDerivedDataRef.current.routes,
-              remixNavigationState()[EP.toString(path)]?.location ?? '/',
+              remixNavigationState[EP.toString(path)]?.location ?? '/',
             )?.map((p) => p.route) ?? [],
         }
 
