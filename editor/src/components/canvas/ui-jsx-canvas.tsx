@@ -309,13 +309,15 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let evaluatedFileNames = React.useRef<Array<string>>([]) // evaluated (i.e. not using a cached evaluation) this render
   evaluatedFileNames.current = [uiFilePath]
   React.useEffect(() => {
+    const resolvedFileNamesLocal = [...resolvedFileNames.current]
+    const evaluatedFileNamesLocal = [...evaluatedFileNames.current]
     setTimeout(() => {
       // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
       void validateControlsToCheck(
         dispatch,
         propertyControlsInfo,
-        resolvedFileNames.current,
-        evaluatedFileNames.current,
+        resolvedFileNamesLocal,
+        evaluatedFileNamesLocal,
       )
     }, 0)
   })
