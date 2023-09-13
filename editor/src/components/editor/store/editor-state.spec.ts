@@ -2,6 +2,7 @@ import type { EditorState } from './editor-state'
 import {
   createEditorState,
   defaultModifyParseSuccess,
+  emptyDerivedState,
   modifyUnderlyingTargetElement,
   StoryboardFilePath,
 } from './editor-state'
@@ -58,6 +59,7 @@ describe('modifyUnderlyingTarget', () => {
       pathToElement,
       '/src/app.js',
       startingEditorModel,
+      emptyDerivedState(startingEditorModel),
       (element) => {
         if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
@@ -106,6 +108,7 @@ describe('modifyUnderlyingTarget', () => {
       pathToElement,
       '/src/card.js',
       startingEditorModel,
+      emptyDerivedState(startingEditorModel),
       (element) => element,
       (success: ParseSuccess) => {
         return parseSuccess(
@@ -144,6 +147,7 @@ describe('modifyUnderlyingTarget', () => {
       pathToElement,
       StoryboardFilePath,
       startingEditorModel,
+      emptyDerivedState(startingEditorModel),
       (element) => {
         if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
@@ -199,6 +203,7 @@ describe('modifyUnderlyingTarget', () => {
         pathToElement,
         '/src/app.js',
         startingEditorModel,
+        emptyDerivedState(startingEditorModel),
         (element) => {
           if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
             return element
@@ -226,6 +231,7 @@ describe('Revision state management', () => {
       pathToElement,
       '/src/app.js',
       startingEditorModel,
+      emptyDerivedState(startingEditorModel),
       (element) => {
         if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element

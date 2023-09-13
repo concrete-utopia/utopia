@@ -51,6 +51,7 @@ import type { PropertyControlsInfo } from '../../components/custom-code/code-fil
 import type { ProjectContentTreeRoot } from '../../components/assets'
 import { StyleLayoutProp } from './layout-helpers-new'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
+import type { RemixRoutingTable } from '../../components/editor/store/remix-derived-data'
 
 export function targetRespectsLayout(
   target: ElementPath,
@@ -58,6 +59,7 @@ export function targetRespectsLayout(
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
+  remixRoutingTable: RemixRoutingTable | null,
 ): boolean {
   const propControls = getPropertyControlsForTarget(
     target,
@@ -65,6 +67,7 @@ export function targetRespectsLayout(
     openFilePath,
     projectContents,
     nodeModules,
+    remixRoutingTable,
   )
 
   return propControls != null && hasStyleControls(propControls)

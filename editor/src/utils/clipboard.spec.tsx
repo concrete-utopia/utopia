@@ -92,6 +92,7 @@ export var Card = (props) => {
     const clipboardData = createClipboardDataFromSelection(
       renderResult.getEditorState().editor,
       renderResult.getEditorState().builtInDependencies,
+      renderResult.getEditorState().derived,
     )
 
     expect(clipboardData?.data.length).toEqual(1)

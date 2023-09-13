@@ -1,6 +1,6 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
 export interface UpdateSelectedViews extends BaseCommand {
@@ -21,6 +21,7 @@ export function updateSelectedViews(
 
 export const runUpdateSelectedViews: CommandFunction<UpdateSelectedViews> = (
   _: EditorState,
+  __: DerivedState,
   command: UpdateSelectedViews,
 ) => {
   const editorStatePatch: EditorStatePatch = {

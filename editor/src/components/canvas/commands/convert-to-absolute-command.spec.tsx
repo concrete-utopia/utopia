@@ -7,7 +7,11 @@ import {
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
+import {
+  deriveState,
+  emptyDerivedState,
+  withUnderlyingTargetFromEditorState,
+} from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
@@ -30,6 +34,7 @@ describe('convertToAbsolute', () => {
     const convertToAbsoluteCommand = convertToAbsolute('always', appInstancePath)
     const result = runConvertToAbsolute(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       convertToAbsoluteCommand,
     )
 
@@ -41,6 +46,7 @@ describe('convertToAbsolute', () => {
     const originalPositionProp = withUnderlyingTargetFromEditorState(
       appInstancePath,
       originalEditorState,
+      emptyDerivedState(originalEditorState),
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {
@@ -63,6 +69,7 @@ describe('convertToAbsolute', () => {
     const updatedPositionProp = withUnderlyingTargetFromEditorState(
       appInstancePath,
       patchedEditor,
+      emptyDerivedState(patchedEditor),
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         if (isJSXElement(element)) {

@@ -5,6 +5,7 @@ import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { runUpdateSelectedViews, updateSelectedViews } from './update-selected-views-command'
+import { emptyDerivedState } from '../../editor/store/editor-state'
 
 describe('updateSelectedViews', () => {
   it('updating selected views work', async () => {
@@ -25,7 +26,11 @@ describe('updateSelectedViews', () => {
 
     const updateSelectedViewsCommand = updateSelectedViews('always', [targetPath])
 
-    const result = runUpdateSelectedViews(originalEditorState, updateSelectedViewsCommand)
+    const result = runUpdateSelectedViews(
+      originalEditorState,
+      emptyDerivedState(originalEditorState),
+      updateSelectedViewsCommand,
+    )
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,

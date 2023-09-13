@@ -100,9 +100,10 @@ export function baseFlexReparentToAbsoluteStrategy(
                 ...escapeHatchCommands,
                 updateFunctionCommand(
                   'always',
-                  (editorState, commandLifecycle): Array<EditorStatePatch> => {
+                  (editorState, derivedState, commandLifecycle): Array<EditorStatePatch> => {
                     const updatedCanvasState = pickCanvasStateFromEditorState(
                       editorState,
+                      derivedState,
                       canvasState.builtInDependencies,
                     )
                     const absoluteReparentStrategyToUse = baseAbsoluteReparentStrategy(
@@ -119,6 +120,7 @@ export function baseFlexReparentToAbsoluteStrategy(
 
                     return foldAndApplyCommandsInner(
                       editorState,
+                      derivedState,
                       [],
                       reparentCommands,
                       commandLifecycle,

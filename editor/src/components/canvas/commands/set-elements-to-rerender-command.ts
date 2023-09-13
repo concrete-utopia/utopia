@@ -1,5 +1,6 @@
 import * as EP from '../../../core/shared/element-path'
 import type {
+  DerivedState,
   EditorState,
   EditorStatePatch,
   ElementsToRerender,
@@ -24,6 +25,7 @@ export function setElementsToRerenderCommand(
 
 export const runSetElementsToRerender: CommandFunction<SetElementsToRerenderCommand> = (
   e: EditorState,
+  __: DerivedState,
   command: SetElementsToRerenderCommand,
 ) => {
   const editorStatePatch: EditorStatePatch = {
@@ -67,6 +69,7 @@ function mergeElementsToRerender(l: ElementsToRerender, r: ElementsToRerender): 
 
 export const runAppendElementsToRerender: CommandFunction<AppendElementsToRerenderCommand> = (
   e: EditorState,
+  __: DerivedState,
   command: AppendElementsToRerenderCommand,
 ) => {
   const editorStatePatch: EditorStatePatch = {

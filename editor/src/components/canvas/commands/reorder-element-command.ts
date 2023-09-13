@@ -2,7 +2,7 @@ import type { IndexPosition } from '../../../utils/utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { reorderComponent } from '../canvas-utils'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -29,11 +29,13 @@ export function reorderElement(
 
 export const runReorderElement: CommandFunction<ReorderElement> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: ReorderElement,
 ) => {
   const patch = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
+    derivedState,
     {},
     (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)

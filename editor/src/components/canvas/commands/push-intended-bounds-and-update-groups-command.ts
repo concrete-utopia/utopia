@@ -18,10 +18,12 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type {
   AllElementProps,
+  DerivedState,
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../editor/store/editor-state'
+import { deriveState, trueUpElementChanged } from '../../editor/store/editor-state'
+import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
 import type { FlexDirection } from '../../inspector/common/css-utils'
 import {
   isHugFromStyleAttribute,
@@ -68,19 +70,28 @@ export function pushIntendedBoundsAndUpdateGroups(
 
 export const runPushIntendedBoundsAndUpdateGroups = (
   editor: EditorState,
+  derivedState: DerivedState,
   command: PushIntendedBoundsAndUpdateGroups,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   const commandRanBecauseOfQueuedTrueUp = command.isStartingMetadata === 'live-metadata'
 
   const { updatedEditor: editorAfterResizingGroupChildren, resizedGroupChildren } =
-    getUpdateResizedGroupChildrenCommands(editor, command)
+    getUpdateResizedGroupChildrenCommands(editor, derivedState, command)
+
+  const derivedStateAfterResizingGroupChildren = deriveState(
+    editorAfterResizingGroupChildren,
+    derivedState,
+    'patched',
+    patchedCreateRemixDerivedDataMemo,
+  )
 
   const {
     updatedEditor: editorAfterResizingAncestors,
     intendedBounds: resizeAncestorsIntendedBounds,
   } = getResizeAncestorGroupsCommands(
     editorAfterResizingGroupChildren,
+    derivedStateAfterResizingGroupChildren,
     command,
     commandRanBecauseOfQueuedTrueUp
       ? 'do-not-create-if-doesnt-exist'
@@ -150,6 +161,7 @@ function rectangleFromChildrenBounds(
 
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
+  derivedState: DerivedState,
   command: PushIntendedBoundsAndUpdateGroups,
 ): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
   const targets: Array<{
@@ -271,7 +283,7 @@ function getUpdateResizedGroupChildrenCommands(
     )
   })
 
-  const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
+  const updatedEditor = foldAndApplyCommandsSimple(editor, derivedState, commandsToRun)
   return {
     updatedEditor: updatedEditor,
     resizedGroupChildren: updatedElements,
@@ -280,6 +292,7 @@ function getUpdateResizedGroupChildrenCommands(
 
 function getResizeAncestorGroupsCommands(
   editor: EditorState,
+  derivedState: DerivedState,
   command: PushIntendedBoundsAndUpdateGroups,
   addGroupSizeIfNonExistant: CreateIfNotExistant,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
@@ -396,7 +409,7 @@ function getResizeAncestorGroupsCommands(
     }
   })
 
-  const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
+  const updatedEditor = foldAndApplyCommandsSimple(editor, derivedState, commandsToRun)
   return {
     updatedEditor: updatedEditor,
     intendedBounds: Object.values(updatedGlobalFrames).filter(isNotNull),

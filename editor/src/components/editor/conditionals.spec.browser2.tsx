@@ -31,7 +31,7 @@ import {
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
-import type { EditorState } from './store/editor-state'
+import type { EditorState, EditorStorePatched } from './store/editor-state'
 import type { InsertionPath } from './store/insertion-path'
 import {
   childInsertionPath,
@@ -195,7 +195,7 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const helloWorldUIDOptic: Optic<EditorState, string> = forElementOptic(
+      const helloWorldUIDOptic: Optic<EditorStorePatched, string> = forElementOptic(
         EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional']),
       )
         .compose(fromTypeGuard(isJSXConditionalExpression))
@@ -203,10 +203,7 @@ describe('conditionals', () => {
         .compose(fromTypeGuard(isJSExpressionValue))
         .compose(filtered((value) => value.value === 'hello'))
         .compose(fromField('uid'))
-      const helloWorldUID: string = unsafeGet(
-        helloWorldUIDOptic,
-        renderResult.getEditorState().editor,
-      )
+      const helloWorldUID: string = unsafeGet(helloWorldUIDOptic, renderResult.getEditorState())
 
       const targetPath = EP.appendNewElementPath(TestScenePath, [
         'aaa',
