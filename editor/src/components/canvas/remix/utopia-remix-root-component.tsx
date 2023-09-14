@@ -87,7 +87,7 @@ function useGetRouteModules(basePath: ElementPath) {
     }
 
     return routeModulesResult
-  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+  }, [defaultExports, remixDerivedDataRef, projectContentsRef, basePath])
 }
 
 export interface UtopiaRemixRootComponentProps {
