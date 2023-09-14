@@ -7,7 +7,7 @@ import {
   getIndicatorAngleToTarget,
   useElementsOutsideVisibleArea,
 } from '../canvas/controls/elements-outside-visible-area-hooks'
-import { scrollToElement } from './actions/action-creators'
+import { scrollToPosition } from './actions/action-creators'
 import { useDispatch } from './store/dispatch-context'
 import { useRefEditorState } from './store/store-hook'
 
@@ -18,15 +18,11 @@ export const ElementsOutsideVisibleAreaIndicator = React.memo(() => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
-  const targets = useElementsOutsideVisibleArea()
-
-  const target = React.useMemo(() => {
-    return targets.at(0) ?? null
-  }, [targets])
+  const target = useElementsOutsideVisibleArea()
 
   const scrollTo = React.useCallback(() => {
     if (target != null) {
-      dispatch([scrollToElement(target.path, 'to-center')])
+      dispatch([scrollToPosition(target.rect, 'to-center')])
     }
   }, [dispatch, target])
 
@@ -35,7 +31,7 @@ export const ElementsOutsideVisibleAreaIndicator = React.memo(() => {
   }
 
   return (
-    <Tooltip title={`Scroll to element${targets.length > 1 ? 's' : ''}`} placement='bottom'>
+    <Tooltip title={`Scroll to element${target.elements > 1 ? 's' : ''}`} placement='bottom'>
       <SquareButton
         highlight
         style={{

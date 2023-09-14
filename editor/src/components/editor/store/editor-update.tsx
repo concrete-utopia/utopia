@@ -317,6 +317,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state, derivedState)
     case 'SCROLL_TO_ELEMENT':
       return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state, dispatch)
+    case 'SCROLL_TO_POSITION':
+      return UPDATE_FNS.SCROLL_TO_POSITION(action, state, dispatch)
     case 'SET_SCROLL_ANIMATION':
       return UPDATE_FNS.SET_SCROLL_ANIMATION(action, state, dispatch)
     case 'UPDATE_CONFIG_FROM_VSCODE':

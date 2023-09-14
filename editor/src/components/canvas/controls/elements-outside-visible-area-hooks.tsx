@@ -4,9 +4,11 @@ import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { CanvasRectangle, WindowPoint, WindowRectangle } from '../../../core/shared/math-utils'
 import {
+  boundingRectangleArray,
   getRectCenter,
   isFiniteRectangle,
   offsetPoint,
+  scaleRect,
   windowPoint,
   windowRectangle,
 } from '../../../core/shared/math-utils'
@@ -22,12 +24,13 @@ type ElementOutsideVisibleArea = {
 }
 
 export type ElementOutsideVisibleAreaIndicator = {
-  path: ElementPath
+  elements: number
+  rect: CanvasRectangle
   position: WindowPoint
   selected: boolean
 }
 
-export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndicator[] {
+export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndicator | null {
   const canvasBounds = document.getElementById('canvas-root')?.getBoundingClientRect()
 
   const selectedViews = useEditorState(
@@ -123,23 +126,27 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
     }, elements)
   }, [elements, canvasOffset, canvasScale, scaledCanvasArea, framesByPathString])
 
-  return React.useMemo((): ElementOutsideVisibleAreaIndicator[] => {
-    if (scaledCanvasArea == null || canvasBounds == null) {
-      return []
+  return React.useMemo((): ElementOutsideVisibleAreaIndicator | null => {
+    if (elementsOutsideVisibleArea.length === 0) {
+      return null
     }
-    const indicators: ElementOutsideVisibleAreaIndicator[] = []
-    for (const { rect, path } of elementsOutsideVisibleArea) {
-      // Map element to indicator
-      const target = getRectCenter(rect)
-      const indicator: ElementOutsideVisibleAreaIndicator = {
-        path: path,
-        position: target,
-        selected: EP.containsPath(path, selectedViews),
-      }
-      indicators.push(indicator)
+    const windowRect = boundingRectangleArray(elementsOutsideVisibleArea.map((a) => a.rect))
+    if (windowRect == null) {
+      return null
     }
-    return indicators
-  }, [elementsOutsideVisibleArea, scaledCanvasArea, canvasBounds, selectedViews])
+    const canvasRect = boundingRectangleArray(
+      elementsOutsideVisibleArea.map((a) => framesByPathString[EP.toString(a.path)]),
+    )
+    if (canvasRect == null) {
+      return null
+    }
+    return {
+      elements: elementsOutsideVisibleArea.length,
+      rect: canvasRect,
+      position: getRectCenter(scaleRect(windowRect, canvasScale)),
+      selected: elementsOutsideVisibleArea.some((e) => EP.containsPath(e.path, selectedViews)),
+    }
+  }, [elementsOutsideVisibleArea, framesByPathString, selectedViews, canvasScale])
 }
 
 export function getIndicatorAngleToTarget(from: WindowPoint, to: WindowPoint): number {
