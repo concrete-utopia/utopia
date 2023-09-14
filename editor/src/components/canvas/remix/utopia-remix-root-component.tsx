@@ -7,7 +7,7 @@ import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
-import { PathPropHOC } from './path-props-hoc'
+import { PathPropHOC, getPaths } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
 
@@ -62,25 +62,24 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
-      const relativePath =
-        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePaths[0]
+      const relativePaths =
+        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePaths
 
       const defaultComponent = (componentProps: any) =>
         value
           .executionScopeCreator(projectContentsRef.current)
           .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
+      const pathsGen = getPaths(relativePaths)
+
       routeModulesResult[routeId] = {
         ...value,
-        default: PathPropHOC(
-          defaultComponent,
-          EP.toString(EP.appendTwoPaths(basePath, relativePath)),
-        ),
+        default: PathPropHOC(defaultComponent, () => EP.toString(pathsGen.next().value)),
       }
     }
 
     return routeModulesResult
-  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+  }, [defaultExports, remixDerivedDataRef, projectContentsRef])
 }
 
 export interface UtopiaRemixRootComponentProps {
