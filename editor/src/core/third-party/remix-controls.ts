@@ -35,4 +35,25 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
       },
     ],
   },
+  Outlet: {
+    properties: {},
+    variants: [
+      {
+        insertMenuLabel: 'Outlet',
+        importsToAdd: {
+          '@remix-run/react': {
+            importedWithName: null,
+            importedFromWithin: [
+              {
+                name: 'Outlet',
+                alias: 'Outlet',
+              },
+            ],
+            importedAs: null,
+          },
+        },
+        elementToInsert: jsxElementWithoutUID('Outlet', [], []),
+      },
+    ],
+  },
 }
