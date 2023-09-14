@@ -78,6 +78,7 @@ const IndicatorArrow = React.memo(({ target }: { target: ElementOutsideVisibleAr
   return (
     <div
       id={ToolbarIndicatorElementsOutsideVisibleAreaId}
+      data-testid={ToolbarIndicatorElementsOutsideVisibleAreaId}
       ref={ref}
       style={{
         transform: `rotate(${angle}rad)`,
