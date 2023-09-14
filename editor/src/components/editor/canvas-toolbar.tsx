@@ -10,15 +10,12 @@ import {
   FlexColumn,
   FlexRow,
   Icn,
-  LargerIcons,
   SquareButton,
   Tooltip as TooltipWithoutSpanFixme,
   useColorTheme,
-  UtopiaStyles,
 } from '../../uuiui'
 import { Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
-import { stopPropagation } from '../inspector/common/inspector-utils'
 import type { EditorAction } from './action-types'
 import {
   applyCommandsAction,
@@ -31,7 +28,6 @@ import {
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
-  useCheckInsertModeForElementType,
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForConditional,
   useEnterDrawToInsertForDiv,
@@ -48,10 +44,10 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
+import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
-
 export const CanvasToolbarId = 'canvas-toolbar'
 
 export const CanvasToolbar = React.memo(() => {
@@ -370,6 +366,7 @@ export const CanvasToolbar = React.memo(() => {
               onClick={resetCanvasCallback}
             />
           </Tooltip>
+          <ElementsOutsideVisibleAreaIndicator />
         </div>
 
         {/* Edit Mode submenus */}

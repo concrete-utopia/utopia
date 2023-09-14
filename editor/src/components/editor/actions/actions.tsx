@@ -312,6 +312,7 @@ import type {
   SwitchConditionalBranches,
   UpdateConditionalExpression,
   SetMapCountOverride,
+  ScrollToPosition,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -445,6 +446,7 @@ import {
   finishCheckpointTimer,
   insertJSXElement,
   openCodeEditorFile,
+  scrollToPosition,
   selectComponents,
   setFocusedElement,
   setPackageStatus,
@@ -4587,6 +4589,104 @@ export const UPDATE_FNS = {
       return editor
     }
   },
+  SCROLL_TO_POSITION: (
+    action: ScrollToPosition,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const isLeftMenuOpen = editor.leftMenu.expanded
+    const containerRootDiv = document.getElementById('canvas-root')
+    const panelOffsets = canvasPanelOffsets()
+    const scale = 1 / editor.canvas.scale
+
+    // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
+    // It will effectively scroll to the element by positioning it at the origin (TL) of the
+    // canvas, based on the BaseCanvasOffset value(s).
+    function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
+      const baseCanvasOffset = isLeftMenuOpen ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+      const target = canvasPoint({
+        x: baseCanvasOffset.x * scale,
+        y: baseCanvasOffset.y * scale,
+      })
+      return Utils.pointDifference(frame, target)
+    }
+
+    function canvasOffsetToCenter(
+      frame: CanvasRectangle,
+      bounds: CanvasRectangle | null,
+    ): CanvasVector {
+      if (bounds == null) {
+        return canvasOffsetToOrigin(frame) // fallback default
+      }
+      const canvasCenter = getRectCenter(
+        canvasRectangle({
+          x: bounds.x,
+          y: bounds.y,
+          width: bounds.width * scale,
+          height: bounds.height * scale,
+        }),
+      )
+      const topLeftTarget = canvasPoint({
+        x:
+          canvasCenter.x -
+          frame.width / 2 -
+          bounds.x +
+          (panelOffsets.left / 2) * scale -
+          (panelOffsets.right / 2) * scale,
+        y: canvasCenter.y - frame.height / 2 - bounds.y,
+      })
+      return Utils.pointDifference(frame, topLeftTarget)
+    }
+
+    function canvasOffsetKeepScrollPositionIfVisible(
+      frame: CanvasRectangle,
+      bounds: CanvasRectangle | null,
+    ): CanvasVector | null {
+      if (bounds == null) {
+        return canvasOffsetToOrigin(frame) // fallback default
+      }
+      const containerRectangle = {
+        x: panelOffsets.left - editor.canvas.realCanvasOffset.x,
+        y: -editor.canvas.realCanvasOffset.y,
+        width: bounds.width,
+        height: bounds.height,
+      } as CanvasRectangle
+      const isVisible = rectangleIntersection(containerRectangle, frame) != null
+      return isVisible
+        ? null // when the element is on screen no scrolling is needed
+        : canvasOffsetToOrigin(frame) // fallback default
+    }
+
+    function getNewCanvasOffset(frame: CanvasRectangle): CanvasVector | null {
+      const containerDivBoundingRect = canvasRectangle(
+        containerRootDiv?.getBoundingClientRect() ?? null,
+      )
+      switch (action.behaviour) {
+        case 'keep-scroll-position-if-visible':
+          return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
+        case 'to-center':
+          return canvasOffsetToCenter(frame, containerDivBoundingRect)
+        default:
+          assertNever(action.behaviour)
+      }
+    }
+
+    const newCanvasOffset = getNewCanvasOffset(action.target)
+    return newCanvasOffset == null
+      ? editor
+      : UPDATE_FNS.SET_SCROLL_ANIMATION(
+          setScrollAnimation(true),
+          {
+            ...editor,
+            canvas: {
+              ...editor.canvas,
+              realCanvasOffset: newCanvasOffset,
+              roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+            },
+          },
+          dispatch,
+        )
+  },
   SCROLL_TO_ELEMENT: (
     action: ScrollToElement,
     editor: EditorModel,
@@ -4597,98 +4697,11 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
     )
     if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
-      const isLeftMenuOpen = editor.leftMenu.expanded
-      const containerRootDiv = document.getElementById('canvas-root')
-      const panelOffsets = canvasPanelOffsets()
-      const scale = 1 / editor.canvas.scale
-
-      // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
-      // It will effectively scroll to the element by positioning it at the origin (TL) of the
-      // canvas, based on the BaseCanvasOffset value(s).
-      function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
-        const baseCanvasOffset = isLeftMenuOpen ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
-        const target = canvasPoint({
-          x: baseCanvasOffset.x * scale,
-          y: baseCanvasOffset.y * scale,
-        })
-        return Utils.pointDifference(frame, target)
-      }
-
-      function canvasOffsetToCenter(
-        frame: CanvasRectangle,
-        bounds: CanvasRectangle | null,
-      ): CanvasVector {
-        if (bounds == null) {
-          return canvasOffsetToOrigin(frame) // fallback default
-        }
-        const canvasCenter = getRectCenter(
-          canvasRectangle({
-            x: bounds.x,
-            y: bounds.y,
-            width: bounds.width * scale,
-            height: bounds.height * scale,
-          }),
-        )
-        const topLeftTarget = canvasPoint({
-          x:
-            canvasCenter.x -
-            frame.width / 2 -
-            bounds.x +
-            (panelOffsets.left / 2) * scale -
-            (panelOffsets.right / 2) * scale,
-          y: canvasCenter.y - frame.height / 2 - bounds.y,
-        })
-        return Utils.pointDifference(frame, topLeftTarget)
-      }
-
-      function canvasOffsetKeepScrollPositionIfVisible(
-        frame: CanvasRectangle,
-        bounds: CanvasRectangle | null,
-      ): CanvasVector | null {
-        if (bounds == null) {
-          return canvasOffsetToOrigin(frame) // fallback default
-        }
-        const containerRectangle = {
-          x: panelOffsets.left - editor.canvas.realCanvasOffset.x,
-          y: -editor.canvas.realCanvasOffset.y,
-          width: bounds.width,
-          height: bounds.height,
-        } as CanvasRectangle
-        const isVisible = rectangleIntersection(containerRectangle, frame) != null
-        return isVisible
-          ? null // when the element is on screen no scrolling is needed
-          : canvasOffsetToOrigin(frame) // fallback default
-      }
-
-      function getNewCanvasOffset(frame: CanvasRectangle): CanvasVector | null {
-        const containerDivBoundingRect = canvasRectangle(
-          containerRootDiv?.getBoundingClientRect() ?? null,
-        )
-        switch (action.behaviour) {
-          case 'keep-scroll-position-if-visible':
-            return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
-          case 'to-center':
-            return canvasOffsetToCenter(frame, containerDivBoundingRect)
-          default:
-            assertNever(action.behaviour)
-        }
-      }
-
-      const newCanvasOffset = getNewCanvasOffset(targetElementCoords)
-      return newCanvasOffset == null
-        ? editor
-        : UPDATE_FNS.SET_SCROLL_ANIMATION(
-            setScrollAnimation(true),
-            {
-              ...editor,
-              canvas: {
-                ...editor.canvas,
-                realCanvasOffset: newCanvasOffset,
-                roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
-              },
-            },
-            dispatch,
-          )
+      return UPDATE_FNS.SCROLL_TO_POSITION(
+        scrollToPosition(targetElementCoords, action.behaviour),
+        editor,
+        dispatch,
+      )
     } else {
       return {
         ...editor,

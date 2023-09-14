@@ -64,7 +64,6 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
-import { ElementsOutsideVisibleAreaIndicators } from './elements-outside-visible-area'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -223,11 +222,6 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
           <ElementContextMenu contextMenuInstance='context-menu-canvas' />
           <ElementContextMenu contextMenuInstance='context-menu-canvas-no-selection' />
         </div>
-        <ElementsOutsideVisibleAreaIndicators
-          canvasRef={ref}
-          localHighlightedViews={localHighlightedViews}
-          localSelectedViews={localSelectedViews}
-        />
       </>
     )
   }

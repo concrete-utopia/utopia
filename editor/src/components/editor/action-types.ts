@@ -880,6 +880,12 @@ export interface ScrollToElement {
   behaviour: ScrollToElementBehaviour
 }
 
+export interface ScrollToPosition {
+  action: 'SCROLL_TO_POSITION'
+  target: CanvasRectangle
+  behaviour: ScrollToElementBehaviour
+}
+
 export interface SetScrollAnimation {
   action: 'SET_SCROLL_ANIMATION'
   value: boolean
@@ -1175,6 +1181,7 @@ export type EditorAction =
   | UpdateText
   | SetFocusedElement
   | ScrollToElement
+  | ScrollToPosition
   | SetScrollAnimation
   | SetFollowSelectionEnabled
   | SetLoginState
