@@ -7,16 +7,15 @@ import {
   boundingRectangleArray,
   getRectCenter,
   isFiniteRectangle,
-  offsetPoint,
+  rectangleIntersection,
   scaleRect,
-  windowPoint,
   windowRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { canvasPointToWindowPoint } from '../dom-lookup'
 
-export type ElementOutsideVisibleAreaDirection = 'top' | 'left' | 'bottom' | 'right'
+const topBarHeight = 40 // px
 
 type ElementOutsideVisibleArea = {
   path: ElementPath
@@ -86,9 +85,9 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
     const scaleRatio = canvasScale > 1 ? canvasScale : 1
     return windowRectangle({
       x: canvasBounds.x * scaleRatio,
-      y: canvasBounds.y * scaleRatio,
-      width: canvasBounds.width * scaleRatio,
-      height: canvasBounds.height * scaleRatio,
+      y: (canvasBounds.y - topBarHeight) * scaleRatio,
+      width: canvasBounds.width,
+      height: canvasBounds.height,
     })
   }, [canvasBounds, canvasScale])
 
@@ -102,20 +101,16 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
         return null
       }
 
-      const topLeftSkew = windowPoint({ x: 0, y: 0 })
-      const topLeftPoint = offsetPoint(
-        canvasPointToWindowPoint(frame, canvasScale, canvasOffset),
-        topLeftSkew,
-      )
+      const topLeftPoint = canvasPointToWindowPoint(frame, canvasScale, canvasOffset)
       const elementRect = windowRectangle({
         x: topLeftPoint.x,
-        y: topLeftPoint.y,
+        y: topLeftPoint.y - topBarHeight,
         width: frame.width * canvasScale,
         height: frame.height * canvasScale,
       })
 
-      const directions = getOutsideDirections(scaledCanvasArea, elementRect)
-      if (directions.length === 0) {
+      const isOutsideVisibleArea = rectangleIntersection(scaledCanvasArea, elementRect) == null
+      if (!isOutsideVisibleArea) {
         return null
       }
 
@@ -151,29 +146,4 @@ export function useElementsOutsideVisibleArea(): ElementOutsideVisibleAreaIndica
 
 export function getIndicatorAngleToTarget(from: WindowPoint, to: WindowPoint): number {
   return Math.atan2(to.y - from.y, to.x - from.x) + Math.PI
-}
-
-function getOutsideDirections(
-  container: WindowRectangle,
-  rect: WindowRectangle,
-): ElementOutsideVisibleAreaDirection[] {
-  if (container == null) {
-    return []
-  }
-  const directions: ElementOutsideVisibleAreaDirection[] = []
-  // Directions will be sorted as [top | bottom], [left | right]
-
-  if (rect.y + rect.height < container.y) {
-    directions.push('top')
-  }
-  if (rect.y > container.y + container.height) {
-    directions.push('bottom')
-  }
-  if (rect.x + rect.width < container.x) {
-    directions.push('left')
-  }
-  if (rect.x > container.x + container.width) {
-    directions.push('right')
-  }
-  return directions
 }
