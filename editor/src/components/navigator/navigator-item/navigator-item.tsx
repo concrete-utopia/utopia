@@ -851,7 +851,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         paddingRight: props.codeItemType === 'map' ? 0 : 10,
         backgroundColor:
           isCodeItem && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
-        color: isCodeItem || isRemixItem ? colorTheme.dynamicBlue.value : undefined,
+        color: isCodeItem
+          ? colorTheme.dynamicBlue.value
+          : isRemixItem
+          ? colorTheme.aqua.value
+          : undefined,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
