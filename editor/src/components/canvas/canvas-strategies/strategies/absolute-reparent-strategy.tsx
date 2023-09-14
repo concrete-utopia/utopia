@@ -123,6 +123,7 @@ export function baseAbsoluteReparentStrategy(
                   canvasState.builtInDependencies,
                   projectContents,
                   nodeModules,
+                  canvasState.remixRoutingTable,
                   openFile,
                   pathToReparent(selectedElement),
                   newParent,
@@ -145,6 +146,7 @@ export function baseAbsoluteReparentStrategy(
                       canvasState.startingMetadata,
                       canvasState.startingMetadata,
                       canvasState.projectContents,
+                      canvasState.remixRoutingTable,
                       canvasState.openFile,
                     )
                   })

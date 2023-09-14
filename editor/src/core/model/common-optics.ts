@@ -1,4 +1,8 @@
-import type { EditorState } from '../../components/editor/store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  EditorStorePatched,
+} from '../../components/editor/store/editor-state'
 import {
   modifyUnderlyingForOpenFile,
   withUnderlyingTargetFromEditorState,
@@ -8,17 +12,26 @@ import type { Optic } from '../shared/optics/optics'
 import { traversal } from '../shared/optics/optics'
 import type { ElementPath } from '../shared/project-file-types'
 
-export function forElementOptic(target: ElementPath): Optic<EditorState, JSXElementChild> {
-  function from(editor: EditorState): Array<JSXElementChild> {
-    return withUnderlyingTargetFromEditorState(target, editor, [], (_, element) => {
-      return [element]
-    })
+export function forElementOptic(target: ElementPath): Optic<EditorStorePatched, JSXElementChild> {
+  function from(store: EditorStorePatched): Array<JSXElementChild> {
+    return withUnderlyingTargetFromEditorState(
+      target,
+      store.editor,
+      store.derived,
+      [],
+      (_, element) => {
+        return [element]
+      },
+    )
   }
   function update(
-    editor: EditorState,
+    store: EditorStorePatched,
     modify: (child: JSXElementChild) => JSXElementChild,
-  ): EditorState {
-    return modifyUnderlyingForOpenFile(target, editor, modify)
+  ): EditorStorePatched {
+    return {
+      ...store,
+      editor: modifyUnderlyingForOpenFile(target, store.editor, store.derived, modify),
+    }
   }
   return traversal(from, update)
 }

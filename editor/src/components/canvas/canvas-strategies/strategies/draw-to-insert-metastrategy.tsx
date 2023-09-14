@@ -20,7 +20,11 @@ import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { cmdModifier } from '../../../../utils/modifiers'
 import type { InsertionSubject } from '../../../editor/editor-modes'
-import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  EditorStatePatch,
+} from '../../../editor/store/editor-state'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
@@ -204,11 +208,12 @@ export function drawToInsertStrategyFactory(
             if (insertionCommand != null) {
               const reparentCommand = updateFunctionCommand(
                 'always',
-                (editorState): Array<EditorStatePatch> => {
+                (editorState, derivedState): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToReparent(
                     reparentStrategyToUse,
                     canvasState.builtInDependencies,
                     editorState,
+                    derivedState,
                     customStrategyState,
                     interactionSession,
                     insertionSubject,
@@ -221,10 +226,11 @@ export function drawToInsertStrategyFactory(
 
               const resizeCommand = updateFunctionCommand(
                 'always',
-                (editorState, commandLifecycle): Array<EditorStatePatch> => {
+                (editorState, derivedState, commandLifecycle): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToResize(
                     canvasState.builtInDependencies,
                     editorState,
+                    derivedState,
                     customStrategyState,
                     interactionSession,
                     commandLifecycle,
@@ -242,9 +248,10 @@ export function drawToInsertStrategyFactory(
                   ? [
                       updateFunctionCommand(
                         'always',
-                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                        (editorState, derivedState, lifecycle): Array<EditorStatePatch> =>
                           foldAndApplyCommandsInner(
                             editorState,
+                            derivedState,
                             [],
                             [
                               wrapInContainerCommand(
@@ -290,11 +297,12 @@ export function drawToInsertStrategyFactory(
             if (insertionCommand != null) {
               const reparentCommand = updateFunctionCommand(
                 'always',
-                (editorState): Array<EditorStatePatch> => {
+                (editorState, derivedState): Array<EditorStatePatch> => {
                   return runTargetStrategiesForFreshlyInsertedElementToReparent(
                     reparentStrategyToUse,
                     canvasState.builtInDependencies,
                     editorState,
+                    derivedState,
                     customStrategyState,
                     interactionSession,
                     insertionSubject,
@@ -312,9 +320,10 @@ export function drawToInsertStrategyFactory(
                   ? [
                       updateFunctionCommand(
                         'always',
-                        (editorState, lifecycle): Array<EditorStatePatch> =>
+                        (editorState, derivedState, lifecycle): Array<EditorStatePatch> =>
                           foldAndApplyCommandsInner(
                             editorState,
+                            derivedState,
                             [],
                             [
                               wrapInContainerCommand(
@@ -557,6 +566,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   reparentStrategyToUse: CanvasStrategyFactory,
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
+  derivedState: DerivedState,
   customStrategyState: CustomStrategyState,
   interactionSession: InteractionSession,
   insertionSubject: InsertionSubject,
@@ -564,7 +574,7 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   strategyLifecycle: InteractionLifecycle,
   startingMetadata: ElementInstanceMetadataMap,
 ): Array<EditorStatePatch> {
-  const canvasState = pickCanvasStateFromEditorState(editorState, builtInDependencies)
+  const canvasState = pickCanvasStateFromEditorState(editorState, derivedState, builtInDependencies)
 
   const rootPath = getRootPath(startingMetadata)
   if (rootPath == null) {
@@ -616,13 +626,19 @@ function runTargetStrategiesForFreshlyInsertedElementToReparent(
   const reparentCommands = strategy.apply(strategyLifecycle).commands
 
   // We only want the commands that are applied at the end of the reparent, as we'll be resizing afterwards
-  return foldAndApplyCommandsInner(editorState, [], reparentCommands, 'end-interaction')
-    .statePatches
+  return foldAndApplyCommandsInner(
+    editorState,
+    derivedState,
+    [],
+    reparentCommands,
+    'end-interaction',
+  ).statePatches
 }
 
 function runTargetStrategiesForFreshlyInsertedElementToResize(
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
+  derivedState: DerivedState,
   customStrategyState: CustomStrategyState,
   interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
@@ -654,6 +670,7 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   // element's index, we will need to update the elementPathTree with the new element and pass it in here.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
+    derivedState,
     builtInDependencies,
     patchedMetadata,
   )
@@ -674,5 +691,6 @@ function runTargetStrategiesForFreshlyInsertedElementToResize(
   const resizeCommands =
     resizeStrategy != null ? resizeStrategy.strategy.apply(strategyLifecycle).commands : []
 
-  return foldAndApplyCommandsInner(editorState, [], resizeCommands, commandLifecycle).statePatches
+  return foldAndApplyCommandsInner(editorState, derivedState, [], resizeCommands, commandLifecycle)
+    .statePatches
 }

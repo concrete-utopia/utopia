@@ -2,7 +2,11 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  EditorStatePatch,
+} from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
@@ -96,10 +100,11 @@ export function absoluteDuplicateStrategy(
             ...duplicateCommands,
             setElementsToRerenderCommand([...selectedElements, ...newPaths]),
             updateSelectedViews('always', selectedElements),
-            updateFunctionCommand('always', (editorState, commandLifecycle) =>
+            updateFunctionCommand('always', (editorState, derivedState, commandLifecycle) =>
               runMoveStrategy(
                 canvasState,
                 editorState,
+                derivedState,
                 interactionSession,
                 commandLifecycle,
                 strategyLifecycle,
@@ -122,6 +127,7 @@ export function absoluteDuplicateStrategy(
 function runMoveStrategy(
   canvasState: InteractionCanvasState,
   editorState: EditorState,
+  derivedState: DerivedState,
   interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,
@@ -130,7 +136,8 @@ function runMoveStrategy(
     absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(strategyLifecycle)
       .commands ?? []
 
-  return foldAndApplyCommandsInner(editorState, [], moveCommands, commandLifecycle).statePatches
+  return foldAndApplyCommandsInner(editorState, derivedState, [], moveCommands, commandLifecycle)
+    .statePatches
 }
 
 function isApplicable(

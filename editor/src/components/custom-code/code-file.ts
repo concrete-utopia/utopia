@@ -8,6 +8,7 @@ import type {
   StaticElementPath,
   ParseSuccess,
   Imports,
+  ElementPathPart,
 } from '../../core/shared/project-file-types'
 import {
   esCodeFile,
@@ -66,6 +67,7 @@ import type { BuiltInDependencies } from '../../core/es-modules/package-manager/
 import { ParsedPropertyControls } from '../../core/property-controls/property-controls-parser'
 import { ParseResult } from '../../utils/value-parser-utils'
 import type { PropertyControls } from 'utopia-api/core'
+import type { RemixRoutingTable } from '../editor/store/remix-derived-data'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -430,73 +432,112 @@ export function normalisePathToUnderlyingTarget(
   nodeModules: NodeModules,
   currentFilePath: string,
   elementPath: ElementPath | null,
+  remixRoutingTable: RemixRoutingTable | null,
 ): NormalisePathResult {
   const currentFile = getProjectFileByFilePath(projectContents, currentFilePath)
-  if (currentFile != null && isTextFile(currentFile)) {
-    if (isParseSuccess(currentFile.fileContents.parsed)) {
-      const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
-      const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
-      if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
-        // As the scene path is empty, there's no more traversing to do, the target is in this file.
-        return normalisePathSuccess(staticPath, currentFilePath, currentFile, elementPath)
-      } else {
-        const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
-        if (droppedPathPart.length === 0) {
-          return normalisePathError(
-            `Unable to handle empty scene path part for ${optionalMap(EP.toString, elementPath)}`,
-          )
-        } else {
-          // Now need to identify the element relating to the last part of the dropped scene path.
-          const lastDroppedPathPart = droppedPathPart[droppedPathPart.length - 1]
-
-          // Walk the parsed representation to find the element with the given uid.
-          const parsedContent = currentFile.fileContents.parsed
-          let targetElement: JSXElement | null = null
-          for (const topLevelElement of parsedContent.topLevelElements) {
-            const possibleTarget = findElementWithUID(topLevelElement, lastDroppedPathPart)
-            if (possibleTarget != null) {
-              targetElement = possibleTarget
-              break
-            }
-          }
-
-          // Identify where the component is imported from or if it's in the same file.
-          if (targetElement == null) {
-            return normalisePathImportNotFound(lastDroppedPathPart)
-          } else {
-            const nonNullTargetElement: JSXElement = targetElement
-
-            // Handle things like divs.
-            if (isIntrinsicElement(targetElement.name)) {
-              return normalisePathSuccess(
-                potentiallyDroppedFirstPathElementResult.newPath == null
-                  ? null
-                  : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
-                currentFilePath,
-                currentFile,
-                potentiallyDroppedFirstPathElementResult.newPath,
-              )
-            } else {
-              return lookupElementImport(
-                targetElement.name.baseVariable,
-                currentFilePath,
-                projectContents,
-                nodeModules,
-                nonNullTargetElement,
-                elementPath,
-                parsedContent,
-                potentiallyDroppedFirstPathElementResult,
-              )
-            }
-          }
-        }
-      }
-    } else {
-      return normalisePathUnableToProceed(currentFilePath)
-    }
-  } else {
+  if (
+    currentFile == null ||
+    !isTextFile(currentFile) ||
+    !isParseSuccess(currentFile.fileContents.parsed)
+  ) {
     return normalisePathUnableToProceed(currentFilePath)
   }
+
+  const staticPath = elementPath == null ? null : EP.dynamicPathToStaticPath(elementPath)
+  const potentiallyDroppedFirstPathElementResult = EP.dropFirstPathElement(elementPath)
+  if (potentiallyDroppedFirstPathElementResult.droppedPathElements == null) {
+    // As the scene path is empty, there's no more traversing to do, the target is in this file.
+    return normalisePathSuccess(staticPath, currentFilePath, currentFile, elementPath)
+  }
+
+  const droppedPathPart = potentiallyDroppedFirstPathElementResult.droppedPathElements
+  if (droppedPathPart.length === 0) {
+    return normalisePathError(
+      `Unable to handle empty scene path part for ${optionalMap(EP.toString, elementPath)}`,
+    )
+  }
+
+  // Now need to identify the element relating to the last part of the dropped scene path.
+  const lastDroppedPathPart = droppedPathPart[droppedPathPart.length - 1]
+
+  // Walk the parsed representation to find the element with the given uid.
+  const parsedContent = currentFile.fileContents.parsed
+  let targetElement: JSXElement | null = null
+  for (const topLevelElement of parsedContent.topLevelElements) {
+    const possibleTarget = findElementWithUID(topLevelElement, lastDroppedPathPart)
+    if (possibleTarget != null) {
+      targetElement = possibleTarget
+      break
+    }
+  }
+
+  // Identify where the component is imported from or if it's in the same file.
+  if (targetElement == null) {
+    return normalisePathImportNotFound(lastDroppedPathPart)
+  }
+
+  const nonNullTargetElement: JSXElement = targetElement
+
+  // Handle things like divs.
+  if (isIntrinsicElement(targetElement.name)) {
+    return normalisePathSuccess(
+      potentiallyDroppedFirstPathElementResult.newPath == null
+        ? null
+        : EP.dynamicPathToStaticPath(potentiallyDroppedFirstPathElementResult.newPath),
+      currentFilePath,
+      currentFile,
+      potentiallyDroppedFirstPathElementResult.newPath,
+    )
+  }
+
+  if (remixRoutingTable != null && potentiallyDroppedFirstPathElementResult.newPath != null) {
+    const maybeRouteModuleResult = lookupRemixRouteModule(
+      potentiallyDroppedFirstPathElementResult.newPath,
+      remixRoutingTable,
+    )
+    if (maybeRouteModuleResult != null) {
+      return normalisePathToUnderlyingTarget(
+        projectContents,
+        nodeModules,
+        maybeRouteModuleResult.filePath,
+        maybeRouteModuleResult.remainingElementPath,
+        remixRoutingTable,
+      )
+    }
+  }
+
+  return lookupElementImport(
+    targetElement.name.baseVariable,
+    currentFilePath,
+    projectContents,
+    nodeModules,
+    nonNullTargetElement,
+    elementPath,
+    parsedContent,
+    potentiallyDroppedFirstPathElementResult,
+    remixRoutingTable,
+  )
+}
+
+function lookupRemixRouteModule(
+  path: ElementPath,
+  remixRoutingTable: RemixRoutingTable,
+): { filePath: string; remainingElementPath: ElementPath } | null {
+  let result: { filePath: string; remainingElementPath: ElementPath } | null = null
+  let currentPathParts = [...path.parts]
+
+  let nextPart: ElementPathPart | undefined
+  while ((nextPart = currentPathParts.shift()) != null) {
+    const maybeFilePath = remixRoutingTable[nextPart[0]]
+    if (maybeFilePath != null) {
+      result = {
+        filePath: maybeFilePath,
+        remainingElementPath: EP.elementPath([nextPart, ...currentPathParts]),
+      }
+    }
+  }
+
+  return result
 }
 
 function lookupElementImport(
@@ -508,6 +549,7 @@ function lookupElementImport(
   elementPath: ElementPath | null,
   parsedContent: ParseSuccess,
   potentiallyDroppedFirstPathElementResult: EP.DropFirstPathElementResultType,
+  remixRoutingTable: RemixRoutingTable | null,
 ): NormalisePathResult {
   const importedFrom = importedFromWhere(
     currentFilePath,
@@ -535,6 +577,7 @@ function lookupElementImport(
           elementPath,
           parsedContent,
           potentiallyDroppedFirstPathElementResult,
+          remixRoutingTable,
         )
       } else {
         return normalisePathError(
@@ -567,6 +610,7 @@ function lookupElementImport(
                   nodeModules,
                   successResult.path,
                   potentiallyDroppedFirstPathElementResult.newPath,
+                  remixRoutingTable,
                 )
               case 'ES_REMOTE_DEPENDENCY_PLACEHOLDER':
                 return normalisePathUnableToProceed(successResult.path)
@@ -587,17 +631,6 @@ function lookupElementImport(
       }
     }
   }
-}
-
-export function normalisePathToUnderlyingTargetForced(
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  currentFilePath: string,
-  elementPath: ElementPath | null,
-): NormalisePathSuccess {
-  return normalisePathSuccessOrThrowError(
-    normalisePathToUnderlyingTarget(projectContents, nodeModules, currentFilePath, elementPath),
-  )
 }
 
 export function findUnderlyingTargetComponentImplementationFromImportInfo(

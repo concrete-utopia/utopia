@@ -1,16 +1,9 @@
 import { produce } from 'immer'
 import update from 'immutability-helper'
 import localforage from 'localforage'
-import { LayoutSystem } from 'utopia-api/core'
 import { imagePathURL } from '../../../common/server'
-import { PinLayoutHelpers } from '../../../core/layout/layout-helpers'
+import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
-  maybeSwitchChildrenLayoutProps,
-  roundAttributeLayoutValues,
-  switchLayoutMetadata,
-} from '../../../core/layout/layout-utils'
-import {
-  findElementAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -20,23 +13,18 @@ import {
   generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
-  transformJSXComponentAtElementPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
   fileTypeFromFileName,
-  getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
-  isImg,
-  revertFile,
   saveFile,
   saveTextFileContents,
   switchToFileType,
   uniqueProjectContentID,
   updateFileContents,
   updateFileIfPossible,
-  updateParsedTextFileHighlightBounds,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
 import type { Either } from '../../../core/shared/either'
@@ -47,15 +35,12 @@ import {
   isLeft,
   isRight,
   left,
-  mapEither,
   right,
-  sequenceEither,
   traverseEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type {
   Comment,
-  DetectedLayoutSystem,
   ElementInstanceMetadataMap,
   JSXAttributes,
   JSExpressionValue,
@@ -63,7 +48,6 @@ import type {
   JSXElementChildren,
   SettableLayoutSystem,
   UtopiaJSXComponent,
-  ElementInstanceMetadata,
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
@@ -71,35 +55,27 @@ import {
   emptyComments,
   emptyJsxMetadata,
   getJSXAttribute,
-  isElementWithUid,
   isImportStatement,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
-  isJSXFragment,
   modifiableAttributeIsPartOfAttributeValue,
   jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxConditionalExpression,
-  JSXConditionalExpression,
   jsxElement,
   jsxElementName,
-  JSXFragment,
   jsxFragment,
   jsxTextBlock,
-  singleLineComment,
   walkElements,
   modifiableAttributeIsAttributeValue,
-  isUtopiaJSXComponent,
-  isNullJSXAttributeValue,
   isJSExpression,
   isJSXMapExpression,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
   getJSXAttributesAtPath,
-  jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
@@ -119,18 +95,7 @@ import {
   isFiniteRectangle,
   rectangleIntersection,
   canvasPoint,
-  roundTo,
-  zeroCanvasPoint,
-  zeroRectangle,
-  MaybeInfinityCanvasRectangle,
-  zeroCanvasRect,
-  zeroLocalRect,
-  LocalPoint,
-  boundingRectangleArray,
-  offsetPoint,
   getRectCenter,
-  nullIfInfinity,
-  isNotNullFiniteRectangle,
   localRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
@@ -166,17 +131,16 @@ import {
   isParseSuccess,
   isTextFile,
   RevisionsState,
-  StaticElementPathPart,
   textFile,
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
-import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils, { absolute } from '../../../utils/utils'
+import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { packageJsonFileFromProjectContents } from '../../assets'
 import {
@@ -225,7 +189,6 @@ import type {
   CloseFloatingInsertMenu,
   ClosePopup,
   CloseTextEditor,
-  CopySelectionToClipboard,
   DeleteFile,
   DeleteView,
   DistributeSelectedViews,
@@ -348,11 +311,9 @@ import type {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
-  ElementPaste,
-  TrueUpGroups,
   SetMapCountOverride,
 } from '../action-types'
-import { DeleteSelected, isLoggedIn } from '../action-types'
+import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
 import { isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
@@ -388,7 +349,7 @@ import type {
   TrueUpTarget,
 } from '../store/editor-state'
 import { trueUpChildrenOfElementChanged } from '../store/editor-state'
-import { AllElementProps, trueUpElementChanged } from '../store/editor-state'
+import { trueUpElementChanged } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
   BaseCanvasOffset,
@@ -399,13 +360,10 @@ import {
   getCurrentTheme,
   getElementPathsInBounds,
   getHighlightBoundsForFile,
-  getJSXComponentsAndImportsForPathFromState,
   getMainUIFromModel,
-  getNewSceneName,
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
-  FileChecksums,
   LeftMenuTab,
   LeftPaneDefaultWidth,
   LeftPaneMinimumWidth,
@@ -415,20 +373,14 @@ import {
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
   modifyUnderlyingTargetElement,
-  persistentModelFromEditorModel,
   removeElementAtPath,
   StoryboardFilePath,
-  transformElementAtPath,
   updateMainUIInEditorState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   modifyOpenJsxElementOrConditionalAtPath,
-  isRegularNavigatorEntry,
-  regularNavigatorEntryOptic,
-  ConditionalClauseNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
-  DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -440,11 +392,11 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
 import { mergeProjectContents } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
-import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -459,16 +411,8 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import type { CopyData } from '../../../utils/clipboard'
-import {
-  createClipboardDataFromSelection,
-  Clipboard,
-  getTargetParentForPaste,
-} from '../../../utils/clipboard'
-import {
-  NavigatorStateKeepDeepEquality,
-  ParamKeepDeepEquality,
-} from '../store/store-deep-equality-instances'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
+import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -476,24 +420,11 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
-  absolutePositionForPaste,
-  absolutePositionForReparent,
   canCopyElement,
   isAllowedToReparent,
-  offsetPositionInPasteBoundingBox,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import type { StaticReparentTarget } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
-  ReparentAsAbsolute,
-  ReparentAsStatic,
-  reparentStrategyForPaste,
-  reparentStrategyForPaste as reparentStrategyForStaticReparent,
-} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
-import type { ToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
-import {
-  elementToReparent,
   getReparentOutcome,
-  getReparentOutcomeMultiselect,
   pathToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import {
@@ -505,19 +436,15 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
-  addToast,
   clearImageFileBlob,
-  deleteView,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
   insertJSXElement,
   openCodeEditorFile,
-  removeToast,
   selectComponents,
   setFocusedElement,
   setPackageStatus,
@@ -528,7 +455,7 @@ import {
   updatePackageJson,
   updateThumbnailGenerated,
 } from './action-creators'
-import { addToastToState, includeToast, removeToastFromState, uniqToasts } from './toast-helpers'
+import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
 import {
   refreshDependencies,
@@ -539,28 +466,19 @@ import { collapseTextElements } from '../../../components/text-editor/text-handl
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { Optic } from '../../../core/shared/optics/optics'
+import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import type { InsertionPath } from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
   isConditionalClauseInsertionPath,
-  isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
   replaceWithSingleElement,
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
-import {
-  findMaybeConditionalExpression,
-  getClauseOptic,
-  getConditionalCaseCorrespondingToBranchPath,
-  isEmptyConditionalBranch,
-  maybeBranchConditionalCase,
-  maybeConditionalExpression,
-} from '../../../core/model/conditionals'
+import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
@@ -569,14 +487,7 @@ import {
   unwrapTextContainingConditional,
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
-import { ConditionalClauseInsertionPath } from '../store/insertion-path'
 import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
-import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
-import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
-import { front } from '../../../utils/utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
-import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
 import type {
   DeleteFileFromVSCode,
   HideVSCodeLoadingScreen,
@@ -602,7 +513,6 @@ import {
   createPinChangeCommandsForElementBecomingGroupChild,
   elementCanBeAGroupChild,
 } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
@@ -682,6 +592,7 @@ function applyUpdateToJSXElement(
 
 function setPropertyOnTarget(
   editor: EditorModel,
+  derivedState: DerivedState,
   target: ElementPath,
   updateFn: (props: JSXAttributes) => Either<any, JSXAttributes>,
 ): EditorModel {
@@ -689,6 +600,7 @@ function setPropertyOnTarget(
     target,
     (e: JSXElement) => applyUpdateToJSXElement(e, updateFn),
     editor,
+    derivedState,
   )
 }
 
@@ -698,6 +610,7 @@ export function editorMoveMultiSelectedTemplates(
   indexPosition: IndexPosition,
   newParent: InsertionPath | null,
   editor: EditorModel,
+  derivedState: DerivedState,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -714,6 +627,7 @@ export function editorMoveMultiSelectedTemplates(
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,
+      derivedState.remixData?.routingTable ?? null,
       editor.canvas.openFile?.filename,
       pathToReparent(target),
       newParent,
@@ -726,7 +640,7 @@ export function editorMoveMultiSelectedTemplates(
       const { commands: reparentCommands, newPath } = outcomeResult
       const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
 
-      const withCommandsApplied = foldAndApplyCommandsSimple(working, [
+      const withCommandsApplied = foldAndApplyCommandsSimple(working, derivedState, [
         ...reparentCommands,
         reorderCommand,
       ])
@@ -751,6 +665,7 @@ export function insertIntoWrapper(
   targets: ElementPath[],
   newParent: InsertionPath,
   editor: EditorModel,
+  derivedState: DerivedState,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -768,7 +683,7 @@ export function insertIntoWrapper(
     elementPathFromInsertionPath(newParent, EP.toUid(target)),
   )
 
-  const updatedEditor = foldAndApplyCommandsSimple(editor, [
+  const updatedEditor = foldAndApplyCommandsSimple(editor, derivedState, [
     ...targets.map((path) => deleteElement('always', path)),
     addElements('always', newParent, elements),
   ])
@@ -787,6 +702,7 @@ export function editorMoveTemplate(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editor: EditorModel,
+  derivedState: DerivedState,
   newParentLayoutSystem: SettableLayoutSystem | null,
   newParentMainAxis: 'horizontal' | 'vertical' | null,
 ): {
@@ -801,6 +717,7 @@ export function editorMoveTemplate(
     newParentPath,
     parentFrame,
     editor,
+    derivedState,
     editor.jsxMetadata,
     editor.selectedViews,
     editor.highlightedViews,
@@ -985,7 +902,11 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   }
 }
 
-function deleteElements(targets: ElementPath[], editor: EditorModel): EditorModel {
+function deleteElements(
+  targets: ElementPath[],
+  editor: EditorModel,
+  derived: DerivedState,
+): EditorModel {
   const openUIJSFilePath = getOpenUIJSFileKey(editor)
   if (openUIJSFilePath == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
@@ -997,6 +918,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         working.nodeModules.files,
         openUIJSFilePath,
         targetPath,
+        derived.remixData?.routingTable ?? null,
       )
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
@@ -1032,9 +954,13 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
   }
 }
 
-function duplicateMany(paths: ElementPath[], editor: EditorModel): EditorModel {
+function duplicateMany(
+  paths: ElementPath[],
+  editor: EditorModel,
+  derivedState: DerivedState,
+): EditorModel {
   const targetParent = EP.getCommonParent(paths)
-  const duplicateResult = duplicate(paths, targetParent, editor)
+  const duplicateResult = duplicate(paths, targetParent, editor, derivedState)
   if (duplicateResult == null) {
     return editor
   } else {
@@ -1045,6 +971,7 @@ function duplicateMany(paths: ElementPath[], editor: EditorModel): EditorModel {
 function indexPositionForAdjustment(
   target: StaticElementPath | ElementPath,
   editor: EditorModel,
+  derivedState: DerivedState,
   index: 'back' | 'front' | 'backward' | 'forward',
 ): IndexPosition {
   switch (index) {
@@ -1060,6 +987,7 @@ function indexPositionForAdjustment(
           target,
           editor.projectContents,
           editor.nodeModules.files,
+          derivedState.remixData?.routingTable ?? null,
           openUIJSFileKey,
           0,
           (success) => {
@@ -1078,6 +1006,7 @@ function indexPositionForAdjustment(
 
 function setZIndexOnSelected(
   editor: EditorModel,
+  derivedState: DerivedState,
   index: 'back' | 'front' | 'backward' | 'forward',
 ): EditorModel {
   const selectedViews = editor.selectedViews
@@ -1110,7 +1039,7 @@ function setZIndexOnSelected(
       return working
     }
 
-    const indexPosition = indexPositionForAdjustment(selectedView, working, index)
+    const indexPosition = indexPositionForAdjustment(selectedView, working, derivedState, index)
     return editorMoveTemplate(
       selectedView,
       selectedView,
@@ -1119,6 +1048,7 @@ function setZIndexOnSelected(
       EP.parentPath(selectedView),
       null,
       editor,
+      derivedState,
       null,
       null,
     ).editor
@@ -1575,12 +1505,14 @@ export const UPDATE_FNS = {
   UNSET_PROPERTY: (
     action: UnsetProperty,
     editor: EditorModel,
+    derivedState: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
     let unsetPropFailedMessage: string | null = null
     const updatedEditor = modifyUnderlyingElementForOpenFile(
       action.element,
       editor,
+      derivedState,
       (element) => {
         const updatedProps = unsetJSXValueAtPath(element.props, action.property)
         return foldEither(
@@ -1604,11 +1536,12 @@ export const UPDATE_FNS = {
       return updatedEditor
     }
   },
-  SET_PROP: (action: SetProp, editor: EditorModel): EditorModel => {
+  SET_PROP: (action: SetProp, editor: EditorModel, derivedState: DerivedState): EditorModel => {
     let setPropFailedMessage: string | null = null
     let updatedEditor = modifyUnderlyingElementForOpenFile(
       action.target,
       editor,
+      derivedState,
       (element) => {
         const updatedProps = setJSXValueAtPath(element.props, action.propertyPath, action.value)
         if (
@@ -1668,7 +1601,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     derived: DerivedState,
   ): EditorModel => {
-    return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
+    return setCanvasFramesInnerNew(editor, derived, action.framesAndTargets, null)
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
     return editorMoveTemplate(
@@ -1679,11 +1612,16 @@ export const UPDATE_FNS = {
       EP.parentPath(action.target),
       null,
       editor,
+      derived,
       null,
       null,
     ).editor
   },
-  DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  DELETE_SELECTED: (
+    editorForAction: EditorModel,
+    dispatch: EditorDispatch,
+    derived: DerivedState,
+  ): EditorModel => {
     // This function returns whether the given path will have the following deletion behavior:
     //  1. when deleting one of its children, the next sibling will be selected
     //  2. when deleting the last chilren, it is removed as well so as not to remain empty
@@ -1764,7 +1702,7 @@ export const UPDATE_FNS = {
             return path
           })
 
-        const withElementDeleted = deleteElements(staticSelectedElements, editor)
+        const withElementDeleted = deleteElements(staticSelectedElements, editor, derived)
 
         const newSelectedViews = uniqBy(
           mapDropNulls((view) => {
@@ -1806,6 +1744,7 @@ export const UPDATE_FNS = {
                 parentPath,
                 withElementDeleted.projectContents,
                 withElementDeleted.nodeModules.files,
+                derived.remixData?.routingTable ?? null,
                 withElementDeleted.canvas.openFile?.filename ?? null,
                 null,
                 (_, element) => {
@@ -1838,14 +1777,19 @@ export const UPDATE_FNS = {
       dispatch,
     )
   },
-  DELETE_VIEW: (action: DeleteView, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  DELETE_VIEW: (
+    action: DeleteView,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    derived: DerivedState,
+  ): EditorModel => {
     return toastOnGeneratedElementsTargeted(
       'Generated elements can only be deleted in code.',
       [action.target],
       editor,
       false,
       (e) => {
-        const updatedEditor = deleteElements([action.target], e)
+        const updatedEditor = deleteElements([action.target], e, derived)
         const parentPath = EP.parentPath(action.target)
         const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
         return {
@@ -1856,13 +1800,17 @@ export const UPDATE_FNS = {
       dispatch,
     )
   },
-  DUPLICATE_SELECTED: (editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  DUPLICATE_SELECTED: (
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+    derivedState: DerivedState,
+  ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       'Generated elements can only be duplicated in code',
       editor,
       false,
       (e) => {
-        return duplicateMany(editor.selectedViews, e)
+        return duplicateMany(editor.selectedViews, e, derivedState)
       },
       dispatch,
     )
@@ -1870,6 +1818,7 @@ export const UPDATE_FNS = {
   DUPLICATE_SPECIFIC_ELEMENTS: (
     action: DuplicateSpecificElements,
     editor: EditorModel,
+    derivedState: DerivedState,
     dispatch: EditorDispatch,
   ): EditorModel => {
     return toastOnGeneratedElementsTargeted(
@@ -1878,7 +1827,7 @@ export const UPDATE_FNS = {
       editor,
       false,
       () => {
-        return duplicateMany(action.paths, editor)
+        return duplicateMany(action.paths, editor, derivedState)
       },
       dispatch,
     )
@@ -1892,17 +1841,17 @@ export const UPDATE_FNS = {
       },
     }
   },
-  MOVE_SELECTED_TO_BACK: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'back')
+  MOVE_SELECTED_TO_BACK: (editor: EditorModel, derivedState: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, derivedState, 'back')
   },
-  MOVE_SELECTED_TO_FRONT: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'front')
+  MOVE_SELECTED_TO_FRONT: (editor: EditorModel, derivedState: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, derivedState, 'front')
   },
-  MOVE_SELECTED_BACKWARD: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'backward')
+  MOVE_SELECTED_BACKWARD: (editor: EditorModel, derivedState: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, derivedState, 'backward')
   },
-  MOVE_SELECTED_FORWARD: (editor: EditorModel): EditorModel => {
-    return setZIndexOnSelected(editor, 'forward')
+  MOVE_SELECTED_FORWARD: (editor: EditorModel, derivedState: DerivedState): EditorModel => {
+    return setZIndexOnSelected(editor, derivedState, 'forward')
   },
   SELECT_COMPONENTS: (
     action: SelectComponents,
@@ -2064,7 +2013,11 @@ export const UPDATE_FNS = {
       }
     }, editor)
   },
-  RENAME_COMPONENT: (action: RenameComponent, editor: EditorModel): EditorModel => {
+  RENAME_COMPONENT: (
+    action: RenameComponent,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     const { name } = action
     const target = action.target
     let propsTransform: (props: JSXAttributes) => Either<string, JSXAttributes>
@@ -2090,9 +2043,14 @@ export const UPDATE_FNS = {
         )
       },
       editor,
+      derivedState,
     )
   },
-  INSERT_JSX_ELEMENT: (action: InsertJSXElement, editor: EditorModel): EditorModel => {
+  INSERT_JSX_ELEMENT: (
+    action: InsertJSXElement,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     let newSelectedViews: ElementPath[] = []
     const parentPath =
       action.parent ??
@@ -2104,6 +2062,7 @@ export const UPDATE_FNS = {
       parentPath,
       forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
+      derivedState,
       (element) => element,
       (success, _, underlyingFilePath) => {
         const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
@@ -2233,6 +2192,7 @@ export const UPDATE_FNS = {
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
+          derived,
           action.targets,
           parentPath,
           action.whatToWrapWith.element,
@@ -2249,6 +2209,7 @@ export const UPDATE_FNS = {
         const withWrapperViewAdded = {
           ...setCanvasFramesInnerNew(
             includeToast(detailsOfUpdate, updatedEditor),
+            derived,
             frameChanges,
             null,
           ),
@@ -2272,6 +2233,7 @@ export const UPDATE_FNS = {
           orderedActionTargets,
           insertionPath(),
           includeToast(detailsOfUpdate, withWrapperViewAdded),
+          derived,
         )
 
         return {
@@ -2313,6 +2275,7 @@ export const UPDATE_FNS = {
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
+    derived: DerivedState,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Cannot unwrap a generated element.`,
@@ -2334,6 +2297,7 @@ export const UPDATE_FNS = {
             workingEditor.projectContents,
             workingEditor.jsxMetadata,
             workingEditor.nodeModules.files,
+            derived.remixData?.routingTable ?? null,
             workingEditor.canvas.openFile?.filename,
             target,
             workingEditor.elementPathTree,
@@ -2360,6 +2324,7 @@ export const UPDATE_FNS = {
           const indexPosition: IndexPosition = indexPositionForAdjustment(
             target,
             workingEditor,
+            derived,
             'forward',
           )
           const children = MetadataUtils.getChildrenOrdered(
@@ -2373,11 +2338,11 @@ export const UPDATE_FNS = {
           )
 
           if (parentPath != null && isConditionalClauseInsertionPath(parentPath)) {
-            return unwrapConditionalClause(workingEditor, target, parentPath)
+            return unwrapConditionalClause(workingEditor, derived, target, parentPath)
           }
           if (elementIsFragmentLike) {
             if (isTextContainingConditional(target, workingEditor.jsxMetadata)) {
-              return unwrapTextContainingConditional(workingEditor, target, dispatch)
+              return unwrapTextContainingConditional(workingEditor, derived, target, dispatch)
             }
 
             const { editor: withChildrenMoved, newPaths } = editorMoveMultiSelectedTemplates(
@@ -2386,6 +2351,7 @@ export const UPDATE_FNS = {
               indexPosition,
               parentPath,
               workingEditor,
+              derived,
             )
 
             return {
@@ -2418,6 +2384,7 @@ export const UPDATE_FNS = {
                 parentPath?.intendedParentPath ?? null,
                 parentFrame,
                 working,
+                derived,
                 null,
                 null,
               )
@@ -2427,6 +2394,7 @@ export const UPDATE_FNS = {
                   groupTrueUps.push(result.newPath)
                   return foldAndApplyCommandsSimple(
                     result.editor,
+                    derived,
                     createPinChangeCommandsForElementBecomingGroupChild(
                       workingEditor.jsxMetadata,
                       child,
@@ -2466,7 +2434,7 @@ export const UPDATE_FNS = {
           return adjustPathAfterWrap(groupTrueUps, path)
         })
 
-        const withViewsDeleted = deleteElements(adjustedViewsToDelete, withViewsUnwrapped)
+        const withViewsDeleted = deleteElements(adjustedViewsToDelete, withViewsUnwrapped, derived)
         return {
           ...withViewsDeleted,
           selectedViews: newSelection,
@@ -2718,12 +2686,16 @@ export const UPDATE_FNS = {
       openPopupId: { $set: null },
     })
   },
-  PASTE_PROPERTIES: (action: PasteProperties, editor: EditorModel): EditorModel => {
+  PASTE_PROPERTIES: (
+    action: PasteProperties,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     if (editor.internalClipboard.styleClipboard.length === 0) {
       return editor
     }
     return editor.selectedViews.reduce((working, target) => {
-      return setPropertyOnTarget(working, target, (attributes) => {
+      return setPropertyOnTarget(working, derivedState, target, (attributes) => {
         const filterForNames = action.type === 'layout' ? LayoutPropertyList : StyleProperties
         const originalPropsToUnset = filterForNames.map((propName) => PP.create('style', propName))
         const withOriginalPropertiesCleared = unsetJSXValuesAtPaths(
@@ -2751,10 +2723,9 @@ export const UPDATE_FNS = {
     }, editor)
   },
   COPY_SELECTION_TO_CLIPBOARD: (
-    action: CopySelectionToClipboard,
     editor: EditorModel,
-    dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
+    derivedState: DerivedState,
   ): EditorModel => {
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
@@ -2766,12 +2737,13 @@ export const UPDATE_FNS = {
       return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
     }
 
-    return copySelectionToClipboardMutating(editor, builtInDependencies)
+    return copySelectionToClipboardMutating(editor, builtInDependencies, derivedState)
   },
   CUT_SELECTION_TO_CLIPBOARD: (
     editor: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
+    derived: DerivedState,
   ): EditorModel => {
     const canReparent = traverseEither(
       (target) => canCopyElement(editor, target),
@@ -2793,9 +2765,13 @@ export const UPDATE_FNS = {
       )
     }
 
-    const editorWithCopyData = copySelectionToClipboardMutating(editor, builtInDependencies)
+    const editorWithCopyData = copySelectionToClipboardMutating(
+      editor,
+      builtInDependencies,
+      derived,
+    )
 
-    return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch)
+    return UPDATE_FNS.DELETE_SELECTED(editorWithCopyData, dispatch, derived)
   },
   COPY_PROPERTIES: (action: CopyProperties, editor: EditorModel): EditorModel => {
     if (editor.selectedViews.length === 0) {
@@ -2958,7 +2934,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  RESET_PINS: (action: ResetPins, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  RESET_PINS: (action: ResetPins, editor: EditorModel, derived: DerivedState): EditorModel => {
     const target = action.target
     const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
 
@@ -2973,7 +2949,7 @@ export const UPDATE_FNS = {
         PP.create('style', 'bottom'),
       ]),
     ]
-    return foldAndApplyCommandsSimple(editor, commands)
+    return foldAndApplyCommandsSimple(editor, derived, commands)
   },
   SET_CURSOR_OVERLAY: (action: SetCursorOverlay, editor: EditorModel): EditorModel => {
     if (editor.canvas.cursor === action.cursor) {
@@ -3022,7 +2998,7 @@ export const UPDATE_FNS = {
     const frameChanges: Array<PinOrFlexFrameChange> = [
       getFrameChange(action.element, canvasFrame, isParentFlex),
     ]
-    const withFrameUpdated = setCanvasFramesInnerNew(editor, frameChanges, null)
+    const withFrameUpdated = setCanvasFramesInnerNew(editor, derived, frameChanges, null)
     return {
       ...withFrameUpdated,
       trueUpGroupsForElementAfterDomWalkerRuns: [
@@ -3263,10 +3239,14 @@ export const UPDATE_FNS = {
 
           const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
 
-          const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, {
-            ...editorWithToast,
-            projectContents: updatedProjectContents,
-          })
+          const withComponentCreated = UPDATE_FNS.INSERT_JSX_ELEMENT(
+            insertJSXElementAction,
+            {
+              ...editorWithToast,
+              projectContents: updatedProjectContents,
+            },
+            derived,
+          )
           return {
             ...withComponentCreated,
             projectContents: withComponentCreated.projectContents,
@@ -3924,7 +3904,7 @@ export const UPDATE_FNS = {
       }
     }
   },
-  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
+  TRUE_UP_GROUPS: (editor: EditorModel, derivedState: DerivedState): EditorModel => {
     const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
       (trueUpTarget) => {
         return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
@@ -3943,15 +3923,19 @@ export const UPDATE_FNS = {
         target: element,
       }
     }, targetsToTrueUp)
-    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
+    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, derivedState, [
       pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata'),
     ])
     return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
   },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added
-  RENAME_PROP_KEY: (action: RenameStyleSelector, editor: EditorModel): EditorModel => {
-    return setPropertyOnTarget(editor, action.target, (props) => {
+  RENAME_PROP_KEY: (
+    action: RenameStyleSelector,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
+    return setPropertyOnTarget(editor, derivedState, action.target, (props) => {
       const originalPropertyPath = PP.createFromArray(action.cssTargetPath.path)
       const newPropertyPath = PP.createFromArray(action.value)
       const originalValue = getJSXAttributesAtPath(props, originalPropertyPath).attribute
@@ -3989,13 +3973,22 @@ export const UPDATE_FNS = {
       },
     }
   },
-  TOGGLE_PROPERTY: (action: ToggleProperty, editor: EditorModel): EditorModel => {
-    return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor)
+  TOGGLE_PROPERTY: (
+    action: ToggleProperty,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
+    return modifyOpenJsxElementAtPath(action.target, action.togglePropValue, editor, derivedState)
   },
-  UPDATE_JSX_ELEMENT_NAME: (action: UpdateJSXElementName, editor: EditorModel): EditorModel => {
+  UPDATE_JSX_ELEMENT_NAME: (
+    action: UpdateJSXElementName,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     const updatedEditor = UPDATE_FNS.ADD_IMPORTS(
       addImports(action.importsToAdd, action.target),
       editor,
+      derivedState,
     )
 
     return modifyOpenJsxElementOrConditionalAtPath(
@@ -4030,11 +4023,13 @@ export const UPDATE_FNS = {
         }
       },
       updatedEditor,
+      derivedState,
     )
   },
   SET_CONDITIONAL_OVERRIDDEN_CONDITION: (
     action: SetConditionalOverriddenCondition,
     editor: EditorModel,
+    derivedState: DerivedState,
   ): EditorModel => {
     return modifyOpenJsxElementOrConditionalAtPath(
       action.target,
@@ -4064,9 +4059,14 @@ export const UPDATE_FNS = {
         }
       },
       editor,
+      derivedState,
     )
   },
-  SET_MAP_COUNT_OVERRIDE: (action: SetMapCountOverride, editor: EditorModel): EditorModel => {
+  SET_MAP_COUNT_OVERRIDE: (
+    action: SetMapCountOverride,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     return modifyOpenJsxChildAtPath(
       action.target,
       (element) => {
@@ -4093,11 +4093,13 @@ export const UPDATE_FNS = {
         }
       },
       editor,
+      derivedState,
     )
   },
   UPDATE_CONDITIONAL_EXPRESSION: (
     action: UpdateConditionalExpression,
     editor: EditorModel,
+    derivedState: DerivedState,
   ): EditorModel => {
     return modifyOpenJsxElementOrConditionalAtPath(
       action.target,
@@ -4132,13 +4134,19 @@ export const UPDATE_FNS = {
         }
       },
       editor,
+      derivedState,
     )
   },
-  ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
+  ADD_IMPORTS: (
+    action: AddImports,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     return modifyUnderlyingTargetElement(
       action.target,
       forceNotNull('Missing open file', editor.canvas.openFile?.filename),
       editor,
+      derivedState,
       (element) => element,
       (success, _, underlyingFilePath) => {
         return {
@@ -4148,7 +4156,11 @@ export const UPDATE_FNS = {
       },
     )
   },
-  SET_ASPECT_RATIO_LOCK: (action: SetAspectRatioLock, editor: EditorModel): EditorModel => {
+  SET_ASPECT_RATIO_LOCK: (
+    action: SetAspectRatioLock,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     return modifyOpenJsxElementAtPath(
       action.target,
       (element) => {
@@ -4164,6 +4176,7 @@ export const UPDATE_FNS = {
         }
       },
       editor,
+      derivedState,
     )
   },
   SET_SAFE_MODE: (action: SetSafeMode, editor: EditorModel): EditorModel => {
@@ -4178,7 +4191,11 @@ export const UPDATE_FNS = {
       saveError: action.value,
     }
   },
-  INSERT_DROPPED_IMAGE: (action: InsertDroppedImage, editor: EditorModel): EditorModel => {
+  INSERT_DROPPED_IMAGE: (
+    action: InsertDroppedImage,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     const projectContent = action.image
     const parent = arrayToMaybe(editor.highlightedViews)
     const newUID = generateUidWithExistingComponents(editor.projectContents)
@@ -4220,7 +4237,7 @@ export const UPDATE_FNS = {
     )
 
     const insertJSXElementAction = insertJSXElement(imageElement, parent, {})
-    return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor)
+    return UPDATE_FNS.INSERT_JSX_ELEMENT(insertJSXElementAction, editor, derivedState)
   },
   REMOVE_FROM_NODE_MODULES_CONTENTS: (
     action: RemoveFromNodeModulesContents,
@@ -4306,7 +4323,11 @@ export const UPDATE_FNS = {
     // No need to actually change the editor state.
     return editor
   },
-  ADD_MISSING_DIMENSIONS: (action: AddMissingDimensions, editor: EditorState): EditorState => {
+  ADD_MISSING_DIMENSIONS: (
+    action: AddMissingDimensions,
+    editor: EditorState,
+    derivedState: DerivedState,
+  ): EditorState => {
     const ArbitrarySize = 10
     const frameWithExtendedDimensions = canvasRectangle({
       x: action.existingSize.x,
@@ -4319,7 +4340,7 @@ export const UPDATE_FNS = {
       frameWithExtendedDimensions,
       null,
     )
-    return setCanvasFramesInnerNew(editor, [frameAndTarget], null)
+    return setCanvasFramesInnerNew(editor, derivedState, [frameAndTarget], null)
   },
   SET_PACKAGE_STATUS: (action: SetPackageStatus, editor: EditorState): EditorState => {
     const packageName = action.packageName
@@ -4402,6 +4423,7 @@ export const UPDATE_FNS = {
             }
           },
           editorStore.unpatchedEditor,
+          editorStore.unpatchedDerived,
         )
       } else if (textProp === 'itself') {
         return modifyOpenJsxChildAtPath(
@@ -4421,6 +4443,7 @@ export const UPDATE_FNS = {
             }
           },
           editorStore.unpatchedEditor,
+          editorStore.unpatchedDerived,
         )
       } else if (textProp === 'fullConditional') {
         return modifyOpenJsxChildAtPath(
@@ -4430,6 +4453,7 @@ export const UPDATE_FNS = {
             return jsxTextBlock(action.text)
           },
           editorStore.unpatchedEditor,
+          editorStore.unpatchedDerived,
         )
       } else if (textProp === 'whenFalse' || textProp === 'whenTrue') {
         return modifyOpenJsxElementOrConditionalAtPath(
@@ -4454,6 +4478,7 @@ export const UPDATE_FNS = {
             return element
           },
           editorStore.unpatchedEditor,
+          editorStore.unpatchedDerived,
         )
       } else {
         assertNever(textProp)
@@ -4464,7 +4489,11 @@ export const UPDATE_FNS = {
       trueUpElementChanged(action.target),
     )
 
-    const withCollapsedElements = collapseTextElements(action.target, withGroupTrueUpQueued)
+    const withCollapsedElements = collapseTextElements(
+      action.target,
+      withGroupTrueUpQueued,
+      editorStore.unpatchedDerived,
+    )
 
     if (withGroupTrueUpQueued === withCollapsedElements) {
       return {
@@ -4805,7 +4834,11 @@ export const UPDATE_FNS = {
       },
     }
   },
-  INSERT_INSERTABLE: (action: InsertInsertable, editor: EditorModel): EditorModel => {
+  INSERT_INSERTABLE: (
+    action: InsertInsertable,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     const openFilename = editor.canvas.openFile?.filename
     if (openFilename == null) {
       return editor
@@ -4832,6 +4865,7 @@ export const UPDATE_FNS = {
         insertionPath.intendedParentPath,
         openFilename,
         editor,
+        derivedState,
         (element) => element,
         (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
@@ -4993,6 +5027,7 @@ export const UPDATE_FNS = {
             trueUpElementChanged(newPath),
           ],
         },
+        derivedState,
         groupCommands,
       )
 
@@ -5173,9 +5208,10 @@ export const UPDATE_FNS = {
   RUN_ESCAPE_HATCH: (
     action: RunEscapeHatch,
     editor: EditorModel,
+    derivedState: DerivedState,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
+    const canvasState = pickCanvasStateFromEditorState(editor, derivedState, builtInDependencies)
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
@@ -5183,13 +5219,19 @@ export const UPDATE_FNS = {
         canvasState,
         null,
       ).commands
-      return foldAndApplyCommandsSimple(editor, commands)
+      return foldAndApplyCommandsSimple(editor, derivedState, commands)
     } else {
       return editor
     }
   },
-  SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
+  SET_ELEMENTS_TO_RERENDER: (
+    action: SetElementsToRerender,
+    derivedState: DerivedState,
+    editor: EditorModel,
+  ): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, derivedState, [
+      setElementsToRerenderCommand(action.value),
+    ])
   },
   TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
     const targets = action.targets
@@ -5280,8 +5322,12 @@ export const UPDATE_FNS = {
       imageDragSessionState: action.imageDragSessionState,
     }
   },
-  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, action.commands)
+  APPLY_COMMANDS: (
+    action: ApplyCommandsAction,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, derivedState, action.commands)
   },
   UPDATE_COLOR_SWATCHES: (action: UpdateColorSwatches, editor: EditorModel): EditorModel => {
     return {
@@ -5292,6 +5338,7 @@ export const UPDATE_FNS = {
   SWITCH_CONDITIONAL_BRANCHES: (
     action: SwitchConditionalBranches,
     editor: EditorModel,
+    derivedState: DerivedState,
   ): EditorModel => {
     const openFile = editor.canvas.openFile?.filename
     if (openFile == null) {
@@ -5302,6 +5349,7 @@ export const UPDATE_FNS = {
       action.target,
       openFile,
       editor,
+      derivedState,
       (element) => {
         if (!isJSXConditionalExpression(element)) {
           return element
@@ -5325,8 +5373,9 @@ export const UPDATE_FNS = {
 function copySelectionToClipboardMutating(
   editor: EditorState,
   builtInDependencies: BuiltInDependencies,
+  derivedState: DerivedState,
 ): EditorState {
-  const copyData = createClipboardDataFromSelection(editor, builtInDependencies)
+  const copyData = createClipboardDataFromSelection(editor, builtInDependencies, derivedState)
   if (copyData != null) {
     // side effect 😟
     Clipboard.setClipboardData({
@@ -5406,7 +5455,7 @@ export function alignOrDistributeSelectedViews(
         sourceIsParent,
       )
       return {
-        ...setCanvasFramesInnerNew(editor, updatedCanvasFrames, null),
+        ...setCanvasFramesInnerNew(editor, derived, updatedCanvasFrames, null),
         trueUpGroupsForElementAfterDomWalkerRuns: groupTrueUps,
       }
     }
@@ -5531,10 +5580,16 @@ function alignOrDistributeCanvasRects(
 
 function setCanvasFramesInnerNew(
   editor: EditorModel,
+  derivedState: DerivedState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
 ): EditorModel {
-  return updateFramesOfScenesAndComponents(editor, framesAndTargets, optionalParentFrame)
+  return updateFramesOfScenesAndComponents(
+    editor,
+    derivedState,
+    framesAndTargets,
+    optionalParentFrame,
+  )
 }
 
 export async function load(

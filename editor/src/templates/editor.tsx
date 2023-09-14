@@ -278,7 +278,10 @@ export class Editor {
 
     this.lowPriorityStore = lowPriorityStore
 
-    this.domWalkerMutableState = createDomWalkerMutableState(this.utopiaStoreHook)
+    this.domWalkerMutableState = createDomWalkerMutableState(
+      this.utopiaStoreHook,
+      this.boundDispatch,
+    )
 
     void renderRootEditor()
 
@@ -453,7 +456,11 @@ export class Editor {
       this.storedState = dispatchResult
       let entireUpdateFinished = dispatchResult.entireUpdateFinished
 
-      if (!dispatchResult.nothingChanged) {
+      const shouldRunDOMWalker =
+        !dispatchResult.nothingChanged ||
+        dispatchedActions.some((a) => a.action === 'RUN_DOM_WALKER')
+
+      if (shouldRunDOMWalker) {
         const updateId = canvasUpdateId++
         Measure.taskTime(`update canvas ${updateId}`, () => {
           const currentElementsToRender = fixElementsToRerender(

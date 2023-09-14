@@ -6,7 +6,7 @@ import { optionalMap } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { InsertionSubject } from '../../editor/editor-modes'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { forUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { InsertionPath } from '../../editor/store/insertion-path'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -33,6 +33,7 @@ export function insertElementInsertionSubject(
 
 export const runInsertElementInsertionSubject: CommandFunction<InsertElementInsertionSubject> = (
   editor: EditorState,
+  derivedState: DerivedState,
   command: InsertElementInsertionSubject,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
@@ -42,6 +43,7 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
   forUnderlyingTargetFromEditorState(
     insertionPath.intendedParentPath,
     editor,
+    derivedState,
     (success, _element, _underlyingTarget, underlyingFilePath) => {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 

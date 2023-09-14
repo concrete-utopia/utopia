@@ -21,6 +21,7 @@ import {
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
 import type { EditorState } from '../../../editor/store/editor-state'
+import { emptyDerivedState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorStateWithSelectedViews,
@@ -133,6 +134,7 @@ function reparentElement(
 
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
+    emptyDerivedState(editorState),
     createBuiltInDependenciesList(null),
     startingMetadata,
   )
@@ -162,6 +164,7 @@ function reparentElement(
 
   const finalEditor = foldAndApplyCommands(
     editorState,
+    emptyDerivedState(editorState),
     editorState,
     [],
     strategyResult.commands,

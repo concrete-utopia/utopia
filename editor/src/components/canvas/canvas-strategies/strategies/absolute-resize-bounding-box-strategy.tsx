@@ -143,6 +143,7 @@ export function absoluteResizeBoundingBoxStrategy(
               const element = getElementFromProjectContents(
                 selectedElement,
                 canvasState.projectContents,
+                canvasState.remixRoutingTable,
                 canvasState.openFile,
               )
               const originalFrame = MetadataUtils.getFrameInCanvasCoords(

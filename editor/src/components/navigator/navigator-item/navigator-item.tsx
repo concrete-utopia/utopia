@@ -295,8 +295,9 @@ function useStyleFullyVisible(
         })
 
         let isInsideFocusedComponent =
-          EP.isFocused(store.editor.focusedElementPath, path) ||
-          EP.isInsideFocusedComponent(path, autoFocusedPaths)
+          !MetadataUtils.isContainingComponentRemixSceneOrOutlet(store.editor.jsxMetadata, path) &&
+          (EP.isFocused(store.editor.focusedElementPath, path) ||
+            EP.isInsideFocusedComponent(path, autoFocusedPaths))
 
         return (
           isStoryboardChild ||
@@ -514,6 +515,16 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem isConditionalDynamicBranch',
   )
 
+  const isContainingComponentRemixSceneOrOutlet = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.isContainingComponentRemixSceneOrOutlet(
+        store.editor.jsxMetadata,
+        navigatorEntry.elementPath,
+      ),
+    'NavigatorItem isInsideRemixOutlet',
+  )
+
   const childComponentCount = props.noOfChildren
 
   const isGenerated = MetadataUtils.isElementGenerated(navigatorEntry.elementPath)
@@ -586,7 +597,9 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isInsideComponent =
-    EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) || isFocusedComponent
+    !isContainingComponentRemixSceneOrOutlet &&
+    (EP.isInsideFocusedComponent(navigatorEntry.elementPath, autoFocusedPaths) ||
+      isFocusedComponent)
   const fullyVisible = useStyleFullyVisible(navigatorEntry, autoFocusedPaths)
   const isProbablyScene = useIsProbablyScene(navigatorEntry)
 

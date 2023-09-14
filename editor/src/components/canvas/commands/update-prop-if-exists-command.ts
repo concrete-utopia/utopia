@@ -9,7 +9,7 @@ import {
 import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -38,12 +38,14 @@ export function updatePropIfExists(
 
 export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: UpdatePropIfExists,
 ) => {
   // check if the prop exists
   const propertyExists = withUnderlyingTargetFromEditorState(
     command.element,
     editorState,
+    derivedState,
     false,
     (_, element) => {
       if (isJSXElement(element)) {
@@ -62,6 +64,7 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
     // Apply the update to the properties.
     const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
       editorState,
+      derivedState,
       command.element,
       [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
     )

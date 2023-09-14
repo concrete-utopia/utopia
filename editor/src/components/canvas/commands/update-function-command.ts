@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import type { BaseCommand, CommandFunctionResult, WhenToRun } from './commands'
@@ -11,6 +11,7 @@ export interface UpdateFunctionCommand extends BaseCommand {
   type: 'UPDATE_FUNCTION_COMMAND'
   updateFunction: (
     editorState: EditorState,
+    derivedState: DerivedState,
     commandLifecycle: InteractionLifecycle,
   ) => Array<EditorStatePatch>
 }
@@ -19,6 +20,7 @@ export function updateFunctionCommand(
   whenToRun: WhenToRun,
   updateFunction: (
     editorState: EditorState,
+    derivedState: DerivedState,
     commandLifecycle: InteractionLifecycle,
   ) => Array<EditorStatePatch>,
 ): UpdateFunctionCommand {
@@ -31,11 +33,12 @@ export function updateFunctionCommand(
 
 export const runUpdateFunctionCommand = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: UpdateFunctionCommand,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   return {
-    editorStatePatches: command.updateFunction(editorState, commandLifecycle),
+    editorStatePatches: command.updateFunction(editorState, derivedState, commandLifecycle),
     commandDescription: `Update Callback`,
   }
 }

@@ -166,6 +166,7 @@ function applyStaticReparent(
             canvasState.builtInDependencies,
             canvasState.projectContents,
             canvasState.nodeModules,
+            canvasState.remixRoutingTable,
             canvasState.openFile,
             pathToReparent(target),
             newParent,

@@ -24,7 +24,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import type { AllElementProps, CanvasBase64Blobs } from './editor-state'
 import { memoize } from '../../../core/shared/memoize'
 
-export interface RemixStaticRoutingTable {
+export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
 }
 
@@ -34,7 +34,7 @@ export interface RemixDerivedData {
   routeModuleCreators: RouteIdsToModuleCreators
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routes: Array<DataRouteObject>
-  routingTable: RemixStaticRoutingTable
+  routingTable: RemixRoutingTable
 }
 
 const CreateRemixDerivedDataRefs: {
