@@ -550,7 +550,8 @@ export const NavigatorItem: React.FunctionComponent<
         return 'code'
       }
       if (
-        MetadataUtils.isImportedComponentFromMetadata(elementMetadata, '@remix-run/react', null)
+        MetadataUtils.isImportedComponentFromMetadata(elementMetadata, '@remix-run/react', null) ||
+        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
       ) {
         return 'remix'
       }
