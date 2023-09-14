@@ -8,7 +8,7 @@ import type {
 } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import type { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
+import type { EditorStorePatched } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { DefaultStartingFeatureSwitches, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
@@ -16,13 +16,7 @@ import { runWrapInContainerCommand, wrapInContainerCommand } from './wrap-in-con
 
 describe('wrapInContainerCommand', () => {
   function getElement(path: ElementPath, store: EditorStorePatched) {
-    return withUnderlyingTargetFromEditorState(
-      path,
-      store.editor,
-      store.derived,
-      null,
-      (_, element) => element,
-    )
+    return withUnderlyingTargetFromEditorState(path, store.editor, null, (_, element) => element)
   }
 
   function getPath(uid: string) {

@@ -28,13 +28,12 @@ export function rearrangeChildren(
 
 export const runRearrangeChildren: CommandFunction<RearrangeChildren> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: RearrangeChildren,
 ) => {
   const patch = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    derivedState,
     {},
     (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)

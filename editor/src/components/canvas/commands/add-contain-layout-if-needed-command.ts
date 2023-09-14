@@ -26,7 +26,7 @@ export function addContainLayoutIfNeeded(
 
 export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeeded> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: AddContainLayoutIfNeeded,
 ) => {
   const elementMetadata = MetadataUtils.findElementByElementPath(
@@ -42,7 +42,7 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
     }
   } else {
     // Apply the update to the properties.
-    const { editorStatePatch } = applyValuesAtPath(editorState, derivedState, command.element, [
+    const { editorStatePatch } = applyValuesAtPath(editorState, command.element, [
       { path: PP.create('style', 'contain'), value: jsExpressionValue('layout', emptyComments) },
     ])
 

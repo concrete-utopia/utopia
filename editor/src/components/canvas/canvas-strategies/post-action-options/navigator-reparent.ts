@@ -51,9 +51,6 @@ function getNavigatorReparentCommands(
   const newParentPath = getInsertionPath(
     data.targetParent,
     editor.projectContents,
-    editor.nodeModules.files,
-    derivedState.remixData?.routingTable ?? null,
-    editor.canvas.openFile?.filename,
     editor.jsxMetadata,
     editor.elementPathTree,
     wrapperUID,

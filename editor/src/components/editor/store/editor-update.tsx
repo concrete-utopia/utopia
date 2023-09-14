@@ -28,11 +28,11 @@ export function runLocalEditorAction(
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
-      return UPDATE_FNS.SET_CANVAS_FRAMES(action, state, derivedState)
+      return UPDATE_FNS.SET_CANVAS_FRAMES(action, state)
     case 'ALIGN_SELECTED_VIEWS':
-      return UPDATE_FNS.ALIGN_SELECTED_VIEWS(action, state, derivedState)
+      return UPDATE_FNS.ALIGN_SELECTED_VIEWS(action, state)
     case 'DISTRIBUTE_SELECTED_VIEWS':
-      return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state, derivedState)
+      return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state)
     case 'SAVE_ASSET':
       return UPDATE_FNS.SAVE_ASSET(action, state, derivedState, dispatch, userState)
     default:
@@ -67,19 +67,19 @@ export function runSimpleLocalEditorAction(
     case 'LOAD':
       return UPDATE_FNS.LOAD(action, state, dispatch)
     case 'DUPLICATE_SELECTED':
-      return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch, derivedState)
+      return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
     case 'UPDATE_DUPLICATION_STATE':
       return UPDATE_FNS.UPDATE_DUPLICATION_STATE(action, state)
     case 'MOVE_SELECTED_TO_BACK':
-      return UPDATE_FNS.MOVE_SELECTED_TO_BACK(state, derivedState)
+      return UPDATE_FNS.MOVE_SELECTED_TO_BACK(state)
     case 'MOVE_SELECTED_TO_FRONT':
-      return UPDATE_FNS.MOVE_SELECTED_TO_FRONT(state, derivedState)
+      return UPDATE_FNS.MOVE_SELECTED_TO_FRONT(state)
     case 'MOVE_SELECTED_BACKWARD':
-      return UPDATE_FNS.MOVE_SELECTED_BACKWARD(state, derivedState)
+      return UPDATE_FNS.MOVE_SELECTED_BACKWARD(state)
     case 'MOVE_SELECTED_FORWARD':
-      return UPDATE_FNS.MOVE_SELECTED_FORWARD(state, derivedState)
+      return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
     case 'UNSET_PROPERTY':
-      return UPDATE_FNS.UNSET_PROPERTY(action, state, derivedState, dispatch)
+      return UPDATE_FNS.UNSET_PROPERTY(action, state)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -97,9 +97,9 @@ export function runSimpleLocalEditorAction(
     case 'TOGGLE_HIDDEN':
       return UPDATE_FNS.TOGGLE_HIDDEN(action, state)
     case 'RENAME_COMPONENT':
-      return UPDATE_FNS.RENAME_COMPONENT(action, state, derivedState)
+      return UPDATE_FNS.RENAME_COMPONENT(action, state)
     case 'INSERT_JSX_ELEMENT':
-      return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state, derivedState)
+      return UPDATE_FNS.INSERT_JSX_ELEMENT(action, state)
     case 'SET_PANEL_VISIBILITY':
       return UPDATE_FNS.SET_PANEL_VISIBILITY(action, state)
     case 'TOGGLE_FOCUSED_OMNIBOX_TAB':
@@ -115,16 +115,11 @@ export function runSimpleLocalEditorAction(
     case 'CLOSE_POPUP':
       return UPDATE_FNS.CLOSE_POPUP(action, state)
     case 'PASTE_PROPERTIES':
-      return UPDATE_FNS.PASTE_PROPERTIES(action, state, derivedState)
+      return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'COPY_SELECTION_TO_CLIPBOARD':
-      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(state, builtInDependencies, derivedState)
+      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(state, builtInDependencies)
     case 'CUT_SELECTION_TO_CLIPBOARD':
-      return UPDATE_FNS.CUT_SELECTION_TO_CLIPBOARD(
-        state,
-        dispatch,
-        builtInDependencies,
-        derivedState,
-      )
+      return UPDATE_FNS.CUT_SELECTION_TO_CLIPBOARD(state, dispatch, builtInDependencies)
     case 'COPY_PROPERTIES':
       return UPDATE_FNS.COPY_PROPERTIES(action, state)
     case 'OPEN_TEXT_EDITOR':
@@ -170,9 +165,9 @@ export function runSimpleLocalEditorAction(
     case 'SET_CURSOR_OVERLAY':
       return UPDATE_FNS.SET_CURSOR_OVERLAY(action, state)
     case 'SET_Z_INDEX':
-      return UPDATE_FNS.SET_Z_INDEX(action, state, derivedState)
+      return UPDATE_FNS.SET_Z_INDEX(action, state)
     case 'UPDATE_FRAME_DIMENSIONS':
-      return UPDATE_FNS.UPDATE_FRAME_DIMENSIONS(action, state, derivedState)
+      return UPDATE_FNS.UPDATE_FRAME_DIMENSIONS(action, state)
     case 'SET_NAVIGATOR_RENAMING_TARGET':
       return UPDATE_FNS.SET_NAVIGATOR_RENAMING_TARGET(action, state)
     case 'SET_STORED_FONT_SETTINGS':
@@ -198,7 +193,7 @@ export function runSimpleLocalEditorAction(
     case 'SHOW_CONTEXT_MENU':
       return UPDATE_FNS.SHOW_CONTEXT_MENU(action, state)
     case 'DUPLICATE_SPECIFIC_ELEMENTS':
-      return UPDATE_FNS.DUPLICATE_SPECIFIC_ELEMENTS(action, state, derivedState, dispatch)
+      return UPDATE_FNS.DUPLICATE_SPECIFIC_ELEMENTS(action, state, dispatch)
     case 'SEND_PREVIEW_MODEL':
       return UPDATE_FNS.SEND_PREVIEW_MODEL(action, state)
     case 'UPDATE_FILE_PATH':
@@ -245,21 +240,21 @@ export function runSimpleLocalEditorAction(
     case 'TRUE_UP_GROUPS':
       return UPDATE_FNS.TRUE_UP_GROUPS(state, derivedState)
     case 'SET_PROP':
-      return UPDATE_FNS.SET_PROP(action, state, derivedState)
+      return UPDATE_FNS.SET_PROP(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
       return UPDATE_FNS.SET_FILEBROWSER_RENAMING_TARGET(action, state)
     case 'TOGGLE_PROPERTY':
-      return UPDATE_FNS.TOGGLE_PROPERTY(action, state, derivedState)
+      return UPDATE_FNS.TOGGLE_PROPERTY(action, state)
     case 'CLEAR_IMAGE_FILE_BLOB':
       return UPDATE_FNS.CLEAR_IMAGE_FILE_BLOB(action, state)
     case 'SAVE_CURRENT_FILE':
       return UPDATE_FNS.SAVE_CURRENT_FILE(action, state)
     case 'DELETE_VIEW':
-      return UPDATE_FNS.DELETE_VIEW(action, state, dispatch, derivedState)
+      return UPDATE_FNS.DELETE_VIEW(action, state, dispatch)
     case 'DELETE_SELECTED':
-      return UPDATE_FNS.DELETE_SELECTED(state, dispatch, derivedState)
+      return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
-      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch, builtInDependencies)
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_ELEMENTS':
@@ -267,21 +262,21 @@ export function runSimpleLocalEditorAction(
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
-      return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state, derivedState)
+      return UPDATE_FNS.UPDATE_JSX_ELEMENT_NAME(action, state)
     case 'ADD_IMPORTS':
-      return UPDATE_FNS.ADD_IMPORTS(action, state, derivedState)
+      return UPDATE_FNS.ADD_IMPORTS(action, state)
     case 'SET_ASPECT_RATIO_LOCK':
-      return UPDATE_FNS.SET_ASPECT_RATIO_LOCK(action, state, derivedState)
+      return UPDATE_FNS.SET_ASPECT_RATIO_LOCK(action, state)
     case 'TOGGLE_CANVAS_IS_LIVE':
       return UPDATE_FNS.TOGGLE_CANVAS_IS_LIVE(state, derivedState)
     case 'RENAME_PROP_KEY':
-      return UPDATE_FNS.RENAME_PROP_KEY(action, state, derivedState)
+      return UPDATE_FNS.RENAME_PROP_KEY(action, state)
     case 'SET_SAFE_MODE':
       return UPDATE_FNS.SET_SAFE_MODE(action, state)
     case 'SET_SAVE_ERROR':
       return UPDATE_FNS.SET_SAVE_ERROR(action, state)
     case 'INSERT_DROPPED_IMAGE':
-      return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state, derivedState)
+      return UPDATE_FNS.INSERT_DROPPED_IMAGE(action, state)
     case 'REMOVE_FROM_NODE_MODULES_CONTENTS':
       return UPDATE_FNS.REMOVE_FROM_NODE_MODULES_CONTENTS(
         action,
@@ -298,7 +293,7 @@ export function runSimpleLocalEditorAction(
     case 'FINISH_CHECKPOINT_TIMER':
       return UPDATE_FNS.FINISH_CHECKPOINT_TIMER(action, state)
     case 'ADD_MISSING_DIMENSIONS':
-      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state, derivedState)
+      return UPDATE_FNS.ADD_MISSING_DIMENSIONS(action, state)
     case 'SET_PACKAGE_STATUS':
       return UPDATE_FNS.SET_PACKAGE_STATUS(action, state)
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
@@ -372,13 +367,13 @@ export function runSimpleLocalEditorAction(
     case 'UPDATE_COLOR_SWATCHES':
       return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
-      return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state, derivedState)
+      return UPDATE_FNS.SET_CONDITIONAL_OVERRIDDEN_CONDITION(action, state)
     case 'SET_MAP_COUNT_OVERRIDE':
-      return UPDATE_FNS.SET_MAP_COUNT_OVERRIDE(action, state, derivedState)
+      return UPDATE_FNS.SET_MAP_COUNT_OVERRIDE(action, state)
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
-      return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state, derivedState)
+      return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
-      return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state, derivedState)
+      return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
     default:
       return state
   }
