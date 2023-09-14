@@ -35,7 +35,6 @@ import type { ReparentStrategy } from './reparent-strategy-helpers'
 import type { ProjectContentTreeRoot } from '../../../../assets'
 import { singleAxisAutoLayoutContainerDirections } from '../flow-reorder-helpers'
 import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
-import type { RemixRoutingTable } from '../../../../editor/store/remix-derived-data'
 
 type ReparentPropertyStrategyUnapplicableReason = string
 
@@ -270,8 +269,6 @@ export const convertFragmentLikeChildrenToVisualSize =
     newParent: ElementPath,
     reparentStrategy: ReparentStrategy,
     projectContents: ProjectContentTreeRoot,
-    remixRoutingTable: RemixRoutingTable | null,
-    openFile: string | null | undefined,
     propertyStrategies: Array<
       (
         elementToReparent: ElementPathSnapshots,
@@ -315,8 +312,6 @@ export const convertFragmentLikeChildrenToVisualSize =
           metadata.originalTargetMetadata,
           metadata.currentMetadata,
           projectContents,
-          remixRoutingTable,
-          openFile,
         )
       } else {
         const directions = singleAxisAutoLayoutContainerDirections(

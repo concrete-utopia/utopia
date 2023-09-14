@@ -29,13 +29,12 @@ export function reorderElement(
 
 export const runReorderElement: CommandFunction<ReorderElement> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: ReorderElement,
 ) => {
   const patch = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    derivedState,
     {},
     (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)

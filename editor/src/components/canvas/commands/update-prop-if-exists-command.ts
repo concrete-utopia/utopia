@@ -38,14 +38,13 @@ export function updatePropIfExists(
 
 export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: UpdatePropIfExists,
 ) => {
   // check if the prop exists
   const propertyExists = withUnderlyingTargetFromEditorState(
     command.element,
     editorState,
-    derivedState,
     false,
     (_, element) => {
       if (isJSXElement(element)) {
@@ -64,7 +63,6 @@ export const runUpdatePropIfExists: CommandFunction<UpdatePropIfExists> = (
     // Apply the update to the properties.
     const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
       editorState,
-      derivedState,
       command.element,
       [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
     )

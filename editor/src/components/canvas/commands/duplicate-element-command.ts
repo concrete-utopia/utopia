@@ -2,8 +2,7 @@ import * as EP from '../../../core/shared/element-path'
 import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { deriveState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { duplicate } from '../canvas-utils'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { getPatchForComponentChange } from './commands'
@@ -34,7 +33,7 @@ export function duplicateElement(
 
 export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: DuplicateElement,
 ) => {
   const targetParent = EP.parentPath(command.target)
@@ -44,7 +43,6 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
     [command.target],
     targetParent,
     editorState,
-    derivedState,
     [{ originalPath: command.target, newUID: command.newUid }],
     command.anchor,
   )
@@ -52,7 +50,6 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   const originalParsedFile = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    derivedState,
     null,
     (parseSuccess, _, __, filePath) => ({ parseSuccess, filePath }),
   )
@@ -64,12 +61,6 @@ export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   const newUtopiaComponents = withUnderlyingTargetFromEditorState(
     newPath,
     duplicateResult.updatedEditorState,
-    deriveState(
-      duplicateResult.updatedEditorState,
-      derivedState,
-      'patched',
-      patchedCreateRemixDerivedDataMemo,
-    ),
     [],
     (parsedFile) => {
       return parsedFile.topLevelElements.filter(isUtopiaJSXComponent) // TODO why can't getPatchForComponentChange just take all top level elements?

@@ -197,31 +197,42 @@ export const MetadataUtils = {
   ): Array<ElementInstanceMetadata> {
     return stripNulls(paths.map((path) => MetadataUtils.findElementByElementPath(elementMap, path)))
   },
-  isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
+  isImportedComponentFromMetadata(
+    element: ElementInstanceMetadata | null,
+    importedFrom: string,
+    componentName: string | null,
+  ): boolean {
     return (
       element != null &&
       element.importInfo != null &&
       isImportedOrigin(element.importInfo) &&
-      element.importInfo.filePath === 'utopia-api' &&
-      element.importInfo.exportedName === 'Scene'
+      element.importInfo.filePath === importedFrom &&
+      (componentName == null || element.importInfo.exportedName === componentName)
     )
+  },
+  isProbablySceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(element, 'utopia-api', 'Scene')
   },
   isProbablyRemixSceneFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    return (
-      element != null &&
-      element.importInfo != null &&
-      isImportedOrigin(element.importInfo) &&
-      element.importInfo.filePath === 'utopia-api' &&
-      element.importInfo.exportedName === 'RemixScene'
-    )
+    return MetadataUtils.isImportedComponentFromMetadata(element, 'utopia-api', 'RemixScene')
   },
   isProbablyRemixOutletFromMetadata(element: ElementInstanceMetadata | null): boolean {
-    return (
-      element != null &&
-      element.importInfo != null &&
-      isImportedOrigin(element.importInfo) &&
-      element.importInfo.filePath === '@remix-run/react' &&
-      element.importInfo.exportedName === 'Outlet'
+    return MetadataUtils.isImportedComponentFromMetadata(element, '@remix-run/react', 'Outlet')
+  },
+  isProbablyRemixLinkFromMetadata(element: ElementInstanceMetadata | null): boolean {
+    return MetadataUtils.isImportedComponentFromMetadata(element, '@remix-run/react', 'Link')
+  },
+  isImportedComponent(
+    jsxMetadata: ElementInstanceMetadataMap,
+    path: ElementPath,
+    importedFrom: string,
+    componentName: string,
+  ): boolean {
+    const elementMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+    return MetadataUtils.isImportedComponentFromMetadata(
+      elementMetadata,
+      componentName,
+      importedFrom,
     )
   },
   isProbablyScene(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
@@ -961,18 +972,12 @@ export const MetadataUtils = {
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
-    nodeModules: NodeModules,
-    remixRoutingTable: RemixRoutingTable | null,
-    openFile: string | null | undefined,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
   ): boolean {
     const targetSupportsChildrenValue = this.targetSupportsChildrenAlsoText(
       projectContents,
       metadata,
-      nodeModules,
-      remixRoutingTable,
-      openFile,
       target,
       pathTree,
     )
@@ -984,9 +989,6 @@ export const MetadataUtils = {
   targetSupportsChildrenAlsoText(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
-    nodeModules: NodeModules,
-    remixRoutingTable: RemixRoutingTable | null,
-    openFile: string | null | undefined,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
   ): ElementSupportsChildren {
@@ -999,9 +1001,6 @@ export const MetadataUtils = {
         return withUnderlyingTarget(
           target,
           projectContents,
-          nodeModules,
-          remixRoutingTable,
-          openFile,
           'doesNotSupportChildren',
           (_, element) => {
             return (

@@ -33,7 +33,7 @@ export function insertElementInsertionSubject(
 
 export const runInsertElementInsertionSubject: CommandFunction<InsertElementInsertionSubject> = (
   editor: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: InsertElementInsertionSubject,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
@@ -43,7 +43,6 @@ export const runInsertElementInsertionSubject: CommandFunction<InsertElementInse
   forUnderlyingTargetFromEditorState(
     insertionPath.intendedParentPath,
     editor,
-    derivedState,
     (success, _element, _underlyingTarget, underlyingFilePath) => {
       const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 

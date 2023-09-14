@@ -391,7 +391,7 @@ const elementWarningsSelector = createCachedSelector(
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
-type CodeItemType = 'conditional' | 'map' | 'code' | 'none'
+type CodeItemType = 'conditional' | 'map' | 'code' | 'none' | 'remix'
 
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
@@ -548,6 +548,11 @@ export const NavigatorItem: React.FunctionComponent<
       }
       if (MetadataUtils.isExpressionOtherJavascriptFromMetadata(elementMetadata)) {
         return 'code'
+      }
+      if (
+        MetadataUtils.isImportedComponentFromMetadata(elementMetadata, '@remix-run/react', null)
+      ) {
+        return 'remix'
       }
       return 'none'
     },
@@ -829,7 +834,8 @@ interface NavigatorRowLabelProps {
 export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const colorTheme = useColorTheme()
 
-  const isCodeItem = props.codeItemType !== 'none'
+  const isCodeItem = props.codeItemType !== 'none' && props.codeItemType !== 'remix'
+  const isRemixItem = props.codeItemType === 'remix'
 
   return (
     <div
@@ -845,7 +851,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         paddingRight: props.codeItemType === 'map' ? 0 : 10,
         backgroundColor:
           isCodeItem && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
-        color: isCodeItem ? colorTheme.dynamicBlue.value : undefined,
+        color: isCodeItem || isRemixItem ? colorTheme.dynamicBlue.value : undefined,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
