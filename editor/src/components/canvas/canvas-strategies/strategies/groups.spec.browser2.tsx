@@ -658,7 +658,7 @@ describe('Groups behaviors', () => {
 
       it('nested group with top,left,right,bottom pins', async () => {
         const editor = await renderProjectWithGroup(`
-            <Group data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <Group data-testid='group' style={{ position: 'absolute', left: 50, top: 50, width: 250, height: 250 }}>
               <div 
                 style={{
                   backgroundColor: 'red',
@@ -1992,7 +1992,7 @@ describe('Groups behaviors', () => {
 
       it('nested group with top,left,right,bottom pins', async () => {
         const editor = await renderProjectWithGroup(`
-            <Group data-uid='group' data-testid='group' style={{position: 'absolute', left: 50, top: 50}}>
+            <Group data-uid='group' data-testid='group' style={{ position: 'absolute', left: 50, top: 50, width: 250, height: 250 }}>
               <div 
                 data-uid='child-1'
                 style={{
@@ -2045,8 +2045,8 @@ describe('Groups behaviors', () => {
           assertStylePropsSet(editor, `${GroupPath}`, {
             left: 50,
             top: 50,
-            width: undefined,
-            height: undefined,
+            width: 300,
+            height: 350,
             right: undefined,
             bottom: undefined,
           })
@@ -2087,8 +2087,8 @@ describe('Groups behaviors', () => {
           assertStylePropsSet(editor, `${GroupPath}`, {
             left: 0,
             top: 0,
-            width: undefined,
-            height: undefined,
+            width: 350,
+            height: 400,
             right: undefined,
             bottom: undefined,
           })
