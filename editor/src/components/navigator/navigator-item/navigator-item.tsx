@@ -700,6 +700,8 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem parentElement',
   )
 
+  const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
+
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
       opacity: isElementVisible && (!isHiddenConditionalBranch || isSlot) ? undefined : 0.4,
@@ -726,7 +728,13 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const iconColor = isRemixItem ? 'remix' : isCodeItem ? 'dynamic' : resultingStyle.iconColor
+  const iconColor = isRemixItem
+    ? 'remix'
+    : isCodeItem
+    ? 'dynamic'
+    : isComponentScene
+    ? 'component'
+    : resultingStyle.iconColor
 
   return (
     <div
@@ -797,6 +805,7 @@ export const NavigatorItem: React.FunctionComponent<
                 isDynamic={isDynamic}
                 iconColor={iconColor}
                 elementWarnings={!isConditional ? elementWarnings : null}
+                childComponentCount={childComponentCount}
               />
             </FlexRow>
             {unless(
@@ -830,6 +839,7 @@ interface NavigatorRowLabelProps {
   selected: boolean
   codeItemType: CodeItemType
   shouldShowParentOutline: boolean
+  childComponentCount: number
   dispatch: EditorDispatch
 }
 
@@ -838,6 +848,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
   const isCodeItem = props.codeItemType !== 'none' && props.codeItemType !== 'remix'
   const isRemixItem = props.codeItemType === 'remix'
+  const isComponentScene =
+    useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
   return (
     <div
@@ -857,6 +869,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           ? colorTheme.dynamicBlue.value
           : isRemixItem
           ? colorTheme.aqua.value
+          : isComponentScene
+          ? colorTheme.component.value
           : undefined,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
