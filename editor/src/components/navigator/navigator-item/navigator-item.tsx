@@ -181,7 +181,7 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   default: { color: 'fg0', iconColor: 'main' },
   dynamic: { color: 'dynamicBlue', iconColor: 'dynamic' },
   component: { color: 'componentOrange', iconColor: 'component-orange' },
-  componentInstance: { color: 'componentPurple', iconColor: 'component' },
+  componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
 }
 
@@ -226,7 +226,7 @@ const computeResultingStyle = (
     styleType = 'erroredGroup'
   } else if (isInsideComponent) {
     styleType = 'component'
-  } else if (isFocusableComponent && selected) {
+  } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
