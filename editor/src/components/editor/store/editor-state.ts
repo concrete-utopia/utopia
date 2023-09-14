@@ -3374,7 +3374,6 @@ export function modifyUnderlyingTargetElement(
   )
 }
 
-// FIXME Replace with modifyUnderlyingTargetElement?
 export function modifyUnderlyingElementForOpenFile(
   target: ElementPath,
   editor: EditorState,
