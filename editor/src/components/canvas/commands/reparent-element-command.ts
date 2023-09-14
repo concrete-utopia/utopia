@@ -42,19 +42,17 @@ export function reparentElement(
 
 export const runReparentElement: CommandFunction<ReparentElement> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: ReparentElement,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    derivedState,
     (successTarget, underlyingElementTarget, _underlyingTarget, underlyingFilePathTarget) => {
       forUnderlyingTargetFromEditorState(
         getElementPathFromInsertionPath(command.newParent),
         editorState,
-        derivedState,
         (
           successNewParent,
           _underlyingElementNewParent,

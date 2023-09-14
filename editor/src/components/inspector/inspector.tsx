@@ -281,7 +281,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
             view,
             store.editor,
-            store.derived,
           )
           anyComponentsInner =
             anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)

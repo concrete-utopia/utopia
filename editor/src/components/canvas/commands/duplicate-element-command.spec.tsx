@@ -50,7 +50,6 @@ describe('runDuplicateElement', () => {
     const newElement = withUnderlyingTargetFromEditorState(
       newPath,
       patchedEditor,
-      emptyDerivedState(patchedEditor),
       null,
       (_, element) => element,
     )
@@ -92,7 +91,6 @@ describe('runDuplicateElement', () => {
     const newElement = withUnderlyingTargetFromEditorState(
       newPath,
       patchedEditor,
-      emptyDerivedState(patchedEditor),
       null,
       (_, element) => element,
     )
@@ -166,7 +164,6 @@ describe('runDuplicateElement', () => {
     const newElement = withUnderlyingTargetFromEditorState(
       newPath,
       patchedEditor,
-      emptyDerivedState(patchedEditor),
       null,
       (_, element) => element,
     )

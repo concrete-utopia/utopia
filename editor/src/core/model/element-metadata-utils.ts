@@ -972,18 +972,12 @@ export const MetadataUtils = {
   targetSupportsChildren(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
-    nodeModules: NodeModules,
-    remixRoutingTable: RemixRoutingTable | null,
-    openFile: string | null | undefined,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
   ): boolean {
     const targetSupportsChildrenValue = this.targetSupportsChildrenAlsoText(
       projectContents,
       metadata,
-      nodeModules,
-      remixRoutingTable,
-      openFile,
       target,
       pathTree,
     )
@@ -995,9 +989,6 @@ export const MetadataUtils = {
   targetSupportsChildrenAlsoText(
     projectContents: ProjectContentTreeRoot,
     metadata: ElementInstanceMetadataMap,
-    nodeModules: NodeModules,
-    remixRoutingTable: RemixRoutingTable | null,
-    openFile: string | null | undefined,
     target: ElementPath | null,
     pathTree: ElementPathTrees,
   ): ElementSupportsChildren {
@@ -1010,9 +1001,6 @@ export const MetadataUtils = {
         return withUnderlyingTarget(
           target,
           projectContents,
-          nodeModules,
-          remixRoutingTable,
-          openFile,
           'doesNotSupportChildren',
           (_, element) => {
             return (

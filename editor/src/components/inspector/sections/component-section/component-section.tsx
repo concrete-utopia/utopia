@@ -810,10 +810,7 @@ export const ComponentSectionInner = React.memo((props: ComponentSectionProps) =
       if (importResult == null) {
         const underlyingTarget = normalisePathToUnderlyingTarget(
           state.editor.projectContents,
-          state.editor.nodeModules.files,
-          state.editor.canvas.openFile?.filename ?? '',
           target,
-          state.derived.remixData?.routingTable ?? null,
         )
 
         return underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : null

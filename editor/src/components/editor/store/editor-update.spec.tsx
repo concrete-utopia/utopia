@@ -593,7 +593,7 @@ describe('INSERT_JSX_ELEMENT', () => {
     const { editor, derivedState, dispatch } = createEditorStates()
 
     const parentBeforeInsert = findJSXElementChildAtPath(
-      getJSXComponentsAndImportsForPathFromState(parentPath, editor, derivedState).components,
+      getJSXComponentsAndImportsForPathFromState(parentPath, editor).components,
       parentPath,
     )
 
@@ -620,7 +620,6 @@ describe('INSERT_JSX_ELEMENT', () => {
     const updatedComponents = getJSXComponentsAndImportsForPathFromState(
       parentPath,
       updatedEditor,
-      derivedState,
     ).components
     const parentAfterInsert = findJSXElementChildAtPath(updatedComponents, parentPath)
     const insertedElement = findJSXElementChildAtPath(
@@ -675,7 +674,6 @@ describe('INSERT_JSX_ELEMENT', () => {
     const componentsBeforeInsert = getJSXComponentsAndImportsForPathFromState(
       ScenePathForTestUiJsFile,
       editor,
-      derivedState,
     ).components
 
     const elementToInsert = jsxElement(
@@ -701,7 +699,6 @@ describe('INSERT_JSX_ELEMENT', () => {
     const updatedComponents = getJSXComponentsAndImportsForPathFromState(
       ScenePathForTestUiJsFile,
       updatedEditor,
-      derivedState,
     ).components
 
     const insertedElement = findJSXElementChildAtPath(

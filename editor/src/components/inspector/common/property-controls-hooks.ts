@@ -10,38 +10,20 @@ import {
   getPropertyControlNames,
 } from '../../../core/property-controls/property-control-values'
 import type { UnionControlDescription, RegularControlDescription } from 'utopia-api/core'
-import {
-  BaseControlDescription,
-  ControlDescription,
-  ArrayControlDescription,
-  HigherLevelControlDescription,
-} from 'utopia-api/core'
 import type { InspectorInfo } from './property-path-hooks'
 import {
   filterUtopiaSpecificProps,
   InspectorPropsContext,
   useCallbackFactory,
   useInspectorContext,
-  useRefSelectedViews,
 } from './property-path-hooks'
 import type { ModifiableAttribute } from '../../../core/shared/jsx-attributes'
-import {
-  getModifiableJSXAttributeAtPath,
-  jsxSimpleAttributeToValue,
-} from '../../../core/shared/jsx-attributes'
+import { getModifiableJSXAttributeAtPath } from '../../../core/shared/jsx-attributes'
 import * as PP from '../../../core/shared/property-path'
 import type { Either } from '../../../core/shared/either'
-import {
-  eitherToMaybe,
-  flatMapEither,
-  foldEither,
-  mapEither,
-  right,
-  unwrapEither,
-} from '../../../core/shared/either'
+import { eitherToMaybe } from '../../../core/shared/either'
 import {
   calculatePropertyStatusForSelection,
-  ControlStatus,
   getControlStatusFromPropertyStatus,
 } from './control-status'
 import { getControlStyles } from './control-styles'
@@ -50,12 +32,8 @@ import {
   useKeepReferenceEqualityIfPossible,
 } from '../../../utils/react-performance'
 import type { UtopiaJSXComponent } from '../../../core/shared/element-template'
-import {
-  ElementInstanceMetadata,
-  isJSXElement,
-  JSXAttributes,
-} from '../../../core/shared/element-template'
-import { addUniquely, mapArrayToDictionary, mapDropNulls } from '../../../core/shared/array-utils'
+import { isJSXElement } from '../../../core/shared/element-template'
+import { addUniquely, mapDropNulls } from '../../../core/shared/array-utils'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getPropertyControlsForTargetFromEditor } from '../../../core/property-controls/property-controls-utils'
@@ -222,11 +200,7 @@ export function useGetPropertyControlsForSelectedComponents(): Array<FullPropert
     (store) => {
       let propertyControlsAndTargets: Array<PropertyControlsAndTargets> = []
       fastForEach(store.editor.selectedViews, (path) => {
-        const propertyControls = getPropertyControlsForTargetFromEditor(
-          path,
-          store.editor,
-          store.derived,
-        )
+        const propertyControls = getPropertyControlsForTargetFromEditor(path, store.editor)
         if (propertyControls == null) {
           propertyControlsAndTargets.push({
             controls: emptyControls,

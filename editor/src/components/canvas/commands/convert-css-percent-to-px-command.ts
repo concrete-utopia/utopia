@@ -43,14 +43,13 @@ export function convertCssPercentToPx(
 
 export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: ConvertCssPercentToPx,
 ) => {
   // Identify the current value, whatever that may be.
   const currentValue: GetModifiableAttributeResult = withUnderlyingTargetFromEditorState(
     command.target,
     editorState,
-    derivedState,
     left(`no target element was found at path ${EP.toString(command.target)}`),
     (_, element) => {
       if (isJSXElement(element)) {
@@ -111,7 +110,6 @@ export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = 
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorState,
-    derivedState,
     command.target,
     propsToUpdate,
   )

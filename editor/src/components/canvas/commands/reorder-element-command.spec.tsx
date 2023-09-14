@@ -95,7 +95,6 @@ describe('runReorderElement', () => {
       const children = withUnderlyingTargetFromEditorState(
         parent,
         patchedEditor,
-        emptyDerivedState(patchedEditor),
         null,
         (_, element) => {
           if (isJSXElementLike(element)) {

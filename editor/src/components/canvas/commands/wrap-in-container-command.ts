@@ -65,7 +65,7 @@ export function wrapInContainerCommand(
 
 export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> = (
   editor: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: WrapInContainerCommand,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
@@ -73,7 +73,6 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
   forUnderlyingTargetFromEditorState(
     command.target,
     editor,
-    derivedState,
     (success, elementToWrap, _underlyingTarget, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
       const withElementRemoved = removeElementAtPath(command.target, components)
@@ -97,9 +96,6 @@ export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> 
       const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,
-        editor.nodeModules.files,
-        derivedState.remixData?.routingTable ?? null,
-        editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,
         wrapperUID,

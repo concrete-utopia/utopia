@@ -49,13 +49,12 @@ export function setPropertyOmitNullProp<T extends PropertyPathPart>(
 
 export const runSetProperty: CommandFunction<SetProperty> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: SetProperty,
 ) => {
   // Apply the update to the properties.
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorState,
-    derivedState,
     command.element,
     [{ path: command.property, value: jsExpressionValue(command.value, emptyComments) }],
   )

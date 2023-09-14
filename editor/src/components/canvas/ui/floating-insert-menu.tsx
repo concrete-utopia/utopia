@@ -428,19 +428,6 @@ export var FloatingMenu = React.memo(() => {
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const remixRoutingTableRef = useRefEditorState(
-    (store) => store.derived.remixData?.routingTable ?? null,
-  )
-  const nodeModules = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.nodeModules.files,
-    'FloatingMenu nodeModules',
-  )
-  const openFile = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.openFile?.filename ?? null,
-    'FloatingMenu openFile',
-  )
   const jsxMetadata = useEditorState(
     Substores.metadata,
     (store) => store.editor.jsxMetadata,
@@ -464,24 +451,13 @@ export var FloatingMenu = React.memo(() => {
       return getInsertionPath(
         target,
         projectContentsRef.current,
-        nodeModules,
-        remixRoutingTableRef.current,
-        openFile,
         jsxMetadata,
         elementPathTree,
         wrapperUID,
         selectedViewsRef.current.length,
       )
     },
-    [
-      projectContentsRef,
-      nodeModules,
-      remixRoutingTableRef,
-      openFile,
-      jsxMetadata,
-      elementPathTree,
-      selectedViewsRef,
-    ],
+    [projectContentsRef, jsxMetadata, elementPathTree, selectedViewsRef],
   )
 
   const onChangeConditionalOrFragment = React.useCallback(

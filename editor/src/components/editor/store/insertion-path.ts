@@ -1,8 +1,4 @@
-import type {
-  ElementPath,
-  NodeModules,
-  StaticElementPath,
-} from '../../../core/shared/project-file-types'
+import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
@@ -18,7 +14,6 @@ import { isJSXConditionalExpression } from '../../../core/shared/element-templat
 import { isRight } from '../../../core/shared/either'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type { RemixRoutingTable } from './remix-derived-data'
 
 export type InsertionPath = ChildInsertionPath | ConditionalClauseInsertionPath
 
@@ -188,9 +183,6 @@ export function commonInsertionPathFromArray(
 export function getInsertionPath(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
-  openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   fragmentWrapperUID: string,
@@ -199,9 +191,6 @@ export function getInsertionPath(
   const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     projectContents,
     metadata,
-    nodeModules,
-    remixRoutingTable,
-    openFile,
     target,
     elementPathTree,
   )

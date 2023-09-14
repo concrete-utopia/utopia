@@ -5,7 +5,7 @@ import type { LayoutPinnedProp } from '../../../../../core/layout/layout-helpers
 import { framePointForPinnedProp } from '../../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
-import { eitherToMaybe, isRight, right } from '../../../../../core/shared/either'
+import { isRight, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
@@ -14,7 +14,6 @@ import type {
 import type { CanvasPoint } from '../../../../../core/shared/math-utils'
 import {
   canvasPoint,
-  CanvasVector,
   isInfinityRectangle,
   nullIfInfinity,
   pointDifference,
@@ -34,7 +33,6 @@ import type {
 } from '../../../commands/adjust-css-length-command'
 import {
   adjustCssLengthProperties,
-  CreateIfNotExistant,
   lengthPropertyToAdjust,
 } from '../../../commands/adjust-css-length-command'
 import type { CanvasCommand } from '../../../commands/commands'
@@ -65,7 +63,6 @@ import {
   treatElementAsFragmentLike,
 } from '../fragment-like-helpers'
 import type { OldPathToNewPathMapping } from '../../post-action-options/post-action-paste'
-import type { RemixRoutingTable } from '../../../../editor/store/remix-derived-data'
 
 const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'left'),
@@ -80,15 +77,8 @@ export function getAbsoluteReparentPropertyChanges(
   targetStartingMetadata: ElementInstanceMetadataMap,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
-  remixRoutingTable: RemixRoutingTable | null,
-  openFile: string | null | undefined,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
-  const element: JSXElement | null = getElementFromProjectContents(
-    target,
-    projectContents,
-    remixRoutingTable,
-    openFile,
-  )
+  const element: JSXElement | null = getElementFromProjectContents(target, projectContents)
 
   const originalParentInstance = MetadataUtils.findElementByElementPath(
     targetStartingMetadata,
@@ -322,8 +312,6 @@ export function getReparentPropertyChanges(
   currentMetadata: ElementInstanceMetadataMap,
   currentPathTrees: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
-  remixRoutingTable: RemixRoutingTable | null,
-  openFile: string | null | undefined,
   targetOriginalStylePosition: CSSPosition | null,
   targetOriginalDisplayProp: string | null,
   oldAllElementProps: AllElementProps,
@@ -347,8 +335,6 @@ export function getReparentPropertyChanges(
         originalContextMetadata,
         currentMetadata,
         projectContents,
-        remixRoutingTable,
-        openFile,
       )
 
       const strategyCommands = runReparentPropertyStrategies([
@@ -363,8 +349,6 @@ export function getReparentPropertyChanges(
           newParent,
           reparentStrategy,
           projectContents,
-          remixRoutingTable,
-          openFile,
           [stripPinsConvertToVisualSize, convertRelativeSizingToVisualSize],
         ),
       ])
@@ -406,8 +390,6 @@ export function getReparentPropertyChanges(
           newParent,
           reparentStrategy,
           projectContents,
-          remixRoutingTable,
-          openFile,
           [
             stripPinsConvertToVisualSize,
             convertRelativeSizingToVisualSize,
