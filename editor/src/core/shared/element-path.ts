@@ -1051,13 +1051,7 @@ export function dropFirstPathElement(path: ElementPath | null): DropFirstPathEle
   }
 }
 
-export function takeLastPartOfPath(path: ElementPath): ElementPath
-export function takeLastPartOfPath(path: null): null
-export function takeLastPartOfPath(path: ElementPath | null): ElementPath | null {
-  if (path == null) {
-    return null
-  }
-
+export function takeLastPartOfPath(path: ElementPath): ElementPath {
   if (path?.parts.length > 1) {
     const lastPart = last(path.parts)!
     return elementPath([lastPart])
