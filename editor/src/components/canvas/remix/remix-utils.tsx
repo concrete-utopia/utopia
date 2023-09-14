@@ -145,7 +145,7 @@ export interface RouteIdsToModuleCreators {
 
 export interface RouteModulesWithRelativePaths {
   [routeId: string]: {
-    relativePath: ElementPath
+    relativePaths: Array<ElementPath>
     filePath: string
   }
 }
@@ -194,15 +194,15 @@ function getRouteModulesWithPaths(
     return {}
   }
 
-  const pathPartToOutlet = findPathToJSXElementChild(
+  const pathPartsToOutlets = findPathToJSXElementChild(
     (e) => isRemixOutletElement(e, filePathForRouteObject, projectContents),
     topLevelElement,
   )
 
-  const isLeafModule = pathPartToOutlet == null
+  const isLeafModule = pathPartsToOutlets == null
   let routeModulesWithBasePaths: RouteModulesWithRelativePaths = {
     [route.id]: {
-      relativePath: pathSoFar,
+      relativePaths: [pathSoFar],
       filePath: filePathForRouteObject,
     },
   }
@@ -212,12 +212,20 @@ function getRouteModulesWithPaths(
   }
 
   const children = route.children ?? []
-  const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
 
-  for (const child of children) {
-    const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
-    for (const [routeId, value] of Object.entries(paths)) {
-      routeModulesWithBasePaths[routeId] = value
+  for (const pathPartToOutlet of pathPartsToOutlets) {
+    for (const child of children) {
+      const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
+
+      const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
+
+      for (const [routeId, value] of Object.entries(paths)) {
+        if (routeModulesWithBasePaths[routeId] == null) {
+          routeModulesWithBasePaths[routeId] = value
+        } else {
+          routeModulesWithBasePaths[routeId].relativePaths.push(...value.relativePaths)
+        }
+      }
     }
   }
 

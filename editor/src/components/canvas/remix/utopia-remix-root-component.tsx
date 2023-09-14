@@ -63,7 +63,7 @@ function useGetRouteModules(basePath: ElementPath) {
       }
 
       const relativePath =
-        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePath
+        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePaths[0]
 
       const defaultComponent = (componentProps: any) =>
         value
