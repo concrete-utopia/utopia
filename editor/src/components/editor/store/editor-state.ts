@@ -113,7 +113,6 @@ import type { UtopiaVSCodeConfig } from 'utopia-vscode-common'
 import { ProjectIDPlaceholderPrefix, defaultConfig } from 'utopia-vscode-common'
 import { loginNotYetKnown } from '../../../common/user'
 import * as EP from '../../../core/shared/element-path'
-import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assertNever } from '../../../core/shared/utils'
 import type { Notice } from '../../common/notice'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
@@ -1739,13 +1738,11 @@ export function modifyOpenJsxElementAtPath(
   path: ElementPath,
   transform: (element: JSXElement) => JSXElement,
   model: EditorState,
-  derivedState: DerivedState,
 ): EditorState {
   return modifyOpenJsxElementOrConditionalAtPath(
     path,
     (element) => (isJSXElement(element) ? transform(element) : element),
     model,
-    derivedState,
   )
 }
 
@@ -1755,13 +1752,10 @@ export function modifyOpenJsxElementOrConditionalAtPath(
     element: JSXElement | JSXConditionalExpression | JSXFragment,
   ) => JSXElement | JSXConditionalExpression | JSXFragment,
   model: EditorState,
-  derivedState: DerivedState,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     path,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
-    derivedState,
     (element) =>
       isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)
         ? transform(element)
@@ -1774,13 +1768,10 @@ export function modifyOpenJsxChildAtPath(
   path: ElementPath,
   transform: (element: JSXElementChild) => JSXElementChild,
   model: EditorState,
-  derivedState: DerivedState,
 ): EditorState {
   return modifyUnderlyingTarget(
     path,
-    forceNotNull('No open designer file.', model.canvas.openFile?.filename),
     model,
-    derivedState,
     (element) => transform(element),
     defaultModifyParseSuccess,
   )
@@ -1837,7 +1828,6 @@ export function getOpenUtopiaJSXComponentsFromStateMultifile(
 export function getJSXComponentsAndImportsForPathFromState(
   path: ElementPath,
   model: EditorState,
-  derived: DerivedState,
 ): {
   components: UtopiaJSXComponent[]
   imports: Imports
@@ -1849,33 +1839,19 @@ export function getJSXComponentsAndImportsForPathFromState(
       imports: {},
     }
   }
-  return getJSXComponentsAndImportsForPath(
-    path,
-    storyboardFilePath,
-    model.projectContents,
-    model.nodeModules.files,
-    derived,
-  )
+  return getJSXComponentsAndImportsForPath(path, storyboardFilePath, model.projectContents)
 }
 
-export function getJSXComponentsAndImportsForPath(
+function getJSXComponentsAndImportsForPath(
   path: ElementPath,
   currentFilePath: string,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  derived: DerivedState,
 ): {
   underlyingFilePath: string
   components: UtopiaJSXComponent[]
   imports: Imports
 } {
-  const underlying = normalisePathToUnderlyingTarget(
-    projectContents,
-    nodeModules,
-    currentFilePath,
-    path,
-    derived.remixData?.routingTable ?? null,
-  )
+  const underlying = normalisePathToUnderlyingTarget(projectContents, path)
   const elementFilePath =
     underlying.type === 'NORMALISE_PATH_SUCCESS' ? underlying.filePath : currentFilePath
   const result = getParseSuccessForFilePath(elementFilePath, projectContents)
@@ -3296,11 +3272,9 @@ export function defaultModifyParseSuccess(success: ParseSuccess): ParseSuccess {
   return success
 }
 
-export function modifyUnderlyingTarget(
+function modifyUnderlyingTarget(
   target: ElementPath | null,
-  currentFilePath: string,
   editor: EditorState,
-  derivedState: DerivedState,
   modifyElement: (
     element: JSXElementChild,
     underlying: ElementPath,
@@ -3312,13 +3286,7 @@ export function modifyUnderlyingTarget(
     underlyingFilePath: string,
   ) => ParseSuccess = defaultModifyParseSuccess,
 ): EditorState {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    editor.projectContents,
-    editor.nodeModules.files,
-    currentFilePath,
-    target,
-    derivedState.remixData?.routingTable ?? null,
-  )
+  const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
   const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
   function innerModifyParseSuccess(oldParseSuccess: ParseSuccess): ParseSuccess {
@@ -3370,27 +3338,18 @@ export function modifyUnderlyingTarget(
 export function modifyUnderlyingForOpenFile(
   target: ElementPath | null,
   editor: EditorState,
-  derivedState: DerivedState,
   modifyElement: (
     element: JSXElementChild,
     underlying: ElementPath,
     underlyingFilePath: string,
   ) => JSXElementChild,
 ): EditorState {
-  return modifyUnderlyingTarget(
-    target,
-    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
-    editor,
-    derivedState,
-    modifyElement,
-  )
+  return modifyUnderlyingTarget(target, editor, modifyElement)
 }
 
 export function modifyUnderlyingTargetElement(
   target: ElementPath,
-  currentFilePath: string,
   editor: EditorState,
-  derivedState: DerivedState,
   modifyElement: (
     element: JSXElement | JSXConditionalExpression | JSXFragment,
     underlying: ElementPath,
@@ -3404,9 +3363,7 @@ export function modifyUnderlyingTargetElement(
 ): EditorState {
   return modifyUnderlyingTarget(
     target,
-    currentFilePath,
     editor,
-    derivedState,
     (element, underlying, underlyingFilePath) => {
       if (isJSXElement(element) || isJSXConditionalExpression(element) || isJSXFragment(element)) {
         return modifyElement(element, underlying, underlyingFilePath)
@@ -3420,7 +3377,6 @@ export function modifyUnderlyingTargetElement(
 export function modifyUnderlyingElementForOpenFile(
   target: ElementPath,
   editor: EditorState,
-  derivedState: DerivedState,
   modifyElement: (
     element: JSXElement,
     underlying: ElementPath,
@@ -3434,9 +3390,7 @@ export function modifyUnderlyingElementForOpenFile(
 ): EditorState {
   return modifyUnderlyingTargetElement(
     target,
-    forceNotNull('Designer file should be open.', editor.canvas.openFile?.filename),
     editor,
-    derivedState,
     (element, underlying, underlyingFilePath) =>
       isJSXElement(element) ? modifyElement(element, underlying, underlyingFilePath) : element,
     modifyParseSuccess,
@@ -3446,9 +3400,6 @@ export function modifyUnderlyingElementForOpenFile(
 export function withUnderlyingTarget<T>(
   target: ElementPath | null | undefined,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
-  openFile: string | null | undefined,
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
@@ -3458,13 +3409,7 @@ export function withUnderlyingTarget<T>(
     underlyingDynamicTarget: ElementPath,
   ) => T,
 ): T {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    projectContents,
-    nodeModules,
-    forceNotNull('Designer file should be open.', openFile),
-    target ?? null,
-    remixRoutingTable,
-  )
+  const underlyingTarget = normalisePathToUnderlyingTarget(projectContents, target ?? null)
 
   if (
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' &&
@@ -3495,7 +3440,6 @@ export function withUnderlyingTarget<T>(
 export function withUnderlyingTargetFromEditorState<T>(
   target: ElementPath | null,
   editor: EditorState,
-  derivedState: DerivedState,
   defaultValue: T,
   withTarget: (
     success: ParseSuccess,
@@ -3504,21 +3448,12 @@ export function withUnderlyingTargetFromEditorState<T>(
     underlyingFilePath: string,
   ) => T,
 ): T {
-  return withUnderlyingTarget(
-    target,
-    editor.projectContents,
-    editor.nodeModules.files,
-    derivedState.remixData?.routingTable ?? null,
-    editor.canvas.openFile?.filename ?? null,
-    defaultValue,
-    withTarget,
-  )
+  return withUnderlyingTarget(target, editor.projectContents, defaultValue, withTarget)
 }
 
 export function forUnderlyingTargetFromEditorState(
   target: ElementPath | null,
   editor: EditorState,
-  derivedState: DerivedState,
   withTarget: (
     success: ParseSuccess,
     element: JSXElementChild,
@@ -3526,54 +3461,20 @@ export function forUnderlyingTargetFromEditorState(
     underlyingFilePath: string,
   ) => void,
 ): void {
-  withUnderlyingTargetFromEditorState<any>(target, editor, derivedState, {}, withTarget)
-}
-
-export function forUnderlyingTarget(
-  target: ElementPath | null,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
-  openFile: string | null | undefined,
-  withTarget: (
-    success: ParseSuccess,
-    element: JSXElementChild,
-    underlyingTarget: StaticElementPath,
-    underlyingFilePath: string,
-  ) => void,
-): void {
-  withUnderlyingTarget<any>(
-    target,
-    projectContents,
-    nodeModules,
-    remixRoutingTable,
-    openFile,
-    {},
-    withTarget,
-  )
+  withUnderlyingTargetFromEditorState<any>(target, editor, {}, withTarget)
 }
 
 export function getElementFromProjectContents(
   target: ElementPath | null,
   projectContents: ProjectContentTreeRoot,
-  remixRoutingTable: RemixRoutingTable | null,
-  openFile: string | null | undefined,
 ): JSXElement | null {
-  return withUnderlyingTarget(
-    target,
-    projectContents,
-    {},
-    remixRoutingTable,
-    openFile,
-    null,
-    (_, element) => {
-      if (isJSXElement(element)) {
-        return element
-      } else {
-        return null
-      }
-    },
-  )
+  return withUnderlyingTarget(target, projectContents, null, (_, element) => {
+    if (isJSXElement(element)) {
+      return element
+    } else {
+      return null
+    }
+  })
 }
 
 export function getCurrentTheme(userConfiguration: ThemeSubstate['userState']): Theme {

@@ -57,9 +57,7 @@ describe('modifyUnderlyingTarget', () => {
     const pathToElement = EP.fromString('app-outer-div/card-instance')
     const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
-      '/src/app.js',
       startingEditorModel,
-      emptyDerivedState(startingEditorModel),
       (element) => {
         if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
@@ -106,9 +104,7 @@ describe('modifyUnderlyingTarget', () => {
     const pathToElement = EP.fromString('card-outer-div/card-inner-div')
     const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
-      '/src/card.js',
       startingEditorModel,
-      emptyDerivedState(startingEditorModel),
       (element) => element,
       (success: ParseSuccess) => {
         return parseSuccess(
@@ -145,9 +141,7 @@ describe('modifyUnderlyingTarget', () => {
     )
     const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
-      StoryboardFilePath,
       startingEditorModel,
-      emptyDerivedState(startingEditorModel),
       (element) => {
         if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element
@@ -199,23 +193,17 @@ describe('modifyUnderlyingTarget', () => {
   it('tries to change something with a nonsense element path', () => {
     const pathToElement = EP.fromString('moon-palace/living-room')
     const modifyCall = () =>
-      modifyUnderlyingTargetElement(
-        pathToElement,
-        '/src/app.js',
-        startingEditorModel,
-        emptyDerivedState(startingEditorModel),
-        (element) => {
-          if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
-            return element
-          }
-          const updatedAttributes = setJSXAttributesAttribute(
-            element.props,
-            'data-thing',
-            jsExpressionValue('a thing', emptyComments),
-          )
-          return jsxElement(element.name, element.uid, updatedAttributes, element.children)
-        },
-      )
+      modifyUnderlyingTargetElement(pathToElement, startingEditorModel, (element) => {
+        if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
+          return element
+        }
+        const updatedAttributes = setJSXAttributesAttribute(
+          element.props,
+          'data-thing',
+          jsExpressionValue('a thing', emptyComments),
+        )
+        return jsxElement(element.name, element.uid, updatedAttributes, element.children)
+      })
     expect(modifyCall).toThrowError(`Could not find element with path moon-palace/living-room`)
   })
 })
@@ -229,9 +217,7 @@ describe('Revision state management', () => {
     const pathToElement = EP.fromString('app-outer-div/card-instance')
     const actualResult = modifyUnderlyingTargetElement(
       pathToElement,
-      '/src/app.js',
       startingEditorModel,
-      emptyDerivedState(startingEditorModel),
       (element) => {
         if (isJSXConditionalExpression(element) || isJSXFragment(element)) {
           return element

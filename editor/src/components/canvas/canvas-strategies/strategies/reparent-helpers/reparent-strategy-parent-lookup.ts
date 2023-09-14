@@ -16,7 +16,7 @@ import {
   sizeFitsInTarget,
   zeroRectIfNullOrInfinity,
 } from '../../../../../core/shared/math-utils'
-import type { ElementPath, NodeModules } from '../../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../../editor/store/editor-state'
 import type { Direction } from '../../../../inspector/common/css-utils'
 import { getAllTargetsAtPointAABB } from '../../../dom-lookup'
@@ -24,7 +24,7 @@ import type { InteractionCanvasState } from '../../canvas-strategy-types'
 import type { AllowSmallerParent } from '../../interaction-state'
 import type { SingleAxisAutolayoutContainerDirections } from '../flow-reorder-helpers'
 import { singleAxisAutoLayoutContainerDirections } from '../flow-reorder-helpers'
-import { getElementFragmentLikeType, treatElementAsFragmentLike } from '../fragment-like-helpers'
+import { treatElementAsFragmentLike } from '../fragment-like-helpers'
 import type {
   ReparentStrategy,
   ReparentSubjects,
@@ -49,7 +49,6 @@ export function getReparentTargetUnified(
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
-  nodeModules: NodeModules,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
   elementSupportsChildren: Array<ElementSupportsChildren> = ['supportsChildren'],
@@ -62,7 +61,6 @@ export function getReparentTargetUnified(
     cmdPressed,
     canvasState,
     metadata,
-    nodeModules,
     elementPathTree,
     allElementProps,
     allowSmallerParent,
@@ -149,7 +147,6 @@ function findValidTargetsUnderPoint(
   cmdPressed: boolean, // TODO: this should be removed from here and replaced by meaningful flag(s) (similar to allowSmallerParent)
   canvasState: InteractionCanvasState,
   metadata: ElementInstanceMetadataMap,
-  nodeModules: NodeModules,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
   allowSmallerParent: AllowSmallerParent,
@@ -223,9 +220,6 @@ function findValidTargetsUnderPoint(
         MetadataUtils.targetSupportsChildrenAlsoText(
           projectContents,
           metadata,
-          nodeModules,
-          canvasState.remixRoutingTable,
-          openFile,
           target,
           elementPathTree,
         ),

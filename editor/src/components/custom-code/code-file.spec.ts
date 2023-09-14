@@ -478,10 +478,7 @@ describe('normalisePathToUnderlyingTarget', () => {
   it('handles finding the target', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
-      SampleNodeModules,
-      StoryboardFilePath,
       EP.fromString('storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div'),
-      null,
     )
     const expectedResult = normalisePathSuccess(
       EP.dynamicPathToStaticPath(EP.fromString('same-file-app-div')),
@@ -492,22 +489,13 @@ describe('normalisePathToUnderlyingTarget', () => {
     expect(actualResult).toEqual(expectedResult)
   })
   it('gives an error when the element path is empty', () => {
-    const actualResult = normalisePathToUnderlyingTarget(
-      projectContents,
-      SampleNodeModules,
-      '/src/nonexistant.js',
-      null,
-      null,
-    )
+    const actualResult = normalisePathToUnderlyingTarget(projectContents, null)
     expect(actualResult.type).toEqual('NORMALISE_PATH_ERROR')
   })
   it('flags elements that can not be found', () => {
     const actualResult = normalisePathToUnderlyingTarget(
       projectContents,
-      SampleNodeModules,
-      StoryboardFilePath,
       EP.fromString('storyboard-entity/scene-1-entity/app-entity:non-existent'),
-      null,
     )
     const expectedResult = normalisePathElementNotFound(
       'storyboard-entity/scene-1-entity/app-entity:non-existent',

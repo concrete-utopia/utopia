@@ -48,14 +48,13 @@ export function addElement(
 
 export const runAddElement: CommandFunction<AddElement> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: AddElement,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []
   forUnderlyingTargetFromEditorState(
     getElementPathFromInsertionPath(command.parentPath),
     editorState,
-    derivedState,
     (
       parentSuccess,
       _underlyingElementNewParent,

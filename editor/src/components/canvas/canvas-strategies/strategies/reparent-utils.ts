@@ -93,7 +93,6 @@ export function getReparentOutcome(
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
   openFile: string | null | undefined,
   toReparent: ToReparent,
   targetParent: InsertionPath | null,
@@ -124,9 +123,6 @@ export function getReparentOutcome(
     withUnderlyingTarget(
       newParentElementPath,
       projectContents,
-      nodeModules,
-      remixRoutingTable,
-      openFile,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return underlyingFilePath
@@ -143,8 +139,6 @@ export function getReparentOutcome(
         toReparent.target,
         projectContents,
         nodeModules,
-        remixRoutingTable,
-        openFile,
         newTargetFilePath,
         builtInDependencies,
       )
@@ -189,7 +183,6 @@ export function getReparentOutcomeMultiselect(
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
   openFile: string | null | undefined,
   toReparentMultiple: Array<ToReparent>,
   targetParent: InsertionPath | null,
@@ -220,11 +213,8 @@ export function getReparentOutcomeMultiselect(
     withUnderlyingTarget(
       newParentElementPath,
       projectContents,
-      nodeModules,
-      remixRoutingTable,
-      openFile,
       null,
-      (success, element, underlyingTarget, underlyingFilePath) => {
+      (_success, _element, _underlyingTarget, underlyingFilePath) => {
         return underlyingFilePath
       },
     ),
@@ -239,8 +229,6 @@ export function getReparentOutcomeMultiselect(
           toReparent.target,
           projectContents,
           nodeModules,
-          remixRoutingTable,
-          openFile,
           newTargetFilePath,
           builtInDependencies,
         )

@@ -25,7 +25,7 @@ export function convertToAbsolute(transient: WhenToRun, target: ElementPath): Co
 
 export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
   editorState: EditorState,
-  derivedState: DerivedState,
+  _derivedState: DerivedState,
   command: ConvertToAbsolute,
 ) => {
   const propsToUpdate: Array<ValueAtPath> = [
@@ -37,7 +37,6 @@ export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
 
   const { editorStatePatch: propertyUpdatePatch } = applyValuesAtPath(
     editorState,
-    derivedState,
     command.target,
     propsToUpdate,
   )
