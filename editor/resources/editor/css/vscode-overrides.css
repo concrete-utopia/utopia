@@ -1,3 +1,74 @@
+.monaco-workbench .part.editor > .content .editor-group-container > .title {
+  background-color: transparent !important;
+}
+
+/* literally the container containing the tabs */
 .monaco-workbench .part.editor > .content .editor-group-container > .title .tabs-container {
-  gap: 4px;
+  background: transparent;
+  gap: 8px;
+  height: 34px;
+}
+
+/* Tab styles */
+.tab {
+  font-weight: 500;
+  font-family: 'Inter';
+  border-right: none !important;
+}
+
+.monaco-workbench
+  .part.editor
+  > .content
+  .editor-group-container
+  > .title
+  .tabs-container
+  > .tab
+  .tab-label
+  a,
+.monaco-workbench .part.editor > .content .editor-group-container > .title .title-label a {
+  font-size: 11px;
+}
+
+.tab[aria-selected='true'] {
+  /* !important is required because vscode styles these at via inline styles */
+  background-color: transparent !important;
+  font-weight: 500;
+}
+
+.tab[aria-selected='false'] {
+  /* important is important because vscode styles these via inline styles */
+  font-weight: 500;
+  font-style: normal !important;
+  background-color: transparent !important;
+  /* VSCode sets a color with alpha value for the label for inactive tabs. 
+  We can't only adjust the alpha value of the color with CSS (yet), so this opacity
+  matches our Utopia tabs reasonably  */
+  opacity: 0.7;
+}
+
+.tab[aria-selected='false']:hover {
+  opacity: 1;
+}
+
+/* Tab bar heights */
+.monaco-workbench
+  .part.editor
+  > .content
+  .editor-group-container
+  > .title
+  .tabs-container
+  > .tab
+  .tab-label {
+  line-height: 34px;
+}
+.monaco-workbench .part.editor > .content .editor-group-container > .title .tabs-container > .tab {
+  height: 34px;
+}
+
+.monaco-workbench .part.editor > .content .editor-group-container > .title .editor-actions {
+  height: 34px;
+}
+
+.monaco-action-bar .actions-container {
+  transform: scale(0.7);
 }
