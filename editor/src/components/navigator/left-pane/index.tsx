@@ -98,26 +98,9 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
   const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
-      if (isFeatureEnabled('Draggable Floating Panels')) {
-        onResize('navigator', _direction, _ref?.clientWidth, _ref?.clientHeight)
-        setIsResizing(null)
-      } else {
-        setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
-      }
+      setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
     },
-    [onResize, setIsResizing, setLeftPanelWidth],
-  )
-  const onLeftPanelResize = React.useCallback<ResizeCallback>(
-    (_event, _direction, _ref, delta) => {
-      if (isFeatureEnabled('Draggable Floating Panels')) {
-        const newWidth = _ref?.clientWidth
-        const newHeight = _ref?.clientHeight
-        if (newWidth != null && newHeight != null) {
-          onResize('navigator', _direction, newWidth, newHeight)
-        }
-      }
-    },
-    [onResize],
+    [setLeftPanelWidth],
   )
   const onResizeStart = React.useCallback(() => {
     setIsResizing('navigator')
@@ -137,15 +120,14 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     <LowPriorityStoreProvider>
       <ResizableFlexColumn
         onResizeStop={onLeftPanelResizeStop}
-        onResize={onLeftPanelResize}
         onResizeStart={onResizeStart}
         defaultSize={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? width : leftPanelWidth,
+          width: leftPanelWidth,
           height: '100%',
         }}
         size={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? width : leftPanelWidth,
-          height: isFeatureEnabled('Draggable Floating Panels') ? height : '100%',
+          width: leftPanelWidth,
+          height: '100%',
         }}
         style={{
           overscrollBehavior: 'contain',

@@ -17,9 +17,9 @@ import {
   windowRectangle,
   zeroWindowRect,
 } from '../../core/shared/math-utils'
-import { CanvasSizeAtom } from '../editor/store/editor-state'
+import { CanvasSizeAtom, LeftPanelMinWidth } from '../editor/store/editor-state'
 import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
-import { useColorTheme } from '../../uuiui'
+import { UtopiaTheme, useColorTheme } from '../../uuiui'
 import { when } from '../../utils/react-conditionals'
 import type { Direction } from 're-resizable/lib/resizer'
 import { usePrevious } from '../editor/hook-utils'
@@ -35,6 +35,7 @@ import { updatePanelsToDefaultSizes } from './floating-panels-state'
 import { DefaultPanels } from './floating-panels-state'
 import { DefaultSizes } from './floating-panels-state'
 import { GapBetweenPanels, SizeConstraints } from './floating-panels-state'
+import { NO_OP } from '../../core/shared/utils'
 
 export const FloatingPanelSizesAtom = atomWithPubSub({
   key: 'FloatingPanelSizesAtom',
@@ -42,6 +43,44 @@ export const FloatingPanelSizesAtom = atomWithPubSub({
 })
 
 export const FloatingPanelsContainer = React.memo(() => {
+  const [panelsData, setPanelsData] = React.useState<PanelState>(DefaultPanels)
+
+  const orderedPanels = React.useMemo(() => {
+    return getOrderedPanelsForRendering(panelsData)
+  }, [panelsData])
+
+  return (
+    <div
+      data-testid='floating-panels-container'
+      style={{
+        position: 'absolute',
+        display: 'grid',
+        width: '100%',
+        height: '100%',
+        gridTemplateColumns: '260px 260px 1fr 260px 260px',
+        gridTemplateRows: 'repeat(12, 1fr)',
+      }}
+    >
+      {orderedPanels.map((pane) => {
+        return (
+          <FloatingPanel
+            key={pane.name}
+            type={pane.type}
+            name={pane.name}
+            frame={pane.frame}
+            panelLocation={pane.location}
+            columnData={pane.column}
+            onResize={NO_OP}
+            updateColumn={NO_OP}
+            onMenuDrag={NO_OP}
+          />
+        )
+      })}
+    </div>
+  )
+})
+
+export const FloatingPanelsContainerOld = React.memo(() => {
   const [panelsData, setPanelsData] = React.useState<PanelState>(DefaultPanels)
   const [highlight, setHighlight] = React.useState<WindowRectangle | null>(null)
 
@@ -295,6 +334,79 @@ interface FloatingPanelProps {
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
+  const { columnData, panelLocation, name, frame, updateColumn, onResize, onMenuDrag } = props
+
+  const draggablePanelComponent = (() => {
+    switch (name) {
+      case 'code-editor':
+        return (
+          <CodeEditorPane
+            small={false}
+            width={0}
+            height={0}
+            onResize={NO_OP}
+            setIsResizing={NO_OP}
+            resizableConfig={{
+              enable: {
+                right: true,
+              },
+            }}
+          />
+        )
+      case 'inspector':
+        return (
+          <ResizableRightPane
+            width={0}
+            height={0}
+            onResize={NO_OP}
+            setIsResizing={NO_OP}
+            resizableConfig={{
+              snap: {
+                x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
+              },
+              enable: {
+                left: true,
+              },
+            }}
+          />
+        )
+      case 'navigator':
+        return (
+          <LeftPaneComponent
+            width={0}
+            height={0}
+            onResize={NO_OP}
+            setIsResizing={NO_OP}
+            resizableConfig={{
+              minWidth: LeftPanelMinWidth,
+              enable: {
+                right: true,
+              },
+            }}
+          />
+        )
+      default:
+        return null
+    }
+  })()
+
+  return (
+    <>
+      <div
+        style={{
+          gridRow: '1 / span 12',
+          display: 'flex',
+          flexDirection: 'column',
+          contain: 'layout',
+        }}
+      >
+        {draggablePanelComponent}
+      </div>
+    </>
+  )
+})
+
+export const FloatingPanelOld = React.memo<FloatingPanelProps>((props) => {
   const { columnData, panelLocation, name, frame, updateColumn, onResize, onMenuDrag } = props
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysTrue)
 

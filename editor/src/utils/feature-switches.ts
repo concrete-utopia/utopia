@@ -47,6 +47,8 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Debug - Print UIDs': false,
 }
 
+let FeatureSwitchLoaded: { [feature in FeatureName]?: boolean } = {}
+
 function settingKeyForName(featureName: FeatureName): string {
   return `Feature-Switch-${featureName}`
 }
@@ -54,18 +56,29 @@ function settingKeyForName(featureName: FeatureName): string {
 async function loadStoredValue(featureName: FeatureName) {
   if (isBrowserEnvironment && !IS_TEST_ENVIRONMENT) {
     const existing = await localforage.getItem<boolean | null>(settingKeyForName(featureName))
+    FeatureSwitchLoaded[featureName] = true
     if (existing != null) {
       FeatureSwitches[featureName] = existing
     }
+    return true
+  } else {
+    return true
   }
 }
 
 // Load stored settings
-fastForEach(AllFeatureNames, (name) => {
-  void loadStoredValue(name)
-})
+export async function loadFeatureSwitches(): Promise<void> {
+  await Promise.all(
+    AllFeatureNames.map((name) => {
+      return loadStoredValue(name)
+    }),
+  )
+}
 
 export function isFeatureEnabled(featureName: FeatureName): boolean {
+  if (FeatureSwitchLoaded[featureName] !== true) {
+    throw new Error(`Reading FS before it was loaded! ${featureName}`)
+  }
   return FeatureSwitches[featureName] ?? false
 }
 

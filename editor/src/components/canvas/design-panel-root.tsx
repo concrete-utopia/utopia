@@ -344,8 +344,8 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         height: '100%',
       }}
       size={{
-        width: isFeatureEnabled('Draggable Floating Panels') ? width : widthLocal,
-        height: isFeatureEnabled('Draggable Floating Panels') ? height : '100%',
+        width: widthLocal,
+        height: '100%',
       }}
       style={{
         transition: 'width 100ms ease-in-out',
@@ -447,10 +447,8 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         height: '100%',
       }}
       size={{
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? width
-          : interfaceDesigner.codePaneWidth,
-        height: isFeatureEnabled('Draggable Floating Panels') ? height : '100%',
+        width: interfaceDesigner.codePaneWidth,
+        height: '100%',
       }}
       onResizeStart={onResizeStart}
       onResizeStop={onResizeStop}
