@@ -560,6 +560,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isConditional = codeItemType === 'conditional'
+  const isRemixItem = codeItemType === 'remix'
   const isCodeItem = codeItemType !== 'none'
 
   const conditionalOverrideUpdate = useEditorState(
@@ -724,7 +725,7 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const iconColor = isCodeItem ? 'dynamic' : resultingStyle.iconColor
+  const iconColor = isRemixItem ? 'remix' : isCodeItem ? 'dynamic' : resultingStyle.iconColor
 
   return (
     <div
