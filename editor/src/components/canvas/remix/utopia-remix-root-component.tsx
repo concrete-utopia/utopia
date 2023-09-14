@@ -62,20 +62,27 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
-      const relativePath =
-        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePaths[0]
+      const relativePaths =
+        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePaths
 
       const defaultComponent = (componentProps: any) =>
         value
           .executionScopeCreator(projectContentsRef.current)
           .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
+      const createGetPath = () => {
+        let idx = 0
+        return () => {
+          const path = EP.toString(
+            EP.appendTwoPaths(basePath, relativePaths[idx++ % relativePaths.length]),
+          )
+          return path
+        }
+      }
+
       routeModulesResult[routeId] = {
         ...value,
-        default: PathPropHOC(
-          defaultComponent,
-          EP.toString(EP.appendTwoPaths(basePath, relativePath)),
-        ),
+        default: PathPropHOC(defaultComponent, createGetPath()),
       }
     }
 
