@@ -1,18 +1,190 @@
+import findIndex from 'lodash.findindex'
+import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
-import { NO_OP } from '../../core/shared/utils'
+import type { MapLike } from 'typescript'
+import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
+import { mod } from '../../core/shared/math-utils'
+import { NO_OP, assertNever } from '../../core/shared/utils'
 import { UtopiaTheme } from '../../uuiui'
 import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
 import type { Menu, Pane, PanelData } from './floating-panels-state-2'
 
+type PanelName = Menu | Pane
+
+interface StoredPanel {
+  name: PanelName
+  type: 'menu' | 'pane'
+}
+
+type StoredLayout = Array<Array<StoredPanel>>
+
+const NumberOfPanels = 4
+const IndexOfCanvas = 2
+
+const NumberOfRows = 12
+
+/**
+ * Returns the index in the wraparound annotation, currently the values are -2, -1, 0, 1
+ */
+function wrapAroundColIndex(index: number): number {
+  const normalized = normalizeColIndex(index)
+  if (normalized >= IndexOfCanvas) {
+    return normalized - NumberOfPanels
+  } else {
+    return normalized
+  }
+}
+
+/**
+ * Normalizes the index to 0,1,2,3
+ */
+function normalizeColIndex(index: number): number {
+  return mod(index, NumberOfPanels)
+}
+
+const defaultPanels: StoredLayout = [
+  [
+    { name: 'navigator', type: 'menu' },
+    { name: 'code-editor', type: 'pane' },
+  ],
+  [],
+  [],
+  [{ name: 'inspector', type: 'menu' }],
+]
+
+function storedLayoutToResolvedPanels(stored: StoredLayout): Array<PanelData> {
+  const panels = accumulate<MapLike<PanelData>>({}, (acc) => {
+    stored.forEach((column, colIndex) => {
+      const panelsForColumn = column.length
+      column.forEach((panel, panelIndex) => {
+        acc[panel.name] = {
+          name: panel.name,
+          type: panel.type,
+          span: NumberOfRows / panelsForColumn, // TODO introduce resize function
+          index: colIndex,
+          order: panelIndex,
+        }
+      })
+    })
+  })
+
+  return Object.values(panels)
+}
+
+type BeforeColumn = {
+  type: 'before-column'
+  columnIndex: number
+}
+type ColumnUpdate = BeforeColumn
+
+type BeforeIndex = {
+  type: 'before-index'
+  columnIndex: number
+  indexInColumn: number
+}
+type AfterIndex = {
+  type: 'after-index'
+  columnIndex: number
+  indexInColumn: number
+}
+type RowUpdate = BeforeIndex | AfterIndex
+type LayoutUpdate = ColumnUpdate | RowUpdate
+
+function updateLayout(
+  stored: StoredLayout,
+  paneToMove: StoredPanel, // must be referentially equal to the stored panel!
+  update: LayoutUpdate,
+): StoredLayout {
+  function insertPanel(layout: StoredLayout) {
+    if (update.type === 'before-column') {
+      const atLeastOneEmptyColumn = layout.some((col) => col.length === 0)
+      if (!atLeastOneEmptyColumn) {
+        // the user wants to create a new column and fill it with the moved Panel.
+        // if there's zero empty columns, it means we cannot create a new column, so we must bail out
+
+        return layout // BAIL OUT! TODO we should show a Toast
+      }
+      const newColumn: Array<StoredPanel> = [{ ...paneToMove }]
+
+      if (update.columnIndex < 0) {
+        // we are on the right hand side of the editor, so we apply right to left logic
+        // we insert the new column at index - 1, shifting neighbors leftwards
+
+        // insert the column at `index - 1`
+        const insertionIndex = update.columnIndex - 1
+        const withColumnInserted = insert(insertionIndex, newColumn, layout)
+        const indexOfFirstEmptyColumnLeftOfInsertion = findLastIndex(
+          withColumnInserted,
+          (col) => col.length === 0,
+          insertionIndex, // start the search from this index, walk backwards
+        )
+        const withEmptyColumnRemoved = removeIndexFromArray(
+          indexOfFirstEmptyColumnLeftOfInsertion,
+          withColumnInserted,
+        )
+        return withEmptyColumnRemoved
+      } else {
+        // we are on the left hand side, so we apply left to right logic
+        // we insert the new column at index, shifting neightbors rightwards
+
+        // insert the column at `index`
+        const withColumnInserted = insert(update.columnIndex, newColumn, layout)
+        const indexOfFirstEmptyColumnRightOfInsertion = findIndex(
+          withColumnInserted,
+          (col) => col.length === 0,
+          update.columnIndex, // start the search from this index
+        )
+        const withEmptyColumnRemoved = removeIndexFromArray(
+          indexOfFirstEmptyColumnRightOfInsertion,
+          withColumnInserted,
+        )
+        return withEmptyColumnRemoved
+      }
+    }
+    if (update.type === 'before-index') {
+      const working = [...layout]
+
+      // insert
+      working[update.columnIndex] = insert(
+        update.indexInColumn,
+        { ...paneToMove },
+        working[update.columnIndex],
+      )
+
+      return working
+    }
+    if (update.type === 'after-index') {
+      const working = [...layout]
+
+      // insert
+      working[update.columnIndex] = insert(
+        update.indexInColumn + 1,
+        { ...paneToMove },
+        working[update.columnIndex],
+      )
+
+      return working
+    }
+
+    assertNever(update)
+  }
+
+  function removeOldPanel(layout: StoredLayout) {
+    return layout.map((column) => removeAll(column, [paneToMove]))
+  }
+
+  const withPanelInserted = insertPanel(stored)
+  const withOldPanelRemoved = removeOldPanel(withPanelInserted)
+
+  // TODO we need to fix the sizes too!
+  return withOldPanelRemoved
+}
+
 export const FloatingPanelsContainer = React.memo(() => {
   const orderedPanels = React.useMemo<Array<PanelData>>(() => {
-    return [
-      { name: 'code-editor', index: 0, span: 6, type: 'pane', order: 1 },
-      { name: 'navigator', index: 0, span: 6, type: 'menu', order: 0 },
-      { name: 'inspector', index: -1, span: 12, type: 'menu', order: 0 },
-    ]
+    return storedLayoutToResolvedPanels(defaultPanels)
   }, [])
 
   return (
