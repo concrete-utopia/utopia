@@ -47,13 +47,20 @@ const CreateRemixDerivedDataRefs: {
   routeModulesCache: { current: {} },
 }
 
+// Problem: passing these via args breaks the memo
+export const spyContainer = { current: {} }
+export const propsContainer = { current: {} }
+export const fileBlobsContainer: { current: CanvasBase64Blobs } = { current: {} }
+export const displayNoneInstancesContainer: { current: Array<ElementPath> } = { current: [] }
+export const hiddenInstancesContainer: { current: Array<ElementPath> } = { current: [] }
+
 export function createRemixDerivedData(
   projectContents: ProjectContentTreeRoot,
-  spyMetadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  fileBlobs: CanvasBase64Blobs,
-  displayNoneInstances: Array<ElementPath>,
-  hiddenInstances: Array<ElementPath>,
+  // spyMetadata: ElementInstanceMetadataMap,
+  // allElementProps: AllElementProps,
+  // fileBlobs: CanvasBase64Blobs,
+  // displayNoneInstances: Array<ElementPath>,
+  // hiddenInstances: Array<ElementPath>,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
 ): RemixDerivedData | null {
@@ -66,7 +73,7 @@ export function createRemixDerivedData(
 
   const metadataCtx = {
     current: {
-      spyValues: { metadata: spyMetadata, allElementProps: allElementProps },
+      spyValues: { metadata: spyContainer.current, allElementProps: propsContainer.current },
     },
   }
 
@@ -80,9 +87,9 @@ export function createRemixDerivedData(
     CreateRemixDerivedDataRefs.mutableContext,
     CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
     CreateRemixDerivedDataRefs.routeModulesCache.current,
-    fileBlobs,
-    displayNoneInstances,
-    hiddenInstances,
+    fileBlobsContainer.current,
+    displayNoneInstancesContainer.current,
+    hiddenInstancesContainer.current,
   )
 
   if (routesAndModulesFromManifestResult == null) {
