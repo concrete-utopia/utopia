@@ -46,6 +46,12 @@ import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indic
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
 import { RemixNavigationBar } from './remix-navigation-bar'
+import { RemixNavigationAtom } from '../canvas/remix/utopia-remix-root-component'
+import { useAtom } from 'jotai'
+import { forceNotNull } from '../../core/shared/optional-utils'
+import type { UiJsxCanvasContextData } from '../canvas/ui-jsx-canvas'
+import { UiJsxCanvasCtxAtom } from '../canvas/ui-jsx-canvas'
+import { AlwaysFalse, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -188,9 +194,23 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [dispatch, isLiveMode])
 
+  // Hack: reset the remix location when resetting the canvas
+  const [navigationData] = useAtom(RemixNavigationAtom)
+  const resetRemixApps = React.useCallback(
+    () => Object.values(navigationData).forEach((navData) => navData.home()),
+    [navigationData],
+  )
+
+  let uiJsxCanvasContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
+  )
+
   const resetCanvasCallback = React.useCallback(() => {
+    uiJsxCanvasContext.current.spyValues.metadata = {}
+    resetRemixApps()
     dispatch([resetCanvas()])
-  }, [dispatch])
+  }, [dispatch, resetRemixApps, uiJsxCanvasContext])
 
   const inspectorInvisible = useEditorState(
     Substores.restOfEditor,
