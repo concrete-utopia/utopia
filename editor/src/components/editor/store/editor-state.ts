@@ -175,13 +175,6 @@ import {
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
-import {
-  spyContainer,
-  propsContainer,
-  hiddenInstancesContainer,
-  displayNoneInstancesContainer,
-  fileBlobsContainer,
-} from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 
@@ -2599,19 +2592,13 @@ export function deriveState(
     editor.navigator.hiddenInNavigator,
   )
 
-  spyContainer.current = editor.spyMetadata
-  propsContainer.current = editor.allElementProps
-  hiddenInstancesContainer.current = editor.hiddenInstances
-  displayNoneInstancesContainer.current = editor.displayNoneInstances
-  fileBlobsContainer.current = editor.canvas.base64Blobs
-
   const remixDerivedData = createRemixDerivedDataMemo(
     editor.projectContents,
-    // editor.spyMetadata,
-    // editor.allElementProps,
-    // editor.canvas.base64Blobs,
-    // editor.hiddenInstances,
-    // editor.displayNoneInstances,
+    editor.spyMetadata,
+    editor.allElementProps,
+    editor.canvas.base64Blobs,
+    editor.hiddenInstances,
+    editor.displayNoneInstances,
     editor.codeResultCache.curriedRequireFn,
     editor.codeResultCache.curriedResolveFn,
   )
