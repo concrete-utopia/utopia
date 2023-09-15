@@ -3,6 +3,9 @@ import { Link, Outlet } from '@remix-run/react'
 import type { LinkProps } from '@remix-run/react'
 import { useInRouterContext, Router } from 'react-router'
 import type { Navigator } from 'react-router'
+import { OutletPathContext } from '../../../components/canvas/remix/remix-utils'
+import { UTOPIA_PATH_KEY } from '../../model/utopia-constants'
+import * as EP from '../../shared/element-path'
 
 const dummyNavigator: Navigator = {
   createHref: () => '',
@@ -33,11 +36,23 @@ export const SafeLink: typeof Link = React.forwardRef<HTMLAnchorElement, LinkPro
   },
 )
 
-export const SafeOutlet: typeof Outlet = (props) => {
+type SafeOutletProps = typeof Outlet & {
+  [UTOPIA_PATH_KEY]?: string
+}
+
+export const SafeOutlet = (props: SafeOutletProps): JSX.Element => {
   const inRouterContext = useInRouterContext()
+  const pathString = props[UTOPIA_PATH_KEY]
+  if (pathString == null) {
+    throw new Error('Outlets rendered on the canvas should have a data-path prop')
+  }
 
   if (inRouterContext) {
-    return <Outlet {...props} />
+    return (
+      <OutletPathContext.Provider value={EP.fromString(pathString)}>
+        <Outlet {...props} />
+      </OutletPathContext.Provider>
+    )
   } else {
     return (
       <Router location='/' navigator={dummyNavigator}>

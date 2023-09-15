@@ -1,3 +1,4 @@
+import React from 'react'
 import type {
   UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_EntryRoute as EntryRoute,
@@ -33,6 +34,8 @@ import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
+
+export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
 const ROOT_DIR = '/src'
 
