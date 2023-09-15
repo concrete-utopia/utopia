@@ -10,10 +10,11 @@ import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
 import type { Menu, Pane, PanelData } from './floating-panels-state-2'
+import { useFloatingPanelDropArea } from './floating-panels-dnd'
 
-type PanelName = Menu | Pane
+export type PanelName = Menu | Pane
 
-interface StoredPanel {
+export interface StoredPanel {
   name: PanelName
   type: 'menu' | 'pane'
 }
@@ -60,8 +61,7 @@ function storedLayoutToResolvedPanels(stored: StoredLayout): Array<PanelData> {
       const panelsForColumn = column.length
       column.forEach((panel, panelIndex) => {
         acc[panel.name] = {
-          name: panel.name,
-          type: panel.type,
+          panel: panel,
           span: NumberOfRows / panelsForColumn, // TODO introduce resize function
           index: colIndex,
           order: panelIndex,
@@ -90,7 +90,7 @@ type AfterIndex = {
   indexInColumn: number
 }
 type RowUpdate = BeforeIndex | AfterIndex
-type LayoutUpdate = ColumnUpdate | RowUpdate
+export type LayoutUpdate = ColumnUpdate | RowUpdate
 
 function updateLayout(
   stored: StoredLayout,
@@ -202,7 +202,7 @@ export const FloatingPanelsContainer = React.memo(() => {
       }}
     >
       {orderedPanels.map((pane) => {
-        return <FloatingPanel key={pane.name} pane={pane} />
+        return <FloatingPanel key={pane.panel.name} pane={pane} />
       })}
     </div>
   )
@@ -213,10 +213,16 @@ interface FloatingPanelProps {
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
-  const { name, index, span, order } = props.pane
+  const { panel, index, span, order } = props.pane
+
+  const onDrop = React.useCallback((itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+    // console.log('new layout!!!', updateLayout(defaultPanels, itemToMove, newPosition))
+  }, [])
+
+  const { drop } = useFloatingPanelDropArea(index, order, onDrop)
 
   const draggablePanelComponent = (() => {
-    switch (name) {
+    switch (panel.name) {
       case 'code-editor':
         return (
           <CodeEditorPane
@@ -235,6 +241,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       case 'inspector':
         return (
           <ResizableRightPane
+            panelData={props.pane.panel}
             width={0}
             height={0}
             onResize={NO_OP}
@@ -272,6 +279,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   return (
     <>
       <div
+        ref={drop}
         style={{
           gridColumn: `col ${index > -1 ? index + 1 : index}`,
           gridRow: `span ${span}`,

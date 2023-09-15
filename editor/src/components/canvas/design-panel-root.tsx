@@ -36,6 +36,7 @@ import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
+import type { StoredPanel } from './floating-panels'
 import { FloatingPanelsContainer } from './floating-panels'
 import type { Menu, Pane } from './floating-panels-state-2'
 import type { ResizableProps } from '../../uuiui-deps'
@@ -228,6 +229,7 @@ const DesignPanelRootInner = React.memo(() => {
                   height={0}
                   onResize={NO_OP}
                   setIsResizing={NO_OP}
+                  panelData={null as any}
                   resizableConfig={{
                     snap: {
                       x: [
@@ -275,6 +277,7 @@ interface ResizableRightPaneProps {
   onResize: (menuName: 'inspector', direction: Direction, width: number, height: number) => void
   setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
   resizableConfig: ResizableProps
+  panelData: StoredPanel
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
@@ -359,7 +362,10 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
       onResizeStop={onResizeStop}
       {...props.resizableConfig}
     >
-      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarUserProfile />)}
+      {when(
+        isFeatureEnabled('Draggable Floating Panels'),
+        <TitleBarUserProfile panelData={props.panelData} />,
+      )}
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'

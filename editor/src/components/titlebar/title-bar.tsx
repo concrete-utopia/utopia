@@ -28,6 +28,8 @@ import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/s
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
+import { useFloatingPanelDraggable } from '../canvas/floating-panels-dnd'
+import type { StoredPanel } from '../canvas/floating-panels'
 
 interface ProjectTitleProps {}
 
@@ -216,7 +218,9 @@ export const TitleBarProjectTitle = React.memo(() => {
   )
 })
 
-export const TitleBarUserProfile = React.memo(() => {
+export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }) => {
+  const { drag } = useFloatingPanelDraggable(props.panelData)
+
   const theme = useColorTheme()
   const { loginState } = useEditorState(
     Substores.restOfStore,
@@ -239,6 +243,7 @@ export const TitleBarUserProfile = React.memo(() => {
 
   return (
     <div
+      ref={drag}
       className='handle'
       style={{
         height: TitleHeight,
