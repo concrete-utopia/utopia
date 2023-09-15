@@ -10,6 +10,7 @@ import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
+import { OutletPathContext } from './remix-utils'
 
 type RouterType = ReturnType<typeof createMemoryRouter>
 
@@ -62,9 +63,6 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
-      const relativePath =
-        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePath
-
       const defaultComponent = (componentProps: any) =>
         value
           .executionScopeCreator(projectContentsRef.current)
@@ -72,15 +70,12 @@ function useGetRouteModules(basePath: ElementPath) {
 
       routeModulesResult[routeId] = {
         ...value,
-        default: PathPropHOC(
-          defaultComponent,
-          EP.toString(EP.appendTwoPaths(basePath, relativePath)),
-        ),
+        default: PathPropHOC(defaultComponent),
       }
     }
 
     return routeModulesResult
-  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+  }, [defaultExports, remixDerivedDataRef, projectContentsRef])
 }
 
 export interface UtopiaRemixRootComponentProps {
@@ -143,6 +138,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     [basePath, setNavigationData],
   )
 
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  React.useLayoutEffect(() => {
+    setActiveRemixScene(basePath)
+  }, [basePath, setActiveRemixScene])
+
   // initialize navigation data
   React.useLayoutEffect(() => {
     if (router != null && navigationData[EP.toString(basePath)] == null) {
@@ -172,11 +172,13 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         future: futureConfig,
       }}
     >
-      <RouterProvider
-        router={router}
-        fallbackElement={null}
-        future={{ v7_startTransition: true }}
-      />
+      <OutletPathContext.Provider value={basePath}>
+        <RouterProvider
+          router={router}
+          fallbackElement={null}
+          future={{ v7_startTransition: true }}
+        />
+      </OutletPathContext.Provider>
     </RemixContext.Provider>
   )
 })

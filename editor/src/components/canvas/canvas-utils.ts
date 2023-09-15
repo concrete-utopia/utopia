@@ -1992,19 +1992,16 @@ function getValidElementPathsFromElement(
     const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
     const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
     if (remixPathGenerationContext.type === 'active' && isRemixScene) {
-      function makeValidPathsFromModule(
-        routeModulePath: string,
-        parentPathInner: ElementPath,
-      ): ElementPath | null {
+      function makeValidPathsFromModule(routeModulePath: string, parentPathInner: ElementPath) {
         const file = getProjectFileByFilePath(projectContents, routeModulePath)
         if (file == null || file.type !== 'TEXT_FILE') {
-          return null
+          return
         }
 
         const topLevelElement = getDefaultExportedTopLevelElement(file)
 
         if (topLevelElement == null) {
-          return null
+          return
         }
 
         paths.push(
@@ -2021,12 +2018,6 @@ function getValidElementPathsFromElement(
             getRemixValidPathsGenerationContext,
           ),
         )
-
-        const pathToOutlet = findPathToJSXElementChild(
-          (e) => isRemixOutletElement(e, filePath, projectContents),
-          topLevelElement,
-        )
-        return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
       }
 
       /**
@@ -2037,9 +2028,11 @@ function getValidElementPathsFromElement(
       for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
         const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
         if (entry != null) {
-          const { relativePath, filePath: filePathOfRouteModule } = entry
-          const basePath = EP.appendTwoPaths(path, relativePath)
-          makeValidPathsFromModule(filePathOfRouteModule, basePath)
+          const { relativePaths, filePath: filePathOfRouteModule } = entry
+          for (const relativePath of relativePaths) {
+            const basePath = EP.appendTwoPaths(path, relativePath)
+            makeValidPathsFromModule(filePathOfRouteModule, basePath)
+          }
         }
       }
 
