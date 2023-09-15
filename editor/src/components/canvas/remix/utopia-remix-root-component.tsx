@@ -143,6 +143,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     [basePath, setNavigationData],
   )
 
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  React.useLayoutEffect(() => {
+    setActiveRemixScene(basePath)
+  }, [basePath, setActiveRemixScene])
+
   // initialize navigation data
   React.useLayoutEffect(() => {
     if (router != null && navigationData[EP.toString(basePath)] == null) {
