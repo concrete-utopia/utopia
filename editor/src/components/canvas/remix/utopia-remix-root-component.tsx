@@ -112,6 +112,8 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     return createMemoryRouter(routes, { initialEntries: initialEntries })
   }, [routes])
 
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+
   const updateNavigationData = React.useCallback(
     (innerRouter: RouterType, location: Location) => {
       setNavigationData((current) => {
@@ -134,14 +136,10 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
           },
         }
       })
+      setActiveRemixScene(basePath)
     },
-    [basePath, setNavigationData],
+    [basePath, setActiveRemixScene, setNavigationData],
   )
-
-  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
-  React.useLayoutEffect(() => {
-    setActiveRemixScene(basePath)
-  }, [basePath, setActiveRemixScene])
 
   // initialize navigation data
   React.useLayoutEffect(() => {
