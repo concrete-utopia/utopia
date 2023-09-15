@@ -181,7 +181,7 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
   default: { color: 'fg0', iconColor: 'main' },
   dynamic: { color: 'dynamicBlue', iconColor: 'dynamic' },
   component: { color: 'componentOrange', iconColor: 'component-orange' },
-  componentInstance: { color: 'componentPurple', iconColor: 'component' },
+  componentInstance: { color: 'fg0', iconColor: 'main' },
   erroredGroup: { color: 'error', iconColor: 'error' },
 }
 
@@ -226,7 +226,7 @@ const computeResultingStyle = (
     styleType = 'erroredGroup'
   } else if (isInsideComponent) {
     styleType = 'component'
-  } else if (isFocusableComponent && selected) {
+  } else if (isFocusableComponent) {
     styleType = 'componentInstance'
   } else if (isHighlightedForInteraction) {
     styleType = 'default'
@@ -550,7 +550,8 @@ export const NavigatorItem: React.FunctionComponent<
         return 'code'
       }
       if (
-        MetadataUtils.isImportedComponentFromMetadata(elementMetadata, '@remix-run/react', null)
+        MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata) ||
+        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
       ) {
         return 'remix'
       }
@@ -560,6 +561,7 @@ export const NavigatorItem: React.FunctionComponent<
   )
 
   const isConditional = codeItemType === 'conditional'
+  const isRemixItem = codeItemType === 'remix'
   const isCodeItem = codeItemType !== 'none'
 
   const conditionalOverrideUpdate = useEditorState(
@@ -698,6 +700,8 @@ export const NavigatorItem: React.FunctionComponent<
     'NavigatorItem parentElement',
   )
 
+  const isComponentScene = useIsProbablyScene(navigatorEntry) && childComponentCount === 1
+
   const containerStyle: React.CSSProperties = React.useMemo(() => {
     return {
       opacity: isElementVisible && (!isHiddenConditionalBranch || isSlot) ? undefined : 0.4,
@@ -724,7 +728,13 @@ export const NavigatorItem: React.FunctionComponent<
     )
   }, [childComponentCount, isFocusedComponent, isConditional])
 
-  const iconColor = isCodeItem ? 'dynamic' : resultingStyle.iconColor
+  const iconColor = isRemixItem
+    ? 'remix'
+    : isCodeItem
+    ? 'dynamic'
+    : isComponentScene
+    ? 'component'
+    : resultingStyle.iconColor
 
   return (
     <div
@@ -795,6 +805,7 @@ export const NavigatorItem: React.FunctionComponent<
                 isDynamic={isDynamic}
                 iconColor={iconColor}
                 elementWarnings={!isConditional ? elementWarnings : null}
+                childComponentCount={childComponentCount}
               />
             </FlexRow>
             {unless(
@@ -828,6 +839,7 @@ interface NavigatorRowLabelProps {
   selected: boolean
   codeItemType: CodeItemType
   shouldShowParentOutline: boolean
+  childComponentCount: number
   dispatch: EditorDispatch
 }
 
@@ -836,6 +848,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
 
   const isCodeItem = props.codeItemType !== 'none' && props.codeItemType !== 'remix'
   const isRemixItem = props.codeItemType === 'remix'
+  const isComponentScene =
+    useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
   return (
     <div
@@ -851,7 +865,13 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         paddingRight: props.codeItemType === 'map' ? 0 : 10,
         backgroundColor:
           isCodeItem && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
-        color: isCodeItem || isRemixItem ? colorTheme.dynamicBlue.value : undefined,
+        color: isCodeItem
+          ? colorTheme.dynamicBlue.value
+          : isRemixItem
+          ? colorTheme.aqua.value
+          : isComponentScene
+          ? colorTheme.componentPurple.value
+          : undefined,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
