@@ -4,12 +4,15 @@ import { OutletPathContext } from './remix-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 
-type WrapperProps<P> = P & {
-  Wrapped: React.ComponentType<P>
+type PropsWithPath<OriginalProps> = OriginalProps & { [UTOPIA_PATH_KEY]: string }
+
+type WrapperProps<P> = {
+  Wrapped: React.ComponentType<PropsWithPath<P>>
+  originalProps: P
   possiblePaths: Array<ElementPath>
 }
 
-function Wrapper<P>({ Wrapped, possiblePaths, ...props }: WrapperProps<P>) {
+function Wrapper<P>({ Wrapped, possiblePaths, originalProps }: WrapperProps<P>): JSX.Element {
   const outletContext = React.useContext(OutletPathContext)
   if (outletContext == null) {
     throw new Error('Route module should be rendered in an OutletPathContext')
@@ -22,13 +25,16 @@ function Wrapper<P>({ Wrapped, possiblePaths, ...props }: WrapperProps<P>) {
 
   const propsWithPath = {
     [UTOPIA_PATH_KEY]: EP.toString(path),
-    ...props,
+    ...originalProps,
   }
   return <Wrapped {...propsWithPath} />
 }
 
-export function PathPropHOC<P>(Wrapped: React.ComponentType<P>, possiblePaths: Array<ElementPath>) {
+export function PathPropHOC<P>(
+  Wrapped: React.ComponentType<PropsWithPath<P>>,
+  possiblePaths: Array<ElementPath>,
+) {
   return (props: P): JSX.Element => {
-    return <Wrapper Wrapped={Wrapped} possiblePaths={possiblePaths} {...props} />
+    return <Wrapper Wrapped={Wrapped} possiblePaths={possiblePaths} originalProps={props} />
   }
 }
