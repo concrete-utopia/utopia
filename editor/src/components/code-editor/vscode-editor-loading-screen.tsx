@@ -100,7 +100,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
       style={{
         width: '100%',
         height: '100%',
-        fontSize: 13,
+        fontSize: 11,
         display: 'flex',
         flexDirection: 'column',
         fontFamily: '-apple-system, system-ui, sans-serif',
@@ -143,7 +143,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
         style={{
           display: 'flex',
           alignItems: 'flex-end',
-          height: 35,
+          height: 34,
           background: colorTheme.codeEditorTabRowBg.value,
         }}
       >
@@ -152,12 +152,12 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
           style={{
             background: colorTheme.codeEditorTabSelectedBG.value,
             color: colorTheme.codeEditorTabSelectedFG.value,
-            borderRight: `1px solid ${colorTheme.codeEditorTabSelectedBorder.value}`,
-            height: 35,
+            height: 34,
             display: 'flex',
             alignItems: 'center',
             paddingLeft: 12,
             paddingRight: 12,
+            fontWeight: 500,
             width: 140,
           }}
         >
