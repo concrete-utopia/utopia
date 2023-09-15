@@ -123,10 +123,17 @@ export const UtopiaApiGroup: React.FunctionComponent<
     const children = group.childNodes
     const { width, height } = getGroupSize(children)
 
-    if (latestPropsRef.current.style?.width == null) {
+    const hasWidth = latestPropsRef.current.style?.width != null
+    const hasLeftAndRight =
+      latestPropsRef.current.style?.left != null && latestPropsRef.current.style?.right != null
+    if (!hasWidth && !hasLeftAndRight) {
       group.style.width = width + 'px'
     }
-    if (latestPropsRef.current.style?.height == null) {
+
+    const hasHeight = latestPropsRef.current.style?.height != null
+    const hasTopAndBottom =
+      latestPropsRef.current.style?.top != null && latestPropsRef.current.style?.bottom != null
+    if (!hasHeight && !hasTopAndBottom) {
       group.style.height = height + 'px'
     }
   }

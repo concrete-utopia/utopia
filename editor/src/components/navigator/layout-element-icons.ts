@@ -215,11 +215,40 @@ export function createElementIconPropsFromMetadata(
     }
   }
 
-  if (MetadataUtils.isProbablyScene(metadata, elementPath)) {
+  if (
+    MetadataUtils.isProbablyScene(metadata, elementPath) ||
+    MetadataUtils.isProbablyRemixScene(metadata, elementPath)
+  ) {
     return {
       iconProps: {
         category: 'component',
         type: 'scene',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (MetadataUtils.isProbablyRemixOutletFromMetadata(element)) {
+    return {
+      iconProps: {
+        category: 'component',
+        type: 'remix-outlet',
+        width: 18,
+        height: 18,
+      },
+
+      isPositionAbsolute: false,
+    }
+  }
+
+  if (MetadataUtils.isProbablyRemixLinkFromMetadata(element)) {
+    return {
+      iconProps: {
+        category: 'component',
+        type: 'remix-link',
         width: 18,
         height: 18,
       },
@@ -377,6 +406,17 @@ function createComponentIconProps(
     return {
       category: 'component',
       type: 'animated',
+      width: 18,
+      height: 18,
+    }
+  }
+  const isRemixComponent =
+    MetadataUtils.isImportedComponentFromMetadata(element, '@remix-run/react', null) ||
+    MetadataUtils.isProbablyRemixSceneFromMetadata(element)
+  if (isRemixComponent) {
+    return {
+      category: 'component',
+      type: 'remix',
       width: 18,
       height: 18,
     }

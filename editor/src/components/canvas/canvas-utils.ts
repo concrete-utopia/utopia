@@ -248,12 +248,10 @@ function valueToUseForPin(
 
 export function updateFramesOfScenesAndComponents(
   editorState: EditorState,
-  derivedState: DerivedState,
   framesAndTargets: Array<PinOrFlexFrameChange>,
   optionalParentFrame: CanvasRectangle | null,
 ): EditorState {
   let workingEditorState: EditorState = editorState
-  let workingDerivedState: DerivedState = derivedState
   let toastsToAdd: Array<Notice> = []
   Utils.fastForEach(framesAndTargets, (frameAndTarget) => {
     const target = frameAndTarget.target
@@ -267,7 +265,6 @@ export function updateFramesOfScenesAndComponents(
     const element = withUnderlyingTargetFromEditorState(
       staticTarget,
       workingEditorState,
-      workingDerivedState,
       null,
       (success, underlyingElement) => underlyingElement,
     )
@@ -281,7 +278,6 @@ export function updateFramesOfScenesAndComponents(
     const parentElement = withUnderlyingTargetFromEditorState(
       staticParentPath,
       workingEditorState,
-      workingDerivedState,
       null,
       (success, underlyingElement) => underlyingElement,
     )
@@ -306,7 +302,6 @@ export function updateFramesOfScenesAndComponents(
           workingEditorState = modifyUnderlyingElementForOpenFile(
             originalTarget,
             workingEditorState,
-            workingDerivedState,
             (elem) => elem,
             (success, underlyingTarget) => {
               const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -602,7 +597,6 @@ export function updateFramesOfScenesAndComponents(
       workingEditorState = modifyUnderlyingElementForOpenFile(
         originalTarget,
         workingEditorState,
-        workingDerivedState,
         (elem) => {
           // Remove the pinning and flex props first...
           const propsToMaybeRemove: Array<LayoutPinnedProp | 'flexBasis'> =
@@ -654,14 +648,7 @@ export function updateFramesOfScenesAndComponents(
     workingEditorState = modifyUnderlyingElementForOpenFile(
       staticTarget,
       workingEditorState,
-      workingDerivedState,
       (attrs) => roundJSXElementLayoutValues(styleStringInArray, attrs),
-    )
-    workingDerivedState = deriveState(
-      workingEditorState,
-      workingDerivedState,
-      'unpatched',
-      unpatchedCreateRemixDerivedDataMemo,
     )
     // TODO originalFrames is never being set, so we have a regression here, meaning keepChildrenGlobalCoords
     // doesn't work. Once that is fixed we can re-implement keeping the children in place
@@ -1338,7 +1325,6 @@ export function moveTemplate(
   newParentPath: ElementPath | null,
   parentFrame: CanvasRectangle | null,
   editorState: EditorState,
-  derivedState: DerivedState,
   componentMetadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   highlightedViews: Array<ElementPath>,
@@ -1363,13 +1349,11 @@ export function moveTemplate(
     return withUnderlyingTargetFromEditorState(
       target,
       editorState,
-      derivedState,
       noChanges(),
       (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
         return withUnderlyingTargetFromEditorState(
           newParentPath,
           editorState,
-          derivedState,
           noChanges(),
           (
             newParentSuccess,
@@ -1429,9 +1413,6 @@ export function moveTemplate(
                   const insertionPath = getInsertionPath(
                     newParentPath,
                     workingEditorState.projectContents,
-                    workingEditorState.nodeModules.files,
-                    derivedState.remixData?.routingTable ?? null,
-                    workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
                     wrapperUID,
@@ -1534,7 +1515,6 @@ export function moveTemplate(
 
                 workingEditorState = updateFramesOfScenesAndComponents(
                   workingEditorState,
-                  derivedState,
                   frameChanges,
                   parentFrame,
                 )
@@ -1695,7 +1675,6 @@ export function duplicate(
   paths: Array<ElementPath>,
   newParentPath: ElementPath | null,
   editor: EditorState,
-  derivedState: DerivedState,
   duplicateNewUIDsInjected: ReadonlyArray<DuplicateNewUID> = [],
   anchor: 'before' | 'after' = 'after',
 ): DuplicateResult | null {
@@ -1704,7 +1683,6 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
-  let workingDerivedState: DerivedState = derivedState
 
   const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
   for (const path of paths) {
@@ -1715,7 +1693,6 @@ export function duplicate(
     workingEditorState = modifyUnderlyingElementForOpenFile(
       path,
       workingEditorState,
-      workingDerivedState,
       (elem) => elem,
       (success, underlyingInstancePath, underlyingFilePath) => {
         let utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
@@ -1848,12 +1825,6 @@ export function duplicate(
       ...workingEditorState,
       jsxMetadata: metadataUpdate(workingEditorState.jsxMetadata),
     }
-    workingDerivedState = deriveState(
-      workingEditorState,
-      workingDerivedState,
-      'unpatched',
-      unpatchedCreateRemixDerivedDataMemo,
-    )
   }
 
   return {
@@ -2021,19 +1992,16 @@ function getValidElementPathsFromElement(
     const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
     const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
     if (remixPathGenerationContext.type === 'active' && isRemixScene) {
-      function makeValidPathsFromModule(
-        routeModulePath: string,
-        parentPathInner: ElementPath,
-      ): ElementPath | null {
+      function makeValidPathsFromModule(routeModulePath: string, parentPathInner: ElementPath) {
         const file = getProjectFileByFilePath(projectContents, routeModulePath)
         if (file == null || file.type !== 'TEXT_FILE') {
-          return null
+          return
         }
 
         const topLevelElement = getDefaultExportedTopLevelElement(file)
 
         if (topLevelElement == null) {
-          return null
+          return
         }
 
         paths.push(
@@ -2050,12 +2018,6 @@ function getValidElementPathsFromElement(
             getRemixValidPathsGenerationContext,
           ),
         )
-
-        const pathToOutlet = findPathToJSXElementChild(
-          (e) => isRemixOutletElement(e, filePath, projectContents),
-          topLevelElement,
-        )
-        return optionalMap((o) => EP.appendNewElementPath(parentPathInner, o), pathToOutlet)
       }
 
       /**
@@ -2066,9 +2028,11 @@ function getValidElementPathsFromElement(
       for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
         const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
         if (entry != null) {
-          const { relativePath, filePath: filePathOfRouteModule } = entry
-          const basePath = EP.appendTwoPaths(path, relativePath)
-          makeValidPathsFromModule(filePathOfRouteModule, basePath)
+          const { relativePaths, filePath: filePathOfRouteModule } = entry
+          for (const relativePath of relativePaths) {
+            const basePath = EP.appendTwoPaths(path, relativePath)
+            makeValidPathsFromModule(filePathOfRouteModule, basePath)
+          }
         }
       }
 

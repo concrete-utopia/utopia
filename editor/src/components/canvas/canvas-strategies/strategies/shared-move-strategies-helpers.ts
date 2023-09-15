@@ -24,12 +24,8 @@ import {
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import type { ProjectContentTreeRoot } from '../../../assets'
 
-import {
-  getElementFromProjectContents,
-  withUnderlyingTarget,
-} from '../../../editor/store/editor-state'
+import { getElementFromProjectContents } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
@@ -180,8 +176,6 @@ export function getMoveCommandsForSelectedElement(
   const element: JSXElement | null = getElementFromProjectContents(
     selectedElement,
     canvasState.projectContents,
-    canvasState.remixRoutingTable,
-    canvasState.openFile,
   )
 
   const elementMetadata = MetadataUtils.findElementByElementPath(

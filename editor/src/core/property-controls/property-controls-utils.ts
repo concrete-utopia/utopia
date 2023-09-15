@@ -44,7 +44,6 @@ export function propertyControlsForComponentInFile(
 export function getPropertyControlsForTargetFromEditor(
   target: ElementPath,
   editor: EditorState,
-  derivedState: DerivedState,
 ): PropertyControls | null {
   const openFilePath = getOpenUIJSFileKey(editor)
   return getPropertyControlsForTarget(
@@ -52,8 +51,6 @@ export function getPropertyControlsForTargetFromEditor(
     editor.propertyControlsInfo,
     openFilePath,
     editor.projectContents,
-    editor.nodeModules.files,
-    derivedState.remixData?.routingTable ?? null,
   )
 }
 
@@ -62,15 +59,10 @@ export function getPropertyControlsForTarget(
   propertyControlsInfo: PropertyControlsInfo,
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
 ): PropertyControls | null {
   return withUnderlyingTarget(
     target,
     projectContents,
-    nodeModules,
-    remixRoutingTable,
-    openFilePath,
     null,
     (
       success: ParseSuccess,

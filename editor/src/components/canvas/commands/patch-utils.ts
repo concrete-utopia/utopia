@@ -65,7 +65,6 @@ export function patchProjectContentsWithParsedFile(
 export function patchParseSuccessAtElementPath(
   target: ElementPath,
   editorState: EditorState,
-  derivedState: DerivedState,
   patchParseSuccess: (
     success: ParseSuccess,
     element: JSXElementChild,
@@ -76,7 +75,6 @@ export function patchParseSuccessAtElementPath(
   return withUnderlyingTargetFromEditorState(
     target,
     editorState,
-    derivedState,
     {},
     (success, underlyingElement, underlyingTarget, underlyingFilePath) => {
       const filePatch = patchParseSuccess(

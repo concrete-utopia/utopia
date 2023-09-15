@@ -140,11 +140,6 @@ export function useToInsert(): (convertTo: InsertMenuItem | null) => void {
   const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const nodeModulesRef = useRefEditorState((store) => store.editor.nodeModules.files)
-  const remixRoutingTableRef = useRefEditorState(
-    (store) => store.derived.remixData?.routingTable ?? null,
-  )
-  const openFileRef = useRefEditorState((store) => store.editor.canvas.openFile?.filename ?? null)
 
   return React.useCallback(
     (convertToMenuItem: InsertMenuItem | null) => {
@@ -154,11 +149,8 @@ export function useToInsert(): (convertTo: InsertMenuItem | null) => void {
         const convertTo = convertToMenuItem.value
         const actions = getActionsToApplyChange(
           projectContentsRef.current,
-          nodeModulesRef.current,
-          remixRoutingTableRef.current,
           jsxMetadataRef.current,
           elementPathTreeRef.current,
-          openFileRef.current,
           selectedViewsRef.current,
           floatingMenuState,
           false,
@@ -168,15 +160,6 @@ export function useToInsert(): (convertTo: InsertMenuItem | null) => void {
         dispatch(actions, 'everyone')
       }
     },
-    [
-      dispatch,
-      elementPathTreeRef,
-      jsxMetadataRef,
-      nodeModulesRef,
-      openFileRef,
-      projectContentsRef,
-      remixRoutingTableRef,
-      selectedViewsRef,
-    ],
+    [dispatch, elementPathTreeRef, jsxMetadataRef, projectContentsRef, selectedViewsRef],
   )
 }

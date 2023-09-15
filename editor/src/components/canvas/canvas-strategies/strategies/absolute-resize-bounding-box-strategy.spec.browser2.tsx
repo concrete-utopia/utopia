@@ -1552,9 +1552,58 @@ export var storyboard = (
         `),
       )
     })
-    it('resizes groups correctly when pinned to the side of a parent, when resizing the parent', async () => {
-      const renderResult = await renderTestEditorWithCode(
-        formatTestProjectCode(`
+    describe('parent resize', () => {
+      /**
+       * In the following tests, the input groups are deliberately _not_ trued up, to make sure the resize actually
+       * does true them up even when coming from a misconfigured scenario.
+       */
+      it('when the group is not pinned and positioned absolutely', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 200, height: 150 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 50, top: 33, height: 89, width: 100, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 30, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 50, height: 30, background: 'blue', top: 33, left: 60 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.fromString('storyboard/div')
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+
+        await resizeElement(renderResult, { x: -80, y: 0 }, EdgePositionBottomRight, emptyModifiers)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 120, height: 150 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 50, top: 33, height: 89, width: 100, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 45, height: 42, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 45, height: 42, background: 'blue', top: 47, left: 55 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+        )
+      })
+      it('when the group is pinned horizontally', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
           import * as React from 'react'
           import { Storyboard, Group } from 'utopia-api'
 
@@ -1569,32 +1618,127 @@ export var storyboard = (
             </Storyboard>
           )
         `),
-        'await-first-dom-report',
-      )
+          'await-first-dom-report',
+        )
 
-      const target = EP.fromString('storyboard/div')
+        const target = EP.fromString('storyboard/div')
 
-      await renderResult.dispatch([selectComponents([target], false)], true)
+        await renderResult.dispatch([selectComponents([target], false)], true)
 
-      await resizeElement(renderResult, { x: -50, y: 0 }, EdgePositionBottomRight, emptyModifiers)
+        await resizeElement(renderResult, { x: -50, y: 0 }, EdgePositionBottomRight, emptyModifiers)
 
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        formatTestProjectCode(`
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
           import * as React from 'react'
           import { Storyboard, Group } from 'utopia-api'
 
           export var storyboard = (
             <Storyboard data-uid='storyboard'>
               <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 150, height: 150 }}>
-                <Group data-uid='group' style={{ position: 'absolute', left: 38, top: 33, height: 89, right: 109, background: 'white' }}>
-                  <div data-uid='foo' style={{ position: 'absolute', width: 38, height: 56, background: 'red', top: 0, left: 0 }} />
-                  <div data-uid='bar' style={{ position: 'absolute', width: 38, height: 56, background: 'blue', top: 33, left: 75 }} />
+                <Group data-uid='group' style={{ position: 'absolute', left: 50, top: 33, height: 89, right: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 13, height: 56, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 13, height: 56, background: 'blue', top: 33, left: 27 }} />
                 </Group>
               </div>
             </Storyboard>
           )
         `),
-      )
+        )
+
+        await resizeElement(
+          renderResult,
+          { x: -150, y: 100 },
+          EdgePositionBottomLeft,
+          emptyModifiers,
+        )
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: -50, top: 100, width: 300, height: 250 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 50, top: 33, height: 89, right: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 62, height: 56, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 62, height: 56, background: 'blue', top: 33, left: 128 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+        )
+      })
+      it('when the group is pinned vertically', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 200, height: 150 }}>
+                <Group data-uid='group' style={{ position: 'absolute', top: 50, bottom: 33, width: 89, left: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 50, height: 56, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 50, height: 56, background: 'blue', top: 33, left: 100 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.fromString('storyboard/div')
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+
+        await resizeElement(renderResult, { x: 0, y: -50 }, EdgePositionBottomRight, emptyModifiers)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: 100, top: 100, width: 200, height: 100 }}>
+                <Group data-uid='group' style={{ position: 'absolute', top: 50, bottom: 33, width: 89, left: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 30, height: 11, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 30, height: 11, background: 'blue', top: 6, left: 59 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+        )
+
+        await resizeElement(
+          renderResult,
+          { x: -150, y: 100 },
+          EdgePositionBottomLeft,
+          emptyModifiers,
+        )
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <div data-uid='div' style={{ background: '#aaa', position: 'absolute', left: -50, top: 100, width: 350, height: 200 }}>
+                <Group data-uid='group' style={{ position: 'absolute', top: 50, bottom: 33, width: 89, left: 60, background: 'white' }}>
+                  <div data-uid='foo' style={{ position: 'absolute', width: 30, height: 76, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position: 'absolute', width: 30, height: 76, background: 'blue', top: 41, left: 59 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+        )
+      })
     })
   })
 })

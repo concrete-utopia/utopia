@@ -432,19 +432,6 @@ export var FloatingMenu = React.memo(() => {
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const remixRoutingTableRef = useRefEditorState(
-    (store) => store.derived.remixData?.routingTable ?? null,
-  )
-  const nodeModules = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.nodeModules.files,
-    'FloatingMenu nodeModules',
-  )
-  const openFile = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.openFile?.filename ?? null,
-    'FloatingMenu openFile',
-  )
   const jsxMetadata = useEditorState(
     Substores.metadata,
     (store) => store.editor.jsxMetadata,
@@ -469,11 +456,8 @@ export var FloatingMenu = React.memo(() => {
 
         const actionsToDispatch = getActionsToApplyChange(
           projectContentsRef.current,
-          nodeModules,
-          remixRoutingTableRef.current,
           jsxMetadata,
           elementPathTree,
-          openFile,
           selectedViewsRef.current,
           floatingMenuState,
           fixedSizeForInsertion,
@@ -491,10 +475,7 @@ export var FloatingMenu = React.memo(() => {
       fixedSizeForInsertion,
       floatingMenuState,
       jsxMetadata,
-      nodeModules,
-      openFile,
       projectContentsRef,
-      remixRoutingTableRef,
       selectedViewsRef,
     ],
   )

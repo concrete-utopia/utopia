@@ -13,11 +13,9 @@ import {
   FlexColumn,
   FlexRow,
   Icn,
-  LargerIcons,
   SquareButton,
   Tooltip as TooltipWithoutSpanFixme,
   useColorTheme,
-  UtopiaStyles,
 } from '../../uuiui'
 import { getControlStyles, Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
@@ -34,7 +32,6 @@ import {
 } from './actions/action-creators'
 import { EditorModes } from './editor-modes'
 import {
-  useCheckInsertModeForElementType,
   useEnterDrawToInsertForButton,
   useEnterDrawToInsertForConditional,
   useEnterDrawToInsertForDiv,
@@ -65,10 +62,10 @@ import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import { useConvertTo } from './convert-callbacks'
 import { useWrapInDiv } from './wrap-in-callbacks'
+import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
-
 export const CanvasToolbarId = 'canvas-toolbar'
 
 export interface ToolbarSearchListingProps {}
@@ -540,6 +537,7 @@ export const CanvasToolbar = React.memo(() => {
               onClick={resetCanvasCallback}
             />
           </Tooltip>
+          <ElementsOutsideVisibleAreaIndicator />
         </div>
         {/* Edit Mode submenus */}
         {when(

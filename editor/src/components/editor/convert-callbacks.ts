@@ -32,11 +32,8 @@ import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-
 
 export function changeConditionalOrFragment(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
-  openFile: string | null,
   selectedViews: Array<ElementPath>,
   floatingMenuState: FloatingInsertMenuState,
   fixedSizeForInsertion: boolean,
@@ -74,9 +71,6 @@ export function changeConditionalOrFragment(
       const insertionPath = getInsertionPath(
         targetParent,
         projectContents,
-        nodeModules,
-        remixRoutingTable,
-        openFile,
         jsxMetadata,
         elementPathTree,
         wrapperUID,
@@ -110,11 +104,8 @@ export function changeConditionalOrFragment(
 
 export function changeElement(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
-  openFile: string | null,
   selectedViews: Array<ElementPath>,
   floatingMenuState: FloatingInsertMenuState,
   fixedSizeForInsertion: boolean,
@@ -167,9 +158,6 @@ export function changeElement(
         const insertionPath = getInsertionPath(
           targetParent,
           projectContents,
-          nodeModules,
-          remixRoutingTable,
-          openFile,
           jsxMetadata,
           elementPathTree,
           wrapperUID,
@@ -205,11 +193,8 @@ export function changeElement(
 
 export function getActionsToApplyChange(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  remixRoutingTable: RemixRoutingTable | null,
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
-  openFile: string | null,
   selectedViews: Array<ElementPath>,
   floatingMenuState: FloatingInsertMenuState,
   fixedSizeForInsertion: boolean,
@@ -221,11 +206,8 @@ export function getActionsToApplyChange(
     case 'JSX_FRAGMENT':
       return changeConditionalOrFragment(
         projectContents,
-        nodeModules,
-        remixRoutingTable,
         jsxMetadata,
         elementPathTree,
-        openFile,
         selectedViews,
         floatingMenuState,
         fixedSizeForInsertion,
@@ -234,11 +216,8 @@ export function getActionsToApplyChange(
     case 'JSX_ELEMENT':
       return changeElement(
         projectContents,
-        nodeModules,
-        remixRoutingTable,
         jsxMetadata,
         elementPathTree,
-        openFile,
         selectedViews,
         floatingMenuState,
         fixedSizeForInsertion,
@@ -256,11 +235,6 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
   const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const nodeModulesRef = useRefEditorState((store) => store.editor.nodeModules.files)
-  const remixRoutingTableRef = useRefEditorState(
-    (store) => store.derived.remixData?.routingTable ?? null,
-  )
-  const openFileRef = useRefEditorState((store) => store.editor.canvas.openFile?.filename ?? null)
   const floatingMenuStateRef = useRefEditorState((store) => store.editor.floatingInsertMenu)
 
   return React.useCallback(
@@ -269,11 +243,8 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
         const convertTo = convertToMenuItem.value
         const actions = getActionsToApplyChange(
           projectContentsRef.current,
-          nodeModulesRef.current,
-          remixRoutingTableRef.current,
           jsxMetadataRef.current,
           elementPathTreeRef.current,
-          openFileRef.current,
           selectedViewsRef.current,
           floatingMenuStateRef.current,
           false,
@@ -288,10 +259,7 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
       elementPathTreeRef,
       floatingMenuStateRef,
       jsxMetadataRef,
-      nodeModulesRef,
-      openFileRef,
       projectContentsRef,
-      remixRoutingTableRef,
       selectedViewsRef,
     ],
   )

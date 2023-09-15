@@ -1156,22 +1156,18 @@ function findAmongJSXElementChildren(
   parentUid: string,
   condition: (e: JSXElementChild) => boolean,
   children: JSXElementChild[],
-): ElementPathPart | null {
-  for (const child of children) {
-    const path = findPathToJSXElementChild(condition, child)
-    if (path != null) {
-      return [parentUid, ...path]
-    }
-  }
-  return null
+): Array<ElementPathPart> {
+  return children.flatMap((child) =>
+    findPathToJSXElementChild(condition, child).map((path) => [parentUid, ...path]),
+  )
 }
 
 export function findPathToJSXElementChild(
   condition: (e: JSXElementChild) => boolean,
   element: JSXElementChild,
-): ElementPathPart | null {
+): Array<ElementPathPart> {
   if (condition(element)) {
-    return [element.uid]
+    return [[element.uid]]
   }
 
   switch (element.type) {
@@ -1200,11 +1196,9 @@ export function findPathToJSXElementChild(
     case 'ATTRIBUTE_FUNCTION_CALL':
     case 'ATTRIBUTE_VALUE':
     case 'JSX_TEXT_BLOCK':
-      return null
+      return []
 
     default:
       assertNever(element)
   }
-
-  return null
 }

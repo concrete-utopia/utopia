@@ -1076,9 +1076,6 @@ export function useIsSubSectionVisible(sectionName: string): boolean {
         const selectedViewType = withUnderlyingTarget(
           view,
           store.editor.projectContents,
-          store.editor.nodeModules.files,
-          store.derived.remixData?.routingTable ?? null,
-          store.editor.canvas.openFile?.filename ?? null,
           null,
           (underlyingSuccess, underlyingElement) => {
             if (isJSXElement(underlyingElement)) {
@@ -1186,8 +1183,7 @@ export function useInspectorWarningStatus(): boolean {
         forUnderlyingTargetFromEditorState(
           view,
           store.editor,
-          store.derived,
-          (underlyingSuccess, underlyingElement) => {
+          (_underlyingSuccess, underlyingElement) => {
             if (isJSXElement(underlyingElement)) {
               const cssAttribute = getJSXAttribute(underlyingElement.props, 'css')
               if (cssAttribute != null) {
