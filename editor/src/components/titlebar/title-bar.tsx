@@ -296,10 +296,12 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
   )
 })
 
-export const TitleBarEmpty = React.memo(() => {
+export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
+  const { drag } = useFloatingPanelDraggable(props.panelData)
   const theme = useColorTheme()
   return (
     <div
+      ref={drag}
       className='handle'
       style={{
         height: TitleHeight,

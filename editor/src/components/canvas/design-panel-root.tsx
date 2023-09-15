@@ -171,6 +171,7 @@ const DesignPanelRootInner = React.memo(() => {
                 style={{ height: 'calc(100% - 20px)', position: 'absolute', margin: 10, zIndex: 1 }}
               >
                 <CodeEditorPane
+                  panelData={null as any}
                   small={false}
                   width={0}
                   height={0}
@@ -389,6 +390,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
 })
 
 interface CodeEditorPaneProps {
+  panelData: StoredPanel
   small: boolean
   width: number
   height: number
@@ -474,7 +476,10 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       }}
       {...resizableConfig}
     >
-      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarEmpty />)}
+      {when(
+        isFeatureEnabled('Draggable Floating Panels'),
+        <TitleBarEmpty panelData={props.panelData} />,
+      )}
       <div
         style={{
           transformOrigin: 'top left',

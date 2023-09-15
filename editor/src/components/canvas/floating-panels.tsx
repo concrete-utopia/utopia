@@ -283,6 +283,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       case 'code-editor':
         return (
           <CodeEditorPane
+            panelData={props.pane.panel}
             small={false}
             width={0}
             height={0}
