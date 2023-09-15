@@ -11,12 +11,7 @@ import {
   walkElement,
 } from '../../core/shared/element-template'
 import type { ElementPath, Imports, NodeModules } from '../../core/shared/project-file-types'
-import {
-  importAlias,
-  importDetails,
-  isParseSuccess,
-  isTextFile,
-} from '../../core/shared/project-file-types'
+import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { withUnderlyingTarget } from './store/editor-state'

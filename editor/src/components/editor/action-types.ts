@@ -471,13 +471,15 @@ export type ResetPins = {
   target: ElementPath
 }
 
+export interface WrapInElementWith {
+  element: JSXElement | JSXConditionalExpression | JSXFragment
+  importsToAdd: Imports
+}
+
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
-  whatToWrapWith: {
-    element: JSXElement | JSXConditionalExpression | JSXFragment
-    importsToAdd: Imports
-  }
+  whatToWrapWith: WrapInElementWith
 }
 
 export interface OpenFloatingInsertMenu {

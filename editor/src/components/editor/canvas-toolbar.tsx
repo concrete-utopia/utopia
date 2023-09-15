@@ -1,9 +1,12 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
+import type { CSSObject } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import * as React from 'react'
 import type { TooltipProps } from '../../uuiui'
+import { Tile } from '../../uuiui'
+import { StringInput } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -16,12 +19,12 @@ import {
   useColorTheme,
   UtopiaStyles,
 } from '../../uuiui'
-import { Utils } from '../../uuiui-deps'
+import { getControlStyles, Utils } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
-import { stopPropagation } from '../inspector/common/inspector-utils'
 import type { EditorAction } from './action-types'
 import {
   applyCommandsAction,
+  closeFloatingInsertMenu,
   openFloatingInsertMenu,
   resetCanvas,
   setPanelVisibility,
@@ -37,6 +40,7 @@ import {
   useEnterDrawToInsertForDiv,
   useEnterDrawToInsertForImage,
   useEnterTextEditMode,
+  useToInsert,
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
 import { RightMenuTab } from './store/editor-state'
@@ -48,11 +52,122 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
+import { NO_OP } from '../../core/shared/utils'
+import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
+import {
+  CustomComponentOption,
+  useComponentSelectorStyles,
+  useGetInsertableComponents,
+} from '../canvas/ui/floating-insert-menu'
+import Select, { components, createFilter } from 'react-select'
+import WindowedSelect from 'react-windowed-select'
+import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
+import { stopPropagation } from '../inspector/common/inspector-utils'
+import { useConvertTo } from './convert-callbacks'
+import { useWrapInDiv } from './wrap-in-callbacks'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 
 export const CanvasToolbarId = 'canvas-toolbar'
+
+export interface ToolbarSearchListingProps {}
+
+export const CanvasToolbarSearchPortalId = 'canvas-toolbar-search-portal'
+
+export const ToolbarSearchListing = React.memo((props: ToolbarSearchListingProps) => {
+  return <div id={CanvasToolbarSearchPortalId} />
+})
+ToolbarSearchListing.displayName = 'ToolbarSearchListing'
+
+export interface CanvasToolbarSearchProps {
+  actionWith: (item: InsertMenuItem | null) => void
+}
+
+export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) => {
+  const insertMenuMode = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.floatingInsertMenu.insertMenuMode,
+    'CanvasToolbarSearch insertMenuMode',
+  )
+  const options = useGetInsertableComponents(insertMenuMode)
+  const componentSelectorStyles = useComponentSelectorStyles()
+  const menuPortalTarget = document.getElementById(CanvasToolbarSearchPortalId)
+  const theme = useColorTheme()
+  const focusedPanelRef = useRefEditorState((store) => store.editor.focusedPanel)
+
+  // Focus the input when it is displayed.
+  const selectRef = React.useRef<any>(null)
+  React.useEffect(() => {
+    if (selectRef.current != null && focusedPanelRef.current === 'canvas') {
+      selectRef.current.focus()
+    }
+  })
+
+  return (
+    <WindowedSelect
+      id={'canvas-toolbar-search'}
+      ref={selectRef}
+      components={{ Option: CustomComponentOption }}
+      openMenuOnFocus={true}
+      openMenuOnClick={true}
+      onBlur={undefined}
+      //value={value}
+      onChange={props.actionWith}
+      options={options}
+      menuPortalTarget={menuPortalTarget}
+      filterOption={createFilter({ ignoreAccents: true })}
+      styles={{
+        ...componentSelectorStyles,
+        menuPortal: (styles: CSSObject): CSSObject => {
+          return {
+            zIndex: -2,
+            marginLeft: 140,
+            padding: '0 8px',
+            overflow: 'hidden',
+            height: 'auto',
+            backgroundColor: theme.bg2.value,
+            borderRadius: '0px 10px 10px 10px',
+            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            pointerEvents: 'initial',
+          }
+        },
+        input: (styles: CSSObject): CSSObject => {
+          return {
+            ...(InspectorInputEmotionStyle({
+              hasLabel: false,
+              controlStyles: getControlStyles('simple'),
+            }) as CSSObject),
+            paddingLeft: 4,
+            backgroundColor: colorTheme.seperator.value,
+            flexGrow: 1,
+            display: 'flex',
+            alignItems: 'center',
+            minWidth: '200px',
+            borderRadius: '10px',
+            borderWidth: 1,
+            borderColor: theme.primary.value,
+            borderStyle: 'solid',
+          }
+        },
+        menuList: (styles: CSSObject): CSSObject => {
+          return {
+            position: 'relative',
+            maxHeight: 210,
+            paddingLeft: 8,
+            paddingRight: 8,
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+          }
+        },
+      }}
+      maxMenuHeight={138}
+    />
+  )
+})
+CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
@@ -65,15 +180,16 @@ export const CanvasToolbar = React.memo(() => {
     setForceInsertMode((value) => !value)
   }, [])
 
+  const turnOffForcedInsertMode = React.useCallback(() => {
+    setForceInsertMode(false)
+  }, [])
+
   React.useEffect(() => {
-    const turnOffForcedInsertMode = () => {
-      setForceInsertMode(false)
-    }
     window.addEventListener('click', turnOffForcedInsertMode)
     return function cleanup() {
       window.removeEventListener('click', turnOffForcedInsertMode)
     }
-  }, [])
+  }, [turnOffForcedInsertMode])
 
   const canvasToolbarMode = useToolbarMode(forcedInsertMode)
 
@@ -93,6 +209,12 @@ export const CanvasToolbar = React.memo(() => {
     'CanvasToolbar insertMenuMode',
   )
 
+  const wrapInDivCallback = useWrapInDiv()
+
+  const convertToCallback = useConvertTo()
+  const toInsertCallback = useToInsert()
+  const convertToFragmentCallback = NO_OP
+
   const openFloatingInsertMenuCallback = React.useCallback(() => {
     dispatch([
       openFloatingInsertMenu({
@@ -102,6 +224,7 @@ export const CanvasToolbar = React.memo(() => {
       }),
     ])
   }, [dispatch])
+
   const openFloatingConvertMenuCallback = React.useCallback(() => {
     dispatch([
       openFloatingInsertMenu({
@@ -109,6 +232,7 @@ export const CanvasToolbar = React.memo(() => {
       }),
     ])
   }, [dispatch])
+
   const openFloatingWrapInMenuCallback = React.useCallback(() => {
     dispatch([
       openFloatingInsertMenu({
@@ -142,9 +266,27 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([applyCommandsAction(commands)])
   }, [dispatch, editorStateRef])
 
-  const clickSelectModeButton = React.useCallback(() => {
-    dispatch([switchEditorMode(EditorModes.selectMode())])
-  }, [dispatch])
+  const switchToSelectModeCloseMenus = React.useCallback(() => {
+    dispatch([switchEditorMode(EditorModes.selectMode()), closeFloatingInsertMenu()], 'everyone')
+    turnOffForcedInsertMode()
+  }, [dispatch, turnOffForcedInsertMode])
+
+  const convertToAndClose = React.useCallback(
+    (convertTo: InsertMenuItem | null) => {
+      convertToCallback(convertTo)
+      switchToSelectModeCloseMenus()
+    },
+    [convertToCallback, switchToSelectModeCloseMenus],
+  )
+
+  const toInsertAndClose = React.useCallback(
+    (toInsert: InsertMenuItem | null) => {
+      toInsertCallback(toInsert)
+      turnOffForcedInsertMode()
+      switchToSelectModeCloseMenus()
+    },
+    [switchToSelectModeCloseMenus, toInsertCallback, turnOffForcedInsertMode],
+  )
 
   const insertMenuSelected = useEditorState(
     Substores.restOfEditor,
@@ -200,6 +342,7 @@ export const CanvasToolbar = React.memo(() => {
     (store) => !store.editor.rightMenu.expanded,
     'SettingsPanel inspector.minimized',
   )
+
   const toggleInspectorVisible = React.useCallback(() => {
     dispatch([togglePanel('rightmenu')])
   }, [dispatch])
@@ -209,6 +352,7 @@ export const CanvasToolbar = React.memo(() => {
     (store) => !store.editor.leftMenu.expanded,
     'SettingsPanel navigator.minimised',
   )
+
   const toggleNavigatorVisible = React.useCallback(() => {
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
@@ -218,10 +362,36 @@ export const CanvasToolbar = React.memo(() => {
     (store) => !store.editor.interfaceDesigner.codePaneVisible,
     'SettingsPanel navigator.minimised',
   )
+
   const toggleCodeEditorVisible = React.useCallback(
     () => dispatch([togglePanel('codeEditor')]),
     [dispatch],
   )
+
+  const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
+    return (
+      <FlexRow
+        data-testid='canvas-toolbar-submenu'
+        style={{
+          alignItems: 'start',
+          marginLeft: 15,
+          padding: '0 8px',
+          height: 32,
+          overflow: 'hidden',
+          backgroundColor: colorTheme.bg2.value,
+          borderRadius: '0px 10px 10px 10px',
+          boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+          pointerEvents: 'initial',
+          zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
+        }}
+        // Prevents clicks within this menu from triggering the insertion cancelling click handler
+        // that is added to the window.
+        onClick={stopPropagation}
+      >
+        {wrapped}
+      </FlexRow>
+    )
+  }, [])
 
   return (
     <div
@@ -319,7 +489,7 @@ export const CanvasToolbar = React.memo(() => {
               iconType='pointer'
               iconCategory='tools'
               primary={canvasToolbarMode.primary === 'edit'}
-              onClick={clickSelectModeButton}
+              onClick={switchToSelectModeCloseMenus}
             />
           </Tooltip>
           <Tooltip title='Insert or Edit Text' placement='bottom'>
@@ -371,129 +541,157 @@ export const CanvasToolbar = React.memo(() => {
             />
           </Tooltip>
         </div>
-
         {/* Edit Mode submenus */}
         {when(
-          canvasToolbarMode.primary === 'edit' &&
-            canvasToolbarMode.secondary === 'nothing-selected',
-          null, // show nothing!
-        )}
-        {when(
           canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'selected',
-          <FlexRow
-            data-testid='canvas-toolbar-submenu'
-            style={{
-              alignItems: 'start',
-              marginLeft: 15,
-              padding: '0 8px',
-              height: 32,
-              overflow: 'hidden',
-              backgroundColor: colorTheme.bg2.value,
-              borderRadius: '0px 10px 10px 10px',
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-              pointerEvents: 'initial',
-              zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
-            }}
-          >
-            <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
-              <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
-            </Tooltip>
-            <Tooltip title='Wrap selection in an element' placement='bottom'>
-              <InsertModeButton
-                iconType='designtool-larger'
-                iconCategory='semantic'
-                primary={insertMenuMode === 'wrap'}
-                onClick={openFloatingWrapInMenuCallback}
-              />
-            </Tooltip>
-            <Tooltip title='Converts an element or component into another (C)' placement='bottom'>
-              <InsertModeButton
-                iconType='convertobject'
-                iconCategory='semantic'
-                primary={insertMenuMode === 'convert'}
-                onClick={openFloatingConvertMenuCallback}
-              />
-            </Tooltip>
-            <Tooltip
-              title='Toggle between absolute and static positioning (X)' // help I need better copy
-              placement='bottom'
-            >
-              <InsertModeButton
-                iconType='position-absolute' // TODO this needs an icon!
-                iconCategory='layout/systems'
-                size={16}
-                onClick={toggleAbsolutePositioningCallback}
-              />
-            </Tooltip>
-          </FlexRow>,
+          <>
+            {when(
+              insertMenuMode === 'closed',
+              wrapInSubmenu(
+                <>
+                  <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
+                    <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
+                  </Tooltip>
+                  <Tooltip title='Wrap selection in an element' placement='bottom'>
+                    <InsertModeButton
+                      iconType='designtool-larger'
+                      iconCategory='semantic'
+                      onClick={openFloatingWrapInMenuCallback}
+                    />
+                  </Tooltip>
+                  <Tooltip
+                    title='Converts an element or component into another (C)'
+                    placement='bottom'
+                  >
+                    <InsertModeButton
+                      iconType='convertobject'
+                      iconCategory='semantic'
+                      onClick={openFloatingConvertMenuCallback}
+                    />
+                  </Tooltip>
+                  <Tooltip
+                    title='Toggle between absolute and static positioning (X)' // help I need better copy
+                    placement='bottom'
+                  >
+                    <InsertModeButton
+                      iconType='position-absolute' // TODO this needs an icon!
+                      iconCategory='layout/systems'
+                      size={16}
+                      onClick={toggleAbsolutePositioningCallback}
+                    />
+                  </Tooltip>
+                </>,
+              ),
+            )}
+            {when(
+              insertMenuMode === 'wrap',
+              wrapInSubmenu(
+                <>
+                  <Tooltip title='Back' placement='bottom'>
+                    <InsertModeButton
+                      iconCategory='semantic'
+                      iconType='icon-semantic-back'
+                      onClick={switchToSelectModeCloseMenus}
+                    />
+                  </Tooltip>
+                  <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
+                    <InsertModeButton
+                      iconType='designtool-larger'
+                      iconCategory='semantic'
+                      onClick={NO_OP}
+                      primary={true}
+                    />
+                  </Tooltip>
+                  <Tooltip title='Wrap in div' placement='bottom'>
+                    <InsertModeButton iconType='div' onClick={wrapInDivCallback} />
+                  </Tooltip>
+                  <Tile style={{ height: '100%' }}>
+                    <CanvasToolbarSearch actionWith={convertToAndClose} />
+                  </Tile>
+                </>,
+              ),
+            )}
+            {when(
+              insertMenuMode === 'convert',
+              wrapInSubmenu(
+                <>
+                  <Tooltip title='Back' placement='bottom'>
+                    <InsertModeButton
+                      iconCategory='semantic'
+                      iconType='icon-semantic-back'
+                      onClick={switchToSelectModeCloseMenus}
+                    />
+                  </Tooltip>
+                  <Tooltip title='Convert selection' placement='bottom'>
+                    <InsertModeButton
+                      iconType='convertobject'
+                      iconCategory='semantic'
+                      onClick={NO_OP}
+                      primary={true}
+                    />
+                  </Tooltip>
+                  <Tooltip title='Convert to Fragment' placement='bottom'>
+                    <InsertModeButton iconType='fragment' onClick={convertToFragmentCallback} />
+                  </Tooltip>
+                  <Tile style={{ height: '100%' }}>
+                    <CanvasToolbarSearch actionWith={convertToAndClose} />
+                  </Tile>
+                </>,
+              ),
+            )}
+          </>,
         )}
         {when(
           canvasToolbarMode.primary === 'edit' && canvasToolbarMode.secondary === 'strategy-active',
           <StrategyIndicator />,
         )}
         {/* Insert Mode */}
-        {canvasToolbarMode.primary === 'insert' && ( // sorry Sean but I need to narrow the type of canvasToolbarMode.primary here :)
-          <FlexRow
-            data-testid='canvas-toolbar-submenu'
-            style={{
-              alignItems: 'start',
-              marginLeft: 15,
-              padding: '0 8px',
-              height: 32,
-              overflow: 'hidden',
-              backgroundColor: colorTheme.bg2.value,
-              borderRadius: '0px 10px 10px 10px',
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-              pointerEvents: 'initial',
-              zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
-            }}
-          >
-            <Tooltip title='Insert div' placement='bottom'>
-              <InsertModeButton
-                iconType='view'
-                primary={canvasToolbarMode.secondary.divInsertionActive}
-                onClick={insertDivCallback}
-              />
-            </Tooltip>
-            <Tooltip title='Insert image' placement='bottom'>
-              <InsertModeButton
-                iconType='image'
-                primary={canvasToolbarMode.secondary.imageInsertionActive}
-                onClick={insertImgCallback}
-              />
-            </Tooltip>
-            <Tooltip title='Insert button' placement='bottom'>
-              <InsertModeButton
-                iconType='clickable'
-                primary={canvasToolbarMode.secondary.buttonInsertionActive}
-                onClick={insertButtonCallback}
-              />
-            </Tooltip>
-            <Tooltip title='Insert conditional' placement='bottom'>
-              <InsertModeButton
-                testid={InsertConditionalButtonTestId}
-                iconType='conditional'
-                primary={canvasToolbarMode.secondary.conditionalInsertionActive}
-                onClick={insertConditionalCallback}
-              />
-            </Tooltip>
-            <Tooltip title='Choose and insert a component' placement='bottom'>
-              <InsertModeButton
-                iconType='componentinstance'
-                primary={canvasToolbarMode.secondary.floatingInsertMenuOpen}
-                onClick={openFloatingInsertMenuCallback}
-              />
-            </Tooltip>
-            <Tooltip title='Open insert menu' placement='bottom'>
-              <InsertModeButton
-                iconType='dotdotdot'
-                iconCategory='semantic'
-                primary={canvasToolbarMode.secondary.insertSidebarOpen}
-                onClick={selectInsertMenuPane}
-              />
-            </Tooltip>
-          </FlexRow>
-        )}
+        {canvasToolbarMode.primary === 'insert'
+          ? wrapInSubmenu(
+              <>
+                <Tooltip title='Back' placement='bottom'>
+                  <InsertModeButton
+                    iconCategory='semantic'
+                    iconType='icon-semantic-back'
+                    onClick={switchToSelectModeCloseMenus}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert div' placement='bottom'>
+                  <InsertModeButton
+                    iconType='view'
+                    primary={canvasToolbarMode.secondary.divInsertionActive}
+                    onClick={insertDivCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert image' placement='bottom'>
+                  <InsertModeButton
+                    iconType='image'
+                    primary={canvasToolbarMode.secondary.imageInsertionActive}
+                    onClick={insertImgCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert button' placement='bottom'>
+                  <InsertModeButton
+                    iconType='clickable'
+                    primary={canvasToolbarMode.secondary.buttonInsertionActive}
+                    onClick={insertButtonCallback}
+                  />
+                </Tooltip>
+                <Tooltip title='Insert conditional' placement='bottom'>
+                  <InsertModeButton
+                    testid={InsertConditionalButtonTestId}
+                    iconType='conditional'
+                    primary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                    onClick={insertConditionalCallback}
+                  />
+                </Tooltip>
+                <Tile style={{ height: '100%' }}>
+                  <CanvasToolbarSearch actionWith={toInsertAndClose} />
+                </Tile>
+              </>,
+            )
+          : null}
+        <ToolbarSearchListing />
       </FlexColumn>
     </div>
   )

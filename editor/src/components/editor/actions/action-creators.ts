@@ -218,6 +218,7 @@ import type {
   SetMapCountOverride,
   TruncateHistory,
   RunDOMWalker,
+  WrapInElementWith,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -731,10 +732,7 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
 
 export function wrapInElement(
   targets: Array<ElementPath>,
-  whatToWrapWith: {
-    element: JSXElement | JSXConditionalExpression | JSXFragment
-    importsToAdd: Imports
-  },
+  whatToWrapWith: WrapInElementWith,
 ): WrapInElement {
   return {
     action: 'WRAP_IN_ELEMENT',

@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+import type { Interpolation, Theme } from '@emotion/react'
 import { jsx } from '@emotion/react'
 import styled from '@emotion/styled'
 import composeRefs from '@seznam/compose-react-refs'
@@ -25,6 +26,8 @@ export interface StringInputProps
   className?: string
   DEPRECATED_labelBelow?: React.ReactChild
   controlStatus?: ControlStatus
+  inputStyle?: React.CSSProperties
+  includeDynamicContainerStyling?: boolean
 }
 
 export const StringInput = React.memo(
@@ -37,6 +40,8 @@ export const StringInput = React.memo(
         placeholder: initialPlaceHolder,
         DEPRECATED_labelBelow: labelBelow,
         testId,
+        inputStyle,
+        includeDynamicContainerStyling = true,
         ...inputProps
       },
       propsRef,
@@ -80,6 +85,30 @@ export const StringInput = React.memo(
         placeholder = 'mixed'
       }
 
+      const containerDynamicStyling: Interpolation<Theme> = React.useMemo(() => {
+        let result: Interpolation<Theme> = {
+          borderRadius: 2,
+          color: controlStyles.mainColor,
+          position: 'relative',
+          background: colorTheme.bg2.value,
+        }
+        if (includeDynamicContainerStyling) {
+          result['&:hover'] = {
+            boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
+          }
+          result['&:focus-within'] = {
+            boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
+          }
+        }
+        return result
+      }, [
+        colorTheme.bg2.value,
+        colorTheme.dynamicBlue.value,
+        colorTheme.fg7.value,
+        controlStyles.mainColor,
+        includeDynamicContainerStyling,
+      ])
+
       return (
         <form
           autoComplete='off'
@@ -87,23 +116,10 @@ export const StringInput = React.memo(
           onMouseDown={stopPropagation}
           onSubmit={preventDefault}
         >
-          <div
-            className='string-input-container'
-            css={{
-              borderRadius: 2,
-              color: controlStyles.mainColor,
-              position: 'relative',
-              background: colorTheme.bg2.value,
-              '&:hover': {
-                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.fg7.value}`,
-              },
-              '&:focus-within': {
-                boxShadow: `inset 0px 0px 0px 1px ${colorTheme.dynamicBlue.value}`,
-              },
-            }}
-          >
+          <div className='string-input-container' css={containerDynamicStyling}>
             <HeadlessStringInput
               {...inputProps}
+              style={inputStyle}
               data-testid={testId}
               data-controlstatus={controlStatus}
               value={inputProps.value}

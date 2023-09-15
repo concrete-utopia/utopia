@@ -1,4 +1,5 @@
 import React from 'react'
+import { emptyImports } from '../../core/workers/common/project-file-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import type { JSXElement } from '../../core/shared/element-template'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
@@ -8,16 +9,28 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { enableInsertModeForJSXElement } from './actions/action-creators'
+import type { WrapInElementWith } from './action-types'
+import { enableInsertModeForJSXElement, wrapInElement } from './actions/action-creators'
 import {
   defaultButtonElement,
   defaultDivElement,
   defaultImgElement,
   defaultSpanElement,
+  defaultTransparentViewElement,
 } from './defaults'
 import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
+import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
+import { getActionsToApplyChange } from './convert-callbacks'
+import { floatingInsertMenuStateInsert } from './store/editor-state'
+
+function shouldSubjectBeWrappedWithConditional(
+  subject: InsertionSubject,
+  isWrapInConditionalInsertOptionSet: boolean,
+): boolean {
+  return subject.insertionSubjectWrapper === 'conditional' && isWrapInConditionalInsertOptionSet
+}
 
 export function useCheckInsertModeForElementType(
   elementName: string,
@@ -121,9 +134,49 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
   )
 }
 
-function shouldSubjectBeWrappedWithConditional(
-  subject: InsertionSubject,
-  isWrapInConditionalInsertOptionSet: boolean,
-): boolean {
-  return subject.insertionSubjectWrapper === 'conditional' && isWrapInConditionalInsertOptionSet
+export function useToInsert(): (convertTo: InsertMenuItem | null) => void {
+  const dispatch = useDispatch()
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const nodeModulesRef = useRefEditorState((store) => store.editor.nodeModules.files)
+  const remixRoutingTableRef = useRefEditorState(
+    (store) => store.derived.remixData?.routingTable ?? null,
+  )
+  const openFileRef = useRefEditorState((store) => store.editor.canvas.openFile?.filename ?? null)
+
+  return React.useCallback(
+    (convertToMenuItem: InsertMenuItem | null) => {
+      if (convertToMenuItem != null) {
+        // Pretend floating menu state as it may be forced by the UI.
+        const floatingMenuState = floatingInsertMenuStateInsert(null, null)
+        const convertTo = convertToMenuItem.value
+        const actions = getActionsToApplyChange(
+          projectContentsRef.current,
+          nodeModulesRef.current,
+          remixRoutingTableRef.current,
+          jsxMetadataRef.current,
+          elementPathTreeRef.current,
+          openFileRef.current,
+          selectedViewsRef.current,
+          floatingMenuState,
+          false,
+          false,
+          convertTo,
+        )
+        dispatch(actions, 'everyone')
+      }
+    },
+    [
+      dispatch,
+      elementPathTreeRef,
+      jsxMetadataRef,
+      nodeModulesRef,
+      openFileRef,
+      projectContentsRef,
+      remixRoutingTableRef,
+      selectedViewsRef,
+    ],
+  )
 }
