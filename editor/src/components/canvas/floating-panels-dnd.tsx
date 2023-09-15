@@ -1,6 +1,7 @@
 import type { ConnectDragPreview, ConnectDragSource, ConnectDropTarget } from 'react-dnd'
-import { useDrag, useDrop } from 'react-dnd'
-import type { LayoutUpdate, StoredPanel } from './floating-panels'
+import { useDrag, useDragLayer, useDrop } from 'react-dnd'
+import type { LayoutUpdate, PanelName, StoredPanel } from './floating-panels'
+import { magnitude, windowPoint } from '../../core/shared/math-utils'
 
 const FloatingPanelTitleBarType = 'floating-panel-title-bar'
 
@@ -33,6 +34,7 @@ export function useFloatingPanelDropArea(
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void,
 ): {
   drop: ConnectDropTarget
+  isOver: boolean
 } {
   const [{ canDrop, isOver }, drop] = useDrop(
     () => ({
@@ -53,5 +55,26 @@ export function useFloatingPanelDropArea(
     [columnIndex, indexInColumn, onDrop],
   )
 
-  return { drop }
+  return { drop, isOver }
+}
+
+const MinDragThreshold = 3
+
+export function useFloatingPanelDragInfo(): {
+  isDragActive: boolean
+  draggedPanelName: PanelName | undefined
+} {
+  const { isDragActive, draggedPanelName } = useDragLayer((monitor) => {
+    const dragVector = monitor.getDifferenceFromInitialOffset()
+    return {
+      isDragActive:
+        monitor.isDragging() &&
+        monitor.getItemType() === FloatingPanelTitleBarType &&
+        dragVector != null &&
+        magnitude(windowPoint(dragVector)) > MinDragThreshold,
+      draggedPanelName: monitor.getItem<FloatingPanelDragItem | null>()?.draggedPanel.name,
+    }
+  })
+
+  return { isDragActive, draggedPanelName }
 }

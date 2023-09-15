@@ -6,11 +6,11 @@ import { v4 as UUID } from 'uuid'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
 import { mod } from '../../core/shared/math-utils'
 import { NO_OP, assertNever } from '../../core/shared/utils'
-import { UtopiaTheme } from '../../uuiui'
+import { UtopiaTheme, colorTheme, width } from '../../uuiui'
 import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
-import { useFloatingPanelDropArea } from './floating-panels-dnd'
+import { useFloatingPanelDragInfo, useFloatingPanelDropArea } from './floating-panels-dnd'
 import type { Menu, Pane, PanelData } from './floating-panels-state-2'
 
 export type PanelName = Menu | Pane
@@ -33,6 +33,9 @@ type StoredLayout = Array<Array<StoredPanel>>
 
 const NumberOfPanels = 4
 const IndexOfCanvas = 2
+
+const VerticalGapHalf = 6
+const HorizontalGapHalf = 6
 
 const NumberOfRows = 12
 
@@ -222,7 +225,10 @@ export const FloatingPanelsContainer = React.memo(() => {
         gridTemplateColumns: '[col] 260px [col] 260px [canvas] 1fr [col] 260px [col] 260px [end]',
         gridTemplateRows: 'repeat(12, 1fr)',
         gridAutoFlow: 'dense',
-        gap: 15,
+        columnGap: HorizontalGapHalf * 2,
+        rowGap: VerticalGapHalf * 2,
+        paddingTop: VerticalGapHalf,
+        paddingBottom: VerticalGapHalf,
       }}
     >
       {orderedPanels.map((pane) => {
@@ -238,9 +244,39 @@ interface FloatingPanelProps {
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
+  const { onDrop } = props
   const { panel, index, span, order } = props.pane
 
-  const { drop } = useFloatingPanelDropArea(index, order, props.onDrop)
+  const { isDragActive, draggedPanelName } = useFloatingPanelDragInfo()
+  const showDragCatchArea = isDragActive && draggedPanelName !== panel.name
+
+  const { drop: dropBefore, isOver: isOverBefore } = useFloatingPanelDropArea(
+    index,
+    order,
+    React.useCallback(
+      (itemToMove: StoredPanel, newPosition: LayoutUpdate) =>
+        onDrop(itemToMove, {
+          type: 'before-index',
+          indexInColumn: order,
+          columnIndex: index,
+        }),
+      [onDrop, index, order],
+    ),
+  )
+  const { drop: dropAfter, isOver: isOverAfter } = useFloatingPanelDropArea(
+    index,
+    order,
+    React.useCallback(
+      (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+        onDrop(itemToMove, {
+          type: 'after-index',
+          indexInColumn: order,
+          columnIndex: index,
+        })
+      },
+      [onDrop, index, order],
+    ),
+  )
 
   const draggablePanelComponent = (() => {
     switch (panel.name) {
@@ -300,7 +336,6 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   return (
     <>
       <div
-        ref={drop}
         style={{
           gridColumn: `col ${index > -1 ? index + 1 : index}`,
           gridRow: `span ${span}`,
@@ -311,6 +346,48 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         }}
       >
         {draggablePanelComponent}
+        <div
+          ref={dropBefore}
+          style={{
+            display: showDragCatchArea ? 'block' : 'none',
+            position: 'absolute',
+            width: '100%',
+            height: `calc(50% + ${VerticalGapHalf}px)`,
+            top: -VerticalGapHalf,
+          }}
+        >
+          <div
+            style={{
+              display: isOverBefore ? 'block' : 'none',
+              position: 'absolute',
+              top: -1,
+              height: 2,
+              width: '100%',
+              backgroundColor: colorTheme.primary.value,
+            }}
+          />
+        </div>
+        <div
+          ref={dropAfter}
+          style={{
+            display: showDragCatchArea ? 'block' : 'none',
+            position: 'absolute',
+            width: '100%',
+            height: `calc(50% + ${VerticalGapHalf}px)`,
+            bottom: -VerticalGapHalf,
+          }}
+        >
+          <div
+            style={{
+              display: isOverAfter ? 'block' : 'none',
+              position: 'absolute',
+              bottom: -1,
+              height: 2,
+              width: '100%',
+              backgroundColor: colorTheme.primary.value,
+            }}
+          />
+        </div>
       </div>
     </>
   )
