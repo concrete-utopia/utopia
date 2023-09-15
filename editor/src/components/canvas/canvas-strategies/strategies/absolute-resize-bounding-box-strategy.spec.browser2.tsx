@@ -17,7 +17,8 @@ import CanvasActions from '../../canvas-actions'
 import { createInteractionViaMouse, updateInteractionViaMouse } from '../interaction-state'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import { canvasPoint, windowPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
-import { emptyModifiers, shiftModifier } from '../../../../utils/modifiers'
+import type { Modifiers } from '../../../../utils/modifiers'
+import { altModifier, emptyModifiers, shiftModifier } from '../../../../utils/modifiers'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { EdgePosition } from '../../canvas-types'
 import {
@@ -320,6 +321,7 @@ async function doSnapDrag(
   delta: { x: number; y: number },
   edgePosition: EdgePosition,
   callback: () => Promise<void>,
+  modifiers: Modifiers = emptyModifiers,
 ) {
   const canvasControl = editor.renderedDOM.getByTestId(
     `resize-control-${edgePosition.x}-${edgePosition.y}`,
@@ -332,7 +334,7 @@ async function doSnapDrag(
   })
 
   await mouseDragFromPointWithDelta(canvasControl, startPoint, delta, {
-    modifiers: emptyModifiers,
+    modifiers: modifiers,
     midDragCallback: callback,
   })
 }
@@ -459,6 +461,38 @@ export var storyboard = (
       data-uid='vertical'
       data-testid='vertical'
     />
+  </Storyboard>
+)
+`
+
+const projectForCenterBasedResize = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 462,
+        top: 122,
+        width: 300,
+        height: 177,
+      }}
+      data-uid='foo'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 91,
+          top: 75,
+          width: 118,
+          height: 31,
+        }}
+        data-uid='bar'
+      />
+    </div>
   </Storyboard>
 )
 `
@@ -1347,14 +1381,30 @@ export var storyboard = (
         projectForMultiSelectResize,
         'await-first-dom-report',
       )
-      await wait(1000)
       await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
-      await wait(1000)
       await doSnapDrag(editor, { x: -305, y: -147 }, EdgePositionBottomRight, async () => {
         // the snap drag along the x axis makes the contents smaller than the snap threshold, so no guidelines are shown
-        await wait(1000)
         expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(0)
       })
+    })
+    it('snap lines are not shown when the bounding box size is below the snapping threshold (center-based)', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForCenterBasedResize,
+        'await-first-dom-report',
+      )
+      await selectComponentsForTest(editor, [EP.fromString('sb/foo/bar')])
+      await doSnapDrag(
+        editor,
+        { x: 0, y: -14 },
+        EdgePositionBottom,
+        async () => {
+          // the snap drag along the y axis makes the contents smaller than the snap threshold, so no guidelines are shown
+          expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(
+            0,
+          )
+        },
+        altModifier,
+      )
     })
 
     describe('groups', () => {
