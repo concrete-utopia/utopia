@@ -101,7 +101,6 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const routeModules = useGetRouteModules(basePath)
 
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
-  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
 
   const currentEntries = navigationData[EP.toString(basePath)]?.entries
   const currentEntriesRef = React.useRef(currentEntries)
@@ -140,9 +139,8 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
           },
         }
       })
-      setActiveRemixScene(basePath)
     },
-    [basePath, setActiveRemixScene, setNavigationData],
+    [basePath, setNavigationData],
   )
 
   // initialize navigation data
