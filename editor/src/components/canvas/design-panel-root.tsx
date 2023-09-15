@@ -198,6 +198,7 @@ const DesignPanelRootInner = React.memo(() => {
                 }}
               >
                 <LeftPaneComponent
+                  panelData={null as any}
                   width={0}
                   height={0}
                   onResize={NO_OP}

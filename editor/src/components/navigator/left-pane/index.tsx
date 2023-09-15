@@ -34,6 +34,7 @@ import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { TitleBarProjectTitle } from '../../titlebar/title-bar'
+import type { StoredPanel } from '../../canvas/floating-panels'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -47,6 +48,7 @@ export const LeftPaneComponentId = 'left-pane'
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 interface LeftPaneComponentProps {
+  panelData: StoredPanel
   width: number
   height: number
   onResize: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
@@ -140,7 +142,10 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
         }}
         {...props.resizableConfig}
       >
-        {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarProjectTitle />)}
+        {when(
+          isFeatureEnabled('Draggable Floating Panels'),
+          <TitleBarProjectTitle panelData={props.panelData} />,
+        )}
         <div
           id={LeftPaneComponentId}
           className='leftPane'

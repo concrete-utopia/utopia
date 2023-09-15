@@ -316,6 +316,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
       case 'navigator':
         return (
           <LeftPaneComponent
+            panelData={props.pane.panel}
             width={0}
             height={0}
             onResize={NO_OP}

@@ -48,7 +48,9 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
   )
 }
 export const TitleHeight = 40
-export const TitleBarProjectTitle = React.memo(() => {
+export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel }) => {
+  const { drag } = useFloatingPanelDraggable(props.panelData)
+
   const dispatch = useDispatch()
   const theme = useColorTheme()
   const projectName = useEditorState(
@@ -122,6 +124,7 @@ export const TitleBarProjectTitle = React.memo(() => {
 
   return (
     <div
+      ref={drag}
       className='handle'
       style={{
         height: TitleHeight,
