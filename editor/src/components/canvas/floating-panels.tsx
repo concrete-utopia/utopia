@@ -69,8 +69,8 @@ const defaultPanels: StoredLayout = [
   [],
 ]
 
-function storedLayoutToResolvedPanels(stored: StoredLayout): Array<PanelData> {
-  const panels = accumulate<MapLike<PanelData>>({}, (acc) => {
+function storedLayoutToResolvedPanels(stored: StoredLayout): { [index in PanelName]: PanelData } {
+  const panels = accumulate<{ [index in PanelName]: PanelData }>({} as any, (acc) => {
     stored.forEach((column, colIndex) => {
       const panelsForColumn = column.length
       column.forEach((panel, panelIndex) => {
@@ -84,7 +84,7 @@ function storedLayoutToResolvedPanels(stored: StoredLayout): Array<PanelData> {
     })
   })
 
-  return Object.values(panels)
+  return panels
 }
 
 type BeforeColumn = {
@@ -203,7 +203,7 @@ function updateLayout(
 export const FloatingPanelsContainer = React.memo(() => {
   const [panelState, setPanelState] = React.useState(defaultPanels)
 
-  const orderedPanels = React.useMemo<Array<PanelData>>(() => {
+  const orderedPanels = React.useMemo(() => {
     return storedLayoutToResolvedPanels(panelState)
   }, [panelState])
 
@@ -231,9 +231,9 @@ export const FloatingPanelsContainer = React.memo(() => {
         paddingBottom: VerticalGapHalf,
       }}
     >
-      {orderedPanels.map((pane) => {
-        return <FloatingPanel key={pane.panel.name} onDrop={onDrop} pane={pane} />
-      })}
+      <FloatingPanel key={'code-editor'} onDrop={onDrop} pane={orderedPanels['code-editor']} />
+      <FloatingPanel key={'navigator'} onDrop={onDrop} pane={orderedPanels['navigator']} />
+      <FloatingPanel key={'inspector'} onDrop={onDrop} pane={orderedPanels['inspector']} />
     </div>
   )
 })

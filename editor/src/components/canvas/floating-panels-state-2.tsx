@@ -1,13 +1,13 @@
 import type { StoredPanel } from './floating-panels'
 
 export type Menu = 'inspector' | 'navigator'
-export type Pane = 'code-editor' | 'preview'
+export type Pane = 'code-editor'
 
 export const allMenusAndPanels: Array<Menu | Pane> = [
   'navigator',
   'code-editor',
   'inspector',
-  'preview',
+  // 'preview', // Does this exist?
 ]
 
 export interface PanelData {
