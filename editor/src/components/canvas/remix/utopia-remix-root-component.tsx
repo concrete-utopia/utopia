@@ -63,10 +63,6 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
-      const possiblePaths = remixDerivedDataRef.current.routeModulesToRelativePaths[
-        routeId
-      ].relativePaths.map((path) => EP.appendTwoPaths(basePath, path))
-
       const defaultComponent = (componentProps: any) =>
         value
           .executionScopeCreator(projectContentsRef.current)
@@ -74,12 +70,12 @@ function useGetRouteModules(basePath: ElementPath) {
 
       routeModulesResult[routeId] = {
         ...value,
-        default: PathPropHOC(defaultComponent, possiblePaths),
+        default: PathPropHOC(defaultComponent),
       }
     }
 
     return routeModulesResult
-  }, [defaultExports, remixDerivedDataRef, projectContentsRef, basePath])
+  }, [defaultExports, remixDerivedDataRef, projectContentsRef])
 }
 
 export interface UtopiaRemixRootComponentProps {
