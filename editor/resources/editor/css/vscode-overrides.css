@@ -10,6 +10,38 @@
      (vscode-editor-loading-screen.tsx)
 */
 
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('../fonts/Inter-Regular.woff') format('woff');
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('../fonts/Inter-Medium.woff') format('woff');
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('../fonts/Inter-MediumItalic.woff') format('woff');
+  font-weight: 500;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('../fonts/Inter-SemiBold.woff') format('woff');
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: 'utopian-inter';
+  src: url('../fonts/Inter-SemiBoldItalic.woff') format('woff');
+  font-weight: 600;
+  font-style: italic;
+}
+
 .monaco-workbench .part.editor > .content .editor-group-container > .title {
   background-color: transparent !important;
 }
@@ -17,7 +49,7 @@
 /* Tab styles */
 .tab {
   font-weight: 500;
-  font-family: 'Inter';
+  font-family: 'utopian-inter';
   border-right: none !important;
   background-color: transparent !important;
 }
