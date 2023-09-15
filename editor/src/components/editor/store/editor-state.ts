@@ -174,11 +174,7 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import type {
-  RemixDerivedData,
-  RemixDerivedDataFactory,
-  RemixRoutingTable,
-} from './remix-derived-data'
+import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
 
 const ObjectPathImmutable: any = OPI
 

@@ -64,6 +64,8 @@ import {
   InspectorHoveredCanvasControls,
 } from '../../inspector/common/inspector-atoms'
 import { useSelectionArea } from './selection-area-hooks'
+import { RemixSceneLabelControl } from './select-mode/remix-scene-label'
+import { NO_OP } from '../../../core/shared/utils'
 
 export const CanvasControlsContainerID = 'new-canvas-controls-container'
 
@@ -171,7 +173,29 @@ export const NewCanvasControls = React.memo((props: NewCanvasControlsProps) => {
   const ref = React.useRef<HTMLDivElement | null>(null)
 
   if (isLiveMode(canvasControlProps.editorMode) && !canvasControlProps.keysPressed.cmd) {
-    return null
+    return (
+      <div
+        style={{
+          pointerEvents: 'none',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+          height: `${canvasControlProps.scale < 1 ? 100 / canvasControlProps.scale : 100}%`,
+          transformOrigin: 'top left',
+          transform: canvasControlProps.scale < 1 ? `scale(${canvasControlProps.scale}) ` : '',
+          cursor: props.cursor,
+          visibility: canvasControlProps.canvasScrollAnimation ? 'hidden' : 'initial',
+        }}
+      >
+        <div style={{ pointerEvents: 'none', position: 'relative', width: '100%', height: '100%' }}>
+          <RemixSceneLabelControl
+            maybeHighlightOnHover={NO_OP}
+            maybeClearHighlightsOnHoverEnd={NO_OP}
+          />
+        </div>
+      </div>
+    )
   } else if (isTextEditMode(canvasControlProps.editorMode)) {
     return <TextEditCanvasOverlay cursor={props.cursor} />
   } else {
@@ -504,6 +528,13 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             {inspectorHoveredControls.map((c) => (
               <RenderControlMemoized key={c.key} control={c.control} propsForControl={c.props} />
             ))}
+            {when(
+              isSelectMode(editorMode),
+              <RemixSceneLabelControl
+                maybeHighlightOnHover={maybeHighlightOnHover}
+                maybeClearHighlightsOnHoverEnd={maybeClearHighlightsOnHoverEnd}
+              />,
+            )}
             {when(isSelectMode(editorMode) && !anyStrategyActive, <PinLines />)}
             {when(isSelectMode(editorMode), <InsertionControls />)}
             {renderHighlightControls()}

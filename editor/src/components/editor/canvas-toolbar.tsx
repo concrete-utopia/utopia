@@ -45,6 +45,13 @@ import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
+import { RemixNavigationBar } from './remix-navigation-bar'
+import { RemixNavigationAtom } from '../canvas/remix/utopia-remix-root-component'
+import { useAtom } from 'jotai'
+import { forceNotNull } from '../../core/shared/optional-utils'
+import type { UiJsxCanvasContextData } from '../canvas/ui-jsx-canvas'
+import { UiJsxCanvasCtxAtom } from '../canvas/ui-jsx-canvas'
+import { AlwaysFalse, usePubSubAtomReadOnly } from '../../core/shared/atom-with-pub-sub'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -187,9 +194,23 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [dispatch, isLiveMode])
 
+  // Hack: reset the remix location when resetting the canvas
+  const [navigationData] = useAtom(RemixNavigationAtom)
+  const resetRemixApps = React.useCallback(
+    () => Object.values(navigationData).forEach((navData) => navData.home()),
+    [navigationData],
+  )
+
+  let uiJsxCanvasContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
+  )
+
   const resetCanvasCallback = React.useCallback(() => {
+    uiJsxCanvasContext.current.spyValues.metadata = {}
+    resetRemixApps()
     dispatch([resetCanvas()])
-  }, [dispatch])
+  }, [dispatch, resetRemixApps, uiJsxCanvasContext])
 
   const inspectorInvisible = useEditorState(
     Substores.restOfEditor,
@@ -489,7 +510,30 @@ export const CanvasToolbar = React.memo(() => {
                 onClick={selectInsertMenuPane}
               />
             </Tooltip>
+            {/* Live Mode */}
           </FlexRow>
+        )}
+        {when(
+          canvasToolbarMode.primary === 'play',
+          <>
+            <FlexRow
+              data-testid='canvas-toolbar-submenu'
+              style={{
+                alignItems: 'start',
+                marginLeft: 15,
+                padding: '0 8px',
+                height: 32,
+                overflow: 'hidden',
+                backgroundColor: colorTheme.bg2.value,
+                borderRadius: '0px 10px 10px 10px',
+                boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+                pointerEvents: 'initial',
+                zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
+              }}
+            >
+              <RemixNavigationBar />
+            </FlexRow>
+          </>,
         )}
       </FlexColumn>
     </div>

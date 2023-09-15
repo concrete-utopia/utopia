@@ -1,4 +1,5 @@
 import moize from 'moize'
+import type { Options } from 'moize'
 import { shallowEqual } from './equality-utils'
 
 export interface MemoizeOptions<T> {
@@ -6,7 +7,7 @@ export interface MemoizeOptions<T> {
   equals: (a: T, b: T) => boolean
 }
 
-function getMemoizeOptions<T>(options?: Partial<MemoizeOptions<T>>): MemoizeOptions<T> {
+function getMemoizeOptions<T>(options?: Partial<MemoizeOptions<any>>): Options<any> {
   let equalsFunction = shallowEqual
   let maxSize = 5
   if (options != null) {
@@ -18,7 +19,7 @@ function getMemoizeOptions<T>(options?: Partial<MemoizeOptions<T>>): MemoizeOpti
     }
   }
   return {
-    equals: equalsFunction,
+    matchesArg: equalsFunction,
     maxSize: maxSize,
   }
 }

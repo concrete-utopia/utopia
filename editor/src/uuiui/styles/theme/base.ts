@@ -6,6 +6,7 @@ export const base = {
   blue30: createUtopiColor('lch(50 85 280 / 30%)'),
   purple: createUtopiColor('lch(39 129 307 / 1)'),
   purple70: createUtopiColor('lch(39 129 307 / 70%)'),
+  purple05: createUtopiColor('lch(39 129 307 / 5%)'),
   red: createUtopiColor('lch(57 100 16 / 1)'),
   orange: createUtopiColor('lch(81 111 79 / 1)'),
   orange20: createUtopiColor('lch(81 111 79 / 20%)'),

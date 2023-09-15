@@ -5,7 +5,7 @@ import { isFiniteRectangle, windowPoint } from '../../../../core/shared/math-uti
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { useColorTheme } from '../../../../uuiui'
+import { FlexRow, Tooltip, useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -14,32 +14,33 @@ import { boundingArea, createInteractionViaMouse } from '../../canvas-strategies
 import { windowToCanvasCoordinates } from '../../dom-lookup'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isSelectModeWithArea } from '../../../editor/editor-modes'
-import { getSubTree } from '../../../../core/shared/element-path-tree'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 
-interface SceneLabelControlProps {
+interface RemixSceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
 }
 
-interface SceneLabelProps extends SceneLabelControlProps {
+interface RemixSceneLabelProps extends RemixSceneLabelControlProps {
   target: ElementPath
 }
 
-export const SceneLabelTestID = 'scene-label'
+export const RemixSceneLabelTestID = 'remix-scene-label'
 
-export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
+export const RemixSceneLabelControl = React.memo<RemixSceneLabelControlProps>((props) => {
   const sceneTargets = useEditorState(
     Substores.metadata,
     (store) =>
       Object.values(store.editor.jsxMetadata).filter((element) =>
-        MetadataUtils.isProbablyScene(store.editor.jsxMetadata, element.elementPath),
+        MetadataUtils.isProbablyRemixScene(store.editor.jsxMetadata, element.elementPath),
       ),
-    'SceneLabelControl',
+    'RemixSceneLabelControl',
   )
   return (
     <>
       {sceneTargets.map((element) => (
-        <SceneLabel
+        <RemixSceneLabel
           key={EP.toString(element.elementPath)}
           target={element.elementPath}
           maybeHighlightOnHover={props.maybeHighlightOnHover}
@@ -50,61 +51,58 @@ export const SceneLabelControl = React.memo<SceneLabelControlProps>((props) => {
   )
 })
 
-const SceneLabel = React.memo<SceneLabelProps>((props) => {
+const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
 
-  const sceneHasSingleChild = useEditorState(
-    Substores.metadata,
-    (store) => {
-      const subTree = getSubTree(store.editor.elementPathTree, props.target)
-      if (subTree == null) {
-        return false
-      } else {
-        return subTree.children.length === 1
-      }
-    },
-    'SceneLabel sceneHasSingleChild',
+  const [navigationData] = useAtom(RemixNavigationAtom)
+
+  const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
+  const isIndexRoute = currentPath === '/'
+
+  const label = isIndexRoute ? '(home)' : currentPath
+
+  const forward = React.useCallback(
+    () => navigationData[EP.toString(props.target)]?.forward(),
+    [navigationData, props.target],
+  )
+  const back = React.useCallback(
+    () => navigationData[EP.toString(props.target)]?.back(),
+    [navigationData, props.target],
+  )
+  const home = React.useCallback(
+    () => navigationData[EP.toString(props.target)]?.home(),
+    [navigationData, props.target],
   )
 
   const labelSelectable = useEditorState(
     Substores.restOfEditor,
     (store) => !store.editor.keysPressed['z'],
-    'SceneLabel Z key pressed',
+    'RemixSceneLabel Z key pressed',
   )
-  const label = useEditorState(
-    Substores.metadata,
-    (store) =>
-      MetadataUtils.getElementLabel(
-        store.editor.allElementProps,
-        props.target,
-        store.editor.elementPathTree,
-        store.editor.jsxMetadata,
-      ),
-    'SceneLabel label',
-  )
+
   const frame = useEditorState(
     Substores.metadata,
     (store) => MetadataUtils.getFrameInCanvasCoords(props.target, store.editor.jsxMetadata),
-    'SceneLabel frame',
+    'RemixSceneLabel frame',
   )
 
   const canvasOffset = useEditorState(
     Substores.canvasOffset,
     (store) => store.editor.canvas.realCanvasOffset,
-    'SceneLabel canvasOffset',
+    'RemixSceneLabel canvasOffset',
   )
   const scale = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
-    'SceneLabel scale',
+    'RemixSceneLabel scale',
   )
   const baseFontSize = 9
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
-  const paddingY = scaledFontSize / 9
-  const offsetY = scaledFontSize / 3
-  const offsetX = scaledFontSize / 2
+  const paddingY = scaledFontSize / 2
+  const offsetY = scaledFontSize
+  const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
   const storeRef = useRefEditorState((store) => {
@@ -116,12 +114,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const isSelected = useEditorState(
     Substores.selectedViews,
     (store) => store.editor.selectedViews.some((view) => EP.pathsEqual(props.target, view)),
-    'SceneLabel isSelected',
+    'RemixSceneLabel isSelected',
   )
   const isHighlighted = useEditorState(
     Substores.highlightedHoveredViews,
     (store) => store.editor.highlightedViews.some((view) => EP.pathsEqual(props.target, view)),
-    'SceneLabel isHighlighted',
+    'RemixSceneLabel isHighlighted',
   )
 
   const onMouseMove = React.useCallback(
@@ -192,32 +190,27 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     }
   }, [onMouseUp])
 
-  const selectedBackgroundColor = sceneHasSingleChild
-    ? colorTheme.componentPurple05solid.value
-    : colorTheme.bg5.value
-  const backgroundColor = isSelected ? selectedBackgroundColor : 'transparent'
+  const backgroundColor = isSelected ? colorTheme.aqua05solid.value : 'transparent'
 
   if (frame != null && isFiniteRectangle(frame)) {
     return (
       <CanvasOffsetWrapper>
-        <div
+        <FlexRow
           onMouseOver={labelSelectable ? onMouseOver : NO_OP}
           onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
           onMouseMove={labelSelectable ? onMouseMove : NO_OP}
-          data-testid={SceneLabelTestID}
+          data-testid={RemixSceneLabelTestID}
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: sceneHasSingleChild
-              ? colorTheme.componentPurple.value
-              : colorTheme.subduedForeground.value,
+            color: isIndexRoute ? colorTheme.aqua.value : colorTheme.textColor.value,
             position: 'absolute',
-            fontWeight: 600,
             left: frame.x,
             bottom: -frame.y + offsetY,
             width: frame.width,
             paddingLeft: offsetX,
+            paddingTop: paddingY,
             paddingBottom: paddingY,
             fontFamily: 'Utopian-Inter',
             fontSize: scaledFontSize,
@@ -227,10 +220,38 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             textOverflow: 'ellipsis',
             borderRadius: borderRadius,
             backgroundColor: backgroundColor,
+            gap: 12 / scale,
           }}
         >
-          {label}
-        </div>
+          <Tooltip title={'Back'}>
+            <span style={{ cursor: 'pointer', fontSize: 16 / scale }} onMouseDown={back}>
+              〱
+            </span>
+          </Tooltip>
+          <Tooltip title={'Forward'}>
+            <span
+              style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
+              onMouseDown={forward}
+            >
+              〱
+            </span>
+          </Tooltip>
+          <Tooltip title={'Home'}>
+            <span style={{ cursor: 'pointer', fontSize: 16 / scale }} onMouseDown={home}>
+              ／
+            </span>
+          </Tooltip>
+          <div
+            style={{
+              backgroundColor: '#f2f3f4',
+              borderRadius: 10 / scale,
+              padding: `${4 / scale}px ${12 / scale}px`,
+              fontSize: 14 / scale,
+            }}
+          >
+            {label}
+          </div>
+        </FlexRow>
       </CanvasOffsetWrapper>
     )
   } else {
