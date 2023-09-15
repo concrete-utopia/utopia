@@ -198,6 +198,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         gridTemplateColumns: '[col] 260px [col] 260px [canvas] 1fr [col] 260px [col] 260px [end]',
         gridTemplateRows: 'repeat(12, 1fr)',
         gridAutoFlow: 'dense',
+        gap: 15,
       }}
     >
       {orderedPanels.map((pane) => {
