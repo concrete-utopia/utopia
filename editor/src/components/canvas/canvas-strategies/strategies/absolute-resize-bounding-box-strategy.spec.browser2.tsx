@@ -1342,6 +1342,20 @@ export var storyboard = (
         ).toEqual('YAxisGuideline')
       })
     })
+    it('snap lines are not shown when the bounding box size is below the snapping threshold', async () => {
+      const editor = await renderTestEditorWithCode(
+        projectForMultiSelectResize,
+        'await-first-dom-report',
+      )
+      await wait(1000)
+      await selectComponentsForTest(editor, [EP.fromString('sb/one'), EP.fromString('sb/two')])
+      await wait(1000)
+      await doSnapDrag(editor, { x: -305, y: -147 }, EdgePositionBottomRight, async () => {
+        // the snap drag along the x axis makes the contents smaller than the snap threshold, so no guidelines are shown
+        await wait(1000)
+        expect(editor.getEditorState().editor.canvas.controls.snappingGuidelines.length).toEqual(0)
+      })
+    })
 
     describe('groups', () => {
       AllFragmentLikeTypes.forEach((type) => {

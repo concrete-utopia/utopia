@@ -141,6 +141,7 @@ export function runLegacyAbsoluteResizeSnapping(
     draggedCorner,
     allElementProps,
     pathTrees,
+    resizedBounds,
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)

@@ -1216,6 +1216,7 @@ export function snapPoint(
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
+  resizedBounds: CanvasRectangle,
 ): {
   snappedPointOnCanvas: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -1232,8 +1233,12 @@ export function snapPoint(
   const anyElementFragmentLike = selectedViews.some((elementPath) =>
     treatElementAsFragmentLike(jsxMetadata, allElementProps, pathTrees, elementPath),
   )
+  const resizedBoundsBelowThreshold =
+    resizedBounds.width < SnappingThreshold || resizedBounds.height < SnappingThreshold
   const shouldSnap =
-    enableSnapping && (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
+    enableSnapping &&
+    !resizedBoundsBelowThreshold &&
+    (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
