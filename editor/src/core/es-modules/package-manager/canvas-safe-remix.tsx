@@ -55,9 +55,11 @@ export const SafeOutlet = (props: SafeOutletProps): JSX.Element => {
     )
   } else {
     return (
-      <Router location='/' navigator={dummyNavigator}>
-        <Outlet {...props} />
-      </Router>
+      <OutletPathContext.Provider value={EP.fromString(pathString)}>
+        <Router location='/' navigator={dummyNavigator}>
+          <Outlet {...props} />
+        </Router>
+      </OutletPathContext.Provider>
     )
   }
 }
