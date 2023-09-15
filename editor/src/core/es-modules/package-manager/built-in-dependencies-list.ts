@@ -17,6 +17,7 @@ import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
 import { UtopiaApiGroup } from './group-component'
 import * as RemixRunReact from '@remix-run/react'
 import * as ReactRouter from 'react-router'
+import { SafeLink, SafeOutlet } from './canvas-safe-remix'
 
 applyUIDMonkeyPatch()
 
@@ -89,7 +90,11 @@ export function createBuiltInDependenciesList(
     ),
     builtInDependency(
       '@remix-run/react',
-      RemixRunReact,
+      {
+        ...RemixRunReact,
+        Link: SafeLink,
+        Outlet: SafeOutlet,
+      },
       editorPackageJSON.dependencies['@remix-run/react'],
     ),
     builtInDependency('react-router', ReactRouter, editorPackageJSON.dependencies['react-router']),
