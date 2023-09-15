@@ -2,6 +2,7 @@ import findIndex from 'lodash.findindex'
 import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
 import type { MapLike } from 'typescript'
+import { v4 as UUID } from 'uuid'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
 import { mod } from '../../core/shared/math-utils'
 import { NO_OP, assertNever } from '../../core/shared/utils'
@@ -9,14 +10,23 @@ import { UtopiaTheme } from '../../uuiui'
 import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
-import type { Menu, Pane, PanelData } from './floating-panels-state-2'
 import { useFloatingPanelDropArea } from './floating-panels-dnd'
+import type { Menu, Pane, PanelData } from './floating-panels-state-2'
 
 export type PanelName = Menu | Pane
 
 export interface StoredPanel {
   name: PanelName
   type: 'menu' | 'pane'
+  uid: string
+}
+
+function storedPanel({ name, type }: { name: PanelName; type: 'menu' | 'pane' }): StoredPanel {
+  return {
+    name: name,
+    type: type,
+    uid: UUID(),
+  }
 }
 
 type StoredLayout = Array<Array<StoredPanel>>
@@ -47,12 +57,13 @@ function normalizeColIndex(index: number): number {
 
 const defaultPanels: StoredLayout = [
   [
-    { name: 'navigator', type: 'menu' },
-    { name: 'code-editor', type: 'pane' },
+    storedPanel({ name: 'inspector', type: 'menu' }),
+    storedPanel({ name: 'navigator', type: 'menu' }),
+    storedPanel({ name: 'code-editor', type: 'pane' }),
   ],
   [],
   [],
-  [{ name: 'inspector', type: 'menu' }],
+  [],
 ]
 
 function storedLayoutToResolvedPanels(stored: StoredLayout): Array<PanelData> {
@@ -97,6 +108,8 @@ function updateLayout(
   paneToMove: StoredPanel, // must be referentially equal to the stored panel!
   update: LayoutUpdate,
 ): StoredLayout {
+  const panelToInsert = storedPanel(paneToMove)
+
   function insertPanel(layout: StoredLayout) {
     if (update.type === 'before-column') {
       const atLeastOneEmptyColumn = layout.some((col) => col.length === 0)
@@ -106,7 +119,7 @@ function updateLayout(
 
         return layout // BAIL OUT! TODO we should show a Toast
       }
-      const newColumn: Array<StoredPanel> = [{ ...paneToMove }]
+      const newColumn: Array<StoredPanel> = [panelToInsert]
 
       if (update.columnIndex < 0) {
         // we are on the right hand side of the editor, so we apply right to left logic
@@ -149,7 +162,7 @@ function updateLayout(
       // insert
       working[update.columnIndex] = insert(
         update.indexInColumn,
-        { ...paneToMove },
+        panelToInsert,
         working[update.columnIndex],
       )
 
@@ -161,7 +174,7 @@ function updateLayout(
       // insert
       working[update.columnIndex] = insert(
         update.indexInColumn + 1,
-        { ...paneToMove },
+        panelToInsert,
         working[update.columnIndex],
       )
 
@@ -172,7 +185,9 @@ function updateLayout(
   }
 
   function removeOldPanel(layout: StoredLayout) {
-    return layout.map((column) => removeAll(column, [paneToMove]))
+    return layout.map((column) => {
+      return removeAll(column, [paneToMove], (l, r) => l.uid === r.uid)
+    })
   }
 
   const withPanelInserted = insertPanel(stored)
@@ -183,9 +198,18 @@ function updateLayout(
 }
 
 export const FloatingPanelsContainer = React.memo(() => {
+  const [panelState, setPanelState] = React.useState(defaultPanels)
+
   const orderedPanels = React.useMemo<Array<PanelData>>(() => {
-    return storedLayoutToResolvedPanels(defaultPanels)
-  }, [])
+    return storedLayoutToResolvedPanels(panelState)
+  }, [panelState])
+
+  const onDrop = React.useCallback(
+    (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+      setPanelState((panels) => updateLayout(panels, itemToMove, newPosition))
+    },
+    [setPanelState],
+  )
 
   return (
     <div
@@ -202,24 +226,21 @@ export const FloatingPanelsContainer = React.memo(() => {
       }}
     >
       {orderedPanels.map((pane) => {
-        return <FloatingPanel key={pane.panel.name} pane={pane} />
+        return <FloatingPanel key={pane.panel.name} onDrop={onDrop} pane={pane} />
       })}
     </div>
   )
 })
 
 interface FloatingPanelProps {
+  onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   pane: PanelData
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   const { panel, index, span, order } = props.pane
 
-  const onDrop = React.useCallback((itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
-    // console.log('new layout!!!', updateLayout(defaultPanels, itemToMove, newPosition))
-  }, [])
-
-  const { drop } = useFloatingPanelDropArea(index, order, onDrop)
+  const { drop } = useFloatingPanelDropArea(index, order, props.onDrop)
 
   const draggablePanelComponent = (() => {
     switch (panel.name) {

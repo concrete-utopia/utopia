@@ -10,16 +10,19 @@ export function useFloatingPanelDraggable(draggedPanel: StoredPanel): {
   drag: ConnectDragSource
   dragPreview: ConnectDragPreview
 } {
-  const [{ isDragging }, drag, dragPreview] = useDrag(() => ({
-    // "type" is required. It is used by the "accept" specification of drop targets.
-    type: FloatingPanelTitleBarType,
-    item: { draggedPanel: draggedPanel } as FloatingPanelDragItem,
-    // The collect function utilizes a "monitor" instance (see the Overview for what this is)
-    // to pull important pieces of state from the DnD system.
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
+  const [{ isDragging }, drag, dragPreview] = useDrag(
+    () => ({
+      // "type" is required. It is used by the "accept" specification of drop targets.
+      type: FloatingPanelTitleBarType,
+      item: { draggedPanel: draggedPanel } as FloatingPanelDragItem,
+      // The collect function utilizes a "monitor" instance (see the Overview for what this is)
+      // to pull important pieces of state from the DnD system.
+      collect: (monitor) => ({
+        isDragging: monitor.isDragging(),
+      }),
     }),
-  }))
+    [draggedPanel],
+  )
 
   return { drag, dragPreview }
 }
@@ -31,21 +34,24 @@ export function useFloatingPanelDropArea(
 ): {
   drop: ConnectDropTarget
 } {
-  const [{ canDrop, isOver }, drop] = useDrop(() => ({
-    // The type (or types) to accept - strings or symbols
-    accept: FloatingPanelTitleBarType,
-    drop: (droppedItem: FloatingPanelDragItem) =>
-      onDrop(droppedItem.draggedPanel, {
-        type: 'before-index',
-        columnIndex: columnIndex,
-        indexInColumn: indexInColumn,
+  const [{ canDrop, isOver }, drop] = useDrop(
+    () => ({
+      // The type (or types) to accept - strings or symbols
+      accept: FloatingPanelTitleBarType,
+      drop: (droppedItem: FloatingPanelDragItem) =>
+        onDrop(droppedItem.draggedPanel, {
+          type: 'before-index',
+          columnIndex: columnIndex,
+          indexInColumn: indexInColumn,
+        }),
+      // Props to collect
+      collect: (monitor) => ({
+        isOver: monitor.isOver(),
+        canDrop: monitor.canDrop(),
       }),
-    // Props to collect
-    collect: (monitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
     }),
-  }))
+    [columnIndex, indexInColumn, onDrop],
+  )
 
   return { drop }
 }
