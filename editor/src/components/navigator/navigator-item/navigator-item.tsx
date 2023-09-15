@@ -870,7 +870,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
           : isRemixItem
           ? colorTheme.aqua.value
           : isComponentScene
-          ? colorTheme.component.value
+          ? colorTheme.componentPurple.value
           : undefined,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
