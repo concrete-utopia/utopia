@@ -288,7 +288,7 @@ export function getMultiselectBounds(
 
 export const flattenSelection = memoize(flattenSelectionInner, {
   maxSize: 1,
-  equals: is,
+  matchesArg: is,
 })
 
 // No need to include descendants in multiselection when dragging

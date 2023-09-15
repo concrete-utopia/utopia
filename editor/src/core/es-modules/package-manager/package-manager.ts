@@ -209,6 +209,6 @@ export const getDependencyTypeDefinitions = memoize(
   },
   {
     maxSize: 1,
-    equals: Object.is, // for an object with thousands of entries, where the values are _large_ strings, even a shallow equals is expensive
+    matchesArg: Object.is, // for an object with thousands of entries, where the values are _large_ strings, even a shallow equals is expensive
   },
 )

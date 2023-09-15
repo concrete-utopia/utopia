@@ -36,7 +36,10 @@ function packageJsonEquals(l: ProjectFile | undefined, r: ProjectFile | undefine
   }
 }
 
-const parsePackageJson = memoize(parsePackageJsonInner, { maxSize: 1, equals: packageJsonEquals })
+const parsePackageJson = memoize(parsePackageJsonInner, {
+  maxSize: 1,
+  matchesArg: packageJsonEquals,
+})
 
 function getParsedPackageJson(projectContents: ProjectContentTreeRoot): Record<string, any> | null {
   return parsePackageJson(getProjectFileByFilePath(projectContents, '/package.json'))
