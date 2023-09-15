@@ -8,7 +8,6 @@ import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
 import {
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
-  wait,
 } from '../../../utils/utils.test-utils'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
@@ -266,6 +265,90 @@ describe('Remix content', () => {
     })
   })
 
+  it('Two remix outlets, both have metadata', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+            <Outlet data-uid='outlet2'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='remix-div'
+        >
+          ${DefaultRouteTextContent}
+        </div>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixDivMetadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remix-scene:rootdiv/outlet:remix-div'
+      ]
+
+    expect(remixDivMetadata).not.toBeUndefined()
+
+    expect(remixDivMetadata.globalFrame).toEqual({
+      height: 200,
+      width: 200,
+      x: 212,
+      y: 128,
+    })
+
+    const remixDiv2Metadata =
+      renderResult.getEditorState().editor.jsxMetadata[
+        'storyboard/remix-scene:rootdiv/outlet2:remix-div'
+      ]
+
+    expect(remixDiv2Metadata).not.toBeUndefined()
+
+    expect(remixDiv2Metadata.globalFrame).toEqual({
+      height: 200,
+      width: 200,
+      x: 212,
+      y: 128,
+    })
+  })
+
   it('Remix content can be selected', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
@@ -322,6 +405,66 @@ describe('Remix content', () => {
 
     expect(EP.toString(renderResult.getEditorState().editor.selectedViews[0])).toEqual(
       'storyboard/remix-scene:rootdiv/outlet:remix-route-root/remix-div',
+    )
+  })
+
+  it('Remix content can be selected from second outlet', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+            <Outlet data-uid='outlet2'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div data-uid='remix-route-root'>
+          <div data-uid='remix-div' data-testid='remix-div'>${DefaultRouteTextContent}</div>
+        </div>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const targetElement = renderResult.renderedDOM.getAllByTestId('remix-div')[1]
+    const targetElementBounds = targetElement.getBoundingClientRect()
+
+    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    await mouseClickAtPoint(canvasControlsLayer, clickPoint, { modifiers: cmdModifier })
+
+    expect(renderResult.getEditorState().editor.selectedViews).toHaveLength(1)
+
+    expect(EP.toString(renderResult.getEditorState().editor.selectedViews[0])).toEqual(
+      'storyboard/remix-scene:rootdiv/outlet2:remix-route-root/remix-div',
     )
   })
 
@@ -750,6 +893,59 @@ describe('Editing Remix content', () => {
       )
     }    
     `,
+  })
+
+  it('set opacity on remix element from second outlet', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-uid='rs'
+            data-label='Playground'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='root'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet' />
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <h1 data-uid='title' data-testid='title'>${DefaultRouteTextContent}</h1>
+      }
+      `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const pathString = 'sb/rs:root/outlet2:title'
+
+    await selectComponentsForTest(renderResult, [EP.fromString(pathString)])
+    await pressKey('3')
+    await pressKey('0')
+
+    const titleElement = renderResult.renderedDOM.getByTestId('title')
+    expect(titleElement.style.opacity).toEqual('0.3')
   })
 
   it('delete element from remix scene', async () => {
