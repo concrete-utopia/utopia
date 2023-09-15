@@ -190,10 +190,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     }
   }, [onMouseUp])
 
-  const highlightColor = colorTheme.fg9.value
-  const backgroundColor = colorTheme.white.value
-  const boxShadowWidth = 1.5 / scale
-  const boxShadow = `0px 0px 0px ${boxShadowWidth}px ${highlightColor}`
+  const backgroundColor = isSelected ? colorTheme.aqua05solid.value : 'transparent'
 
   if (frame != null && isFiniteRectangle(frame)) {
     return (
@@ -207,7 +204,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: isIndexRoute ? colorTheme.subduedForeground.value : colorTheme.textColor.value,
+            color: isIndexRoute ? colorTheme.aqua.value : colorTheme.textColor.value,
             position: 'absolute',
             left: frame.x,
             bottom: -frame.y + offsetY,
@@ -215,14 +212,12 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
             paddingLeft: offsetX,
             paddingTop: paddingY,
             paddingBottom: paddingY,
-            fontFamily:
-              '-apple-system, BlinkMacSystemFont, Helvetica, "Segoe UI", Roboto,  Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+            fontFamily: 'Utopian-Inter',
             fontSize: scaledFontSize,
             lineHeight: `${scaledLineHeight}px`,
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
-            boxShadow: boxShadow,
             borderRadius: borderRadius,
             backgroundColor: backgroundColor,
             gap: 12 / scale,
