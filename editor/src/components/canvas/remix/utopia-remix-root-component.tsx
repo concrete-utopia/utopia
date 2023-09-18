@@ -2,7 +2,7 @@ import { RemixContext } from '@remix-run/react/dist/components'
 import type { RouteModules } from '@remix-run/react/dist/routeModules'
 import React from 'react'
 import type { Location } from 'react-router'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { createMemoryRouter, matchRoutes, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
@@ -154,6 +154,18 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     }
     return
   }, [router, updateNavigationData])
+
+  React.useEffect(() => {
+    const currentLocation = navigationData[EP.toString(basePath)]
+    if (currentLocation == null) {
+      return
+    }
+
+    const isExistingRoute = matchRoutes(routes, currentLocation.location) != null
+    if (!isExistingRoute) {
+      router?.navigate('/')
+    }
+  }, [basePath, navigationData, router, routes])
 
   if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null
