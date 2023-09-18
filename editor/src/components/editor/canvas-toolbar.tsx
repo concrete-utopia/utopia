@@ -50,7 +50,11 @@ import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { NO_OP } from '../../core/shared/utils'
-import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
+import type {
+  InsertableComponentFlatList,
+  InsertMenuItem,
+  InsertMenuItemValue,
+} from '../canvas/ui/floating-insert-menu'
 import {
   CustomComponentOption,
   useComponentSelectorStyles,
@@ -63,6 +67,10 @@ import { stopPropagation } from '../inspector/common/inspector-utils'
 import { useConvertTo } from './convert-callbacks'
 import { useWrapInDiv } from './wrap-in-callbacks'
 import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
+import {
+  fragmentComponentInfo,
+  insertableComponentGroupFragment,
+} from '../shared/project-components'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -214,8 +222,6 @@ export const CanvasToolbar = React.memo(() => {
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'CanvasToolbar insertMenuMode',
   )
-  const options = useGetInsertableComponents(insertMenuMode)
-
   const wrapInDivCallback = useWrapInDiv()
 
   const convertToCallback = useConvertTo()
@@ -287,21 +293,24 @@ export const CanvasToolbar = React.memo(() => {
   )
 
   const convertToFragment = React.useCallback(() => {
-    // Find the fragment conversion and apply that for consistency with the dropdown.
-    let convertToFragmentMenuItem: InsertMenuItem | null = null
-    for (const group of options) {
-      if (group.label === 'Fragment') {
-        for (const option of group.options) {
-          if (option.label === 'Fragment') {
-            convertToFragmentMenuItem = option
-            break
-          }
-        }
-        break
-      }
+    // Should be consistent with the value that would be present in the dropdown.
+    // Done like this to avoid having to actually pull the options in the dropdown
+    // as that will cause a lot of extra work when rendering this toolbar.
+    const convertToFragmentMenuItem: InsertMenuItem = {
+      label: fragmentComponentInfo.insertMenuLabel,
+      source: null,
+      value: {
+        importsToAdd: fragmentComponentInfo.importsToAdd,
+        element: fragmentComponentInfo.elementToInsert,
+        name: fragmentComponentInfo.insertMenuLabel,
+        stylePropOptions: [],
+        defaultSize: null,
+        source: insertableComponentGroupFragment(),
+        key: fragmentComponentInfo.insertMenuLabel,
+      },
     }
     convertToAndClose(convertToFragmentMenuItem)
-  }, [convertToAndClose, options])
+  }, [convertToAndClose])
 
   const wrapInDivAndClose = React.useCallback(
     (event: React.MouseEvent<Element>) => {
