@@ -273,8 +273,7 @@ const ColumnDragTargets = React.memo(
     onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   }) => {
     const { columnIndex, onDrop } = props
-    // const { isDragActive } = useFloatingPanelDragInfo()
-    const isDragActive = true
+    const { isDragActive } = useFloatingPanelDragInfo()
 
     const { drop: dropBefore, isOver: isOverBefore } = useFloatingPanelDropArea(
       columnIndex,
