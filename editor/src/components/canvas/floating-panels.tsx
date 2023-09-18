@@ -3,7 +3,13 @@ import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
 import type { MapLike } from 'typescript'
 import { v4 as UUID } from 'uuid'
-import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
+import {
+  accumulate,
+  arrayAccumulate,
+  insert,
+  removeAll,
+  removeIndexFromArray,
+} from '../../core/shared/array-utils'
 import { mod } from '../../core/shared/math-utils'
 import { NO_OP, assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, colorTheme, width } from '../../uuiui'
@@ -37,6 +43,8 @@ const IndexOfCanvas = 2
 const VerticalGapHalf = 6
 const HorizontalGapHalf = 6
 
+const ExtraHorizontalDropTargetPadding = 5
+
 const NumberOfRows = 12
 
 /**
@@ -59,14 +67,10 @@ function normalizeColIndex(index: number): number {
 }
 
 const defaultPanels: StoredLayout = [
-  [
-    storedPanel({ name: 'inspector', type: 'menu' }),
-    storedPanel({ name: 'navigator', type: 'menu' }),
-    storedPanel({ name: 'code-editor', type: 'pane' }),
-  ],
+  [storedPanel({ name: 'code-editor', type: 'pane' })],
+  [storedPanel({ name: 'navigator', type: 'menu' })],
   [],
-  [],
-  [],
+  [storedPanel({ name: 'inspector', type: 'menu' })],
 ]
 
 function storedLayoutToResolvedPanels(stored: StoredLayout): { [index in PanelName]: PanelData } {
@@ -91,7 +95,11 @@ type BeforeColumn = {
   type: 'before-column'
   columnIndex: number
 }
-type ColumnUpdate = BeforeColumn
+type AfterColumn = {
+  type: 'after-column'
+  columnIndex: number
+}
+type ColumnUpdate = BeforeColumn | AfterColumn
 
 type BeforeIndex = {
   type: 'before-index'
@@ -114,7 +122,7 @@ function updateLayout(
   const panelToInsert = storedPanel(paneToMove)
 
   function insertPanel(layout: StoredLayout) {
-    if (update.type === 'before-column') {
+    if (update.type === 'before-column' || update.type === 'after-column') {
       const atLeastOneEmptyColumn = layout.some((col) => col.length === 0)
       if (!atLeastOneEmptyColumn) {
         // the user wants to create a new column and fill it with the moved Panel.
@@ -124,40 +132,20 @@ function updateLayout(
       }
       const newColumn: Array<StoredPanel> = [panelToInsert]
 
-      if (update.columnIndex < 0) {
-        // we are on the right hand side of the editor, so we apply right to left logic
-        // we insert the new column at index - 1, shifting neighbors leftwards
+      const normalizedIndex = normalizeColIndex(update.columnIndex)
 
-        // insert the column at `index - 1`
-        const insertionIndex = update.columnIndex - 1
-        const withColumnInserted = insert(insertionIndex, newColumn, layout)
-        const indexOfFirstEmptyColumnLeftOfInsertion = findLastIndex(
-          withColumnInserted,
-          (col) => col.length === 0,
-          insertionIndex, // start the search from this index, walk backwards
-        )
-        const withEmptyColumnRemoved = removeIndexFromArray(
-          indexOfFirstEmptyColumnLeftOfInsertion,
-          withColumnInserted,
-        )
-        return withEmptyColumnRemoved
-      } else {
-        // we are on the left hand side, so we apply left to right logic
-        // we insert the new column at index, shifting neightbors rightwards
+      const indexInArray = update.type === 'before-column' ? normalizedIndex : normalizedIndex + 1
 
-        // insert the column at `index`
-        const withColumnInserted = insert(update.columnIndex, newColumn, layout)
-        const indexOfFirstEmptyColumnRightOfInsertion = findIndex(
-          withColumnInserted,
-          (col) => col.length === 0,
-          update.columnIndex, // start the search from this index
-        )
-        const withEmptyColumnRemoved = removeIndexFromArray(
-          indexOfFirstEmptyColumnRightOfInsertion,
-          withColumnInserted,
-        )
-        return withEmptyColumnRemoved
-      }
+      const rightHandSide = normalizedIndex >= IndexOfCanvas
+
+      const withElementInserted = insert(indexInArray, newColumn, layout)
+      const withOldPanelRemoved = removeOldPanel(withElementInserted)
+
+      const indexOfFirstEmptyColumn = rightHandSide
+        ? findLastIndex(withOldPanelRemoved, (col) => col.length === 0)
+        : withOldPanelRemoved.findIndex((col) => col.length === 0)
+
+      return removeIndexFromArray(indexOfFirstEmptyColumn, withOldPanelRemoved)
     }
     if (update.type === 'before-index') {
       const working = [...layout]
@@ -169,7 +157,7 @@ function updateLayout(
         working[update.columnIndex],
       )
 
-      return working
+      return removeOldPanel(working)
     }
     if (update.type === 'after-index') {
       const working = [...layout]
@@ -181,7 +169,7 @@ function updateLayout(
         working[update.columnIndex],
       )
 
-      return working
+      return removeOldPanel(working)
     }
 
     assertNever(update)
@@ -193,11 +181,35 @@ function updateLayout(
     })
   }
 
+  function floatColumnsTowardsEdges(layout: StoredLayout) {
+    const leftSide = layout.slice(0, IndexOfCanvas)
+    const rightSideReversed = layout.slice(IndexOfCanvas).reverse()
+    const leftSideFixed = accumulate(new Array(leftSide.length).fill([]), (acc) => {
+      let iterator = 0
+      leftSide.forEach((column) => {
+        if (column.length > 0) {
+          acc[iterator] = column
+          iterator++
+        }
+      })
+    })
+    const rightSideFixed = accumulate(new Array(rightSideReversed.length).fill([]), (acc) => {
+      let iterator = rightSideReversed.length - 1
+      rightSideReversed.forEach((column) => {
+        if (column.length > 0) {
+          acc[iterator] = column
+          iterator--
+        }
+      })
+    })
+    return [...leftSideFixed, ...rightSideFixed]
+  }
+
   const withPanelInserted = insertPanel(stored)
-  const withOldPanelRemoved = removeOldPanel(withPanelInserted)
+  const withEmptyColumnsInMiddle = floatColumnsTowardsEdges(withPanelInserted)
 
   // TODO we need to fix the sizes too!
-  return withOldPanelRemoved
+  return withEmptyColumnsInMiddle
 }
 
 export const FloatingPanelsContainer = React.memo(() => {
@@ -205,6 +217,16 @@ export const FloatingPanelsContainer = React.memo(() => {
 
   const orderedPanels = React.useMemo(() => {
     return storedLayoutToResolvedPanels(panelState)
+  }, [panelState])
+
+  const nonEmptyColumns = React.useMemo(() => {
+    return arrayAccumulate((acc: Array<number>) => {
+      panelState.forEach((column, colIndex) => {
+        if (column.length > 0) {
+          acc.push(wrapAroundColIndex(colIndex))
+        }
+      })
+    })
   }, [panelState])
 
   const onDrop = React.useCallback(
@@ -219,6 +241,7 @@ export const FloatingPanelsContainer = React.memo(() => {
       data-testid='floating-panels-container'
       style={{
         position: 'absolute',
+        contain: 'layout',
         display: 'grid',
         width: '100%',
         height: '100%',
@@ -229,14 +252,113 @@ export const FloatingPanelsContainer = React.memo(() => {
         rowGap: VerticalGapHalf * 2,
         paddingTop: VerticalGapHalf,
         paddingBottom: VerticalGapHalf,
+        paddingLeft: HorizontalGapHalf,
+        paddingRight: HorizontalGapHalf,
       }}
     >
       <FloatingPanel key={'code-editor'} onDrop={onDrop} pane={orderedPanels['code-editor']} />
       <FloatingPanel key={'navigator'} onDrop={onDrop} pane={orderedPanels['navigator']} />
       <FloatingPanel key={'inspector'} onDrop={onDrop} pane={orderedPanels['inspector']} />
+      {/* All future Panels need to be explicitly listed here */}
+      {nonEmptyColumns.map((columnIndex) => (
+        <ColumnDragTargets key={columnIndex} columnIndex={columnIndex} onDrop={onDrop} />
+      ))}
     </div>
   )
 })
+
+const ColumnDragTargets = React.memo(
+  (props: {
+    columnIndex: number
+    onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
+  }) => {
+    const { columnIndex, onDrop } = props
+    // const { isDragActive } = useFloatingPanelDragInfo()
+    const isDragActive = true
+
+    const { drop: dropBefore, isOver: isOverBefore } = useFloatingPanelDropArea(
+      columnIndex,
+      9,
+      React.useCallback(
+        (itemToMove: StoredPanel, newPosition: LayoutUpdate) =>
+          onDrop(itemToMove, {
+            type: 'before-column',
+            columnIndex: columnIndex,
+          }),
+        [onDrop, columnIndex],
+      ),
+    )
+
+    const { drop: dropAfter, isOver: isOverAfter } = useFloatingPanelDropArea(
+      columnIndex,
+      0,
+      React.useCallback(
+        (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+          onDrop(itemToMove, {
+            type: 'after-column',
+            columnIndex: columnIndex,
+          })
+        },
+        [onDrop, columnIndex],
+      ),
+    )
+
+    return (
+      <>
+        <div
+          ref={dropBefore}
+          style={{
+            position: 'absolute',
+            gridRowStart: 1,
+            gridRowEnd: -1,
+            gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
+            display: isDragActive ? 'block' : 'none',
+            width: 2 * ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf,
+            height: '100%',
+            left: -(ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf),
+            backgroundColor: 'red',
+          }}
+        >
+          <div
+            style={{
+              display: isOverBefore ? 'block' : 'none',
+              position: 'absolute',
+              left: `calc(50% - 1px)`,
+              width: 2,
+              height: '100%',
+              backgroundColor: colorTheme.primary.value,
+            }}
+          />
+        </div>
+        <div
+          ref={dropAfter}
+          style={{
+            position: 'absolute',
+            gridRowStart: 1,
+            gridRowEnd: -1,
+            gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
+            display: isDragActive ? 'block' : 'none',
+            width: 2 * ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf,
+            height: '100%',
+            right: -(ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf),
+            backgroundColor: 'green',
+          }}
+        >
+          <div
+            style={{
+              display: isOverAfter ? 'block' : 'none',
+              position: 'absolute',
+              left: `calc(50% - 1px)`,
+              width: 2,
+              height: '100%',
+              backgroundColor: colorTheme.primary.value,
+            }}
+          />
+        </div>
+      </>
+    )
+  },
+)
 
 interface FloatingPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
