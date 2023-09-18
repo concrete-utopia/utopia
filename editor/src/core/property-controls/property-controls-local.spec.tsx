@@ -68,6 +68,167 @@ describe('registered property controls', () => {
     await wait(10) // this is quite ugly but we want to wait for a timeout(0) in ui-jsx-canvas before calling validateControlsToCheck
     const editorState = renderResult.getEditorState().editor
 
-    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`undefined`)
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      Object {
+        "Card": Object {
+          "properties": Object {
+            "background": Object {
+              "control": "color",
+            },
+            "label": Object {
+              "control": "string-input",
+            },
+            "visible": Object {
+              "control": "checkbox",
+            },
+          },
+          "variants": Array [
+            Object {
+              "elementToInsert": Object {
+                "children": Array [],
+                "name": Object {
+                  "baseVariable": "Card",
+                  "propertyPath": Object {
+                    "propertyElements": Array [],
+                  },
+                },
+                "props": Array [
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "uid": "",
+                      "value": "fb0",
+                    },
+                  },
+                ],
+                "type": "JSX_ELEMENT",
+                "uid": "",
+              },
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
+            },
+            Object {
+              "elementToInsert": Object {
+                "children": Array [],
+                "name": Object {
+                  "baseVariable": "Card",
+                  "propertyPath": Object {
+                    "propertyElements": Array [],
+                  },
+                },
+                "props": Array [
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "person",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "definedElsewhere": Array [
+                        "DefaultPerson",
+                      ],
+                      "elementsWithin": Object {},
+                      "javascript": "DefaultPerson",
+                      "originalJavascript": "DefaultPerson",
+                      "sourceMap": Object {
+                        "file": "code.tsx",
+                        "mappings": "OAI2BA",
+                        "names": Array [
+                          "DefaultPerson",
+                        ],
+                        "sources": Array [
+                          "code.tsx",
+                        ],
+                        "sourcesContent": Array [
+                          "import { Card } from '/src/card'; import { DefaultPerson } from '/src/defaults';;
+
+             function Utopia$$$Component(props) {
+                return (
+                  <Card person={DefaultPerson} />
+                )
+               }",
+                        ],
+                        "version": 3,
+                      },
+                      "transpiledJavascript": "return DefaultPerson;",
+                      "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
+                      "uid": "",
+                    },
+                  },
+                  Object {
+                    "comments": Object {
+                      "leadingComments": Array [],
+                      "trailingComments": Array [],
+                    },
+                    "key": "data-uid",
+                    "type": "JSX_ATTRIBUTES_ENTRY",
+                    "value": Object {
+                      "comments": Object {
+                        "leadingComments": Array [],
+                        "trailingComments": Array [],
+                      },
+                      "type": "ATTRIBUTE_VALUE",
+                      "uid": "",
+                      "value": "627",
+                    },
+                  },
+                ],
+                "type": "JSX_ELEMENT",
+                "uid": "",
+              },
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+                "/src/defaults": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "DefaultPerson",
+                      "name": "DefaultPerson",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "ID Card",
+            },
+          ],
+        },
+      }
+    `)
   })
 })
