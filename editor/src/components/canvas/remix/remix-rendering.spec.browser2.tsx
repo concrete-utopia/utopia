@@ -9,7 +9,7 @@ import {
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../utils/utils.test-utils'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { deleteFile, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
 import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
@@ -706,6 +706,71 @@ describe('Remix navigation', () => {
       x: 212,
       y: 128,
     })
+  })
+
+  it('Navigates to / when rendered route module is deleted', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+        import { RemixScene, Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard>
+            <RemixScene
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+              }}
+              data-label='Playground'
+            />
+          </Storyboard>
+        )
+        `,
+      ['/src/root.js']: `import React from 'react'
+        import { Outlet } from '@remix-run/react'
+        
+        export default function Root() {
+          return (
+            <div>
+              ${RootTextContent}
+              <Outlet />
+            </div>
+          )
+        }
+        `,
+      ['/src/routes/_index.js']: `import React from 'react'
+        import { Link } from '@remix-run/react'
+  
+        export default function Index() {
+          return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
+        }
+        `,
+      ['/src/routes/about.js']: `import React from 'react'
+  
+        export default function About() {
+          return <h1>About</h1>
+        }
+        `,
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+
+    const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+
+    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+
+    await mouseClickAtPoint(targetElement, clickPoint)
+
+    await expectRemixSceneToBeRendered(renderResult, 'About')
+
+    await renderResult.dispatch([deleteFile('/src/routes/about.js')], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    await expectRemixSceneToBeRendered(renderResult, DefaultRouteTextContent)
   })
 })
 
