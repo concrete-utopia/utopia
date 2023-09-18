@@ -316,7 +316,6 @@ const ColumnDragTargets = React.memo(
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf,
             height: '100%',
             left: -(ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf),
-            backgroundColor: 'red',
           }}
         >
           <div
@@ -341,7 +340,6 @@ const ColumnDragTargets = React.memo(
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf,
             height: '100%',
             right: -(ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf),
-            backgroundColor: 'green',
           }}
         >
           <div
