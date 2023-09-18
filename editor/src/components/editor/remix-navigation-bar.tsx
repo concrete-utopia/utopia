@@ -9,6 +9,15 @@ import { FlexRow, Tooltip, UtopiaTheme, useColorTheme } from '../../uuiui'
 import { stopPropagation } from '../inspector/common/inspector-utils'
 import * as EP from '../../core/shared/element-path'
 
+export const RemixNavigationBarPathTestId = 'remix-navigation-bar-path'
+
+export const RemixNavigationBarHomeLabel = '(home)'
+
+export type RemixSceneLabelButtonType = 'back' | 'forward' | 'home'
+
+export const RemixNavigationBarButtonTestId = (button: RemixSceneLabelButtonType): string =>
+  `remix-navigation-bar-button-${button}`
+
 export const RemixNavigationBar = React.memo(() => {
   const [navigationControls] = useAtom(RemixNavigationAtom)
   const [activeRemixScene] = useAtom(ActiveRemixSceneAtom)
@@ -36,7 +45,7 @@ export const RemixNavigationBar = React.memo(() => {
   const pathname = navigationControls[EP.toString(activeRemixScene)]?.location?.pathname
   const isIndexRoute = pathname === '/'
 
-  const label = isIndexRoute ? '(home)' : pathname
+  const label = isIndexRoute ? RemixNavigationBarHomeLabel : pathname
 
   if (!isLiveMode || navigationControls == null || pathname == null) {
     return null
@@ -59,12 +68,17 @@ export const RemixNavigationBar = React.memo(() => {
       onClick={stopPropagation}
     >
       <Tooltip title={'Back'}>
-        <span style={{ cursor: 'pointer', fontSize: 16 }} onMouseDown={back}>
+        <span
+          data-testid={RemixNavigationBarButtonTestId('back')}
+          style={{ cursor: 'pointer', fontSize: 16 }}
+          onMouseDown={back}
+        >
           〱
         </span>
       </Tooltip>
       <Tooltip title={'Forward'}>
         <span
+          data-testid={RemixNavigationBarButtonTestId('forward')}
           style={{ cursor: 'pointer', fontSize: 16, transform: 'scale(-1, 1)' }}
           onMouseDown={forward}
         >
@@ -72,11 +86,16 @@ export const RemixNavigationBar = React.memo(() => {
         </span>
       </Tooltip>
       <Tooltip title={'Home'}>
-        <span style={{ cursor: 'pointer', fontSize: 16 }} onMouseDown={home}>
+        <span
+          data-testid={RemixNavigationBarButtonTestId('home')}
+          style={{ cursor: 'pointer', fontSize: 16 }}
+          onMouseDown={home}
+        >
           ／
         </span>
       </Tooltip>
       <div
+        data-testid={RemixNavigationBarPathTestId}
         style={{
           backgroundColor: '#f2f3f4',
           borderRadius: 10,

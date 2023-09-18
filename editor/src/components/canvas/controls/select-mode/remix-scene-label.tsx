@@ -24,7 +24,7 @@ export const RemixSceneHomeLabel = '(home)'
 
 export type RemixSceneLabelButtonType = 'back' | 'forward' | 'home'
 
-export const RemixSceneLabelButton = (
+export const RemixSceneLabelButtonTestId = (
   path: ElementPath,
   button: RemixSceneLabelButtonType,
 ): string => `${EP.toString(path)}-remix-scene-label-button-${button}`
@@ -238,7 +238,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
         >
           <Tooltip title={'Back'}>
             <span
-              data-testid={RemixSceneLabelButton(props.target, 'back')}
+              data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
               style={{ cursor: 'pointer', fontSize: 16 / scale }}
               onMouseDown={back}
             >
@@ -247,7 +247,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           </Tooltip>
           <Tooltip title={'Forward'}>
             <span
-              data-testid={RemixSceneLabelButton(props.target, 'forward')}
+              data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
               style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
               onMouseDown={forward}
             >
@@ -256,7 +256,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           </Tooltip>
           <Tooltip title={'Home'}>
             <span
-              data-testid={RemixSceneLabelButton(props.target, 'home')}
+              data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
               style={{ cursor: 'pointer', fontSize: 16 / scale }}
               onMouseDown={home}
             >
