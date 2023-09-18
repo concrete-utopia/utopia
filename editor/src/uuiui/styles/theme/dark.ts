@@ -5,10 +5,6 @@ const darkBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary30: createUtopiColor('oklch(59% 0.25 254 / 30%)'),
-
-  primarySubdued: createUtopiColor('rgba(0,118,247,1)'),
-  primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
-
   component: createUtopiColor('oklch(53% 0.31 290)'),
   componentChild: createUtopiColor('oklch(83.6% 0.198 81.5)'),
   componentChild20: createUtopiColor('oklch(83.6% 0.198 81.5 / 20%)'),
@@ -21,12 +17,10 @@ const darkBase = {
   brandNeonPink10: createUtopiColor('oklch(78.64% 0.237 327.81 / 10%)'),
   brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
   pinkSubdued: createUtopiColor('oklch(33% 0.07 327)'),
-
-  secondaryBlue: createUtopiColor('#679AD1'),
-  secondaryOrange: createUtopiColor('#E89A74'),
-  denimBlue: createUtopiColor('#133763'),
-  lightDenimBlue: createUtopiColor('#072140'),
-
+  secondaryBlue: createUtopiColor('oklch(75.44% 0.138 251.22)'),
+  secondaryOrange: createUtopiColor('oklch(81.8% 0.141 47)'),
+  denimBlue: createUtopiColor('oklch(33.65% 0.09 255)'),
+  lightDenimBlue: createUtopiColor('oklch(25% 0.07 255)'),
   transparent: createUtopiColor('oklch(0% 0 0 / 0%)'),
   error: createUtopiColor('oklch(67.99% 0.261 22.81)'),
   componentOrange: createUtopiColor('oklch(80.6% 0.15 50)'),
@@ -192,8 +186,8 @@ export const dark: typeof light = {
   // application utilities:
   navigatorResizeHintBorder: darkBase.primary,
   navigatorComponentName: darkBase.primary,
-  navigatorComponentSelected: darkBase.componentChild20,
-  navigatorComponentIconBorder: darkBase.componentChild,
+  navigatorComponentSelected: darkBase.componentChild20.value,
+  navigatorComponentIconBorder: darkBase.componentChild.value,
 
   contextMenuBackground: darkPrimitives.secondaryBackground,
   contextMenuForeground: darkPrimitives.neutralForeground,
