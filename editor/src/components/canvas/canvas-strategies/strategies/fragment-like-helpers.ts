@@ -58,7 +58,7 @@ export function retargetStrategyToTopMostFragmentLikeElement(
 
 export const replaceFragmentLikePathsWithTheirChildrenRecursive = memoize(
   replaceFragmentLikePathsWithTheirChildrenRecursiveInner,
-  { maxSize: 1, equals: is },
+  { maxSize: 1, matchesArg: is },
 )
 
 function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
@@ -102,7 +102,7 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
 
 export const replaceNonDOMElementPathsWithTheirChildrenRecursive = memoize(
   replaceNonDOMElementPathsWithTheirChildrenRecursiveInner,
-  { maxSize: 1, equals: is },
+  { maxSize: 1, matchesArg: is },
 )
 
 function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(
