@@ -241,7 +241,7 @@ export function createRegisterModuleFunction(
             parseAndPrepareComponentsFn = memoize(
               partiallyParseAndPrepareComponents(workers, moduleName),
               {
-                equals: fastDeepEqual,
+                matchesArg: fastDeepEqual,
                 maxSize: 5,
               },
             )

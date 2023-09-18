@@ -400,9 +400,7 @@ function getUtopiaJSXComponentsFromSuccessInner(success: ParseSuccess): Array<Ut
   return getComponentsFromTopLevelElements(success.topLevelElements)
 }
 
-export const getUtopiaJSXComponentsFromSuccess = Utils.memoize(
-  getUtopiaJSXComponentsFromSuccessInner,
-)
+export const getUtopiaJSXComponentsFromSuccess = memoize(getUtopiaJSXComponentsFromSuccessInner)
 
 export function applyUtopiaJSXComponentsChanges(
   topLevelElements: Array<TopLevelElement>,
@@ -472,7 +470,7 @@ function getHighlightBoundsForProjectImpl(
 
 export const getHighlightBoundsForProject = memoize(getHighlightBoundsForProjectImpl, {
   maxSize: 2,
-  equals: (a, b) => a === b,
+  matchesArg: (a, b) => a === b,
 })
 
 export function updateParsedTextFileHighlightBounds(

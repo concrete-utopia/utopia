@@ -8,7 +8,7 @@ import type {
 } from '../shared/element-template'
 import { emptySet } from '../shared/set-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import Utils from '../../utils/utils'
+import { memoize } from '../shared/memoize'
 
 export type DuplicateUIDsResult = { [key: string]: Array<Array<string>> }
 
@@ -199,7 +199,7 @@ function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllU
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }
 
-export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
+export const getAllUniqueUids = memoize(getAllUniqueUidsInner)
 
 export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): GetAllUniqueUIDsResult {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
