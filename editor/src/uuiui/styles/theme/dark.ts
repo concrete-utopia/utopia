@@ -5,8 +5,10 @@ const darkBase = {
   primary: createUtopiColor('oklch(59% 0.25 254)'),
   primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
   primary30: createUtopiColor('oklch(59% 0.25 254 / 30%)'),
+
   primarySubdued: createUtopiColor('rgba(0,118,247,1)'),
   primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
+
   component: createUtopiColor('oklch(53% 0.31 290)'),
   componentChild: createUtopiColor('oklch(83.6% 0.198 81.5)'),
   componentChild20: createUtopiColor('oklch(83.6% 0.198 81.5 / 20%)'),
@@ -19,10 +21,12 @@ const darkBase = {
   brandNeonPink10: createUtopiColor('oklch(78.64% 0.237 327.81 / 10%)'),
   brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
   pinkSubdued: createUtopiColor('oklch(33% 0.07 327)'),
+
   secondaryBlue: createUtopiColor('#679AD1'),
   secondaryOrange: createUtopiColor('#E89A74'),
   denimBlue: createUtopiColor('#133763'),
   lightDenimBlue: createUtopiColor('#072140'),
+
   transparent: createUtopiColor('oklch(0% 0 0 / 0%)'),
   error: createUtopiColor('oklch(67.99% 0.261 22.81)'),
   componentOrange: createUtopiColor('oklch(80.6% 0.15 50)'),
