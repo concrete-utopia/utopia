@@ -920,11 +920,7 @@ describe('Remix navigation', () => {
       const remixScene2 = renderResult.renderedDOM.getByTestId(Remix2TestId)
       await mouseClickAtPoint(remixScene2, { x: 10, y: 10 })
 
-      await wait(5000)
-
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
-
-      await wait(10000)
     })
   })
 })
