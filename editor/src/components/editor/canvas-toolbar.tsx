@@ -76,11 +76,9 @@ export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 export const CanvasToolbarId = 'canvas-toolbar'
 
-export interface ToolbarSearchListingProps {}
-
 export const CanvasToolbarSearchPortalId = 'canvas-toolbar-search-portal'
 
-export const ToolbarSearchListing = React.memo((props: ToolbarSearchListingProps) => {
+export const ToolbarSearchListing = React.memo(() => {
   return <div id={CanvasToolbarSearchPortalId} />
 })
 ToolbarSearchListing.displayName = 'ToolbarSearchListing'
