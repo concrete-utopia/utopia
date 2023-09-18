@@ -1,6 +1,8 @@
+import { within } from '@testing-library/react'
 import * as EP from '../../../core/shared/element-path'
 import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { NO_OP } from '../../../core/shared/utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
@@ -8,12 +10,19 @@ import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
 import {
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
 } from '../../../utils/utils.test-utils'
 import { switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
 import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
+import type { RemixSceneLabelButtonType } from '../controls/select-mode/remix-scene-label'
+import {
+  RemixSceneHomeLabel,
+  RemixSceneLabelButton,
+  RemixSceneLabelPathTestId,
+} from '../controls/select-mode/remix-scene-label'
 import {
   MockClipboardHandlers,
   firePasteEvent,
@@ -32,6 +41,7 @@ import {
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
+const AboutTextContent = 'About'
 
 const storyboardFileContent = `
 import * as React from 'react';
@@ -552,64 +562,64 @@ describe('Remix content with feature switch off', () => {
 
 describe('Remix navigation', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
-  it('Can navigate to a different route', async () => {
-    const project = createModifiedProject({
-      [StoryboardFilePath]: `import * as React from 'react'
-        import { RemixScene, Storyboard } from 'utopia-api'
-        
-        export var storyboard = (
-          <Storyboard>
-            <RemixScene
-              style={{
-                width: 700,
-                height: 759,
-                position: 'absolute',
-                left: 212,
-                top: 128,
-              }}
-              data-label='Playground'
-            />
-          </Storyboard>
+
+  const projectWithMultipleRoutes = createModifiedProject({
+    [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix'
+          />
+        </Storyboard>
+      )
+      `,
+    ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div>
+            ${RootTextContent}
+            <Outlet />
+          </div>
         )
-        `,
-      ['/src/root.js']: `import React from 'react'
-        import { Outlet } from '@remix-run/react'
-        
-        export default function Root() {
-          return (
-            <div>
-              ${RootTextContent}
-              <Outlet />
-            </div>
-          )
-        }
-        `,
-      ['/src/routes/_index.js']: `import React from 'react'
-        import { Link } from '@remix-run/react'
-  
-        export default function Index() {
-          return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
-        }
-        `,
-      ['/src/routes/about.js']: `import React from 'react'
-  
-        export default function About() {
-          return <h1>About</h1>
-        }
-        `,
-    })
+      }
+      `,
+    ['/src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
-    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+      export default function Index() {
+        return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
+      }
+      `,
+    ['/src/routes/about.js']: `import React from 'react'
 
-    const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
-    const targetElementBounds = targetElement.getBoundingClientRect()
+      export default function About() {
+        return <h1>${AboutTextContent}</h1>
+      }
+      `,
+  })
 
-    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+  it('Can navigate to a different route', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      projectWithMultipleRoutes,
+      'await-first-dom-report',
+    )
+    await switchToLiveMode(renderResult)
 
-    await mouseClickAtPoint(targetElement, clickPoint)
+    await clickRemixLink(renderResult)
 
-    await expectRemixSceneToBeRendered(renderResult, 'About')
+    await expectRemixSceneToBeRendered(renderResult, AboutTextContent)
   })
 
   it('Remix navigation updates metadata', async () => {
@@ -679,14 +689,9 @@ describe('Remix navigation', () => {
       ]
     expect(remixLinkMetadata).not.toBeUndefined()
 
-    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+    await switchToLiveMode(renderResult)
 
-    const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
-    const targetElementBounds = targetElement.getBoundingClientRect()
-
-    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
-
-    await mouseClickAtPoint(targetElement, clickPoint)
+    await clickRemixLink(renderResult)
 
     const remixLinkMetadataAfterNavigation =
       renderResult.getEditorState().editor.jsxMetadata[
@@ -706,6 +711,155 @@ describe('Remix navigation', () => {
       x: 212,
       y: 128,
     })
+  })
+
+  it('can navigate with the scene label nav buttons, in live mode', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      projectWithMultipleRoutes,
+      'await-first-dom-report',
+    )
+
+    const pathToRemixScene = EP.fromString('sb/remix')
+
+    await switchToLiveMode(renderResult)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+
+    await clickRemixLink(renderResult)
+
+    expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+    await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
+
+    expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+
+    await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
+    expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+    await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
+    expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+  })
+
+  it('can navigate with the scene label nav buttons, in edit mode', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      projectWithMultipleRoutes,
+      'await-first-dom-report',
+    )
+
+    const pathToRemixScene = EP.fromString('sb/remix')
+
+    await switchToLiveMode(renderResult)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+
+    await clickRemixLink(renderResult)
+
+    expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+    await switchToEditMode(renderResult)
+
+    // check that switching modes doesn't change the navigation state
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+    expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+
+    await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
+
+    expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+
+    await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'forward')
+    expect(renderResult.renderedDOM.queryAllByText(AboutTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('/about')
+
+    await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'home')
+    expect(renderResult.renderedDOM.queryAllByText(RootTextContent)).toHaveLength(1)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
+  })
+
+  it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
+    const renderResult = await renderTestEditorWithModel(
+      createModifiedProject({
+        [StoryboardFilePath]: `import * as React from 'react'
+        import { RemixScene, Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <RemixScene
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+              }}
+              data-label='Playground'
+              data-testid='remix-1'
+              data-uid='remix-1'
+            />
+
+            <RemixScene
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 1000,
+                top: 128,
+              }}
+              data-label='Playground'
+              data-testid='remix-2'
+              data-uid='remix-2'
+            />
+          </Storyboard>
+        )
+        `,
+        ['/src/root.js']: `import React from 'react'
+        import { Outlet } from '@remix-run/react'
+        
+        export default function Root() {
+          return (
+            <div>
+              ${RootTextContent}
+              <Outlet />
+            </div>
+          )
+        }
+        `,
+        ['/src/routes/_index.js']: `import React from 'react'
+        import { Link } from '@remix-run/react'
+  
+        export default function Index() {
+          return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
+        }
+        `,
+        ['/src/routes/about.js']: `import React from 'react'
+  
+        export default function About() {
+          return <h1>${AboutTextContent}</h1>
+        }
+        `,
+      }),
+      'await-first-dom-report',
+    )
+
+    const pathToRemixScene1 = EP.fromString('sb/remix-1')
+    const pathToRemixScene2 = EP.fromString('sb/remix-2')
+
+    await switchToLiveMode(renderResult)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual(RemixSceneHomeLabel)
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene2)).toEqual(RemixSceneHomeLabel)
+
+    await clickRemixLink(renderResult)
+    const remixScene1 = renderResult.renderedDOM.getByTestId('remix-1')
+    expect(within(remixScene1).queryAllByText(AboutTextContent)).toHaveLength(1)
+
+    const remixScene2 = renderResult.renderedDOM.getByTestId('remix-2')
+    expect(within(remixScene2).queryAllByText(RootTextContent)).toHaveLength(1)
+
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual('/about')
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene2)).toEqual(RemixSceneHomeLabel)
   })
 })
 
@@ -956,7 +1110,7 @@ describe('Editing Remix content', () => {
 
     expect(renderResult.renderedDOM.queryAllByTestId(FlexDivTestId)).toHaveLength(1)
 
-    await clickElementOnCanvas(renderResult, FlexDivTestId)
+    await clickElementOnCanvasControlsLayer(renderResult, FlexDivTestId)
     await pressKey('Backspace')
 
     expect(renderResult.renderedDOM.queryAllByTestId(FlexDivTestId)).toHaveLength(0)
@@ -1004,7 +1158,7 @@ export default function Index() {
       'await-first-dom-report',
     )
 
-    const absoluteDiv = await clickElementOnCanvas(renderResult, AbsoluteDivTestId)
+    const absoluteDiv = await clickElementOnCanvasControlsLayer(renderResult, AbsoluteDivTestId)
 
     const targetElement = renderResult.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
     await mouseClickAtPoint(targetElement, { x: 1, y: 1 }, { modifiers: cmdModifier })
@@ -1032,7 +1186,7 @@ export default function Index() {
       ],
     )
 
-    const child1 = await clickElementOnCanvas(renderResult, Child1TestId)
+    const child1 = await clickElementOnCanvasControlsLayer(renderResult, Child1TestId)
     const child1Bounds = child1.getBoundingClientRect()
     await dragMouse(
       renderResult,
@@ -1061,7 +1215,7 @@ export default function Index() {
       'await-first-dom-report',
     )
 
-    const absoluteDiv = await clickElementOnCanvas(renderResult, AbsoluteDivTestId)
+    const absoluteDiv = await clickElementOnCanvasControlsLayer(renderResult, AbsoluteDivTestId)
     expect({ left: absoluteDiv.style.left, top: absoluteDiv.style.top }).toEqual({
       left: '46px',
       top: '64px',
@@ -1102,7 +1256,7 @@ export default function Index() {
 
     await pressKey('d') // enter draw to insert mode
 
-    const absoluteDiv = await clickElementOnCanvas(renderResult, AbsoluteDivTestId)
+    const absoluteDiv = await clickElementOnCanvasControlsLayer(renderResult, AbsoluteDivTestId)
     const absoluteDivBounds = absoluteDiv.getBoundingClientRect()
 
     await dragMouse(
@@ -1330,7 +1484,10 @@ export default function Index() {
 
     {
       // Drag the element out of Remix
-      const absoluteElement = await clickElementOnCanvas(renderResult, AbsoluteDivTestId)
+      const absoluteElement = await clickElementOnCanvasControlsLayer(
+        renderResult,
+        AbsoluteDivTestId,
+      )
       const absoluteDivBounds = absoluteElement.getBoundingClientRect()
       await dragMouse(
         renderResult,
@@ -1355,7 +1512,10 @@ export default function Index() {
 
     {
       // Drag the element back into Remix
-      const absoluteElement = await clickElementOnCanvas(renderResult, AbsoluteDivTestId)
+      const absoluteElement = await clickElementOnCanvasControlsLayer(
+        renderResult,
+        AbsoluteDivTestId,
+      )
       const absoluteDivBounds = absoluteElement.getBoundingClientRect()
       await dragMouse(
         renderResult,
@@ -1380,7 +1540,7 @@ export default function Index() {
   })
 })
 
-async function clickElementOnCanvas(
+async function clickElementOnCanvasControlsLayer(
   renderResult: EditorRenderResult,
   testId: string,
 ): Promise<HTMLElement> {
@@ -1421,3 +1581,35 @@ async function expectRemixSceneToBeRendered(
   const [indexText] = await editor.renderedDOM.findAllByText(textContent)
   expect(indexText).toBeDefined()
 }
+
+const switchToLiveMode = (editor: EditorRenderResult) =>
+  editor.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+
+const switchToEditMode = (editor: EditorRenderResult) =>
+  editor.dispatch([switchEditorMode(EditorModes.selectMode())], true)
+
+async function clickRemixLink(editor: EditorRenderResult) {
+  const targetElement = editor.renderedDOM.queryAllByTestId('remix-link')[0]
+  const targetElementBounds = targetElement.getBoundingClientRect()
+
+  const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+  await mouseClickAtPoint(targetElement, clickPoint)
+}
+
+const navigateWithRemixSceneLabelButton = (
+  renderResult: EditorRenderResult,
+  pathToRemixScene: ElementPath,
+  button: RemixSceneLabelButtonType,
+) =>
+  mouseClickAtPoint(
+    renderResult.renderedDOM.getByTestId(RemixSceneLabelButton(pathToRemixScene, button)),
+    {
+      x: 2,
+      y: 2,
+    },
+  )
+
+const getPathInRemixSceneLabel = (
+  renderResult: EditorRenderResult,
+  pathToRemixScene: ElementPath,
+) => renderResult.renderedDOM.getByTestId(RemixSceneLabelPathTestId(pathToRemixScene)).textContent
