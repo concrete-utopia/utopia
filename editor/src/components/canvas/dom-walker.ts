@@ -1057,9 +1057,13 @@ function elementContainsOnlyText(element: HTMLElement): boolean {
   return true
 }
 
-function getTextBounds(element: HTMLElement): DOMRect {
+function getTextBounds(element: HTMLElement): DOMRect | null {
   const range = document.createRange()
   range.selectNodeContents(element)
+  if (range.getBoundingClientRect == null) {
+    // for some reason, this can be undefined (in tests?)
+    return null
+  }
   const textBounds = range.getBoundingClientRect()
   const computedStyle = window.getComputedStyle(element)
   function maybeValueFromComputedStyle(property: string): number {
