@@ -568,12 +568,13 @@ describe('Remix content with feature switch off', () => {
 describe('Remix navigation', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
 
-  const projectWithMultipleRoutes = createModifiedProject({
-    [StoryboardFilePath]: `import * as React from 'react'
+  const projectWithMultipleRoutes = (storyboardId: string) =>
+    createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='sb'>
+        <Storyboard data-uid='${storyboardId}'>
           <RemixScene
             style={{
               width: 700,
@@ -588,7 +589,7 @@ describe('Remix navigation', () => {
         </Storyboard>
       )
       `,
-    ['/src/root.js']: `import React from 'react'
+      ['/src/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -600,30 +601,31 @@ describe('Remix navigation', () => {
         )
       }
       `,
-    ['/src/routes/_index.js']: `import React from 'react'
+      ['/src/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
         return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
       }
       `,
-    ['/src/routes/about.js']: `import React from 'react'
+      ['/src/routes/about.js']: `import React from 'react'
 
       export default function About() {
         return <h1>${AboutTextContent}</h1>
       }
       `,
-  })
+    })
 
   const Remix1TestId = 'remix-1'
   const Remix2TestId = 'remix-2'
 
-  const projectWithMultipleRemixScenes = createModifiedProject({
-    [StoryboardFilePath]: `import * as React from 'react'
+  const projectWithMultipleRemixScenes = (storyboardId: string) =>
+    createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='sb'>
+        <Storyboard data-uid='${storyboardId}'>
           <RemixScene
             style={{
               width: 700,
@@ -652,7 +654,7 @@ describe('Remix navigation', () => {
         </Storyboard>
       )
       `,
-    ['/src/root.js']: `import React from 'react'
+      ['/src/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -664,24 +666,24 @@ describe('Remix navigation', () => {
         )
       }
       `,
-    ['/src/routes/_index.js']: `import React from 'react'
+      ['/src/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
         return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
       }
       `,
-    ['/src/routes/about.js']: `import React from 'react'
+      ['/src/routes/about.js']: `import React from 'react'
 
       export default function About() {
         return <h1>${AboutTextContent}</h1>
       }
       `,
-  })
+    })
 
   it('Can navigate to a different route', async () => {
     const renderResult = await renderTestEditorWithModel(
-      projectWithMultipleRoutes,
+      projectWithMultipleRoutes('sbnav'),
       'await-first-dom-report',
     )
     await switchToLiveMode(renderResult)
@@ -785,11 +787,11 @@ describe('Remix navigation', () => {
   describe('remix scene label', () => {
     it('can navigate with the scene label nav buttons, in live mode', async () => {
       const renderResult = await renderTestEditorWithModel(
-        projectWithMultipleRoutes,
+        projectWithMultipleRoutes('sb1'),
         'await-first-dom-report',
       )
 
-      const pathToRemixScene = EP.fromString('sb/remix')
+      const pathToRemixScene = EP.fromString('sb1/remix')
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
@@ -815,11 +817,11 @@ describe('Remix navigation', () => {
 
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
       const renderResult = await renderTestEditorWithModel(
-        projectWithMultipleRoutes,
+        projectWithMultipleRoutes('sb2'),
         'await-first-dom-report',
       )
 
-      const pathToRemixScene = EP.fromString('sb/remix')
+      const pathToRemixScene = EP.fromString('sb2/remix')
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
@@ -851,12 +853,12 @@ describe('Remix navigation', () => {
 
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
       const renderResult = await renderTestEditorWithModel(
-        projectWithMultipleRemixScenes,
+        projectWithMultipleRemixScenes('sb3'),
         'await-first-dom-report',
       )
 
-      const pathToRemixScene1 = EP.fromString('sb/remix-1')
-      const pathToRemixScene2 = EP.fromString('sb/remix-2')
+      const pathToRemixScene1 = EP.fromString('sb3/remix-1')
+      const pathToRemixScene2 = EP.fromString('sb3/remix-2')
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual(RemixSceneHomeLabel)
@@ -877,7 +879,7 @@ describe('Remix navigation', () => {
   describe('Nav bar in the canvas toolbar', () => {
     it('can navigate using the nav bar in the canvas toolbar', async () => {
       const renderResult = await renderTestEditorWithModel(
-        projectWithMultipleRoutes,
+        projectWithMultipleRoutes('sb4'),
         'await-first-dom-report',
       )
 
@@ -905,7 +907,7 @@ describe('Remix navigation', () => {
 
     it('can navigate inside multiple Remix scenes, using the nav bar in the canvas toolbar', async () => {
       const renderResult = await renderTestEditorWithModel(
-        projectWithMultipleRemixScenes,
+        projectWithMultipleRemixScenes('sb5'),
         'await-first-dom-report',
       )
 
