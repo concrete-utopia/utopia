@@ -92,11 +92,20 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
   const menuPortalTarget = document.getElementById(CanvasToolbarSearchPortalId)
   const theme = useColorTheme()
   const focusedPanelRef = useRefEditorState((store) => store.editor.focusedPanel)
+  const interactionSessionRef = useRefEditorState((store) => store.editor.canvas.interactionSession)
 
   // Focus the input when it is displayed.
   const selectRef = React.useRef<any>(null)
   React.useEffect(() => {
-    if (selectRef.current != null && focusedPanelRef.current === 'canvas') {
+    // Only focus when:
+    // - There's a ref we can use to focus.
+    // - The canvas is focused, so that we don't unfocus the code editor.
+    // - If an interaction hasn't already been started.
+    if (
+      selectRef.current != null &&
+      focusedPanelRef.current === 'canvas' &&
+      interactionSessionRef.current === null
+    ) {
       selectRef.current.focus()
     }
   })
@@ -205,12 +214,12 @@ export const CanvasToolbar = React.memo(() => {
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'CanvasToolbar insertMenuMode',
   )
+  const options = useGetInsertableComponents(insertMenuMode)
 
   const wrapInDivCallback = useWrapInDiv()
 
   const convertToCallback = useConvertTo()
   const toInsertCallback = useToInsert()
-  const convertToFragmentCallback = NO_OP
 
   const openFloatingInsertMenuCallback = React.useCallback(() => {
     dispatch([
@@ -263,6 +272,7 @@ export const CanvasToolbar = React.memo(() => {
     dispatch([applyCommandsAction(commands)])
   }, [dispatch, editorStateRef])
 
+  // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const switchToSelectModeCloseMenus = React.useCallback(() => {
     dispatch([switchEditorMode(EditorModes.selectMode()), closeFloatingInsertMenu()], 'everyone')
     turnOffForcedInsertMode()
@@ -274,6 +284,31 @@ export const CanvasToolbar = React.memo(() => {
       switchToSelectModeCloseMenus()
     },
     [convertToCallback, switchToSelectModeCloseMenus],
+  )
+
+  const convertToFragment = React.useCallback(() => {
+    // Find the fragment conversion and apply that for consistency with the dropdown.
+    let convertToFragmentMenuItem: InsertMenuItem | null = null
+    for (const group of options) {
+      if (group.label === 'Fragment') {
+        for (const option of group.options) {
+          if (option.label === 'Fragment') {
+            convertToFragmentMenuItem = option
+            break
+          }
+        }
+        break
+      }
+    }
+    convertToAndClose(convertToFragmentMenuItem)
+  }, [convertToAndClose, options])
+
+  const wrapInDivAndClose = React.useCallback(
+    (event: React.MouseEvent<Element>) => {
+      wrapInDivCallback(event)
+      switchToSelectModeCloseMenus()
+    },
+    [switchToSelectModeCloseMenus, wrapInDivCallback],
   )
 
   const toInsertAndClose = React.useCallback(
@@ -601,7 +636,7 @@ export const CanvasToolbar = React.memo(() => {
                     />
                   </Tooltip>
                   <Tooltip title='Wrap in div' placement='bottom'>
-                    <InsertModeButton iconType='div' onClick={wrapInDivCallback} />
+                    <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
                   </Tooltip>
                   <Tile style={{ height: '100%' }}>
                     <CanvasToolbarSearch actionWith={convertToAndClose} />
@@ -629,7 +664,7 @@ export const CanvasToolbar = React.memo(() => {
                     />
                   </Tooltip>
                   <Tooltip title='Convert to Fragment' placement='bottom'>
-                    <InsertModeButton iconType='fragment' onClick={convertToFragmentCallback} />
+                    <InsertModeButton iconType='fragment' onClick={convertToFragment} />
                   </Tooltip>
                   <Tile style={{ height: '100%' }}>
                     <CanvasToolbarSearch actionWith={convertToAndClose} />
