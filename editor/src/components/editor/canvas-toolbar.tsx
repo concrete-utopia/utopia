@@ -126,7 +126,6 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
       openMenuOnFocus={true}
       openMenuOnClick={true}
       onBlur={undefined}
-      //value={value}
       onChange={props.actionWith}
       options={options}
       menuPortalTarget={menuPortalTarget}
