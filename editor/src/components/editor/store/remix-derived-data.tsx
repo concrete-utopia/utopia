@@ -8,6 +8,7 @@ import type { MapLike } from 'typescript'
 import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { DataRouteObject } from 'react-router'
 import type { ProjectContentTreeRoot } from '../../assets'
+import { isProjectContentDirectory, isProjectContentFile } from '../../assets'
 import type {
   RouteIdsToModuleCreators,
   RouteModulesWithRelativePaths,
@@ -23,6 +24,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { AllElementProps, CanvasBase64Blobs } from './editor-state'
 import { memoize } from '../../../core/shared/memoize'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -102,8 +104,36 @@ export function createRemixDerivedData(
   }
 }
 
-export const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
+function isProjectContentTreeRoot(v: unknown): v is ProjectContentTreeRoot {
+  if (v != null && typeof v === 'object' && !Array.isArray(v)) {
+    const firstValue = Object.values(v)[0]
+    return isProjectContentDirectory(firstValue) || isProjectContentFile(firstValue)
+  }
 
-export const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
+  return false
+}
+
+function memoEqualityFn(l: unknown, r: unknown): boolean {
+  // FIXME we probably want certain changes from other params included here
+  if (isProjectContentTreeRoot(l) && isProjectContentTreeRoot(r)) {
+    return shallowEqual(l, r)
+  }
+
+  if (typeof l === 'function' && typeof r === 'function') {
+    return l === r
+  }
+
+  return true
+}
+
+export const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
+  maxSize: 1,
+  matchesArg: memoEqualityFn,
+})
+
+export const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
+  maxSize: 1,
+  matchesArg: memoEqualityFn,
+})
 
 export type RemixDerivedDataFactory = typeof createRemixDerivedData
