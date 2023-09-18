@@ -595,13 +595,59 @@ describe('Remix navigation', () => {
         import { Link } from '@remix-run/react'
   
         export default function Index() {
-          return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
+          return <Link to='/posts' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
         }
         `,
-      ['/src/routes/about.js']: `import React from 'react'
-  
-        export default function About() {
-          return <h1>About</h1>
+      ['/src/routes/posts._index.js']: `import React from 'react'
+        import { Link } from '@remix-run/react'
+        import { json, useLoaderData } from 'react-router'
+        
+        export function loader() {
+          return json({
+            activities: [
+              {
+                id: 0,
+                name: 'Do the thing',
+              },
+            ]
+          })
+        }
+        
+        export default function Posts() {
+          const { activities } = useLoaderData()
+          return (
+            <div>
+              {activities.map(
+                ({
+                  id,
+                  name,
+                }) => (
+                  <Link to={\`\${id}\`} data-testid='post-link'>{name}</Link>
+                )
+              )}
+            </div>
+          )
+        }
+        `,
+      ['/src/routes/posts.$postId.js']: `import React from 'react'
+        import { json, useLoaderData } from 'react-router'
+        
+        export function loader({ params }) {
+          return json({
+            id: 0,
+            name: 'Do the thing',
+            desc: 'Do it now!'
+          })
+        }
+
+        export default function Post() {
+          const {
+            desc
+          } = useLoaderData()
+
+          return (
+            <div>{desc}</div>
+          )
         }
         `,
     })
@@ -612,11 +658,17 @@ describe('Remix navigation', () => {
     const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    await mouseClickAtPoint(targetElement, {
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
 
-    await mouseClickAtPoint(targetElement, clickPoint)
+    const postLink = renderResult.renderedDOM.getByTestId('post-link')
+    const postLinkBounds = postLink.getBoundingClientRect()
 
-    await expectRemixSceneToBeRendered(renderResult, 'About')
+    await mouseClickAtPoint(postLink, { x: postLinkBounds.x + 5, y: postLinkBounds.y + 5 })
+
+    await expectRemixSceneToBeRendered(renderResult, 'Do it now!')
   })
 
   it('Remix navigation updates metadata', async () => {
