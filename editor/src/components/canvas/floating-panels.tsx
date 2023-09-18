@@ -35,6 +35,9 @@ function storedPanel({ name, type }: { name: PanelName; type: 'menu' | 'pane' })
   }
 }
 
+const MenuWidth = 260
+const PaneWidth = 500
+
 type StoredLayout = Array<Array<StoredPanel>>
 
 const NumberOfPanels = 4
@@ -236,6 +239,18 @@ export const FloatingPanelsContainer = React.memo(() => {
     [setPanelState],
   )
 
+  const columnWidths = React.useMemo(
+    () =>
+      panelState.map((column) => {
+        if (column.length === 0 || column.some((p) => p.type === 'menu')) {
+          return MenuWidth
+        } else {
+          return PaneWidth
+        }
+      }),
+    [panelState],
+  )
+
   return (
     <div
       data-testid='floating-panels-container'
@@ -245,7 +260,7 @@ export const FloatingPanelsContainer = React.memo(() => {
         display: 'grid',
         width: '100%',
         height: '100%',
-        gridTemplateColumns: '[col] 260px [col] 260px [canvas] 1fr [col] 260px [col] 260px [end]',
+        gridTemplateColumns: `[col] ${columnWidths[0]}px [col] ${columnWidths[1]}px [canvas] 1fr [col] ${columnWidths[2]}px [col] ${columnWidths[3]}px [end]`,
         gridTemplateRows: 'repeat(12, 1fr)',
         gridAutoFlow: 'dense',
         columnGap: HorizontalGapHalf * 2,

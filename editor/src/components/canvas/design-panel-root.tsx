@@ -452,11 +452,15 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   return (
     <Resizable
       defaultSize={{
-        width: interfaceDesigner.codePaneWidth,
+        width: isFeatureEnabled('Draggable Floating Panels')
+          ? '100%'
+          : interfaceDesigner.codePaneWidth,
         height: '100%',
       }}
       size={{
-        width: interfaceDesigner.codePaneWidth,
+        width: isFeatureEnabled('Draggable Floating Panels')
+          ? '100%'
+          : interfaceDesigner.codePaneWidth,
         height: '100%',
       }}
       onResizeStart={onResizeStart}
@@ -465,9 +469,6 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       className='resizableFlexColumnCanvasCode'
       style={{
         display: props.small ? 'block' : interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? interfaceDesigner.codePaneWidth
-          : undefined,
         position: 'relative',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
