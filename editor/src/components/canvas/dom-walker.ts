@@ -20,11 +20,7 @@ import {
   emptyAttributeMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import {
-  VoidElementsToFilter,
-  getCanvasRectangleFromElement,
-  getDOMAttribute,
-} from '../../core/shared/dom-utils'
+import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -42,17 +38,11 @@ import type {
 } from '../../core/shared/math-utils'
 import {
   canvasPoint,
-  boundingRectangle,
   localRectangle,
   roundToNearestHalf,
-  zeroCanvasRect,
-  zeroLocalRect,
   canvasRectangle,
   infinityCanvasRectangle,
   infinityLocalRectangle,
-  zeroRectIfNullOrInfinity,
-  scaleRect,
-  MaybeInfinityCanvasRectangle,
 } from '../../core/shared/math-utils'
 import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
@@ -61,6 +51,7 @@ import {
   computedStyleKeys,
   parseDirection,
   parseFlexDirection,
+  parseCSSPx,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -1003,6 +994,8 @@ function getSpecialMeasurements(
   const fontStyle = elementStyle.fontStyle
   const textDecorationLine = elementStyle.textDecorationLine
 
+  const textBounds = elementContainsOnlyText(element) ? getTextBounds(element) : null
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1045,7 +1038,49 @@ function getSpecialMeasurements(
     fontWeight,
     fontStyle,
     textDecorationLine,
+    textBounds,
   )
+}
+
+function elementContainsOnlyText(element: HTMLElement): boolean {
+  if (element.childNodes.length === 0) {
+    return false
+  }
+  for (const node of element.childNodes) {
+    const isForText =
+      node.nodeType === Node.TEXT_NODE ||
+      (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'BR')
+    if (!isForText) {
+      return false
+    }
+  }
+  return true
+}
+
+function getTextBounds(element: HTMLElement): DOMRect {
+  const range = document.createRange()
+  range.selectNodeContents(element)
+  const textBounds = range.getBoundingClientRect()
+  const computedStyle = window.getComputedStyle(element)
+  function maybeValueFromComputedStyle(property: string): number {
+    const parsed = parseCSSPx(property)
+    return isRight(parsed) ? parsed.value.value : 0
+  }
+  return {
+    ...textBounds,
+    width:
+      textBounds.width +
+      maybeValueFromComputedStyle(computedStyle.paddingLeft) +
+      maybeValueFromComputedStyle(computedStyle.paddingRight) +
+      maybeValueFromComputedStyle(computedStyle.marginLeft) +
+      maybeValueFromComputedStyle(computedStyle.marginRight),
+    height:
+      textBounds.height +
+      maybeValueFromComputedStyle(computedStyle.paddingTop) +
+      maybeValueFromComputedStyle(computedStyle.paddingBottom) +
+      maybeValueFromComputedStyle(computedStyle.marginTop) +
+      maybeValueFromComputedStyle(computedStyle.marginBottom),
+  }
 }
 
 function globalFrameForElement(

@@ -6,14 +6,13 @@ import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
 } from '../../../core/shared/element-template'
-import type { CanvasRectangle, LocalRectangle, Size } from '../../../core/shared/math-utils'
+import type { CanvasRectangle, Size } from '../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   nullIfInfinity,
   rectangleDifference,
-  sizeFromRectangle,
 } from '../../../core/shared/math-utils'
-import { forceNotNull, isNotNull, optionalMap } from '../../../core/shared/optional-utils'
+import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type {
@@ -226,6 +225,8 @@ function getUpdateResizedGroupChildrenCommands(
           let constraints: Array<keyof FrameWithAllPoints> =
             editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
 
+          const elementMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, child)
+
           const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
           if (jsxElement != null) {
             if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
@@ -245,14 +246,38 @@ function getUpdateResizedGroupChildrenCommands(
               constraints,
             ),
           )
+
+          function getAdjustedResizedLocalFramePoints(): FrameWithAllPoints {
+            if (elementMetadata != null && MetadataUtils.isTextFromMetadata(elementMetadata)) {
+              if (elementMetadata.specialSizeMeasurements.textBounds != null) {
+                const newWidth = Math.max(
+                  resizedLocalFramePoints.width,
+                  elementMetadata.specialSizeMeasurements.textBounds.width,
+                )
+                const newHeight = Math.max(
+                  resizedLocalFramePoints.height,
+                  elementMetadata.specialSizeMeasurements.textBounds.height,
+                )
+                return {
+                  ...resizedLocalFramePoints,
+                  width: newWidth,
+                  height: newHeight,
+                }
+              }
+            }
+            return resizedLocalFramePoints
+          }
+
+          const adjustedResizedLocalFramePoints = getAdjustedResizedLocalFramePoints()
+
           updatedLocalFrames[EP.toString(child)] = {
-            allSixFramePoints: resizedLocalFramePoints,
+            allSixFramePoints: adjustedResizedLocalFramePoints,
             parentSize: updatedGroupBounds,
             target: child,
           }
           targets.push({
             target: child,
-            frame: sixFramePointsToCanvasRectangle(resizedLocalFramePoints),
+            frame: sixFramePointsToCanvasRectangle(adjustedResizedLocalFramePoints),
           })
         }
       }
