@@ -17,6 +17,15 @@ import { isSelectModeWithArea } from '../../../editor/editor-modes'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
 
+export const RemixSceneLabelPathTestId = 'remix-scene-label-path'
+
+export const RemixSceneHomeLabel = '(home)'
+
+export type RemixSceneLabelButtonType = 'back' | 'forward' | 'home'
+
+export const RemixSceneLabelButton = (button: RemixSceneLabelButtonType): string =>
+  `remix-scene-label-button-${button}`
+
 interface RemixSceneLabelControlProps {
   maybeHighlightOnHover: (target: ElementPath) => void
   maybeClearHighlightsOnHoverEnd: () => void
@@ -60,7 +69,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
   const isIndexRoute = currentPath === '/'
 
-  const label = isIndexRoute ? '(home)' : currentPath
+  const label = isIndexRoute ? RemixSceneHomeLabel : currentPath
 
   const forward = React.useCallback(
     () => navigationData[EP.toString(props.target)]?.forward(),
@@ -224,12 +233,17 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           }}
         >
           <Tooltip title={'Back'}>
-            <span style={{ cursor: 'pointer', fontSize: 16 / scale }} onMouseDown={back}>
+            <span
+              data-testid={RemixSceneLabelButton('back')}
+              style={{ cursor: 'pointer', fontSize: 16 / scale }}
+              onMouseDown={back}
+            >
               〱
             </span>
           </Tooltip>
           <Tooltip title={'Forward'}>
             <span
+              data-testid={RemixSceneLabelButton('forward')}
               style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
               onMouseDown={forward}
             >
@@ -237,11 +251,16 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
             </span>
           </Tooltip>
           <Tooltip title={'Home'}>
-            <span style={{ cursor: 'pointer', fontSize: 16 / scale }} onMouseDown={home}>
+            <span
+              data-testid={RemixSceneLabelButton('home')}
+              style={{ cursor: 'pointer', fontSize: 16 / scale }}
+              onMouseDown={home}
+            >
               ／
             </span>
           </Tooltip>
           <div
+            data-testid={RemixSceneLabelPathTestId}
             style={{
               backgroundColor: '#f2f3f4',
               borderRadius: 10 / scale,
