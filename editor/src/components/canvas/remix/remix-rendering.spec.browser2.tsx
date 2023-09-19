@@ -685,7 +685,50 @@ describe('Remix navigation', () => {
         return <h1>${AboutTextContent}</h1>
       }
       `,
-      ['/src/routes/posts._index.js']: `import React from 'react'
+    })
+
+  it('Can navigate to a different route', async () => {
+    const renderResult = await renderRemixProject(
+      createModifiedProject({
+        [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix'
+          />
+        </Storyboard>
+      )
+      `,
+        ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div>
+            ${RootTextContent}
+            <Outlet />
+          </div>
+        )
+      }
+      `,
+        ['/src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+
+      export default function Index() {
+        return <Link to='/posts' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
+      }
+      `,
+        ['/src/routes/posts._index.js']: `import React from 'react'
         import { Link } from '@remix-run/react'
         import { json, useLoaderData } from 'react-router'
         
@@ -716,7 +759,7 @@ describe('Remix navigation', () => {
           )
         }
         `,
-      ['/src/routes/posts.$postId.js']: `import React from 'react'
+        ['/src/routes/posts.$postId.js']: `import React from 'react'
         import { json, useLoaderData } from 'react-router'
         
         export function loader({ params }) {
@@ -734,15 +777,15 @@ describe('Remix navigation', () => {
             <div>{desc}</div>
           )
         }`,
-    })
-
-  it('Can navigate to a different route', async () => {
-    const renderResult = await renderRemixProject(projectWithMultipleRoutes('sbnav'))
+      }),
+    )
     await switchToLiveMode(renderResult)
 
     await clickRemixLink(renderResult)
 
-    await expectRemixSceneToBeRendered(renderResult, AboutTextContent)
+    await clickPostLink(renderResult)
+
+    await expectRemixSceneToBeRendered(renderResult, 'Do it now!')
   })
 
   it('Remix navigation updates metadata', async () => {
@@ -807,13 +850,13 @@ describe('Remix navigation', () => {
     const renderResult = await renderRemixProject(project)
     await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
 
+    await switchToLiveMode(renderResult)
+
     const remixLinkMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
         'storyboard/remix-scene:rootdiv/outlet:remixlink'
       ]
     expect(remixLinkMetadata).not.toBeUndefined()
-
-    await switchToLiveMode(renderResult)
 
     await clickRemixLink(renderResult)
 
@@ -1673,13 +1716,16 @@ const switchToLiveMode = (editor: EditorRenderResult) =>
 const switchToEditMode = (editor: EditorRenderResult) =>
   editor.dispatch([switchEditorMode(EditorModes.selectMode())], true)
 
-async function clickRemixLink(editor: EditorRenderResult) {
-  const targetElement = editor.renderedDOM.queryAllByTestId('remix-link')[0]
+async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
+  const targetElement = editor.renderedDOM.queryAllByTestId(testId)[0]
   const targetElementBounds = targetElement.getBoundingClientRect()
 
   const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
   await mouseClickAtPoint(targetElement, clickPoint)
 }
+
+const clickRemixLink = (editor: EditorRenderResult) => clickLinkWithTestId(editor, 'remix-link')
+const clickPostLink = (editor: EditorRenderResult) => clickLinkWithTestId(editor, 'post-link')
 
 const navigateWithRemixSceneLabelButton = (
   renderResult: EditorRenderResult,
