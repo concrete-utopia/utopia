@@ -46,7 +46,7 @@ const IndexOfCanvas = 2
 const VerticalGapHalf = 6
 const HorizontalGapHalf = 6
 
-const ExtraHorizontalDropTargetPadding = 5
+const ExtraHorizontalDropTargetPadding = 15
 
 const NumberOfRows = 12
 
