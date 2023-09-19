@@ -24,12 +24,15 @@ export function identity<T>(t: T): T {
 }
 
 export function fastForEach<T>(a: readonly T[], fn: (t: T, index: number) => void): void {
-  fastForEachQuery(a, (t, index) => {
-    fn(t, index)
-    return false
-  })
+  for (var i = 0, len = a.length; i < len; i++) {
+    if (i in a) {
+      fn(a[i]!, i)
+    }
+  }
 }
 
+// This is a copy of fastForEach that returns immediately when the argument function returns true. That boolean is
+// also returned to the caller.
 export function fastForEachQuery<T>(
   a: readonly T[],
   fn: (t: T, index: number) => boolean,
