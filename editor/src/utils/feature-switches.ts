@@ -68,6 +68,10 @@ async function loadStoredValue(featureName: FeatureName) {
 
 // Load stored settings
 export async function loadFeatureSwitches(): Promise<void> {
+  if (IS_TEST_ENVIRONMENT) {
+    // in test environments, we actually don't want to load from localforage, ever
+    return
+  }
   await Promise.all(
     AllFeatureNames.map((name) => {
       return loadStoredValue(name)
@@ -77,7 +81,10 @@ export async function loadFeatureSwitches(): Promise<void> {
 
 export function isFeatureEnabled(featureName: FeatureName): boolean {
   if (FeatureSwitchLoaded[featureName] !== true) {
-    throw new Error(`Reading FS before it was loaded! ${featureName}`)
+    if (!IS_TEST_ENVIRONMENT) {
+      // in test environments, we actually don't want to load from localforage, ever
+      throw new Error(`Reading FS before it was loaded! ${featureName}`)
+    }
   }
   return FeatureSwitches[featureName] ?? false
 }
