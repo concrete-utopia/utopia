@@ -63,8 +63,9 @@ const MinDragThreshold = 3
 export function useFloatingPanelDragInfo(): {
   isDragActive: boolean
   draggedPanelName: PanelName | undefined
+  draggedPanel: StoredPanel | undefined
 } {
-  const { isDragActive, draggedPanelName } = useDragLayer((monitor) => {
+  const { isDragActive, draggedPanelName, draggedPanel } = useDragLayer((monitor) => {
     const dragVector = monitor.getDifferenceFromInitialOffset()
     return {
       isDragActive:
@@ -73,8 +74,9 @@ export function useFloatingPanelDragInfo(): {
         dragVector != null &&
         magnitude(windowPoint(dragVector)) > MinDragThreshold,
       draggedPanelName: monitor.getItem<FloatingPanelDragItem | null>()?.draggedPanel.name,
+      draggedPanel: monitor.getItem<FloatingPanelDragItem | null>()?.draggedPanel,
     }
   })
 
-  return { isDragActive, draggedPanelName }
+  return { isDragActive, draggedPanelName, draggedPanel }
 }

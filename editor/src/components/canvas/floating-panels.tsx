@@ -239,6 +239,25 @@ export const FloatingPanelsContainer = React.memo(() => {
     [setPanelState],
   )
 
+  const canDrop = React.useCallback(
+    (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+      const wouldBePanelState = updateLayout(panelState, itemToMove, newPosition)
+      const wouldBePanelStateEqualsCurrentPanelState = panelState.every((column, colIndex) =>
+        column.every(
+          (item, itemIndex) => item.name === wouldBePanelState[colIndex]?.[itemIndex]?.name,
+        ),
+      )
+
+      if (wouldBePanelStateEqualsCurrentPanelState) {
+        // if the drop results in no change, we don't allow it
+        return false
+      }
+
+      return true
+    },
+    [panelState],
+  )
+
   const columnWidths = React.useMemo(
     () =>
       panelState.map((column) => {
@@ -276,7 +295,12 @@ export const FloatingPanelsContainer = React.memo(() => {
       <FloatingPanel key={'inspector'} onDrop={onDrop} pane={orderedPanels['inspector']} />
       {/* All future Panels need to be explicitly listed here */}
       {nonEmptyColumns.map((columnIndex) => (
-        <ColumnDragTargets key={columnIndex} columnIndex={columnIndex} onDrop={onDrop} />
+        <ColumnDragTargets
+          key={columnIndex}
+          columnIndex={columnIndex}
+          onDrop={onDrop}
+          canDrop={canDrop}
+        />
       ))}
     </div>
   )
@@ -285,21 +309,38 @@ export const FloatingPanelsContainer = React.memo(() => {
 const ColumnDragTargets = React.memo(
   (props: {
     columnIndex: number
+    canDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
     onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   }) => {
-    const { columnIndex, onDrop } = props
-    const { isDragActive } = useFloatingPanelDragInfo()
+    const { columnIndex, onDrop, canDrop } = props
+    const { isDragActive, draggedPanel } = useFloatingPanelDragInfo()
+
+    const dropBeforeColumn: LayoutUpdate = React.useMemo(
+      () => ({
+        type: 'before-column',
+        columnIndex: columnIndex,
+      }),
+      [columnIndex],
+    )
+
+    const dropAfterColumn: LayoutUpdate = React.useMemo(
+      () => ({
+        type: 'after-column',
+        columnIndex: columnIndex,
+      }),
+      [columnIndex],
+    )
+
+    const canDropBefore = draggedPanel != null && canDrop(draggedPanel, dropBeforeColumn)
+    const canDropAfter = draggedPanel != null && canDrop(draggedPanel, dropAfterColumn)
 
     const { drop: dropBefore, isOver: isOverBefore } = useFloatingPanelDropArea(
       columnIndex,
       9,
       React.useCallback(
         (itemToMove: StoredPanel, newPosition: LayoutUpdate) =>
-          onDrop(itemToMove, {
-            type: 'before-column',
-            columnIndex: columnIndex,
-          }),
-        [onDrop, columnIndex],
+          onDrop(itemToMove, dropBeforeColumn),
+        [onDrop, dropBeforeColumn],
       ),
     )
 
@@ -308,12 +349,9 @@ const ColumnDragTargets = React.memo(
       0,
       React.useCallback(
         (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
-          onDrop(itemToMove, {
-            type: 'after-column',
-            columnIndex: columnIndex,
-          })
+          onDrop(itemToMove, dropAfterColumn)
         },
-        [onDrop, columnIndex],
+        [onDrop, dropAfterColumn],
       ),
     )
 
@@ -326,7 +364,7 @@ const ColumnDragTargets = React.memo(
             gridRowStart: 1,
             gridRowEnd: -1,
             gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
-            display: isDragActive ? 'block' : 'none',
+            display: isDragActive && canDropBefore ? 'block' : 'none',
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf,
             height: '100%',
             left: -(ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf),
@@ -350,7 +388,7 @@ const ColumnDragTargets = React.memo(
             gridRowStart: 1,
             gridRowEnd: -1,
             gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
-            display: isDragActive ? 'block' : 'none',
+            display: isDragActive && canDropAfter ? 'block' : 'none',
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf,
             height: '100%',
             right: -(ExtraHorizontalDropTargetPadding + 2 * HorizontalGapHalf),
