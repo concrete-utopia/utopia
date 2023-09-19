@@ -1771,7 +1771,7 @@ const switchToLiveMode = (editor: EditorRenderResult) =>
   editor.dispatch([switchEditorMode(EditorModes.liveMode())], true)
 
 const switchToEditMode = (editor: EditorRenderResult) =>
-  editor.dispatch([switchEditorMode(EditorModes.selectMode())], true)
+  editor.dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))], true)
 
 async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
   const targetElement = editor.renderedDOM.queryAllByTestId(testId)[0]
