@@ -7,6 +7,7 @@ import type { MutableUtopiaCtxRefData } from '../../canvas/ui-jsx-canvas-rendere
 import type { MapLike } from 'typescript'
 import type { ComponentRendererComponent } from '../../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { DataRouteObject } from 'react-router'
+import { isProjectContentDirectory, isProjectContentFile } from '../../assets'
 import type { ProjectContentTreeRoot } from '../../assets'
 import type {
   RouteIdsToModuleCreators,
@@ -19,10 +20,8 @@ import {
   getRoutesAndModulesFromManifest,
 } from '../../canvas/remix/remix-utils'
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
-import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import type { AllElementProps, CanvasBase64Blobs } from './editor-state'
 import { memoize } from '../../../core/shared/memoize'
+import { shallowEqual } from '../../../core/shared/equality-utils'
 
 export interface RemixRoutingTable {
   [rootElementUid: string]: string /* file path */
@@ -47,13 +46,10 @@ const CreateRemixDerivedDataRefs: {
   routeModulesCache: { current: {} },
 }
 
+// Important Note: When updating the params here, you must evaluate whether the change should
+// have an effect on the memoization, and if so update paramsEqualityFn below
 export function createRemixDerivedData(
   projectContents: ProjectContentTreeRoot,
-  spyMetadata: ElementInstanceMetadataMap,
-  allElementProps: AllElementProps,
-  fileBlobs: CanvasBase64Blobs,
-  displayNoneInstances: Array<ElementPath>,
-  hiddenInstances: Array<ElementPath>,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
 ): RemixDerivedData | null {
@@ -64,25 +60,13 @@ export function createRemixDerivedData(
 
   const assetsManifest = createAssetsManifest(routeManifest)
 
-  const metadataCtx = {
-    current: {
-      spyValues: { metadata: spyMetadata, allElementProps: allElementProps },
-    },
-  }
-
   const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
     routeManifest,
     DefaultFutureConfig,
     curriedRequireFn,
     curriedResolveFn,
-    metadataCtx,
     projectContents,
-    CreateRemixDerivedDataRefs.mutableContext,
-    CreateRemixDerivedDataRefs.topLevelComponentRendererComponents,
     CreateRemixDerivedDataRefs.routeModulesCache.current,
-    fileBlobs,
-    displayNoneInstances,
-    hiddenInstances,
   )
 
   if (routesAndModulesFromManifestResult == null) {
@@ -102,8 +86,31 @@ export function createRemixDerivedData(
   }
 }
 
-export const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
+function isProjectContentTreeRoot(v: unknown): v is ProjectContentTreeRoot {
+  if (v != null && typeof v === 'object' && !Array.isArray(v)) {
+    const firstValue = Object.values(v)[0]
+    return isProjectContentDirectory(firstValue) || isProjectContentFile(firstValue)
+  }
 
-export const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, { maxSize: 1 })
+  return false
+}
+
+function paramsEqualityFn(l: unknown, r: unknown): boolean {
+  if (isProjectContentTreeRoot(l) && isProjectContentTreeRoot(r)) {
+    return shallowEqual(l, r)
+  }
+
+  return l === r
+}
+
+export const patchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
+  maxSize: 1,
+  matchesArg: paramsEqualityFn,
+})
+
+export const unpatchedCreateRemixDerivedDataMemo = memoize(createRemixDerivedData, {
+  maxSize: 1,
+  matchesArg: paramsEqualityFn,
+})
 
 export type RemixDerivedDataFactory = typeof createRemixDerivedData
