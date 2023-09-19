@@ -3,7 +3,7 @@ import { runLocalCanvasAction } from '../../templates/editor-canvas'
 import { canvasPoint, point } from '../../core/shared/math-utils'
 import CanvasActions from '../canvas/canvas-actions'
 import { editorStateToolbarModeOptic, maybeClearPseudoInsertMode } from './canvas-toolbar-states'
-import { defaultUserState } from './store/editor-state'
+import { defaultUserState, StoryboardFilePath } from './store/editor-state'
 import { setFocus } from '../common/actions'
 import { runLocalEditorAction } from './store/editor-update'
 import type { CreateEditorStatesResult } from '../../utils/utils.test-utils'
@@ -12,7 +12,11 @@ import { fromField } from '../../core/shared/optics/optic-creators'
 import { emptyUiJsxCanvasContextData } from '../canvas/ui-jsx-canvas'
 import * as History from '../editor/history'
 import { MockUtopiaTsWorkers } from '../../core/workers/workers'
-import { updateJSXElementName } from './actions/action-creators'
+import {
+  updateFromWorker,
+  updateJSXElementName,
+  workerParsedUpdate,
+} from './actions/action-creators'
 import { ScenePathForTestUiJsFile } from '../../core/model/test-ui-js-file.test-utils'
 import { emptyImports } from '../../core/workers/common/project-file-utils'
 import {
@@ -20,6 +24,7 @@ import {
   createInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
 import { emptyModifiers } from '../../utils/modifiers'
+import { unparsed } from '../../core/shared/project-file-types'
 
 const workers = new MockUtopiaTsWorkers()
 
@@ -77,6 +82,39 @@ describe('maybeClearPseudoInsertMode', () => {
     expect(editorStateAfterPseudoInsertUpdate).not.toEqual(editorStateAfterAction)
     expect(unsafeGet(editorStateToolbarModeOptic, editorStateAfterPseudoInsertUpdate)).toEqual(
       'none',
+    )
+  })
+  it('keeps the insert mode when project contents change but that originated from a worker', () => {
+    const { editor, derivedState, dispatch } = set(
+      fromField<CreateEditorStatesResult, 'editor'>('editor').compose(editorStateToolbarModeOptic),
+      'pseudo-insert',
+      createEditorStates(),
+    )
+    expect(unsafeGet(editorStateToolbarModeOptic, editor)).toEqual('pseudo-insert')
+
+    const updateFromWorkerAction = updateFromWorker([
+      workerParsedUpdate(StoryboardFilePath, unparsed, 5000),
+    ])
+
+    const editorStateAfterAction = runLocalEditorAction(
+      editor,
+      derivedState,
+      defaultUserState,
+      workers,
+      updateFromWorkerAction,
+      History.init(editor, derivedState),
+      dispatch,
+      emptyUiJsxCanvasContextData(),
+      [],
+    )
+    const editorStateAfterPseudoInsertUpdate = maybeClearPseudoInsertMode(
+      editor,
+      editorStateAfterAction,
+      updateFromWorkerAction,
+    )
+    expect(editorStateAfterPseudoInsertUpdate).toEqual(editorStateAfterAction)
+    expect(unsafeGet(editorStateToolbarModeOptic, editorStateAfterPseudoInsertUpdate)).toEqual(
+      'pseudo-insert',
     )
   })
   it('loses the insert mode when project contents change', () => {
