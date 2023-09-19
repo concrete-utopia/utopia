@@ -155,7 +155,6 @@ function getStartingTargetParentsToFilterOutInner(
     canvasState,
     canvasState.startingMetadata,
     canvasState.startingElementPathTree,
-    canvasState.nodeModules,
     canvasState.startingAllElementProps,
     allowSmallerParent,
     elementSupportsChildren,
@@ -192,7 +191,7 @@ function isCanvasState(
 
 const getStartingTargetParentsToFilterOut = memoize(getStartingTargetParentsToFilterOutInner, {
   maxSize: 10,
-  equals: (
+  matchesArg: (
     l: InteractionCanvasState | InteractionSession,
     r: InteractionCanvasState | InteractionSession,
   ) => {

@@ -1,32 +1,25 @@
 import moize from 'moize'
+import type { Options, Moizeable } from 'moize'
 import { shallowEqual } from './equality-utils'
 
-export interface MemoizeOptions<T> {
-  maxSize: number
-  equals: (a: T, b: T) => boolean
-}
-
-function getMemoizeOptions<T>(options?: Partial<MemoizeOptions<T>>): MemoizeOptions<T> {
-  let equalsFunction = shallowEqual
+function getMemoizeOptions<T extends Moizeable>(options?: Partial<Options<T>>): Options<T> {
+  let matchesArg = shallowEqual
   let maxSize = 5
   if (options != null) {
-    if (options.equals != null) {
-      equalsFunction = options.equals
+    if (options.matchesArg != null) {
+      matchesArg = options.matchesArg
     }
     if (options.maxSize != null) {
       maxSize = options.maxSize
     }
   }
   return {
-    equals: equalsFunction,
+    matchesArg: matchesArg,
     maxSize: maxSize,
   }
 }
 
-export function memoize<F extends (...args: Array<any>) => any, T>(
-  func: F,
-  options?: Partial<MemoizeOptions<T>>,
-): F {
+export function memoize<T extends Moizeable>(func: T, options?: Partial<Options<T>>): T {
   const memoizeOptions = getMemoizeOptions(options)
   return moize(func, memoizeOptions)
 }

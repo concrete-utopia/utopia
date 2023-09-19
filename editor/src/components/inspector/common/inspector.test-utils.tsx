@@ -119,7 +119,6 @@ export function editPropOfSelectedView(
     editor: modifyUnderlyingElementForOpenFile(
       store.editor.selectedViews[0] as StaticElementPath,
       store.editor,
-      store.derived,
       (element): JSXElement => {
         const updatedAttributes = setJSXValueAtPath(
           element.props,

@@ -1,3 +1,4 @@
+import React from 'react'
 import type {
   UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_EntryRoute as EntryRoute,
@@ -33,6 +34,8 @@ import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
+
+export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
 const ROOT_DIR = '/src'
 
@@ -136,7 +139,7 @@ export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsM
 
 export interface RouteModuleCreator {
   filePath: string
-  executionScopeCreator: (projectContents: ProjectContentTreeRoot) => ExecutionScope
+  executionScopeCreator: ExecutionScopeCreator
 }
 
 export interface RouteIdsToModuleCreators {
@@ -145,7 +148,7 @@ export interface RouteIdsToModuleCreators {
 
 export interface RouteModulesWithRelativePaths {
   [routeId: string]: {
-    relativePath: ElementPath
+    relativePaths: Array<ElementPath>
     filePath: string
   }
 }
@@ -155,22 +158,6 @@ export interface GetRoutesAndModulesFromManifestResult {
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routingTable: RemixRoutingTable
-}
-
-function addLoaderAndActionToRoutes(
-  routes: DataRouteObject[],
-  routeId: string,
-  loader: LoaderFunction | undefined,
-  action: ActionFunction | undefined,
-) {
-  routes.forEach((route) => {
-    if (route.id === routeId) {
-      route.action = action
-      route.loader = loader
-    } else {
-      addLoaderAndActionToRoutes(route.children ?? [], routeId, loader, action)
-    }
-  })
 }
 
 function getRouteModulesWithPaths(
@@ -194,15 +181,15 @@ function getRouteModulesWithPaths(
     return {}
   }
 
-  const pathPartToOutlet = findPathToJSXElementChild(
+  const pathPartsToOutlets = findPathToJSXElementChild(
     (e) => isRemixOutletElement(e, filePathForRouteObject, projectContents),
     topLevelElement,
   )
 
-  const isLeafModule = pathPartToOutlet == null
+  const isLeafModule = pathPartsToOutlets == null
   let routeModulesWithBasePaths: RouteModulesWithRelativePaths = {
     [route.id]: {
-      relativePath: pathSoFar,
+      relativePaths: [pathSoFar],
       filePath: filePathForRouteObject,
     },
   }
@@ -212,43 +199,60 @@ function getRouteModulesWithPaths(
   }
 
   const children = route.children ?? []
-  const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
 
-  for (const child of children) {
-    const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
-    for (const [routeId, value] of Object.entries(paths)) {
-      routeModulesWithBasePaths[routeId] = value
+  for (const pathPartToOutlet of pathPartsToOutlets) {
+    for (const child of children) {
+      const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
+
+      const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
+
+      for (const [routeId, value] of Object.entries(paths)) {
+        if (routeModulesWithBasePaths[routeId] == null) {
+          routeModulesWithBasePaths[routeId] = value
+        } else {
+          routeModulesWithBasePaths[routeId].relativePaths.push(...value.relativePaths)
+        }
+      }
     }
   }
 
   return routeModulesWithBasePaths
 }
 
+export type ExecutionScopeCreator = (
+  innerProjectContents: ProjectContentTreeRoot,
+  fileBlobs: CanvasBase64Blobs,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  metadataContext: UiJsxCanvasContextData,
+) => ExecutionScope
+
 function getRemixExportsOfModule(
   filename: string,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
-  topLevelComponentRendererComponents: React.MutableRefObject<
-    MapLike<MapLike<ComponentRendererComponent>>
-  >,
-  fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
 ): {
-  executionScopeCreator: (innerProjectContents: ProjectContentTreeRoot) => ExecutionScope
-  loader: LoaderFunction | undefined
-  action: ActionFunction | undefined
+  executionScopeCreator: ExecutionScopeCreator
   rootComponentUid: string
 } {
-  const executionScopeCreator = (innerProjectContents: ProjectContentTreeRoot) => {
+  const executionScopeCreator = (
+    innerProjectContents: ProjectContentTreeRoot,
+    fileBlobs: CanvasBase64Blobs,
+    hiddenInstances: Array<ElementPath>,
+    displayNoneInstances: Array<ElementPath>,
+    metadataContext: UiJsxCanvasContextData,
+  ) => {
     let resolvedFiles: MapLike<Array<string>> = {}
     let resolvedFileNames: Array<string> = ['/src/root.js']
 
     const requireFn = curriedRequireFn(innerProjectContents)
     const resolve = curriedResolveFn(innerProjectContents)
+
+    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+    let topLevelComponentRendererComponents: {
+      current: MapLike<MapLike<ComponentRendererComponent>>
+    } = { current: {} }
 
     const customRequire = (importOrigin: string, toImport: string) => {
       if (resolvedFiles[importOrigin] == null) {
@@ -270,9 +274,9 @@ function getRemixExportsOfModule(
         mutableContextRef,
         topLevelComponentRendererComponents,
         '/src/root.js',
-        {},
-        [],
-        [],
+        fileBlobs,
+        hiddenInstances,
+        displayNoneInstances,
         metadataContext,
         NO_OP,
         false,
@@ -308,16 +312,11 @@ function getRemixExportsOfModule(
     )
   }
 
-  const executionScope = executionScopeCreator(projectContents)
-
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
 
   return {
     executionScopeCreator: executionScopeCreator,
     rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
-    // FIXME the executionScope should be created at the point where we use the loader and action like we do for the module's default export component
-    loader: executionScope.scope['loader'] as LoaderFunction | undefined,
-    action: executionScope.scope['action'] as ActionFunction | undefined,
   }
 }
 export function getRoutesAndModulesFromManifest(
@@ -325,16 +324,8 @@ export function getRoutesAndModulesFromManifest(
   futureConfig: FutureConfig,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
-  topLevelComponentRendererComponents: React.MutableRefObject<
-    MapLike<MapLike<ComponentRendererComponent>>
-  >,
   routeModulesCache: RouteModules,
-  fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
@@ -370,20 +361,13 @@ export function getRoutesAndModulesFromManifest(
   )
 
   Object.values(routeManifest).forEach((route) => {
-    const { executionScopeCreator, loader, action, rootComponentUid } = getRemixExportsOfModule(
+    const { executionScopeCreator, rootComponentUid } = getRemixExportsOfModule(
       route.module,
       curriedRequireFn,
       curriedResolveFn,
-      metadataContext,
       projectContents,
-      mutableContextRef,
-      topLevelComponentRendererComponents,
-      fileBlobs,
-      hiddenInstances,
-      displayNoneInstances,
     )
 
-    addLoaderAndActionToRoutes(routes, route.id, loader, action)
     routeModuleCreators[route.id] = {
       filePath: route.module,
       executionScopeCreator: executionScopeCreator,

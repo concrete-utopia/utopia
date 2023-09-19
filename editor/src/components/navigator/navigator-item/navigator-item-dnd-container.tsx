@@ -240,11 +240,7 @@ function notDroppingIntoOwnDefinition(
   )
 }
 
-function canDropInto(
-  editorState: EditorState,
-  derivedState: DerivedState,
-  moveToEntry: ElementPath,
-): boolean {
+function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolean {
   const notSelectedItem = editorState.selectedViews.every((selection) => {
     return !EP.isDescendantOfOrEqualTo(moveToEntry, selection)
   })
@@ -252,9 +248,6 @@ function canDropInto(
   const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     editorState.projectContents,
     editorState.jsxMetadata,
-    editorState.nodeModules.files,
-    derivedState.remixData?.routingTable ?? null,
-    editorState.canvas.openFile?.filename,
     moveToEntry,
     editorState.elementPathTree,
   )
@@ -494,7 +487,6 @@ function isHintDisallowed(elementPath: ElementPath | null, metadata: ElementInst
 
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
-  const derivedStateRef = useRefEditorState((store) => store.derived)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
   const canvasViewportCenterRef = useRefEditorState((store) =>
     canvasPoint({
@@ -735,7 +727,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         props.editorDispatch(actions)
       },
       canDrop: (item: NavigatorItemDragAndDropWrapperProps) => {
-        return canDropInto(editorStateRef.current, derivedStateRef.current, props.elementPath)
+        return canDropInto(editorStateRef.current, props.elementPath)
       },
     }),
     [props, dropTargetHint],

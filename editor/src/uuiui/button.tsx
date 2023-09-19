@@ -1,6 +1,7 @@
 import styled from '@emotion/styled'
+import type { Property } from 'csstype'
 //TODO: refactor components to functional components and use 'useColorTheme()':
-import { colorTheme, UtopiaTheme, UtopiaStyles } from './styles/theme'
+import { colorTheme, UtopiaTheme } from './styles/theme'
 
 export interface ButtonProps {
   hidden?: boolean
@@ -10,6 +11,7 @@ export interface ButtonProps {
   disabled?: boolean
   primary?: boolean
   danger?: boolean
+  overriddenBackground?: Property.Background<string | number>
 }
 
 /**
@@ -24,40 +26,58 @@ export interface ButtonProps {
 
  */
 
-export const Button = styled.div<ButtonProps>((props: ButtonProps) => ({
-  label: 'button',
-  cursor: 'pointer',
-  display: props.hidden ? 'none' : 'flex',
-  flexGrow: 0,
-  flexShrink: 0,
-  border: 'none',
-  boxSixing: 'border-box',
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  outline: 'none',
-  borderRadius: 1,
-  padding: 0,
-  height: UtopiaTheme.layout.inputHeight.default,
-  opacity: props.disabled ? 0.5 : 1,
-  pointerEvents: props.disabled ? 'none' : 'initial',
-  boxShadow: props.outline ? `inset 0px 0px 0px 1px ${colorTheme.buttonShadow.value}` : undefined,
-  color: props.primary ? 'white' : 'inherit',
-  //TODO Nested ternaries
-  background: props.primary
-    ? colorTheme.primary.value
-    : props.spotlight
-    ? colorTheme.buttonBackground.value
-    : undefined,
-  '&:active': {
-    outline: 'none',
+export const Button = styled.div<ButtonProps>((props: ButtonProps) => {
+  let background: Property.Background<string | number> | undefined = undefined
+  if (props.overriddenBackground != null) {
+    background = props.overriddenBackground
+  } else if (props.primary) {
+    background = colorTheme.primary.value
+  } else if (props.spotlight) {
+    background = colorTheme.buttonBackground.value
+  }
+
+  let hoverBackground: Property.Background<string | number> | undefined = 'transparent'
+  if (props.overriddenBackground != null) {
+    hoverBackground = props.overriddenBackground
+  } else if (props.primary && props.highlight) {
+    hoverBackground = colorTheme.primary.value
+  } else if (props.highlight) {
+    hoverBackground = colorTheme.buttonHoverBackground.value
+  }
+
+  return {
+    label: 'button',
+    cursor: 'pointer',
+    display: props.hidden ? 'none' : 'flex',
+    flexGrow: 0,
+    flexShrink: 0,
     border: 'none',
-    boxShadow: props.outline
-      ? `inset 0px 0px 0px 1px  ${colorTheme.buttonShadowActive.value}`
-      : undefined,
-    filter: props.highlight ? 'brightness(98%)' : undefined,
-  },
-}))
+    boxSixing: 'border-box',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    outline: 'none',
+    borderRadius: 1,
+    padding: 0,
+    height: UtopiaTheme.layout.inputHeight.default,
+    opacity: props.disabled ? 0.5 : 1,
+    pointerEvents: props.disabled ? 'none' : 'initial',
+    boxShadow: props.outline ? `inset 0px 0px 0px 1px ${colorTheme.buttonShadow.value}` : undefined,
+    color: props.primary ? 'white' : 'inherit',
+    background: background,
+    '&:hover': {
+      background: hoverBackground,
+    },
+    '&:active': {
+      outline: 'none',
+      border: 'none',
+      boxShadow: props.outline
+        ? `inset 0px 0px 0px 1px  ${colorTheme.buttonShadowActive.value}`
+        : undefined,
+      filter: props.highlight ? 'brightness(98%)' : undefined,
+    },
+  }
+})
 
 export const SquareButton = styled(Button)({
   label: 'SquareButton',

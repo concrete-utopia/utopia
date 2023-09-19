@@ -141,7 +141,6 @@ import {
   SafeFunctionCurriedErrorHandler,
   processErrorWithSourceMap,
 } from '../core/shared/code-exec-utils'
-import { memoize } from '../core/shared/memoize'
 import type { ValueType, OptionsType, OptionTypeBase } from 'react-select'
 import { emptySet } from '../core/shared/set-utils'
 import * as ObjectPath from 'object-path'
@@ -1055,7 +1054,6 @@ export default {
   shallowClone: shallowClone,
   proxyValue: proxyValue,
   createSimpleClock: createSimpleClock,
-  memoize: memoize,
   shallowEqual: shallowEqual,
   oneLevelNestedEquals: oneLevelNestedEquals,
   keepReferenceIfShallowEqual: keepReferenceIfShallowEqual,

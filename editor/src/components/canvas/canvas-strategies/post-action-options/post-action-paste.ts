@@ -12,10 +12,7 @@ import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import type {
-  ElementInstanceMetadataMap,
-  JSXElementChild,
-} from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   zeroCanvasPoint,
   canvasRectangle,
@@ -29,7 +26,6 @@ import type {
   NodeModules,
 } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
-import { assertNever } from '../../../../core/shared/utils'
 import { getTargetParentForPaste } from '../../../../utils/clipboard'
 import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
 import type { IndexPosition } from '../../../../utils/utils'
@@ -240,7 +236,6 @@ export function staticReparentAndUpdatePosition(
     editorStateContext.builtInDependencies,
     editorStateContext.projectContents,
     editorStateContext.nodeModules,
-    editorStateContext.remixRoutingTable,
     editorStateContext.openFile,
     elementsToInsert.map((e) => e.pathToReparent),
     target.parentPath,
@@ -286,8 +281,6 @@ export function staticReparentAndUpdatePosition(
           editor.jsxMetadata,
           editor.elementPathTree,
           editor.projectContents,
-          derivedState.remixData?.routingTable ?? null,
-          editor.canvas.openFile?.filename ?? null,
           pastedElementMetadata?.specialSizeMeasurements.position ?? null,
           pastedElementMetadata?.specialSizeMeasurements.display ?? null,
           pasteContext.originalAllElementProps,
@@ -571,7 +564,6 @@ function getTargetParentForPasteHere(
   const target = getTargetParentForPaste(
     editor.projectContents,
     editor.selectedViews,
-    editor.nodeModules.files,
     editor.canvas.openFile?.filename ?? null,
     editor.jsxMetadata,
     editor.pasteTargetsToIgnore,
@@ -581,7 +573,6 @@ function getTargetParentForPasteHere(
       originalContextElementPathTrees: originalPathTree,
     },
     editor.elementPathTree,
-    derived.remixData?.routingTable ?? null,
   )
 
   const storyboardPath = getStoryboardElementPath(

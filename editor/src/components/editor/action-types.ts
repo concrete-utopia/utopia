@@ -471,13 +471,15 @@ export type ResetPins = {
   target: ElementPath
 }
 
+export interface WrapInElementWith {
+  element: JSXElement | JSXConditionalExpression | JSXFragment
+  importsToAdd: Imports
+}
+
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
-  whatToWrapWith: {
-    element: JSXElement | JSXConditionalExpression | JSXFragment
-    importsToAdd: Imports
-  }
+  whatToWrapWith: WrapInElementWith
 }
 
 export interface OpenFloatingInsertMenu {
@@ -880,6 +882,12 @@ export interface ScrollToElement {
   behaviour: ScrollToElementBehaviour
 }
 
+export interface ScrollToPosition {
+  action: 'SCROLL_TO_POSITION'
+  target: CanvasRectangle
+  behaviour: ScrollToElementBehaviour
+}
+
 export interface SetScrollAnimation {
   action: 'SET_SCROLL_ANIMATION'
   value: boolean
@@ -1175,6 +1183,7 @@ export type EditorAction =
   | UpdateText
   | SetFocusedElement
   | ScrollToElement
+  | ScrollToPosition
   | SetScrollAnimation
   | SetFollowSelectionEnabled
   | SetLoginState

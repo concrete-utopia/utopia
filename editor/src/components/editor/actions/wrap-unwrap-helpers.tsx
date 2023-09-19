@@ -58,16 +58,13 @@ import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export function unwrapConditionalClause(
   editor: EditorState,
-  derivedState: DerivedState,
   target: ElementPath,
   parentPath: ConditionalClauseInsertionPath,
 ): EditorState {
   let newSelection: Array<ElementPath> = []
   const withElementMoved = modifyUnderlyingTargetElement(
     parentPath.intendedParentPath,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
-    derivedState,
     (element) => element,
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -132,7 +129,6 @@ export function unwrapConditionalClause(
 }
 export function unwrapTextContainingConditional(
   editor: EditorState,
-  derived: DerivedState,
   target: ElementPath,
   dispatch: EditorDispatch,
 ): EditorState {
@@ -157,9 +153,7 @@ export function unwrapTextContainingConditional(
 
   const withParentUpdated = modifyUnderlyingTargetElement(
     targetParent,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
-    derived,
     (element) => element,
     (success) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -168,9 +162,6 @@ export function unwrapTextContainingConditional(
       const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,
-        editor.nodeModules.files,
-        derived.remixData?.routingTable ?? null,
-        editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,
         wrapperUID,
@@ -199,7 +190,7 @@ export function unwrapTextContainingConditional(
     },
   )
 
-  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated, dispatch, derived)
+  return UPDATE_FNS.DELETE_VIEW(deleteView(target), withParentUpdated, dispatch)
 }
 
 export function isTextContainingConditional(
@@ -288,7 +279,6 @@ export function wrapElementInsertions(
         case 'CONDITIONAL_CLAUSE_INSERTION':
           const withTargetAdded = insertElementIntoJSXConditional(
             editor,
-            derivedState,
             staticTarget,
             elementToInsert,
             importsToAdd,
@@ -311,7 +301,6 @@ export function wrapElementInsertions(
         case 'CONDITIONAL_CLAUSE_INSERTION':
           const withTargetAdded = insertElementIntoJSXConditional(
             editor,
-            derivedState,
             staticTarget,
             elementToInsert,
             importsToAdd,
@@ -334,7 +323,6 @@ export function wrapElementInsertions(
         case 'CONDITIONAL_CLAUSE_INSERTION':
           const withTargetAdded = insertConditionalIntoConditionalClause(
             editor,
-            derivedState,
             staticTarget,
             elementToInsert,
             importsToAdd,
@@ -379,16 +367,13 @@ function findIndexPositionInParent(
 
 function insertElementIntoJSXConditional(
   editor: EditorState,
-  derivedState: DerivedState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXElement | JSXFragment,
   importsToAdd: Imports,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
-    derivedState,
     (element) => element,
     (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)
@@ -432,16 +417,13 @@ function insertElementIntoJSXConditional(
 }
 function insertConditionalIntoConditionalClause(
   editor: EditorState,
-  derivedState: DerivedState,
   staticTarget: ConditionalClauseInsertionPath,
   elementToInsert: JSXConditionalExpression,
   importsToAdd: Imports,
 ): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
-    derivedState,
     (element) => element,
     (success, _, underlyingFilePath) => {
       const components = getUtopiaJSXComponentsFromSuccess(success)

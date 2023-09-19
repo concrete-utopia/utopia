@@ -202,7 +202,7 @@ const convertScenesAndTopLevelElementsToUtopiaCanvasComponentMemoized = memoize(
     ...topLevelElements,
     convertScenesToUtopiaCanvasComponent(scenes),
   ],
-  { equals: fastDeepEqual }, // delete me as soon as possible
+  { matchesArg: fastDeepEqual }, // delete me as soon as possible
 )
 
 export function convertScenesAndTopLevelElementsToUtopiaCanvasComponent(

@@ -218,6 +218,8 @@ import type {
   SetMapCountOverride,
   TruncateHistory,
   RunDOMWalker,
+  WrapInElementWith,
+  ScrollToPosition,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -731,10 +733,7 @@ export function openFloatingInsertMenu(mode: FloatingInsertMenuState): OpenFloat
 
 export function wrapInElement(
   targets: Array<ElementPath>,
-  whatToWrapWith: {
-    element: JSXElement | JSXConditionalExpression | JSXFragment
-    importsToAdd: Imports
-  },
+  whatToWrapWith: WrapInElementWith,
 ): WrapInElement {
   return {
     action: 'WRAP_IN_ELEMENT',
@@ -1389,6 +1388,17 @@ export function scrollToElement(
   return {
     action: 'SCROLL_TO_ELEMENT',
     target: focusedElementElementPath,
+    behaviour: behaviour,
+  }
+}
+
+export function scrollToPosition(
+  target: CanvasRectangle,
+  behaviour: ScrollToElementBehaviour,
+): ScrollToPosition {
+  return {
+    action: 'SCROLL_TO_POSITION',
+    target: target,
     behaviour: behaviour,
   }
 }

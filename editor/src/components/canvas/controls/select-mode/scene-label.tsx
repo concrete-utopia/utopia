@@ -103,8 +103,8 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 9
-  const offsetY = scaledFontSize
-  const offsetX = scaledFontSize
+  const offsetY = scaledFontSize / 3
+  const offsetX = scaledFontSize / 2
   const borderRadius = 3 / scale
 
   const storeRef = useRefEditorState((store) => {
@@ -192,11 +192,10 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     }
   }, [onMouseUp])
 
-  const highlightColor = colorTheme.fg9.value
-  const selectedColor = colorTheme.verySubduedForeground.value
-  const backgroundColor = isSelected ? selectedColor : highlightColor
-  const boxShadowWidth = 1.5 / scale
-  const boxShadow = `0px 0px 0px ${boxShadowWidth}px ${backgroundColor}`
+  const selectedBackgroundColor = sceneHasSingleChild
+    ? colorTheme.componentPurple05solid.value
+    : colorTheme.bg5.value
+  const backgroundColor = isSelected ? selectedBackgroundColor : 'transparent'
 
   if (frame != null && isFiniteRectangle(frame)) {
     return (

@@ -1,7 +1,7 @@
 import { RemixContext } from '@remix-run/react/dist/components'
 import type { RouteModules } from '@remix-run/react/dist/routeModules'
 import React from 'react'
-import type { Location } from 'react-router'
+import type { DataRouteObject, Location } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -10,6 +10,11 @@ import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
 import { atom, useAtom, useSetAtom } from 'jotai'
 import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
+import { OutletPathContext } from './remix-utils'
+import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
+import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
+import { forceNotNull } from '../../../core/shared/optional-utils'
+import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 
 type RouterType = ReturnType<typeof createMemoryRouter>
 
@@ -31,6 +36,14 @@ export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 function useGetRouteModules(basePath: ElementPath) {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const fileBlobsRef = useRefEditorState((store) => store.editor.canvas.base64Blobs)
+  const hiddenInstancesRef = useRefEditorState((store) => store.editor.hiddenInstances)
+  const displayNoneInstancesRef = useRefEditorState((store) => store.editor.displayNoneInstances)
+
+  let metadataContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
+  )
 
   const defaultExports = useEditorState(
     Substores.derived,
@@ -62,25 +75,104 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
-      const relativePath =
-        remixDerivedDataRef.current.routeModulesToRelativePaths[routeId].relativePath
-
       const defaultComponent = (componentProps: any) =>
         value
-          .executionScopeCreator(projectContentsRef.current)
+          .executionScopeCreator(
+            projectContentsRef.current,
+            fileBlobsRef.current,
+            hiddenInstancesRef.current,
+            displayNoneInstancesRef.current,
+            metadataContext,
+          )
           .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
       routeModulesResult[routeId] = {
         ...value,
-        default: PathPropHOC(
-          defaultComponent,
-          EP.toString(EP.appendTwoPaths(basePath, relativePath)),
-        ),
+        default: PathPropHOC(defaultComponent),
       }
     }
 
     return routeModulesResult
-  }, [basePath, defaultExports, remixDerivedDataRef, projectContentsRef])
+  }, [
+    defaultExports,
+    metadataContext,
+    remixDerivedDataRef,
+    projectContentsRef,
+    fileBlobsRef,
+    hiddenInstancesRef,
+    displayNoneInstancesRef,
+  ])
+}
+
+function useGetRoutes() {
+  const routes = useEditorState(
+    Substores.derived,
+    (store) => store.derived.remixData?.routes ?? [],
+    'UtopiaRemixRootComponent routes',
+  )
+
+  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const fileBlobsRef = useRefEditorState((store) => store.editor.canvas.base64Blobs)
+  const hiddenInstancesRef = useRefEditorState((store) => store.editor.hiddenInstances)
+  const displayNoneInstancesRef = useRefEditorState((store) => store.editor.displayNoneInstances)
+
+  let metadataContext: UiJsxCanvasContextData = forceNotNull(
+    `Missing UiJsxCanvasCtxAtom provider`,
+    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
+  )
+
+  return React.useMemo(() => {
+    if (remixDerivedDataRef.current == null) {
+      return routes
+    }
+
+    const creators = remixDerivedDataRef.current.routeModuleCreators
+
+    function addLoaderAndActionToRoutes(innerRoutes: DataRouteObject[]) {
+      innerRoutes.forEach((route) => {
+        // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
+        // we only ever pass in an empty object for the `routeModules` and never mutate it
+        const creatorForRoute = route.id === 'root' ? null : creators[route.id]
+        if (creatorForRoute != null) {
+          route.action = (args: any) =>
+            creatorForRoute
+              .executionScopeCreator(
+                projectContentsRef.current,
+                fileBlobsRef.current,
+                hiddenInstancesRef.current,
+                displayNoneInstancesRef.current,
+                metadataContext,
+              )
+              .scope['action']?.(args) ?? null
+          route.loader = (args: any) =>
+            creatorForRoute
+              .executionScopeCreator(
+                projectContentsRef.current,
+                fileBlobsRef.current,
+                hiddenInstancesRef.current,
+                displayNoneInstancesRef.current,
+                metadataContext,
+              )
+              .scope['loader']?.(args) ?? null
+        }
+
+        addLoaderAndActionToRoutes(route.children ?? [])
+      })
+    }
+
+    addLoaderAndActionToRoutes(routes)
+
+    return routes
+  }, [
+    displayNoneInstancesRef,
+    metadataContext,
+    fileBlobsRef,
+    hiddenInstancesRef,
+    projectContentsRef,
+    remixDerivedDataRef,
+    routes,
+  ])
 }
 
 export interface UtopiaRemixRootComponentProps {
@@ -90,18 +182,13 @@ export interface UtopiaRemixRootComponentProps {
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
-  const routes = useEditorState(
-    Substores.derived,
-    (store) => store.derived.remixData?.routes ?? [],
-    'UtopiaRemixRootComponent routes',
-  )
+  const routes = useGetRoutes()
 
   const basePath = props[UTOPIA_PATH_KEY]
 
   const routeModules = useGetRouteModules(basePath)
 
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
-  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
 
   const currentEntries = navigationData[EP.toString(basePath)]?.entries
   const currentEntriesRef = React.useRef(currentEntries)
@@ -140,10 +227,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
           },
         }
       })
-      setActiveRemixScene(basePath)
     },
-    [basePath, setActiveRemixScene, setNavigationData],
+    [basePath, setNavigationData],
   )
+
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  React.useLayoutEffect(() => {
+    setActiveRemixScene(basePath)
+  }, [basePath, setActiveRemixScene])
 
   // initialize navigation data
   React.useLayoutEffect(() => {
@@ -155,7 +246,13 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   // apply changes navigation data
   React.useLayoutEffect(() => {
     if (router != null) {
-      return router?.subscribe((newState) => updateNavigationData(router, newState.location))
+      return router?.subscribe((newState) => {
+        if (newState.navigation.location == null) {
+          // newState.navigation.location will hold an intended navigation, so when it is null
+          // that will have completed
+          updateNavigationData(router, newState.location)
+        }
+      })
     }
     return
   }, [router, updateNavigationData])
@@ -174,11 +271,13 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
         future: futureConfig,
       }}
     >
-      <RouterProvider
-        router={router}
-        fallbackElement={null}
-        future={{ v7_startTransition: true }}
-      />
+      <OutletPathContext.Provider value={basePath}>
+        <RouterProvider
+          router={router}
+          fallbackElement={null}
+          future={{ v7_startTransition: true }}
+        />
+      </OutletPathContext.Provider>
     </RemixContext.Provider>
   )
 })

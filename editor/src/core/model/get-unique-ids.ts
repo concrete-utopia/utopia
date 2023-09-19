@@ -8,7 +8,7 @@ import type {
 } from '../shared/element-template'
 import { emptySet } from '../shared/set-utils'
 import { assertNever, fastForEach } from '../shared/utils'
-import Utils from '../../utils/utils'
+import { memoize } from '../shared/memoize'
 
 export type DuplicateUIDsResult = { [key: string]: Array<Array<string>> }
 
@@ -16,12 +16,14 @@ interface GetAllUniqueUIDsResult {
   uniqueIDs: Array<string>
   duplicateIDs: DuplicateUIDsResult
   allIDs: Array<string>
+  uidsToFilePaths: { [uid: string]: string }
 }
 
 interface GetAllUniqueUIDsWorkingResult {
   uniqueIDs: { [key: string]: Array<string> }
   duplicateIDs: { [key: string]: Array<Array<string>> }
   allIDs: Set<string>
+  uidsToFilePaths: { [uid: string]: string }
 }
 
 export function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingResult {
@@ -29,6 +31,7 @@ export function emptyGetAllUniqueUIDsWorkingResult(): GetAllUniqueUIDsWorkingRes
     uniqueIDs: {},
     duplicateIDs: {},
     allIDs: emptySet(),
+    uidsToFilePaths: {},
   }
 }
 
@@ -39,16 +42,19 @@ export function getAllUniqueUIDsResultFromWorkingResult(
     uniqueIDs: Object.keys(workingResult.uniqueIDs),
     duplicateIDs: workingResult.duplicateIDs,
     allIDs: Array.from(workingResult.allIDs),
+    uidsToFilePaths: workingResult.uidsToFilePaths,
   }
 }
 
 function checkUID(
   workingResult: GetAllUniqueUIDsWorkingResult,
+  filePath: string,
   debugPath: Array<string>,
   uid: string,
   value: any,
 ): void {
   workingResult.allIDs.add(uid)
+  workingResult.uidsToFilePaths[uid] = filePath
   if (uid in workingResult.duplicateIDs) {
     workingResult.duplicateIDs[uid].push(debugPath)
   } else {
@@ -64,16 +70,17 @@ function checkUID(
 
 function extractUidFromAttributes(
   workingResult: GetAllUniqueUIDsWorkingResult,
+  filePath: string,
   debugPath: Array<string>,
   attributes: JSXAttributes,
 ): void {
   for (const attributePart of attributes) {
     switch (attributePart.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        extractUidFromJSXElementChild(workingResult, debugPath, attributePart.value)
+        extractUidFromJSXElementChild(workingResult, filePath, debugPath, attributePart.value)
         break
       case 'JSX_ATTRIBUTES_SPREAD':
-        extractUidFromJSXElementChild(workingResult, debugPath, attributePart.spreadValue)
+        extractUidFromJSXElementChild(workingResult, filePath, debugPath, attributePart.spreadValue)
         break
       default:
         assertNever(attributePart)
@@ -83,27 +90,28 @@ function extractUidFromAttributes(
 
 function extractUidFromJSXElementChild(
   workingResult: GetAllUniqueUIDsWorkingResult,
+  filePath: string,
   debugPath: Array<string>,
   element: JSXElementChild,
 ): void {
   const newDebugPath = [...debugPath, element.uid]
-  checkUID(workingResult, newDebugPath, element.uid, element)
+  checkUID(workingResult, filePath, newDebugPath, element.uid, element)
   switch (element.type) {
     case 'JSX_ELEMENT':
       fastForEach(element.children, (child) =>
-        extractUidFromJSXElementChild(workingResult, newDebugPath, child),
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child),
       )
-      extractUidFromAttributes(workingResult, newDebugPath, element.props)
+      extractUidFromAttributes(workingResult, filePath, newDebugPath, element.props)
       break
     case 'JSX_FRAGMENT':
       fastForEach(element.children, (child) =>
-        extractUidFromJSXElementChild(workingResult, newDebugPath, child),
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, child),
       )
       break
     case 'JSX_CONDITIONAL_EXPRESSION':
-      extractUidFromJSXElementChild(workingResult, newDebugPath, element.condition)
-      extractUidFromJSXElementChild(workingResult, newDebugPath, element.whenTrue)
-      extractUidFromJSXElementChild(workingResult, newDebugPath, element.whenFalse)
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.condition)
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.whenTrue)
+      extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, element.whenFalse)
       break
     case 'JSX_TEXT_BLOCK':
       break
@@ -111,23 +119,23 @@ function extractUidFromJSXElementChild(
       break
     case 'ATTRIBUTE_NESTED_ARRAY':
       for (const contentPart of element.content) {
-        extractUidFromJSXElementChild(workingResult, newDebugPath, contentPart.value)
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, contentPart.value)
       }
       break
     case 'ATTRIBUTE_NESTED_OBJECT':
       for (const contentPart of element.content) {
-        extractUidFromJSXElementChild(workingResult, newDebugPath, contentPart.value)
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, contentPart.value)
       }
       break
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
       for (const elementWithin of Object.values(element.elementsWithin)) {
-        extractUidFromJSXElementChild(workingResult, newDebugPath, elementWithin)
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, elementWithin)
       }
       break
     case 'ATTRIBUTE_FUNCTION_CALL':
       for (const parameter of element.parameters) {
-        extractUidFromJSXElementChild(workingResult, newDebugPath, parameter)
+        extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, parameter)
       }
       break
     default:
@@ -137,30 +145,37 @@ function extractUidFromJSXElementChild(
 
 function extractUIDFromArbitraryBlock(
   workingResult: GetAllUniqueUIDsWorkingResult,
+  filePath: string,
   debugPath: Array<string>,
   arbitraryBlock: ArbitraryJSBlock,
 ): void {
   const newDebugPath = [...debugPath, arbitraryBlock.uid]
-  checkUID(workingResult, newDebugPath, arbitraryBlock.uid, arbitraryBlock)
+  checkUID(workingResult, filePath, newDebugPath, arbitraryBlock.uid, arbitraryBlock)
   for (const elementWithin of Object.values(arbitraryBlock.elementsWithin)) {
-    extractUidFromJSXElementChild(workingResult, newDebugPath, elementWithin)
+    extractUidFromJSXElementChild(workingResult, filePath, newDebugPath, elementWithin)
   }
 }
 
 export function extractUIDFromTopLevelElement(
   workingResult: GetAllUniqueUIDsWorkingResult,
+  filePath: string,
   debugPath: Array<string>,
   topLevelElement: TopLevelElement,
 ): void {
   switch (topLevelElement.type) {
     case 'UTOPIA_JSX_COMPONENT':
-      extractUidFromJSXElementChild(workingResult, debugPath, topLevelElement.rootElement)
+      extractUidFromJSXElementChild(workingResult, filePath, debugPath, topLevelElement.rootElement)
       if (topLevelElement.arbitraryJSBlock != null) {
-        extractUIDFromArbitraryBlock(workingResult, debugPath, topLevelElement.arbitraryJSBlock)
+        extractUIDFromArbitraryBlock(
+          workingResult,
+          filePath,
+          debugPath,
+          topLevelElement.arbitraryJSBlock,
+        )
       }
       break
     case 'ARBITRARY_JS_BLOCK':
-      extractUIDFromArbitraryBlock(workingResult, debugPath, topLevelElement)
+      extractUIDFromArbitraryBlock(workingResult, filePath, debugPath, topLevelElement)
       break
     case 'IMPORT_STATEMENT':
       break
@@ -174,23 +189,23 @@ export function extractUIDFromTopLevelElement(
 function getAllUniqueUidsInner(projectContents: ProjectContentTreeRoot): GetAllUniqueUIDsResult {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
 
-  walkContentsTreeForParseSuccess(projectContents, (fullPath, parseSuccess) => {
+  walkContentsTreeForParseSuccess(projectContents, (filePath, parseSuccess) => {
     fastForEach(parseSuccess.topLevelElements, (tle) => {
-      const debugPath = [fullPath]
-      extractUIDFromTopLevelElement(workingResult, debugPath, tle)
+      const debugPath = [filePath]
+      extractUIDFromTopLevelElement(workingResult, filePath, debugPath, tle)
     })
   })
 
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }
 
-export const getAllUniqueUids = Utils.memoize(getAllUniqueUidsInner)
+export const getAllUniqueUids = memoize(getAllUniqueUidsInner)
 
 export function getAllUniqueUidsFromAttributes(attributes: JSXAttributes): GetAllUniqueUIDsResult {
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
 
   const debugPath: Array<string> = []
-  extractUidFromAttributes(workingResult, debugPath, attributes)
+  extractUidFromAttributes(workingResult, '', debugPath, attributes) // FIXME filePath
 
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }
@@ -201,7 +216,7 @@ export function getAllUniqueUIdsFromElementChild(
   const workingResult = emptyGetAllUniqueUIDsWorkingResult()
 
   const debugPath: Array<string> = []
-  extractUidFromJSXElementChild(workingResult, debugPath, expression)
+  extractUidFromJSXElementChild(workingResult, '', debugPath, expression) // FIXME filePath
 
   return getAllUniqueUIDsResultFromWorkingResult(workingResult)
 }
