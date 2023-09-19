@@ -1,4 +1,5 @@
-import { createUtopiColor } from '../utopi-color-helpers'
+import { MapLike } from 'typescript'
+import { UtopiColor, createUtopiColor, enforceUtopiColorTheme } from '../utopi-color-helpers'
 import type { dark } from './dark'
 
 const lightBase = {
@@ -105,7 +106,7 @@ const colorsWithOpacity = {
   subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
 }
 
-export const light = {
+const lightTheme = {
   ...colorsWithOpacity,
   ...lightBase,
   ...lightPrimitives,
@@ -185,8 +186,8 @@ export const light = {
   // application utilities:
   navigatorResizeHintBorder: lightBase.primary,
   navigatorComponentName: lightBase.primary,
-  navigatorComponentSelected: lightBase.componentChild20.value,
-  navigatorComponentIconBorder: lightBase.componentChild.value,
+  navigatorComponentSelected: lightBase.componentChild20,
+  navigatorComponentIconBorder: lightBase.componentChild,
 
   contextMenuBackground: lightPrimitives.secondaryBackground,
   contextMenuForeground: lightPrimitives.neutralForeground,
@@ -224,3 +225,6 @@ export const light = {
   // Gap controls
   gapControls: createUtopiColor('#FFA500'),
 }
+
+// all values in light must be of the type UtopiColor! This will break if you made a mistake.
+export const light = enforceUtopiColorTheme(lightTheme)

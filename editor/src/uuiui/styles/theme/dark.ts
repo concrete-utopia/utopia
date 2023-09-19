@@ -1,4 +1,4 @@
-import { createUtopiColor } from '../utopi-color-helpers'
+import { createUtopiColor, enforceUtopiColorTheme } from '../utopi-color-helpers'
 import type { light } from './light'
 
 const darkBase = {
@@ -105,7 +105,7 @@ const colorsWithOpacity = {
   subduedBorder80: createUtopiColor('rgba(24, 28, 32, 0.8)'),
 }
 
-export const dark: typeof light = {
+const darkTheme: typeof light = {
   ...colorsWithOpacity,
   ...darkBase,
   ...darkPrimitives,
@@ -186,8 +186,8 @@ export const dark: typeof light = {
   // application utilities:
   navigatorResizeHintBorder: darkBase.primary,
   navigatorComponentName: darkBase.primary,
-  navigatorComponentSelected: darkBase.componentChild20.value,
-  navigatorComponentIconBorder: darkBase.componentChild.value,
+  navigatorComponentSelected: darkBase.componentChild20,
+  navigatorComponentIconBorder: darkBase.componentChild,
 
   contextMenuBackground: darkPrimitives.secondaryBackground,
   contextMenuForeground: darkPrimitives.neutralForeground,
@@ -225,3 +225,5 @@ export const dark: typeof light = {
   // Gap controls
   gapControls: darkBase.brandNeonGreen,
 }
+
+export const dark = enforceUtopiColorTheme(darkTheme)
