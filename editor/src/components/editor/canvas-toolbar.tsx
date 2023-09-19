@@ -6,7 +6,6 @@ import { jsx } from '@emotion/react'
 import * as React from 'react'
 import type { TooltipProps } from '../../uuiui'
 import { Tile } from '../../uuiui'
-import { StringInput } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
 import {
   colorTheme,
@@ -79,7 +78,7 @@ export const CanvasToolbarId = 'canvas-toolbar'
 export const CanvasToolbarSearchPortalId = 'canvas-toolbar-search-portal'
 
 export const ToolbarSearchListing = React.memo(() => {
-  return <div id={CanvasToolbarSearchPortalId} />
+  return <div style={{ alignSelf: 'end', width: 232 }} id={CanvasToolbarSearchPortalId} />
 })
 ToolbarSearchListing.displayName = 'ToolbarSearchListing'
 
@@ -133,7 +132,6 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         menuPortal: (styles: CSSObject): CSSObject => {
           return {
             zIndex: -2,
-            marginLeft: 140,
             padding: '0 8px',
             overflow: 'hidden',
             height: 'auto',
@@ -633,12 +631,12 @@ export const CanvasToolbar = React.memo(() => {
                       onClick={switchToSelectModeCloseMenus}
                     />
                   </Tooltip>
-                  <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
+                  <Tooltip title='Wrap selection' placement='bottom'>
                     <InsertModeButton
                       iconType='designtool-larger'
                       iconCategory='semantic'
                       onClick={NO_OP}
-                      primary={true}
+                      secondary={true}
                     />
                   </Tooltip>
                   <Tooltip title='Wrap in div' placement='bottom'>
@@ -666,7 +664,7 @@ export const CanvasToolbar = React.memo(() => {
                       iconType='convertobject'
                       iconCategory='semantic'
                       onClick={NO_OP}
-                      primary={true}
+                      secondary={true}
                     />
                   </Tooltip>
                   <Tooltip title='Convert to Fragment' placement='bottom'>
@@ -698,21 +696,21 @@ export const CanvasToolbar = React.memo(() => {
                 <Tooltip title='Insert div' placement='bottom'>
                   <InsertModeButton
                     iconType='view'
-                    primary={canvasToolbarMode.secondary.divInsertionActive}
+                    secondary={canvasToolbarMode.secondary.divInsertionActive}
                     onClick={insertDivCallback}
                   />
                 </Tooltip>
                 <Tooltip title='Insert image' placement='bottom'>
                   <InsertModeButton
                     iconType='image'
-                    primary={canvasToolbarMode.secondary.imageInsertionActive}
+                    secondary={canvasToolbarMode.secondary.imageInsertionActive}
                     onClick={insertImgCallback}
                   />
                 </Tooltip>
                 <Tooltip title='Insert button' placement='bottom'>
                   <InsertModeButton
                     iconType='clickable'
-                    primary={canvasToolbarMode.secondary.buttonInsertionActive}
+                    secondary={canvasToolbarMode.secondary.buttonInsertionActive}
                     onClick={insertButtonCallback}
                   />
                 </Tooltip>
@@ -720,7 +718,7 @@ export const CanvasToolbar = React.memo(() => {
                   <InsertModeButton
                     testid={InsertConditionalButtonTestId}
                     iconType='conditional'
-                    primary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                    secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
                     onClick={insertConditionalCallback}
                   />
                 </Tooltip>
@@ -740,6 +738,7 @@ interface InsertModeButtonProps {
   iconType: string
   iconCategory?: string
   primary?: boolean
+  secondary?: boolean
   keepActiveInLiveMode?: boolean
   style?: React.CSSProperties
   testid?: string
@@ -749,6 +748,7 @@ interface InsertModeButtonProps {
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
+  const secondary = props.secondary ?? false
   const canvasInLiveMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode.type === 'live',
@@ -768,9 +768,11 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       data-testid={props.testid}
       style={{ ...props.style, height: 32, width: 32 }}
       primary={primary}
+      spotlight={secondary}
       highlight
       onClick={onClickHandler}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
+      overriddenBackground={secondary ? colorTheme.bg5.value : undefined}
     >
       <Icn
         category={iconCategory}
