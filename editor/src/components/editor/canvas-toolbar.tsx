@@ -70,6 +70,7 @@ import {
   fragmentComponentInfo,
   insertableComponentGroupFragment,
 } from '../shared/project-components'
+import { setFocus } from '../common/actions'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -182,25 +183,7 @@ export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
   const theme = useColorTheme()
 
-  const [forcedInsertMode, setForceInsertMode] = React.useState(false)
-
-  const toggleInsertButtonClicked = React.useCallback((e: React.MouseEvent<Element>) => {
-    e.stopPropagation()
-    setForceInsertMode((value) => !value)
-  }, [])
-
-  const turnOffForcedInsertMode = React.useCallback(() => {
-    setForceInsertMode(false)
-  }, [])
-
-  React.useEffect(() => {
-    window.addEventListener('click', turnOffForcedInsertMode)
-    return function cleanup() {
-      window.removeEventListener('click', turnOffForcedInsertMode)
-    }
-  }, [turnOffForcedInsertMode])
-
-  const canvasToolbarMode = useToolbarMode(forcedInsertMode)
+  const canvasToolbarMode = useToolbarMode()
 
   const editorStateRef = useRefEditorState((store) => store.editor)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -275,9 +258,11 @@ export const CanvasToolbar = React.memo(() => {
 
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
   const switchToSelectModeCloseMenus = React.useCallback(() => {
-    dispatch([switchEditorMode(EditorModes.selectMode()), closeFloatingInsertMenu()], 'everyone')
-    turnOffForcedInsertMode()
-  }, [dispatch, turnOffForcedInsertMode])
+    dispatch(
+      [switchEditorMode(EditorModes.selectMode(null, false, 'none')), closeFloatingInsertMenu()],
+      'everyone',
+    )
+  }, [dispatch])
 
   const convertToAndClose = React.useCallback(
     (convertTo: InsertMenuItem | null) => {
@@ -318,10 +303,9 @@ export const CanvasToolbar = React.memo(() => {
   const toInsertAndClose = React.useCallback(
     (toInsert: InsertMenuItem | null) => {
       toInsertCallback(toInsert)
-      turnOffForcedInsertMode()
       switchToSelectModeCloseMenus()
     },
-    [switchToSelectModeCloseMenus, toInsertCallback, turnOffForcedInsertMode],
+    [switchToSelectModeCloseMenus, toInsertCallback],
   )
 
   const insertMenuSelected = useEditorState(
@@ -363,7 +347,7 @@ export const CanvasToolbar = React.memo(() => {
   )
   const toggleLiveMode = React.useCallback(() => {
     if (isLiveMode) {
-      dispatch([switchEditorMode(EditorModes.selectMode())])
+      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'none'))])
     } else {
       dispatch([switchEditorMode(EditorModes.liveMode())])
     }
@@ -404,6 +388,14 @@ export const CanvasToolbar = React.memo(() => {
     [dispatch],
   )
 
+  const toggleInsertButtonClicked = React.useCallback(() => {
+    if (canvasToolbarMode.primary === 'insert') {
+      switchToSelectModeCloseMenus()
+    } else {
+      dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'pseudo-insert'))])
+    }
+  }, [canvasToolbarMode.primary, dispatch, switchToSelectModeCloseMenus])
+
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
       <FlexRow
@@ -420,14 +412,19 @@ export const CanvasToolbar = React.memo(() => {
           pointerEvents: 'initial',
           zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
         }}
-        // Prevents clicks within this menu from triggering the insertion cancelling click handler
-        // that is added to the window.
-        onClick={stopPropagation}
       >
         {wrapped}
       </FlexRow>
     )
   }, [])
+
+  const focusCanvasOnMouseDown = React.useCallback(
+    (event: React.MouseEvent<Element>) => {
+      stopPropagation(event)
+      dispatch([setFocus('canvas')], 'everyone')
+    },
+    [dispatch],
+  )
 
   return (
     <div
@@ -436,6 +433,10 @@ export const CanvasToolbar = React.memo(() => {
         gap: 10,
         flexDirection: 'row',
       }}
+      // Mouse events should never go through this component.
+      onClick={stopPropagation}
+      onMouseDown={focusCanvasOnMouseDown}
+      onMouseUp={stopPropagation}
     >
       {navigatorInvisible ? (
         <div
@@ -755,13 +756,6 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
     'CanvasToolbar canvasInLiveMode',
   )
   const iconCategory = props.iconCategory ?? 'element'
-  const onClickHandler = React.useCallback(
-    (event: React.MouseEvent<Element>) => {
-      event.stopPropagation()
-      props.onClick(event)
-    },
-    [props],
-  )
 
   return (
     <SquareButton
@@ -770,7 +764,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       primary={primary}
       spotlight={secondary}
       highlight
-      onClick={onClickHandler}
+      onClick={props.onClick}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
       overriddenBackground={secondary ? colorTheme.bg5.value : undefined}
     >

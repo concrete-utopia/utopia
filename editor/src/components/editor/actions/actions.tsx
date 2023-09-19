@@ -757,7 +757,7 @@ export function restoreEditorState(
     displayNoneInstances: desiredEditor.displayNoneInstances,
     warnedInstances: desiredEditor.warnedInstances,
     lockedElements: desiredEditor.lockedElements,
-    mode: EditorModes.selectMode(),
+    mode: EditorModes.selectMode(null, false, 'none'),
     focusedPanel: currentEditor.focusedPanel,
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -1901,7 +1901,7 @@ export const UPDATE_FNS = {
   TOGGLE_CANVAS_IS_LIVE: (editor: EditorModel, derived: DerivedState): EditorModel => {
     // same as UPDATE_EDITOR_MODE, but clears the drag state
     if (isLiveMode(editor.mode)) {
-      return setModeState(EditorModes.selectMode(editor.mode.controlId), editor)
+      return setModeState(EditorModes.selectMode(editor.mode.controlId, false, 'none'), editor)
     } else {
       return setModeState(
         EditorModes.liveMode(isSelectMode(editor.mode) ? editor.mode.controlId : null),
