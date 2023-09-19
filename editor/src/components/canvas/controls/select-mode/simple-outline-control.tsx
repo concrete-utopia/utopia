@@ -66,22 +66,6 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     'OutlineControl scale',
   )
 
-  const colors = useEditorState(
-    Substores.fullStore,
-    (store) => {
-      return targets.map((path) =>
-        getSelectionColor(
-          path,
-          store.editor.jsxMetadata,
-          store.editor.focusedElementPath,
-          store.derived.autoFocusedPaths,
-          colorTheme,
-        ),
-      )
-    },
-    'OutlineControl colors',
-  )
-
   const outlineRef = useBoundingBox(targets, (ref, boundingBox, canvasScale) => {
     if (isZeroSizedElement(boundingBox)) {
       ref.current.style.display = 'none'
@@ -94,17 +78,6 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     }
   })
 
-  const color =
-    props.color === 'primary' ? colors[0] : colorTheme.canvasSelectionSecondaryOutline.value
-
-  const isResizing = useEditorState(
-    Substores.canvas,
-    (store) =>
-      store.editor.canvas.interactionSession != null &&
-      store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE',
-    'ResizePoint isResizing',
-  )
-
   if (targets.length > 0) {
     return (
       <div
@@ -113,7 +86,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
         className='role-outline'
         style={{
           position: 'absolute',
-          borderColor: isResizing ? colorTheme.primary.value : color,
+          borderColor: colorTheme.primary.value,
           borderWidth: `${1 / scale}px`,
           borderStyle: props.outlineStyle,
           pointerEvents: 'none',
