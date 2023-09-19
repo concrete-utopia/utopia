@@ -47,7 +47,6 @@ import {
   getIndexInParent,
   generateUidWithExistingComponents,
   insertJSXElementChildren,
-  findPathToJSXElementChild,
 } from '../../core/model/element-template-utils'
 import { getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
@@ -68,7 +67,6 @@ import {
   applyUtopiaJSXComponentsChanges,
   getDefaultExportedTopLevelElement,
   getUtopiaJSXComponentsFromSuccess,
-  isRemixOutletElement,
   isRemixSceneElement,
 } from '../../core/model/project-file-utils'
 import type { Either } from '../../core/shared/either'
@@ -99,7 +97,6 @@ import type {
   AllElementProps,
   ElementProps,
   NavigatorEntry,
-  DerivedState,
 } from '../editor/store/editor-state'
 import {
   removeElementAtPath,
@@ -107,7 +104,6 @@ import {
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
   isSyntheticNavigatorEntry,
-  deriveState,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -159,8 +155,8 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
-import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
 import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
+import type { IsCenterBased } from './canvas-strategies/strategies/resize-helpers'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1216,6 +1212,8 @@ export function snapPoint(
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
+  resizedBounds: CanvasRectangle,
+  centerBased: IsCenterBased,
 ): {
   snappedPointOnCanvas: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -1226,14 +1224,23 @@ export function snapPoint(
     true,
     false,
   )
+
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
+
   const anyElementFragmentLike = selectedViews.some((elementPath) =>
     treatElementAsFragmentLike(jsxMetadata, allElementProps, pathTrees, elementPath),
   )
+
+  const threshold = centerBased === 'center-based' ? SnappingThreshold * 2 : SnappingThreshold
+  const resizedBoundsBelowThreshold =
+    resizedBounds.width < threshold || resizedBounds.height < threshold
+
   const shouldSnap =
-    enableSnapping && (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
+    enableSnapping &&
+    !resizedBoundsBelowThreshold &&
+    (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
