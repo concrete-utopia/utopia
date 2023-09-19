@@ -5,10 +5,10 @@ import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-wi
 import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 
 export function useResetRemixApps() {
-  const [navigationData] = useAtom(RemixNavigationAtom)
+  const [_, setNavigationData] = useAtom(RemixNavigationAtom)
   let uiJsxCanvasContext = usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse)
   return React.useCallback(() => {
+    setNavigationData({})
     uiJsxCanvasContext.current.spyValues.metadata = {}
-    Object.values(navigationData).forEach((navData) => navData.home())
-  }, [navigationData, uiJsxCanvasContext])
+  }, [setNavigationData, uiJsxCanvasContext])
 }

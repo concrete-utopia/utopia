@@ -243,7 +243,13 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   // apply changes navigation data
   React.useLayoutEffect(() => {
     if (router != null) {
-      return router?.subscribe((newState) => updateNavigationData(router, newState.location))
+      return router?.subscribe((newState) => {
+        if (newState.navigation.location == null) {
+          // newState.navigation.location will hold an intended navigation, so when it is null
+          // that will have completed
+          updateNavigationData(router, newState.location)
+        }
+      })
     }
     return
   }, [router, updateNavigationData])
