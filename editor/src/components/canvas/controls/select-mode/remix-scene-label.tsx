@@ -118,7 +118,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const offsetX = scaledFontSize
   const borderRadius = 3 / scale
 
-  const storeRef = useRefEditorState((store) => {
+  const editorModeRef = useRefEditorState((store) => {
     return {
       mode: store.editor.mode,
     }
@@ -137,12 +137,12 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const onMouseMove = React.useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
-      const isSelectingArea = isSelectModeWithArea(storeRef.current.mode)
+      const isSelectingArea = isSelectModeWithArea(editorModeRef.current.mode)
       if (!isSelectingArea) {
         event.stopPropagation()
       }
     },
-    [storeRef],
+    [editorModeRef],
   )
   const onMouseOver = React.useCallback(() => {
     if (!isHighlighted) {
