@@ -17,9 +17,13 @@ describe('history', () => {
       }
       const derivedState = deriveState(editorState, null, 'unpatched', () => null)
       const stateHistory = init(editorState, derivedState)
-      const updatedStateHistory = add(stateHistory, editorState, derivedState, [
-        { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },
-      ])
+      const updatedStateHistory = add(
+        stateHistory,
+        editorState,
+        derivedState,
+        [{ filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' }],
+        null,
+      )
       await baseAssetPromise
       expect(updatedStateHistory.current.assetRenames).toMatchInlineSnapshot(`
         Array [
@@ -37,9 +41,13 @@ describe('history', () => {
       }
       const derivedState = deriveState(editorState, null, 'unpatched', () => null)
       const stateHistory = init(editorState, derivedState)
-      const updatedStateHistory = add(stateHistory, editorState, derivedState, [
-        { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },
-      ])
+      const updatedStateHistory = add(
+        stateHistory,
+        editorState,
+        derivedState,
+        [{ filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' }],
+        null,
+      )
       const undoneStateHistory = undo('testproject', updatedStateHistory, 'run-side-effects')
       await baseAssetPromise
       expect(undoneStateHistory.current.assetRenames).toMatchInlineSnapshot(`Array []`)
@@ -59,9 +67,13 @@ describe('history', () => {
       }
       const derivedState = deriveState(editorState, null, 'unpatched', () => null)
       const stateHistory = init(editorState, derivedState)
-      const updatedStateHistory = add(stateHistory, editorState, derivedState, [
-        { filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' },
-      ])
+      const updatedStateHistory = add(
+        stateHistory,
+        editorState,
+        derivedState,
+        [{ filenameChangedFrom: 'thing.jpg', filenameChangedTo: 'otherthing.jpg' }],
+        null,
+      )
       const undoneStateHistory = undo('testproject', updatedStateHistory, 'run-side-effects')
       const redoneStateHistory = redo('testproject', undoneStateHistory, 'run-side-effects')
       await baseAssetPromise

@@ -77,6 +77,7 @@ import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-o
 import type { FromVSCodeAction } from './actions/actions-from-vscode'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
+import type { Location } from 'react-router'
 
 export interface PropertyTarget {
   propertyPath: PropertyPath
@@ -863,6 +864,12 @@ export interface UpdateText {
   textProp: TextProp
 }
 
+export interface UpdateNavigationState {
+  action: 'UPDATE_NAVIGATION_STATE'
+  pathString: string
+  location: Array<Location>
+}
+
 export interface TruncateHistory {
   action: 'TRUNCATE_HISTORY'
 }
@@ -1220,6 +1227,7 @@ export type EditorAction =
   | StartPostActionSession
   | FromVSCodeAction
   | TruncateHistory
+  | UpdateNavigationState
 
 export type DispatchPriority =
   | 'everyone'

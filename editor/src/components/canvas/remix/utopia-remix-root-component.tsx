@@ -1,5 +1,5 @@
 import { RemixContext } from '@remix-run/react/dist/components'
-import type { RouteModules } from '@remix-run/react/dist/routeModules'
+import type { UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
 import React from 'react'
 import type { DataRouteObject, Location } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -15,6 +15,8 @@ import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { mergeWithPrevUndo, updateNavigationState } from '../../editor/actions/action-creators'
 
 type RouterType = ReturnType<typeof createMemoryRouter>
 
@@ -191,7 +193,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
 
-  const currentEntries = navigationData[EP.toString(basePath)]?.entries
+  const currentEntries = navigationData[EP.toString(basePath)]?.entries ?? []
   const currentEntriesRef = React.useRef(currentEntries)
   currentEntriesRef.current = currentEntries
 
@@ -240,13 +242,29 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     }
   }, [router, navigationData, basePath, updateNavigationData])
 
+  const dispatch = useDispatch()
+
   // apply changes navigation data
   React.useLayoutEffect(() => {
     if (router != null) {
-      return router?.subscribe((newState) => updateNavigationData(router, newState.location))
+      return router?.subscribe((newState) => {
+        updateNavigationData(router, newState.location)
+        dispatch(
+          newState.navigation.location == null
+            ? []
+            : [
+                mergeWithPrevUndo([
+                  updateNavigationState(
+                    EP.toString(basePath),
+                    currentEntriesRef.current.concat(newState.navigation.location),
+                  ),
+                ]),
+              ],
+        )
+      })
     }
     return
-  }, [router, updateNavigationData])
+  }, [router, updateNavigationData, dispatch, basePath])
 
   if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
     return null

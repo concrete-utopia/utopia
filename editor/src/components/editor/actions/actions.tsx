@@ -313,6 +313,7 @@ import type {
   UpdateConditionalExpression,
   SetMapCountOverride,
   ScrollToPosition,
+  UpdateNavigationState,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -4366,6 +4367,7 @@ export const UPDATE_FNS = {
           withGroupTrueUpQueued,
           editorStore.unpatchedDerived,
           [],
+          null,
         ),
       }
     }

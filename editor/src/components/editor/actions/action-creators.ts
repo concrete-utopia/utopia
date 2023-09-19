@@ -48,6 +48,7 @@ import type { ElementContextMenuInstance } from '../../element-context-menu'
 import type { FontSettings } from '../../inspector/common/css-utils'
 import type { CSSTarget } from '../../inspector/sections/header-section/target-selector'
 import type { InsertableComponent, StylePropOption } from '../../shared/project-components'
+import type { Location } from 'react-router'
 import type {
   AddFolder,
   AddMissingDimensions,
@@ -219,6 +220,7 @@ import type {
   TruncateHistory,
   RunDOMWalker,
   ScrollToPosition,
+  UpdateNavigationState,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -1365,6 +1367,17 @@ export function updateText(target: ElementPath, text: string, textProp: TextProp
     target: target,
     text: text,
     textProp: textProp,
+  }
+}
+
+export function updateNavigationState(
+  pathString: string,
+  location: Array<Location>,
+): UpdateNavigationState {
+  return {
+    action: 'UPDATE_NAVIGATION_STATE',
+    pathString: pathString,
+    location: location,
   }
 }
 

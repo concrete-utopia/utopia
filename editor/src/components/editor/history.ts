@@ -9,10 +9,16 @@ export interface AssetRename {
   filenameChangedTo: string
 }
 
+export interface NavigationEvent {
+  pathString: string
+  location: Array<Location>
+}
+
 export type HistoryItem = {
   editor: EditorState
   derived: DerivedState
   assetRenames: Array<AssetRename>
+  navigationEvent: NavigationEvent | null
 }
 
 export interface StateHistory {
@@ -128,6 +134,7 @@ export function add(
   editor: EditorState,
   derived: DerivedState,
   assetRenames: Array<AssetRename>,
+  navigationEvent: NavigationEvent | null,
 ): StateHistory {
   let previous =
     stateHistory.previous.length > MAX_HISTORY
@@ -140,6 +147,7 @@ export function add(
       editor: editor,
       derived: derived,
       assetRenames: assetRenames,
+      navigationEvent: navigationEvent,
     },
     next: [],
   }
@@ -151,6 +159,7 @@ export function replaceLast(
   editor: EditorState,
   derived: DerivedState,
   assetRenames: Array<AssetRename>,
+  navigationEvent: NavigationEvent | null,
 ): StateHistory {
   const newHistory: StateHistory = {
     previous: stateHistory.previous,
@@ -158,6 +167,7 @@ export function replaceLast(
       editor: editor,
       derived: derived,
       assetRenames: stateHistory.current.assetRenames.concat(assetRenames),
+      navigationEvent: navigationEvent,
     },
     next: stateHistory.next,
   }
@@ -186,6 +196,7 @@ export function init(editor: EditorState, derived: DerivedState): StateHistory {
       editor: editor,
       derived: derived,
       assetRenames: [],
+      navigationEvent: null,
     },
     next: [],
   }
