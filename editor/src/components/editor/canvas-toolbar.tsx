@@ -130,18 +130,22 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
       options={options}
       menuPortalTarget={menuPortalTarget}
       filterOption={createFilter({ ignoreAccents: true })}
+      placeholder={'Wrap Within...'}
       styles={{
         ...componentSelectorStyles,
         menuPortal: (styles: CSSObject): CSSObject => {
           return {
-            zIndex: -2,
+            zIndex: 2,
             padding: '0 8px',
             overflow: 'hidden',
-            height: 'auto',
-            backgroundColor: theme.bg2.value,
-            borderRadius: '0px 10px 10px 10px',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            // maxHeight: 150,
+            // backgroundColor: theme.bg2.value,
+            background: '#ff00ff20',
+            // borderRadius: '0px 0px 10px 10px',
+            // boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             pointerEvents: 'initial',
+            position: 'relative',
+            // top: -156,
           }
         },
         input: (styles: CSSObject): CSSObject => {
@@ -156,7 +160,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
             display: 'flex',
             alignItems: 'center',
             minWidth: '200px',
-            borderRadius: '10px',
+            borderRadius: '30px',
             borderWidth: 1,
             borderColor: theme.primary.value,
             borderStyle: 'solid',
@@ -164,18 +168,16 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         },
         menuList: (styles: CSSObject): CSSObject => {
           return {
-            position: 'relative',
-            maxHeight: 210,
-            paddingLeft: 8,
-            paddingRight: 8,
+            maxHeight: 144,
+            // padding: '0 10px',
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: 6,
+            // gap: 6,
           }
         },
       }}
-      maxMenuHeight={138}
+      // maxMenuHeight={138}
     />
   )
 })
@@ -418,7 +420,7 @@ export const CanvasToolbar = React.memo(() => {
           alignItems: 'start',
           marginLeft: 15,
           padding: '0 8px',
-          height: 32,
+          minHeight: 32,
           overflow: 'hidden',
           backgroundColor: colorTheme.bg2.value,
           borderRadius: '0px 10px 10px 10px',
@@ -597,7 +599,7 @@ export const CanvasToolbar = React.memo(() => {
               insertMenuMode === 'closed',
               wrapInSubmenu(
                 <>
-                  <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
+                  <Tooltip title='Group (⌘G)' placement='bottom'>
                     <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
                   </Tooltip>
                   <Tooltip title='Wrap Within' placement='bottom'>
@@ -631,29 +633,46 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'wrap',
               wrapInSubmenu(
-                <>
-                  <Tooltip title='Back' placement='bottom'>
-                    <InsertModeButton
-                      iconCategory='semantic'
-                      iconType='icon-semantic-back'
-                      onClick={switchToSelectModeCloseMenus}
-                    />
-                  </Tooltip>
-                  <Tooltip title='Wrap selection' placement='bottom'>
-                    <InsertModeButton
-                      iconType='designtool-larger'
-                      iconCategory='semantic'
-                      onClick={NO_OP}
-                      secondary={true}
-                    />
-                  </Tooltip>
-                  <Tooltip title='Wrap in div' placement='bottom'>
-                    <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
-                  </Tooltip>
-                  <Tile style={{ height: '100%' }}>
-                    <CanvasToolbarSearch actionWith={convertToAndClose} />
-                  </Tile>
-                </>,
+                <FlexColumn style={{ height: 'min-contents' }}>
+                  <FlexRow>
+                    <Tooltip title='Back' placement='bottom'>
+                      <InsertModeButton
+                        iconCategory='semantic'
+                        iconType='icon-semantic-back'
+                        onClick={switchToSelectModeCloseMenus}
+                        style={{ width: undefined }}
+                      />
+                    </Tooltip>
+                    {/* <InsertModeButton
+                    iconType='designtool-larger'
+                    iconCategory='semantic'
+                    onClick={NO_OP}
+                  /> */}
+                    <Tooltip title='Wrap in div' placement='bottom'>
+                      <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    <Tooltip title='Wrap in div' placement='bottom'>
+                      <InsertModeButton iconType='group-open' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    <Tooltip title='Wrap in div' placement='bottom'>
+                      <InsertModeButton
+                        iconType='scene'
+                        iconCategory='component'
+                        onClick={wrapInDivAndClose}
+                      />
+                    </Tooltip>
+                    <Tooltip title='Wrap in div' placement='bottom'>
+                      <InsertModeButton iconType='fragment' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    <Tooltip title='Wrap in div' placement='bottom'>
+                      <InsertModeButton iconType='clickable' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    <Tooltip title='Wrap in div' placement='bottom'>
+                      <InsertModeButton iconType='conditional' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                  </FlexRow>
+                  <CanvasToolbarSearch actionWith={convertToAndClose} />
+                </FlexColumn>,
               ),
             )}
             {when(
@@ -746,7 +765,8 @@ export const CanvasToolbar = React.memo(() => {
                 alignItems: 'start',
                 marginLeft: 15,
                 padding: '0 8px',
-                height: 32,
+                minHeight: 32,
+                // height: 214,
                 overflow: 'hidden',
                 backgroundColor: colorTheme.bg2.value,
                 borderRadius: '0px 10px 10px 10px',
@@ -806,7 +826,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
     <SquareButton
       data-testid={props.testid}
-      style={{ ...props.style, height: 32, width: 32 }}
+      style={{ height: 32, width: 32, ...props.style }}
       primary={primary}
       spotlight={secondary}
       highlight

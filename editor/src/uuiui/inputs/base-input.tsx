@@ -143,13 +143,14 @@ export const InspectorInputEmotionStyle = ({
   height: UtopiaTheme.layout.inputHeight.default,
   width: '100%',
   marginBottom: 0,
+  borderRadius: 30,
   // ...getChainedBoxShadow(controlStyles, chained, focused, false),
-  ...getBorderRadiusStyles(chained, roundCorners),
-  disabled: !controlStyles.interactive,
-  '&:hover': {
-    // ...getChainedBoxShadow(controlStyles, chained, focused, true),
-  },
-  '&:focus': {},
+  // ...getBorderRadiusStyles(chained, roundCorners),
+  // disabled: !controlStyles.interactive,
+  // '&:hover': {
+  //   // ...getChainedBoxShadow(controlStyles, chained, focused, true),
+  // },
+  // '&:focus': {},
 })
 
 const StyledInput = styled.input<InspectorInputProps>(InspectorInputEmotionStyle)
