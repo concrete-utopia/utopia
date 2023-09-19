@@ -275,6 +275,7 @@ export const FloatingPanelsContainer = React.memo(() => {
       data-testid='floating-panels-container'
       style={{
         position: 'absolute',
+        pointerEvents: 'none',
         contain: 'layout',
         display: 'grid',
         width: '100%',
@@ -286,8 +287,8 @@ export const FloatingPanelsContainer = React.memo(() => {
         rowGap: VerticalGapHalf * 2,
         paddingTop: VerticalGapHalf,
         paddingBottom: VerticalGapHalf,
-        paddingLeft: HorizontalGapHalf,
-        paddingRight: HorizontalGapHalf,
+        paddingLeft: HorizontalGapHalf + 2,
+        paddingRight: HorizontalGapHalf + 2,
       }}
     >
       <FloatingPanel
@@ -375,6 +376,7 @@ const ColumnDragTargets = React.memo(
           ref={dropBefore}
           style={{
             position: 'absolute',
+            pointerEvents: 'initial',
             gridRowStart: 1,
             gridRowEnd: -1,
             gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
@@ -399,6 +401,7 @@ const ColumnDragTargets = React.memo(
           ref={dropAfter}
           style={{
             position: 'absolute',
+            pointerEvents: 'initial',
             gridRowStart: 1,
             gridRowEnd: -1,
             gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
@@ -534,61 +537,60 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
   })()
 
   return (
-    <>
+    <div
+      style={{
+        pointerEvents: 'initial',
+        gridColumn: `col ${index > -1 ? index + 1 : index}`,
+        gridRow: `span ${span}`,
+        order: order,
+        display: 'flex',
+        flexDirection: 'column',
+        contain: 'layout',
+      }}
+    >
+      {draggablePanelComponent}
       <div
+        ref={dropBefore}
         style={{
-          gridColumn: `col ${index > -1 ? index + 1 : index}`,
-          gridRow: `span ${span}`,
-          order: order,
-          display: 'flex',
-          flexDirection: 'column',
-          contain: 'layout',
+          display: isDragActive && canDropAbove ? 'block' : 'none',
+          position: 'absolute',
+          width: '100%',
+          height: `calc(50% + ${VerticalGapHalf}px)`,
+          top: -VerticalGapHalf,
         }}
       >
-        {draggablePanelComponent}
         <div
-          ref={dropBefore}
           style={{
-            display: isDragActive && canDropAbove ? 'block' : 'none',
+            display: isOverBefore ? 'block' : 'none',
             position: 'absolute',
+            top: -1,
+            height: 2,
             width: '100%',
-            height: `calc(50% + ${VerticalGapHalf}px)`,
-            top: -VerticalGapHalf,
+            backgroundColor: colorTheme.primary.value,
           }}
-        >
-          <div
-            style={{
-              display: isOverBefore ? 'block' : 'none',
-              position: 'absolute',
-              top: -1,
-              height: 2,
-              width: '100%',
-              backgroundColor: colorTheme.primary.value,
-            }}
-          />
-        </div>
-        <div
-          ref={dropAfter}
-          style={{
-            display: isDragActive && canDropBelow ? 'block' : 'none',
-            position: 'absolute',
-            width: '100%',
-            height: `calc(50% + ${VerticalGapHalf}px)`,
-            bottom: -VerticalGapHalf,
-          }}
-        >
-          <div
-            style={{
-              display: isOverAfter ? 'block' : 'none',
-              position: 'absolute',
-              bottom: -1,
-              height: 2,
-              width: '100%',
-              backgroundColor: colorTheme.primary.value,
-            }}
-          />
-        </div>
+        />
       </div>
-    </>
+      <div
+        ref={dropAfter}
+        style={{
+          display: isDragActive && canDropBelow ? 'block' : 'none',
+          position: 'absolute',
+          width: '100%',
+          height: `calc(50% + ${VerticalGapHalf}px)`,
+          bottom: -VerticalGapHalf,
+        }}
+      >
+        <div
+          style={{
+            display: isOverAfter ? 'block' : 'none',
+            position: 'absolute',
+            bottom: -1,
+            height: 2,
+            width: '100%',
+            backgroundColor: colorTheme.primary.value,
+          }}
+        />
+      </div>
+    </div>
   )
 })
