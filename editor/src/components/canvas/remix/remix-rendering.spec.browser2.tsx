@@ -848,8 +848,6 @@ describe('Remix navigation', () => {
     })
 
     const renderResult = await renderRemixProject(project)
-    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
-
     await switchToLiveMode(renderResult)
 
     const remixLinkMetadata =
