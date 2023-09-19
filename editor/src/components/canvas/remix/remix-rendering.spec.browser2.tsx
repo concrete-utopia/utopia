@@ -230,7 +230,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     expect(
       renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
