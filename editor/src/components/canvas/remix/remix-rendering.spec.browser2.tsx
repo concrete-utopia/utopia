@@ -9,9 +9,10 @@ import {
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../utils/utils.test-utils'
-import { switchEditorMode } from '../../editor/actions/action-creators'
+import { runDOMWalker, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
+import type { PersistentModel } from '../../editor/store/editor-state'
 import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import {
@@ -56,6 +57,12 @@ export var storyboard = (
 
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectRemixSceneToBeRendered"] }] */
 
+async function renderRemixProject(project: PersistentModel) {
+  const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+  await renderResult.dispatch([runDOMWalker()], true)
+  return renderResult
+}
+
 describe('Remix content', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Renders the remix container with actual content', async () => {
@@ -98,7 +105,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
     await expectRemixSceneToBeRendered(renderResult)
   })
 
@@ -154,7 +161,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const remixDivMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
@@ -234,7 +241,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const remixDivMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
@@ -318,7 +325,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const remixDivMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
@@ -392,7 +399,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const targetElement = renderResult.renderedDOM.getByTestId('remix-div')
     const targetElementBounds = targetElement.getBoundingClientRect()
@@ -452,7 +459,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const targetElement = renderResult.renderedDOM.getAllByTestId('remix-div')[1]
     const targetElementBounds = targetElement.getBoundingClientRect()
@@ -521,7 +528,7 @@ describe('Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const targetElement = renderResult.renderedDOM.getByTestId(DraggedElementId)
     const targetElementBounds = targetElement.getBoundingClientRect()
@@ -543,7 +550,7 @@ describe('Remix content with feature switch off', () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
     })
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
     await expect(async () =>
       renderResult.renderedDOM.findAllByTestId(REMIX_SCENE_TESTID),
     ).rejects.toThrow()
@@ -588,28 +595,80 @@ describe('Remix navigation', () => {
         import { Link } from '@remix-run/react'
   
         export default function Index() {
-          return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
+          return <Link to='/posts' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
         }
         `,
-      ['/src/routes/about.js']: `import React from 'react'
-  
-        export default function About() {
-          return <h1>About</h1>
+      ['/src/routes/posts._index.js']: `import React from 'react'
+        import { Link } from '@remix-run/react'
+        import { json, useLoaderData } from 'react-router'
+        
+        export function loader() {
+          return json({
+            activities: [
+              {
+                id: 0,
+                name: 'Do the thing',
+              },
+            ]
+          })
+        }
+        
+        export default function Posts() {
+          const { activities } = useLoaderData()
+          return (
+            <div>
+              {activities.map(
+                ({
+                  id,
+                  name,
+                }) => (
+                  <Link to={\`\${id}\`} data-testid='post-link'>{name}</Link>
+                )
+              )}
+            </div>
+          )
+        }
+        `,
+      ['/src/routes/posts.$postId.js']: `import React from 'react'
+        import { json, useLoaderData } from 'react-router'
+        
+        export function loader({ params }) {
+          return json({
+            id: 0,
+            name: 'Do the thing',
+            desc: 'Do it now!'
+          })
+        }
+
+        export default function Post() {
+          const {
+            desc
+          } = useLoaderData()
+
+          return (
+            <div>{desc}</div>
+          )
         }
         `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
     await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
 
     const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
     const targetElementBounds = targetElement.getBoundingClientRect()
 
-    const clickPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
+    await mouseClickAtPoint(targetElement, {
+      x: targetElementBounds.x + 5,
+      y: targetElementBounds.y + 5,
+    })
 
-    await mouseClickAtPoint(targetElement, clickPoint)
+    const postLink = renderResult.renderedDOM.getByTestId('post-link')
+    const postLinkBounds = postLink.getBoundingClientRect()
 
-    await expectRemixSceneToBeRendered(renderResult, 'About')
+    await mouseClickAtPoint(postLink, { x: postLinkBounds.x + 5, y: postLinkBounds.y + 5 })
+
+    await expectRemixSceneToBeRendered(renderResult, 'Do it now!')
   })
 
   it('Remix navigation updates metadata', async () => {
@@ -671,15 +730,14 @@ describe('Remix navigation', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
+    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
 
     const remixLinkMetadata =
       renderResult.getEditorState().editor.jsxMetadata[
         'storyboard/remix-scene:rootdiv/outlet:remixlink'
       ]
     expect(remixLinkMetadata).not.toBeUndefined()
-
-    await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
 
     const targetElement = renderResult.renderedDOM.getByTestId('remix-link')
     const targetElementBounds = targetElement.getBoundingClientRect()
@@ -753,7 +811,7 @@ describe('Editing Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const pathString = 'sb/rs:root/outlet:title'
 
@@ -936,7 +994,7 @@ describe('Editing Remix content', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
 
     const pathString = 'sb/rs:root/outlet2:title'
 
@@ -949,10 +1007,7 @@ describe('Editing Remix content', () => {
   })
 
   it('delete element from remix scene', async () => {
-    const renderResult = await renderTestEditorWithModel(
-      remixProjectForEditingTests,
-      'await-first-dom-report',
-    )
+    const renderResult = await renderRemixProject(remixProjectForEditingTests)
 
     expect(renderResult.renderedDOM.queryAllByTestId(FlexDivTestId)).toHaveLength(1)
 
@@ -999,10 +1054,7 @@ export default function Index() {
   })
 
   it('use the inspector to add a layout system', async () => {
-    const renderResult = await renderTestEditorWithModel(
-      remixProjectForEditingTests,
-      'await-first-dom-report',
-    )
+    const renderResult = await renderRemixProject(remixProjectForEditingTests)
 
     const absoluteDiv = await clickElementOnCanvas(renderResult, AbsoluteDivTestId)
 
@@ -1013,10 +1065,9 @@ export default function Index() {
   })
 
   it('flex reorder elements inside Remix', async () => {
-    const renderResult = await renderTestEditorWithModel(
-      remixProjectForEditingTests,
-      'await-first-dom-report',
-    )
+    const renderResult = await renderRemixProject(remixProjectForEditingTests)
+
+    await renderResult.dispatch([runDOMWalker()], true)
 
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
@@ -1056,10 +1107,7 @@ export default function Index() {
   })
 
   it('absolute move elements inside Remix', async () => {
-    const renderResult = await renderTestEditorWithModel(
-      remixProjectForEditingTests,
-      'await-first-dom-report',
-    )
+    const renderResult = await renderRemixProject(remixProjectForEditingTests)
 
     const absoluteDiv = await clickElementOnCanvas(renderResult, AbsoluteDivTestId)
     expect({ left: absoluteDiv.style.left, top: absoluteDiv.style.top }).toEqual({
@@ -1081,10 +1129,9 @@ export default function Index() {
   })
 
   it('draw to insert into Remix', async () => {
-    const renderResult = await renderTestEditorWithModel(
-      remixProjectForEditingTests,
-      'await-first-dom-report',
-    )
+    const renderResult = await renderRemixProject(remixProjectForEditingTests)
+
+    await renderResult.dispatch([runDOMWalker()], true)
 
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
@@ -1203,10 +1250,7 @@ export default function Index() {
   const clipboardMock = new MockClipboardHandlers().mock()
 
   it('copy-paste element inside Remix', async () => {
-    const renderResult = await renderTestEditorWithModel(
-      remixProjectForEditingTests,
-      'await-first-dom-report',
-    )
+    const renderResult = await renderRemixProject(remixProjectForEditingTests)
 
     await selectComponentsForTest(renderResult, [
       EP.fromString('sb/remix-scene:app/outlet:index/absolute-div'),
@@ -1310,10 +1354,7 @@ export default function Index() {
   })
 
   it('dragging elements between Remix and the storyboard', async () => {
-    const renderResult = await renderTestEditorWithModel(
-      remixProjectForEditingTests,
-      'await-first-dom-report',
-    )
+    const renderResult = await renderRemixProject(remixProjectForEditingTests)
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
         'regular-sb/remix-scene',
