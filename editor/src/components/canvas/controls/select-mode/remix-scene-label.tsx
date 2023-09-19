@@ -1,7 +1,7 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import { isFiniteRectangle, windowPoint } from '../../../../core/shared/math-utils'
+import { isInfinityRectangle, windowPoint } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
@@ -205,79 +205,79 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const backgroundColor = isSelected ? colorTheme.aqua05solid.value : 'transparent'
 
-  if (frame != null && isFiniteRectangle(frame)) {
-    return (
-      <CanvasOffsetWrapper>
-        <FlexRow
-          onMouseOver={labelSelectable ? onMouseOver : NO_OP}
-          onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
-          onMouseDown={labelSelectable ? onMouseDown : NO_OP}
-          onMouseMove={labelSelectable ? onMouseMove : NO_OP}
-          data-testid={RemixSceneLabelTestID(props.target)}
-          className='roleComponentName'
-          style={{
-            pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: isIndexRoute ? colorTheme.aqua.value : colorTheme.textColor.value,
-            position: 'absolute',
-            left: frame.x,
-            bottom: -frame.y + offsetY,
-            width: frame.width,
-            paddingLeft: offsetX,
-            paddingTop: paddingY,
-            paddingBottom: paddingY,
-            fontFamily: 'Utopian-Inter',
-            fontSize: scaledFontSize,
-            lineHeight: `${scaledLineHeight}px`,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            borderRadius: borderRadius,
-            backgroundColor: backgroundColor,
-            gap: 12 / scale,
-          }}
-        >
-          <Tooltip title={'Back'}>
-            <span
-              data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
-              style={{ cursor: 'pointer', fontSize: 16 / scale }}
-              onMouseDown={back}
-            >
-              〱
-            </span>
-          </Tooltip>
-          <Tooltip title={'Forward'}>
-            <span
-              data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
-              style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
-              onMouseDown={forward}
-            >
-              〱
-            </span>
-          </Tooltip>
-          <Tooltip title={'Home'}>
-            <span
-              data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
-              style={{ cursor: 'pointer', fontSize: 16 / scale }}
-              onMouseDown={home}
-            >
-              ／
-            </span>
-          </Tooltip>
-          <div
-            data-testid={RemixSceneLabelPathTestId(props.target)}
-            style={{
-              backgroundColor: '#f2f3f4',
-              borderRadius: 10 / scale,
-              padding: `${4 / scale}px ${12 / scale}px`,
-              fontSize: 14 / scale,
-            }}
-          >
-            {label}
-          </div>
-        </FlexRow>
-      </CanvasOffsetWrapper>
-    )
-  } else {
+  if (frame == null || isInfinityRectangle(frame)) {
     return null
   }
+
+  return (
+    <CanvasOffsetWrapper>
+      <FlexRow
+        onMouseOver={labelSelectable ? onMouseOver : NO_OP}
+        onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
+        onMouseDown={labelSelectable ? onMouseDown : NO_OP}
+        onMouseMove={labelSelectable ? onMouseMove : NO_OP}
+        data-testid={RemixSceneLabelTestID(props.target)}
+        className='roleComponentName'
+        style={{
+          pointerEvents: labelSelectable ? 'initial' : 'none',
+          color: isIndexRoute ? colorTheme.aqua.value : colorTheme.textColor.value,
+          position: 'absolute',
+          left: frame.x,
+          bottom: -frame.y + offsetY,
+          width: frame.width,
+          paddingLeft: offsetX,
+          paddingTop: paddingY,
+          paddingBottom: paddingY,
+          fontFamily: 'Utopian-Inter',
+          fontSize: scaledFontSize,
+          lineHeight: `${scaledLineHeight}px`,
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          borderRadius: borderRadius,
+          backgroundColor: backgroundColor,
+          gap: 12 / scale,
+        }}
+      >
+        <Tooltip title={'Back'}>
+          <span
+            data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
+            style={{ cursor: 'pointer', fontSize: 16 / scale }}
+            onMouseDown={back}
+          >
+            〱
+          </span>
+        </Tooltip>
+        <Tooltip title={'Forward'}>
+          <span
+            data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
+            style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
+            onMouseDown={forward}
+          >
+            〱
+          </span>
+        </Tooltip>
+        <Tooltip title={'Home'}>
+          <span
+            data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
+            style={{ cursor: 'pointer', fontSize: 16 / scale }}
+            onMouseDown={home}
+          >
+            ／
+          </span>
+        </Tooltip>
+        <div
+          data-testid={RemixSceneLabelPathTestId(props.target)}
+          style={{
+            backgroundColor: '#f2f3f4',
+            borderRadius: 10 / scale,
+            padding: `${4 / scale}px ${12 / scale}px`,
+            fontSize: 14 / scale,
+          }}
+        >
+          {label}
+        </div>
+      </FlexRow>
+    </CanvasOffsetWrapper>
+  )
 })
