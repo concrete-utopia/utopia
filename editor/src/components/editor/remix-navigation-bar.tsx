@@ -24,7 +24,7 @@ export const RemixNavigationBar = React.memo(() => {
 
   const isLiveMode = useEditorState(
     Substores.restOfEditor,
-    (_) => _.editor.mode.type === 'live',
+    (store) => store.editor.mode.type === 'live',
     'RemixNavigationBar isLiveMode',
   )
   const theme = useColorTheme()
