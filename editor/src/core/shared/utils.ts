@@ -23,12 +23,25 @@ export function identity<T>(t: T): T {
   return t
 }
 
-export function fastForEach<T>(a: readonly T[], fn: (t: T, index: number) => void) {
+export function fastForEach<T>(a: readonly T[], fn: (t: T, index: number) => void): void {
+  fastForEachQuery(a, (t, index) => {
+    fn(t, index)
+    return false
+  })
+}
+
+export function fastForEachQuery<T>(
+  a: readonly T[],
+  fn: (t: T, index: number) => boolean,
+): boolean {
   for (var i = 0, len = a.length; i < len; i++) {
     if (i in a) {
-      fn(a[i]!, i)
+      if (fn(a[i]!, i)) {
+        return true
+      }
     }
   }
+  return false
 }
 
 export function arrayEqualsByReference<T>(a: Array<T>, b: Array<T>): boolean {
