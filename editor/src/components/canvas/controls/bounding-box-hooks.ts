@@ -10,6 +10,7 @@ import {
 } from '../../../core/shared/math-utils'
 import {
   Substores,
+  useEditorState,
   useRefEditorState,
   useSelectorWithCallback,
 } from '../../editor/store/store-hook'
@@ -49,15 +50,19 @@ function useBoundingBoxFromMetadataRef(
   const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
-  const isMidInteraction = useRefEditorState(
-    (store) => store.editor.canvas.interactionSession?.startedAt != null,
+  const isNotDuringInteraction = useEditorState(
+    Substores.canvas,
+    (store) => {
+      return store.editor.canvas.interactionSession?.interactionData == null
+    },
+    'useBoundingBoxFromMetadataRef isNotDuringInteraction',
   )
 
   const shouldApplySafeGap = React.useCallback(
     (dimension: number, scale: number): boolean => {
-      return !isMidInteraction.current && dimension <= SmallElementSize / scale
+      return isNotDuringInteraction && dimension <= SmallElementSize / scale
     },
-    [isMidInteraction],
+    [isNotDuringInteraction],
   )
 
   const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)
