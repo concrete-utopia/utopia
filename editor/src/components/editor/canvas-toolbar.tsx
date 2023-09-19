@@ -490,9 +490,9 @@ export const CanvasToolbar = React.memo(() => {
                 onClick={selectInsertMenuPane}
               />
             </Tooltip>
-            {/* Live Mode */}
           </FlexRow>
         )}
+        {/* Live Mode */}
         {when(
           canvasToolbarMode.primary === 'play',
           <>
