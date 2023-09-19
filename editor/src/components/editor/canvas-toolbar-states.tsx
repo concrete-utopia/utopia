@@ -28,17 +28,21 @@ export function useToolbarMode(toolbarInsertMode: boolean): ToolbarMode {
     (store) => store.editor.mode,
     'useGetToolbarMode editorMode',
   )
+
   const floatingInsertMenu = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
     'useGetToolbarMode floatingInsertMenu',
   )
+
   const dragStrategyFlags = useGetDragStrategyIndicatorFlags()
+
   const rightMenuTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.rightMenu.selectedTab,
     'useGetToolbarMode rightMenuTab',
   )
+
   const keysPressed = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.keysPressed,
