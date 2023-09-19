@@ -290,9 +290,24 @@ export const FloatingPanelsContainer = React.memo(() => {
         paddingRight: HorizontalGapHalf,
       }}
     >
-      <FloatingPanel key={'code-editor'} onDrop={onDrop} pane={orderedPanels['code-editor']} />
-      <FloatingPanel key={'navigator'} onDrop={onDrop} pane={orderedPanels['navigator']} />
-      <FloatingPanel key={'inspector'} onDrop={onDrop} pane={orderedPanels['inspector']} />
+      <FloatingPanel
+        key={'code-editor'}
+        onDrop={onDrop}
+        canDrop={canDrop}
+        pane={orderedPanels['code-editor']}
+      />
+      <FloatingPanel
+        key={'navigator'}
+        onDrop={onDrop}
+        canDrop={canDrop}
+        pane={orderedPanels['navigator']}
+      />
+      <FloatingPanel
+        key={'inspector'}
+        onDrop={onDrop}
+        canDrop={canDrop}
+        pane={orderedPanels['inspector']}
+      />
       {/* All future Panels need to be explicitly listed here */}
       {nonEmptyColumns.map((columnIndex) => (
         <ColumnDragTargets
@@ -412,27 +427,43 @@ const ColumnDragTargets = React.memo(
 
 interface FloatingPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
+  canDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => boolean
   pane: PanelData
 }
 
 export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
-  const { onDrop } = props
+  const { onDrop, canDrop } = props
   const { panel, index, span, order } = props.pane
 
-  const { isDragActive, draggedPanelName } = useFloatingPanelDragInfo()
-  const showDragCatchArea = isDragActive && draggedPanelName !== panel.name
+  const { isDragActive, draggedPanel } = useFloatingPanelDragInfo()
+
+  const dropAboveElement: LayoutUpdate = React.useMemo(
+    () => ({
+      type: 'before-index',
+      indexInColumn: order,
+      columnIndex: index,
+    }),
+    [order, index],
+  )
+
+  const dropBelowElement: LayoutUpdate = React.useMemo(
+    () => ({
+      type: 'after-index',
+      indexInColumn: order,
+      columnIndex: index,
+    }),
+    [order, index],
+  )
+
+  const canDropAbove = draggedPanel != null && canDrop(draggedPanel, dropAboveElement)
+  const canDropBelow = draggedPanel != null && canDrop(draggedPanel, dropBelowElement)
 
   const { drop: dropBefore, isOver: isOverBefore } = useFloatingPanelDropArea(
     index,
     order,
     React.useCallback(
-      (itemToMove: StoredPanel, newPosition: LayoutUpdate) =>
-        onDrop(itemToMove, {
-          type: 'before-index',
-          indexInColumn: order,
-          columnIndex: index,
-        }),
-      [onDrop, index, order],
+      (itemToMove: StoredPanel, newPosition: LayoutUpdate) => onDrop(itemToMove, dropAboveElement),
+      [onDrop, dropAboveElement],
     ),
   )
   const { drop: dropAfter, isOver: isOverAfter } = useFloatingPanelDropArea(
@@ -440,13 +471,9 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     order,
     React.useCallback(
       (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
-        onDrop(itemToMove, {
-          type: 'after-index',
-          indexInColumn: order,
-          columnIndex: index,
-        })
+        onDrop(itemToMove, dropBelowElement)
       },
-      [onDrop, index, order],
+      [onDrop, dropBelowElement],
     ),
   )
 
@@ -523,7 +550,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         <div
           ref={dropBefore}
           style={{
-            display: showDragCatchArea ? 'block' : 'none',
+            display: isDragActive && canDropAbove ? 'block' : 'none',
             position: 'absolute',
             width: '100%',
             height: `calc(50% + ${VerticalGapHalf}px)`,
@@ -544,7 +571,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
         <div
           ref={dropAfter}
           style={{
-            display: showDragCatchArea ? 'block' : 'none',
+            display: isDragActive && canDropBelow ? 'block' : 'none',
             position: 'absolute',
             width: '100%',
             height: `calc(50% + ${VerticalGapHalf}px)`,
