@@ -353,8 +353,7 @@ const ColumnDragTargets = React.memo(
       columnIndex,
       9,
       React.useCallback(
-        (itemToMove: StoredPanel, newPosition: LayoutUpdate) =>
-          onDrop(itemToMove, dropBeforeColumn),
+        (itemToMove: StoredPanel) => onDrop(itemToMove, dropBeforeColumn),
         [onDrop, dropBeforeColumn],
       ),
     )
@@ -363,7 +362,7 @@ const ColumnDragTargets = React.memo(
       columnIndex,
       0,
       React.useCallback(
-        (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+        (itemToMove: StoredPanel) => {
           onDrop(itemToMove, dropAfterColumn)
         },
         [onDrop, dropAfterColumn],
@@ -462,7 +461,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     index,
     order,
     React.useCallback(
-      (itemToMove: StoredPanel, newPosition: LayoutUpdate) => onDrop(itemToMove, dropAboveElement),
+      (itemToMove: StoredPanel) => onDrop(itemToMove, dropAboveElement),
       [onDrop, dropAboveElement],
     ),
   )
@@ -470,7 +469,7 @@ export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
     index,
     order,
     React.useCallback(
-      (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+      (itemToMove: StoredPanel) => {
         onDrop(itemToMove, dropBelowElement)
       },
       [onDrop, dropBelowElement],

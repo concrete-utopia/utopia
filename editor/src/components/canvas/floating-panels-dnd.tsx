@@ -1,7 +1,7 @@
 import type { ConnectDragPreview, ConnectDragSource, ConnectDropTarget } from 'react-dnd'
 import { useDrag, useDragLayer, useDrop } from 'react-dnd'
-import type { LayoutUpdate, PanelName, StoredPanel } from './floating-panels'
 import { magnitude, windowPoint } from '../../core/shared/math-utils'
+import type { StoredPanel } from './floating-panels'
 
 const FloatingPanelTitleBarType = 'floating-panel-title-bar'
 
@@ -31,25 +31,19 @@ export function useFloatingPanelDraggable(draggedPanel: StoredPanel): {
 export function useFloatingPanelDropArea(
   columnIndex: number,
   indexInColumn: number,
-  onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void,
+  onDrop: (itemToMove: StoredPanel) => void,
 ): {
   drop: ConnectDropTarget
   isOver: boolean
 } {
-  const [{ canDrop, isOver }, drop] = useDrop(
+  const [{ isOver }, drop] = useDrop(
     () => ({
       // The type (or types) to accept - strings or symbols
       accept: FloatingPanelTitleBarType,
-      drop: (droppedItem: FloatingPanelDragItem) =>
-        onDrop(droppedItem.draggedPanel, {
-          type: 'before-index',
-          columnIndex: columnIndex,
-          indexInColumn: indexInColumn,
-        }),
+      drop: (droppedItem: FloatingPanelDragItem) => onDrop(droppedItem.draggedPanel),
       // Props to collect
       collect: (monitor) => ({
         isOver: monitor.isOver(),
-        canDrop: monitor.canDrop(),
       }),
     }),
     [columnIndex, indexInColumn, onDrop],
@@ -62,10 +56,9 @@ const MinDragThreshold = 3
 
 export function useFloatingPanelDragInfo(): {
   isDragActive: boolean
-  draggedPanelName: PanelName | undefined
   draggedPanel: StoredPanel | undefined
 } {
-  const { isDragActive, draggedPanelName, draggedPanel } = useDragLayer((monitor) => {
+  const { isDragActive, draggedPanel } = useDragLayer((monitor) => {
     const dragVector = monitor.getDifferenceFromInitialOffset()
     return {
       isDragActive:
@@ -73,10 +66,9 @@ export function useFloatingPanelDragInfo(): {
         monitor.getItemType() === FloatingPanelTitleBarType &&
         dragVector != null &&
         magnitude(windowPoint(dragVector)) > MinDragThreshold,
-      draggedPanelName: monitor.getItem<FloatingPanelDragItem | null>()?.draggedPanel.name,
       draggedPanel: monitor.getItem<FloatingPanelDragItem | null>()?.draggedPanel,
     }
   })
 
-  return { isDragActive, draggedPanelName, draggedPanel }
+  return { isDragActive, draggedPanel }
 }
