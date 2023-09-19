@@ -97,6 +97,14 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
   const color =
     props.color === 'primary' ? colors[0] : colorTheme.canvasSelectionSecondaryOutline.value
 
+  const isResizing = useEditorState(
+    Substores.canvas,
+    (store) =>
+      store.editor.canvas.interactionSession != null &&
+      store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE',
+    'ResizePoint isResizing',
+  )
+
   if (targets.length > 0) {
     return (
       <div
@@ -105,7 +113,7 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
         className='role-outline'
         style={{
           position: 'absolute',
-          borderColor: color,
+          borderColor: isResizing ? colorTheme.primary.value : color,
           borderWidth: `${1 / scale}px`,
           borderStyle: props.outlineStyle,
           pointerEvents: 'none',
