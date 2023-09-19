@@ -534,14 +534,14 @@ export const CanvasToolbar = React.memo(() => {
               onClick={switchToSelectModeCloseMenus}
             />
           </Tooltip>
-          <Tooltip title='Insert or Edit Text' placement='bottom'>
+          <Tooltip title='Insert/Edit Text (T)' placement='bottom'>
             <InsertModeButton
               iconType='pure-text'
               primary={canvasToolbarMode.primary === 'text'}
               onClick={insertTextCallback}
             />
           </Tooltip>
-          <Tooltip title='Insert...' placement='bottom'>
+          <Tooltip title='Insert' placement='bottom'>
             <InsertModeButton
               testid={InsertMenuButtonTestId}
               iconType='plusbutton-larger'
@@ -550,7 +550,7 @@ export const CanvasToolbar = React.memo(() => {
               onClick={toggleInsertButtonClicked}
             />
           </Tooltip>
-          <Tooltip title='Toggle Live Mode' placement='bottom'>
+          <Tooltip title='Live Mode' placement='bottom'>
             <InsertModeButton
               iconType='playbutton'
               iconCategory='semantic'
@@ -600,17 +600,14 @@ export const CanvasToolbar = React.memo(() => {
                   <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
                     <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
                   </Tooltip>
-                  <Tooltip title='Wrap selection in an element' placement='bottom'>
+                  <Tooltip title='Wrap Within' placement='bottom'>
                     <InsertModeButton
                       iconType='designtool-larger'
                       iconCategory='semantic'
                       onClick={openFloatingWrapInMenuCallback}
                     />
                   </Tooltip>
-                  <Tooltip
-                    title='Converts an element or component into another (C)'
-                    placement='bottom'
-                  >
+                  <Tooltip title='Convert Element (C)' placement='bottom'>
                     <InsertModeButton
                       iconType='convertobject'
                       iconCategory='semantic'
@@ -618,7 +615,7 @@ export const CanvasToolbar = React.memo(() => {
                     />
                   </Tooltip>
                   <Tooltip
-                    title='Toggle between absolute and static positioning (X)' // help I need better copy
+                    title='Toggle Position Absolute (X)' // help I need better copy
                     placement='bottom'
                   >
                     <InsertModeButton
