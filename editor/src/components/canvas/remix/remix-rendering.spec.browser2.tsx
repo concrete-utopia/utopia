@@ -1779,6 +1779,77 @@ export default function Index() {
       ],
     )
   })
+
+  it('undo navigates back the route where the last modification happened', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='sb-nav-back'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv' data-testid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+
+      export default function Index() {
+        return <Link to='/about' data-testid='remix-link' data-uid='remix-link'>${DefaultRouteTextContent}</Link>
+      }
+      `,
+      ['/src/routes/about.js']: `import React from 'react'
+
+      export default function About() {
+        return <h1>${AboutTextContent}</h1>
+      }
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+    await expectRemixSceneToBeRendered(renderResult, DefaultRouteTextContent)
+
+    const pathString = 'sb-nav-back/remix-scene:rootdiv'
+
+    await selectComponentsForTest(renderResult, [EP.fromString(pathString)])
+    await pressKey('3')
+    await pressKey('0')
+
+    const titleElement = renderResult.renderedDOM.getByTestId('rootdiv')
+    expect(titleElement.style.opacity).toEqual('0.3')
+
+    await clickRemixLink(renderResult)
+
+    await expectRemixSceneToBeRendered(renderResult, AboutTextContent)
+
+    await pressKey('z', { modifiers: cmdModifier })
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // TODO
+    // await expectRemixSceneToBeRendered(renderResult, DefaultRouteTextContent)
+  })
 })
 
 async function clickElementOnCanvasControlsLayer(
