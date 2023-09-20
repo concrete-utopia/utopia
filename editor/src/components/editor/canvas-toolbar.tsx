@@ -136,16 +136,17 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         menuPortal: (styles: CSSObject): CSSObject => {
           return {
             zIndex: 2,
-            padding: '0 8px',
+            // padding: '0 8px',
             overflow: 'hidden',
             // maxHeight: 150,
-            // backgroundColor: theme.bg2.value,
-            background: '#ff00ff20',
-            // borderRadius: '0px 0px 10px 10px',
+            backgroundColor: theme.bg2.value,
+            // background: '#ff00ff20',
+            borderRadius: '0px 0px 10px 10px',
             // boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             pointerEvents: 'initial',
             position: 'relative',
-            // top: -156,
+            top: -10,
+            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           }
         },
         input: (styles: CSSObject): CSSObject => {
@@ -154,7 +155,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
               hasLabel: false,
               controlStyles: getControlStyles('simple'),
             }) as CSSObject),
-            paddingLeft: 4,
+            paddingLeft: 8,
             backgroundColor: colorTheme.seperator.value,
             flexGrow: 1,
             display: 'flex',
@@ -169,7 +170,8 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         menuList: (styles: CSSObject): CSSObject => {
           return {
             maxHeight: 144,
-            // padding: '0 10px',
+            padding: '0 8px',
+            width: 230,
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
@@ -528,10 +530,33 @@ export const CanvasToolbar = React.memo(() => {
             padding: '0 8px',
           }}
         >
+          {/* {when(
+            insertMenuMode === 'wrap',
+            wrapInSubmenu(
+              <Tooltip title='Edit' placement='bottom'>
+                <InsertModeButton
+                  iconType='designtool-larger'
+                  iconCategory='semantic'
+                  // primary={canvasToolbarMode.primary === 'edit'}
+                  onClick={NO_OP}
+                />
+              </Tooltip>,
+            ),
+          )} */}
+          {/* <Tooltip title='Edit' placement='bottom'>
+            <InsertModeButton
+              iconType='designtool-larger'
+              iconCategory='semantic'
+              // primary={canvasToolbarMode.primary === 'edit'}
+              onClick={NO_OP}
+            />
+          </Tooltip> */}
           <Tooltip title='Edit' placement='bottom'>
             <InsertModeButton
-              iconType='pointer'
-              iconCategory='tools'
+              // iconType='pointer'
+              iconType={insertMenuMode === 'wrap' ? 'designtool-larger' : 'pointer'}
+              // iconCategory='tools'
+              iconCategory={insertMenuMode === 'wrap' ? 'semantic' : 'tools'}
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={switchToSelectModeCloseMenus}
             />
@@ -633,7 +658,7 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'wrap',
               wrapInSubmenu(
-                <FlexColumn style={{ height: 'min-contents' }}>
+                <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
                   <FlexRow>
                     <Tooltip title='Back' placement='bottom'>
                       <InsertModeButton
