@@ -38,6 +38,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { safeIndex } from '../../../core/shared/array-utils'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -399,12 +400,13 @@ export function getRouteComponentNameForOutlet(
   }
 
   const outletChildren = MetadataUtils.getImmediateChildrenPathsOrdered(metadata, pathTrees, path)
-  if (outletChildren.length == 0) {
+  const outletChild = safeIndex(outletChildren, 0)
+  if (outletChild == null) {
     return null
   }
 
   const uidsToFilePath = getAllUniqueUids(projectContents).uidsToFilePaths
-  const filePath = uidsToFilePath[EP.toUid(outletChildren[0])]
+  const filePath = uidsToFilePath[EP.toUid(outletChild)]
   if (filePath == null) {
     return null
   }
