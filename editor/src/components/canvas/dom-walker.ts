@@ -994,7 +994,7 @@ function getSpecialMeasurements(
   const fontStyle = elementStyle.fontStyle
   const textDecorationLine = elementStyle.textDecorationLine
 
-  const textBounds = elementContainsOnlyText(element) ? getTextBounds(element) : null
+  const textBounds = elementContainsOnlyText(element) ? getTextBounds(element, scale) : null
 
   return specialSizeMeasurements(
     offset,
@@ -1057,7 +1057,7 @@ function elementContainsOnlyText(element: HTMLElement): boolean {
   return true
 }
 
-function getTextBounds(element: HTMLElement): DOMRect | null {
+function getTextBounds(element: HTMLElement, scale: number): DOMRect | null {
   const range = document.createRange()
   range.selectNodeContents(element)
   if (range.getBoundingClientRect == null) {
@@ -1070,20 +1070,23 @@ function getTextBounds(element: HTMLElement): DOMRect | null {
     const parsed = parseCSSPx(property)
     return isRight(parsed) ? parsed.value.value : 0
   }
+  const ratio = scale < 1 ? scale : 1
   return {
     ...textBounds,
     width:
-      textBounds.width +
-      maybeValueFromComputedStyle(computedStyle.paddingLeft) +
-      maybeValueFromComputedStyle(computedStyle.paddingRight) +
-      maybeValueFromComputedStyle(computedStyle.marginLeft) +
-      maybeValueFromComputedStyle(computedStyle.marginRight),
+      (textBounds.width +
+        maybeValueFromComputedStyle(computedStyle.paddingLeft) +
+        maybeValueFromComputedStyle(computedStyle.paddingRight) +
+        maybeValueFromComputedStyle(computedStyle.marginLeft) +
+        maybeValueFromComputedStyle(computedStyle.marginRight)) /
+      ratio,
     height:
-      textBounds.height +
-      maybeValueFromComputedStyle(computedStyle.paddingTop) +
-      maybeValueFromComputedStyle(computedStyle.paddingBottom) +
-      maybeValueFromComputedStyle(computedStyle.marginTop) +
-      maybeValueFromComputedStyle(computedStyle.marginBottom),
+      (textBounds.height +
+        maybeValueFromComputedStyle(computedStyle.paddingTop) +
+        maybeValueFromComputedStyle(computedStyle.paddingBottom) +
+        maybeValueFromComputedStyle(computedStyle.marginTop) +
+        maybeValueFromComputedStyle(computedStyle.marginBottom)) /
+      ratio,
   }
 }
 
