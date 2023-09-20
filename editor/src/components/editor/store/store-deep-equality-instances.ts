@@ -536,6 +536,7 @@ import type { ElementPathTree, ElementPathTrees } from '../../../core/shared/ele
 import { elementPathTree } from '../../../core/shared/element-path-tree'
 import type { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboard'
 import { elementPaste } from '../actions/action-creators'
+import type { Location } from 'react-router'
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -4068,6 +4069,14 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   return keepDeepEqualityResult(newValue, false)
 }
 
+export const ReactRouterLocationDeepEquality: KeepDeepEqualityCall<Location> = (
+  oldvalue,
+  newValue,
+) =>
+  oldvalue.key === newValue.key
+    ? keepDeepEqualityResult(oldvalue, false)
+    : keepDeepEqualityResult(newValue, true)
+
 export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   oldValue,
   newValue,
@@ -4342,6 +4351,10 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     newValue.internalClipboard,
   )
 
+  const remixNavigationStateEquals = objectDeepEquality(
+    undefinableDeepEquality(arrayDeepEquality(ReactRouterLocationDeepEquality)),
+  )(oldValue.remixNavigationState, newValue.remixNavigationState)
+
   const areEqual =
     idResult.areEqual &&
     vscodeBridgeIdResult.areEqual &&
@@ -4417,7 +4430,8 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     githubDataResults.areEqual &&
     refreshingDependenciesResults.areEqual &&
     colorSwatchesResults.areEqual &&
-    internalClipboardResults.areEqual
+    internalClipboardResults.areEqual &&
+    remixNavigationStateEquals.areEqual
 
   if (areEqual) {
     return keepDeepEqualityResult(oldValue, true)
@@ -4498,6 +4512,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       refreshingDependenciesResults.value,
       colorSwatchesResults.value,
       internalClipboardResults.value,
+      remixNavigationStateEquals.value,
     )
 
     return keepDeepEqualityResult(newEditorState, false)

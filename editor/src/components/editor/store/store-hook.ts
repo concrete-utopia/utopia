@@ -31,6 +31,7 @@ import type {
   Substates,
   ThemeSubstate,
   UserStateSubstate,
+  RemixNavigationSubstate,
 } from './store-hook-substore-types'
 import {
   canvasOffsetSubstateKeys,
@@ -299,6 +300,7 @@ export const Substores = {
   ) => {
     return keysEquality([...projectContentsKeys, ...metadataSubstateKeys], a.editor, b.editor)
   },
+  remixNavigation: (a: RemixNavigationSubstate, b: RemixNavigationSubstate) => shallowEqual(a, b),
 } as const
 
 export const SubstateEqualityFns: {

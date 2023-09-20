@@ -504,13 +504,11 @@ export function editorDispatchClosingOut(
 
   let newHistory: StateHistory
   if (allMergeWithPrevUndo) {
-    const navigationStateFromMergeAction = navigationEventsFromActions(dispatchedActions)
     newHistory = History.replaceLast(
       result.history,
       editorFilteredForFiles,
       frozenDerivedState,
       assetRenames,
-      navigationStateFromMergeAction,
     )
   } else if (transientOrNoChange || !shouldSave) {
     // If there's a selection change, incorporate it into the previous history step.
@@ -535,7 +533,6 @@ export function editorDispatchClosingOut(
       editorFilteredForFiles,
       frozenDerivedState,
       assetRenames,
-      null,
     )
   }
 
@@ -908,17 +905,4 @@ function filterEditorForFiles(editor: EditorState) {
       lintErrors: pick(allFiles, editor.codeEditorErrors.lintErrors),
     },
   }
-}
-
-function navigationEventsFromActions(actions: ReadonlyArray<EditorAction>): NavigationEvent | null {
-  for (const action of actions) {
-    if (action.action === 'MERGE_WITH_PREV_UNDO') {
-      for (const innerAction of action.actions) {
-        if (innerAction.action === 'UPDATE_NAVIGATION_STATE') {
-          return { location: innerAction.location, pathString: innerAction.pathString }
-        }
-      }
-    }
-  }
-  return null
 }

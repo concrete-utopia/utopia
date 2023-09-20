@@ -174,11 +174,8 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import type {
-  RemixDerivedData,
-  RemixDerivedDataFactory,
-  RemixRoutingTable,
-} from './remix-derived-data'
+import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
+import type { Location } from 'react-router'
 
 const ObjectPathImmutable: any = OPI
 
@@ -1423,6 +1420,7 @@ export interface EditorState {
   refreshingDependencies: boolean
   colorSwatches: Array<ColorSwatch>
   internalClipboard: InternalClipboard
+  remixNavigationState: RemixNavigationState
 }
 
 export function editorState(
@@ -1501,6 +1499,7 @@ export function editorState(
   refreshingDependencies: boolean,
   colorSwatches: Array<ColorSwatch>,
   internalClipboardData: InternalClipboard,
+  remixNavigationState: RemixNavigationState,
 ): EditorState {
   return {
     id: id,
@@ -1578,6 +1577,7 @@ export function editorState(
     refreshingDependencies: refreshingDependencies,
     colorSwatches: colorSwatches,
     internalClipboard: internalClipboardData,
+    remixNavigationState: remixNavigationState,
   }
 }
 
@@ -2278,6 +2278,10 @@ export const BaseCanvasOffsetLeftPane = {
   y: BaseCanvasOffset.y,
 } as CanvasPoint
 
+export interface RemixNavigationState {
+  [pathString: string]: Array<Location> | undefined
+}
+
 export function createEditorState(dispatch: EditorDispatch): EditorState {
   return {
     id: null,
@@ -2450,6 +2454,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       styleClipboard: [],
       elements: [],
     },
+    remixNavigationState: {},
   }
 }
 
@@ -2821,6 +2826,7 @@ export function editorModelFromPersistentModel(
       styleClipboard: [],
       elements: [],
     },
+    remixNavigationState: {},
   }
   return editor
 }

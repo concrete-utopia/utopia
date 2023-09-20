@@ -1375,7 +1375,7 @@ export function updateNavigationState(
   return {
     action: 'UPDATE_NAVIGATION_STATE',
     pathString: pathString,
-    location: location,
+    entries: location,
   }
 }
 

@@ -869,7 +869,7 @@ export interface UpdateText {
 export interface UpdateNavigationState {
   action: 'UPDATE_NAVIGATION_STATE'
   pathString: string
-  location: Array<Location>
+  entries: Array<Location>
 }
 
 export interface TruncateHistory {

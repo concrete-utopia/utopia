@@ -6,6 +6,7 @@ import type {
   EditorState,
   EditorStorePatched,
   EditorStoreShared,
+  RemixNavigationState,
   ThemeSetting,
 } from './editor-state'
 import { EmptyEditorStateForKeysOnly } from './store-hook-substore-helpers'
@@ -113,6 +114,10 @@ export const canvasSubstateKeys = Object.keys(emptyCanvasSubstate.editor.canvas)
 
 export interface DerivedSubstate {
   derived: DerivedState
+}
+
+export interface RemixNavigationSubstate {
+  editor: { remixNavigationState: RemixNavigationState }
 }
 
 export interface DispatchSubstate {

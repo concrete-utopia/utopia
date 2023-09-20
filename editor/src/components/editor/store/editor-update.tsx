@@ -376,6 +376,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_CONDITIONAL_EXPRESSION(action, state)
     case 'SWITCH_CONDITIONAL_BRANCHES':
       return UPDATE_FNS.SWITCH_CONDITIONAL_BRANCHES(action, state)
+    case 'UPDATE_NAVIGATION_STATE':
+      return UPDATE_FNS.UPDATE_NAVIGATION_STATE(action, state)
     default:
       return state
   }

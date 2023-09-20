@@ -874,6 +874,7 @@ export function restoreEditorState(
     refreshingDependencies: currentEditor.refreshingDependencies,
     colorSwatches: currentEditor.colorSwatches,
     internalClipboard: currentEditor.internalClipboard,
+    remixNavigationState: desiredEditor.remixNavigationState,
   }
 }
 
@@ -4367,7 +4368,6 @@ export const UPDATE_FNS = {
           withGroupTrueUpQueued,
           editorStore.unpatchedDerived,
           [],
-          null,
         ),
       }
     }
@@ -5232,6 +5232,15 @@ export const UPDATE_FNS = {
     )
 
     return updatedEditor
+  },
+  UPDATE_NAVIGATION_STATE: (action: UpdateNavigationState, editor: EditorModel): EditorModel => {
+    return {
+      ...editor,
+      remixNavigationState: {
+        ...editor.remixNavigationState,
+        [action.pathString]: action.entries,
+      },
+    }
   },
 }
 
