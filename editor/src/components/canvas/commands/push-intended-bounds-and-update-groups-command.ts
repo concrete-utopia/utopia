@@ -250,18 +250,16 @@ function getUpdateResizedGroupChildrenCommands(
           function getAdjustedResizedLocalFramePoints(): FrameWithAllPoints {
             if (elementMetadata != null && MetadataUtils.isTextFromMetadata(elementMetadata)) {
               if (elementMetadata.specialSizeMeasurements.textBounds != null) {
-                const newWidth = Math.max(
-                  resizedLocalFramePoints.width,
-                  elementMetadata.specialSizeMeasurements.textBounds.width,
-                )
-                const newHeight = Math.max(
-                  resizedLocalFramePoints.height,
-                  elementMetadata.specialSizeMeasurements.textBounds.height,
-                )
                 return {
                   ...resizedLocalFramePoints,
-                  width: newWidth,
-                  height: newHeight,
+                  width: Math.max(
+                    resizedLocalFramePoints.width,
+                    elementMetadata.specialSizeMeasurements.textBounds.width,
+                  ),
+                  height: Math.max(
+                    resizedLocalFramePoints.height,
+                    elementMetadata.specialSizeMeasurements.textBounds.height,
+                  ),
                 }
               }
             }
