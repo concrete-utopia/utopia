@@ -35,6 +35,7 @@ import type {
   ComponentDescriptor,
   ComponentDescriptorsForFile,
   ComponentElementToInsert,
+  ComponentInfo,
 } from '../custom-code/code-file'
 import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
 import { defaultViewElementStyle } from '../editor/defaults'
@@ -392,22 +393,22 @@ const groupElementsDescriptors: ComponentDescriptorsForFile = {
   },
 }
 
+export const fragmentComponentInfo: ComponentInfo = {
+  insertMenuLabel: 'Fragment',
+  elementToInsert: jsxFragmentWithoutUID([], true),
+  importsToAdd: {
+    react: {
+      importedAs: 'React',
+      importedFromWithin: [],
+      importedWithName: null,
+    },
+  },
+}
+
 const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
-    variants: [
-      {
-        insertMenuLabel: 'Fragment',
-        elementToInsert: jsxFragmentWithoutUID([], true),
-        importsToAdd: {
-          react: {
-            importedAs: 'React',
-            importedFromWithin: [],
-            importedWithName: null,
-          },
-        },
-      },
-    ],
+    variants: [fragmentComponentInfo],
   },
 }
 

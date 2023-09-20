@@ -8,8 +8,8 @@ import type { ControlStatus } from '../../components/inspector/common/control-st
 import type { ControlStyles } from '../../components/inspector/common/control-styles'
 import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
-import { useColorTheme, UtopiaTheme } from '../styles/theme'
-import { InspectorInput, InspectorInputEmotionStyle } from './base-input'
+import { useColorTheme } from '../styles/theme'
+import { InspectorInputEmotionStyle, getInputPlaceholder } from './base-input'
 
 interface StringInputOptions {
   focusOnMount?: boolean
@@ -73,12 +73,7 @@ export const StringInput = React.memo(
         [inputPropsKeyDown],
       )
 
-      let placeholder = initialPlaceHolder
-      if (controlStyles.unknown) {
-        placeholder = 'unknown'
-      } else if (controlStyles.mixed) {
-        placeholder = 'mixed'
-      }
+      const placeholder = getInputPlaceholder(controlStyles)
 
       return (
         <form

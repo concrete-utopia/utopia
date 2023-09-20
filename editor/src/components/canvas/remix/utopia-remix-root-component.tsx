@@ -29,7 +29,7 @@ interface RemixNavigationContext {
 }
 
 interface RemixNavigationAtomData {
-  [pathString: string]: RemixNavigationContext
+  [pathString: string]: RemixNavigationContext | undefined
 }
 
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
@@ -194,7 +194,6 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const routeModules = useGetRouteModules(basePath)
 
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
-  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
 
   const currentEntries = React.useMemo(
     () => navigationData[EP.toString(basePath)]?.entries ?? [],
@@ -250,10 +249,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
           },
         }
       })
-      setActiveRemixScene(basePath)
     },
-    [basePath, setActiveRemixScene, setNavigationData],
+    [basePath, setNavigationData],
   )
+
+  const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
+  React.useLayoutEffect(() => {
+    setActiveRemixScene(basePath)
+  }, [basePath, setActiveRemixScene])
 
   // initialize navigation data
   React.useLayoutEffect(() => {
@@ -268,19 +271,23 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   React.useLayoutEffect(() => {
     if (router != null) {
       return router?.subscribe((newState) => {
-        updateNavigationData(router, newState.location)
-        dispatch(
-          newState.navigation.location == null
-            ? []
-            : [
-                mergeWithPrevUndo([
-                  updateNavigationState(
-                    EP.toString(basePath),
-                    currentEntriesRef.current.concat(newState.navigation.location),
-                  ),
-                ]),
-              ],
-        )
+        if (newState.navigation.location == null) {
+          // newState.navigation.location will hold an intended navigation, so when it is null
+          // that will have completed
+          updateNavigationData(router, newState.location)
+          dispatch(
+            newState.navigation.location == null
+              ? []
+              : [
+                  mergeWithPrevUndo([
+                    updateNavigationState(
+                      EP.toString(basePath),
+                      currentEntriesRef.current.concat(newState.location),
+                    ),
+                  ]),
+                ],
+          )
+        }
       })
     }
     return
