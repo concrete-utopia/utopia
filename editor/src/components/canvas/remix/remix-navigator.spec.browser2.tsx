@@ -212,4 +212,67 @@ describe('Remix navigator', () => {
     )
     expect(navigatorItemElement.style.color).toEqual('var(--utopitheme-fg0)')
   })
+
+  it('Remix Outlet navigator item label contains route component name', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='remix-div'
+        >
+          ${DefaultRouteTextContent}
+        </div>
+      }
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+    const outletItemElement = renderResult.renderedDOM.getByTestId(
+      NavigatorItemTestId(
+        varSafeNavigatorEntryToKey(
+          regularNavigatorEntry(EP.fromString('storyboard/remix-scene:rootdiv/outlet')),
+        ),
+      ),
+    )
+    expect(outletItemElement.textContent).toEqual('Outlet: Index')
+  })
 })
