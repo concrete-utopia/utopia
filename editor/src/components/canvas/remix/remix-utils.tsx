@@ -34,6 +34,11 @@ import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { safeIndex } from '../../../core/shared/array-utils'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -139,7 +144,7 @@ export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsM
 
 export interface RouteModuleCreator {
   filePath: string
-  executionScopeCreator: (projectContents: ProjectContentTreeRoot) => ExecutionScope
+  executionScopeCreator: ExecutionScopeCreator
 }
 
 export interface RouteIdsToModuleCreators {
@@ -158,22 +163,6 @@ export interface GetRoutesAndModulesFromManifestResult {
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
   routingTable: RemixRoutingTable
-}
-
-function addLoaderAndActionToRoutes(
-  routes: DataRouteObject[],
-  routeId: string,
-  loader: LoaderFunction | undefined,
-  action: ActionFunction | undefined,
-) {
-  routes.forEach((route) => {
-    if (route.id === routeId) {
-      route.action = action
-      route.loader = loader
-    } else {
-      addLoaderAndActionToRoutes(route.children ?? [], routeId, loader, action)
-    }
-  })
 }
 
 function getRouteModulesWithPaths(
@@ -235,31 +224,40 @@ function getRouteModulesWithPaths(
   return routeModulesWithBasePaths
 }
 
+export type ExecutionScopeCreator = (
+  innerProjectContents: ProjectContentTreeRoot,
+  fileBlobs: CanvasBase64Blobs,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  metadataContext: UiJsxCanvasContextData,
+) => ExecutionScope
+
 function getRemixExportsOfModule(
   filename: string,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
-  topLevelComponentRendererComponents: React.MutableRefObject<
-    MapLike<MapLike<ComponentRendererComponent>>
-  >,
-  fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
 ): {
-  executionScopeCreator: (innerProjectContents: ProjectContentTreeRoot) => ExecutionScope
-  loader: LoaderFunction | undefined
-  action: ActionFunction | undefined
+  executionScopeCreator: ExecutionScopeCreator
   rootComponentUid: string
 } {
-  const executionScopeCreator = (innerProjectContents: ProjectContentTreeRoot) => {
+  const executionScopeCreator = (
+    innerProjectContents: ProjectContentTreeRoot,
+    fileBlobs: CanvasBase64Blobs,
+    hiddenInstances: Array<ElementPath>,
+    displayNoneInstances: Array<ElementPath>,
+    metadataContext: UiJsxCanvasContextData,
+  ) => {
     let resolvedFiles: MapLike<Array<string>> = {}
     let resolvedFileNames: Array<string> = ['/src/root.js']
 
     const requireFn = curriedRequireFn(innerProjectContents)
     const resolve = curriedResolveFn(innerProjectContents)
+
+    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+    let topLevelComponentRendererComponents: {
+      current: MapLike<MapLike<ComponentRendererComponent>>
+    } = { current: {} }
 
     const customRequire = (importOrigin: string, toImport: string) => {
       if (resolvedFiles[importOrigin] == null) {
@@ -281,9 +279,9 @@ function getRemixExportsOfModule(
         mutableContextRef,
         topLevelComponentRendererComponents,
         '/src/root.js',
-        {},
-        [],
-        [],
+        fileBlobs,
+        hiddenInstances,
+        displayNoneInstances,
         metadataContext,
         NO_OP,
         false,
@@ -319,16 +317,11 @@ function getRemixExportsOfModule(
     )
   }
 
-  const executionScope = executionScopeCreator(projectContents)
-
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
 
   return {
     executionScopeCreator: executionScopeCreator,
     rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
-    // FIXME the executionScope should be created at the point where we use the loader and action like we do for the module's default export component
-    loader: executionScope.scope['loader'] as LoaderFunction | undefined,
-    action: executionScope.scope['action'] as ActionFunction | undefined,
   }
 }
 export function getRoutesAndModulesFromManifest(
@@ -336,16 +329,8 @@ export function getRoutesAndModulesFromManifest(
   futureConfig: FutureConfig,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
-  topLevelComponentRendererComponents: React.MutableRefObject<
-    MapLike<MapLike<ComponentRendererComponent>>
-  >,
   routeModulesCache: RouteModules,
-  fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
@@ -381,20 +366,13 @@ export function getRoutesAndModulesFromManifest(
   )
 
   Object.values(routeManifest).forEach((route) => {
-    const { executionScopeCreator, loader, action, rootComponentUid } = getRemixExportsOfModule(
+    const { executionScopeCreator, rootComponentUid } = getRemixExportsOfModule(
       route.module,
       curriedRequireFn,
       curriedResolveFn,
-      metadataContext,
       projectContents,
-      mutableContextRef,
-      topLevelComponentRendererComponents,
-      fileBlobs,
-      hiddenInstances,
-      displayNoneInstances,
     )
 
-    addLoaderAndActionToRoutes(routes, route.id, loader, action)
     routeModuleCreators[route.id] = {
       filePath: route.module,
       executionScopeCreator: executionScopeCreator,
@@ -409,4 +387,34 @@ export function getRoutesAndModulesFromManifest(
     routeModulesToRelativePaths,
     routingTable,
   }
+}
+
+export function getRouteComponentNameForOutlet(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  pathTrees: ElementPathTrees,
+): string | null {
+  if (!MetadataUtils.isProbablyRemixOutlet(metadata, path)) {
+    return null
+  }
+
+  const outletChildren = MetadataUtils.getImmediateChildrenPathsOrdered(metadata, pathTrees, path)
+  const outletChild = safeIndex(outletChildren, 0)
+  if (outletChild == null) {
+    return null
+  }
+
+  const uidsToFilePath = getAllUniqueUids(projectContents).uidsToFilePaths
+  const filePath = uidsToFilePath[EP.toUid(outletChild)]
+  if (filePath == null) {
+    return null
+  }
+
+  const defaultExport = getDefaultExportNameAndUidFromFile(projectContents, filePath)
+  if (defaultExport == null) {
+    return null
+  }
+
+  return defaultExport.name
 }

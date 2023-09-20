@@ -294,7 +294,7 @@ export const ConditionalSection = React.memo(({ paths }: { paths: ElementPath[] 
   )
 
   const branchLabels = useEditorState(
-    Substores.metadata,
+    Substores.projectContentsAndMetadata,
     (store) => {
       function getLabel(entry: NavigatorEntry | null) {
         if (entry == null) {

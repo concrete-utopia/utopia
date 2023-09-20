@@ -55,6 +55,7 @@ import { unsetProperty, setProp_UNSAFE } from '../editor/actions/action-creators
 import { FlexCol } from 'utopia-api'
 import { PinControl } from './controls/pin-control'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
+import { MixedPlaceholder } from '../../uuiui/inputs/base-input'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -610,7 +611,7 @@ const GroupConstraintSelect = React.memo(
         case 'constrained':
           return colorTheme.brandNeonPink.value
         case 'mixed':
-          return colorTheme.primary.value
+          return colorTheme.fg6Opacity50.value
         case 'not-constrained':
           return colorTheme.subduedForeground.value
         default:
@@ -752,7 +753,7 @@ function checkGroupChildConstraint(
 const groupChildConstraintOptionValues = {
   constrained: groupChildConstraintOption('constrained'),
   notConstrained: groupChildConstraintOption('not-constrained'),
-  mixed: { value: 'mixed', label: 'Mixed' },
+  mixed: { value: 'mixed', label: MixedPlaceholder },
 }
 
 const groupChildConstraintOptions: Array<SelectOption> = [

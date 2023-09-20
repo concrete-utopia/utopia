@@ -30,8 +30,8 @@ const lightBase = {
   unavailable: createUtopiColor('oklch(54.52% 0 0 / 5%)'),
   unavailableGrey: createUtopiColor('oklch(0% 0 0 / 22%)'),
   unavailableGrey10: createUtopiColor('oklch(0% 0 0 / 10%)'),
-  aqua: createUtopiColor('oklch(72.99% 0.127 212.08)'),
-
+  aqua: createUtopiColor('oklch(0.74 0.18 218.28)'),
+  aqua05solid: createUtopiColor('oklch(0.98 0.02 211)'),
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),
   bg2: createUtopiColor('lch(98.0 0.01 0)'),
