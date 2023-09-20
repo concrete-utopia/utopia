@@ -52,7 +52,7 @@ function getSHA1ChecksumInner(contents: string | Buffer): string {
 // those cached checksum objects.
 export const getSHA1Checksum = memoize(getSHA1ChecksumInner, {
   maxSize: 10,
-  equals: (first, second) => first === second,
+  matchesArg: (first, second) => first === second,
 })
 
 export function gitBlobChecksumFromBase64(base64: string): string {

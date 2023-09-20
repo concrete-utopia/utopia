@@ -12,9 +12,13 @@ export function updateSimpleLocks(
 ): Array<ElementPath> {
   let result: Array<ElementPath> = [...currentSimpleLockedItems]
   for (const [key, value] of Object.entries(newMetadata)) {
-    // This entry is the root element of an instance and it isn't present in the previous metadata,
+    // This entry is the root element of an instance or a remix Outlet, and it isn't present in the previous metadata,
     // which implies that it has been newly added.
-    if (EP.isRootElementOfInstance(value.elementPath) && !(key in priorMetadata)) {
+    if (
+      (EP.isRootElementOfInstance(value.elementPath) ||
+        MetadataUtils.isProbablyRemixOutlet(newMetadata, value.elementPath)) &&
+      !(key in priorMetadata)
+    ) {
       result.push(value.elementPath)
     }
   }

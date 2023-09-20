@@ -2598,11 +2598,6 @@ export function deriveState(
 
   const remixDerivedData = createRemixDerivedDataMemo(
     editor.projectContents,
-    editor.spyMetadata,
-    editor.allElementProps,
-    editor.canvas.base64Blobs,
-    editor.hiddenInstances,
-    editor.displayNoneInstances,
     editor.codeResultCache.curriedRequireFn,
     editor.codeResultCache.curriedResolveFn,
   )

@@ -73,6 +73,7 @@ import {
   printMarginAsAttributeValue,
 } from '../../../printer-parsers/css/css-parser-margin'
 import { parseFlex, printFlexAsAttributeValue } from '../../../printer-parsers/css/css-parser-flex'
+import { memoize } from '../../../core/shared/memoize'
 
 var combineRegExp = function (regexpList: Array<RegExp | string>, flags?: string) {
   let source: string = ''
@@ -4901,12 +4902,12 @@ function parseValueFactory<T, K extends keyof T>(parserMap: {
   }
 }
 
-const parseMetadataValue = Utils.memoize(parseValueFactory(elementPropertiesParsers), {
+const parseMetadataValue = memoize(parseValueFactory(elementPropertiesParsers), {
   maxSize: 1000,
 })
-const parseCSSValue = Utils.memoize(parseValueFactory(cssParsers), { maxSize: 1000 })
-const parseOldLayoutValue = Utils.memoize(parseValueFactory(layoutParsers), { maxSize: 1000 })
-const parseNewLayoutValue = Utils.memoize(parseValueFactory(layoutParsersNew), { maxSize: 1000 })
+const parseCSSValue = memoize(parseValueFactory(cssParsers), { maxSize: 1000 })
+const parseOldLayoutValue = memoize(parseValueFactory(layoutParsers), { maxSize: 1000 })
+const parseNewLayoutValue = memoize(parseValueFactory(layoutParsersNew), { maxSize: 1000 })
 
 function isMetadataProp(prop: unknown): prop is keyof ParsedElementProperties {
   return typeof prop === 'string' && prop in elementPropertiesEmptyValues

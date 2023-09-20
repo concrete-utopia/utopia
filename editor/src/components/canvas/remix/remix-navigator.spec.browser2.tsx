@@ -1,17 +1,25 @@
 import * as EP from '../../../core/shared/element-path'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
+import { runDOMWalker } from '../../editor/actions/action-creators'
 import {
   StoryboardFilePath,
   navigatorEntryToKey,
   regularNavigatorEntry,
   varSafeNavigatorEntryToKey,
 } from '../../editor/store/editor-state'
+import type { PersistentModel } from '../../editor/store/editor-state'
 import { NavigatorItemTestId } from '../../navigator/navigator-item/navigator-item'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
+
+async function renderRemixProject(project: PersistentModel) {
+  const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+  await renderResult.dispatch([runDOMWalker()], true)
+  return renderResult
+}
 
 describe('Remix navigator', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
@@ -67,7 +75,7 @@ describe('Remix navigator', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
         'regular-storyboard/remix-scene',
@@ -130,7 +138,7 @@ describe('Remix navigator', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
       [
         'regular-storyboard/remix-scene',
@@ -194,7 +202,7 @@ describe('Remix navigator', () => {
       `,
     })
 
-    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+    const renderResult = await renderRemixProject(project)
     const navigatorItemElement = renderResult.renderedDOM.getByTestId(
       NavigatorItemTestId(
         varSafeNavigatorEntryToKey(
