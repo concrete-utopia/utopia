@@ -16,7 +16,7 @@ import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
-import type { Menu, Pane, PanelData } from './floating-panels-state-2'
+import type { Menu, Pane, PanelData } from './grid-panels-state-2'
 
 export type PanelName = Menu | Pane
 
