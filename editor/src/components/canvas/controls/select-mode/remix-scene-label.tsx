@@ -243,7 +243,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
         className='roleComponentName'
         style={{
           pointerEvents: labelSelectable ? 'initial' : 'none',
-          color: isIndexRoute ? colorTheme.aqua.value : colorTheme.textColor.value,
+          color: colorTheme.aqua.value,
           position: 'absolute',
           left: frame.x,
           bottom: -frame.y + offsetY,
