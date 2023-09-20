@@ -76,8 +76,11 @@ type RowUpdate = BeforeIndex | AfterIndex
 export type LayoutUpdate = ColumnUpdate | RowUpdate
 
 export const GridMenuDefaultPanels: StoredLayout = [
-  [storedPanel({ name: 'code-editor', type: 'pane' })],
-  [storedPanel({ name: 'navigator', type: 'menu' })],
+  [
+    storedPanel({ name: 'navigator', type: 'menu' }),
+    storedPanel({ name: 'code-editor', type: 'pane' }),
+  ],
+  [],
   [],
   [storedPanel({ name: 'inspector', type: 'menu' })],
 ]
