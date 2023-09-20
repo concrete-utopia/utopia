@@ -131,6 +131,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CLEAR_POST_ACTION_SESSION':
     case 'START_POST_ACTION_SESSION':
     case 'TRUNCATE_HISTORY':
+    case 'UPDATE_NAVIGATION_STATE':
       return true
 
     case 'TRUE_UP_GROUPS':

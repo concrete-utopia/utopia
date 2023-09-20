@@ -24,6 +24,8 @@ interface RemixNavigationContext {
   forward: () => void
   back: () => void
   home: () => void
+  location: Location
+  entries: Array<Location>
 }
 
 interface RemixNavigationAtomData {
