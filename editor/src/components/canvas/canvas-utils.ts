@@ -1,4 +1,4 @@
-import { NormalisedFrame } from 'utopia-api/core'
+import type { DataRouteObject } from 'react-router'
 import type { LayoutPinnedProp, LayoutTargetableProp } from '../../core/layout/layout-helpers-new'
 import {
   framePointForPinnedProp,
@@ -33,7 +33,6 @@ import {
   jsExpressionValue,
   getJSXElementNameAsString,
   isJSExpressionMapOrOtherJavaScript,
-  isJSXFragment,
   isUtopiaJSXComponent,
   emptyComments,
   jsxElementName,
@@ -49,7 +48,7 @@ import {
   generateUidWithExistingComponents,
   insertJSXElementChildren,
 } from '../../core/model/element-template-utils'
-import { generateUID, getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
+import { getUtopiaID, setUtopiaID } from '../../core/shared/uid-utils'
 import type { ValueAtPath } from '../../core/shared/jsx-attributes'
 import {
   setJSXValuesAtPaths,
@@ -63,15 +62,12 @@ import type {
   HighlightBoundsForUids,
   ExportsDetail,
 } from '../../core/shared/project-file-types'
-import {
-  ParseSuccess,
-  isParseSuccess,
-  isTextFile,
-  NodeModules,
-} from '../../core/shared/project-file-types'
+import { isParseSuccess, isTextFile } from '../../core/shared/project-file-types'
 import {
   applyUtopiaJSXComponentsChanges,
+  getDefaultExportedTopLevelElement,
   getUtopiaJSXComponentsFromSuccess,
+  isRemixSceneElement,
 } from '../../core/model/project-file-utils'
 import type { Either } from '../../core/shared/either'
 import {
@@ -92,11 +88,8 @@ import Utils, {
 import type { CanvasPoint, CanvasRectangle, CanvasVector, Size } from '../../core/shared/math-utils'
 import {
   canvasPoint,
-  canvasRectangle,
   isInfinityRectangle,
   isFiniteRectangle,
-  localRectangle,
-  LocalRectangle,
   nullIfInfinity,
 } from '../../core/shared/math-utils'
 import type {
@@ -106,21 +99,10 @@ import type {
   NavigatorEntry,
 } from '../editor/store/editor-state'
 import {
-  DerivedState,
-  OriginalCanvasAndLocalFrame,
   removeElementAtPath,
-  TransientCanvasState,
-  transientCanvasState,
-  transientFileState,
-  modifyUnderlyingTargetElement,
   modifyParseSuccessAtPath,
-  getOpenUIJSFileKey,
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
-  TransientFilesState,
-  forUnderlyingTargetFromEditorState,
-  TransientFileState,
-  ResizeOptions,
   isSyntheticNavigatorEntry,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
@@ -133,39 +115,31 @@ import type {
   EdgePosition,
   PinOrFlexFrameChange,
 } from './canvas-types'
-import { CSSCursor, flexResizeChange, pinFrameChange } from './canvas-types'
+import { flexResizeChange, pinFrameChange } from './canvas-types'
 import {
   collectParentAndSiblingGuidelines,
   filterGuidelinesStaticAxis,
   oneGuidelinePerDimension,
 } from './controls/guideline-helpers'
-import {
-  determineElementsToOperateOnForDragging,
-  dragComponent,
-  extendSelectedViewsForInteraction,
-} from './controls/select-mode/move-utils'
+import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import type {
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
 } from './guideline'
 import { cornerGuideline, Guidelines, xAxisGuideline, yAxisGuideline } from './guideline'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
-import { getStoryboardElementPath, getStoryboardUID } from '../../core/model/scene-utils'
+import { getStoryboardUID } from '../../core/model/scene-utils'
 import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
-import { getAllTargetsAtPointAABB } from './dom-lookup'
 import type { CSSNumber } from '../inspector/common/css-utils'
 import { parseCSSLengthPercent, printCSSNumber } from '../inspector/common/css-utils'
-import { uniqBy } from '../../core/shared/array-utils'
-import { mapValues } from '../../core/shared/object-utils'
 import { getTopLevelName, importedFromWhere } from '../editor/import-utils'
 import type { Notice } from '../common/notice'
 import { createStylePostActionToast } from '../../core/layout/layout-notice'
 import { includeToast, uniqToasts } from '../editor/actions/toast-helpers'
 import { stylePropPathMappingFn } from '../inspector/common/property-path-hooks'
-import { EditorDispatch } from '../editor/action-types'
 import { styleStringInArray } from '../../utils/common-constants'
 import { treatElementAsFragmentLike } from './canvas-strategies/strategies/fragment-like-helpers'
 import { mergeImports } from '../../core/workers/common/project-file-utils'
@@ -179,9 +153,10 @@ import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/co
 import { isEmptyConditionalBranch } from '../../core/model/conditionals'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import type { OverlayError } from '../../core/shared/runtime-report-logs'
+import type { RouteModulesWithRelativePaths } from './remix/remix-utils'
+import type { IsCenterBased } from './canvas-strategies/strategies/resize-helpers'
 
 function dragDeltaScaleForProp(prop: LayoutTargetableProp): number {
   switch (prop) {
@@ -1237,6 +1212,8 @@ export function snapPoint(
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
+  resizedBounds: CanvasRectangle,
+  centerBased: IsCenterBased,
 ): {
   snappedPointOnCanvas: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
@@ -1247,14 +1224,23 @@ export function snapPoint(
     true,
     false,
   )
+
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
+
   const anyElementFragmentLike = selectedViews.some((elementPath) =>
     treatElementAsFragmentLike(jsxMetadata, allElementProps, pathTrees, elementPath),
   )
+
+  const threshold = centerBased === 'center-based' ? SnappingThreshold * 2 : SnappingThreshold
+  const resizedBoundsBelowThreshold =
+    resizedBounds.width < threshold || resizedBounds.height < threshold
+
   const shouldSnap =
-    enableSnapping && (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
+    enableSnapping &&
+    !resizedBoundsBelowThreshold &&
+    (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
 
   if (keepAspectRatio) {
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
@@ -1434,8 +1420,6 @@ export function moveTemplate(
                   const insertionPath = getInsertionPath(
                     newParentPath,
                     workingEditorState.projectContents,
-                    workingEditorState.nodeModules.files,
-                    workingEditorState.canvas.openFile?.filename ?? null,
                     workingEditorState.jsxMetadata,
                     workingEditorState.elementPathTree,
                     wrapperUID,
@@ -1706,6 +1690,7 @@ export function duplicate(
 
   let newSelectedViews: Array<ElementPath> = []
   let workingEditorState: EditorState = editor
+
   const existingIDsMutable = new Set(getAllUniqueUids(workingEditorState.projectContents).allIDs)
   for (const path of paths) {
     let metadataUpdate: (metadata: ElementInstanceMetadataMap) => ElementInstanceMetadataMap = (
@@ -1934,6 +1919,14 @@ export function getParseSuccessForFilePath(
   }
 }
 
+export type RemixValidPathsGenerationContext =
+  | { type: 'inactive' }
+  | {
+      type: 'active'
+      routeModulesToRelativePaths: RouteModulesWithRelativePaths
+      currentlyRenderedRouteModules: Array<DataRouteObject>
+    }
+
 export function getValidElementPaths(
   focusedElementPath: ElementPath | null,
   topLevelElementName: string,
@@ -1941,6 +1934,7 @@ export function getValidElementPaths(
   projectContents: ProjectContentTreeRoot,
   filePath: string,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   const { topLevelElements, imports } = getParseSuccessForFilePath(filePath, projectContents)
   const importSource = importedFromWhere(filePath, topLevelElementName, topLevelElements, imports)
@@ -1975,6 +1969,7 @@ export function getValidElementPaths(
           false,
           true,
           resolve,
+          getRemixValidPathsGenerationContext,
         )
       }
     }
@@ -1992,15 +1987,68 @@ function getValidElementPathsFromElement(
   isOnlyChildOfScene: boolean,
   parentIsInstance: boolean,
   resolve: (importOrigin: string, toImport: string) => Either<string, string>,
+  getRemixValidPathsGenerationContext: (path: ElementPath) => RemixValidPathsGenerationContext,
 ): Array<ElementPath> {
   if (isJSXElementLike(element)) {
-    const isScene = isSceneElement(element, filePath, projectContents)
-    const isSceneWithOneChild = isScene && element.children.length === 1
     const uid = getUtopiaID(element)
     const path = parentIsInstance
       ? EP.appendNewElementPath(parentPath, uid)
       : EP.appendToPath(parentPath, uid)
     let paths = [path]
+
+    const isRemixScene = isRemixSceneElement(element, filePath, projectContents)
+    const remixPathGenerationContext = getRemixValidPathsGenerationContext(path)
+    if (remixPathGenerationContext.type === 'active' && isRemixScene) {
+      function makeValidPathsFromModule(routeModulePath: string, parentPathInner: ElementPath) {
+        const file = getProjectFileByFilePath(projectContents, routeModulePath)
+        if (file == null || file.type !== 'TEXT_FILE') {
+          return
+        }
+
+        const topLevelElement = getDefaultExportedTopLevelElement(file)
+
+        if (topLevelElement == null) {
+          return
+        }
+
+        paths.push(
+          ...getValidElementPathsFromElement(
+            focusedElementPath,
+            topLevelElement,
+            parentPathInner,
+            projectContents,
+            routeModulePath,
+            uiFilePath,
+            false,
+            true,
+            resolve,
+            getRemixValidPathsGenerationContext,
+          ),
+        )
+      }
+
+      /**
+       * The null check is here to guard against the case when a route with children is missing an outlet
+       * that would render the children
+       */
+
+      for (const route of remixPathGenerationContext.currentlyRenderedRouteModules) {
+        const entry = remixPathGenerationContext.routeModulesToRelativePaths[route.id]
+        if (entry != null) {
+          const { relativePaths, filePath: filePathOfRouteModule } = entry
+          for (const relativePath of relativePaths) {
+            const basePath = EP.appendTwoPaths(path, relativePath)
+            makeValidPathsFromModule(filePathOfRouteModule, basePath)
+          }
+        }
+      }
+
+      return paths
+    }
+
+    const isScene = isSceneElement(element, filePath, projectContents)
+    const isSceneWithOneChild = isScene && element.children.length === 1
+
     fastForEach(element.children, (c) =>
       paths.push(
         ...getValidElementPathsFromElement(
@@ -2013,6 +2061,7 @@ function getValidElementPathsFromElement(
           isSceneWithOneChild,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2034,6 +2083,7 @@ function getValidElementPathsFromElement(
           projectContents,
           filePath,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     }
@@ -2075,6 +2125,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       ),
     )
@@ -2097,6 +2148,7 @@ function getValidElementPathsFromElement(
           false,
           false,
           resolve,
+          getRemixValidPathsGenerationContext,
         ),
       )
     })

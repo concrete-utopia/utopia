@@ -18,6 +18,7 @@ import {
 import type {
   AllElementProps,
   ConditionalClauseNavigatorEntry,
+  DerivedState,
   DropTargetHint,
   DropTargetType,
   EditorState,
@@ -247,8 +248,6 @@ function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolea
   const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     editorState.projectContents,
     editorState.jsxMetadata,
-    editorState.nodeModules.files,
-    editorState.canvas.openFile?.filename,
     moveToEntry,
     editorState.elementPathTree,
   )

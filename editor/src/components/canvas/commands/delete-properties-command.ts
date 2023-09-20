@@ -1,5 +1,9 @@
 import type { JSXElement } from '../../../core/shared/element-template'
-import type { EditorState, EditorStatePatch } from '../../../components/editor/store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  EditorStatePatch,
+} from '../../../components/editor/store/editor-state'
 import { modifyUnderlyingElementForOpenFile } from '../../../components/editor/store/editor-state'
 import { foldEither } from '../../../core/shared/either'
 import { unsetJSXValuesAtPaths } from '../../../core/shared/jsx-attributes'
@@ -30,6 +34,7 @@ export function deleteProperties(
 
 export const runDeleteProperties: CommandFunction<DeleteProperties> = (
   editorState: EditorState,
+  _derivedState: DerivedState,
   command: DeleteProperties,
 ) => {
   // Apply the update to the properties.

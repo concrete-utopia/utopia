@@ -41,7 +41,13 @@ import {
 } from '../canvas/event-helpers.test-utils'
 import { setConditionalOverriddenCondition } from '../editor/actions/action-creators'
 import { selectComponents } from '../editor/actions/meta-actions'
-import type { DerivedState, EditorState, NavigatorEntry } from '../editor/store/editor-state'
+import type {
+  DerivedState,
+  EditorState,
+  EditorStoreFull,
+  EditorStorePatched,
+  NavigatorEntry,
+} from '../editor/store/editor-state'
 import {
   conditionalClauseNavigatorEntry,
   navigatorEntryToKey,
@@ -1094,7 +1100,7 @@ describe('conditionals in the navigator', () => {
     const inactiveElementOptic = forElementOptic(EP.parentPath(elementPathToDrag))
       .compose(jsxConditionalExpressionOptic)
       .compose(conditionalWhenFalseOptic)
-    const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState().editor)
+    const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState())
 
     await act(async () => {
       const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
@@ -1147,7 +1153,7 @@ describe('conditionals in the navigator', () => {
       .compose(conditionalWhenFalseOptic)
     const removedOriginalLocation = unsafeGet(
       removedOriginalLocationOptic,
-      renderResult.getEditorState().editor,
+      renderResult.getEditorState(),
     )
     const removedOriginalUID = getUtopiaID(removedOriginalLocation)
 
@@ -1246,7 +1252,7 @@ describe('conditionals in the navigator', () => {
       .compose(conditionalWhenTrueOptic)
     const removedOriginalLocation = unsafeGet(
       removedOriginalLocationOptic,
-      renderResult.getEditorState().editor,
+      renderResult.getEditorState(),
     )
     const removedOriginalUID = getUtopiaID(removedOriginalLocation)
 
@@ -1348,7 +1354,7 @@ describe('conditionals in the navigator', () => {
     )
     const elseDivElement = unsafeGet(
       forElementOptic(elementPathToDelete),
-      renderResult.getEditorState().editor,
+      renderResult.getEditorState(),
     )
 
     // Getting info relating to what element will be selected.
@@ -1384,7 +1390,7 @@ describe('conditionals in the navigator', () => {
       .compose(conditionalWhenFalseOptic)
     const removedOriginalLocation = unsafeGet(
       removedOriginalLocationOptic,
-      renderResult.getEditorState().editor,
+      renderResult.getEditorState(),
     )
     const removedOriginalUID = getUtopiaID(removedOriginalLocation)
 
@@ -1469,8 +1475,8 @@ describe('conditionals in the navigator', () => {
     expectedNavigatorStructure: string
     postPasteValidation: (
       pasteTestCase: PasteTestCase,
-      startingEditorState: EditorState,
-      endingEditorState: EditorState,
+      startingEditorState: EditorStorePatched,
+      endingEditorStore: EditorStorePatched,
     ) => void
   }
 
@@ -1506,8 +1512,8 @@ describe('conditionals in the navigator', () => {
       regular-utopia-storyboard-uid/scene-aaa/containing-div/sibling-div`,
       postPasteValidation: (
         pasteTestCase: PasteTestCase,
-        startingEditorState: EditorState,
-        endingEditorState: EditorState,
+        startingEditorStore: EditorStorePatched,
+        endingEditorStore: EditorStorePatched,
       ) => {
         const expectedPasteTargetOptic = forElementOptic(
           EP.parentPath(pasteTestCase.pathToPasteInto),
@@ -1516,9 +1522,9 @@ describe('conditionals in the navigator', () => {
           .compose(conditionalWhenFalseOptic)
         const expectedPasteTargetBeforePaste = unsafeGet(
           expectedPasteTargetOptic,
-          startingEditorState,
+          startingEditorStore,
         )
-        const expectedPasteTargetAfterPaste = unsafeGet(expectedPasteTargetOptic, endingEditorState)
+        const expectedPasteTargetAfterPaste = unsafeGet(expectedPasteTargetOptic, endingEditorStore)
 
         expect(expectedPasteTargetBeforePaste.type).toEqual('ATTRIBUTE_VALUE')
         expect(expectedPasteTargetAfterPaste.type).toEqual('JSX_ELEMENT')
@@ -1533,7 +1539,7 @@ describe('conditionals in the navigator', () => {
         pasteTestCase.startingCode,
         'await-first-dom-report',
       )
-      const beforePasteEditorState = renderResult.getEditorState().editor
+      const beforePasteEditorState = renderResult.getEditorState()
 
       await selectComponentsForTest(renderResult, [pasteTestCase.pathToCopy])
       await pressKey('c', { modifiers: cmdModifier })
@@ -1541,7 +1547,7 @@ describe('conditionals in the navigator', () => {
       // Getting info relating to what element will be pasted into.
       const elementToPasteInto = unsafeGet(
         forElementOptic(pasteTestCase.pathToPasteInto),
-        renderResult.getEditorState().editor,
+        renderResult.getEditorState(),
       )
 
       const navigatorEntryToPasteInto = await renderResult.renderedDOM.findByTestId(
@@ -1592,7 +1598,7 @@ describe('conditionals in the navigator', () => {
       pasteTestCase.postPasteValidation(
         pasteTestCase,
         beforePasteEditorState,
-        renderResult.getEditorState().editor,
+        renderResult.getEditorState(),
       )
     })
   })
@@ -1874,7 +1880,7 @@ describe('Navigator conditional override toggling', () => {
       ? regularNavigatorEntry(elementPath)
       : syntheticNavigatorEntry(
           elementPath,
-          unsafeGet(inactiveElementOptic, renderResult.getEditorState().editor),
+          unsafeGet(inactiveElementOptic, renderResult.getEditorState()),
         )
 
     return clickNavigatorRow(navigatorEntry, renderResult, [elementPath])

@@ -30,6 +30,7 @@ describe('convertToAbsolute', () => {
     const convertToAbsoluteCommand = convertToAbsolute('always', appInstancePath)
     const result = runConvertToAbsolute(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       convertToAbsoluteCommand,
     )
 

@@ -6,7 +6,7 @@ import {
   getProjectContentKeyPathElements,
   ProjectContentFile,
 } from '../../../components/assets'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type {
   ElementPath,

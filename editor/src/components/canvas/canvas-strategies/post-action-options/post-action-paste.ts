@@ -12,10 +12,7 @@ import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import type {
-  ElementInstanceMetadataMap,
-  JSXElementChild,
-} from '../../../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import {
   zeroCanvasPoint,
   canvasRectangle,
@@ -29,7 +26,6 @@ import type {
   NodeModules,
 } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
-import { assertNever } from '../../../../core/shared/utils'
 import { getTargetParentForPaste } from '../../../../utils/clipboard'
 import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
 import type { IndexPosition } from '../../../../utils/utils'
@@ -49,6 +45,7 @@ import {
   childInsertionPath,
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../../../editor/store/insertion-path'
+import type { RemixRoutingTable } from '../../../editor/store/remix-derived-data'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
@@ -75,6 +72,7 @@ import type { PostActionChoice } from './post-action-options'
 interface EditorStateContext {
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
+  remixRoutingTable: RemixRoutingTable | null
   openFile: string | null
   pasteTargetsToIgnore: Array<ElementPath>
   builtInDependencies: BuiltInDependencies
@@ -261,7 +259,7 @@ export function staticReparentAndUpdatePosition(
 
   const commands = elementsToInsert.flatMap((elementToInsert) => {
     return [
-      updateFunctionCommand('always', (editor, commandLifecycle) => {
+      updateFunctionCommand('always', (editor, derivedState, commandLifecycle) => {
         const newPath = oldPathToNewPathMapping[EP.toString(elementToInsert.elementPath)]
 
         if (newPath == null) {
@@ -283,7 +281,6 @@ export function staticReparentAndUpdatePosition(
           editor.jsxMetadata,
           editor.elementPathTree,
           editor.projectContents,
-          editor.canvas.openFile?.filename ?? null,
           pastedElementMetadata?.specialSizeMeasurements.position ?? null,
           pastedElementMetadata?.specialSizeMeasurements.display ?? null,
           pasteContext.originalAllElementProps,
@@ -311,6 +308,7 @@ export function staticReparentAndUpdatePosition(
 
         return foldAndApplyCommandsInner(
           editor,
+          derivedState,
           [],
           [...propertyCommands, updateSelectedViews('always', [...editor.selectedViews, newPath])],
           commandLifecycle,
@@ -364,6 +362,7 @@ export const PropsPreservedPastePostActionChoice = (
         openFile: store.canvas.openFile?.filename ?? null,
         pasteTargetsToIgnore: postActionMenuData.pasteTargetsToIgnore,
         projectContents: store.projectContents,
+        remixRoutingTable: derived.remixData?.routingTable ?? null,
         startingMetadata: store.jsxMetadata,
         startingElementPathTrees: store.elementPathTree,
         startingAllElementProps: store.allElementProps,
@@ -404,6 +403,7 @@ export const PropsReplacedPastePostActionChoice = (
           openFile: store.canvas.openFile?.filename ?? null,
           pasteTargetsToIgnore: postActionMenuData.pasteTargetsToIgnore,
           projectContents: store.projectContents,
+          remixRoutingTable: derived.remixData?.routingTable ?? null,
           startingMetadata: store.jsxMetadata,
           startingElementPathTrees: store.elementPathTree,
           startingAllElementProps: store.allElementProps,
@@ -461,6 +461,7 @@ export const PropsPreservedPasteHerePostActionChoice = (
         openFile: editor.canvas.openFile?.filename ?? null,
         pasteTargetsToIgnore: [],
         projectContents: editor.projectContents,
+        remixRoutingTable: derived.remixData?.routingTable ?? null,
         startingMetadata: editor.jsxMetadata,
         startingElementPathTrees: editor.elementPathTree,
         startingAllElementProps: editor.allElementProps,
@@ -528,6 +529,7 @@ export const PropsReplacedPasteHerePostActionChoice = (
           openFile: editor.canvas.openFile?.filename ?? null,
           pasteTargetsToIgnore: [],
           projectContents: editor.projectContents,
+          remixRoutingTable: derived.remixData?.routingTable ?? null,
           startingMetadata: editor.jsxMetadata,
           startingElementPathTrees: editor.elementPathTree,
           startingAllElementProps: editor.allElementProps,
@@ -562,7 +564,6 @@ function getTargetParentForPasteHere(
   const target = getTargetParentForPaste(
     editor.projectContents,
     editor.selectedViews,
-    editor.nodeModules.files,
     editor.canvas.openFile?.filename ?? null,
     editor.jsxMetadata,
     editor.pasteTargetsToIgnore,
@@ -689,7 +690,7 @@ function pasteToReplaceCommands(
 
   const pasteCommands = targets.flatMap((target) => {
     return [
-      updateFunctionCommand('always', (updatedEditor, commandLifecycle) => {
+      updateFunctionCommand('always', (updatedEditor, updatedDerivedState, commandLifecycle) => {
         const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
         const position = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
         const strategy = MetadataUtils.isPositionAbsolute(element)
@@ -726,6 +727,7 @@ function pasteToReplaceCommands(
             openFile: editor.canvas.openFile?.filename ?? null,
             pasteTargetsToIgnore: [],
             projectContents: updatedEditor.projectContents,
+            remixRoutingTable: updatedDerivedState.remixData?.routingTable ?? null,
             startingMetadata: editor.jsxMetadata,
             startingElementPathTrees: editor.elementPathTree,
             startingAllElementProps: editor.allElementProps,
@@ -747,7 +749,13 @@ function pasteToReplaceCommands(
         if (commands == null) {
           return []
         }
-        return foldAndApplyCommandsInner(updatedEditor, [], commands, commandLifecycle).statePatches
+        return foldAndApplyCommandsInner(
+          updatedEditor,
+          updatedDerivedState,
+          [],
+          commands,
+          commandLifecycle,
+        ).statePatches
       }),
     ]
   }, [] as Array<CanvasCommand>)

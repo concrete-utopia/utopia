@@ -1,6 +1,6 @@
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction } from './commands'
 
 export interface HighlightElementsCommand extends BaseCommand {
@@ -18,6 +18,7 @@ export function highlightElementsCommand(value: ElementPath[]): HighlightElement
 
 export const runHighlightElementsCommand: CommandFunction<HighlightElementsCommand> = (
   _: EditorState,
+  __: DerivedState,
   command: HighlightElementsCommand,
 ) => {
   const editorStatePatch: EditorStatePatch = {

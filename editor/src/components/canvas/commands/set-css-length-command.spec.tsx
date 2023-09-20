@@ -6,7 +6,7 @@ import { getNumberPropertyFromProps } from '../../../core/shared/jsx-attributes'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
 import { styleStringInArray } from '../../../utils/common-constants'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { EditorState, EditorStorePatched } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { ParsedCSSProperties } from '../../inspector/common/css-utils'
 import { cssPixelLength } from '../../inspector/common/css-utils'
@@ -50,6 +50,7 @@ describe('setCssLengthProperty', () => {
 
     const result = runSetCssLengthProperty(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       setCSSPropertyCommand,
     )
 
@@ -92,7 +93,7 @@ describe('setCssLengthProperty', () => {
       'row',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
     expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
     expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
@@ -114,7 +115,7 @@ describe('setCssLengthProperty', () => {
       'row',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
     expect(getStylePropForElement(result, targetPath, 'height')).toBe(400)
     expect(getStylePropForElement(result, targetPath, 'minWidth')).toBe(50)
     expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBe(150)
@@ -145,7 +146,7 @@ describe('setCssLengthProperty', () => {
       'row',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
     expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
     expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
@@ -180,7 +181,7 @@ describe('setCssLengthProperty', () => {
       'column',
     )
 
-    const result = runCommandUpdateEditor(editor.getEditorState().editor, command)
+    const result = runCommandUpdateEditor(editor.getEditorState(), command)
     expect(getStylePropForElement(result, targetPath, 'width')).toBe(400)
     expect(getStylePropForElement(result, targetPath, 'minWidth')).toBeNull()
     expect(getStylePropForElement(result, targetPath, 'maxWidth')).toBeNull()
@@ -223,10 +224,13 @@ function projectWithChildStyle(
       `
 }
 
-function runCommandUpdateEditor(editor: EditorState, command: SetCssLengthProperty): EditorState {
-  const result = runSetCssLengthProperty(editor, command)
+function runCommandUpdateEditor(
+  store: EditorStorePatched,
+  command: SetCssLengthProperty,
+): EditorState {
+  const result = runSetCssLengthProperty(store.editor, store.derived, command)
 
-  return updateEditorStateWithPatches(editor, result.editorStatePatches)
+  return updateEditorStateWithPatches(store.editor, result.editorStatePatches)
 }
 
 function getStylePropForElement(

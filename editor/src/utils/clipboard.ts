@@ -3,6 +3,7 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import type {
   AllElementProps,
+  DerivedState,
   EditorState,
   PastePostActionMenuData,
 } from '../components/editor/store/editor-state'
@@ -62,6 +63,7 @@ import type { Either } from '../core/shared/either'
 import { isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
 import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import type { RemixRoutingTable } from '../components/editor/store/remix-derived-data'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -140,7 +142,6 @@ function getJSXElementPasteActions(
   const target = getTargetParentForPaste(
     editor.projectContents,
     editor.selectedViews,
-    editor.nodeModules.files,
     editor.canvas.openFile?.filename ?? null,
     editor.jsxMetadata,
     editor.pasteTargetsToIgnore,
@@ -196,7 +197,6 @@ function getJSXElementPasteActions(
 
 function getFilePasteActions(
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
   openFile: string | null,
   canvasViewportCenter: CanvasPoint,
   pastedFiles: Array<FileResult>,
@@ -212,7 +212,6 @@ function getFilePasteActions(
   const target = getTargetParentForPaste(
     projectContents,
     selectedViews,
-    nodeModules,
     openFile,
     componentMetadata,
     pasteTargetsToIgnore,
@@ -269,7 +268,6 @@ export function getActionsForClipboardItems(
     ...getJSXElementPasteActions(editor, clipboardData, canvasViewportCenter),
     ...getFilePasteActions(
       editor.projectContents,
-      editor.nodeModules.files,
       editor.canvas.openFile?.filename ?? null,
       canvasViewportCenter,
       pastedFiles,
@@ -331,12 +329,7 @@ export function createClipboardDataFromSelection(
     return editor.selectedViews.every((otherView) => !EP.isDescendantOf(view, otherView))
   })
   const jsxElements: Array<ElementPaste> = mapDropNulls((target) => {
-    const underlyingTarget = normalisePathToUnderlyingTarget(
-      editor.projectContents,
-      editor.nodeModules.files,
-      openUIJSFileKey,
-      target,
-    )
+    const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
     const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
     const projectFile = getProjectFileByFilePath(editor.projectContents, targetPathSuccess.filePath)
     if (
@@ -353,7 +346,6 @@ export function createClipboardDataFromSelection(
           target,
           editor.projectContents,
           editor.nodeModules.files,
-          openUIJSFileKey,
           targetPathSuccess.filePath,
           builtInDependencies,
         )
@@ -450,7 +442,6 @@ type PasteParentNotFoundError =
 export function getTargetParentForPaste(
   projectContents: ProjectContentTreeRoot,
   selectedViews: Array<ElementPath>,
-  nodeModules: NodeModules,
   openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   pasteTargetsToIgnore: ElementPath[],
@@ -496,16 +487,9 @@ export function getTargetParentForPaste(
     // This should exist because the check above proves there should be a value.
     const targetPath = selectedViews[0]!
     const parentPath = EP.parentPath(targetPath)
-    const parentElement = withUnderlyingTarget(
-      parentPath,
-      projectContents,
-      nodeModules,
-      openFile,
-      null,
-      (_, element) => {
-        return element
-      },
-    )
+    const parentElement = withUnderlyingTarget(parentPath, projectContents, null, (_, element) => {
+      return element
+    })
 
     if (parentElement != null && isJSXConditionalExpression(parentElement)) {
       // Check if the target parent is an attribute,
@@ -516,8 +500,6 @@ export function getTargetParentForPaste(
         const parentInsertionPath = getInsertionPath(
           targetPath,
           projectContents,
-          nodeModules,
-          openFile,
           metadata,
           elementPathTree,
           wrapperFragmentUID,
@@ -593,8 +575,6 @@ export function getTargetParentForPaste(
     MetadataUtils.targetSupportsChildren(
       projectContents,
       metadata,
-      nodeModules,
-      openFile,
       parentTarget,
       elementPathTree,
     ) &&
@@ -609,8 +589,6 @@ export function getTargetParentForPaste(
     MetadataUtils.targetSupportsChildren(
       projectContents,
       metadata,
-      nodeModules,
-      openFile,
       parentOfSelected,
       elementPathTree,
     )

@@ -471,13 +471,15 @@ export type ResetPins = {
   target: ElementPath
 }
 
+export interface WrapInElementWith {
+  element: JSXElement | JSXConditionalExpression | JSXFragment
+  importsToAdd: Imports
+}
+
 export interface WrapInElement {
   action: 'WRAP_IN_ELEMENT'
   targets: ElementPath[]
-  whatToWrapWith: {
-    element: JSXElement | JSXConditionalExpression | JSXFragment
-    importsToAdd: Imports
-  }
+  whatToWrapWith: WrapInElementWith
 }
 
 export interface OpenFloatingInsertMenu {
@@ -703,6 +705,10 @@ export interface SaveDOMReport {
   invalidatedPaths: Array<string>
 }
 
+export interface RunDOMWalker {
+  action: 'RUN_DOM_WALKER'
+}
+
 export interface TrueUpGroups {
   action: 'TRUE_UP_GROUPS'
 }
@@ -873,6 +879,12 @@ export type ScrollToElementBehaviour = 'keep-scroll-position-if-visible' | 'to-c
 export interface ScrollToElement {
   action: 'SCROLL_TO_ELEMENT'
   target: ElementPath
+  behaviour: ScrollToElementBehaviour
+}
+
+export interface ScrollToPosition {
+  action: 'SCROLL_TO_POSITION'
+  target: CanvasRectangle
   behaviour: ScrollToElementBehaviour
 }
 
@@ -1141,6 +1153,7 @@ export type EditorAction =
   | SetCodeEditorBuildErrors
   | SetCodeEditorLintErrors
   | SaveDOMReport
+  | RunDOMWalker
   | TrueUpGroups
   | SetProp
   | SetFilebrowserRenamingTarget
@@ -1170,6 +1183,7 @@ export type EditorAction =
   | UpdateText
   | SetFocusedElement
   | ScrollToElement
+  | ScrollToPosition
   | SetScrollAnimation
   | SetFollowSelectionEnabled
   | SetLoginState

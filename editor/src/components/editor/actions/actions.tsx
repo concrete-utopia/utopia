@@ -1,16 +1,9 @@
 import { produce } from 'immer'
 import update from 'immutability-helper'
 import localforage from 'localforage'
-import { LayoutSystem } from 'utopia-api/core'
 import { imagePathURL } from '../../../common/server'
-import { PinLayoutHelpers } from '../../../core/layout/layout-helpers'
+import { roundAttributeLayoutValues } from '../../../core/layout/layout-utils'
 import {
-  maybeSwitchChildrenLayoutProps,
-  roundAttributeLayoutValues,
-  switchLayoutMetadata,
-} from '../../../core/layout/layout-utils'
-import {
-  findElementAtPath,
   getZIndexOrderedViewsWithoutDirectChildren,
   MetadataUtils,
 } from '../../../core/model/element-metadata-utils'
@@ -20,23 +13,18 @@ import {
   generateUidWithExistingComponents,
   getIndexInParent,
   insertJSXElementChildren,
-  transformJSXComponentAtElementPath,
 } from '../../../core/model/element-template-utils'
 import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
   fileTypeFromFileName,
-  getHighlightBoundsFromParseResult,
   getUtopiaJSXComponentsFromSuccess,
-  isImg,
-  revertFile,
   saveFile,
   saveTextFileContents,
   switchToFileType,
   uniqueProjectContentID,
   updateFileContents,
   updateFileIfPossible,
-  updateParsedTextFileHighlightBounds,
 } from '../../../core/model/project-file-utils'
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
 import type { Either } from '../../../core/shared/either'
@@ -47,15 +35,12 @@ import {
   isLeft,
   isRight,
   left,
-  mapEither,
   right,
-  sequenceEither,
   traverseEither,
 } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type {
   Comment,
-  DetectedLayoutSystem,
   ElementInstanceMetadataMap,
   JSXAttributes,
   JSExpressionValue,
@@ -63,7 +48,6 @@ import type {
   JSXElementChildren,
   SettableLayoutSystem,
   UtopiaJSXComponent,
-  ElementInstanceMetadata,
   JSXElementChild,
 } from '../../../core/shared/element-template'
 import {
@@ -71,35 +55,27 @@ import {
   emptyComments,
   emptyJsxMetadata,
   getJSXAttribute,
-  isElementWithUid,
   isImportStatement,
   isJSXAttributeValue,
   isJSXConditionalExpression,
   isJSXElement,
-  isJSXFragment,
   modifiableAttributeIsPartOfAttributeValue,
   jsExpressionOtherJavaScript,
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxConditionalExpression,
-  JSXConditionalExpression,
   jsxElement,
   jsxElementName,
-  JSXFragment,
   jsxFragment,
   jsxTextBlock,
-  singleLineComment,
   walkElements,
   modifiableAttributeIsAttributeValue,
-  isUtopiaJSXComponent,
-  isNullJSXAttributeValue,
   isJSExpression,
   isJSXMapExpression,
 } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import {
   getJSXAttributesAtPath,
-  jsxSimpleAttributeToValue,
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValueAtPath,
@@ -119,18 +95,7 @@ import {
   isFiniteRectangle,
   rectangleIntersection,
   canvasPoint,
-  roundTo,
-  zeroCanvasPoint,
-  zeroRectangle,
-  MaybeInfinityCanvasRectangle,
-  zeroCanvasRect,
-  zeroLocalRect,
-  LocalPoint,
-  boundingRectangleArray,
-  offsetPoint,
   getRectCenter,
-  nullIfInfinity,
-  isNotNullFiniteRectangle,
   localRectangle,
   zeroRectIfNullOrInfinity,
 } from '../../../core/shared/math-utils'
@@ -166,17 +131,16 @@ import {
   isParseSuccess,
   isTextFile,
   RevisionsState,
-  StaticElementPathPart,
   textFile,
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
-import { emptyImports, mergeImports } from '../../../core/workers/common/project-file-utils'
+import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
-import Utils, { absolute } from '../../../utils/utils'
+import Utils from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { packageJsonFileFromProjectContents } from '../../assets'
 import {
@@ -225,7 +189,6 @@ import type {
   CloseFloatingInsertMenu,
   ClosePopup,
   CloseTextEditor,
-  CopySelectionToClipboard,
   DeleteFile,
   DeleteView,
   DistributeSelectedViews,
@@ -348,11 +311,10 @@ import type {
   SetConditionalOverriddenCondition,
   SwitchConditionalBranches,
   UpdateConditionalExpression,
-  ElementPaste,
-  TrueUpGroups,
   SetMapCountOverride,
+  ScrollToPosition,
 } from '../action-types'
-import { DeleteSelected, isLoggedIn } from '../action-types'
+import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
 import { isTextEditMode } from '../editor-modes'
 import { EditorModes, isLiveMode, isSelectMode } from '../editor-modes'
@@ -388,7 +350,7 @@ import type {
   TrueUpTarget,
 } from '../store/editor-state'
 import { trueUpChildrenOfElementChanged } from '../store/editor-state'
-import { AllElementProps, trueUpElementChanged } from '../store/editor-state'
+import { trueUpElementChanged } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
   BaseCanvasOffset,
@@ -399,13 +361,10 @@ import {
   getCurrentTheme,
   getElementPathsInBounds,
   getHighlightBoundsForFile,
-  getJSXComponentsAndImportsForPathFromState,
   getMainUIFromModel,
-  getNewSceneName,
   getOpenFilename,
   getOpenTextFileKey,
   getOpenUIJSFileKey,
-  FileChecksums,
   LeftMenuTab,
   LeftPaneDefaultWidth,
   LeftPaneMinimumWidth,
@@ -415,20 +374,14 @@ import {
   modifyParseSuccessWithSimple,
   modifyUnderlyingElementForOpenFile,
   modifyUnderlyingTargetElement,
-  persistentModelFromEditorModel,
   removeElementAtPath,
   StoryboardFilePath,
-  transformElementAtPath,
   updateMainUIInEditorState,
   vsCodeBridgeIdProjectId,
   withUnderlyingTarget,
   modifyOpenJsxElementOrConditionalAtPath,
-  isRegularNavigatorEntry,
-  regularNavigatorEntryOptic,
-  ConditionalClauseNavigatorEntry,
   modifyOpenJsxChildAtPath,
   isConditionalClauseNavigatorEntry,
-  DefaultNavigatorWidth,
 } from '../store/editor-state'
 import { loadStoredState } from '../stored-state'
 import { applyMigrations } from './migrations/migrations'
@@ -440,11 +393,11 @@ import { fetchNodeModules } from '../../../core/es-modules/package-manager/fetch
 import { resolveModule } from '../../../core/es-modules/package-manager/module-resolution'
 import { addStoryboardFileToProject } from '../../../core/model/storyboard-utils'
 import { UTOPIA_UID_KEY } from '../../../core/model/utopia-constants'
-import { mapDropNulls, reverse, uniqBy } from '../../../core/shared/array-utils'
+import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
 import { mergeProjectContents } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
-import { fixUtopiaElement, getUtopiaID } from '../../../core/shared/uid-utils'
+import { getUtopiaID } from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -459,16 +412,8 @@ import {
   sendSetFollowSelectionEnabledMessage,
   sendSetVSCodeTheme,
 } from '../../../core/vscode/vscode-bridge'
-import type { CopyData } from '../../../utils/clipboard'
-import {
-  createClipboardDataFromSelection,
-  Clipboard,
-  getTargetParentForPaste,
-} from '../../../utils/clipboard'
-import {
-  NavigatorStateKeepDeepEquality,
-  ParamKeepDeepEquality,
-} from '../store/store-deep-equality-instances'
+import { createClipboardDataFromSelection, Clipboard } from '../../../utils/clipboard'
+import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-instances'
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
@@ -476,24 +421,11 @@ import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
-  absolutePositionForPaste,
-  absolutePositionForReparent,
   canCopyElement,
   isAllowedToReparent,
-  offsetPositionInPasteBoundingBox,
 } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import type { StaticReparentTarget } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
 import {
-  ReparentAsAbsolute,
-  ReparentAsStatic,
-  reparentStrategyForPaste,
-  reparentStrategyForPaste as reparentStrategyForStaticReparent,
-} from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-helpers'
-import type { ToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
-import {
-  elementToReparent,
   getReparentOutcome,
-  getReparentOutcomeMultiselect,
   pathToReparent,
 } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import {
@@ -505,19 +437,16 @@ import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
 import { setElementsToRerenderCommand } from '../../canvas/commands/set-elements-to-rerender-command'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import { notice } from '../../common/notice'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import type { ShortcutConfiguration } from '../shortcut-definitions'
 import { ElementInstanceMetadataMapKeepDeepEquality } from '../store/store-deep-equality-instances'
 import {
   addImports,
-  addToast,
   clearImageFileBlob,
-  deleteView,
   enableInsertModeForJSXElement,
   finishCheckpointTimer,
   insertJSXElement,
   openCodeEditorFile,
-  removeToast,
+  scrollToPosition,
   selectComponents,
   setFocusedElement,
   setPackageStatus,
@@ -528,7 +457,7 @@ import {
   updatePackageJson,
   updateThumbnailGenerated,
 } from './action-creators'
-import { addToastToState, includeToast, removeToastFromState, uniqToasts } from './toast-helpers'
+import { addToastToState, includeToast, removeToastFromState } from './toast-helpers'
 import { AspectRatioLockedProp } from '../../aspect-ratio'
 import {
   refreshDependencies,
@@ -539,28 +468,19 @@ import { collapseTextElements } from '../../../components/text-editor/text-handl
 import { LayoutPropertyList, StyleProperties } from '../../inspector/common/css-utils'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { isUtopiaCommentFlag, makeUtopiaFlagComment } from '../../../core/shared/comment-flags'
-import { modify, toArrayOf } from '../../../core/shared/optics/optic-utilities'
-import { Optic } from '../../../core/shared/optics/optics'
+import { toArrayOf } from '../../../core/shared/optics/optic-utilities'
 import { fromField, traverseArray } from '../../../core/shared/optics/optic-creators'
 import type { InsertionPath } from '../store/insertion-path'
 import {
   commonInsertionPathFromArray,
   getElementPathFromInsertionPath,
   isConditionalClauseInsertionPath,
-  isChildInsertionPath,
   childInsertionPath,
   conditionalClauseInsertionPath,
   replaceWithSingleElement,
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../store/insertion-path'
-import {
-  findMaybeConditionalExpression,
-  getClauseOptic,
-  getConditionalCaseCorrespondingToBranchPath,
-  isEmptyConditionalBranch,
-  maybeBranchConditionalCase,
-  maybeConditionalExpression,
-} from '../../../core/model/conditionals'
+import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
@@ -569,14 +489,7 @@ import {
   unwrapTextContainingConditional,
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
-import { ConditionalClauseInsertionPath } from '../store/insertion-path'
 import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
-import { wildcardPatch } from '../../canvas/commands/wildcard-patch-command'
-import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
-import { front } from '../../../utils/utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
-import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import { addToReparentedToPaths } from '../../canvas/commands/add-to-reparented-to-paths-command'
 import type {
   DeleteFileFromVSCode,
   HideVSCodeLoadingScreen,
@@ -602,7 +515,6 @@ import {
   createPinChangeCommandsForElementBecomingGroupChild,
   elementCanBeAGroupChild,
 } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { reparentElement } from '../../canvas/commands/reparent-element-command'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
@@ -698,6 +610,7 @@ export function editorMoveMultiSelectedTemplates(
   indexPosition: IndexPosition,
   newParent: InsertionPath | null,
   editor: EditorModel,
+  derivedState: DerivedState,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -726,7 +639,7 @@ export function editorMoveMultiSelectedTemplates(
       const { commands: reparentCommands, newPath } = outcomeResult
       const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
 
-      const withCommandsApplied = foldAndApplyCommandsSimple(working, [
+      const withCommandsApplied = foldAndApplyCommandsSimple(working, derivedState, [
         ...reparentCommands,
         reorderCommand,
       ])
@@ -751,6 +664,7 @@ export function insertIntoWrapper(
   targets: ElementPath[],
   newParent: InsertionPath,
   editor: EditorModel,
+  derivedState: DerivedState,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -768,7 +682,7 @@ export function insertIntoWrapper(
     elementPathFromInsertionPath(newParent, EP.toUid(target)),
   )
 
-  const updatedEditor = foldAndApplyCommandsSimple(editor, [
+  const updatedEditor = foldAndApplyCommandsSimple(editor, derivedState, [
     ...targets.map((path) => deleteElement('always', path)),
     addElements('always', newParent, elements),
   ])
@@ -992,12 +906,12 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
     return editor
   } else {
     const updatedEditor = targets.reduce((working, targetPath) => {
-      const underlyingTarget = normalisePathToUnderlyingTarget(
-        working.projectContents,
-        working.nodeModules.files,
-        openUIJSFilePath,
-        targetPath,
-      )
+      const underlyingTarget = normalisePathToUnderlyingTarget(working.projectContents, targetPath)
+
+      if (underlyingTarget.type === 'NORMALISE_PATH_ELEMENT_NOT_FOUND') {
+        return working // The element has likely already been deleted
+      }
+
       const targetSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
 
       function deleteElementFromParseSuccess(parseSuccess: ParseSuccess): ParseSuccess {
@@ -1056,16 +970,9 @@ function indexPositionForAdjustment(
     case 'forward':
       const openUIJSFileKey = getOpenUIJSFileKey(editor)
       if (openUIJSFileKey != null) {
-        const current = withUnderlyingTarget(
-          target,
-          editor.projectContents,
-          editor.nodeModules.files,
-          openUIJSFileKey,
-          0,
-          (success) => {
-            return getIndexInParent(success.topLevelElements, EP.asStatic(target))
-          },
-        )
+        const current = withUnderlyingTarget(target, editor.projectContents, 0, (success) => {
+          return getIndexInParent(success.topLevelElements, EP.asStatic(target))
+        })
         return {
           type: 'absolute',
           index: index === 'backward' ? Math.max(current - 1, 0) : current + 1,
@@ -1572,11 +1479,7 @@ export const UPDATE_FNS = {
       return editor
     }
   },
-  UNSET_PROPERTY: (
-    action: UnsetProperty,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
+  UNSET_PROPERTY: (action: UnsetProperty, editor: EditorModel): EditorModel => {
     let unsetPropFailedMessage: string | null = null
     const updatedEditor = modifyUnderlyingElementForOpenFile(
       action.element,
@@ -1663,14 +1566,10 @@ export const UPDATE_FNS = {
 
     return updatedEditor
   },
-  SET_CANVAS_FRAMES: (
-    action: SetCanvasFrames,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
+  SET_CANVAS_FRAMES: (action: SetCanvasFrames, editor: EditorModel): EditorModel => {
     return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
   },
-  SET_Z_INDEX: (action: SetZIndex, editor: EditorModel, derived: DerivedState): EditorModel => {
+  SET_Z_INDEX: (action: SetZIndex, editor: EditorModel): EditorModel => {
     return editorMoveTemplate(
       action.target,
       action.target,
@@ -1805,8 +1704,6 @@ export const UPDATE_FNS = {
               const branchPath = withUnderlyingTarget(
                 parentPath,
                 withElementDeleted.projectContents,
-                withElementDeleted.nodeModules.files,
-                withElementDeleted.canvas.openFile?.filename ?? null,
                 null,
                 (_, element) => {
                   if (isJSXConditionalExpression(element) && element.uid === EP.toUid(parentPath)) {
@@ -2102,7 +1999,6 @@ export const UPDATE_FNS = {
       )
     const withNewElement = modifyUnderlyingTargetElement(
       parentPath,
-      forceNotNull('Should originate from a designer', editor.canvas.openFile?.filename),
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
@@ -2159,7 +2055,6 @@ export const UPDATE_FNS = {
     editorForAction: EditorModel,
     derived: DerivedState,
     dispatch: EditorDispatch,
-    builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Generated elements can't be wrapped into other elements.`,
@@ -2233,6 +2128,7 @@ export const UPDATE_FNS = {
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
+          derived,
           action.targets,
           parentPath,
           action.whatToWrapWith.element,
@@ -2272,6 +2168,7 @@ export const UPDATE_FNS = {
           orderedActionTargets,
           insertionPath(),
           includeToast(detailsOfUpdate, withWrapperViewAdded),
+          derived,
         )
 
         return {
@@ -2313,6 +2210,7 @@ export const UPDATE_FNS = {
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
+    derived: DerivedState,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Cannot unwrap a generated element.`,
@@ -2333,8 +2231,6 @@ export const UPDATE_FNS = {
           const supportsChildren = MetadataUtils.targetSupportsChildren(
             workingEditor.projectContents,
             workingEditor.jsxMetadata,
-            workingEditor.nodeModules.files,
-            workingEditor.canvas.openFile?.filename,
             target,
             workingEditor.elementPathTree,
           )
@@ -2386,6 +2282,7 @@ export const UPDATE_FNS = {
               indexPosition,
               parentPath,
               workingEditor,
+              derived,
             )
 
             return {
@@ -2427,6 +2324,7 @@ export const UPDATE_FNS = {
                   groupTrueUps.push(result.newPath)
                   return foldAndApplyCommandsSimple(
                     result.editor,
+                    derived,
                     createPinChangeCommandsForElementBecomingGroupChild(
                       workingEditor.jsxMetadata,
                       child,
@@ -2751,9 +2649,7 @@ export const UPDATE_FNS = {
     }, editor)
   },
   COPY_SELECTION_TO_CLIPBOARD: (
-    action: CopySelectionToClipboard,
     editor: EditorModel,
-    dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
     const canReparent = traverseEither(
@@ -2958,7 +2854,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  RESET_PINS: (action: ResetPins, editor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  RESET_PINS: (action: ResetPins, editor: EditorModel, derived: DerivedState): EditorModel => {
     const target = action.target
     const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
 
@@ -2973,7 +2869,7 @@ export const UPDATE_FNS = {
         PP.create('style', 'bottom'),
       ]),
     ]
-    return foldAndApplyCommandsSimple(editor, commands)
+    return foldAndApplyCommandsSimple(editor, derived, commands)
   },
   SET_CURSOR_OVERLAY: (action: SetCursorOverlay, editor: EditorModel): EditorModel => {
     if (editor.canvas.cursor === action.cursor) {
@@ -2987,11 +2883,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  UPDATE_FRAME_DIMENSIONS: (
-    action: UpdateFrameDimensions,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
+  UPDATE_FRAME_DIMENSIONS: (action: UpdateFrameDimensions, editor: EditorModel): EditorModel => {
     const initialFrame = MetadataUtils.getFrame(action.element, editor.jsxMetadata)
 
     if (initialFrame == null || isInfinityRectangle(initialFrame)) {
@@ -3410,19 +3302,14 @@ export const UPDATE_FNS = {
       editorState.preview.connected = action.connected
     })
   },
-  ALIGN_SELECTED_VIEWS: (
-    action: AlignSelectedViews,
-    editor: EditorModel,
-    derived: DerivedState,
-  ): EditorModel => {
-    return alignOrDistributeSelectedViews(editor, derived, action.alignment)
+  ALIGN_SELECTED_VIEWS: (action: AlignSelectedViews, editor: EditorModel): EditorModel => {
+    return alignOrDistributeSelectedViews(editor, action.alignment)
   },
   DISTRIBUTE_SELECTED_VIEWS: (
     action: DistributeSelectedViews,
     editor: EditorModel,
-    derived: DerivedState,
   ): EditorModel => {
-    return alignOrDistributeSelectedViews(editor, derived, action.distribution)
+    return alignOrDistributeSelectedViews(editor, action.distribution)
   },
   SHOW_CONTEXT_MENU: (action: ShowContextMenu, editor: EditorModel): EditorModel => {
     // side effect!
@@ -3924,7 +3811,7 @@ export const UPDATE_FNS = {
       }
     }
   },
-  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
+  TRUE_UP_GROUPS: (editor: EditorModel, derivedState: DerivedState): EditorModel => {
     const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
       (trueUpTarget) => {
         return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
@@ -3943,7 +3830,7 @@ export const UPDATE_FNS = {
         target: element,
       }
     }, targetsToTrueUp)
-    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
+    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, derivedState, [
       pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata'),
     ])
     return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
@@ -4137,7 +4024,6 @@ export const UPDATE_FNS = {
   ADD_IMPORTS: (action: AddImports, editor: EditorModel): EditorModel => {
     return modifyUnderlyingTargetElement(
       action.target,
-      forceNotNull('Missing open file', editor.canvas.openFile?.filename),
       editor,
       (element) => element,
       (success, _, underlyingFilePath) => {
@@ -4558,6 +4444,104 @@ export const UPDATE_FNS = {
       return editor
     }
   },
+  SCROLL_TO_POSITION: (
+    action: ScrollToPosition,
+    editor: EditorModel,
+    dispatch: EditorDispatch,
+  ): EditorModel => {
+    const isLeftMenuOpen = editor.leftMenu.expanded
+    const containerRootDiv = document.getElementById('canvas-root')
+    const panelOffsets = canvasPanelOffsets()
+    const scale = 1 / editor.canvas.scale
+
+    // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
+    // It will effectively scroll to the element by positioning it at the origin (TL) of the
+    // canvas, based on the BaseCanvasOffset value(s).
+    function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
+      const baseCanvasOffset = isLeftMenuOpen ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
+      const target = canvasPoint({
+        x: baseCanvasOffset.x * scale,
+        y: baseCanvasOffset.y * scale,
+      })
+      return Utils.pointDifference(frame, target)
+    }
+
+    function canvasOffsetToCenter(
+      frame: CanvasRectangle,
+      bounds: CanvasRectangle | null,
+    ): CanvasVector {
+      if (bounds == null) {
+        return canvasOffsetToOrigin(frame) // fallback default
+      }
+      const canvasCenter = getRectCenter(
+        canvasRectangle({
+          x: bounds.x,
+          y: bounds.y,
+          width: bounds.width * scale,
+          height: bounds.height * scale,
+        }),
+      )
+      const topLeftTarget = canvasPoint({
+        x:
+          canvasCenter.x -
+          frame.width / 2 -
+          bounds.x +
+          (panelOffsets.left / 2) * scale -
+          (panelOffsets.right / 2) * scale,
+        y: canvasCenter.y - frame.height / 2 - bounds.y,
+      })
+      return Utils.pointDifference(frame, topLeftTarget)
+    }
+
+    function canvasOffsetKeepScrollPositionIfVisible(
+      frame: CanvasRectangle,
+      bounds: CanvasRectangle | null,
+    ): CanvasVector | null {
+      if (bounds == null) {
+        return canvasOffsetToOrigin(frame) // fallback default
+      }
+      const containerRectangle = {
+        x: panelOffsets.left - editor.canvas.realCanvasOffset.x,
+        y: -editor.canvas.realCanvasOffset.y,
+        width: bounds.width,
+        height: bounds.height,
+      } as CanvasRectangle
+      const isVisible = rectangleIntersection(containerRectangle, frame) != null
+      return isVisible
+        ? null // when the element is on screen no scrolling is needed
+        : canvasOffsetToOrigin(frame) // fallback default
+    }
+
+    function getNewCanvasOffset(frame: CanvasRectangle): CanvasVector | null {
+      const containerDivBoundingRect = canvasRectangle(
+        containerRootDiv?.getBoundingClientRect() ?? null,
+      )
+      switch (action.behaviour) {
+        case 'keep-scroll-position-if-visible':
+          return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
+        case 'to-center':
+          return canvasOffsetToCenter(frame, containerDivBoundingRect)
+        default:
+          assertNever(action.behaviour)
+      }
+    }
+
+    const newCanvasOffset = getNewCanvasOffset(action.target)
+    return newCanvasOffset == null
+      ? editor
+      : UPDATE_FNS.SET_SCROLL_ANIMATION(
+          setScrollAnimation(true),
+          {
+            ...editor,
+            canvas: {
+              ...editor.canvas,
+              realCanvasOffset: newCanvasOffset,
+              roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+            },
+          },
+          dispatch,
+        )
+  },
   SCROLL_TO_ELEMENT: (
     action: ScrollToElement,
     editor: EditorModel,
@@ -4568,98 +4552,11 @@ export const UPDATE_FNS = {
       editor.jsxMetadata,
     )
     if (targetElementCoords != null && isFiniteRectangle(targetElementCoords)) {
-      const isLeftMenuOpen = editor.leftMenu.expanded
-      const containerRootDiv = document.getElementById('canvas-root')
-      const panelOffsets = canvasPanelOffsets()
-      const scale = 1 / editor.canvas.scale
-
-      // This returns the offset used as the fallback for the other behaviours when the container bounds are not defined.
-      // It will effectively scroll to the element by positioning it at the origin (TL) of the
-      // canvas, based on the BaseCanvasOffset value(s).
-      function canvasOffsetToOrigin(frame: CanvasRectangle): CanvasVector {
-        const baseCanvasOffset = isLeftMenuOpen ? BaseCanvasOffsetLeftPane : BaseCanvasOffset
-        const target = canvasPoint({
-          x: baseCanvasOffset.x * scale,
-          y: baseCanvasOffset.y * scale,
-        })
-        return Utils.pointDifference(frame, target)
-      }
-
-      function canvasOffsetToCenter(
-        frame: CanvasRectangle,
-        bounds: CanvasRectangle | null,
-      ): CanvasVector {
-        if (bounds == null) {
-          return canvasOffsetToOrigin(frame) // fallback default
-        }
-        const canvasCenter = getRectCenter(
-          canvasRectangle({
-            x: bounds.x,
-            y: bounds.y,
-            width: bounds.width * scale,
-            height: bounds.height * scale,
-          }),
-        )
-        const topLeftTarget = canvasPoint({
-          x:
-            canvasCenter.x -
-            frame.width / 2 -
-            bounds.x +
-            (panelOffsets.left / 2) * scale -
-            (panelOffsets.right / 2) * scale,
-          y: canvasCenter.y - frame.height / 2 - bounds.y,
-        })
-        return Utils.pointDifference(frame, topLeftTarget)
-      }
-
-      function canvasOffsetKeepScrollPositionIfVisible(
-        frame: CanvasRectangle,
-        bounds: CanvasRectangle | null,
-      ): CanvasVector | null {
-        if (bounds == null) {
-          return canvasOffsetToOrigin(frame) // fallback default
-        }
-        const containerRectangle = {
-          x: panelOffsets.left - editor.canvas.realCanvasOffset.x,
-          y: -editor.canvas.realCanvasOffset.y,
-          width: bounds.width,
-          height: bounds.height,
-        } as CanvasRectangle
-        const isVisible = rectangleIntersection(containerRectangle, frame) != null
-        return isVisible
-          ? null // when the element is on screen no scrolling is needed
-          : canvasOffsetToOrigin(frame) // fallback default
-      }
-
-      function getNewCanvasOffset(frame: CanvasRectangle): CanvasVector | null {
-        const containerDivBoundingRect = canvasRectangle(
-          containerRootDiv?.getBoundingClientRect() ?? null,
-        )
-        switch (action.behaviour) {
-          case 'keep-scroll-position-if-visible':
-            return canvasOffsetKeepScrollPositionIfVisible(frame, containerDivBoundingRect)
-          case 'to-center':
-            return canvasOffsetToCenter(frame, containerDivBoundingRect)
-          default:
-            assertNever(action.behaviour)
-        }
-      }
-
-      const newCanvasOffset = getNewCanvasOffset(targetElementCoords)
-      return newCanvasOffset == null
-        ? editor
-        : UPDATE_FNS.SET_SCROLL_ANIMATION(
-            setScrollAnimation(true),
-            {
-              ...editor,
-              canvas: {
-                ...editor.canvas,
-                realCanvasOffset: newCanvasOffset,
-                roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
-              },
-            },
-            dispatch,
-          )
+      return UPDATE_FNS.SCROLL_TO_POSITION(
+        scrollToPosition(targetElementCoords, action.behaviour),
+        editor,
+        dispatch,
+      )
     } else {
       return {
         ...editor,
@@ -4805,7 +4702,11 @@ export const UPDATE_FNS = {
       },
     }
   },
-  INSERT_INSERTABLE: (action: InsertInsertable, editor: EditorModel): EditorModel => {
+  INSERT_INSERTABLE: (
+    action: InsertInsertable,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
     const openFilename = editor.canvas.openFile?.filename
     if (openFilename == null) {
       return editor
@@ -4830,7 +4731,6 @@ export const UPDATE_FNS = {
 
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
-        openFilename,
         editor,
         (element) => element,
         (success, _, underlyingFilePath) => {
@@ -4993,6 +4893,7 @@ export const UPDATE_FNS = {
             trueUpElementChanged(newPath),
           ],
         },
+        derivedState,
         groupCommands,
       )
 
@@ -5173,9 +5074,10 @@ export const UPDATE_FNS = {
   RUN_ESCAPE_HATCH: (
     action: RunEscapeHatch,
     editor: EditorModel,
+    derivedState: DerivedState,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
+    const canvasState = pickCanvasStateFromEditorState(editor, derivedState, builtInDependencies)
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
@@ -5183,13 +5085,19 @@ export const UPDATE_FNS = {
         canvasState,
         null,
       ).commands
-      return foldAndApplyCommandsSimple(editor, commands)
+      return foldAndApplyCommandsSimple(editor, derivedState, commands)
     } else {
       return editor
     }
   },
-  SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
+  SET_ELEMENTS_TO_RERENDER: (
+    action: SetElementsToRerender,
+    derivedState: DerivedState,
+    editor: EditorModel,
+  ): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, derivedState, [
+      setElementsToRerenderCommand(action.value),
+    ])
   },
   TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
     const targets = action.targets
@@ -5280,8 +5188,12 @@ export const UPDATE_FNS = {
       imageDragSessionState: action.imageDragSessionState,
     }
   },
-  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, action.commands)
+  APPLY_COMMANDS: (
+    action: ApplyCommandsAction,
+    editor: EditorModel,
+    derivedState: DerivedState,
+  ): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, derivedState, action.commands)
   },
   UPDATE_COLOR_SWATCHES: (action: UpdateColorSwatches, editor: EditorModel): EditorModel => {
     return {
@@ -5300,7 +5212,6 @@ export const UPDATE_FNS = {
 
     const updatedEditor = modifyUnderlyingTargetElement(
       action.target,
-      openFile,
       editor,
       (element) => {
         if (!isJSXConditionalExpression(element)) {
@@ -5348,7 +5259,6 @@ function copySelectionToClipboardMutating(
 /** DO NOT USE outside of actions.ts, only exported for testing purposes */
 export function alignOrDistributeSelectedViews(
   editor: EditorModel,
-  derived: DerivedState,
   alignmentOrDistribution: Alignment | Distribution,
 ): EditorModel {
   const selectedViews = editor.selectedViews

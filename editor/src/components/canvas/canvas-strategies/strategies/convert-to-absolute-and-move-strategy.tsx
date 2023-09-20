@@ -416,11 +416,7 @@ function filterPinsToSet(
   path: ElementPath,
   canvasState: InteractionCanvasState,
 ): Array<LayoutPinnedProp> {
-  const element = getElementFromProjectContents(
-    path,
-    canvasState.projectContents,
-    canvasState.openFile,
-  )
+  const element = getElementFromProjectContents(path, canvasState.projectContents)
   if (element == null) {
     return ['top', 'left', 'width', 'height']
   } else {

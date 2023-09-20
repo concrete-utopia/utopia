@@ -51,6 +51,7 @@ import { fastForEach } from '../../../../core/shared/utils'
 import { addElements } from '../../commands/add-elements-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { getRequiredGroupTrueUps } from '../../commands/queue-group-true-up-command'
+import type { RemixRoutingTable } from '../../../editor/store/remix-derived-data'
 
 interface GetReparentOutcomeResult {
   commands: Array<CanvasCommand>
@@ -122,8 +123,6 @@ export function getReparentOutcome(
     withUnderlyingTarget(
       newParentElementPath,
       projectContents,
-      nodeModules,
-      openFile,
       null,
       (success, element, underlyingTarget, underlyingFilePath) => {
         return underlyingFilePath
@@ -140,7 +139,6 @@ export function getReparentOutcome(
         toReparent.target,
         projectContents,
         nodeModules,
-        openFile,
         newTargetFilePath,
         builtInDependencies,
       )
@@ -215,10 +213,8 @@ export function getReparentOutcomeMultiselect(
     withUnderlyingTarget(
       newParentElementPath,
       projectContents,
-      nodeModules,
-      openFile,
       null,
-      (success, element, underlyingTarget, underlyingFilePath) => {
+      (_success, _element, _underlyingTarget, underlyingFilePath) => {
         return underlyingFilePath
       },
     ),
@@ -233,7 +229,6 @@ export function getReparentOutcomeMultiselect(
           toReparent.target,
           projectContents,
           nodeModules,
-          openFile,
           newTargetFilePath,
           builtInDependencies,
         )

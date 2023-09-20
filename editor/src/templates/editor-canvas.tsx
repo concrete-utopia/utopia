@@ -663,6 +663,7 @@ function createNodeConnectorsDiv(offset: CanvasPoint, scale: number) {
 interface EditorCanvasProps {
   model: CanvasModel
   editor: EditorState
+  derived: DerivedState
   userState: UserState
   builtinDependencies: BuiltInDependencies
   dispatch: EditorDispatch

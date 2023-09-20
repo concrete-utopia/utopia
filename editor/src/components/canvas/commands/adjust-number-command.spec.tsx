@@ -60,6 +60,7 @@ describe('adjustNumberProperty', () => {
 
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       adjustNumberPropertyCommand,
     )
 
@@ -67,6 +68,7 @@ describe('adjustNumberProperty', () => {
       renderResult.getEditorState().editor,
       result.editorStatePatches,
     )
+
     const updatedLeftStyleProp = withUnderlyingTargetFromEditorState(
       cardInstancePath,
       patchedEditor,
@@ -114,6 +116,7 @@ describe('adjustNumberProperty', () => {
 
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
+      renderResult.getEditorState().derived,
       adjustNumberPropertyCommand,
     )
 

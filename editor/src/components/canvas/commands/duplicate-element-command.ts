@@ -1,7 +1,7 @@
 import * as EP from '../../../core/shared/element-path'
 import { isUtopiaJSXComponent } from '../../../core/shared/element-template'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { duplicate } from '../canvas-utils'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -33,6 +33,7 @@ export function duplicateElement(
 
 export const runDuplicateElement: CommandFunction<DuplicateElement> = (
   editorState: EditorState,
+  _derivedState: DerivedState,
   command: DuplicateElement,
 ) => {
   const targetParent = EP.parentPath(command.target)

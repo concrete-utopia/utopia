@@ -8,7 +8,7 @@ import {
   ClassNameToAttributes,
 } from '../third-party/tailwind-defaults'
 import Highlighter from 'react-highlight-words'
-import type { ElementPath, NodeModules } from '../shared/project-file-types'
+import type { ElementPath } from '../shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import {
   Substores,
@@ -22,13 +22,12 @@ import { getProjectFileByFilePath } from '../../components/assets'
 import type { JSXElementChild } from '../shared/element-template'
 import {
   modifiableAttributeIsAttributeNotFound,
-  isJSXAttributeValue,
   isJSXElement,
   modifiableAttributeIsAttributeValue,
 } from '../shared/element-template'
 import { findElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
 import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
-import { eitherToMaybe, flatMapEither, foldEither, mapEither } from '../shared/either'
+import { eitherToMaybe, flatMapEither, foldEither } from '../shared/either'
 import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
@@ -233,14 +232,8 @@ function getJSXElementForTarget(
   target: ElementPath,
   openUIJSFileKey: string,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
 ): JSXElementChild | null {
-  const underlyingTarget = normalisePathToUnderlyingTarget(
-    projectContents,
-    nodeModules,
-    openUIJSFileKey,
-    target,
-  )
+  const underlyingTarget = normalisePathToUnderlyingTarget(projectContents, target)
   const underlyingPath =
     underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey
   const projectFile = getProjectFileByFilePath(projectContents, underlyingPath)
@@ -298,12 +291,7 @@ export function useGetSelectedClasses(): {
         return []
       } else {
         return store.editor.selectedViews.map((elementPath) =>
-          getJSXElementForTarget(
-            elementPath,
-            openUIJSFileKey,
-            store.editor.projectContents,
-            store.editor.nodeModules.files,
-          ),
+          getJSXElementForTarget(elementPath, openUIJSFileKey, store.editor.projectContents),
         )
       }
     },

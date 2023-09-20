@@ -120,15 +120,9 @@ export const ExpressionInputPropertyControl = React.memo(
     const targetFilePaths = useEditorState(
       Substores.fullStore,
       (store) => {
-        const currentFilePath = forceNotNull(
-          'Missing open file',
-          store.editor.canvas.openFile?.filename,
-        )
         return store.editor.selectedViews.map((selectedView) => {
           const normalisedPath = normalisePathToUnderlyingTarget(
             store.editor.projectContents,
-            store.editor.nodeModules.files,
-            currentFilePath,
             selectedView,
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath
@@ -239,15 +233,9 @@ export const ExpressionPopUpListPropertyControl = React.memo(
       Substores.fullStore,
       (store) => {
         // TODO probably make a store with selected views, projectContents and nodeModules.files ?
-        const currentFilePath = forceNotNull(
-          'Missing open file',
-          store.editor.canvas.openFile?.filename,
-        )
         return selectedViews.map((selectedView) => {
           const normalisedPath = normalisePathToUnderlyingTarget(
             store.editor.projectContents,
-            store.editor.nodeModules.files,
-            currentFilePath,
             selectedView,
           )
           return normalisePathSuccessOrThrowError(normalisedPath).filePath

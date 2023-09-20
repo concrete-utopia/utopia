@@ -1,3 +1,4 @@
+import React from 'react'
 import type {
   UNSAFE_FutureConfig as FutureConfig,
   UNSAFE_EntryRoute as EntryRoute,
@@ -18,34 +19,25 @@ import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { attemptToResolveParsedComponents } from '../ui-jsx-canvas'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import type {
-  ElementPath,
-  ElementPathPart,
-  ExportDefaultFunctionOrClass,
-  TextFile,
-} from '../../../core/shared/project-file-types'
-import {
-  isTextFile,
-  isParseSuccess,
-  isExportDefaultFunctionOrClass,
-} from '../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
-import type { RemixStaticRoutingTable } from '../../editor/store/remix-derived-data'
-import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
+import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
+import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import {
-  isRemixOutletAgainstImports,
+  getDefaultExportNameAndUidFromFile,
+  getDefaultExportedTopLevelElement,
   isRemixOutletElement,
 } from '../../../core/model/project-file-utils'
 import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
+import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
+
+export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
 const ROOT_DIR = '/src'
-
-type RouteModule = keyof RouteModules
 
 export type RouteManifestWithContents = RouteManifest<EntryRoute>
 
@@ -147,7 +139,7 @@ export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsM
 
 export interface RouteModuleCreator {
   filePath: string
-  executionScopeCreator: (projectContents: ProjectContentTreeRoot) => ExecutionScope
+  executionScopeCreator: ExecutionScopeCreator
 }
 
 export interface RouteIdsToModuleCreators {
@@ -156,7 +148,7 @@ export interface RouteIdsToModuleCreators {
 
 export interface RouteModulesWithRelativePaths {
   [routeId: string]: {
-    relativePath: ElementPath
+    relativePaths: Array<ElementPath>
     filePath: string
   }
 }
@@ -165,131 +157,7 @@ export interface GetRoutesAndModulesFromManifestResult {
   routeModuleCreators: RouteIdsToModuleCreators
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
-  routingTable: RemixStaticRoutingTable
-}
-
-export function getDefaultExportNameAndUidFromFile(
-  projectContents: ProjectContentTreeRoot,
-  filePath: string,
-): { name: string; uid: string } | null {
-  const file = getProjectFileByFilePath(projectContents, filePath)
-  if (
-    file == null ||
-    file.type != 'TEXT_FILE' ||
-    file.fileContents.parsed.type !== 'PARSE_SUCCESS'
-  ) {
-    return null
-  }
-
-  const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
-
-  if (defaultExportName == null) {
-    return null
-  }
-
-  const elementUid = file.fileContents.parsed.topLevelElements.find(
-    (t): t is UtopiaJSXComponent =>
-      t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-  )?.rootElement.uid
-  if (elementUid == null) {
-    return null
-  }
-
-  return { name: defaultExportName, uid: elementUid }
-}
-
-export function getDefaultExportedTopLevelElement(file: TextFile): JSXElementChild | null {
-  if (file.fileContents.parsed.type !== 'PARSE_SUCCESS') {
-    return null
-  }
-
-  const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
-
-  if (defaultExportName == null) {
-    return null
-  }
-
-  return (
-    file.fileContents.parsed.topLevelElements.find(
-      (t): t is UtopiaJSXComponent =>
-        t.type === 'UTOPIA_JSX_COMPONENT' && t.name === defaultExportName,
-    )?.rootElement ?? null
-  )
-}
-
-function addLoaderAndActionToRoutes(
-  routes: DataRouteObject[],
-  routeId: string,
-  loader: LoaderFunction | undefined,
-  action: ActionFunction | undefined,
-) {
-  routes.forEach((route) => {
-    if (route.id === routeId) {
-      route.action = action
-      route.loader = loader
-    } else {
-      addLoaderAndActionToRoutes(route.children ?? [], routeId, loader, action)
-    }
-  })
-}
-
-function findAmongJSXElementChildren(
-  parentUid: string,
-  condition: (e: JSXElementChild) => boolean,
-  children: JSXElementChild[],
-): ElementPathPart | null {
-  for (const child of children) {
-    const path = findPathToJSXElementChild(condition, child)
-    if (path != null) {
-      return [parentUid, ...path]
-    }
-  }
-  return null
-}
-
-function findPathToJSXElementChild(
-  condition: (e: JSXElementChild) => boolean,
-  element: JSXElementChild,
-): ElementPathPart | null {
-  if (condition(element)) {
-    return [element.uid]
-  }
-
-  switch (element.type) {
-    case 'JSX_ELEMENT':
-    case 'JSX_FRAGMENT':
-      return findAmongJSXElementChildren(element.uid, condition, element.children)
-    case 'JSX_CONDITIONAL_EXPRESSION':
-      return findAmongJSXElementChildren(element.uid, condition, [
-        element.whenTrue,
-        element.whenFalse,
-      ])
-    case 'JSX_MAP_EXPRESSION':
-    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return findAmongJSXElementChildren(
-        element.uid,
-        condition,
-        Object.values(element.elementsWithin),
-      )
-    case 'ATTRIBUTE_NESTED_ARRAY':
-    case 'ATTRIBUTE_NESTED_OBJECT':
-      return findAmongJSXElementChildren(
-        element.uid,
-        condition,
-        element.content.map((c) => c.value),
-      )
-    case 'ATTRIBUTE_FUNCTION_CALL':
-    case 'ATTRIBUTE_VALUE':
-    case 'JSX_TEXT_BLOCK':
-      return null
-
-    default:
-      assertNever(element)
-  }
-
-  return null
+  routingTable: RemixRoutingTable
 }
 
 function getRouteModulesWithPaths(
@@ -313,15 +181,15 @@ function getRouteModulesWithPaths(
     return {}
   }
 
-  const pathPartToOutlet = findPathToJSXElementChild(
+  const pathPartsToOutlets = findPathToJSXElementChild(
     (e) => isRemixOutletElement(e, filePathForRouteObject, projectContents),
     topLevelElement,
   )
 
-  const isLeafModule = pathPartToOutlet == null
+  const isLeafModule = pathPartsToOutlets == null
   let routeModulesWithBasePaths: RouteModulesWithRelativePaths = {
     [route.id]: {
-      relativePath: pathSoFar,
+      relativePaths: [pathSoFar],
       filePath: filePathForRouteObject,
     },
   }
@@ -331,43 +199,60 @@ function getRouteModulesWithPaths(
   }
 
   const children = route.children ?? []
-  const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
 
-  for (const child of children) {
-    const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
-    for (const [routeId, value] of Object.entries(paths)) {
-      routeModulesWithBasePaths[routeId] = value
+  for (const pathPartToOutlet of pathPartsToOutlets) {
+    for (const child of children) {
+      const pathForChildren = EP.appendNewElementPath(pathSoFar, pathPartToOutlet)
+
+      const paths = getRouteModulesWithPaths(projectContents, manifest, child, pathForChildren)
+
+      for (const [routeId, value] of Object.entries(paths)) {
+        if (routeModulesWithBasePaths[routeId] == null) {
+          routeModulesWithBasePaths[routeId] = value
+        } else {
+          routeModulesWithBasePaths[routeId].relativePaths.push(...value.relativePaths)
+        }
+      }
     }
   }
 
   return routeModulesWithBasePaths
 }
 
+export type ExecutionScopeCreator = (
+  innerProjectContents: ProjectContentTreeRoot,
+  fileBlobs: CanvasBase64Blobs,
+  hiddenInstances: Array<ElementPath>,
+  displayNoneInstances: Array<ElementPath>,
+  metadataContext: UiJsxCanvasContextData,
+) => ExecutionScope
+
 function getRemixExportsOfModule(
   filename: string,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
-  topLevelComponentRendererComponents: React.MutableRefObject<
-    MapLike<MapLike<ComponentRendererComponent>>
-  >,
-  fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
 ): {
-  executionScopeCreator: (innerProjectContents: ProjectContentTreeRoot) => ExecutionScope
-  loader: LoaderFunction | undefined
-  action: ActionFunction | undefined
+  executionScopeCreator: ExecutionScopeCreator
   rootComponentUid: string
 } {
-  const executionScopeCreator = (innerProjectContents: ProjectContentTreeRoot) => {
+  const executionScopeCreator = (
+    innerProjectContents: ProjectContentTreeRoot,
+    fileBlobs: CanvasBase64Blobs,
+    hiddenInstances: Array<ElementPath>,
+    displayNoneInstances: Array<ElementPath>,
+    metadataContext: UiJsxCanvasContextData,
+  ) => {
     let resolvedFiles: MapLike<Array<string>> = {}
     let resolvedFileNames: Array<string> = ['/src/root.js']
 
     const requireFn = curriedRequireFn(innerProjectContents)
     const resolve = curriedResolveFn(innerProjectContents)
+
+    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+    let topLevelComponentRendererComponents: {
+      current: MapLike<MapLike<ComponentRendererComponent>>
+    } = { current: {} }
 
     const customRequire = (importOrigin: string, toImport: string) => {
       if (resolvedFiles[importOrigin] == null) {
@@ -389,9 +274,9 @@ function getRemixExportsOfModule(
         mutableContextRef,
         topLevelComponentRendererComponents,
         '/src/root.js',
-        {},
-        [],
-        [],
+        fileBlobs,
+        hiddenInstances,
+        displayNoneInstances,
         metadataContext,
         NO_OP,
         false,
@@ -427,16 +312,11 @@ function getRemixExportsOfModule(
     )
   }
 
-  const executionScope = executionScopeCreator(projectContents)
-
   const nameAndUid = getDefaultExportNameAndUidFromFile(projectContents, filename)
 
   return {
     executionScopeCreator: executionScopeCreator,
     rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
-    // FIXME the executionScope should be created at the point where we use the loader and action like we do for the module's default export component
-    loader: executionScope.scope['loader'] as LoaderFunction | undefined,
-    action: executionScope.scope['action'] as ActionFunction | undefined,
   }
 }
 export function getRoutesAndModulesFromManifest(
@@ -444,19 +324,11 @@ export function getRoutesAndModulesFromManifest(
   futureConfig: FutureConfig,
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
-  metadataContext: UiJsxCanvasContextData,
   projectContents: ProjectContentTreeRoot,
-  mutableContextRef: React.MutableRefObject<MutableUtopiaCtxRefData>,
-  topLevelComponentRendererComponents: React.MutableRefObject<
-    MapLike<MapLike<ComponentRendererComponent>>
-  >,
   routeModulesCache: RouteModules,
-  fileBlobs: CanvasBase64Blobs,
-  hiddenInstances: Array<ElementPath>,
-  displayNoneInstances: Array<ElementPath>,
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
-  const routingTable: RemixStaticRoutingTable = {}
+  const routingTable: RemixRoutingTable = {}
 
   const rootJsFile = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
   if (rootJsFile == null || rootJsFile.type !== 'TEXT_FILE') {
@@ -489,20 +361,13 @@ export function getRoutesAndModulesFromManifest(
   )
 
   Object.values(routeManifest).forEach((route) => {
-    const { executionScopeCreator, loader, action, rootComponentUid } = getRemixExportsOfModule(
+    const { executionScopeCreator, rootComponentUid } = getRemixExportsOfModule(
       route.module,
       curriedRequireFn,
       curriedResolveFn,
-      metadataContext,
       projectContents,
-      mutableContextRef,
-      topLevelComponentRendererComponents,
-      fileBlobs,
-      hiddenInstances,
-      displayNoneInstances,
     )
 
-    addLoaderAndActionToRoutes(routes, route.id, loader, action)
     routeModuleCreators[route.id] = {
       filePath: route.module,
       executionScopeCreator: executionScopeCreator,

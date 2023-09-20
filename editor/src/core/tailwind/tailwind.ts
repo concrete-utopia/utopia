@@ -192,7 +192,10 @@ export function adjustRuleScopeImpl(rule: string, prefixSelector: string | null)
   }
 }
 
-const adjustRuleScope = memoize(adjustRuleScopeImpl, { maxSize: 100, equals: (a, b) => a === b })
+const adjustRuleScope = memoize(adjustRuleScopeImpl, {
+  maxSize: 100,
+  matchesArg: (a, b) => a === b,
+})
 
 function updateTwind(config: Configuration, prefixSelector: string | null) {
   const element = document.head.appendChild(document.createElement('style'))

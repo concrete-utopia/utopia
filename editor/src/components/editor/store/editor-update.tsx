@@ -1,4 +1,5 @@
 import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import { deriveState } from './editor-state'
 import type {
   EditorAction,
   EditorDispatch,
@@ -12,6 +13,7 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
+import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -26,11 +28,11 @@ export function runLocalEditorAction(
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
-      return UPDATE_FNS.SET_CANVAS_FRAMES(action, state, derivedState)
+      return UPDATE_FNS.SET_CANVAS_FRAMES(action, state)
     case 'ALIGN_SELECTED_VIEWS':
-      return UPDATE_FNS.ALIGN_SELECTED_VIEWS(action, state, derivedState)
+      return UPDATE_FNS.ALIGN_SELECTED_VIEWS(action, state)
     case 'DISTRIBUTE_SELECTED_VIEWS':
-      return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state, derivedState)
+      return UPDATE_FNS.DISTRIBUTE_SELECTED_VIEWS(action, state)
     case 'SAVE_ASSET':
       return UPDATE_FNS.SAVE_ASSET(action, state, derivedState, dispatch, userState)
     default:
@@ -77,7 +79,7 @@ export function runSimpleLocalEditorAction(
     case 'MOVE_SELECTED_FORWARD':
       return UPDATE_FNS.MOVE_SELECTED_FORWARD(state)
     case 'UNSET_PROPERTY':
-      return UPDATE_FNS.UNSET_PROPERTY(action, state, dispatch)
+      return UPDATE_FNS.UNSET_PROPERTY(action, state)
     case 'UNDO':
       return UPDATE_FNS.UNDO(state, stateHistory)
     case 'REDO':
@@ -115,7 +117,7 @@ export function runSimpleLocalEditorAction(
     case 'PASTE_PROPERTIES':
       return UPDATE_FNS.PASTE_PROPERTIES(action, state)
     case 'COPY_SELECTION_TO_CLIPBOARD':
-      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(action, state, dispatch, builtInDependencies)
+      return UPDATE_FNS.COPY_SELECTION_TO_CLIPBOARD(state, builtInDependencies)
     case 'CUT_SELECTION_TO_CLIPBOARD':
       return UPDATE_FNS.CUT_SELECTION_TO_CLIPBOARD(state, dispatch, builtInDependencies)
     case 'COPY_PROPERTIES':
@@ -159,13 +161,13 @@ export function runSimpleLocalEditorAction(
     case 'SHOW_MODAL':
       return UPDATE_FNS.SHOW_MODAL(action, state)
     case 'RESET_PINS':
-      return UPDATE_FNS.RESET_PINS(action, state, dispatch)
+      return UPDATE_FNS.RESET_PINS(action, state, derivedState)
     case 'SET_CURSOR_OVERLAY':
       return UPDATE_FNS.SET_CURSOR_OVERLAY(action, state)
     case 'SET_Z_INDEX':
-      return UPDATE_FNS.SET_Z_INDEX(action, state, derivedState)
+      return UPDATE_FNS.SET_Z_INDEX(action, state)
     case 'UPDATE_FRAME_DIMENSIONS':
-      return UPDATE_FNS.UPDATE_FRAME_DIMENSIONS(action, state, derivedState)
+      return UPDATE_FNS.UPDATE_FRAME_DIMENSIONS(action, state)
     case 'SET_NAVIGATOR_RENAMING_TARGET':
       return UPDATE_FNS.SET_NAVIGATOR_RENAMING_TARGET(action, state)
     case 'SET_STORED_FONT_SETTINGS':
@@ -236,7 +238,7 @@ export function runSimpleLocalEditorAction(
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
     case 'TRUE_UP_GROUPS':
-      return UPDATE_FNS.TRUE_UP_GROUPS(state)
+      return UPDATE_FNS.TRUE_UP_GROUPS(state, derivedState)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
@@ -252,11 +254,11 @@ export function runSimpleLocalEditorAction(
     case 'DELETE_SELECTED':
       return UPDATE_FNS.DELETE_SELECTED(state, dispatch)
     case 'WRAP_IN_ELEMENT':
-      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch, builtInDependencies)
+      return UPDATE_FNS.WRAP_IN_ELEMENT(action, state, derivedState, dispatch)
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_ELEMENTS':
-      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies)
+      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies, derivedState)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
@@ -310,6 +312,8 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_FOCUSED_ELEMENT(action, state, derivedState)
     case 'SCROLL_TO_ELEMENT':
       return UPDATE_FNS.SCROLL_TO_ELEMENT(action, state, dispatch)
+    case 'SCROLL_TO_POSITION':
+      return UPDATE_FNS.SCROLL_TO_POSITION(action, state, dispatch)
     case 'SET_SCROLL_ANIMATION':
       return UPDATE_FNS.SET_SCROLL_ANIMATION(action, state, dispatch)
     case 'UPDATE_CONFIG_FROM_VSCODE':
@@ -331,7 +335,7 @@ export function runSimpleLocalEditorAction(
     case 'CLOSE_FLOATING_INSERT_MENU':
       return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
     case 'INSERT_INSERTABLE':
-      return UPDATE_FNS.INSERT_INSERTABLE(action, state)
+      return UPDATE_FNS.INSERT_INSERTABLE(action, state, derivedState)
     case 'SET_PROP_TRANSIENT':
       return UPDATE_FNS.SET_PROP_TRANSIENT(action, state)
     case 'CLEAR_TRANSIENT_PROPS':
@@ -353,7 +357,7 @@ export function runSimpleLocalEditorAction(
     case 'FORCE_PARSE_FILE':
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'RUN_ESCAPE_HATCH':
-      return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, builtInDependencies)
+      return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, derivedState, builtInDependencies)
     case 'TOGGLE_SELECTION_LOCK':
       return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
     case 'UPDATE_AGAINST_GITHUB':
@@ -361,7 +365,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_IMAGE_DRAG_SESSION_STATE':
       return UPDATE_FNS.SET_FILE_BROWSER_DRAG_STATE(action, state)
     case 'APPLY_COMMANDS':
-      return UPDATE_FNS.APPLY_COMMANDS(action, state)
+      return UPDATE_FNS.APPLY_COMMANDS(action, state, derivedState)
     case 'UPDATE_COLOR_SWATCHES':
       return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
@@ -390,6 +394,13 @@ export function runExecuteWithPostActionMenuAction(
     working.postActionInteractionSession.editorStateSnapshot,
   )
 
+  const derivedState = deriveState(
+    editorState,
+    null,
+    'unpatched',
+    unpatchedCreateRemixDerivedDataMemo,
+  )
+
   const commands = action.choice.run(
     editorState,
     working.postActionInteractionSession.derivedStateSnapshot,
@@ -400,7 +411,7 @@ export function runExecuteWithPostActionMenuAction(
     return working
   }
 
-  const newEditorState = foldAndApplyCommandsSimple(editorState, commands)
+  const newEditorState = foldAndApplyCommandsSimple(editorState, derivedState, commands)
   return {
     ...working,
     unpatchedEditor: newEditorState,

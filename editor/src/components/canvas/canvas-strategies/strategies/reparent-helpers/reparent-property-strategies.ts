@@ -269,7 +269,6 @@ export const convertFragmentLikeChildrenToVisualSize =
     newParent: ElementPath,
     reparentStrategy: ReparentStrategy,
     projectContents: ProjectContentTreeRoot,
-    openFile: string | null | undefined,
     propertyStrategies: Array<
       (
         elementToReparent: ElementPathSnapshots,
@@ -313,7 +312,6 @@ export const convertFragmentLikeChildrenToVisualSize =
           metadata.originalTargetMetadata,
           metadata.currentMetadata,
           projectContents,
-          openFile,
         )
       } else {
         const directions = singleAxisAutoLayoutContainerDirections(

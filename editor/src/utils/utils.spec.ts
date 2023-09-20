@@ -225,28 +225,6 @@ describe('Utils.proxyValue', () => {
   })
 })
 
-describe('Utils.memoize', () => {
-  it('memoizes', () => {
-    const functionToMemoize = (params: { a: number; b: number }) => {
-      return Math.sqrt(params.a * params.a + params.b * params.b)
-    }
-    const memoized = Utils.memoize(functionToMemoize)
-    const firstRun = memoized({ a: 4, b: 12 })
-    const secondRun = memoized({ a: 4, b: 12 })
-    expect(firstRun).to.equal(secondRun)
-  })
-
-  it('returns new stuff', () => {
-    const functionToMemoize = (params: { a: number; b: number }) => {
-      return Math.sqrt(params.a * params.a + params.b * params.b)
-    }
-    const memoized = Utils.memoize(functionToMemoize)
-    const firstRun = memoized({ a: 4, b: 12 })
-    const secondRun = memoized({ a: 2, b: 1 })
-    expect(firstRun).to.not.equal(secondRun)
-  })
-})
-
 describe('Utils.boundingRectangle', () => {
   it('encompasses two overlapping rectangles', () => {
     const first = { x: 10, y: 20, width: 100, height: 200 } as CanvasRectangle

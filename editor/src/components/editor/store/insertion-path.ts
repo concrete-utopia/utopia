@@ -1,8 +1,4 @@
-import type {
-  ElementPath,
-  NodeModules,
-  StaticElementPath,
-} from '../../../core/shared/project-file-types'
+import type { ElementPath, StaticElementPath } from '../../../core/shared/project-file-types'
 import * as EP from '../../../core/shared/element-path'
 import type { ConditionalCase } from '../../../core/model/conditionals'
 import {
@@ -187,8 +183,6 @@ export function commonInsertionPathFromArray(
 export function getInsertionPath(
   target: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-  openFile: string | null | undefined,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   fragmentWrapperUID: string,
@@ -197,8 +191,6 @@ export function getInsertionPath(
   const targetSupportsChildren = MetadataUtils.targetSupportsChildren(
     projectContents,
     metadata,
-    nodeModules,
-    openFile,
     target,
     elementPathTree,
   )

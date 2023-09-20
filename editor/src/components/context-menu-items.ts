@@ -1,20 +1,26 @@
 import { MetadataUtils } from '../core/model/element-metadata-utils'
 import type { Either } from '../core/shared/either'
 import { isRight } from '../core/shared/either'
-import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import {
-  isIntrinsicElement,
-  isJSXElement,
-  isJSXElementLike,
-  isJSXFragment,
-} from '../core/shared/element-template'
-import type { CanvasPoint } from '../core/shared/math-utils'
-import type { NodeModules, ElementPath } from '../core/shared/project-file-types'
 import * as EP from '../core/shared/element-path'
+import type { ElementPathTrees } from '../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
+import { isIntrinsicElement, isJSXElementLike } from '../core/shared/element-template'
+import type { CanvasPoint } from '../core/shared/math-utils'
+import type { ElementPath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
+import { WindowMousePositionRaw } from '../utils/global-positions'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import type { ProjectContentTreeRoot } from './assets'
+import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
+import {
+  PropsPreservedPasteHerePostActionChoice,
+  PropsReplacedPasteHerePostActionChoice,
+} from './canvas/canvas-strategies/post-action-options/post-action-paste'
+import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { windowToCanvasCoordinates } from './canvas/dom-lookup'
 import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
@@ -28,6 +34,7 @@ import type {
   NavigatorEntry,
   PasteHerePostActionMenuData,
 } from './editor/store/editor-state'
+import type { ElementContextMenuInstance } from './element-context-menu'
 import {
   toggleBackgroundLayers,
   toggleBorder,
@@ -35,21 +42,6 @@ import {
   toggleStylePropPath,
   toggleStylePropPaths,
 } from './inspector/common/css-utils'
-import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import { defaultTransparentViewElement } from './editor/defaults'
-import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategies/fragment-like-helpers'
-import type { ElementPathTrees } from '../core/shared/element-path-tree'
-import { windowToCanvasCoordinates } from './canvas/dom-lookup'
-import { WindowMousePositionRaw } from '../utils/global-positions'
-import type { ElementContextMenuInstance } from './element-context-menu'
-import {
-  PropsPreservedPasteHerePostActionChoice,
-  PropsReplacedPasteHerePostActionChoice,
-} from './canvas/canvas-strategies/post-action-options/post-action-paste'
-import { stripNulls } from '../core/shared/array-utils'
-import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { createPasteToReplacePostActionActions } from './canvas/canvas-strategies/post-action-options/post-action-options'
 
 export interface ContextMenuItem<T> {
   name: string | React.ReactNode
@@ -66,14 +58,12 @@ export interface CanvasData {
   selectedViews: Array<ElementPath>
   jsxMetadata: ElementInstanceMetadataMap
   projectContents: ProjectContentTreeRoot
-  nodeModules: NodeModules
   resolve: (importOrigin: string, toImport: string) => Either<string, string>
   hiddenInstances: ElementPath[]
   scale: number
   focusedElementPath: ElementPath | null
   allElementProps: AllElementProps
   pathTrees: ElementPathTrees
-  openFile: string | null
   internalClipboard: InternalClipboard
   contextMenuInstance: ElementContextMenuInstance
   autoFocusedPaths: Array<ElementPath>
@@ -393,8 +383,6 @@ export const unwrap: ContextMenuItem<CanvasData> = {
         MetadataUtils.targetSupportsChildren(
           data.projectContents,
           data.jsxMetadata,
-          data.nodeModules,
-          data.openFile,
           path,
           data.pathTrees,
         ) ||

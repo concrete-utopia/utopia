@@ -1,6 +1,4 @@
 import React from 'react'
-import Utils from './utils'
-import { keepDeepReferenceEqualityIfPossible } from './react-performance'
 import { omitWithPredicate } from '../core/shared/object-utils'
 import type { MapLike } from 'typescript'
 import { firstLetterIsLowerCase } from '../core/shared/string-utils'
@@ -9,6 +7,7 @@ import { UtopiaKeys, UTOPIA_UID_KEY, UTOPIA_PATH_KEY } from '../core/model/utopi
 import { v4 } from 'uuid'
 import { isFeatureEnabled } from './feature-switches'
 import { PERFORMANCE_MARKS_ALLOWED } from '../common/env-vars'
+import { memoize } from '../core/shared/memoize'
 
 const realCreateElement = React.createElement
 
@@ -119,7 +118,7 @@ function attachDataUidToRoot(
   }
 }
 
-const mangleFunctionType = Utils.memoize(
+const mangleFunctionType = memoize(
   (type: unknown): React.FunctionComponent<React.PropsWithChildren<unknown>> => {
     const mangledFunctionName = `UtopiaSpiedFunctionComponent(${getDisplayName(type)})`
 
@@ -161,7 +160,7 @@ const mangleFunctionType = Utils.memoize(
   },
 )
 
-const mangleClassType = Utils.memoize(
+const mangleClassType = memoize(
   (type: any) => {
     const originalRender = type.prototype.render
     // mutation
@@ -197,7 +196,7 @@ const mangleClassType = Utils.memoize(
   },
 )
 
-const mangleExoticType = Utils.memoize(
+const mangleExoticType = memoize(
   (
     type: React.ComponentType<React.PropsWithChildren<unknown>>,
   ): React.FunctionComponent<React.PropsWithChildren<unknown>> => {

@@ -5,7 +5,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
 import type { ValueAtPath } from '../../../core/shared/jsx-attributes'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
 import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -25,6 +25,7 @@ export function convertToAbsolute(transient: WhenToRun, target: ElementPath): Co
 
 export const runConvertToAbsolute: CommandFunction<ConvertToAbsolute> = (
   editorState: EditorState,
+  _derivedState: DerivedState,
   command: ConvertToAbsolute,
 ) => {
   const propsToUpdate: Array<ValueAtPath> = [

@@ -38,7 +38,7 @@ import type { ElementPath, Imports } from '../../../core/shared/project-file-typ
 import type { IndexPosition } from '../../../utils/utils'
 import { absolute } from '../../../utils/utils'
 import type { EditorDispatch } from '../action-types'
-import type { EditorState } from '../store/editor-state'
+import type { DerivedState, EditorState } from '../store/editor-state'
 import { modifyUnderlyingTargetElement } from '../store/editor-state'
 import type { ConditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import {
@@ -64,7 +64,6 @@ export function unwrapConditionalClause(
   let newSelection: Array<ElementPath> = []
   const withElementMoved = modifyUnderlyingTargetElement(
     parentPath.intendedParentPath,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
     (element) => element,
     (success) => {
@@ -154,7 +153,6 @@ export function unwrapTextContainingConditional(
 
   const withParentUpdated = modifyUnderlyingTargetElement(
     targetParent,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
     (element) => element,
     (success) => {
@@ -164,8 +162,6 @@ export function unwrapTextContainingConditional(
       const insertionPath = getInsertionPath(
         targetParent,
         editor.projectContents,
-        editor.nodeModules.files,
-        editor.canvas.openFile?.filename,
         editor.jsxMetadata,
         editor.elementPathTree,
         wrapperUID,
@@ -221,6 +217,7 @@ export function isTextContainingConditional(
 
 export function wrapElementInsertions(
   editor: EditorState,
+  derivedState: DerivedState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
   rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
@@ -274,7 +271,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -296,7 +293,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -318,7 +315,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -376,7 +373,6 @@ function insertElementIntoJSXConditional(
 ): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
     (element) => element,
     (success, _, underlyingFilePath) => {
@@ -427,7 +423,6 @@ function insertConditionalIntoConditionalClause(
 ): EditorState {
   return modifyUnderlyingTargetElement(
     staticTarget.intendedParentPath,
-    forceNotNull('No storyboard file found', editor.canvas.openFile?.filename),
     editor,
     (element) => element,
     (success, _, underlyingFilePath) => {

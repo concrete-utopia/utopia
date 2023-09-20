@@ -1,19 +1,7 @@
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { EditorState } from '../../../components/editor/store/editor-state'
-import {
-  modifyParseSuccessAtPath,
-  modifyUnderlyingElementForOpenFile,
-} from '../../../components/editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../../components/editor/store/editor-state'
 import type { Imports } from '../../../core/shared/project-file-types'
-import {
-  isParseSuccess,
-  isTextFile,
-  RevisionsState,
-  TextFile,
-} from '../../../core/shared/project-file-types'
 import type { BaseCommand, WhenToRun, CommandFunction, CommandFunctionResult } from './commands'
-import { Spec } from 'immutability-helper'
-import { ProjectContentTreeRoot } from '../../../components/assets'
 import { patchParseSuccessAtFilePath } from './patch-utils'
 
 export interface AddImportsToFile extends BaseCommand {
@@ -37,6 +25,7 @@ export function addImportsToFile(
 
 export const runAddImportsToFile: CommandFunction<AddImportsToFile> = (
   editorState: EditorState,
+  derivedState: DerivedState,
   command: AddImportsToFile,
 ): CommandFunctionResult => {
   const editorStatePatch = patchParseSuccessAtFilePath(

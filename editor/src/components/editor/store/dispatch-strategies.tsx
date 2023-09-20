@@ -77,6 +77,7 @@ export function interactionFinished(
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
+    result.unpatchedDerived,
     result.builtInDependencies,
   )
   const interactionSession = storedState.unpatchedEditor.canvas.interactionSession
@@ -104,6 +105,7 @@ export function interactionFinished(
           }
     const commandResult = foldAndApplyCommands(
       newEditorState,
+      result.unpatchedDerived,
       storedState.patchedEditor,
       [],
       strategyResult.commands,
@@ -153,6 +155,7 @@ export function interactionHardReset(
   }
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
+    result.unpatchedDerived,
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
@@ -191,6 +194,7 @@ export function interactionHardReset(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
+        result.unpatchedDerived,
         storedState.patchedEditor,
         [],
         strategyResult.commands,
@@ -236,6 +240,7 @@ export function interactionUpdate(
   const newEditorState = result.unpatchedEditor
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
+    result.unpatchedDerived,
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
@@ -267,6 +272,7 @@ export function interactionUpdate(
         return handleUserChangedStrategy(
           result.builtInDependencies,
           newEditorState,
+          result.unpatchedDerived,
           storedState.patchedEditor,
           result.strategyState,
           strategy,
@@ -284,6 +290,7 @@ export function interactionUpdate(
       return handleAccumulatingKeypresses(
         result.builtInDependencies,
         newEditorState,
+        result.unpatchedDerived,
         storedState.patchedEditor,
         result.strategyState,
         strategy,
@@ -294,6 +301,7 @@ export function interactionUpdate(
     return handleUpdate(
       result.builtInDependencies,
       newEditorState,
+      result.unpatchedDerived,
       storedState.patchedEditor,
       result.strategyState,
       strategy,
@@ -318,6 +326,7 @@ export function interactionStart(
   )
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
+    result.unpatchedDerived,
     result.builtInDependencies,
   )
   const interactionSession = newEditorState.canvas.interactionSession
@@ -351,6 +360,7 @@ export function interactionStart(
       )
       const commandResult = foldAndApplyCommands(
         newEditorState,
+        result.unpatchedDerived,
         storedState.patchedEditor,
         [],
         strategyResult.commands,
@@ -416,6 +426,7 @@ export function interactionCancel(
 function handleUserChangedStrategy(
   builtInDependencies: BuiltInDependencies,
   newEditorState: EditorState,
+  newDerivedState: DerivedState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
@@ -424,6 +435,7 @@ function handleUserChangedStrategy(
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
+    newDerivedState,
     builtInDependencies,
   )
 
@@ -453,6 +465,7 @@ function handleUserChangedStrategy(
     )
     const commandResult = foldAndApplyCommands(
       newEditorState,
+      newDerivedState,
       storedEditorState,
       strategyChangedLogCommands.flatMap((c) => c.commands),
       strategyResult.commands,
@@ -491,6 +504,7 @@ function handleUserChangedStrategy(
 function handleAccumulatingKeypresses(
   builtInDependencies: BuiltInDependencies,
   newEditorState: EditorState,
+  newDerivedState: DerivedState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
@@ -499,6 +513,7 @@ function handleAccumulatingKeypresses(
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
+    newDerivedState,
     builtInDependencies,
   )
   // If there is a current strategy, produce the commands from it.
@@ -533,6 +548,7 @@ function handleAccumulatingKeypresses(
           : strategyApplicationResult([])
       const commandResult = foldAndApplyCommands(
         updatedEditorState,
+        newDerivedState,
         storedEditorState,
         strategyState.currentStrategyCommands,
         strategyResult.commands,
@@ -571,6 +587,7 @@ function handleAccumulatingKeypresses(
 function handleUpdate(
   builtInDependencies: BuiltInDependencies,
   newEditorState: EditorState,
+  newDerivedState: DerivedState,
   storedEditorState: EditorState,
   strategyState: StrategyState,
   strategy: StrategyWithFitness | null,
@@ -579,6 +596,7 @@ function handleUpdate(
 ): HandleStrategiesResult {
   const canvasState: InteractionCanvasState = pickCanvasStateFromEditorState(
     newEditorState,
+    newDerivedState,
     builtInDependencies,
   )
   // If there is a current strategy, produce the commands from it.
@@ -595,6 +613,7 @@ function handleUpdate(
         : strategyApplicationResult([])
     const commandResult = foldAndApplyCommands(
       newEditorState,
+      newDerivedState,
       storedEditorState,
       [],
       strategyResult.commands,

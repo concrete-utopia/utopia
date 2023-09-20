@@ -1,17 +1,10 @@
 import type { FlexLength, FlexStretch } from 'utopia-api/core'
-import {
-  FlexAlignment,
-  FlexElementProps,
-  FramePoint,
-  getUnstretchedWidthHeight,
-  LayoutSystem,
-} from 'utopia-api/core'
+import { getUnstretchedWidthHeight } from 'utopia-api/core'
 import type { UtopiaComponentProps } from 'utopia-api'
 import type { FullFrame } from '../../components/frame'
 import type { Either } from '../shared/either'
 import {
   applicative2Either,
-  defaultEither,
   flatMapEither,
   foldEither,
   isRight,
@@ -24,21 +17,14 @@ import {
   eitherFromMaybe,
 } from '../shared/either'
 import type { ElementInstanceMetadata, JSXAttributes, JSXElement } from '../shared/element-template'
-import {
-  isJSXElement,
-  jsExpressionValue,
-  UtopiaJSXComponent,
-  ElementInstanceMetadataMap,
-  emptyComments,
-} from '../shared/element-template'
+import { isJSXElement, jsExpressionValue, emptyComments } from '../shared/element-template'
 import type { ValueAtPath } from '../shared/jsx-attributes'
 import {
   setJSXValueAtPath,
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
 } from '../shared/jsx-attributes'
-import type { NodeModules, PropertyPath, ElementPath } from '../shared/project-file-types'
-import { Imports } from '../shared/project-file-types'
+import type { PropertyPath, ElementPath } from '../shared/project-file-types'
 import { getLayoutProperty } from './getLayoutProperty'
 import type { PropsOrJSXAttributes } from '../model/element-metadata-utils'
 import { getSimpleAttributeAtPath } from '../model/element-metadata-utils'
@@ -49,7 +35,6 @@ import {
 } from '../property-controls/property-controls-utils'
 import type { PropertyControlsInfo } from '../../components/custom-code/code-file'
 import type { ProjectContentTreeRoot } from '../../components/assets'
-import { StyleLayoutProp } from './layout-helpers-new'
 import { stylePropPathMappingFn } from '../../components/inspector/common/property-path-hooks'
 
 export function targetRespectsLayout(
@@ -57,14 +42,12 @@ export function targetRespectsLayout(
   propertyControlsInfo: PropertyControlsInfo,
   openFilePath: string | null,
   projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
 ): boolean {
   const propControls = getPropertyControlsForTarget(
     target,
     propertyControlsInfo,
     openFilePath,
     projectContents,
-    nodeModules,
   )
 
   return propControls != null && hasStyleControls(propControls)

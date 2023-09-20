@@ -61,15 +61,17 @@ import { emptyImports } from '../../../core/workers/common/project-file-utils'
 import { emptyElementPath } from '../../../core/shared/element-path'
 import { getInsertionPath } from '../../editor/store/insertion-path'
 import type { InsertMenuMode } from './floating-insert-menu-helpers'
+import { getActionsToApplyChange } from '../../../components/editor/convert-callbacks'
+import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export const FloatingMenuTestId = 'floating-menu-test-id'
 
-type InsertMenuItemValue = InsertableComponent & {
+export type InsertMenuItemValue = InsertableComponent & {
   source: InsertableComponentGroupType | null
   key: string
 }
 
-type InsertMenuItem = {
+export type InsertMenuItem = {
   label: string
   source: string | null
   value: InsertMenuItemValue
@@ -80,7 +82,7 @@ type InsertMenuItemGroup = {
   options: Array<InsertMenuItem>
 }
 
-type InsertableComponentFlatList = Array<InsertMenuItemGroup>
+export type InsertableComponentFlatList = Array<InsertMenuItemGroup>
 
 function convertInsertableComponentsToFlatList(
   insertableComponents: InsertableComponentGroup[],
@@ -108,7 +110,9 @@ function convertInsertableComponentsToFlatList(
   })
 }
 
-function useGetInsertableComponents(insertMenuMode: InsertMenuMode): InsertableComponentFlatList {
+export function useGetInsertableComponents(
+  insertMenuMode: InsertMenuMode,
+): InsertableComponentFlatList {
   const dependencies = usePossiblyResolvedPackageDependencies()
 
   const { packageStatus, propertyControlsInfo } = useEditorState(
@@ -154,7 +158,7 @@ function useGetInsertableComponents(insertMenuMode: InsertMenuMode): InsertableC
   return insertableComponents
 }
 
-function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
+export function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false> {
   const colorTheme = useColorTheme()
   // componentSelectorStyles will only be recreated if the theme changes, otherwise we re-use the same object
   return React.useMemo(
@@ -313,7 +317,7 @@ interface CheckboxRowProps {
   onChange: (value: boolean) => void
 }
 
-const CustomOption = (props: OptionProps<InsertMenuItem, false>) => {
+export const CustomComponentOption = (props: OptionProps<InsertMenuItem, false>) => {
   const { innerRef, innerProps, isDisabled, isFocused, label, data } = props
   const colorTheme = useColorTheme()
   return (
@@ -428,16 +432,6 @@ export var FloatingMenu = React.memo(() => {
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const nodeModules = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.nodeModules.files,
-    'FloatingMenu nodeModules',
-  )
-  const openFile = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.openFile?.filename ?? null,
-    'FloatingMenu openFile',
-  )
   const jsxMetadata = useEditorState(
     Substores.metadata,
     (store) => store.editor.jsxMetadata,
@@ -455,195 +449,35 @@ export var FloatingMenu = React.memo(() => {
   const [addContentForInsertion, setAddContentForInsertion] = React.useState(false)
   const [fixedSizeForInsertion, setFixedSizeForInsertion] = React.useState(false)
 
-  const getInsertionPathInner = React.useCallback(
-    (target: ElementPath) => {
-      const wrapperUID = generateUidWithExistingComponents(projectContentsRef.current)
-      return getInsertionPath(
-        target,
-        projectContentsRef.current,
-        nodeModules,
-        openFile,
-        jsxMetadata,
-        elementPathTree,
-        wrapperUID,
-        selectedViewsRef.current.length,
-      )
-    },
-    [projectContentsRef, nodeModules, openFile, jsxMetadata, elementPathTree, selectedViewsRef],
-  )
-
-  const onChangeConditionalOrFragment = React.useCallback(
-    (element: JSXConditionalExpressionWithoutUID | JSXFragmentWithoutUID): Array<EditorAction> => {
-      let actionsToDispatch: Array<EditorAction> = []
-      const selectedViews = selectedViewsRef.current
-      const importsToAdd: Imports =
-        element.type === 'JSX_FRAGMENT' && element.longForm
-          ? {
-              react: {
-                importedAs: 'React',
-                importedFromWithin: [],
-                importedWithName: null,
-              },
-            }
-          : emptyImports()
-
-      switch (floatingMenuState.insertMenuMode) {
-        case 'wrap':
-          actionsToDispatch = [
-            wrapInElement(selectedViews, {
-              element: {
-                ...element,
-                uid: generateUidWithExistingComponents(projectContentsRef.current),
-              },
-              importsToAdd: importsToAdd,
-            }),
-          ]
-          break
-        case 'insert':
-          const targetParent = safeIndex(selectedViews, 0) ?? emptyElementPath
-
-          actionsToDispatch = [
-            insertInsertable(
-              getInsertionPathInner(targetParent),
-              insertableComponent(importsToAdd, element, '', [], null),
-              fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-              floatingMenuState.indexPosition,
-            ),
-          ]
-          break
-        case 'convert': {
-          if (element.type === 'JSX_FRAGMENT') {
-            const targetsForUpdates = getElementsToTarget(selectedViews)
-            actionsToDispatch = targetsForUpdates.flatMap((path) => {
-              return updateJSXElementName(path, { type: 'JSX_FRAGMENT' }, importsToAdd)
-            })
-          }
-          break
-        }
-        case 'closed':
-          break
-        default:
-          assertNever(floatingMenuState)
-      }
-      return actionsToDispatch
-    },
-    [
-      selectedViewsRef,
-      floatingMenuState,
-      projectContentsRef,
-      getInsertionPathInner,
-      fixedSizeForInsertion,
-    ],
-  )
-
-  const onChangeElement = React.useCallback(
-    (pickedInsertableComponent: InsertMenuItemValue): Array<EditorAction> => {
-      if (pickedInsertableComponent.element.type !== 'JSX_ELEMENT') {
-        return []
-      }
-      const selectedViews = selectedViewsRef.current
-      let actionsToDispatch: Array<EditorAction> = []
-      switch (floatingMenuState.insertMenuMode) {
-        case 'wrap':
-          const newUID = generateUidWithExistingComponents(projectContentsRef.current)
-
-          const newElement = jsxElement(
-            pickedInsertableComponent.element.name,
-            newUID,
-            setJSXAttributesAttribute(
-              pickedInsertableComponent.element.props,
-              'data-uid',
-              jsExpressionValue(newUID, emptyComments),
-            ),
-            pickedInsertableComponent.element.children,
-          )
-
-          actionsToDispatch = [
-            wrapInElement(selectedViews, {
-              element: newElement,
-              importsToAdd: pickedInsertableComponent.importsToAdd,
-            }),
-          ]
-          break
-        case 'insert':
-          let elementToInsert = pickedInsertableComponent
-          if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
-            elementToInsert = {
-              ...pickedInsertableComponent,
-              element: {
-                ...pickedInsertableComponent.element,
-                children: [jsxTextBlock('Utopia')],
-              },
-            }
-          }
-
-          const targetParent: ElementPath | null =
-            floatingMenuState.parentPath ?? safeIndex(selectedViews, 0) ?? null
-          if (targetParent != null) {
-            // TODO multiselect?
-            actionsToDispatch = [
-              insertInsertable(
-                getInsertionPathInner(targetParent),
-                elementToInsert,
-                fixedSizeForInsertion ? 'add-size' : 'do-not-add',
-                floatingMenuState.indexPosition,
-              ),
-            ]
-          }
-          break
-        case 'convert':
-          const { element, importsToAdd } = pickedInsertableComponent
-          // this is taken from render-as.tsx
-          const targetsForUpdates = getElementsToTarget(selectedViews)
-          actionsToDispatch = targetsForUpdates.flatMap((path) => {
-            return updateJSXElementName(
-              path,
-              { type: 'JSX_ELEMENT', name: element.name },
-              importsToAdd,
-            )
-          })
-          break
-        case 'closed':
-          break
-        default:
-          assertNever(floatingMenuState)
-      }
-
-      return actionsToDispatch
-    },
-    [
-      selectedViewsRef,
-      floatingMenuState,
-      projectContentsRef,
-      addContentForInsertion,
-      getInsertionPathInner,
-      fixedSizeForInsertion,
-    ],
-  )
-
   const onChange = React.useCallback(
     (value: InsertMenuItem | null) => {
       if (value != null) {
         const pickedInsertableComponent = (value as InsertMenuItem).value
 
-        function getActionsToDispatch() {
-          switch (pickedInsertableComponent.element.type) {
-            case 'JSX_CONDITIONAL_EXPRESSION':
-            case 'JSX_FRAGMENT':
-              return onChangeConditionalOrFragment(pickedInsertableComponent.element)
-            case 'JSX_ELEMENT':
-              return onChangeElement(pickedInsertableComponent)
-            default:
-              assertNever(pickedInsertableComponent.element)
-          }
-        }
-
-        const actionsToDispatch = getActionsToDispatch()
+        const actionsToDispatch = getActionsToApplyChange(
+          projectContentsRef.current,
+          jsxMetadata,
+          elementPathTree,
+          selectedViewsRef.current,
+          floatingMenuState,
+          fixedSizeForInsertion,
+          addContentForInsertion,
+          pickedInsertableComponent,
+        )
 
         dispatch([...actionsToDispatch, closeFloatingInsertMenu()])
       }
     },
-    [onChangeConditionalOrFragment, onChangeElement, dispatch],
+    [
+      addContentForInsertion,
+      dispatch,
+      elementPathTree,
+      fixedSizeForInsertion,
+      floatingMenuState,
+      jsxMetadata,
+      projectContentsRef,
+      selectedViewsRef,
+    ],
   )
 
   useHandleCloseOnESCOrEnter(
@@ -700,7 +534,7 @@ export var FloatingMenu = React.memo(() => {
           placeholder='Search...'
           styles={componentSelectorStyles}
           tabSelectsValue={false}
-          components={{ Option: CustomOption }}
+          components={{ Option: CustomComponentOption }}
         />
         {showInsertionControls ? (
           <FlexRow
@@ -750,7 +584,7 @@ export const FloatingInsertMenu = React.memo((props: FloatingInsertMenuProps) =>
     dispatch([closeFloatingInsertMenu()])
   }, [dispatch])
 
-  return isVisible ? (
+  return isVisible && !isFeatureEnabled('Draggable Floating Panels') ? (
     <OnClickOutsideHOC onClickOutside={onClickOutside}>
       <div
         style={{

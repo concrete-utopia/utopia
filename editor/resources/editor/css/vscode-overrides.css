@@ -1,0 +1,78 @@
+/* Notes: 
+  1) this file gets loaded after VSCode's CSS. If you use the same specificity in your 
+    selectors, you'll be able to override them
+  2) Beware that VSCode also sets a number of styles are set inline - 
+     typically anything coming from a color theme, and anything dynamic. 
+     If you want to override those, use !important
+  3) Because of the theme, avoid defining colors here unless your goal is to remove them
+     with transparent !important.
+  4) Don't forget to update the loading screen placeholder where needed 
+     (vscode-editor-loading-screen.tsx)
+*/
+
+.monaco-workbench .part.editor > .content .editor-group-container > .title {
+  background-color: transparent !important;
+}
+
+/* Tab styles */
+.tab {
+  font-weight: 500;
+  font-family: 'Inter';
+  border-right: none !important;
+  background-color: transparent !important;
+}
+
+.tab[aria-selected='true'] {
+  background-color: transparent !important;
+}
+
+.tab[aria-selected='false'] {
+  opacity: 0.7;
+}
+
+.tab[aria-selected='false']:hover {
+  opacity: 1;
+}
+
+.monaco-workbench
+  .part.editor
+  > .content
+  .editor-group-container
+  > .title
+  .tabs-container
+  > .tab
+  .tab-label
+  a,
+.monaco-workbench .part.editor > .content .editor-group-container > .title .title-label a {
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* smaller 'edited / close'  marker, to match Utopia house style */
+.monaco-action-bar .actions-container {
+  transform: scale(0.7);
+}
+
+/* Tab bar heights */
+.monaco-workbench
+  .part.editor
+  > .content
+  .editor-group-container
+  > .title
+  .tabs-container
+  > .tab
+  .tab-label {
+  line-height: 34px;
+}
+.monaco-workbench .part.editor > .content .editor-group-container > .title .tabs-container > .tab {
+  height: 34px;
+}
+
+.monaco-workbench .part.editor > .content .editor-group-container > .title .editor-actions {
+  height: 34px;
+}
+.monaco-workbench .part.editor > .content .editor-group-container > .title .tabs-container {
+  background: transparent;
+  gap: 8px;
+  height: 34px;
+}

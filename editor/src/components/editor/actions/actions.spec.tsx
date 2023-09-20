@@ -1,41 +1,56 @@
 import * as Chai from 'chai'
 import type { FramePin } from 'utopia-api/core'
 import { LayoutSystem } from 'utopia-api/core'
+import { contentsTreeOptic } from '../../../components/assets'
+import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
+import { sampleCode } from '../../../core/model/new-project-files'
+import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
+import {
+  BakedInStoryboardUID,
+  BakedInStoryboardVariableName,
+} from '../../../core/model/scene-utils'
+import {
+  ScenePath1ForTestUiJsFile,
+  ScenePathForTestUiJsFile,
+  sampleImportsForTests,
+} from '../../../core/model/test-ui-js-file.test-utils'
+import { mapEither, right } from '../../../core/shared/either'
+import * as EP from '../../../core/shared/element-path'
 import type {
+  ElementInstanceMetadataMap,
   JSXAttributes,
   JSXElement,
   TopLevelElement,
   UtopiaJSXComponent,
-  ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
 import {
+  clearExpressionUniqueIDs,
+  defaultPropsParam,
+  elementInstanceMetadata,
+  emptyAttributeMetadata,
+  emptyComments,
+  emptyComputedStyle,
+  emptySpecialSizeMeasurements,
   isUtopiaJSXComponent,
-  jsxAttributeNestedObjectSimple,
   jsExpressionValue,
+  jsxAttributeNestedObjectSimple,
+  jsxAttributesFromMap,
   jsxElement,
   jsxElementName,
-  utopiaJSXComponent,
-  defaultPropsParam,
-  emptySpecialSizeMeasurements,
-  clearTopLevelElementUniqueIDs,
-  emptyComputedStyle,
-  ElementInstanceMetadata,
-  jsxAttributesFromMap,
-  emptyAttributeMetadata,
-  JSXElementChild,
-  partOfJsxAttributeValue,
-  jsxElementWithoutUID,
-  jsxAttributesEntry,
-  elementInstanceMetadata,
-  emptyComments,
-  SpecialSizeMeasurements,
   unparsedCode,
-  clearExpressionUniqueIDs,
+  utopiaJSXComponent,
 } from '../../../core/shared/element-template'
 import {
   clearModifiableAttributeUniqueIDs,
   getModifiableJSXAttributeAtPath,
 } from '../../../core/shared/jsx-attributes'
+import type { CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
+import { canvasRectangle, zeroRectangle } from '../../../core/shared/math-utils'
+import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'
+import { filtered, fromField, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { unsafeGet } from '../../../core/shared/optics/optic-utilities'
+import type { Optic } from '../../../core/shared/optics/optics'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 import type {
   ParseSuccess,
   TextFile,
@@ -43,49 +58,50 @@ import type {
 } from '../../../core/shared/project-file-types'
 import {
   RevisionsState,
+  exportFunction,
+  importAlias,
   isParseSuccess,
   isTextFile,
-  textFileContents,
-  textFile,
-  unparsed,
-  EmptyExportsDetail,
-  importAlias,
-  exportVariable,
-  exportVariables,
-  exportFunction,
-  parseSuccess,
   isUnparsed,
-  ParsedTextFile,
+  parseSuccess,
+  textFile,
+  textFileContents,
+  unparsed,
 } from '../../../core/shared/project-file-types'
-import { addImport, emptyImports } from '../../../core/workers/common/project-file-utils'
-import { deepFreeze } from '../../../utils/deep-freeze'
-import { right, forceRight, left, isRight, mapEither } from '../../../core/shared/either'
-import {
-  createFakeMetadataForComponents,
-  createFakeMetadataForEditor,
-} from '../../../utils/utils.test-utils'
-import Utils from '../../../utils/utils'
-import type { CanvasRectangle, LocalRectangle } from '../../../core/shared/math-utils'
-import { canvasRectangle, localRectangle, zeroRectangle } from '../../../core/shared/math-utils'
-import { getFrameChange } from '../../canvas/canvas-utils'
 import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
+import { NO_OP } from '../../../core/shared/utils'
+import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
+import { addImport } from '../../../core/workers/common/project-file-utils'
+import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
+import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
+import { styleStringInArray } from '../../../utils/common-constants'
+import { deepFreeze } from '../../../utils/deep-freeze'
+import Utils from '../../../utils/utils'
+import { createFakeMetadataForComponents } from '../../../utils/utils.test-utils'
+import {
+  contentsToTree,
+  getProjectFileByFilePath,
+  walkContentsTreeForParseSuccess,
+} from '../../assets'
+import { getFrameChange } from '../../canvas/canvas-utils'
+import { generateCodeResultCache } from '../../custom-code/code-file'
+import { cssNumber } from '../../inspector/common/css-utils'
+import { getComponentGroups } from '../../shared/project-components'
 import type { EditorState, PersistentModel } from '../store/editor-state'
 import {
-  createEditorState,
-  deriveState,
-  reconstructJSXMetadata,
-  getOpenUIJSFile,
   StoryboardFilePath,
+  createEditorState,
   defaultUserState,
+  deriveState,
   editorModelFromPersistentModel,
+  emptyDerivedState,
+  getOpenUIJSFile,
   withUnderlyingTargetFromEditorState,
-  ElementProps,
 } from '../store/editor-state'
-import { editorMoveTemplate, UPDATE_FNS } from './actions'
+import { childInsertionPath } from '../store/insertion-path'
+import { unpatchedCreateRemixDerivedDataMemo } from '../store/remix-derived-data'
 import {
   insertInsertable,
-  runEscapeHatch,
   setCanvasFrames,
   setFocusedElement,
   setProp_UNSAFE,
@@ -93,60 +109,8 @@ import {
   updateFromWorker,
   workerCodeAndParsedUpdate,
 } from './action-creators'
-import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
-import {
-  ScenePathForTestUiJsFile,
-  ScenePath1ForTestUiJsFile,
-  sampleImportsForTests,
-  TestScene0UID,
-  TestMainComponentUID,
-} from '../../../core/model/test-ui-js-file.test-utils'
-import {
-  BakedInStoryboardUID,
-  BakedInStoryboardVariableName,
-} from '../../../core/model/scene-utils'
-import { sampleCode } from '../../../core/model/new-project-files'
-import {
-  getEditorState,
-  makeTestProjectCodeWithSnippet,
-  testPrintCodeFromEditorState,
-  TestScenePath,
-} from '../../canvas/ui-jsx.test-utils'
-import { NO_OP } from '../../../core/shared/utils'
+import { UPDATE_FNS, editorMoveTemplate } from './actions'
 import { CURRENT_PROJECT_VERSION } from './migrations/migrations'
-import { generateCodeResultCache } from '../../custom-code/code-file'
-import {
-  contentsToTree,
-  getProjectFileByFilePath,
-  treeToContents,
-  walkContentsTreeForParseSuccess,
-} from '../../assets'
-import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
-import {
-  getComponentGroups,
-  insertableComponent,
-  InsertableComponent,
-} from '../../shared/project-components'
-import { immediatelyResolvableDependenciesWithEditorRequirements } from '../npm-dependency/npm-dependency'
-import { printCode, printCodeOptions } from '../../../core/workers/parser-printer/parser-printer'
-import { resolvedNpmDependency } from '../../../core/shared/npm-dependency-types'
-import { forceNotNull } from '../../../core/shared/optional-utils'
-import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import { DefaultThirdPartyControlDefinitions } from '../../../core/third-party/third-party-controls'
-import { cssNumber } from '../../inspector/common/css-utils'
-import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
-import { styleStringInArray } from '../../../utils/common-constants'
-import { childInsertionPath } from '../store/insertion-path'
-import type { Optic } from '../../../core/shared/optics/optics'
-import { fromField, filtered, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
-import { contentsTreeOptic } from '../../../components/assets'
-import { unsafeGet } from '../../../core/shared/optics/optic-utilities'
-import {
-  ElementPathTree,
-  elementPathTree,
-  ElementPathTrees,
-} from '../../../core/shared/element-path-tree'
-import { unpatchedCreateRemixDerivedDataMemo } from '../store/remix-derived-data'
 
 const chaiExpect = Chai.expect
 
@@ -303,12 +267,6 @@ describe('SET_PROP', () => {
 })
 
 describe('SET_CANVAS_FRAMES', () => {
-  const derivedState = deriveState(
-    testEditor,
-    null,
-    'unpatched',
-    unpatchedCreateRemixDerivedDataMemo,
-  )
   it('Updates the frame of the child correctly', () => {
     const action = setCanvasFrames(
       [
@@ -320,7 +278,7 @@ describe('SET_CANVAS_FRAMES', () => {
       ],
       false,
     )
-    const newEditor = UPDATE_FNS.SET_CANVAS_FRAMES(action, testEditor, derivedState)
+    const newEditor = UPDATE_FNS.SET_CANVAS_FRAMES(action, testEditor)
     const newUiJsFile = getProjectFileByFilePath(
       newEditor.projectContents,
       StoryboardFilePath,
@@ -906,6 +864,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an element into the project with the given values', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -943,7 +907,7 @@ describe('INSERT_INSERTABLE', () => {
       null,
     )
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1013,6 +977,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an element into the project with the given values, also adding style props', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -1050,7 +1020,7 @@ describe('INSERT_INSERTABLE', () => {
       null,
     )
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1121,6 +1091,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an img element into the project, also adding style props', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -1151,7 +1127,7 @@ describe('INSERT_INSERTABLE', () => {
 
     const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', null)
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1216,6 +1192,12 @@ describe('INSERT_INSERTABLE', () => {
   it('inserts an img element into the project, also adding style props, added at the back', () => {
     const project = complexDefaultProjectPreParsed()
     const editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(
+      editorState,
+      null,
+      'unpatched',
+      unpatchedCreateRemixDerivedDataMemo,
+    )
 
     const insertableGroups = getComponentGroups(
       'insert',
@@ -1248,7 +1230,7 @@ describe('INSERT_INSERTABLE', () => {
       type: 'back',
     })
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1315,6 +1297,7 @@ describe('SET_FOCUSED_ELEMENT', () => {
   it('prevents focusing a non-focusable element', () => {
     const project = complexDefaultProjectPreParsed()
     let editorState = editorModelFromPersistentModel(project, NO_OP)
+    const derivedState = deriveState(editorState, null, 'unpatched', () => null)
     const pathToFocus = EP.fromString('storyboard-entity/scene-1-entity/app-entity:app-outer-div')
     const underlyingElement = forceNotNull(
       'Should be able to find this.',
@@ -1343,7 +1326,6 @@ describe('SET_FOCUSED_ELEMENT', () => {
       jsxMetadata: fakeMetadata,
     }
     const action = setFocusedElement(pathToFocus)
-    const derivedState = deriveState(editorState, null, 'unpatched', () => null)
     const updatedEditorState = UPDATE_FNS.SET_FOCUSED_ELEMENT(action, editorState, derivedState)
     expect(updatedEditorState).toBe(editorState)
   })

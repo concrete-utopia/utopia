@@ -1151,3 +1151,54 @@ export function pathPartsFromJSXElementChild(
       assertNever(element)
   }
 }
+
+function findAmongJSXElementChildren(
+  parentUid: string,
+  condition: (e: JSXElementChild) => boolean,
+  children: JSXElementChild[],
+): Array<ElementPathPart> {
+  return children.flatMap((child) =>
+    findPathToJSXElementChild(condition, child).map((path) => [parentUid, ...path]),
+  )
+}
+
+export function findPathToJSXElementChild(
+  condition: (e: JSXElementChild) => boolean,
+  element: JSXElementChild,
+): Array<ElementPathPart> {
+  if (condition(element)) {
+    return [[element.uid]]
+  }
+
+  switch (element.type) {
+    case 'JSX_ELEMENT':
+    case 'JSX_FRAGMENT':
+      return findAmongJSXElementChildren(element.uid, condition, element.children)
+    case 'JSX_CONDITIONAL_EXPRESSION':
+      return findAmongJSXElementChildren(element.uid, condition, [
+        element.whenTrue,
+        element.whenFalse,
+      ])
+    case 'JSX_MAP_EXPRESSION':
+    case 'ATTRIBUTE_OTHER_JAVASCRIPT':
+      return findAmongJSXElementChildren(
+        element.uid,
+        condition,
+        Object.values(element.elementsWithin),
+      )
+    case 'ATTRIBUTE_NESTED_ARRAY':
+    case 'ATTRIBUTE_NESTED_OBJECT':
+      return findAmongJSXElementChildren(
+        element.uid,
+        condition,
+        element.content.map((c) => c.value),
+      )
+    case 'ATTRIBUTE_FUNCTION_CALL':
+    case 'ATTRIBUTE_VALUE':
+    case 'JSX_TEXT_BLOCK':
+      return []
+
+    default:
+      assertNever(element)
+  }
+}

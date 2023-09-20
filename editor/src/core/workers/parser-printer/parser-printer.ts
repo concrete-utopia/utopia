@@ -828,7 +828,7 @@ function printArbitraryJSBlock(block: ArbitraryJSBlock): TS.Node {
 }
 
 export const printCode = memoize(printCodeImpl, {
-  equals: (a, b) => a === b,
+  matchesArg: (a, b) => a === b,
   maxSize: 1,
 })
 

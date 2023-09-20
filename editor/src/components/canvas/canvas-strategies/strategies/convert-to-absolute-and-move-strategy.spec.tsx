@@ -10,6 +10,7 @@ import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { emptyModifiers } from '../../../../utils/modifiers'
 import type { EditorState } from '../../../editor/store/editor-state'
+import { emptyDerivedState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
@@ -189,6 +190,7 @@ function dragByPixels(
     convertToAbsoluteAndMoveStrategy(
       pickCanvasStateFromEditorStateWithMetadata(
         editorState,
+        emptyDerivedState(editorState),
         createBuiltInDependenciesList(null),
         metadata,
       ),
@@ -197,6 +199,7 @@ function dragByPixels(
 
   const finalEditor = foldAndApplyCommands(
     editorState,
+    emptyDerivedState(editorState),
     editorState,
     [],
     strategyResultCommands,

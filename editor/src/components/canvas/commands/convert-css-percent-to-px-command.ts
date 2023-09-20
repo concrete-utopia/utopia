@@ -12,7 +12,7 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { CSSNumber } from '../../inspector/common/css-utils'
 import { parseCSSPercent, printCSSNumber } from '../../inspector/common/css-utils'
@@ -43,6 +43,7 @@ export function convertCssPercentToPx(
 
 export const runConvertCssPercentToPx: CommandFunction<ConvertCssPercentToPx> = (
   editorState: EditorState,
+  _derivedState: DerivedState,
   command: ConvertCssPercentToPx,
 ) => {
   // Identify the current value, whatever that may be.

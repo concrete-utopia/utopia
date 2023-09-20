@@ -31,17 +31,15 @@ export function getChildGroupsForNonGroupParents(
   metadata: ElementInstanceMetadataMap,
   paths: Array<ElementPath>,
 ): Array<ElementPath> {
-  let result: ElementPath[] = []
-  for (const path of paths) {
-    if (!treatElementAsGroupLike(metadata, path)) {
-      for (const child of MetadataUtils.getChildrenUnordered(metadata, path)) {
-        if (treatElementAsGroupLikeFromMetadata(child)) {
-          result.push(child.elementPath)
-        }
+  let result: Set<ElementPath> = new Set()
+  for (const meta of Object.values(metadata)) {
+    for (const path of paths) {
+      if (EP.isDescendantOf(meta.elementPath, path) && treatElementAsGroupLikeFromMetadata(meta)) {
+        result.add(meta.elementPath)
       }
     }
   }
-  return result
+  return Array.from(result)
 }
 
 export function retargetStrategyToTopMostFragmentLikeElement(
@@ -60,7 +58,7 @@ export function retargetStrategyToTopMostFragmentLikeElement(
 
 export const replaceFragmentLikePathsWithTheirChildrenRecursive = memoize(
   replaceFragmentLikePathsWithTheirChildrenRecursiveInner,
-  { maxSize: 1, equals: is },
+  { maxSize: 1, matchesArg: is },
 )
 
 function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
@@ -104,7 +102,7 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
 
 export const replaceNonDOMElementPathsWithTheirChildrenRecursive = memoize(
   replaceNonDOMElementPathsWithTheirChildrenRecursiveInner,
-  { maxSize: 1, equals: is },
+  { maxSize: 1, matchesArg: is },
 )
 
 function replaceNonDOMElementPathsWithTheirChildrenRecursiveInner(

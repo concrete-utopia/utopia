@@ -167,8 +167,6 @@ export function keyboardAbsoluteResizeStrategy(
             const element = withUnderlyingTarget(
               selectedElement,
               canvasState.projectContents,
-              {},
-              canvasState.openFile,
               null,
               (_, e) => e,
             )

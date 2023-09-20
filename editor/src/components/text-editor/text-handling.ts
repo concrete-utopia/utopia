@@ -1,5 +1,5 @@
 import type { ElementPath } from '../../core/shared/project-file-types'
-import type { EditorState } from '../editor/store/editor-state'
+import type { DerivedState, EditorState } from '../editor/store/editor-state'
 import {
   getElementFromProjectContents,
   modifyUnderlyingTargetElement,
@@ -167,13 +167,9 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
   const openFile = editor.canvas.openFile?.filename
 
   if (openFile != null) {
-    const targetElement = getElementFromProjectContents(target, editor.projectContents, openFile)
+    const targetElement = getElementFromProjectContents(target, editor.projectContents)
     // Identify a run of eligible elements including the target.
-    const parentElement = getElementFromProjectContents(
-      targetParent,
-      editor.projectContents,
-      openFile,
-    )
+    const parentElement = getElementFromProjectContents(targetParent, editor.projectContents)
     if (targetElement != null && parentElement != null && isJSXElement(parentElement)) {
       let targetRun: Array<JSXElementChild> = []
       let currentRun: Array<JSXElementChild> = []
@@ -225,7 +221,6 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
         // Modify the editor state.
         return modifyUnderlyingTargetElement(
           targetParent,
-          openFile,
           editor,
           (element) => {
             if (isJSXConditionalExpression(element)) {

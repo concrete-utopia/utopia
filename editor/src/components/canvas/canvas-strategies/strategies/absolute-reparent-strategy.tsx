@@ -145,7 +145,6 @@ export function baseAbsoluteReparentStrategy(
                       canvasState.startingMetadata,
                       canvasState.startingMetadata,
                       canvasState.projectContents,
-                      canvasState.openFile,
                     )
                   })
 
