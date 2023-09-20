@@ -11,6 +11,7 @@ import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 import { parseCSSPx } from '../../components/inspector/common/css-utils'
 import { isRight } from './either'
+import { assertNever } from './utils'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -237,10 +238,6 @@ export function getCanvasRectangleFromElement(
   canvasScale: number,
   withContent: 'without-content' | 'with-content' | 'only-content',
 ): CanvasRectangle {
-  if (withContent === 'only-content') {
-    return getContentBounds(element, canvasScale) ?? zeroCanvasRect
-  }
-
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
 
   const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
@@ -263,47 +260,50 @@ export function getCanvasRectangleFromElement(
   }
 
   const range = document.createRange()
-  range.selectNode(element)
+  switch (withContent) {
+    case 'only-content':
+      range.selectNodeContents(element)
+      break
+    case 'with-content':
+      range.selectNode(element)
+      break
+    default:
+      assertNever(withContent)
+  }
   const rangeBounding =
     // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
     typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
+  const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
 
-  return boundingRectangle(elementRect, domRectToScaledCanvasRectangle(rangeBounding))
-}
+  switch (withContent) {
+    case 'only-content':
+      const computedStyle = window.getComputedStyle(element)
+      function maybeValueFromComputedStyle(property: string): number {
+        const parsed = parseCSSPx(property)
+        return isRight(parsed) ? parsed.value.value : 0
+      }
 
-function getContentBounds(element: HTMLElement, scale: number): CanvasRectangle | null {
-  const range = document.createRange()
-  range.selectNodeContents(element)
-  if (range.getBoundingClientRect == null) {
-    // This can be undefined in tests
-    return null
+      return canvasRectangle({
+        x: contentRect.x,
+        y: contentRect.y,
+        width:
+          contentRect.width +
+          maybeValueFromComputedStyle(computedStyle.paddingLeft) +
+          maybeValueFromComputedStyle(computedStyle.paddingRight) +
+          maybeValueFromComputedStyle(computedStyle.marginLeft) +
+          maybeValueFromComputedStyle(computedStyle.marginRight),
+        height:
+          contentRect.height +
+          maybeValueFromComputedStyle(computedStyle.paddingTop) +
+          maybeValueFromComputedStyle(computedStyle.paddingBottom) +
+          maybeValueFromComputedStyle(computedStyle.marginTop) +
+          maybeValueFromComputedStyle(computedStyle.marginBottom),
+      })
+    case 'with-content':
+      return boundingRectangle(elementRect, contentRect)
+    default:
+      assertNever(withContent)
   }
-  const contentBounds = range.getBoundingClientRect()
-
-  const computedStyle = window.getComputedStyle(element)
-  function maybeValueFromComputedStyle(property: string): number {
-    const parsed = parseCSSPx(property)
-    return isRight(parsed) ? parsed.value.value : 0
-  }
-
-  const ratio = scale < 1 ? scale : 1
-  return canvasRectangle({
-    ...contentBounds,
-    width:
-      (contentBounds.width +
-        maybeValueFromComputedStyle(computedStyle.paddingLeft) +
-        maybeValueFromComputedStyle(computedStyle.paddingRight) +
-        maybeValueFromComputedStyle(computedStyle.marginLeft) +
-        maybeValueFromComputedStyle(computedStyle.marginRight)) /
-      ratio,
-    height:
-      (contentBounds.height +
-        maybeValueFromComputedStyle(computedStyle.paddingTop) +
-        maybeValueFromComputedStyle(computedStyle.paddingBottom) +
-        maybeValueFromComputedStyle(computedStyle.marginTop) +
-        maybeValueFromComputedStyle(computedStyle.marginBottom)) /
-      ratio,
-  })
 }
 
 export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true): void {

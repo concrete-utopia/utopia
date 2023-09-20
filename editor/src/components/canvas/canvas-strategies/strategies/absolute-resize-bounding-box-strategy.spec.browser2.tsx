@@ -1842,9 +1842,9 @@ export var storyboard = (
 
           export var storyboard = (
             <Storyboard data-uid='storyboard'>
-              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 173, height: 108 }}>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 173, height: 108.5 }}>
                 <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 54, height: 77 }} />
-                <span data-uid='span' style={{ position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 67.96875, height: 18, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span data-uid='span' style={{ position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 68, height: 18.5, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   hello there
                 </span>
               </Group>
@@ -1891,9 +1891,9 @@ export var storyboard = (
 
           export var storyboard = (
             <Storyboard data-uid='storyboard'>
-              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 193, height: 127 }}>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 193, height: 128.5 }}>
                 <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 54, height: 77 }} />
-                <span data-uid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 87.96875, height: 37, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span data-uid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 88, height: 38.5, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   hello there
                 </span>
               </Group>
@@ -1940,9 +1940,9 @@ export var storyboard = (
 
           export var storyboard = (
             <Storyboard data-uid='storyboard'>
-              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 193, height: 127 }}>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 193, height: 128.5 }}>
                 <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 54, height: 77 }} />
-                <span data-uid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 87.96875, height: 37, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span data-uid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 88, height: 38.5, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   hello there
                 </span>
               </Group>
@@ -1992,9 +1992,9 @@ export var storyboard = (
 
           export var storyboard = (
             <Storyboard data-uid='storyboard'>
-              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 193, height: 127 }}>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 193, height: 129 }}>
                 <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 54, height: 77 }} />
-                <span data-uid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 87.96875, height: 37, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span data-uid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 105, top: 90, width: 88, height: 38.5, backgroundColor: 'red', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   hello there
                 </span>
               </Group>
