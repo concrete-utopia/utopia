@@ -32,6 +32,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
   DerivedSubstate,
   MetadataSubstate,
+  ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
 } from '../../editor/store/store-hook-substore-types'
 import type {
@@ -98,11 +99,11 @@ const elementSupportsChildrenSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 export const labelSelector = createCachedSelector(
-  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.jsxMetadata,
+  (store: ProjectContentAndMetadataSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
-  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.allElementProps,
-  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.elementPathTree,
-  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.projectContents,
+  (store: ProjectContentAndMetadataSubstate) => store.editor.allElementProps,
+  (store: ProjectContentAndMetadataSubstate) => store.editor.elementPathTree,
+  (store: ProjectContentAndMetadataSubstate) => store.editor.projectContents,
   (metadata, elementMetadata, allElementProps, pathTrees, projectContents) => {
     if (elementMetadata == null) {
       // "Element" with ghost emoji.
