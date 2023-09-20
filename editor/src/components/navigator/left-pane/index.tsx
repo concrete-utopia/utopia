@@ -29,12 +29,12 @@ import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
-import type { Menu, Pane } from '../../canvas/grid-panels-state-2'
+import type { Menu, Pane } from '../../canvas/grid-panels-state'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { TitleBarProjectTitle } from '../../titlebar/title-bar'
-import type { StoredPanel } from '../../canvas/grid-panels-container'
+import type { StoredPanel } from '../../canvas/grid-panels-state'
 
 export interface LeftPaneProps {
   editorState: EditorState

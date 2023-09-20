@@ -4,15 +4,14 @@ import { UtopiaTheme, colorTheme } from '../../uuiui'
 import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
-import type { LayoutUpdate, StoredPanel } from './grid-panels-container'
-import { GridPanelVerticalGapHalf } from './grid-panels-container'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
-import type { PanelData } from './grid-panels-state-2'
+import type { GridPanelData, LayoutUpdate, StoredPanel } from './grid-panels-state'
+import { GridPanelVerticalGapHalf } from './grid-panels-state'
 
 interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   canDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => boolean
-  pane: PanelData
+  pane: GridPanelData
 }
 
 export const GridPanel = React.memo<GridPanelProps>((props) => {
