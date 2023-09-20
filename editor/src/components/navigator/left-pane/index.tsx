@@ -34,7 +34,7 @@ import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { TitleBarProjectTitle } from '../../titlebar/title-bar'
-import type { StoredPanel } from '../../canvas/grid-panels'
+import type { StoredPanel } from '../../canvas/grid-panels-container'
 
 export interface LeftPaneProps {
   editorState: EditorState

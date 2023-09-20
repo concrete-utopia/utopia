@@ -290,19 +290,19 @@ export const GridPanelsContainer = React.memo(() => {
         paddingRight: HorizontalGapHalf + 2,
       }}
     >
-      <Panel
+      <GridPanel
         key={'code-editor'}
         onDrop={onDrop}
         canDrop={canDrop}
         pane={orderedPanels['code-editor']}
       />
-      <Panel
+      <GridPanel
         key={'navigator'}
         onDrop={onDrop}
         canDrop={canDrop}
         pane={orderedPanels['navigator']}
       />
-      <Panel
+      <GridPanel
         key={'inspector'}
         onDrop={onDrop}
         canDrop={canDrop}
@@ -426,13 +426,13 @@ const ColumnDragTargets = React.memo(
   },
 )
 
-interface FloatingPanelProps {
+interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   canDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => boolean
   pane: PanelData
 }
 
-const Panel = React.memo<FloatingPanelProps>((props) => {
+export const GridPanel = React.memo<GridPanelProps>((props) => {
   const { onDrop, canDrop } = props
   const { panel, index, span, order } = props.pane
 

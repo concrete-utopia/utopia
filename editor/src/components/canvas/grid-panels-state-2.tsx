@@ -1,4 +1,4 @@
-import type { StoredPanel } from './grid-panels'
+import type { StoredPanel } from './grid-panels-container'
 
 export type Menu = 'inspector' | 'navigator'
 export type Pane = 'code-editor'

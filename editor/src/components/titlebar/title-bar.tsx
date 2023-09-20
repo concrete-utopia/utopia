@@ -29,7 +29,7 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 import { useGridPanelDraggable } from '../canvas/grid-panels-dnd'
-import type { StoredPanel } from '../canvas/grid-panels'
+import type { StoredPanel } from '../canvas/grid-panels-container'
 
 interface ProjectTitleProps {}
 
