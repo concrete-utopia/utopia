@@ -1,7 +1,14 @@
+import { act } from 'react-dom/test-utils'
+import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import * as EP from '../../../core/shared/element-path'
+import type { WindowPoint } from '../../../core/shared/math-utils'
+import { offsetPoint, windowPoint } from '../../../core/shared/math-utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
-import { runDOMWalker } from '../../editor/actions/action-creators'
+import {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
+} from '../../../utils/utils.test-utils'
+import { runDOMWalker, selectComponents } from '../../editor/actions/action-creators'
 import {
   StoryboardFilePath,
   navigatorEntryToKey,
@@ -10,7 +17,9 @@ import {
 } from '../../editor/store/editor-state'
 import type { PersistentModel } from '../../editor/store/editor-state'
 import { NavigatorItemTestId } from '../../navigator/navigator-item/navigator-item'
+import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { fireEvent } from '@testing-library/react'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -276,3 +285,321 @@ describe('Remix navigator', () => {
     expect(outletItemElement.textContent).toEqual('Outlet: Index')
   })
 })
+describe('Reparenting in Remix projects in the navigator', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
+  it('Can reparent into element in Remix', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 500,
+              top: 500,
+              width: 88,
+              height: 91,
+            }}
+            data-uid='drag-div'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='remix-div'
+        />
+      }
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+    // await wait(100000)
+
+    // the element we drag
+    const dragElementTestId = NavigatorItemTestId(
+      varSafeNavigatorEntryToKey(regularNavigatorEntry(EP.fromString('storyboard/drag-div'))),
+    )
+    const dragDivElement = await renderResult.renderedDOM.findByTestId(dragElementTestId)
+    const dragElementRect = dragDivElement.getBoundingClientRect()
+    const dragElementCenter = getDomRectCenter(dragElementRect)
+
+    const dropElementTestId = NavigatorItemTestId(
+      varSafeNavigatorEntryToKey(
+        regularNavigatorEntry(EP.fromString('storyboard/remix-scene:rootdiv/outlet:remix-div')),
+      ),
+    )
+
+    const dropElement = renderResult.renderedDOM.getByTestId(dropElementTestId)
+    const dropElementRect = dropElement.getBoundingClientRect()
+    const dropElementCenter = getDomRectCenter(dropElementRect)
+
+    const dragDelta = windowPoint({
+      x: dropElementCenter.x - dragElementCenter.x,
+      y: dropElementCenter.y - dragElementCenter.y,
+    })
+
+    const targetElement = EP.fromString('storyboard/drag-div')
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    await dragElement(
+      renderResult,
+      dragElementTestId,
+      dropElementTestId,
+      windowPoint(dragElementCenter),
+      dragDelta,
+    )
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-storyboard/remix-scene',
+        'regular-storyboard/remix-scene:rootdiv',
+        'regular-storyboard/remix-scene:rootdiv/outlet',
+        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
+        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div/drag-div', // <-- reparented here from storyboard
+      ],
+    )
+  })
+
+  it('Can not reparent into Remix Outlet', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 500,
+              top: 500,
+              width: 88,
+              height: 91,
+            }}
+            data-uid='drag-div'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='remix-div'
+        />
+      }
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+    // await wait(100000)
+
+    // the element we drag
+    const dragElementTestId = NavigatorItemTestId(
+      varSafeNavigatorEntryToKey(regularNavigatorEntry(EP.fromString('storyboard/drag-div'))),
+    )
+    const dragDivElement = await renderResult.renderedDOM.findByTestId(dragElementTestId)
+    const dragElementRect = dragDivElement.getBoundingClientRect()
+    const dragElementCenter = getDomRectCenter(dragElementRect)
+
+    const dropElementTestId = NavigatorItemTestId(
+      varSafeNavigatorEntryToKey(
+        regularNavigatorEntry(EP.fromString('storyboard/remix-scene:rootdiv/outlet')),
+      ),
+    )
+
+    const dropElement = renderResult.renderedDOM.getByTestId(dropElementTestId)
+    const dropElementRect = dropElement.getBoundingClientRect()
+    const dropElementCenter = getDomRectCenter(dropElementRect)
+
+    const dragDelta = windowPoint({
+      x: dropElementCenter.x - dragElementCenter.x,
+      y: dropElementCenter.y - dragElementCenter.y,
+    })
+
+    const targetElement = EP.fromString('storyboard/drag-div')
+    await act(async () => {
+      const dispatchDone = renderResult.getDispatchFollowUpActionsFinished()
+      await renderResult.dispatch([selectComponents([targetElement], false)], false)
+      await dispatchDone
+    })
+
+    await dragElement(
+      renderResult,
+      dragElementTestId,
+      dropElementTestId,
+      windowPoint(dragElementCenter),
+      dragDelta,
+    )
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-storyboard/remix-scene',
+        'regular-storyboard/remix-scene:rootdiv',
+        'regular-storyboard/remix-scene:rootdiv/outlet',
+        'regular-storyboard/remix-scene:rootdiv/outlet:remix-div',
+        'regular-storyboard/drag-div', // <-- not reparented
+      ],
+    )
+  })
+})
+
+async function dragElement(
+  renderResult: EditorRenderResult,
+  dragTargetID: string,
+  dropTargetID: string,
+  startPoint: WindowPoint,
+  dragDelta: WindowPoint,
+): Promise<void> {
+  const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
+  const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
+
+  const endPoint = offsetPoint(startPoint, dragDelta)
+
+  await wait(0)
+
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        clientX: startPoint.x,
+        clientY: startPoint.y,
+        buttons: 1,
+      }),
+    )
+  })
+
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('drag', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        movementX: dragDelta.x,
+        movementY: dragDelta.y,
+        buttons: 1,
+      }),
+    )
+  })
+
+  await wait(0)
+
+  await act(async () => {
+    fireEvent(
+      dropTarget,
+      new MouseEvent('dragenter', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        movementX: dragDelta.x,
+        movementY: dragDelta.y,
+        buttons: 1,
+      }),
+    )
+  })
+
+  await act(async () => {
+    fireEvent(
+      dropTarget,
+      new MouseEvent('dragover', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        movementX: dragDelta.x,
+        movementY: dragDelta.y,
+        buttons: 1,
+      }),
+    )
+  })
+
+  await wait(0)
+
+  await act(async () => {
+    fireEvent(
+      dropTarget,
+      new MouseEvent('drop', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        buttons: 1,
+      }),
+    )
+  })
+}
