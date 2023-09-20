@@ -31,22 +31,6 @@ export function fastForEach<T>(a: readonly T[], fn: (t: T, index: number) => voi
   }
 }
 
-// This is a copy of fastForEach that returns immediately when the argument function returns true. That boolean is
-// also returned to the caller.
-export function fastForEachQuery<T>(
-  a: readonly T[],
-  fn: (t: T, index: number) => boolean,
-): boolean {
-  for (var i = 0, len = a.length; i < len; i++) {
-    if (i in a) {
-      if (fn(a[i]!, i)) {
-        return true
-      }
-    }
-  }
-  return false
-}
-
 export function arrayEqualsByReference<T>(a: Array<T>, b: Array<T>): boolean {
   if (a === b) {
     return true

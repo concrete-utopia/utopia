@@ -27,10 +27,10 @@ import {
   parseCSSLengthPercent,
   parseCSSNumber,
 } from './common/css-utils'
-import { assertNever, fastForEachQuery } from '../../core/shared/utils'
+import { assertNever } from '../../core/shared/utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
-import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 import type { CSSProperties } from 'react'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
@@ -45,17 +45,7 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import {
-  CanvasRectangle,
-  roundUpToNearestHalf,
-  SimpleRectangle,
-} from '../../core/shared/math-utils'
-import {
-  canvasRectangle,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  zeroRectIfNullOrInfinity,
-} from '../../core/shared/math-utils'
+import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
@@ -746,7 +736,7 @@ export function detectFillHugFixedStateMultiselect(
     const results = elementPaths.map((path) => detectFillHugFixedState(axis, metadata, path))
     const value: FixedHugFill | null = results[0]?.fixedHugFill
 
-    const isMixed = fastForEachQuery(results, (result) => {
+    const isMixed = results.some((result) => {
       return !isFixedHugFillEqual(result, results[0])
     })
     if (isMixed) {
