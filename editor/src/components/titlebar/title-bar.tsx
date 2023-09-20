@@ -28,7 +28,7 @@ import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/s
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
-import { useFloatingPanelDraggable } from '../canvas/floating-panels-dnd'
+import { useGridPanelDraggable } from '../canvas/grid-panels-dnd'
 import type { StoredPanel } from '../canvas/grid-panels'
 
 interface ProjectTitleProps {}
@@ -49,7 +49,7 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
 }
 export const TitleHeight = 40
 export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel }) => {
-  const { drag } = useFloatingPanelDraggable(props.panelData)
+  const { drag } = useGridPanelDraggable(props.panelData)
 
   const dispatch = useDispatch()
   const theme = useColorTheme()
@@ -222,7 +222,7 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
 })
 
 export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }) => {
-  const { drag } = useFloatingPanelDraggable(props.panelData)
+  const { drag } = useGridPanelDraggable(props.panelData)
 
   const theme = useColorTheme()
   const { loginState } = useEditorState(
@@ -297,7 +297,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
 })
 
 export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
-  const { drag } = useFloatingPanelDraggable(props.panelData)
+  const { drag } = useGridPanelDraggable(props.panelData)
   const theme = useColorTheme()
   return (
     <div

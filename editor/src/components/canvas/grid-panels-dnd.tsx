@@ -7,7 +7,7 @@ const FloatingPanelTitleBarType = 'floating-panel-title-bar'
 
 type FloatingPanelDragItem = { draggedPanel: StoredPanel }
 
-export function useFloatingPanelDraggable(draggedPanel: StoredPanel): {
+export function useGridPanelDraggable(draggedPanel: StoredPanel): {
   drag: ConnectDragSource
   dragPreview: ConnectDragPreview
 } {
@@ -28,7 +28,7 @@ export function useFloatingPanelDraggable(draggedPanel: StoredPanel): {
   return { drag, dragPreview }
 }
 
-export function useFloatingPanelDropArea(
+export function useGridPanelDropArea(
   columnIndex: number,
   indexInColumn: number,
   onDrop: (itemToMove: StoredPanel) => void,
@@ -54,7 +54,7 @@ export function useFloatingPanelDropArea(
 
 const MinDragThreshold = 3
 
-export function useFloatingPanelDragInfo(): {
+export function useGridPanelDragInfo(): {
   isDragActive: boolean
   draggedPanel: StoredPanel | undefined
 } {

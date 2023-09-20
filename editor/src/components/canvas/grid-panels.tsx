@@ -15,7 +15,7 @@ import { UtopiaTheme, colorTheme, width } from '../../uuiui'
 import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
-import { useFloatingPanelDragInfo, useFloatingPanelDropArea } from './floating-panels-dnd'
+import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
 import type { Menu, Pane, PanelData } from './floating-panels-state-2'
 
 export type PanelName = Menu | Pane
@@ -328,7 +328,7 @@ const ColumnDragTargets = React.memo(
     onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   }) => {
     const { columnIndex, onDrop, canDrop } = props
-    const { isDragActive, draggedPanel } = useFloatingPanelDragInfo()
+    const { isDragActive, draggedPanel } = useGridPanelDragInfo()
 
     const dropBeforeColumn: LayoutUpdate = React.useMemo(
       () => ({
@@ -349,7 +349,7 @@ const ColumnDragTargets = React.memo(
     const canDropBefore = draggedPanel != null && canDrop(draggedPanel, dropBeforeColumn)
     const canDropAfter = draggedPanel != null && canDrop(draggedPanel, dropAfterColumn)
 
-    const { drop: dropBefore, isOver: isOverBefore } = useFloatingPanelDropArea(
+    const { drop: dropBefore, isOver: isOverBefore } = useGridPanelDropArea(
       columnIndex,
       9,
       React.useCallback(
@@ -358,7 +358,7 @@ const ColumnDragTargets = React.memo(
       ),
     )
 
-    const { drop: dropAfter, isOver: isOverAfter } = useFloatingPanelDropArea(
+    const { drop: dropAfter, isOver: isOverAfter } = useGridPanelDropArea(
       columnIndex,
       0,
       React.useCallback(
@@ -436,7 +436,7 @@ const Panel = React.memo<FloatingPanelProps>((props) => {
   const { onDrop, canDrop } = props
   const { panel, index, span, order } = props.pane
 
-  const { isDragActive, draggedPanel } = useFloatingPanelDragInfo()
+  const { isDragActive, draggedPanel } = useGridPanelDragInfo()
 
   const dropAboveElement: LayoutUpdate = React.useMemo(
     () => ({
@@ -459,7 +459,7 @@ const Panel = React.memo<FloatingPanelProps>((props) => {
   const canDropAbove = draggedPanel != null && canDrop(draggedPanel, dropAboveElement)
   const canDropBelow = draggedPanel != null && canDrop(draggedPanel, dropBelowElement)
 
-  const { drop: dropBefore, isOver: isOverBefore } = useFloatingPanelDropArea(
+  const { drop: dropBefore, isOver: isOverBefore } = useGridPanelDropArea(
     index,
     order,
     React.useCallback(
@@ -467,7 +467,7 @@ const Panel = React.memo<FloatingPanelProps>((props) => {
       [onDrop, dropAboveElement],
     ),
   )
-  const { drop: dropAfter, isOver: isOverAfter } = useFloatingPanelDropArea(
+  const { drop: dropAfter, isOver: isOverAfter } = useGridPanelDropArea(
     index,
     order,
     React.useCallback(
