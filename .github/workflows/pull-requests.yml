@@ -212,7 +212,7 @@ jobs:
 
   performance-test:
     name: Run Performance Tests
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: [deploy-staging, cache-pnpm-store]
     env:
       UTOPIA_SHA: ${{ github.sha }}
