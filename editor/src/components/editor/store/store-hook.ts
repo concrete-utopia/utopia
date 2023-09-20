@@ -23,6 +23,7 @@ import type {
   MetadataSubstate,
   NavigatorSubstate,
   PostActionInteractionSessionSubstate,
+  ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
   RestOfEditorState,
   SelectedViewsSubstate,
@@ -291,6 +292,12 @@ export const Substores = {
     b: PostActionInteractionSessionSubstate,
   ) => {
     return a.postActionInteractionSession === b.postActionInteractionSession
+  },
+  projectContentsAndMetadata: (
+    a: ProjectContentAndMetadataSubstate,
+    b: ProjectContentAndMetadataSubstate,
+  ) => {
+    return keysEquality([...projectContentsKeys, ...metadataSubstateKeys], a.editor, b.editor)
   },
 } as const
 
