@@ -198,19 +198,7 @@ const DesignPanelRootInner = React.memo(() => {
                   margin: 10,
                 }}
               >
-                <LeftPaneComponent
-                  panelData={null as any}
-                  width={0}
-                  height={0}
-                  onResize={NO_OP}
-                  setIsResizing={NO_OP}
-                  resizableConfig={{
-                    minWidth: LeftPanelMinWidth,
-                    enable: {
-                      right: true,
-                    },
-                  }}
-                />
+                <LeftPaneComponent panelData={null as any} />
               </div>,
             )}
             <CanvasWrapperComponent />

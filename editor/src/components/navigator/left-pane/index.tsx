@@ -49,15 +49,9 @@ export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 interface LeftPaneComponentProps {
   panelData: StoredPanel
-  width: number
-  height: number
-  onResize: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
-  resizableConfig: ResizableProps
 }
 
 export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
-  const { onResize, setIsResizing, width, height } = props
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -104,9 +98,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     },
     [setLeftPanelWidth],
   )
-  const onResizeStart = React.useCallback(() => {
-    setIsResizing('navigator')
-  }, [setIsResizing])
 
   const leftMenuExpanded = useEditorState(
     Substores.restOfEditor,
@@ -121,8 +112,8 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
   return (
     <LowPriorityStoreProvider>
       <ResizableFlexColumn
+        enable={{ right: !isFeatureEnabled('Draggable Floating Panels') }}
         onResizeStop={onLeftPanelResizeStop}
-        onResizeStart={onResizeStart}
         defaultSize={{
           width: leftPanelWidth,
           height: '100%',
@@ -140,7 +131,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           flexDirection: 'column',
           overflow: 'hidden',
         }}
-        {...props.resizableConfig}
       >
         {when(
           isFeatureEnabled('Draggable Floating Panels'),

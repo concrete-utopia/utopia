@@ -97,21 +97,7 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
           />
         )
       case 'navigator':
-        return (
-          <LeftPaneComponent
-            panelData={props.pane.panel}
-            width={0}
-            height={0}
-            onResize={NO_OP}
-            setIsResizing={NO_OP}
-            resizableConfig={{
-              minWidth: LeftPanelMinWidth,
-              enable: {
-                right: true,
-              },
-            }}
-          />
-        )
+        return <LeftPaneComponent panelData={props.pane.panel} />
       default:
         return null
     }
