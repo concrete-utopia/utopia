@@ -6,7 +6,7 @@ import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
 import type { GridPanelData, LayoutUpdate, StoredPanel } from './grid-panels-state'
-import { GridPanelVerticalGapHalf } from './grid-panels-state'
+import { GridPanelVerticalGapHalf, GridPanelsNumberOfRows } from './grid-panels-state'
 
 interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
@@ -66,16 +66,7 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
         return (
           <CodeEditorPane
             panelData={props.pane.panel}
-            small={false}
-            width={0}
-            height={0}
-            onResize={NO_OP}
-            setIsResizing={NO_OP}
-            resizableConfig={{
-              enable: {
-                right: true,
-              },
-            }}
+            small={props.pane.span !== GridPanelsNumberOfRows} // it's only not small if it's full-height (span === number of rows)
           />
         )
       case 'inspector':

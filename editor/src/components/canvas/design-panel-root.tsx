@@ -170,19 +170,7 @@ const DesignPanelRootInner = React.memo(() => {
                 id='vscode-editor'
                 style={{ height: 'calc(100% - 20px)', position: 'absolute', margin: 10, zIndex: 1 }}
               >
-                <CodeEditorPane
-                  panelData={null as any}
-                  small={false}
-                  width={0}
-                  height={0}
-                  onResize={NO_OP}
-                  setIsResizing={NO_OP}
-                  resizableConfig={{
-                    enable: {
-                      right: true,
-                    },
-                  }}
-                />
+                <CodeEditorPane panelData={null as any} small={false} />
               </div>,
             )}
             {unless(
@@ -380,15 +368,9 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
 interface CodeEditorPaneProps {
   panelData: StoredPanel
   small: boolean
-  width: number
-  height: number
-  onResize: (menuName: 'code-editor', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
-  resizableConfig: ResizableProps
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const { width, height, onResize: onPanelResize, setIsResizing, resizableConfig } = props
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
@@ -398,11 +380,6 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   )
 
   const codeEditorEnabled = isCodeEditorEnabled()
-  const onResizeStart = React.useCallback(() => {
-    if (isFeatureEnabled('Draggable Floating Panels')) {
-      setIsResizing('code-editor')
-    }
-  }, [setIsResizing])
   const onResizeStop = React.useCallback(
     (
       event: MouseEvent | TouchEvent,
@@ -411,30 +388,8 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       delta: NumberSize,
     ) => {
       dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
-      const newWidth = elementRef?.clientWidth
-      const newHeight = elementRef?.clientHeight
-
-      if (isFeatureEnabled('Draggable Floating Panels')) {
-        onPanelResize('code-editor', direction, newWidth, newHeight)
-        setIsResizing(null)
-      }
     },
-    [dispatch, onPanelResize, setIsResizing],
-  )
-  const onResize = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      const newWidth = elementRef?.clientWidth
-      const newHeight = elementRef?.clientHeight
-      if (newWidth != null && newHeight != null) {
-        onPanelResize('code-editor', direction, newWidth, newHeight)
-      }
-    },
-    [onPanelResize],
+    [dispatch],
   )
 
   return (
@@ -451,9 +406,16 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
           : interfaceDesigner.codePaneWidth,
         height: '100%',
       }}
-      onResizeStart={onResizeStart}
       onResizeStop={onResizeStop}
-      onResize={onResize}
+      enable={{
+        top: false,
+        right: isFeatureEnabled('Draggable Floating Panels') ? false : true,
+        bottom: false,
+        topRight: false,
+        bottomRight: false,
+        bottomLeft: false,
+        topLeft: false,
+      }}
       className='resizableFlexColumnCanvasCode'
       style={{
         display: props.small ? 'block' : interfaceDesigner.codePaneVisible ? 'flex' : 'none',
@@ -463,7 +425,6 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         flexDirection: 'column',
       }}
-      {...resizableConfig}
     >
       {when(
         isFeatureEnabled('Draggable Floating Panels'),
@@ -485,7 +446,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         <div
           style={{
             display: 'flex',
-            height: props.small ? (height - TitleHeight) / 0.7 - 32 : '100%',
+            height: '100%',
           }}
         >
           {when(codeEditorEnabled, <CodeEditorWrapper />)}
