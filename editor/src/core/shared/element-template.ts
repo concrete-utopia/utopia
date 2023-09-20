@@ -2021,7 +2021,7 @@ export interface SpecialSizeMeasurements {
   coordinateSystemBounds: CanvasRectangle | null
   immediateParentBounds: CanvasRectangle | null
   globalFrameWithTextContent: MaybeInfinityCanvasRectangle | null
-  textBounds: DOMRect | null
+  textBounds: CanvasRectangle | null
   immediateParentProvidesLayout: boolean
   closestOffsetParentPath: ElementPath
   usesParentBounds: boolean
@@ -2099,7 +2099,7 @@ export function specialSizeMeasurements(
   fontWeight: string | null,
   fontStyle: string | null,
   textDecorationLine: string | null,
-  textBounds: DOMRect | null,
+  textBounds: CanvasRectangle | null,
 ): SpecialSizeMeasurements {
   return {
     offset,

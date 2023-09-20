@@ -994,7 +994,9 @@ function getSpecialMeasurements(
   const fontStyle = elementStyle.fontStyle
   const textDecorationLine = elementStyle.textDecorationLine
 
-  const textBounds = elementContainsOnlyText(element) ? getTextBounds(element, scale) : null
+  const textBounds = elementContainsOnlyText(element)
+    ? getCanvasRectangleFromElement(element, scale, 'only-content')
+    : null
 
   return specialSizeMeasurements(
     offset,
@@ -1055,39 +1057,6 @@ function elementContainsOnlyText(element: HTMLElement): boolean {
     }
   }
   return true
-}
-
-function getTextBounds(element: HTMLElement, scale: number): DOMRect | null {
-  const range = document.createRange()
-  range.selectNodeContents(element)
-  if (range.getBoundingClientRect == null) {
-    // for some reason, this can be undefined (in tests?)
-    return null
-  }
-  const textBounds = range.getBoundingClientRect()
-  const computedStyle = window.getComputedStyle(element)
-  function maybeValueFromComputedStyle(property: string): number {
-    const parsed = parseCSSPx(property)
-    return isRight(parsed) ? parsed.value.value : 0
-  }
-  const ratio = scale < 1 ? scale : 1
-  return {
-    ...textBounds,
-    width:
-      (textBounds.width +
-        maybeValueFromComputedStyle(computedStyle.paddingLeft) +
-        maybeValueFromComputedStyle(computedStyle.paddingRight) +
-        maybeValueFromComputedStyle(computedStyle.marginLeft) +
-        maybeValueFromComputedStyle(computedStyle.marginRight)) /
-      ratio,
-    height:
-      (textBounds.height +
-        maybeValueFromComputedStyle(computedStyle.paddingTop) +
-        maybeValueFromComputedStyle(computedStyle.paddingBottom) +
-        maybeValueFromComputedStyle(computedStyle.marginTop) +
-        maybeValueFromComputedStyle(computedStyle.marginBottom)) /
-      ratio,
-  }
 }
 
 function globalFrameForElement(
