@@ -1,6 +1,7 @@
 import { assertNever } from '../../core/shared/utils'
 import { updateAssetFileName } from './server'
 import type { DerivedState, EditorState } from './store/editor-state'
+import type { Location } from 'react-router'
 
 const MAX_HISTORY = 50
 

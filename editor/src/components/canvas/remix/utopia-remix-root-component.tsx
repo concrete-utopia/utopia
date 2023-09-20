@@ -24,8 +24,6 @@ interface RemixNavigationContext {
   forward: () => void
   back: () => void
   home: () => void
-  location: Location
-  entries: Array<Location>
 }
 
 interface RemixNavigationAtomData {
@@ -34,6 +32,9 @@ interface RemixNavigationAtomData {
 
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
 export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
+
+const locationArraysEqual = (left: Location[], right: Location[]): boolean =>
+  left.length === right.length && left.every((element, index) => element.key === right[index].key)
 
 function useGetRouteModules(basePath: ElementPath) {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
@@ -193,9 +194,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
 
-  const currentEntries = navigationData[EP.toString(basePath)]?.entries ?? []
+  const currentEntries = React.useMemo(
+    () => navigationData[EP.toString(basePath)]?.entries ?? [],
+    [basePath, navigationData],
+  )
   const currentEntriesRef = React.useRef(currentEntries)
   currentEntriesRef.current = currentEntries
+
+  const routerRef = React.useRef<RouterType | null>(null)
 
   // The router always needs to be updated otherwise new routes won't work without a refresh
   // We need to create the new router with the current location in the initial entries to
@@ -205,8 +211,20 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
       return null
     }
     const initialEntries = currentEntriesRef.current == null ? undefined : currentEntriesRef.current
+    if (routerRef.current == null || initialEntries == null) {
+      return createMemoryRouter(routes, { initialEntries: initialEntries })
+    }
+
+    if (locationArraysEqual(initialEntries, currentEntries)) {
+      return routerRef.current
+    }
+
     return createMemoryRouter(routes, { initialEntries: initialEntries })
-  }, [routes])
+  }, [currentEntries, routes])
+
+  React.useEffect(() => {
+    routerRef.current = router
+  }, [router])
 
   const updateNavigationData = React.useCallback(
     (innerRouter: RouterType, location: Location) => {
@@ -266,7 +284,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     return
   }, [router, updateNavigationData, dispatch, basePath])
 
-  if (remixDerivedDataRef.current == null || router == null || routeModules == null) {
+  if (remixDerivedDataRef.current == null || routerRef.current == null || routeModules == null) {
     return null
   }
 
@@ -282,7 +300,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     >
       <OutletPathContext.Provider value={basePath}>
         <RouterProvider
-          router={router}
+          router={routerRef.current}
           fallbackElement={null}
           future={{ v7_startTransition: true }}
         />
