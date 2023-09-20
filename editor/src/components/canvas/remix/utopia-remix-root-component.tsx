@@ -19,6 +19,7 @@ import { useDispatch } from '../../editor/store/dispatch-context'
 import { updateNavigationState } from '../../editor/actions/action-creators'
 import createCachedSelector from 're-reselect'
 import type { RemixNavigationSubstate } from '../../editor/store/store-hook-substore-types'
+import { usePrevious } from '../../editor/hook-utils'
 
 type RouterType = ReturnType<typeof createMemoryRouter>
 
@@ -211,6 +212,8 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const currentEntriesRef = React.useRef(currentEntries)
   currentEntriesRef.current = currentEntries
 
+  const previousEntries = usePrevious(currentEntries)
+
   const routerRef = React.useRef<RouterType | null>(null)
 
   // The router always needs to be updated otherwise new routes won't work without a refresh
@@ -220,17 +223,17 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     if (routes == null || routes.length === 0) {
       return null
     }
-    const initialEntries = currentEntries ?? undefined
-    if (routerRef.current == null || initialEntries == null || currentEntries == null) {
-      return createMemoryRouter(routes, { initialEntries: initialEntries })
+
+    if (routerRef.current == null || previousEntries == null || currentEntries == null) {
+      return createMemoryRouter(routes)
     }
 
-    if (locationArraysEqual(initialEntries, currentEntries)) {
+    if (locationArraysEqual(previousEntries, currentEntries)) {
       return routerRef.current
     }
 
-    return createMemoryRouter(routes, { initialEntries: initialEntries })
-  }, [currentEntries, routes])
+    return createMemoryRouter(routes, { initialEntries: currentEntries })
+  }, [previousEntries, currentEntries, routes])
 
   React.useEffect(() => {
     routerRef.current = router
@@ -280,16 +283,6 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
           // newState.navigation.location will hold an intended navigation, so when it is null
           // that will have completed
           updateNavigationData(router, newState.location)
-          dispatch(
-            newState.navigation.location == null
-              ? []
-              : [
-                  updateNavigationState(
-                    EP.toString(basePath),
-                    (currentEntriesRef.current ?? []).concat(newState.location),
-                  ),
-                ],
-          )
         }
       })
     }
