@@ -167,3 +167,16 @@ export const InspectorInput = React.memo(
     )
   }),
 )
+
+export const MixedPlaceholder = 'Mixed'
+export const UnknownPlaceholer = 'Unknown'
+
+export function getInputPlaceholder(controlStyles: ControlStyles): string {
+  if (controlStyles.unknown) {
+    return UnknownPlaceholer
+  } else if (controlStyles.mixed) {
+    return MixedPlaceholder
+  } else {
+    return ''
+  }
+}

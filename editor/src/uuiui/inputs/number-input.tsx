@@ -43,7 +43,7 @@ import { Icn } from '../icn'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
 import type { BaseInputProps, BoxCorners, ChainedType } from './base-input'
-import { getBorderRadiusStyles, InspectorInput } from './base-input'
+import { getBorderRadiusStyles, getInputPlaceholder, InspectorInput } from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
@@ -179,17 +179,30 @@ export const NumberInput = React.memo<NumberInputProps>(
     onMouseLeave,
   }) => {
     const ref = React.useRef<HTMLInputElement>(null)
-    const controlStyles = getControlStyles(controlStatus)
     const colorTheme = useColorTheme()
 
-    const { showContent } = controlStyles
+    const controlStyles = React.useMemo(() => {
+      return getControlStyles(controlStatus)
+    }, [controlStatus])
 
-    const [mixed, setMixed] = React.useState<boolean>(controlStyles.mixed)
+    const { mixed, showContent } = React.useMemo(
+      () => ({
+        mixed: controlStyles.mixed,
+        showContent: controlStyles.showContent,
+      }),
+      [controlStyles],
+    )
 
     const [value, setValue] = usePropControlledStateV2(propsValue ?? null)
     const [displayValue, setDisplayValue] = usePropControlledStateV2(
       getDisplayValue(value, defaultUnitToHide, mixed, showContent),
     )
+    React.useEffect(() => {
+      if (mixed) {
+        setDisplayValue('')
+      }
+    }, [mixed, setDisplayValue])
+
     const valueUnit = React.useMemo(() => value?.unit ?? null, [value])
 
     const [isActuallyFocused, setIsActuallyFocused] = React.useState<boolean>(false)
@@ -496,7 +509,6 @@ export const NumberInput = React.memo<NumberInputProps>(
           inputProps.onChange(e)
         }
         setValueChangedSinceFocus(true)
-        setMixed(false)
         setDisplayValue(e.target.value)
       },
       [inputProps, setDisplayValue],
@@ -606,12 +618,7 @@ export const NumberInput = React.memo<NumberInputProps>(
       [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value],
     )
 
-    let placeholder: string = ''
-    if (controlStyles.unknown) {
-      placeholder = 'unknown'
-    } else if (controlStyles.mixed) {
-      placeholder = 'mixed'
-    }
+    const placeholder = getInputPlaceholder(controlStyles)
 
     const chainedStyles: Interpolation<any> | undefined =
       (chained === 'first' || chained === 'middle') && !isFocused

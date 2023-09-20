@@ -93,9 +93,17 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = mapArrayToDictio
         trackColor = 'var(--control-styles-interactive-unset-track-color)'
         railColor = 'var(--control-styles-interactive-unset-rail-color)'
         break
+      case 'multiselect-mixed-simple-or-unset':
+        mixed = true
+        interactive = true
+        showContent = true
+        mainColor = colorTheme.fg6Opacity50.value
+        secondaryColor = colorTheme.fg6Opacity50.value
+        trackColor = colorTheme.fg6Opacity50.value
+        strokePrimaryColor = colorTheme.fg6Opacity50.value
+        break
       case 'controlled':
       case 'multiselect-controlled':
-      case 'multiselect-mixed-simple-or-unset':
         interactive = true
         mainColor = colorTheme.dynamicBlue.value
         secondaryColor = colorTheme.dynamicBlue.value
