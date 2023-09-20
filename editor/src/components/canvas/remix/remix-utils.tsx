@@ -34,6 +34,10 @@ import type { Either } from '../../../core/shared/either'
 import { foldEither, forEachRight, left } from '../../../core/shared/either'
 import type { CanvasBase64Blobs } from '../../editor/store/editor-state'
 import { findPathToJSXElementChild } from '../../../core/model/element-template-utils'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -382,4 +386,33 @@ export function getRoutesAndModulesFromManifest(
     routeModulesToRelativePaths,
     routingTable,
   }
+}
+
+export function getRouteComponentNameForOutlet(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  pathTrees: ElementPathTrees,
+): string | null {
+  if (!MetadataUtils.isProbablyRemixOutlet(metadata, path)) {
+    return null
+  }
+
+  const outletChildren = MetadataUtils.getImmediateChildrenPathsOrdered(metadata, pathTrees, path)
+  if (outletChildren.length == 0) {
+    return null
+  }
+
+  const uidsToFilePath = getAllUniqueUids(projectContents).uidsToFilePaths
+  const filePath = uidsToFilePath[EP.toUid(outletChildren[0])]
+  if (filePath == null) {
+    return null
+  }
+
+  const defaultExport = getDefaultExportNameAndUidFromFile(projectContents, filePath)
+  if (defaultExport == null) {
+    return null
+  }
+
+  return defaultExport.name
 }

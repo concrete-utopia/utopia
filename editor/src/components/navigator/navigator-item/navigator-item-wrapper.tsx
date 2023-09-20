@@ -32,6 +32,7 @@ import { Substores, useEditorState } from '../../editor/store/store-hook'
 import type {
   DerivedSubstate,
   MetadataSubstate,
+  ProjectContentSubstate,
 } from '../../editor/store/store-hook-substore-types'
 import type {
   ConditionalClauseNavigatorItemContainerProps,
@@ -48,7 +49,7 @@ import {
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
 import { maybeConditionalExpression } from '../../../core/model/conditionals'
-import { front } from '../../../utils/utils'
+import { getRouteComponentNameForOutlet } from '../../canvas/remix/remix-utils'
 
 interface NavigatorItemWrapperProps {
   index: number
@@ -97,21 +98,31 @@ const elementSupportsChildrenSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 export const labelSelector = createCachedSelector(
-  (store: MetadataSubstate) => store.editor.jsxMetadata,
+  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.jsxMetadata,
   targetElementMetadataSelector,
-  (store: MetadataSubstate) => store.editor.allElementProps,
-  (store: MetadataSubstate) => store.editor.elementPathTree,
-  (metadata, elementMetadata, allElementProps, pathTrees) => {
+  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.allElementProps,
+  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.elementPathTree,
+  (store: MetadataSubstate & ProjectContentSubstate) => store.editor.projectContents,
+  (metadata, elementMetadata, allElementProps, pathTrees, projectContents) => {
     if (elementMetadata == null) {
       // "Element" with ghost emoji.
       return 'Element 👻'
     }
-    return MetadataUtils.getElementLabelFromMetadata(
+    const label = MetadataUtils.getElementLabelFromMetadata(
       metadata,
       allElementProps,
       pathTrees,
       elementMetadata,
     )
+
+    const routeComponentName = getRouteComponentNameForOutlet(
+      elementMetadata.elementPath,
+      metadata,
+      projectContents,
+      pathTrees,
+    )
+
+    return routeComponentName == null ? label : `${label}: ${routeComponentName}`
   },
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
@@ -248,7 +259,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     isNullConditionalBranch(props.navigatorEntry, maybeParentConditional)
 
   const labelForTheElement = useEditorState(
-    Substores.metadata,
+    Substores.projectContentsAndMetadata,
     (store) => labelSelector(store, props.navigatorEntry),
     'NavigatorItemWrapper labelSelector',
   )
