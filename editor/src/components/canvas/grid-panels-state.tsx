@@ -7,7 +7,7 @@ import { assertNever } from '../../core/shared/utils'
 export const GridMenuWidth = 260
 export const GridPaneWidth = 500
 
-export const NumberOfPanels = 4
+export const NumberOfColumns = 4
 export const IndexOfCanvas = 2
 
 export const GridPanelVerticalGapHalf = 6
@@ -108,7 +108,7 @@ export function storedLayoutToResolvedPanels(stored: StoredLayout): {
 export function wrapAroundColIndex(index: number): number {
   const normalized = normalizeColIndex(index)
   if (normalized >= IndexOfCanvas) {
-    return normalized - NumberOfPanels
+    return normalized - NumberOfColumns
   } else {
     return normalized
   }
@@ -118,7 +118,7 @@ export function wrapAroundColIndex(index: number): number {
  * Normalizes the index to 0,1,2,3
  */
 function normalizeColIndex(index: number): number {
-  return mod(index, NumberOfPanels)
+  return mod(index, NumberOfColumns)
 }
 
 export function updateLayout(

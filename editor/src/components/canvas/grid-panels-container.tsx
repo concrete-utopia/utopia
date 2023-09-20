@@ -1,5 +1,5 @@
 import React from 'react'
-import { arrayAccumulate } from '../../core/shared/array-utils'
+import { accumulate, arrayAccumulate } from '../../core/shared/array-utils'
 import { GridPanel } from './grid-panel'
 import { ColumnDragTargets } from './grid-panels-drag-targets'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
@@ -9,6 +9,7 @@ import {
   GridPaneWidth,
   GridPanelHorizontalGapHalf,
   GridPanelVerticalGapHalf,
+  NumberOfColumns,
   storedLayoutToResolvedPanels,
   updateLayout,
   wrapAroundColIndex,
@@ -23,13 +24,19 @@ export const GridPanelsContainer = React.memo(() => {
   }, [panelState])
 
   const nonEmptyColumns = React.useMemo(() => {
-    return arrayAccumulate((acc: Array<number>) => {
-      panelState.forEach((column, colIndex) => {
-        if (column.length > 0) {
-          acc.push(wrapAroundColIndex(colIndex))
-        }
-      })
-    })
+    return Array.from(
+      accumulate(new Set<number>(), (acc: Set<number>) => {
+        // we always include the first and last columns
+        acc.add(0)
+        acc.add(NumberOfColumns - 1)
+
+        panelState.forEach((column, colIndex) => {
+          if (column.length > 0) {
+            acc.add(wrapAroundColIndex(colIndex))
+          }
+        })
+      }),
+    )
   }, [panelState])
 
   const onDrop = React.useCallback(
