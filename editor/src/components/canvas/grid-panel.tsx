@@ -70,23 +70,7 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
           />
         )
       case 'inspector':
-        return (
-          <ResizableRightPane
-            panelData={props.pane.panel}
-            width={0}
-            height={0}
-            onResize={NO_OP}
-            setIsResizing={NO_OP}
-            resizableConfig={{
-              snap: {
-                x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
-              },
-              enable: {
-                left: true,
-              },
-            }}
-          />
-        )
+        return <ResizableRightPane panelData={props.pane.panel} />
       case 'navigator':
         return <LeftPaneComponent panelData={props.pane.panel} />
       default:

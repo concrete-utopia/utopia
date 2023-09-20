@@ -202,24 +202,7 @@ const DesignPanelRootInner = React.memo(() => {
                   margin: 10,
                 }}
               >
-                <ResizableRightPane
-                  width={0}
-                  height={0}
-                  onResize={NO_OP}
-                  setIsResizing={NO_OP}
-                  panelData={null as any}
-                  resizableConfig={{
-                    snap: {
-                      x: [
-                        UtopiaTheme.layout.inspectorSmallWidth,
-                        UtopiaTheme.layout.inspectorLargeWidth,
-                      ],
-                    },
-                    enable: {
-                      left: true,
-                    },
-                  }}
-                />
+                <ResizableRightPane panelData={null as any} />
               </div>,
             )}
             {when(draggablePanelsEnabled, <GridPanelsContainer />)}
@@ -250,57 +233,24 @@ export const DesignPanelRoot = React.memo(() => {
 DesignPanelRoot.displayName = 'DesignPanelRoot'
 
 interface ResizableRightPaneProps {
-  width: number
-  height: number
-  onResize: (menuName: 'inspector', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
-  resizableConfig: ResizableProps
   panelData: StoredPanel
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const { onResize: onPanelResize, setIsResizing, width, height } = props
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
-  const [widthLocal, setWidthLocal] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
+  const [width, setWidth] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
 
   const resizableRef = React.useRef<Resizable>(null)
-  const onResizeStart = React.useCallback(() => {
-    setIsResizing('inspector')
-  }, [setIsResizing])
-  const onResize = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: Size,
-    ) => {
-      const newWidth = resizableRef.current?.size.width
-      if (newWidth != null) {
-        // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-        if (isFeatureEnabled('Draggable Floating Panels')) {
-          onPanelResize('inspector', direction, newWidth, elementRef?.clientHeight)
-        } else {
-          setWidthLocal(newWidth)
-        }
-        updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
-      }
-    },
-    [updateInspectorWidth, onPanelResize],
-  )
-  const onResizeStop = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: Size,
-    ) => {
-      setIsResizing(null)
-      onResize(event, direction, elementRef, delta)
-    },
-    [setIsResizing, onResize],
-  )
+  const onResize = React.useCallback(() => {
+    const newWidth = resizableRef.current?.size.width
+    if (newWidth != null) {
+      // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
+      setWidth(newWidth)
+      updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
+    }
+  }, [updateInspectorWidth])
 
   const selectedTab = useEditorState(
     Substores.restOfEditor,
@@ -325,7 +275,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         height: '100%',
       }}
       size={{
-        width: widthLocal,
+        width: width,
         height: '100%',
       }}
       style={{
@@ -335,10 +285,15 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
       }}
-      onResizeStart={onResizeStart}
+      onResizeStart={onResize}
       onResize={onResize}
-      onResizeStop={onResizeStop}
-      {...props.resizableConfig}
+      onResizeStop={onResize}
+      snap={{
+        x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
+      }}
+      enable={{
+        left: isFeatureEnabled('Draggable Floating Panels') ? false : true,
+      }}
     >
       {when(
         isFeatureEnabled('Draggable Floating Panels'),
