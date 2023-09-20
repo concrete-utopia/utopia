@@ -1,13 +1,8 @@
 import { act } from 'react-dom/test-utils'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import * as EP from '../../../core/shared/element-path'
-import type { WindowPoint } from '../../../core/shared/math-utils'
-import { offsetPoint, windowPoint } from '../../../core/shared/math-utils'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
-import {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly,
-  wait,
-} from '../../../utils/utils.test-utils'
+import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { runDOMWalker, selectComponents } from '../../editor/actions/action-creators'
 import {
   StoryboardFilePath,
@@ -17,9 +12,9 @@ import {
 } from '../../editor/store/editor-state'
 import type { PersistentModel } from '../../editor/store/editor-state'
 import { NavigatorItemTestId } from '../../navigator/navigator-item/navigator-item'
-import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
-import { fireEvent } from '@testing-library/react'
+import { dragElementWithDNDEvents } from '../event-helpers.test-utils'
+import { windowPoint } from '../../../core/shared/math-utils'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -380,12 +375,13 @@ describe('Reparenting in Remix projects in the navigator', () => {
       await dispatchDone
     })
 
-    await dragElement(
+    await dragElementWithDNDEvents(
       renderResult,
       dragElementTestId,
       dropElementTestId,
       windowPoint(dragElementCenter),
       dragDelta,
+      'apply-hover-events',
     )
 
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
@@ -492,12 +488,13 @@ describe('Reparenting in Remix projects in the navigator', () => {
       await dispatchDone
     })
 
-    await dragElement(
+    await dragElementWithDNDEvents(
       renderResult,
       dragElementTestId,
       dropElementTestId,
       windowPoint(dragElementCenter),
       dragDelta,
+      'apply-hover-events',
     )
 
     expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
@@ -511,93 +508,3 @@ describe('Reparenting in Remix projects in the navigator', () => {
     )
   })
 })
-
-async function dragElement(
-  renderResult: EditorRenderResult,
-  dragTargetID: string,
-  dropTargetID: string,
-  startPoint: WindowPoint,
-  dragDelta: WindowPoint,
-): Promise<void> {
-  const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
-  const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
-
-  const endPoint = offsetPoint(startPoint, dragDelta)
-
-  await wait(0)
-
-  await act(async () => {
-    fireEvent(
-      dragTarget,
-      new MouseEvent('dragstart', {
-        bubbles: true,
-        cancelable: true,
-        clientX: startPoint.x,
-        clientY: startPoint.y,
-        buttons: 1,
-      }),
-    )
-  })
-
-  await act(async () => {
-    fireEvent(
-      dragTarget,
-      new MouseEvent('drag', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
-  })
-
-  await wait(0)
-
-  await act(async () => {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragenter', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
-  })
-
-  await act(async () => {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('dragover', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        movementX: dragDelta.x,
-        movementY: dragDelta.y,
-        buttons: 1,
-      }),
-    )
-  })
-
-  await wait(0)
-
-  await act(async () => {
-    fireEvent(
-      dropTarget,
-      new MouseEvent('drop', {
-        bubbles: true,
-        cancelable: true,
-        clientX: endPoint.x,
-        clientY: endPoint.y,
-        buttons: 1,
-      }),
-    )
-  })
-}
