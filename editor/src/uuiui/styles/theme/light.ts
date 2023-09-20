@@ -26,6 +26,8 @@ const lightBase = {
   error: createUtopiColor('oklch(66% 0.3 11.65)'),
   componentOrange: createUtopiColor('oklch(68% 0.2 42)'),
   componentPurple: createUtopiColor('oklch(53% 0.31 290)'),
+  componentPurple05: createUtopiColor('oklch(53.19% 0.307 289.7 / 5%)'),
+  componentPurple05solid: createUtopiColor('oklch(0.96 0.02 286)'),
   dynamicBlue: createUtopiColor('oklch(59% 0.25 254)'),
   dynamicBlue10: createUtopiColor('oklch(58.98% 0.246 254.39 / 10%)'),
   unavailable: createUtopiColor('oklch(54.52% 0 0 / 5%)'),
