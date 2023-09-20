@@ -349,7 +349,6 @@ describe('Reparenting in Remix projects in the navigator', () => {
     })
 
     const renderResult = await renderRemixProject(project)
-    // await wait(100000)
 
     // the element we drag
     const dragElementTestId = NavigatorItemTestId(
@@ -462,7 +461,6 @@ describe('Reparenting in Remix projects in the navigator', () => {
     })
 
     const renderResult = await renderRemixProject(project)
-    // await wait(100000)
 
     // the element we drag
     const dragElementTestId = NavigatorItemTestId(
