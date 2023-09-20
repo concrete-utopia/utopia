@@ -530,32 +530,9 @@ export const CanvasToolbar = React.memo(() => {
             padding: '0 8px',
           }}
         >
-          {/* {when(
-            insertMenuMode === 'wrap',
-            wrapInSubmenu(
-              <Tooltip title='Edit' placement='bottom'>
-                <InsertModeButton
-                  iconType='designtool-larger'
-                  iconCategory='semantic'
-                  // primary={canvasToolbarMode.primary === 'edit'}
-                  onClick={NO_OP}
-                />
-              </Tooltip>,
-            ),
-          )} */}
-          {/* <Tooltip title='Edit' placement='bottom'>
-            <InsertModeButton
-              iconType='designtool-larger'
-              iconCategory='semantic'
-              // primary={canvasToolbarMode.primary === 'edit'}
-              onClick={NO_OP}
-            />
-          </Tooltip> */}
           <Tooltip title='Edit' placement='bottom'>
             <InsertModeButton
-              // iconType='pointer'
               iconType={insertMenuMode === 'wrap' ? 'designtool-larger' : 'pointer'}
-              // iconCategory='tools'
               iconCategory={insertMenuMode === 'wrap' ? 'semantic' : 'tools'}
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={switchToSelectModeCloseMenus}
