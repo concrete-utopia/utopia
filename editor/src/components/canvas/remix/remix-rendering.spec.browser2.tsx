@@ -10,6 +10,7 @@ import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
 import {
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
 } from '../../../utils/utils.test-utils'
 import { runDOMWalker, switchEditorMode } from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
@@ -19,6 +20,7 @@ import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-la
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import type { RemixSceneLabelButtonType } from '../controls/select-mode/remix-scene-label'
 import {
+  LocationDoesNotMatchRoutesTestId,
   RemixSceneHomeLabel,
   RemixSceneLabelButtonTestId,
   RemixSceneLabelPathTestId,
@@ -249,6 +251,60 @@ describe('Remix content', () => {
     expect(
       renderResult.getEditorState().editor.lockedElements.simpleLock.map(EP.toString),
     ).toContain('storyboard/remix-scene:rootdiv/outlet')
+  })
+
+  it("remix scene label signals that the existing routes don't match the current location", async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+
+      export default function Index() {
+        return <Link to='/about' data-testid='remix-link' data-uid='remix-link'>${DefaultRouteTextContent}</Link>
+      }
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+
+    await switchToLiveMode(renderResult)
+
+    await clickRemixLink(renderResult)
+
+    expect(renderResult.renderedDOM.queryAllByText('404 Not Found')).toHaveLength(1) // default 404 page is rendered
+    expect(
+      renderResult.renderedDOM.queryAllByTestId(LocationDoesNotMatchRoutesTestId),
+    ).toHaveLength(1) // location not matching warning is rendered
   })
 
   it('Two remix scenes, both have metadata', async () => {
