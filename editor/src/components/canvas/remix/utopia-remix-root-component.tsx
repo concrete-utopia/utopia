@@ -27,7 +27,7 @@ interface RemixNavigationContext {
 }
 
 interface RemixNavigationAtomData {
-  [pathString: string]: RemixNavigationContext
+  [pathString: string]: RemixNavigationContext | undefined
 }
 
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)

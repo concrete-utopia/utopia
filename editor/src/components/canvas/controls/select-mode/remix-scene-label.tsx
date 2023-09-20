@@ -5,7 +5,7 @@ import { isInfinityRectangle, windowPoint } from '../../../../core/shared/math-u
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { FlexRow, Tooltip, useColorTheme } from '../../../../uuiui'
+import { FlexRow, Icn, Tooltip, useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -16,9 +16,13 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isSelectModeWithArea } from '../../../editor/editor-modes'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from '../../remix/utopia-remix-root-component'
+import { matchRoutes } from 'react-router'
+import { unless } from '../../../../utils/react-conditionals'
 
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
+
+export const LocationDoesNotMatchRoutesTestId = 'location-does-not-match-routes'
 
 export const RemixSceneHomeLabel = '(home)'
 
@@ -40,6 +44,23 @@ interface RemixSceneLabelProps extends RemixSceneLabelControlProps {
 
 export const RemixSceneLabelTestID = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label`
+
+function useCurrentLocationMatchesRoutes(pathToRemixScene: ElementPath): boolean {
+  const routes = useEditorState(
+    Substores.derived,
+    (store) => store.derived.remixData?.routes ?? null,
+    'useCurrentLocationMatchesRoutes routes',
+  )
+  const [remixNavigationData] = useAtom(RemixNavigationAtom)
+
+  const remixNavigationDataForScene = remixNavigationData[EP.toString(pathToRemixScene)]
+  if (remixNavigationDataForScene == null || routes == null) {
+    return true
+  }
+
+  const matches = matchRoutes(routes, remixNavigationDataForScene.location) != null
+  return matches
+}
 
 export const RemixSceneLabelControl = React.memo<RemixSceneLabelControlProps>((props) => {
   const sceneTargets = useEditorState(
@@ -74,6 +95,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const isIndexRoute = currentPath === '/'
 
   const label = isIndexRoute ? RemixSceneHomeLabel : currentPath
+
+  const currentLocationMatchesRoutes = useCurrentLocationMatchesRoutes(props.target)
 
   const forward = React.useCallback(
     () => navigationData[EP.toString(props.target)]?.forward(),
@@ -269,14 +292,28 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
         <div
           data-testid={RemixSceneLabelPathTestId(props.target)}
           style={{
-            backgroundColor: '#f2f3f4',
             borderRadius: 10 / scale,
             padding: `${4 / scale}px ${12 / scale}px`,
             fontSize: 14 / scale,
+            color: currentLocationMatchesRoutes ? undefined : colorTheme.error.value,
           }}
         >
           {label}
         </div>
+        {unless(
+          currentLocationMatchesRoutes,
+          <Tooltip title={"Current location doesn't match available routes"}>
+            <span
+              data-testid={LocationDoesNotMatchRoutesTestId}
+              style={{
+                fontSize: 16 / scale,
+                color: colorTheme.error.value,
+              }}
+            >
+              ⚠
+            </span>
+          </Tooltip>,
+        )}
       </FlexRow>
     </CanvasOffsetWrapper>
   )
