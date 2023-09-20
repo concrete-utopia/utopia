@@ -13,6 +13,7 @@ import {
   updateLayout,
   wrapAroundColIndex,
 } from './grid-panels-state'
+import { CanvasFloatingToolbars } from './camvas-floating-toolbars'
 
 export const GridPanelsContainer = React.memo(() => {
   const [panelState, setPanelState] = React.useState(GridMenuDefaultPanels)
@@ -107,6 +108,9 @@ export const GridPanelsContainer = React.memo(() => {
         onDrop={onDrop}
         canDrop={canDrop}
         pane={orderedPanels['inspector']}
+      />
+      <CanvasFloatingToolbars
+        style={{ position: 'absolute', gridColumn: 'canvas / span 1', gridRow: '1 / -1' }}
       />
       {/* All future Panels need to be explicitly listed here */}
       {nonEmptyColumns.map((columnIndex) => (
