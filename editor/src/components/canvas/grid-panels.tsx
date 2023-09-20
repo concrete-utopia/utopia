@@ -214,7 +214,7 @@ function updateLayout(
   return withEmptyColumnsInMiddle
 }
 
-export const FloatingPanelsContainer = React.memo(() => {
+export const GridPanelsContainer = React.memo(() => {
   const [panelState, setPanelState] = React.useState(defaultPanels)
 
   const orderedPanels = React.useMemo(() => {
@@ -290,19 +290,19 @@ export const FloatingPanelsContainer = React.memo(() => {
         paddingRight: HorizontalGapHalf + 2,
       }}
     >
-      <FloatingPanel
+      <Panel
         key={'code-editor'}
         onDrop={onDrop}
         canDrop={canDrop}
         pane={orderedPanels['code-editor']}
       />
-      <FloatingPanel
+      <Panel
         key={'navigator'}
         onDrop={onDrop}
         canDrop={canDrop}
         pane={orderedPanels['navigator']}
       />
-      <FloatingPanel
+      <Panel
         key={'inspector'}
         onDrop={onDrop}
         canDrop={canDrop}
@@ -432,7 +432,7 @@ interface FloatingPanelProps {
   pane: PanelData
 }
 
-export const FloatingPanel = React.memo<FloatingPanelProps>((props) => {
+const Panel = React.memo<FloatingPanelProps>((props) => {
   const { onDrop, canDrop } = props
   const { panel, index, span, order } = props.pane
 

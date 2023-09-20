@@ -29,7 +29,7 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 import { useFloatingPanelDraggable } from '../canvas/floating-panels-dnd'
-import type { StoredPanel } from '../canvas/floating-panels'
+import type { StoredPanel } from '../canvas/grid-panels'
 
 interface ProjectTitleProps {}
 

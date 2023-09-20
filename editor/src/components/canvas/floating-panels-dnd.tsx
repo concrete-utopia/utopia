@@ -1,7 +1,7 @@
 import type { ConnectDragPreview, ConnectDragSource, ConnectDropTarget } from 'react-dnd'
 import { useDrag, useDragLayer, useDrop } from 'react-dnd'
 import { magnitude, windowPoint } from '../../core/shared/math-utils'
-import type { StoredPanel } from './floating-panels'
+import type { StoredPanel } from './grid-panels'
 
 const FloatingPanelTitleBarType = 'floating-panel-title-bar'
 

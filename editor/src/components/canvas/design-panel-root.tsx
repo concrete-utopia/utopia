@@ -36,8 +36,8 @@ import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import type { StoredPanel } from './floating-panels'
-import { FloatingPanelsContainer } from './floating-panels'
+import type { StoredPanel } from './grid-panels'
+import { GridPanelsContainer } from './grid-panels'
 import type { Menu, Pane } from './floating-panels-state-2'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
@@ -246,7 +246,7 @@ const DesignPanelRootInner = React.memo(() => {
                 />
               </div>,
             )}
-            {when(draggablePanelsEnabled, <FloatingPanelsContainer />)}
+            {when(draggablePanelsEnabled, <GridPanelsContainer />)}
           </SimpleFlexColumn>
         }
       </SimpleFlexRow>

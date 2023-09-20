@@ -1,4 +1,4 @@
-import type { StoredPanel } from './floating-panels'
+import type { StoredPanel } from './grid-panels'
 
 export type Menu = 'inspector' | 'navigator'
 export type Pane = 'code-editor'
