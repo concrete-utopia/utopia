@@ -1,4 +1,3 @@
-import findIndex from 'lodash.findindex'
 import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
 import type { MapLike } from 'typescript'

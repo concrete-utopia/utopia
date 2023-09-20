@@ -95,8 +95,7 @@ specifiers:
   '@types/jquery': 3.3.29
   '@types/json-schema': 6.0.0
   '@types/json5': 0.0.29
-  '@types/lodash.findindex': ^4.6.7
-  '@types/lodash.findlastindex': ^4.6.7
+  '@types/lodash.findlastindex': 4.6.7
   '@types/matter-js': 0.10.0
   '@types/mime-types': 2.1.0
   '@types/minimatch': 3.0.4
@@ -348,7 +347,6 @@ dependencies:
   '@svgr/plugin-jsx': 5.5.0
   '@tippyjs/react': 4.1.0_ef5jwxihqo6n7gxfmzogljlgcm
   '@types/fontfaceobserver': 0.0.6
-  '@types/lodash.findindex': 4.6.7
   '@types/lodash.findlastindex': 4.6.7
   '@types/react-syntax-highlighter': 11.0.4
   '@types/w3c-css-typed-object-model-level-1': 20180410.0.5
@@ -4088,12 +4086,6 @@ packages:
     dependencies:
       '@types/node': 16.10.2
     dev: true
-
-  /@types/lodash.findindex/4.6.7:
-    resolution: {integrity: sha512-Rrcz/vl+yP0vl2vGiu2FCIeMNShoGTVMvG78o8oaxpg4oxwWuY0Pqz/itV3l/FhV6hPVAa3OmHYFQqy7FqSBWA==}
-    dependencies:
-      '@types/lodash': 4.14.198
-    dev: false
 
   /@types/lodash.findlastindex/4.6.7:
     resolution: {integrity: sha512-B1f1tlVFXAN4xTv9yytcY7G/eNHZjQ5xjHZdl+GhBLY+groZ/RRqHGBITTbaxxw3hZOpzVlbM/Ox5FI+LlHNmg==}
