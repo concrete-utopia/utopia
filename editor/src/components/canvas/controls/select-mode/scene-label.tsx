@@ -102,7 +102,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const baseFontSize = 10
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
-  const paddingY = scaledFontSize / 9
+  const paddingY = scaledFontSize / 4
   const offsetY = scaledFontSize / 1.5
   const offsetX = scaledFontSize / 2
   const borderRadius = 3 / scale
@@ -215,8 +215,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             left: frame.x,
             bottom: -frame.y + offsetY,
             width: frame.width,
-            height: scaledLineHeight * 2,
-            padding: '10px 20px',
+            padding: `${paddingY}px ${paddingY * 2}px`,
             fontFamily: 'Utopian-Inter',
             fontSize: scaledFontSize,
             lineHeight: `${scaledLineHeight}px`,
@@ -229,8 +228,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
         >
           <div
             style={{
-              padding: `${4 / scale}px`,
-              fontWeight: 'bold',
+              fontWeight: 600,
             }}
           >
             {label}

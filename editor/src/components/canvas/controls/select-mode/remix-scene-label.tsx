@@ -148,7 +148,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const baseFontSize = 10
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
-  const paddingY = scaledFontSize / 2
+  const paddingY = scaledFontSize / 4
   const offsetY = scaledFontSize / 1.5
   const offsetX = scaledFontSize / 2
   const borderRadius = 3 / scale
@@ -260,8 +260,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           left: frame.x,
           bottom: -frame.y + offsetY,
           width: frame.width,
-          height: scaledLineHeight * 2,
-          padding: '10px 20px',
+          padding: `${paddingY}px ${paddingY * 2}px`,
           fontFamily: 'Utopian-Inter',
           fontSize: scaledFontSize,
           lineHeight: `${scaledLineHeight}px`,
@@ -270,17 +269,14 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           textOverflow: 'ellipsis',
           borderRadius: borderRadius,
           backgroundColor: backgroundColor,
-          // gap: 12 / scale,
-          //gap: 5 / scale
           justifyContent: 'space-between',
         }}
       >
-        <FlexRow style={{}}>
+        <FlexRow style={{ gap: paddingY * 2 }}>
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}
             style={{
-              padding: `${4 / scale}px`,
-              fontWeight: 'bold',
+              fontWeight: 600,
             }}
           >
             {scenelabel}
@@ -288,14 +284,13 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}
             style={{
-              padding: `${4 / scale}px`,
               color: currentLocationMatchesRoutes ? undefined : colorTheme.error.value,
             }}
           >
             {label}
           </div>
         </FlexRow>
-        <FlexRow style={{ gap: 10 }}>
+        <FlexRow style={{ gap: 10, alignItems: 'center' }}>
           <Tooltip title={'Back'}>
             <span
               data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
@@ -323,16 +318,22 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               〱
             </span>
           </Tooltip>
+          <Tooltip title={'Home'}>
+            <span
+              data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
+              style={{
+                cursor: 'pointer',
+                fontSize: 14 / scale,
+                display: isSelected ? 'block' : 'none',
+                position: 'relative',
+                bottom: 0 / scale,
+              }}
+              onMouseDown={home}
+            >
+              ⛫
+            </span>
+          </Tooltip>
         </FlexRow>
-        {/* <Tooltip title={'Home'}>
-          <span
-            data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
-            style={{ cursor: 'pointer', fontSize: 16 / scale }}
-            onMouseDown={home}
-          >
-            ／
-          </span>
-        </Tooltip> */}
 
         {unless(
           currentLocationMatchesRoutes,
