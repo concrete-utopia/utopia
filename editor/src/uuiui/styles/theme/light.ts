@@ -1,33 +1,34 @@
-import { rgb } from 'chroma-js'
-import { createUtopiColor } from '../utopi-color-helpers'
-import { base } from './base'
+import { MapLike } from 'typescript'
+import { UtopiColor, createUtopiColor, enforceUtopiColorTheme } from '../utopi-color-helpers'
+import type { dark } from './dark'
 
 const lightBase = {
-  primary: base.blue,
-  primarySubdued: createUtopiColor('rgba(0,118,247,1)'),
-  primaryEmphasized: createUtopiColor('rgba(26,135,255,1)'),
-  component: base.purple,
-  componentChild: base.orange,
+  primary: createUtopiColor('oklch(59% 0.25 254)'),
+  primary10: createUtopiColor('oklch(59% 0.25 254 / 10%)'),
+  primary30: createUtopiColor('oklch(59% 0.25 254 / 30%)'),
+  component: createUtopiColor('oklch(53% 0.31 290)'),
+  componentChild: createUtopiColor('oklch(83.6% 0.198 81.5)'),
+  componentChild20: createUtopiColor('oklch(83.6% 0.198 81.5 / 20%)'),
   css: createUtopiColor('oklch(69% 0.18 166.76)'),
-  white: base.white,
-  black: base.black,
-  brandPurple: base.purple,
-  brandNeonPink: base.neonpink,
+  white: createUtopiColor('oklch(100% 0 0)'),
+  black: createUtopiColor('oklch(0% 0 0)'),
+  brandPurple: createUtopiColor('oklch(53% 0.31 290)'),
+  brandPurple70: createUtopiColor('oklch(53% 0.31 290 / 70%)'),
+  brandNeonPink: createUtopiColor('oklch(72.2% 0.36 331.7)'),
   brandNeonPink10: createUtopiColor('oklch(72.53% 0.353 331.69 / 10%)'),
-  brandNeonGreen: base.neongreen,
+  brandNeonGreen: createUtopiColor('oklch(86.6% 0.27 158.6)'),
   pinkSubdued: createUtopiColor('oklch(92% 0.076 326)'),
-  jsYellow: base.jsYellow,
-  secondaryBlue: createUtopiColor('#49B6FF'),
-  secondaryOrange: createUtopiColor('#EEA544'),
-  denimBlue: createUtopiColor('#CEE5FF'),
-  lightDenimBlue: createUtopiColor('#EDF5FF'),
-  transparent: base.transparent,
-  error: base.red,
-  componentOrange: createUtopiColor('lch(61% 89 50)'),
-  componentPurple: base.purple,
-  componentPurple05: base.purple05,
-  componentPurple05solid: createUtopiColor('oklch(0.94 0.04 306)'),
-  dynamicBlue: base.blue,
+  secondaryBlue: createUtopiColor('oklch(74.5% 0.14 241.9)'),
+  secondaryOrange: createUtopiColor('oklch(78.97% 0.192 70)'),
+  denimBlue: createUtopiColor('oklch(91.3% 0.04 252)'),
+  lightDenimBlue: createUtopiColor('oklch(97% 0.02 254)'),
+  transparent: createUtopiColor('oklch(0% 0 0 / 0%)'),
+  error: createUtopiColor('oklch(66% 0.3 11.65)'),
+  componentOrange: createUtopiColor('oklch(68% 0.2 42)'),
+  componentPurple: createUtopiColor('oklch(53% 0.31 290)'),
+  componentPurple05: createUtopiColor('oklch(53.19% 0.307 289.7 / 5%)'),
+  componentPurple05solid: createUtopiColor('oklch(0.96 0.02 286)'),
+  dynamicBlue: createUtopiColor('oklch(59% 0.25 254)'),
   dynamicBlue10: createUtopiColor('oklch(58.98% 0.246 254.39 / 10%)'),
   unavailable: createUtopiColor('oklch(54.52% 0 0 / 5%)'),
   unavailableGrey: createUtopiColor('oklch(0% 0 0 / 22%)'),
@@ -62,7 +63,7 @@ const lightPrimitives = {
   // backgrounds
   emphasizedBackground: lightBase.bg0,
   emphasizedBackgroundPop: lightBase.bg1,
-  emphasizedBackgroundReduced: base.white,
+  emphasizedBackgroundReduced: lightBase.white,
   neutralBackground: lightBase.bg1,
   secondaryBackground: lightBase.bg2,
   subtleBackground: lightBase.bg3,
@@ -78,15 +79,15 @@ const lightPrimitives = {
   secondaryBorder: lightBase.border2,
   subduedBorder: lightBase.border1,
 
-  checkerboardLight: base.white,
+  checkerboardLight: createUtopiColor('oklch(100% 0 0)'),
   checkerboardDark: createUtopiColor('rgb(247 247 247)'),
 }
 
 const lightErrorStates = {
-  errorForeground: base.red,
+  errorForeground: createUtopiColor('oklch(66% 0.3 11.65)'),
   errorForegroundEmphasized: createUtopiColor('rgba(245,0,57,1)'),
   // TODO vv only used by button, refactor button and remove
-  warningForeground: base.orange,
+  warningForeground: createUtopiColor('oklch(83.6% 0.198 81.5)'),
   // TODO vv only used by image-thumbnail-control, consider removing
   warningBgTranslucent: createUtopiColor('rgba(250, 94, 0, 0.2)'),
   warningBgSolid: createUtopiColor('rgba(252,142,77,1)'),
@@ -103,21 +104,18 @@ const colorsWithOpacity = {
   neutralInvertedBackground30: createUtopiColor('hsla(0,0%,0%,0.3)'),
   // the following is used with an animation to zero opacity but same colour value
   listNewItemFlashBackground0: createUtopiColor('rgba(211, 254, 162, 0)'),
-  brandPurple70: base.purple70,
   // TODO vv only used by button, refactor & remove
   errorForeground20: createUtopiColor('rgba(253, 0, 59, 0.2)'),
-  primary10: base.blue10,
-  primary30: base.blue30,
   subduedBorder80: createUtopiColor('hsla(0, 0%, 91%, 0.8)'),
 }
 
-export const light = {
+const lightTheme = {
   ...colorsWithOpacity,
   ...lightBase,
   ...lightPrimitives,
   ...lightErrorStates,
 
-  textColor: base.almostBlack,
+  textColor: createUtopiColor('oklch(21.56% 0 0)'),
 
   panelShadowColor: createUtopiColor('rgba(0,0,0, .3)'),
   seperator: createUtopiColor('hsl(0,0%,92%)'),
@@ -143,7 +141,7 @@ export const light = {
   canvasControlsSizeBoxBorder: createUtopiColor('hsl(0,0%,15%)'),
   canvasControlReorderSliderBoxShadowPrimary: createUtopiColor('rgba(52,52,52,0.35)'),
   canvasControlReorderSliderBoxShadowSecondary: createUtopiColor('hsl(0,0%,0%,0.5)'),
-  canvasControlsCoordinateSystemMarks: base.neonpink,
+  canvasControlsCoordinateSystemMarks: lightBase.brandNeonPink,
   canvasControlsImmediateParentMarks: createUtopiColor('rgba(0, 0, 0, 0.25)'),
   canvasControlsInlineIndicatorInactive: createUtopiColor('rgba(179,215,255,1)'),
   canvasControlsInlineToggleUnsetText: createUtopiColor('rgba(179,215,255,1)'),
@@ -155,21 +153,21 @@ export const light = {
   canvasControlsDimensionableControlShadow: createUtopiColor('rgba(140,140,140,.9)'),
 
   canvasSelectionPrimaryOutline: lightBase.primary,
-  canvasSelectionInstanceOutline: base.purple,
-  canvasSelectionSceneOutline: base.purple,
-  canvasSelectionRandomDOMElementInstanceOutline: base.darkgray,
+  canvasSelectionInstanceOutline: lightBase.brandPurple,
+  canvasSelectionSceneOutline: lightBase.brandPurple,
+  canvasSelectionRandomDOMElementInstanceOutline: createUtopiColor('oklch(59.82% 0 0)'),
   canvasSelectionSecondaryOutline: createUtopiColor('hsla(0,0%,10%,0.5)'),
-  canvasSelectionNotFocusable: base.darkgray,
+  canvasSelectionNotFocusable: createUtopiColor('oklch(59.82% 0 0)'),
 
-  canvasSelectionFocusable: base.purple,
-  canvasSelectionIsolatedComponent: base.purple,
+  canvasSelectionFocusable: lightBase.brandPurple,
+  canvasSelectionIsolatedComponent: lightBase.brandPurple,
   //Children of isolated component
-  canvasSelectionNotFocusableChild: base.darkorange,
-  canvasSelectionFocusableChild: base.purple,
+  canvasSelectionNotFocusableChild: createUtopiColor('oklch(63% 0.22 41)'),
+  canvasSelectionFocusableChild: lightBase.brandPurple,
 
-  canvasLayoutStroke: base.neonpink,
+  canvasLayoutStroke: lightBase.brandNeonPink,
 
-  paddingForeground: base.neongreen,
+  paddingForeground: lightBase.brandNeonGreen,
   paddingFillTranslucent: createUtopiColor('rgba(230,248,230,0.7)'),
 
   canvasElementBackground: createUtopiColor('rgba(230,242,255,1)'),
@@ -191,19 +189,19 @@ export const light = {
   // application utilities:
   navigatorResizeHintBorder: lightBase.primary,
   navigatorComponentName: lightBase.primary,
-  navigatorComponentSelected: base.orange20,
-  navigatorComponentIconBorder: base.orange,
+  navigatorComponentSelected: lightBase.componentChild20,
+  navigatorComponentIconBorder: lightBase.componentChild,
 
   contextMenuBackground: lightPrimitives.secondaryBackground,
   contextMenuForeground: lightPrimitives.neutralForeground,
-  contextMenuHighlightForeground: base.white,
+  contextMenuHighlightForeground: lightBase.white,
   contextMenuHighlightBackground: lightBase.primary,
   contextMenuSeparator: createUtopiColor('rgba(0,0,0,0.1)'),
 
   inspectorHoverColor: lightBase.fg8,
   inspectorFocusedColor: lightBase.primary,
   inspectorSetBorderColor: lightPrimitives.neutralBorder,
-  flasherHookColor: base.neonpink,
+  flasherHookColor: lightBase.brandNeonPink,
 
   // Github pane
   githubBoxesBorder: createUtopiColor('#2D2E33'),
@@ -230,3 +228,6 @@ export const light = {
   // Gap controls
   gapControls: createUtopiColor('#FFA500'),
 }
+
+// all values in light must be of the type UtopiColor! This will break if you made a mistake.
+export const light = enforceUtopiColorTheme(lightTheme)

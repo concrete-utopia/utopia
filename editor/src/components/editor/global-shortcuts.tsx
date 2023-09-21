@@ -509,10 +509,14 @@ export function handleKeyDown(
 
         // TODO: Move this around.
         if (isLiveMode(editor.mode)) {
-          return [EditorActions.updateEditorMode(EditorModes.selectMode(editor.mode.controlId))]
+          return [
+            EditorActions.updateEditorMode(
+              EditorModes.selectMode(editor.mode.controlId, false, 'none'),
+            ),
+          ]
         }
         if (isTextEditMode(editor.mode)) {
-          return [EditorActions.updateEditorMode(EditorModes.selectMode())]
+          return [EditorActions.updateEditorMode(EditorModes.selectMode(null, false, 'none'))]
         }
         return []
       },
@@ -633,7 +637,7 @@ export function handleKeyDown(
       },
       [START_RENAMING_SHORTCUT]: () => {
         const exitInsertModeActions = [
-          EditorActions.switchEditorMode(EditorModes.selectMode()),
+          EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
           CanvasActions.clearInteractionSession(false),
           EditorActions.clearHighlightedViews(),
         ]

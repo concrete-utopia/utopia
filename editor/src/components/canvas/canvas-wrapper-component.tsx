@@ -247,7 +247,7 @@ const ErrorOverlayComponent = React.memo(() => {
 
         dispatch([
           CanvasActions.clearInteractionSession(true),
-          switchEditorMode(EditorModes.selectMode()),
+          switchEditorMode(EditorModes.selectMode(null, false, 'none')),
           clearHighlightedViews(),
         ])
       }, 0)

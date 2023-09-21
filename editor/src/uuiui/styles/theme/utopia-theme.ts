@@ -1,4 +1,4 @@
-import { base } from './base'
+import { color } from '../utopitrons'
 import { dark } from './dark'
 import { light } from './light'
 import type { ThemeObject } from './theme-helpers'
@@ -110,43 +110,43 @@ const scene = {
 
 const noticeStyles: { [styleName: string]: React.CSSProperties } = {
   info: {
-    backgroundColor: base.almostBlack.cssValue,
-    color: base.offWhite.cssValue,
+    backgroundColor: colorTheme.fg1.value,
+    color: colorTheme.white.value,
   },
   warning: {
-    backgroundColor: base.almostBlack.cssValue,
-    color: base.offWhite.cssValue,
+    backgroundColor: colorTheme.fg1.value,
+    color: colorTheme.white.value,
   },
   notice: {
-    backgroundColor: base.blue.cssValue,
-    color: 'white',
+    backgroundColor: colorTheme.primary.value,
+    color: colorTheme.white.value,
   },
   success: {
-    backgroundColor: base.blue.cssValue,
-    color: base.offWhite.cssValue,
+    backgroundColor: colorTheme.primary.value,
+    color: colorTheme.white.value,
   },
   primary: {
-    backgroundColor: base.blue.cssValue,
-    color: base.offWhite.cssValue,
+    backgroundColor: colorTheme.primary.value,
+    color: colorTheme.white.value,
   },
   error: {
-    backgroundColor: base.red.cssValue,
-    color: base.offWhite.cssValue,
+    backgroundColor: colorTheme.error.value,
+    color: colorTheme.white.value,
   },
   disconnected: {
-    backgroundColor: base.almostBlack.cssValue,
-    color: base.offWhite.cssValue,
+    backgroundColor: colorTheme.fg1.value,
+    color: colorTheme.white.value,
   },
 }
 
 const textNoticeStyles = {
   info: {},
-  success: { color: base.neongreen.cssValue },
-  primary: { color: base.blue.cssValue },
-  notice: { color: base.darkgray.cssValue },
-  warning: { color: base.red.cssValue },
-  error: { color: base.red.cssValue },
-  disconnected: { background: base.black.value, color: 'white' },
+  success: { color: colorTheme.brandNeonGreen.value },
+  primary: { color: colorTheme.primary.value },
+  notice: { color: colorTheme.fg5.value },
+  warning: { color: colorTheme.error.value },
+  error: { color: colorTheme.error.value },
+  disconnected: { background: colorTheme.black.value, color: colorTheme.white.value },
 }
 
 const fontStyles = {

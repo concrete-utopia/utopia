@@ -288,6 +288,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     fontWeight: '400',
     fontStyle: 'normal',
     textDecorationLine: 'none',
+    textBounds: null,
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -373,6 +374,7 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     fontWeight: '400',
     fontStyle: 'normal',
     textDecorationLine: 'none',
+    textBounds: null,
   }
 
   it('same reference returns the same reference', () => {
@@ -513,6 +515,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       fontWeight: '400',
       fontStyle: 'normal',
       textDecorationLine: 'none',
+      textBounds: null,
     },
     computedStyle: {
       a: 'a',
@@ -628,6 +631,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       fontWeight: '400',
       fontStyle: 'normal',
       textDecorationLine: 'none',
+      textBounds: null,
     },
     computedStyle: {
       a: 'a',
@@ -769,6 +773,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         fontWeight: '400',
         fontStyle: 'normal',
         textDecorationLine: 'none',
+        textBounds: null,
       },
       computedStyle: {
         a: 'a',
@@ -886,6 +891,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         fontWeight: '400',
         fontStyle: 'normal',
         textDecorationLine: 'none',
+        textBounds: null,
       },
       computedStyle: {
         a: 'a',
@@ -1003,6 +1009,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         fontWeight: '400',
         fontStyle: 'normal',
         textDecorationLine: 'none',
+        textBounds: null,
       },
       computedStyle: {
         a: 'a',
