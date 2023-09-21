@@ -36,9 +36,9 @@ import { InsertMenuPane } from '../navigator/insert-menu-pane'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import type { StoredPanel } from './grid-panels-state'
+import { GridMenuWidth } from './grid-panels-state'
 import { GridPanelsContainer } from './grid-panels-container'
-import type { Menu, Pane } from './grid-panels-state'
+import type { Menu, Pane, StoredPanel } from './grid-panels-state'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
@@ -237,10 +237,14 @@ interface ResizableRightPaneProps {
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
+  const defaultInspectorWidth = isFeatureEnabled('Draggable Floating Panels')
+    ? GridMenuWidth
+    : UtopiaTheme.layout.inspectorSmallWidth
+
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
-  const [width, setWidth] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
+  const [width, setWidth] = React.useState<number>(defaultInspectorWidth)
 
   const resizableRef = React.useRef<Resizable>(null)
   const onResize = React.useCallback(() => {
@@ -248,9 +252,9 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
     if (newWidth != null) {
       // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
       setWidth(newWidth)
-      updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
+      updateInspectorWidth(newWidth > defaultInspectorWidth ? 'wide' : 'regular')
     }
-  }, [updateInspectorWidth])
+  }, [updateInspectorWidth, defaultInspectorWidth])
 
   const selectedTab = useEditorState(
     Substores.restOfEditor,
@@ -271,7 +275,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
     <Resizable
       ref={resizableRef}
       defaultSize={{
-        width: UtopiaTheme.layout.inspectorSmallWidth,
+        width: defaultInspectorWidth,
         height: '100%',
       }}
       size={{
@@ -289,7 +293,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
       onResize={onResize}
       onResizeStop={onResize}
       snap={{
-        x: [UtopiaTheme.layout.inspectorSmallWidth, UtopiaTheme.layout.inspectorLargeWidth],
+        x: [defaultInspectorWidth, UtopiaTheme.layout.inspectorLargeWidth],
       }}
       enable={{
         left: isFeatureEnabled('Draggable Floating Panels') ? false : true,
