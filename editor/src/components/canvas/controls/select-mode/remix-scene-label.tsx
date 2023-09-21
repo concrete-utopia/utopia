@@ -145,7 +145,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     (store) => store.editor.canvas.scale,
     'RemixSceneLabel scale',
   )
-  const baseFontSize = 9
+  const baseFontSize = 10
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 2
@@ -261,6 +261,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           bottom: -frame.y + offsetY,
           width: frame.width,
           paddingLeft: offsetX,
+          paddingRight: offsetX,
           paddingTop: paddingY,
           paddingBottom: paddingY,
           fontFamily: 'Utopian-Inter',
@@ -282,7 +283,6 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
             style={{
               // padding: `${4 / scale}px ${12 / scale}px`,
               padding: `${4 / scale}px ${4 / scale}px`,
-              fontSize: 14 / scale,
               fontWeight: 'bold',
             }}
           >
@@ -294,18 +294,17 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               // borderRadius: 10 / scale,
               // padding: `${4 / scale}px ${12 / scale}px`,
               padding: `${4 / scale}px ${4 / scale}px`,
-              fontSize: 14 / scale,
               color: currentLocationMatchesRoutes ? undefined : colorTheme.error.value,
             }}
           >
             {label}
           </div>
         </FlexRow>
-        <FlexRow style={{ padding: '0 20px', gap: 10 }}>
+        <FlexRow style={{ gap: 10 }}>
           <Tooltip title={'Back'}>
             <span
               data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
-              style={{ cursor: 'pointer', fontSize: 16 / scale }}
+              style={{ cursor: 'pointer', fontSize: 12 / scale }}
               onMouseDown={back}
             >
               〱
@@ -314,7 +313,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           <Tooltip title={'Forward'}>
             <span
               data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
-              style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
+              style={{ cursor: 'pointer', fontSize: 12 / scale, transform: 'scale(-1, 1)' }}
               onMouseDown={forward}
             >
               〱

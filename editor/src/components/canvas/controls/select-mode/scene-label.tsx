@@ -99,7 +99,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     (store) => store.editor.canvas.scale,
     'SceneLabel scale',
   )
-  const baseFontSize = 9
+  const baseFontSize = 10
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 9
@@ -218,6 +218,8 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             bottom: -frame.y + offsetY,
             width: frame.width,
             paddingLeft: offsetX,
+            paddingRight: offsetX,
+            paddingTop: paddingY,
             paddingBottom: paddingY,
             fontFamily: 'Utopian-Inter',
             fontSize: scaledFontSize,
