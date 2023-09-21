@@ -194,7 +194,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
 
   const selectedBackgroundColor = sceneHasSingleChild
     ? colorTheme.componentPurple05solid.value
-    : colorTheme.bg5.value
+    : colorTheme.bg510solid.value
   const backgroundColor = isSelected ? selectedBackgroundColor : 'transparent'
 
   if (frame != null && isFiniteRectangle(frame)) {
@@ -209,9 +209,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: sceneHasSingleChild
-              ? colorTheme.componentPurple.value
-              : colorTheme.subduedForeground.value,
+            color: sceneHasSingleChild ? colorTheme.componentPurple.value : colorTheme.fg2.value,
             position: 'absolute',
             fontWeight: 600,
             left: frame.x,
