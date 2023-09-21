@@ -103,7 +103,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 9
-  const offsetY = scaledFontSize / 3
+  const offsetY = scaledFontSize / 1.5
   const offsetX = scaledFontSize / 2
   const borderRadius = 3 / scale
 

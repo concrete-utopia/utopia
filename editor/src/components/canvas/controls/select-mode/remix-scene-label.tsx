@@ -149,8 +149,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 2
-  const offsetY = scaledFontSize
-  const offsetX = scaledFontSize
+  const offsetY = scaledFontSize / 1.5
+  const offsetX = scaledFontSize / 2
   const borderRadius = 3 / scale
 
   const editorModeRef = useRefEditorState((store) => {
