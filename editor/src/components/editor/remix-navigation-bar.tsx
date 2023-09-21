@@ -57,7 +57,7 @@ export const RemixNavigationBar = React.memo(() => {
   return (
     <FlexRow
       style={{
-        gap: 12,
+        gap: 10,
         alignSelf: 'stretch',
         alignItems: 'center',
         justifyContent: 'center',
@@ -98,7 +98,7 @@ export const RemixNavigationBar = React.memo(() => {
       <Tooltip title={'Home'} placement='bottom'>
         <span
           data-testid={RemixNavigationBarButtonTestId('home')}
-          style={{ cursor: 'pointer', fontSize: 12 }}
+          style={{ cursor: 'pointer', fontSize: 16 }}
           css={{
             '&:hover': {
               color: colorTheme.dynamicBlue.value,
@@ -106,7 +106,7 @@ export const RemixNavigationBar = React.memo(() => {
           }}
           onMouseDown={home}
         >
-          ／
+          ⛫
         </span>
       </Tooltip>
       <div

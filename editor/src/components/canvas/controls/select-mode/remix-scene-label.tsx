@@ -149,6 +149,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
   const paddingY = scaledFontSize / 4
+  const paddingX = paddingY * 2
   const offsetY = scaledFontSize / 1.5
   const offsetX = scaledFontSize / 2
   const borderRadius = 3 / scale
@@ -260,7 +261,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           left: frame.x,
           bottom: -frame.y + offsetY,
           width: frame.width,
-          padding: `${paddingY}px ${paddingY * 2}px`,
+          padding: `${paddingY}px ${paddingX}px`,
           fontFamily: 'Utopian-Inter',
           fontSize: scaledFontSize,
           lineHeight: `${scaledLineHeight}px`,
@@ -272,7 +273,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           justifyContent: 'space-between',
         }}
       >
-        <FlexRow style={{ gap: paddingY * 2 }}>
+        <FlexRow style={{ gap: paddingX }}>
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}
             style={{
@@ -290,13 +291,13 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
             {label}
           </div>
         </FlexRow>
-        <FlexRow style={{ gap: 10, alignItems: 'center' }}>
+        <FlexRow style={{ gap: paddingX, alignItems: 'center' }}>
           <Tooltip title={'Back'}>
             <span
               data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
               style={{
                 cursor: 'pointer',
-                fontSize: 12 / scale,
+                fontSize: 10 / scale,
                 display: isSelected ? 'block' : 'none',
               }}
               onMouseDown={back}
@@ -309,7 +310,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
               style={{
                 cursor: 'pointer',
-                fontSize: 12 / scale,
+                fontSize: 10 / scale,
                 display: isSelected ? 'block' : 'none',
                 transform: 'scale(-1, 1)',
               }}
