@@ -43,6 +43,7 @@ import {
   canvasRectangle,
   infinityCanvasRectangle,
   infinityLocalRectangle,
+  stretchRect,
 } from '../../core/shared/math-utils'
 import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
@@ -995,7 +996,18 @@ function getSpecialMeasurements(
   const textDecorationLine = elementStyle.textDecorationLine
 
   const textBounds = elementContainsOnlyText(element)
-    ? getCanvasRectangleFromElement(element, scale, 'only-content')
+    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content'), {
+        w:
+          maybeValueFromComputedStyle(elementStyle.paddingLeft) +
+          maybeValueFromComputedStyle(elementStyle.paddingRight) +
+          maybeValueFromComputedStyle(elementStyle.marginLeft) +
+          maybeValueFromComputedStyle(elementStyle.marginRight),
+        h:
+          maybeValueFromComputedStyle(elementStyle.paddingTop) +
+          maybeValueFromComputedStyle(elementStyle.paddingBottom) +
+          maybeValueFromComputedStyle(elementStyle.marginTop) +
+          maybeValueFromComputedStyle(elementStyle.marginBottom),
+      })
     : null
 
   return specialSizeMeasurements(
@@ -1057,6 +1069,11 @@ function elementContainsOnlyText(element: HTMLElement): boolean {
     }
   }
   return true
+}
+
+function maybeValueFromComputedStyle(property: string): number {
+  const parsed = parseCSSPx(property)
+  return isRight(parsed) ? parsed.value.value : 0
 }
 
 function globalFrameForElement(

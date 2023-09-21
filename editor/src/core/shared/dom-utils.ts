@@ -1,16 +1,8 @@
 import type { ReactDOM } from 'react'
 import type { CanvasRectangle } from './math-utils'
-import {
-  boundingRectangle,
-  canvasRectangle,
-  roundToNearestHalf,
-  scaleRect,
-  zeroCanvasRect,
-} from './math-utils'
+import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
-import { parseCSSPx } from '../../components/inspector/common/css-utils'
-import { isRight } from './either'
 import { assertNever } from './utils'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
@@ -277,28 +269,7 @@ export function getCanvasRectangleFromElement(
 
   switch (withContent) {
     case 'only-content':
-      const computedStyle = window.getComputedStyle(element)
-      function maybeValueFromComputedStyle(property: string): number {
-        const parsed = parseCSSPx(property)
-        return isRight(parsed) ? parsed.value.value : 0
-      }
-
-      return canvasRectangle({
-        x: contentRect.x,
-        y: contentRect.y,
-        width:
-          contentRect.width +
-          maybeValueFromComputedStyle(computedStyle.paddingLeft) +
-          maybeValueFromComputedStyle(computedStyle.paddingRight) +
-          maybeValueFromComputedStyle(computedStyle.marginLeft) +
-          maybeValueFromComputedStyle(computedStyle.marginRight),
-        height:
-          contentRect.height +
-          maybeValueFromComputedStyle(computedStyle.paddingTop) +
-          maybeValueFromComputedStyle(computedStyle.paddingBottom) +
-          maybeValueFromComputedStyle(computedStyle.marginTop) +
-          maybeValueFromComputedStyle(computedStyle.marginBottom),
-      })
+      return contentRect
     case 'with-content':
       return boundingRectangle(elementRect, contentRect)
     default:
