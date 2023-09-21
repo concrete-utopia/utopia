@@ -96,6 +96,18 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
 
   const label = isIndexRoute ? RemixSceneHomeLabel : currentPath
 
+  const scenelabel = useEditorState(
+    Substores.metadata,
+    (store) =>
+      MetadataUtils.getElementLabel(
+        store.editor.allElementProps,
+        props.target,
+        store.editor.elementPathTree,
+        store.editor.jsxMetadata,
+      ),
+    'SceneLabel label',
+  )
+
   const currentLocationMatchesRoutes = useCurrentLocationMatchesRoutes(props.target)
 
   const forward = React.useCallback(
@@ -259,28 +271,57 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           textOverflow: 'ellipsis',
           borderRadius: borderRadius,
           backgroundColor: backgroundColor,
-          gap: 12 / scale,
+          // gap: 12 / scale,
+          //gap: 5 / scale
+          justifyContent: 'space-between',
         }}
       >
-        <Tooltip title={'Back'}>
-          <span
-            data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
-            style={{ cursor: 'pointer', fontSize: 16 / scale }}
-            onMouseDown={back}
+        <FlexRow style={{}}>
+          <div
+            data-testid={RemixSceneLabelPathTestId(props.target)}
+            style={{
+              // padding: `${4 / scale}px ${12 / scale}px`,
+              padding: `${4 / scale}px ${4 / scale}px`,
+              fontSize: 14 / scale,
+              fontWeight: 'bold',
+            }}
           >
-            〱
-          </span>
-        </Tooltip>
-        <Tooltip title={'Forward'}>
-          <span
-            data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
-            style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
-            onMouseDown={forward}
+            {scenelabel}
+          </div>
+          <div
+            data-testid={RemixSceneLabelPathTestId(props.target)}
+            style={{
+              // borderRadius: 10 / scale,
+              // padding: `${4 / scale}px ${12 / scale}px`,
+              padding: `${4 / scale}px ${4 / scale}px`,
+              fontSize: 14 / scale,
+              color: currentLocationMatchesRoutes ? undefined : colorTheme.error.value,
+            }}
           >
-            〱
-          </span>
-        </Tooltip>
-        <Tooltip title={'Home'}>
+            {label}
+          </div>
+        </FlexRow>
+        <FlexRow style={{ padding: '0 20px', gap: 10 }}>
+          <Tooltip title={'Back'}>
+            <span
+              data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
+              style={{ cursor: 'pointer', fontSize: 16 / scale }}
+              onMouseDown={back}
+            >
+              〱
+            </span>
+          </Tooltip>
+          <Tooltip title={'Forward'}>
+            <span
+              data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
+              style={{ cursor: 'pointer', fontSize: 16 / scale, transform: 'scale(-1, 1)' }}
+              onMouseDown={forward}
+            >
+              〱
+            </span>
+          </Tooltip>
+        </FlexRow>
+        {/* <Tooltip title={'Home'}>
           <span
             data-testid={RemixSceneLabelButtonTestId(props.target, 'home')}
             style={{ cursor: 'pointer', fontSize: 16 / scale }}
@@ -288,18 +329,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           >
             ／
           </span>
-        </Tooltip>
-        <div
-          data-testid={RemixSceneLabelPathTestId(props.target)}
-          style={{
-            borderRadius: 10 / scale,
-            padding: `${4 / scale}px ${12 / scale}px`,
-            fontSize: 14 / scale,
-            color: currentLocationMatchesRoutes ? undefined : colorTheme.error.value,
-          }}
-        >
-          {label}
-        </div>
+        </Tooltip> */}
+
         {unless(
           currentLocationMatchesRoutes,
           <Tooltip title={"Current location doesn't match available routes"}>
