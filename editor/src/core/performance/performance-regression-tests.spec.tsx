@@ -14,13 +14,6 @@ jest.mock('../../components/canvas/controls/outline-utils', () => ({
   isZeroSizedElement: () => false, // in test environment elements have no size
 }))
 
-// These tests render enough to cause this to be triggered by a hook that calls it.
-jest.mock('../../common/server', () => ({
-  checkProjectOwnership: async () => ({
-    isOwner: false,
-  }),
-}))
-
 describe('React Render Count Tests -', () => {
   it('Clicking on opacity slider with a simple project', async () => {
     const renderResult = await renderTestEditorWithCode(
