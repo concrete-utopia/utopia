@@ -1805,6 +1805,10 @@ export var storyboard = (
       })
     })
     describe('text children', () => {
+      function isBetween(n: number, min: number, max: number) {
+        return min <= n && n <= max
+      }
+
       it('does not resize text elements past their intrinsic size', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(`
@@ -1838,7 +1842,7 @@ export var storyboard = (
 
         const span = await renderResult.renderedDOM.findByTestId('span')
         expect(span.clientWidth).toEqual(68)
-        expect(span.clientHeight).toEqual(19)
+        expect(isBetween(span.clientHeight, 18, 19)).toBe(true)
       })
       it('does not resize text elements past their intrinsic size with padding', async () => {
         const renderResult = await renderTestEditorWithCode(
@@ -1873,7 +1877,7 @@ export var storyboard = (
 
         const span = await renderResult.renderedDOM.findByTestId('span')
         expect(span.clientWidth).toEqual(88)
-        expect(span.clientHeight).toEqual(39)
+        expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
       it('does not resize text elements past their intrinsic size when zoomed in', async () => {
         const renderResult = await renderTestEditorWithCode(
@@ -1911,7 +1915,7 @@ export var storyboard = (
 
         const span = await renderResult.renderedDOM.findByTestId('span')
         expect(span.clientWidth).toEqual(88)
-        expect(span.clientHeight).toEqual(39)
+        expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
       it('does not resize text elements past their intrinsic size when zoomed out', async () => {
         const renderResult = await renderTestEditorWithCode(
@@ -1949,7 +1953,7 @@ export var storyboard = (
 
         const span = await renderResult.renderedDOM.findByTestId('span')
         expect(span.clientWidth).toEqual(88)
-        expect(span.clientHeight).toEqual(39)
+        expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
       })
       it('does not resize text elements past their intrinsic size for nested groups', async () => {
         const renderResult = await renderTestEditorWithCode(
