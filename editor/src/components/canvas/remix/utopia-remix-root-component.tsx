@@ -88,7 +88,7 @@ function useGetRouteModules(basePath: ElementPath) {
         createExecutionScope()[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
       const errorBoundary = value.createErrorBoundary
-        ? () => createExecutionScope()['ErrorBoundary']?.() ?? null
+        ? (componentProps: any) => createExecutionScope()['ErrorBoundary']?.(componentProps) ?? null
         : undefined
 
       routeModulesResult[routeId] = {
