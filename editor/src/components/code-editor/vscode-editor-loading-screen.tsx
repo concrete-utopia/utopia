@@ -161,9 +161,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
             width: 140,
           }}
         >
-          <div style={{ color: colorTheme.jsYellow.value, display: 'flex' }}>
-            <JSIcon />
-          </div>
+          <JSIcon />
           <span style={{}}>storyboard.js</span>
         </div>
       </div>
@@ -229,9 +227,7 @@ export const VSCodeLoadingScreen = React.memo((): React.ReactElement | null => {
               justifyContent: 'center',
             }}
           >
-            <div style={{ color: colorTheme.jsYellow.value, display: 'flex', paddingRight: 4 }}>
-              <JSIcon />
-            </div>
+            <JSIcon />
             <div className='monaco-icon-label-container' title='~/utopia/storyboard.js'>
               <span className='monaco-icon-name-container'>
                 <a style={{ color: colorTheme.codeEditorTabRowFg.value }} className='label-name'>
