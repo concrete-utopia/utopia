@@ -7,7 +7,8 @@
 import '../vite-shims'
 
 // import feature switches so they are loaded before anything else can read them
-import '../utils/feature-switches'
+import { loadFeatureSwitches } from '../utils/feature-switches'
+await loadFeatureSwitches()
 
 // Fire off server requests that later block, to improve initial load on slower connections. These will still block,
 // but this gives us a chance to cache the result first

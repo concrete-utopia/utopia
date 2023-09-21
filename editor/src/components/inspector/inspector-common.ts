@@ -27,10 +27,10 @@ import {
   parseCSSLengthPercent,
   parseCSSNumber,
 } from './common/css-utils'
-import { assertNever, fastForEach } from '../../core/shared/utils'
+import { assertNever } from '../../core/shared/utils'
 import { defaultEither, foldEither, isLeft, isRight, right } from '../../core/shared/either'
 import { elementOnlyHasTextChildren } from '../../core/model/element-template-utils'
-import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 import type { CSSProperties } from 'react'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
@@ -45,17 +45,7 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import {
-  CanvasRectangle,
-  roundUpToNearestHalf,
-  SimpleRectangle,
-} from '../../core/shared/math-utils'
-import {
-  canvasRectangle,
-  isFiniteRectangle,
-  isInfinityRectangle,
-  zeroRectIfNullOrInfinity,
-} from '../../core/shared/math-utils'
+import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
@@ -733,24 +723,34 @@ export function detectFillHugFixedStateMultiselect(
   if (elementPaths.length === 1) {
     return detectFillHugFixedState(axis, metadata, elementPaths[0])
   } else {
-    const results = elementPaths.map((path) => detectFillHugFixedState(axis, metadata, path))
-    let controlStatus: ControlStatus = results[0]?.controlStatus ?? 'off'
-    let value: FixedHugFill | null = results[0]?.fixedHugFill
-
-    fastForEach(results, (result) => {
-      if (!isFixedHugFillEqual(result, results[0])) {
-        controlStatus = 'multiselect-mixed-simple-or-unset'
+    function fixedHugFillWithControlStatus(
+      fixedHugFill: FixedHugFill | null,
+      controlStatus: ControlStatus,
+    ) {
+      return {
+        fixedHugFill: fixedHugFill,
+        controlStatus: controlStatus,
       }
+    }
+
+    const results = elementPaths.map((path) => detectFillHugFixedState(axis, metadata, path))
+    const value: FixedHugFill | null = results[0]?.fixedHugFill
+
+    const isMixed = results.some((result) => {
+      return !isFixedHugFillEqual(result, results[0])
     })
+    if (isMixed) {
+      return fixedHugFillWithControlStatus(value, 'multiselect-mixed-simple-or-unset')
+    }
 
     const allControlStatus = uniq(results.map((result) => result.controlStatus))
     if (allControlStatus.includes('unoverwritable')) {
-      controlStatus = 'multiselect-unoverwritable'
+      return fixedHugFillWithControlStatus(value, 'multiselect-unoverwritable')
     } else if (allControlStatus.includes('controlled')) {
-      controlStatus = 'multiselect-controlled'
+      return fixedHugFillWithControlStatus(value, 'multiselect-controlled')
+    } else {
+      return fixedHugFillWithControlStatus(value, results[0]?.controlStatus ?? 'off')
     }
-
-    return { fixedHugFill: value, controlStatus: controlStatus }
   }
 }
 

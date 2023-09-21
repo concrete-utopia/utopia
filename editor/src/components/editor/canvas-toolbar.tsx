@@ -66,6 +66,8 @@ import { stopPropagation } from '../inspector/common/inspector-utils'
 import { useConvertTo } from './convert-callbacks'
 import { useWrapInDiv } from './wrap-in-callbacks'
 import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
+import { useResetRemixApps } from '../canvas/remix/remix-hooks'
+import { RemixNavigationBar } from './remix-navigation-bar'
 import {
   fragmentComponentInfo,
   insertableComponentGroupFragment,
@@ -369,9 +371,12 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [dispatch, isLiveMode])
 
+  const resetRemixApps = useResetRemixApps()
+
   const resetCanvasCallback = React.useCallback(() => {
+    resetRemixApps()
     dispatch([resetCanvas()])
-  }, [dispatch])
+  }, [dispatch, resetRemixApps])
 
   const inspectorInvisible = useEditorState(
     Substores.restOfEditor,
@@ -728,6 +733,29 @@ export const CanvasToolbar = React.memo(() => {
               </>,
             )
           : null}
+        {/* Live Mode */}
+        {when(
+          canvasToolbarMode.primary === 'play',
+          <>
+            <FlexRow
+              data-testid='canvas-toolbar-submenu'
+              style={{
+                alignItems: 'start',
+                marginLeft: 15,
+                padding: '0 8px',
+                height: 32,
+                overflow: 'hidden',
+                backgroundColor: colorTheme.bg2.value,
+                borderRadius: '0px 10px 10px 10px',
+                boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+                pointerEvents: 'initial',
+                zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
+              }}
+            >
+              <RemixNavigationBar />
+            </FlexRow>
+          </>,
+        )}
         <ToolbarSearchListing />
       </FlexColumn>
     </div>
