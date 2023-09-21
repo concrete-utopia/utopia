@@ -4,11 +4,13 @@ import { GridPanel } from './grid-panel'
 import { ColumnDragTargets } from './grid-panels-drag-targets'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
+  GridHorizontalExtraPadding,
   GridMenuDefaultPanels,
   GridMenuWidth,
   GridPaneWidth,
   GridPanelHorizontalGapHalf,
   GridPanelVerticalGapHalf,
+  GridVerticalExtraPadding,
   NumberOfColumns,
   storedLayoutToResolvedPanels,
   updateLayout,
@@ -95,10 +97,10 @@ export const GridPanelsContainer = React.memo(() => {
         gridAutoFlow: 'dense',
         columnGap: GridPanelHorizontalGapHalf * 2,
         rowGap: GridPanelVerticalGapHalf * 2,
-        paddingTop: GridPanelVerticalGapHalf,
-        paddingBottom: GridPanelVerticalGapHalf,
-        paddingLeft: GridPanelHorizontalGapHalf + 2,
-        paddingRight: GridPanelHorizontalGapHalf + 2,
+        paddingTop: GridPanelVerticalGapHalf + GridVerticalExtraPadding,
+        paddingBottom: GridPanelVerticalGapHalf + GridVerticalExtraPadding,
+        paddingLeft: GridPanelHorizontalGapHalf + GridHorizontalExtraPadding,
+        paddingRight: GridPanelHorizontalGapHalf + GridHorizontalExtraPadding,
       }}
     >
       <GridPanel
