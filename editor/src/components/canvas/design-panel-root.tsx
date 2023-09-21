@@ -1,39 +1,36 @@
-import type { ResizeCallback, ResizeDirection } from 're-resizable'
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+
+import { jsx } from '@emotion/react'
+import type { ResizeDirection } from 're-resizable'
 import { Resizable } from 're-resizable'
 import React from 'react'
-import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
-import { ConsoleLog, LeftPanelMinWidth, RightMenuTab } from '../editor/store/editor-state'
+import { RightMenuTab } from '../editor/store/editor-state'
 
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
-import { NavigatorComponent } from '../navigator/navigator'
 import {
   SimpleFlexRow,
   UtopiaTheme,
-  UtopiaStyles,
   SimpleFlexColumn,
-  background,
   useColorTheme,
-  Icons,
   LargerIcons,
 } from '../../uuiui'
 
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
-import { canvasPoint } from '../../core/shared/math-utils'
-import type { Size } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 import { getQueryParam } from '../../common/env-vars'
 import { unless, when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
-import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { GridMenuWidth } from './grid-panels-state'
@@ -42,8 +39,13 @@ import type { Menu, Pane, StoredPanel } from './grid-panels-state'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { NO_OP } from '../../core/shared/utils'
-import { TitleBarEmpty, TitleBarUserProfile, TitleHeight } from '../titlebar/title-bar'
+import { TitleBarEmpty, TitleBarUserProfile } from '../titlebar/title-bar'
+import type { EditorAction } from '../editor/action-types'
+import { SettingsPane } from '../navigator/left-pane/settings-pane'
+import { MenuTab } from '../../uuiui/menu-tab'
+import { UIGridRow } from '../inspector/widgets/ui-grid-row'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { strictEvery } from '../../core/shared/array-utils'
 
 interface NumberSize {
   width: number
@@ -267,6 +269,46 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
     (store) => store.editor.rightMenu.expanded,
     'DesignPanelRoot isRightMenuExpanded',
   )
+  const dispatch = useDispatch()
+
+  const onClickTab = React.useCallback(
+    (menuTab: RightMenuTab) => {
+      let actions: Array<EditorAction> = []
+      actions.push(EditorActions.setRightMenuTab(menuTab))
+      dispatch(actions)
+    },
+    [dispatch],
+  )
+
+  const onClickInsertTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Insert)
+  }, [onClickTab])
+
+  const onClickInspectorTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Inspector)
+  }, [onClickTab])
+
+  const onClickSettingsTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Settings)
+  }, [onClickTab])
+
+  const anyKnownElements = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return strictEvery(store.editor.selectedViews, (view) => {
+        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null
+      })
+    },
+    'DesignPanelRoot anyKnownElements',
+  )
+  const tabToShow: RightMenuTab = React.useMemo(() => {
+    if (anyKnownElements || selectedTab === RightMenuTab.Insert) {
+      return selectedTab
+    } else {
+      return RightMenuTab.Settings
+    }
+  }, [anyKnownElements, selectedTab])
+
   if (!isRightMenuExpanded) {
     return null
   }
@@ -316,8 +358,31 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
           flexShrink: 0,
         }}
       >
-        {selectedTab === RightMenuTab.Insert && <InsertMenuPane />}
-        {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
+        <UIGridRow
+          variant='|--67px--||--67px--||--67px--||--67px--|'
+          padded={false}
+          css={{ gridColumnGap: 0 }}
+          style={{ alignItems: 'stretch', marginBottom: 10 }}
+        >
+          <MenuTab
+            label={'Insert'}
+            selected={tabToShow === RightMenuTab.Insert}
+            onClick={onClickInsertTab}
+          />
+          <MenuTab
+            label={'Inspector'}
+            selected={tabToShow === RightMenuTab.Inspector}
+            onClick={onClickInspectorTab}
+          />
+          <MenuTab
+            label={'Settings'}
+            selected={tabToShow === RightMenuTab.Settings}
+            onClick={onClickSettingsTab}
+          />
+        </UIGridRow>
+        {when(tabToShow === RightMenuTab.Insert, <InsertMenuPane />)}
+        {when(tabToShow === RightMenuTab.Inspector, <InspectorEntryPoint />)}
+        {when(tabToShow === RightMenuTab.Settings, <SettingsPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
     </Resizable>
@@ -330,7 +395,6 @@ interface CodeEditorPaneProps {
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
     Substores.restOfEditor,

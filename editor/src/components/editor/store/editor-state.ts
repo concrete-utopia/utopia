@@ -185,7 +185,6 @@ const ObjectPathImmutable: any = OPI
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
   Project = 'project',
-  Settings = 'settings',
   Github = 'github',
   Navigator = 'navigator',
 }
@@ -207,6 +206,7 @@ export const CanvasSizeAtom = atomWithPubSub({
 export enum RightMenuTab {
   Insert = 'insert',
   Inspector = 'inspector',
+  Settings = 'settings',
 }
 
 // TODO: this should just contain an NpmDependency and a status
