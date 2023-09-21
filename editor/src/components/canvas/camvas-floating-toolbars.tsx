@@ -43,3 +43,4 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
     </FlexRow>
   )
 })
+CanvasFloatingToolbars.displayName = 'CanvasFloatingToolbars'

@@ -59,3 +59,4 @@ export const ErrorOverlayComponent = React.memo(() => {
     />
   )
 })
+ErrorOverlayComponent.displayName = 'ErrorOverlayComponent'
