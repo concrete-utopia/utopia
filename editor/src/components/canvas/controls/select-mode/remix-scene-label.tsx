@@ -299,7 +299,11 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           <Tooltip title={'Back'}>
             <span
               data-testid={RemixSceneLabelButtonTestId(props.target, 'back')}
-              style={{ cursor: 'pointer', fontSize: 12 / scale }}
+              style={{
+                cursor: 'pointer',
+                fontSize: 12 / scale,
+                display: isSelected ? 'block' : 'none',
+              }}
               onMouseDown={back}
             >
               〱
@@ -308,7 +312,12 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           <Tooltip title={'Forward'}>
             <span
               data-testid={RemixSceneLabelButtonTestId(props.target, 'forward')}
-              style={{ cursor: 'pointer', fontSize: 12 / scale, transform: 'scale(-1, 1)' }}
+              style={{
+                cursor: 'pointer',
+                fontSize: 12 / scale,
+                display: isSelected ? 'block' : 'none',
+                transform: 'scale(-1, 1)',
+              }}
               onMouseDown={forward}
             >
               〱
