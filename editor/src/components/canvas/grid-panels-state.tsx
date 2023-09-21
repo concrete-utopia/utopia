@@ -13,7 +13,7 @@ export const IndexOfCanvas = 2
 export const GridPanelVerticalGapHalf = 6
 export const GridPanelHorizontalGapHalf = 6
 
-export const ExtraHorizontalDropTargetPadding = 15
+export const ExtraHorizontalDropTargetPadding = 45
 
 export const GridPanelsNumberOfRows = 12
 
