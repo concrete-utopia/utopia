@@ -66,15 +66,15 @@ export const GridPanelsContainer = React.memo(() => {
     [panelState],
   )
 
-  const columnWidths = React.useMemo(
+  const columnWidths: Array<`${number}px`> = React.useMemo(
     () =>
       panelState.map((column) => {
         if (column.length === 0) {
-          return 0
+          return `0px`
         } else if (column.some((p) => p.type === 'menu')) {
-          return GridMenuWidth
+          return `${GridMenuWidth}px`
         } else {
-          return GridPaneWidth
+          return `${GridPaneWidth}px`
         }
       }),
     [panelState],
@@ -90,7 +90,7 @@ export const GridPanelsContainer = React.memo(() => {
         display: 'grid',
         width: '100%',
         height: '100%',
-        gridTemplateColumns: `[col] ${columnWidths[0]}px [col] ${columnWidths[1]}px [canvas] 1fr [col] ${columnWidths[2]}px [col] ${columnWidths[3]}px [end]`,
+        gridTemplateColumns: `[col] ${columnWidths[0]} [col] ${columnWidths[1]} [canvas] 1fr [col] ${columnWidths[2]} [col] ${columnWidths[3]} [end]`,
         gridTemplateRows: 'repeat(12, 1fr)',
         gridAutoFlow: 'dense',
         columnGap: GridPanelHorizontalGapHalf * 2,
