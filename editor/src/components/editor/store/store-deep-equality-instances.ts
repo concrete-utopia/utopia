@@ -1584,6 +1584,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     const fontWeightEquals = oldSize.fontWeight === newSize.fontWeight
     const fontStyleEquals = oldSize.fontStyle === newSize.fontStyle
     const textDecorationLineEquals = oldSize.textDecorationLine === newSize.textDecorationLine
+    const textBoundsEqual = nullableDeepEquality(CanvasRectangleKeepDeepEquality)(
+      oldSize.textBounds,
+      newSize.textBounds,
+    ).areEqual
 
     const areEqual =
       offsetResult.areEqual &&
@@ -1624,7 +1628,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       fontSizeEquals &&
       fontWeightEquals &&
       fontStyleEquals &&
-      textDecorationLineEquals
+      textDecorationLineEquals &&
+      textBoundsEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1668,6 +1673,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.fontWeight,
         newSize.fontStyle,
         newSize.textDecorationLine,
+        newSize.textBounds,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

@@ -3,6 +3,7 @@ import type { CanvasRectangle } from './math-utils'
 import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
+import { assertNever } from './utils'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -227,7 +228,7 @@ export function setDOMAttribute(element: Element, attributeName: string, value: 
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
-  withContent: 'without-content' | 'with-content',
+  withContent: 'without-content' | 'with-content' | 'only-content',
 ): CanvasRectangle {
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
 
@@ -251,12 +252,29 @@ export function getCanvasRectangleFromElement(
   }
 
   const range = document.createRange()
-  range.selectNode(element)
+  switch (withContent) {
+    case 'only-content':
+      range.selectNodeContents(element)
+      break
+    case 'with-content':
+      range.selectNode(element)
+      break
+    default:
+      assertNever(withContent)
+  }
   const rangeBounding =
     // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
     typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
+  const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
 
-  return boundingRectangle(elementRect, domRectToScaledCanvasRectangle(rangeBounding))
+  switch (withContent) {
+    case 'only-content':
+      return contentRect
+    case 'with-content':
+      return boundingRectangle(elementRect, contentRect)
+    default:
+      assertNever(withContent)
+  }
 }
 
 export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true): void {

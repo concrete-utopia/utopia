@@ -1804,6 +1804,196 @@ export var storyboard = (
         )
       })
     })
+    describe('text children', () => {
+      function isBetween(n: number, min: number, max: number) {
+        return min <= n && n <= max
+      }
+
+      it('does not resize text elements past their intrinsic size', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 366, height: 308 }}>
+                <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 118, height: 220 }} />
+                <span data-uid='span' data-testid='span' style={{ position: 'absolute', wordBreak: 'break-word', left: 231, top: 258, width: 135, height: 50, backgroundColor: 'red', color: 'white' }}>
+                  hello there
+                </span>
+              </Group>
+            </Storyboard>
+          )
+        `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.fromString('storyboard/group')
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+
+        await resizeElement(
+          renderResult,
+          { x: -200, y: -200 },
+          EdgePositionBottomRight,
+          emptyModifiers,
+        )
+
+        const span = await renderResult.renderedDOM.findByTestId('span')
+        expect(span.clientWidth).toEqual(68)
+        expect(isBetween(span.clientHeight, 18, 19)).toBe(true)
+      })
+      it('does not resize text elements past their intrinsic size with padding', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 366, height: 308 }}>
+                <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 118, height: 220 }} />
+                <span data-uid='span' data-testid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 231, top: 258, width: 135, height: 50, backgroundColor: 'red', color: 'white' }}>
+                  hello there
+                </span>
+              </Group>
+            </Storyboard>
+          )
+        `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.fromString('storyboard/group')
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+
+        await resizeElement(
+          renderResult,
+          { x: -200, y: -200 },
+          EdgePositionBottomRight,
+          emptyModifiers,
+        )
+
+        const span = await renderResult.renderedDOM.findByTestId('span')
+        expect(span.clientWidth).toEqual(88)
+        expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
+      })
+      it('does not resize text elements past their intrinsic size when zoomed in', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 366, height: 308 }}>
+                <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 118, height: 220 }} />
+                <span data-uid='span' data-testid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 231, top: 258, width: 135, height: 50, backgroundColor: 'red', color: 'white' }}>
+                  hello there
+                </span>
+              </Group>
+            </Storyboard>
+          )
+        `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.fromString('storyboard/group')
+
+        await renderResult.dispatch(
+          [selectComponents([target], false), CanvasActions.zoom(2)],
+          true,
+        )
+
+        await resizeElement(
+          renderResult,
+          { x: -400, y: -400 },
+          EdgePositionBottomRight,
+          emptyModifiers,
+        )
+
+        const span = await renderResult.renderedDOM.findByTestId('span')
+        expect(span.clientWidth).toEqual(88)
+        expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
+      })
+      it('does not resize text elements past their intrinsic size when zoomed out', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', left: 114, top: 115, width: 366, height: 308 }}>
+                <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 118, height: 220 }} />
+                <span data-uid='span' data-testid='span' style={{ padding: 10, position: 'absolute', wordBreak: 'break-word', left: 231, top: 258, width: 135, height: 50, backgroundColor: 'red', color: 'white' }}>
+                  hello there
+                </span>
+              </Group>
+            </Storyboard>
+          )
+        `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.fromString('storyboard/group')
+
+        await renderResult.dispatch(
+          [selectComponents([target], false), CanvasActions.zoom(0.5)],
+          true,
+        )
+
+        await resizeElement(
+          renderResult,
+          { x: -100, y: -100 },
+          EdgePositionBottomRight,
+          emptyModifiers,
+        )
+
+        const span = await renderResult.renderedDOM.findByTestId('span')
+        expect(span.clientWidth).toEqual(88)
+        expect(isBetween(span.clientHeight, 37, 39)).toBe(true)
+      })
+      it('does not resize text elements past their intrinsic size for nested groups', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', left: 257, top: 97, width: 533, height: 438 }}>
+                <Group data-uid='nested-group' style={{ position: 'absolute', left: 0, top: 153, width: 365, height: 285 }}>
+                  <div data-uid='nested-div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 165, height: 165 }} />
+                  <span data-uid='span' data-testid='span' style={{ position: 'absolute', wordBreak: 'break-word', left: 237, top: 233, width: 128, height: 52, backgroundColor: 'red', color: 'white' }}>
+                    hello there
+                  </span>
+                </Group>
+                <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 444, top: 0, width: 89, height: 104 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.fromString('storyboard/group')
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+
+        await resizeElement(
+          renderResult,
+          { x: -200, y: -200 },
+          EdgePositionBottomRight,
+          emptyModifiers,
+        )
+
+        const span = await renderResult.renderedDOM.findByTestId('span')
+        expect(span.clientWidth).toEqual(80)
+        expect(span.clientHeight).toEqual(28)
+      })
+    })
   })
 })
 
