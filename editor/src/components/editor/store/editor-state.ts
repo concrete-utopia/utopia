@@ -1607,7 +1607,7 @@ export function mergeStoredEditorStateIntoEditorState(
     return {
       ...editor,
       selectedViews: storedEditorState.selectedViews,
-      mode: storedEditorState.mode ?? EditorModes.selectMode(),
+      mode: storedEditorState.mode ?? EditorModes.selectMode(null, false, 'none'),
     }
   }
 }
@@ -2312,7 +2312,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       simpleLock: [],
       hierarchyLock: [],
     },
-    mode: EditorModes.selectMode(),
+    mode: EditorModes.selectMode(null, false, 'none'),
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -2690,7 +2690,7 @@ export function editorModelFromPersistentModel(
       simpleLock: [],
       hierarchyLock: [],
     },
-    mode: EditorModes.selectMode(),
+    mode: EditorModes.selectMode(null, false, 'none'),
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),

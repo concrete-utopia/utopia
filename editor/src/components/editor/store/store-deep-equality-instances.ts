@@ -474,6 +474,7 @@ import type {
   Coordinates,
   TextEditableElementState,
   InsertionSubjectWrapper,
+  SelectModeToolbarMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -3154,11 +3155,13 @@ export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = comb
   EditorModes.insertMode,
 )
 
-export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine2EqualityCalls(
+export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine3EqualityCalls(
   (mode) => mode.controlId,
   NullableStringKeepDeepEquality,
   (mode) => mode.area,
   BooleanKeepDeepEquality,
+  (mode) => mode.toolbarMode,
+  createCallWithTripleEquals<SelectModeToolbarMode>(),
   EditorModes.selectMode,
 )
 

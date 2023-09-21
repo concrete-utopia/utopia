@@ -111,12 +111,14 @@ export function createPersistentModel(): PersistentModel {
   return persistentModelFromEditorModel(editor)
 }
 
-export function createEditorStates(selectedViews: ElementPath[] = []): {
+export interface CreateEditorStatesResult {
   editor: EditorState
   derivedState: DerivedState
   dispatch: EditorDispatch
   strategyState: StrategyState
-} {
+}
+
+export function createEditorStates(selectedViews: ElementPath[] = []): CreateEditorStatesResult {
   const editor: EditorState = {
     ...createEditorState(NO_OP),
     projectContents: contentsToTree({

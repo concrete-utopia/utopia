@@ -121,7 +121,9 @@ export function useSelectionArea(
         return false
       }
 
-      let mouseDownActions: EditorAction[] = [switchEditorMode(EditorModes.selectMode(null, true))]
+      let mouseDownActions: EditorAction[] = [
+        switchEditorMode(EditorModes.selectMode(null, true, 'none')),
+      ]
       if (!mouseDownEvent.shiftKey) {
         mouseDownActions.push(clearSelection())
       }
@@ -182,7 +184,9 @@ export function useSelectionArea(
         setSelectionAreaRectangle(null)
         setLocalHighlightedViews([])
 
-        let mouseUpActions: EditorAction[] = [switchEditorMode(EditorModes.selectMode())]
+        let mouseUpActions: EditorAction[] = [
+          switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+        ]
         if (
           newHighlightedViews.length > 0 &&
           isValidMouseEventForSelectionArea(
