@@ -5,7 +5,7 @@ import { isFiniteRectangle, windowPoint } from '../../../../core/shared/math-uti
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { useColorTheme } from '../../../../uuiui'
+import { FlexRow, useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -200,7 +200,7 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   if (frame != null && isFiniteRectangle(frame)) {
     return (
       <CanvasOffsetWrapper>
-        <div
+        <FlexRow
           onMouseOver={labelSelectable ? onMouseOver : NO_OP}
           onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
@@ -217,10 +217,8 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             left: frame.x,
             bottom: -frame.y + offsetY,
             width: frame.width,
-            paddingLeft: offsetX,
-            paddingRight: offsetX,
-            paddingTop: paddingY,
-            paddingBottom: paddingY,
+            height: scaledLineHeight * 2,
+            padding: '10px 20px',
             fontFamily: 'Utopian-Inter',
             fontSize: scaledFontSize,
             lineHeight: `${scaledLineHeight}px`,
@@ -231,8 +229,15 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             backgroundColor: backgroundColor,
           }}
         >
-          {label}
-        </div>
+          <div
+            style={{
+              padding: `${4 / scale}px`,
+              fontWeight: 'bold',
+            }}
+          >
+            {label}
+          </div>
+        </FlexRow>
       </CanvasOffsetWrapper>
     )
   } else {

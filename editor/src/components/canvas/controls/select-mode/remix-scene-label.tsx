@@ -260,10 +260,8 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           left: frame.x,
           bottom: -frame.y + offsetY,
           width: frame.width,
-          paddingLeft: offsetX,
-          paddingRight: offsetX,
-          paddingTop: paddingY,
-          paddingBottom: paddingY,
+          height: scaledLineHeight * 2,
+          padding: '10px 20px',
           fontFamily: 'Utopian-Inter',
           fontSize: scaledFontSize,
           lineHeight: `${scaledLineHeight}px`,
@@ -281,8 +279,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}
             style={{
-              // padding: `${4 / scale}px ${12 / scale}px`,
-              padding: `${4 / scale}px ${4 / scale}px`,
+              padding: `${4 / scale}px`,
               fontWeight: 'bold',
             }}
           >
@@ -291,9 +288,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
           <div
             data-testid={RemixSceneLabelPathTestId(props.target)}
             style={{
-              // borderRadius: 10 / scale,
-              // padding: `${4 / scale}px ${12 / scale}px`,
-              padding: `${4 / scale}px ${4 / scale}px`,
+              padding: `${4 / scale}px`,
               color: currentLocationMatchesRoutes ? undefined : colorTheme.error.value,
             }}
           >
