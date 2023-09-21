@@ -69,7 +69,9 @@ export const GridPanelsContainer = React.memo(() => {
   const columnWidths = React.useMemo(
     () =>
       panelState.map((column) => {
-        if (column.length === 0 || column.some((p) => p.type === 'menu')) {
+        if (column.length === 0) {
+          return 0
+        } else if (column.some((p) => p.type === 'menu')) {
           return GridMenuWidth
         } else {
           return GridPaneWidth
