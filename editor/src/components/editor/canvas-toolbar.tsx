@@ -531,40 +531,42 @@ export const CanvasToolbar = React.memo(() => {
             padding: '0 8px',
           }}
         >
-          <Tooltip title='Edit' placement='bottom'>
-            <InsertModeButton
-              iconType={'pointer'}
-              iconCategory={'tools'}
-              primary={canvasToolbarMode.primary === 'edit'}
-              onClick={switchToSelectModeCloseMenus}
-            />
-          </Tooltip>
-          <Tooltip title='Text (T)' placement='bottom'>
-            <InsertModeButton
-              iconType='text'
-              iconCategory={'tools'}
-              primary={canvasToolbarMode.primary === 'text'}
-              onClick={insertTextCallback}
-            />
-          </Tooltip>
-          <Tooltip title='Insert' placement='bottom'>
-            <InsertModeButton
-              testid={InsertMenuButtonTestId}
-              iconType='insert'
-              iconCategory='tools'
-              primary={canvasToolbarMode.primary === 'insert'}
-              onClick={toggleInsertButtonClicked}
-            />
-          </Tooltip>
-          <Tooltip title='Live Mode' placement='bottom'>
-            <InsertModeButton
-              iconType='play'
-              iconCategory='tools'
-              primary={canvasToolbarMode.primary === 'play'}
-              onClick={toggleLiveMode}
-              keepActiveInLiveMode
-            />
-          </Tooltip>
+          <FlexRow style={{ gap: 5 }}>
+            <Tooltip title='Edit' placement='bottom'>
+              <InsertModeButton
+                iconType={'pointer'}
+                iconCategory={'tools'}
+                primary={canvasToolbarMode.primary === 'edit'}
+                onClick={switchToSelectModeCloseMenus}
+              />
+            </Tooltip>
+            <Tooltip title='Text (T)' placement='bottom'>
+              <InsertModeButton
+                iconType='text'
+                iconCategory={'tools'}
+                primary={canvasToolbarMode.primary === 'text'}
+                onClick={insertTextCallback}
+              />
+            </Tooltip>
+            <Tooltip title='Insert' placement='bottom'>
+              <InsertModeButton
+                testid={InsertMenuButtonTestId}
+                iconType='insert'
+                iconCategory='tools'
+                primary={canvasToolbarMode.primary === 'insert'}
+                onClick={toggleInsertButtonClicked}
+              />
+            </Tooltip>
+            <Tooltip title='Live Mode' placement='bottom'>
+              <InsertModeButton
+                iconType='play'
+                iconCategory='tools'
+                primary={canvasToolbarMode.primary === 'play'}
+                onClick={toggleLiveMode}
+                keepActiveInLiveMode
+              />
+            </Tooltip>
+          </FlexRow>
           <Separator />
           <Tooltip title='Zoom to 100%' placement='bottom'>
             <SquareButton
@@ -605,7 +607,7 @@ export const CanvasToolbar = React.memo(() => {
                 <FlexRow
                   style={{
                     gap: 25,
-                    padding: '0 15px',
+                    padding: '0 12px',
                     alignSelf: 'stretch',
                   }}
                 >
