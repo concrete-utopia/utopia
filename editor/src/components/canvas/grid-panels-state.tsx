@@ -1,6 +1,12 @@
 import findLastIndex from 'lodash.findlastindex'
 import { v4 as UUID } from 'uuid'
-import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
+import {
+  accumulate,
+  insert,
+  removeAll,
+  removeFromArray,
+  removeIndexFromArray,
+} from '../../core/shared/array-utils'
 import { mod } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
 
@@ -189,7 +195,10 @@ export function updateLayout(
 
   function removeOldPanel(layout: StoredLayout) {
     return layout.map((column) => {
-      return removeAll(column, [paneToMove], (l, r) => l.uid === r.uid)
+      return removeFromArray(
+        column,
+        (panel) => panel.name === panelToInsert.name && panel.uid !== panelToInsert.uid,
+      )
     })
   }
 

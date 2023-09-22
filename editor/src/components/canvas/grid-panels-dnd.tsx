@@ -28,7 +28,10 @@ export function useGridPanelDraggable(draggedPanel: StoredPanel): {
   return { drag, dragPreview }
 }
 
-export function useGridPanelDropArea(onDrop: (itemToMove: StoredPanel) => void): {
+export function useGridPanelDropArea(
+  onDrop: (itemToMove: StoredPanel) => void,
+  onHover?: (itemToMove: StoredPanel) => void,
+): {
   drop: ConnectDropTarget
   isOver: boolean
 } {
@@ -37,6 +40,7 @@ export function useGridPanelDropArea(onDrop: (itemToMove: StoredPanel) => void):
       // The type (or types) to accept - strings or symbols
       accept: FloatingPanelTitleBarType,
       drop: (droppedItem: FloatingPanelDragItem) => onDrop(droppedItem.draggedPanel),
+      hover: (droppedItem: FloatingPanelDragItem) => onHover?.(droppedItem.draggedPanel),
       // Props to collect
       collect: (monitor) => ({
         isOver: monitor.isOver(),

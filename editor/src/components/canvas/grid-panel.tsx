@@ -1,5 +1,5 @@
 import React from 'react'
-import { NO_OP } from '../../core/shared/utils'
+import { NO_OP, assertNever } from '../../core/shared/utils'
 import { UtopiaTheme, colorTheme } from '../../uuiui'
 import { LeftPanelMinWidth } from '../editor/store/editor-state'
 import { LeftPaneComponent } from '../navigator/left-pane'
@@ -15,11 +15,20 @@ import {
 interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   canDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => boolean
+  onHover: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
   pane: GridPanelData
 }
 
 export const GridPanel = React.memo<GridPanelProps>((props) => {
-  const { onDrop, canDrop } = props
+  if (props.pane == null) {
+    // todo make it nullable in the type
+    return null
+  }
+  return <GridPanelInner {...props} />
+})
+
+const GridPanelInner = React.memo<GridPanelProps>((props) => {
+  const { onDrop, canDrop, onHover } = props
   const { panel, index, span, order } = props.pane
 
   const { isDragActive, draggedPanel } = useGridPanelDragInfo()
@@ -53,6 +62,10 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
       (itemToMove: StoredPanel) => onDrop(itemToMove, dropAboveElement),
       [onDrop, dropAboveElement],
     ),
+    React.useCallback(
+      (itemToMove: StoredPanel) => onHover(itemToMove, dropAboveElement),
+      [onHover, dropAboveElement],
+    ),
   )
   const { drop: dropAfter, isOver: isOverAfter } = useGridPanelDropArea(
     React.useCallback(
@@ -60,6 +73,12 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
         onDrop(itemToMove, dropBelowElement)
       },
       [onDrop, dropBelowElement],
+    ),
+    React.useCallback(
+      (itemToMove: StoredPanel) => {
+        onHover(itemToMove, dropBelowElement)
+      },
+      [onHover, dropBelowElement],
     ),
   )
 
@@ -77,6 +96,7 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
       case 'navigator':
         return <LeftPaneComponent panelData={props.pane.panel} />
       default:
+        assertNever(panel.name)
         return null
     }
   })()

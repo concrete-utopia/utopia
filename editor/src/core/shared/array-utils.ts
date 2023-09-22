@@ -2,6 +2,7 @@ import type { MapLike } from 'typescript'
 import { is, shallowEqual } from './equality-utils'
 import { clamp } from './math-utils'
 import { fastForEach } from './utils'
+import { should } from 'chai'
 
 export function stripNulls<T>(array: Array<T | null | undefined>): Array<T> {
   var workingArray: Array<T> = []
@@ -312,6 +313,19 @@ export function removeAll<T>(
   fastForEach(target, (nextA) => {
     if (toRemove.findIndex((nextB) => eqFn(nextA, nextB)) < 0) {
       result.push(nextA)
+    }
+  })
+  return result
+}
+
+export function removeFromArray<T>(
+  target: ReadonlyArray<T>,
+  shouldRemove: (element: T) => boolean,
+): Array<T> {
+  let result: Array<T> = []
+  fastForEach(target, (element) => {
+    if (!shouldRemove(element)) {
+      result.push(element)
     }
   })
   return result

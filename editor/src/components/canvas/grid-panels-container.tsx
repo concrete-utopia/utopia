@@ -48,6 +48,22 @@ export const GridPanelsContainer = React.memo(() => {
     [setPanelState],
   )
 
+  const onHover = React.useCallback(
+    (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
+      setPanelState((panels) => {
+        if (
+          newPosition.columnIndex !==
+          panels.findIndex((c) => c.find((p) => p.name === itemToMove.name))
+        ) {
+          // If not within column reorder, let's bail out here
+          return panels
+        }
+        return updateLayout(panels, itemToMove, newPosition)
+      })
+    },
+    [setPanelState],
+  )
+
   const canDrop = React.useCallback(
     (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
       return true // for now, just enable all drop areas while we are tweaking the behavior
@@ -105,18 +121,21 @@ export const GridPanelsContainer = React.memo(() => {
         key={'code-editor'}
         onDrop={onDrop}
         canDrop={canDrop}
+        onHover={onHover}
         pane={orderedPanels['code-editor']}
       />
       <GridPanel
         key={'navigator'}
         onDrop={onDrop}
         canDrop={canDrop}
+        onHover={onHover}
         pane={orderedPanels['navigator']}
       />
       <GridPanel
         key={'inspector'}
         onDrop={onDrop}
         canDrop={canDrop}
+        onHover={onHover}
         pane={orderedPanels['inspector']}
       />
       <CanvasFloatingToolbars
