@@ -16,7 +16,7 @@ export function useGridPanelDraggable(draggedPanel: StoredPanel): {
       // "type" is required. It is used by the "accept" specification of drop targets.
       type: FloatingPanelTitleBarType,
       item: { draggedPanel: draggedPanel } as FloatingPanelDragItem,
-      // The collect function utilizes a "monitor" instance (see the Overview for what this is)
+      // The collect function utilizes a "monitor" instance (see https://react-dnd.github.io/react-dnd/docs/overview/ for what this is)
       // to pull important pieces of state from the DnD system.
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
