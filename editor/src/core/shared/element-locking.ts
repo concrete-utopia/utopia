@@ -13,15 +13,19 @@ export function updateSimpleLocks(
 ): Array<ElementPath> {
   let result: Array<ElementPath> = [...currentSimpleLockedItems]
   for (const [key, value] of Object.entries(newMetadata)) {
-    // This entry is the root element of an instance or a remix Outlet, and it isn't present in the previous metadata,
-    // which implies that it has been newly added.
-    if (
-      !(key in priorMetadata) &&
-      ((EP.isRootElementOfInstance(value.elementPath) &&
-        MetadataUtils.getChildrenPathsOrdered(newMetadata, pathTree, value.elementPath).length >
-          0) ||
-        MetadataUtils.isProbablyRemixOutlet(newMetadata, value.elementPath))
-    ) {
+    // The entry isn't present in the previous metadata, which implies that it has been newly added.
+    const isNewlyAdded = !(key in priorMetadata)
+
+    // You rarely want to select a root element of a component instance, except when it is a leaf element
+    const isNonLeafRootElement =
+      EP.isRootElementOfInstance(value.elementPath) &&
+      MetadataUtils.getChildrenPathsOrdered(newMetadata, pathTree, value.elementPath).length > 0
+
+    // Remix Outlet are rarely needed to be selected
+    const isRemixOutlet = MetadataUtils.isProbablyRemixOutlet(newMetadata, value.elementPath)
+
+    // This entry is a newly added non-leaf root element or a remix Outlet, it should be autolocked
+    if (isNewlyAdded && (isNonLeafRootElement || isRemixOutlet)) {
       result.push(value.elementPath)
     }
   }
