@@ -185,27 +185,28 @@ export function absoluteResizeBoundingBoxStrategy(
                   canvasState.startingMetadata,
                   canvasState.startingAllElementProps,
                   selectedElement,
+                  originalFrame,
                 )
                 if (constrainedFrames.length > 0) {
-                  const adjustedHorizontal = getAdjustedOffsets(
+                  const horizontalAdjustments = getAdjustedOffsets(
                     constrainedFrames,
                     'width',
                     edgePosition,
                     originalFrame,
                     newFrame,
                   )
-                  newFrame.x = adjustedHorizontal.offset
-                  newFrame.width = adjustedHorizontal.size
+                  newFrame.x = horizontalAdjustments.offset
+                  newFrame.width = horizontalAdjustments.size
 
-                  const adjustedVertical = getAdjustedOffsets(
+                  const verticalAdjustments = getAdjustedOffsets(
                     constrainedFrames,
                     'height',
                     edgePosition,
                     originalFrame,
                     newFrame,
                   )
-                  newFrame.y = adjustedVertical.offset
-                  newFrame.height = adjustedVertical.size
+                  newFrame.y = verticalAdjustments.offset
+                  newFrame.height = verticalAdjustments.size
                 }
               }
               const metadata = MetadataUtils.findElementByElementPath(
@@ -271,33 +272,54 @@ function getConstrainedSizes(
   jsxMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
+  originalRect: CanvasRectangle,
 ): Array<Size> {
   let result: Array<Size> = []
   const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
   for (const child of children) {
-    const constraints = getSafeGroupChildConstraintsArray(allElementProps, child.elementPath)
+    const constraintsArray = getSafeGroupChildConstraintsArray(allElementProps, child.elementPath)
     const frame = child.localFrame
-    const constrained = constraints.some(
-      (c) =>
-        c === 'top' ||
-        c === 'bottom' ||
-        c === 'height' ||
-        c === 'left' ||
-        c === 'right' ||
-        c === 'width',
-    )
+    const constraints = {
+      width: constraintsArray.includes('width'),
+      height: constraintsArray.includes('height'),
+      top: constraintsArray.includes('top'),
+      bottom: constraintsArray.includes('bottom'),
+      left: constraintsArray.includes('left'),
+      right: constraintsArray.includes('right'),
+    }
+    const constrained =
+      constraints.top ||
+      constraints.bottom ||
+      constraints.height ||
+      constraints.left ||
+      constraints.right ||
+      constraints.width
     if (frame != null && isFiniteRectangle(frame) && constrained) {
+      let width = 0
+      if (constraints.left && constraints.right) {
+        width = originalRect.width
+      } else if (constraints.left) {
+        width = frame.x + frame.width
+      } else if (constraints.right) {
+        width = originalRect.width - frame.x
+      } else if (constraints.width) {
+        width = frame.width
+      }
+
+      let height = 0
+      if (constraints.top && constraints.bottom) {
+        height = originalRect.height
+      } else if (constraints.top) {
+        height = frame.y + frame.height
+      } else if (constraints.bottom) {
+        height = originalRect.height - frame.y
+      } else if (constraints.height) {
+        height = frame.height
+      }
+
       result.push({
-        height: constraints.includes('height')
-          ? frame.height
-          : constraints.includes('top') || constraints.includes('bottom')
-          ? frame.height + frame.y
-          : 0,
-        width: constraints.includes('width')
-          ? frame.width
-          : constraints.includes('left') || constraints.includes('right')
-          ? frame.width + frame.x
-          : 0,
+        width: width,
+        height: height,
       })
     }
   }
@@ -317,11 +339,11 @@ function getAdjustedOffsets(
   originalRect: CanvasRectangle,
   currentRect: CanvasRectangle,
 ): { offset: number; size: number } {
-  const max = getMaxDimension(constrainedFrames, dimension)
   const axis = dimension === 'width' ? 'x' : 'y'
+  const max = getMaxDimension(constrainedFrames, dimension)
   let offset = currentRect[axis]
   if (currentRect[dimension] <= max) {
-    if (edgePosition.x === 0) {
+    if (edgePosition[axis] === 0) {
       offset = Math.max(originalRect[axis], originalRect[axis] + originalRect[dimension] - max)
     } else if (edgePosition[axis] === 1) {
       offset = originalRect[axis]
