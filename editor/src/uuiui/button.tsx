@@ -115,7 +115,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
   backgroundColor: props.primary
     ? props.danger
       ? colorTheme.errorForeground.value
-      : colorTheme.primarySubdued.value
+      : colorTheme.primary.value
     : colorTheme.emphasizedBackgroundPop.value,
 
   color: props.primary ? 'white' : props.danger ? colorTheme.errorForeground.value : 'inherit',
@@ -153,7 +153,7 @@ export const FormButton = styled.button<ButtonProps>((props: ButtonProps) => ({
     backgroundColor: props.primary
       ? props.danger
         ? colorTheme.errorForegroundEmphasized.value
-        : colorTheme.primaryEmphasized.value
+        : colorTheme.primary.value
       : colorTheme.emphasizedBackgroundReduced.value,
   },
 }))

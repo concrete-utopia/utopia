@@ -20,11 +20,7 @@ import {
   emptyAttributeMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import {
-  VoidElementsToFilter,
-  getCanvasRectangleFromElement,
-  getDOMAttribute,
-} from '../../core/shared/dom-utils'
+import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -42,17 +38,12 @@ import type {
 } from '../../core/shared/math-utils'
 import {
   canvasPoint,
-  boundingRectangle,
   localRectangle,
   roundToNearestHalf,
-  zeroCanvasRect,
-  zeroLocalRect,
   canvasRectangle,
   infinityCanvasRectangle,
   infinityLocalRectangle,
-  zeroRectIfNullOrInfinity,
-  scaleRect,
-  MaybeInfinityCanvasRectangle,
+  stretchRect,
 } from '../../core/shared/math-utils'
 import type { CSSNumber, CSSPosition } from '../inspector/common/css-utils'
 import {
@@ -61,6 +52,7 @@ import {
   computedStyleKeys,
   parseDirection,
   parseFlexDirection,
+  parseCSSPx,
 } from '../inspector/common/css-utils'
 import { camelCaseToDashed } from '../../core/shared/string-utils'
 import type { UtopiaStoreAPI } from '../editor/store/store-hook'
@@ -1003,6 +995,21 @@ function getSpecialMeasurements(
   const fontStyle = elementStyle.fontStyle
   const textDecorationLine = elementStyle.textDecorationLine
 
+  const textBounds = elementContainsOnlyText(element)
+    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content'), {
+        w:
+          maybeValueFromComputedStyle(elementStyle.paddingLeft) +
+          maybeValueFromComputedStyle(elementStyle.paddingRight) +
+          maybeValueFromComputedStyle(elementStyle.marginLeft) +
+          maybeValueFromComputedStyle(elementStyle.marginRight),
+        h:
+          maybeValueFromComputedStyle(elementStyle.paddingTop) +
+          maybeValueFromComputedStyle(elementStyle.paddingBottom) +
+          maybeValueFromComputedStyle(elementStyle.marginTop) +
+          maybeValueFromComputedStyle(elementStyle.marginBottom),
+      })
+    : null
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1045,7 +1052,28 @@ function getSpecialMeasurements(
     fontWeight,
     fontStyle,
     textDecorationLine,
+    textBounds,
   )
+}
+
+function elementContainsOnlyText(element: HTMLElement): boolean {
+  if (element.childNodes.length === 0) {
+    return false
+  }
+  for (const node of element.childNodes) {
+    const isForText =
+      node.nodeType === Node.TEXT_NODE ||
+      (node.nodeType === Node.ELEMENT_NODE && node.nodeName === 'BR')
+    if (!isForText) {
+      return false
+    }
+  }
+  return true
+}
+
+function maybeValueFromComputedStyle(property: string): number {
+  const parsed = parseCSSPx(property)
+  return isRight(parsed) ? parsed.value.value : 0
 }
 
 function globalFrameForElement(

@@ -85,6 +85,7 @@ import { intrinsicHTMLElementNamesThatSupportChildren } from '../shared/dom-util
 import { isNullJSXAttributeValue } from '../shared/element-template'
 import { getAllUniqueUids } from './get-unique-ids'
 import type { ElementPathTrees } from '../shared/element-path-tree'
+import { MetadataUtils } from './element-metadata-utils'
 
 export function generateUidWithExistingComponents(projectContents: ProjectContentTreeRoot): string {
   const mockUID = generateMockNextGeneratedUID()
@@ -1099,6 +1100,9 @@ export function elementChildSupportsChildrenAlsoText(
     if (isTextEditableConditional(path, metadata, elementPathTree)) {
       return 'conditionalWithText'
     }
+    return 'doesNotSupportChildren'
+  }
+  if (MetadataUtils.isProbablyRemixOutlet(metadata, path)) {
     return 'doesNotSupportChildren'
   }
   if (elementOnlyHasTextChildren(element)) {

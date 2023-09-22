@@ -57,7 +57,7 @@ export async function insertImageFromClipboard(
   context.dispatch(
     [
       CanvasActions.clearInteractionSession(false),
-      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
     ],
     'everyone',
   )
@@ -100,7 +100,7 @@ async function onDrop(
     if (images.length === 0) {
       return context.dispatch([
         CanvasActions.clearInteractionSession(false),
-        EditorActions.switchEditorMode(EditorModes.selectMode()),
+        EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
         EditorActions.showToast({
           id: 'image-drag-drop',
           level: 'WARNING',

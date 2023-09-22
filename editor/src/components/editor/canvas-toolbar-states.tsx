@@ -1,7 +1,13 @@
-import { assertNever } from '../../core/shared/utils'
 import { useGetDragStrategyIndicatorFlags } from '../canvas/controls/select-mode/strategy-indicator'
+import type { EditorState } from './store/editor-state'
 import { RightMenuTab } from './store/editor-state'
 import { Substores, useEditorState } from './store/store-hook'
+import type { SelectModeToolbarMode } from './editor-modes'
+import { isSelectMode } from './editor-modes'
+import type { Optic } from '../../core/shared/optics/optics'
+import { fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
+import { anyBy, set } from '../../core/shared/optics/optic-utilities'
+import type { EditorAction } from './action-types'
 
 // This is the data structure that governs the Canvas Toolbar's submenus and active buttons
 type ToolbarMode =
@@ -22,7 +28,7 @@ type ToolbarMode =
   | { primary: 'play' }
   | { primary: 'zoom' }
 
-export function useToolbarMode(toolbarInsertMode: boolean): ToolbarMode {
+export function useToolbarMode(): ToolbarMode {
   const editorMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.mode,
@@ -84,7 +90,7 @@ export function useToolbarMode(toolbarInsertMode: boolean): ToolbarMode {
 
   // Insert Mode (sans text insertion)
   if (
-    toolbarInsertMode ||
+    (editorMode.type === 'select' && editorMode.toolbarMode === 'pseudo-insert') ||
     editorMode.type === 'insert' ||
     floatingInsertMenu === 'insert' ||
     rightMenuTab === RightMenuTab.Insert
@@ -139,4 +145,49 @@ export function useToolbarMode(toolbarInsertMode: boolean): ToolbarMode {
   }
 
   return { primary: 'edit', secondary: 'nothing-selected' } // fallback - for now
+}
+
+export const editorStateToolbarModeOptic: Optic<EditorState, SelectModeToolbarMode> = fromField<
+  EditorState,
+  'mode'
+>('mode')
+  .compose(fromTypeGuard(isSelectMode))
+  .compose(fromField('toolbarMode'))
+
+export function maybeClearPseudoInsertMode(
+  editorStateBefore: EditorState,
+  editorStateAfter: EditorState,
+  action: EditorAction,
+): EditorState {
+  // Check the psuedo insert mode is currently enabled as there's no need to do anything otherwise.
+  if (anyBy(editorStateToolbarModeOptic, (mode) => mode === 'pseudo-insert', editorStateAfter)) {
+    function clearPseudoInsertMode(): EditorState {
+      return set<EditorState, SelectModeToolbarMode>(
+        editorStateToolbarModeOptic,
+        'none',
+        editorStateAfter,
+      )
+    }
+
+    // If the project contents have changed at all and the change didn't come from a worker, then clear the pseudo-insert mode.
+    if (
+      editorStateBefore.projectContents !== editorStateAfter.projectContents &&
+      action.action !== 'UPDATE_FROM_WORKER'
+    ) {
+      return clearPseudoInsertMode()
+    }
+
+    // If the user has started an interaction, clear the psuedo mode.
+    if (action.action === 'CREATE_INTERACTION_SESSION') {
+      return clearPseudoInsertMode()
+    }
+
+    // If the user focuses another panel.
+    if (editorStateAfter.focusedPanel !== 'canvas') {
+      return clearPseudoInsertMode()
+    }
+  }
+
+  // Default to the original value in all other cases.
+  return editorStateAfter
 }

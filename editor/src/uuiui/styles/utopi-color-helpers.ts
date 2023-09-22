@@ -9,3 +9,7 @@ export function createUtopiColor(
 ): UtopiColor {
   return { value: `var(${path})`, cssValue: baseColor }
 }
+
+export function enforceUtopiColorTheme<T extends { [K in keyof T]: UtopiColor }>(theme: T): T {
+  return theme
+}
