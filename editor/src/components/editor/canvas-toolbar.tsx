@@ -747,7 +747,7 @@ export const CanvasToolbar = React.memo(() => {
                 height: 32,
                 overflow: 'hidden',
                 backgroundColor: colorTheme.bg2.value,
-                borderRadius: '0px 10px 10px 10px',
+                borderRadius: '0px 0px 10px 10px',
                 boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 pointerEvents: 'initial',
                 zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one

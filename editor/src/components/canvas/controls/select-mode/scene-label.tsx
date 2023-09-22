@@ -5,7 +5,7 @@ import { isFiniteRectangle, windowPoint } from '../../../../core/shared/math-uti
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { NO_OP } from '../../../../core/shared/utils'
 import { Modifier } from '../../../../utils/modifiers'
-import { useColorTheme } from '../../../../uuiui'
+import { FlexRow, useColorTheme } from '../../../../uuiui'
 import { clearHighlightedViews, selectComponents } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
@@ -99,11 +99,12 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
     (store) => store.editor.canvas.scale,
     'SceneLabel scale',
   )
-  const baseFontSize = 9
+  const baseFontSize = 10
   const scaledFontSize = baseFontSize / scale
   const scaledLineHeight = 17 / scale
-  const paddingY = scaledFontSize / 9
-  const offsetY = scaledFontSize / 3
+  const paddingY = scaledFontSize / 4
+  const paddingX = paddingY * 2
+  const offsetY = scaledFontSize / 1.5
   const offsetX = scaledFontSize / 2
   const borderRadius = 3 / scale
 
@@ -194,13 +195,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
 
   const selectedBackgroundColor = sceneHasSingleChild
     ? colorTheme.componentPurple05solid.value
-    : colorTheme.bg5.value
+    : colorTheme.bg510solid.value
   const backgroundColor = isSelected ? selectedBackgroundColor : 'transparent'
 
   if (frame != null && isFiniteRectangle(frame)) {
     return (
       <CanvasOffsetWrapper>
-        <div
+        <FlexRow
           onMouseOver={labelSelectable ? onMouseOver : NO_OP}
           onMouseOut={labelSelectable ? onMouseLeave : NO_OP}
           onMouseDown={labelSelectable ? onMouseDown : NO_OP}
@@ -209,16 +210,13 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
           className='roleComponentName'
           style={{
             pointerEvents: labelSelectable ? 'initial' : 'none',
-            color: sceneHasSingleChild
-              ? colorTheme.componentPurple.value
-              : colorTheme.subduedForeground.value,
+            color: sceneHasSingleChild ? colorTheme.componentPurple.value : colorTheme.fg2.value,
             position: 'absolute',
             fontWeight: 600,
             left: frame.x,
             bottom: -frame.y + offsetY,
             width: frame.width,
-            paddingLeft: offsetX,
-            paddingBottom: paddingY,
+            padding: `${paddingY}px ${paddingX}px`,
             fontFamily: 'Utopian-Inter',
             fontSize: scaledFontSize,
             lineHeight: `${scaledLineHeight}px`,
@@ -229,8 +227,14 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
             backgroundColor: backgroundColor,
           }}
         >
-          {label}
-        </div>
+          <div
+            style={{
+              fontWeight: 600,
+            }}
+          >
+            {label}
+          </div>
+        </FlexRow>
       </CanvasOffsetWrapper>
     )
   } else {
