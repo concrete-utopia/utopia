@@ -823,8 +823,8 @@ export function editorStateCanvasTransientProperty(
 
 export function dragToMoveIndicatorFlags(
   showIndicator: boolean,
-  dragType: 'absolute' | 'static' | 'none',
-  reparent: 'same-component' | 'different-component' | 'none',
+  dragType: DragToMoveIndicatorFlags['dragType'],
+  reparent: DragToMoveIndicatorFlags['reparent'],
   ancestor: boolean,
 ): DragToMoveIndicatorFlags {
   return {
