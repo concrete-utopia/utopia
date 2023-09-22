@@ -1,4 +1,4 @@
-import type { ResizeCallback, ResizeDirection } from 're-resizable'
+import type { Resizable, ResizeCallback, ResizeDirection } from 're-resizable'
 import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
