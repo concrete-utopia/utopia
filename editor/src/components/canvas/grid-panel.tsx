@@ -104,7 +104,8 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
           display: isDraggingThisPanel ? 'block' : 'none',
           width: '100%',
           height: '100%',
-          backgroundColor: 'lightgrey',
+          backgroundColor: '#f4f4f4',
+          border: '1px solid rgb(236, 236, 236, 1)',
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         }}
       />

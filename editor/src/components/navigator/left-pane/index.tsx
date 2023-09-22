@@ -3,7 +3,13 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
+import {
+  FlexColumn,
+  ResizableFlexColumn,
+  UtopiaTheme,
+  colorTheme,
+  flexColumnStyle,
+} from '../../../uuiui'
 import type { ResizableProps } from '../../../uuiui-deps'
 import { User } from '../../../uuiui-deps'
 import { MenuTab } from '../../../uuiui/menu-tab'
@@ -35,6 +41,7 @@ import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { TitleBarProjectTitle } from '../../titlebar/title-bar'
 import type { StoredPanel } from '../../canvas/grid-panels-state'
+import { useGridPanelDraggable } from '../../canvas/grid-panels-dnd'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -52,6 +59,8 @@ interface LeftPaneComponentProps {
 }
 
 export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
+  const { drag, dragPreview } = useGridPanelDraggable(props.panelData)
+
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -111,17 +120,8 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   return (
     <LowPriorityStoreProvider>
-      <ResizableFlexColumn
-        enable={{ right: !isFeatureEnabled('Draggable Floating Panels') }}
-        onResizeStop={onLeftPanelResizeStop}
-        defaultSize={{
-          width: leftPanelWidth,
-          height: '100%',
-        }}
-        size={{
-          width: leftPanelWidth,
-          height: '100%',
-        }}
+      <div
+        ref={dragPreview}
         style={{
           overscrollBehavior: 'contain',
           backgroundColor: colorTheme.leftPaneBackground.value,
@@ -130,16 +130,16 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
+          width: '100%',
+          height: '100%',
         }}
       >
-        {when(
-          isFeatureEnabled('Draggable Floating Panels'),
-          <TitleBarProjectTitle panelData={props.panelData} />,
-        )}
+        {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarProjectTitle ref={drag} />)}
         <div
           id={LeftPaneComponentId}
           className='leftPane'
           style={{
+            ...flexColumnStyle,
             height: '100%',
             position: 'relative',
             color: colorTheme.fg1.value,
@@ -197,7 +197,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
             {loggedIn ? null : <LoggedOutPane />}
           </div>
         </div>
-      </ResizableFlexColumn>
+      </div>
     </LowPriorityStoreProvider>
   )
 })

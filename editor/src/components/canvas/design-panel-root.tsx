@@ -1,5 +1,4 @@
 import type { ResizeCallback, ResizeDirection } from 're-resizable'
-import { Resizable } from 're-resizable'
 import React from 'react'
 import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
@@ -44,6 +43,7 @@ import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { NO_OP } from '../../core/shared/utils'
 import { TitleBarEmpty, TitleBarUserProfile, TitleHeight } from '../titlebar/title-bar'
+import { useGridPanelDraggable } from './grid-panels-dnd'
 
 interface NumberSize {
   width: number
@@ -237,6 +237,7 @@ interface ResizableRightPaneProps {
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
+  const { drag, dragPreview } = useGridPanelDraggable(props.panelData)
   const defaultInspectorWidth = isFeatureEnabled('Draggable Floating Panels')
     ? GridMenuWidth
     : UtopiaTheme.layout.inspectorSmallWidth
@@ -272,37 +273,19 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
   }
 
   return (
-    <Resizable
-      ref={resizableRef}
-      defaultSize={{
-        width: defaultInspectorWidth,
-        height: '100%',
-      }}
-      size={{
-        width: width,
-        height: '100%',
-      }}
+    <div
+      ref={dragPreview}
       style={{
         transition: 'width 100ms ease-in-out',
         overflow: 'hidden',
+        width: '100%',
+        height: '100%',
         backgroundColor: colorTheme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
       }}
-      onResizeStart={onResize}
-      onResize={onResize}
-      onResizeStop={onResize}
-      snap={{
-        x: [defaultInspectorWidth, UtopiaTheme.layout.inspectorLargeWidth],
-      }}
-      enable={{
-        left: isFeatureEnabled('Draggable Floating Panels') ? false : true,
-      }}
     >
-      {when(
-        isFeatureEnabled('Draggable Floating Panels'),
-        <TitleBarUserProfile panelData={props.panelData} />,
-      )}
+      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarUserProfile ref={drag} />)}
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
@@ -320,7 +303,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
-    </Resizable>
+    </div>
   )
 })
 
@@ -330,6 +313,7 @@ interface CodeEditorPaneProps {
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
+  const { drag, dragPreview } = useGridPanelDraggable(props.panelData)
   const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
@@ -352,32 +336,13 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   )
 
   return (
-    <Resizable
-      defaultSize={{
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? '100%'
-          : interfaceDesigner.codePaneWidth,
-        height: '100%',
-      }}
-      size={{
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? '100%'
-          : interfaceDesigner.codePaneWidth,
-        height: '100%',
-      }}
-      onResizeStop={onResizeStop}
-      enable={{
-        top: false,
-        right: isFeatureEnabled('Draggable Floating Panels') ? false : true,
-        bottom: false,
-        topRight: false,
-        bottomRight: false,
-        bottomLeft: false,
-        topLeft: false,
-      }}
+    <div
+      ref={dragPreview}
       className='resizableFlexColumnCanvasCode'
       style={{
         display: props.small ? 'block' : interfaceDesigner.codePaneVisible ? 'flex' : 'none',
+        width: '100%',
+        height: '100%',
         position: 'relative',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
@@ -385,10 +350,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         flexDirection: 'column',
       }}
     >
-      {when(
-        isFeatureEnabled('Draggable Floating Panels'),
-        <TitleBarEmpty panelData={props.panelData} />,
-      )}
+      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarEmpty ref={drag} />)}
       <div
         style={{
           transformOrigin: 'top left',
@@ -412,6 +374,6 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         </div>
         <ConsoleAndErrorsPane />
       </div>
-    </Resizable>
+    </div>
   )
 })

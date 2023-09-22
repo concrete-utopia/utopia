@@ -48,291 +48,297 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
   )
 }
 export const TitleHeight = 40
-export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel }) => {
-  const { drag } = useGridPanelDraggable(props.panelData)
+export const TitleBarProjectTitle = React.memo(
+  React.forwardRef<HTMLDivElement>((props, ref) => {
+    const dispatch = useDispatch()
+    const theme = useColorTheme()
+    const projectName = useEditorState(
+      Substores.restOfEditor,
+      (store) => {
+        return store.editor.projectName
+      },
+      'TitleBar projectName',
+    )
+    const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
+      Substores.github,
+      (store) => {
+        return {
+          upstreamChanges: store.editor.githubData.upstreamChanges,
+          currentBranch: store.editor.githubSettings.branchName,
+          treeConflicts: store.editor.githubData.treeConflicts,
+          repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
+        }
+      },
+      'TitleBar github',
+    )
 
-  const dispatch = useDispatch()
-  const theme = useColorTheme()
-  const projectName = useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      return store.editor.projectName
-    },
-    'TitleBar projectName',
-  )
-  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
-    Substores.github,
-    (store) => {
-      return {
-        upstreamChanges: store.editor.githubData.upstreamChanges,
-        currentBranch: store.editor.githubSettings.branchName,
-        treeConflicts: store.editor.githubData.treeConflicts,
-        repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
+    const openFile = React.useCallback(
+      (filename: string) => {
+        dispatch([openCodeEditorFile(filename, true)], 'everyone')
+      },
+      [dispatch],
+    )
+    const showMergeConflict = React.useCallback(() => {
+      if (Object.keys(treeConflicts).length < 1) {
+        return
       }
-    },
-    'TitleBar github',
-  )
+      const firstConflictFilename = Object.keys(treeConflicts)[0]
+      openFile(firstConflictFilename)
+    }, [openFile, treeConflicts])
 
-  const openFile = React.useCallback(
-    (filename: string) => {
-      dispatch([openCodeEditorFile(filename, true)], 'everyone')
-    },
-    [dispatch],
-  )
-  const showMergeConflict = React.useCallback(() => {
-    if (Object.keys(treeConflicts).length < 1) {
-      return
-    }
-    const firstConflictFilename = Object.keys(treeConflicts)[0]
-    openFile(firstConflictFilename)
-  }, [openFile, treeConflicts])
+    const hasUpstreamChanges = React.useMemo(
+      () => getGithubFileChangesCount(upstreamChanges) > 0,
+      [upstreamChanges],
+    )
 
-  const hasUpstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(upstreamChanges) > 0,
-    [upstreamChanges],
-  )
+    const hasMergeConflicts = React.useMemo(() => {
+      if (treeConflicts == null) {
+        return false
+      }
+      return Object.keys(treeConflicts).length > 0
+    }, [treeConflicts])
 
-  const hasMergeConflicts = React.useMemo(() => {
-    if (treeConflicts == null) {
-      return false
-    }
-    return Object.keys(treeConflicts).length > 0
-  }, [treeConflicts])
+    const githubFileChanges = useGithubFileChanges()
+    const hasDownstreamChanges = React.useMemo(
+      () => getGithubFileChangesCount(githubFileChanges) > 0,
+      [githubFileChanges],
+    )
+    const openLeftPaneltoGithubTab = useCallback(() => {
+      dispatch([setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Github)])
+    }, [dispatch])
 
-  const githubFileChanges = useGithubFileChanges()
-  const hasDownstreamChanges = React.useMemo(
-    () => getGithubFileChangesCount(githubFileChanges) > 0,
-    [githubFileChanges],
-  )
-  const openLeftPaneltoGithubTab = useCallback(() => {
-    dispatch([setPanelVisibility('leftmenu', true), setLeftMenuTab(LeftMenuTab.Github)])
-  }, [dispatch])
+    const { loginState } = useEditorState(
+      Substores.restOfStore,
+      (store) => ({
+        loginState: store.userState.loginState,
+      }),
+      'TitleBar loginState',
+    )
 
-  const { loginState } = useEditorState(
-    Substores.restOfStore,
-    (store) => ({
-      loginState: store.userState.loginState,
-    }),
-    'TitleBar loginState',
-  )
+    const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
-  const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
+    const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation()
+    }, [])
 
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
-  }, [])
-
-  return (
-    <div
-      ref={drag}
-      className='handle'
-      style={{
-        height: TitleHeight,
-        width: '100%',
-        backgroundColor: theme.inspectorBackground.value,
-        paddingLeft: 10,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-      }}
-    >
+    return (
       <div
-        style={{ width: 8, height: 8, borderRadius: 8, backgroundColor: theme.brandNeonPink.value }}
-      />
-      <div
+        ref={ref}
+        className='handle'
         style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.brandNeonGreen.value,
+          height: TitleHeight,
+          width: '100%',
+          backgroundColor: theme.inspectorBackground.value,
+          paddingLeft: 10,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
         }}
-      />
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {currentBranch != null ? (
-          <SimpleFlexRow
-            style={{
-              gap: 5,
-              scale: hasUpstreamChanges || hasMergeConflicts || hasDownstreamChanges ? '75%' : 1,
-              transformOrigin: 'left',
-            }}
-          >
-            {repoName}
-            {<Icons.Branch style={{ width: 19, height: 19 }} />}
-            {currentBranch}
-          </SimpleFlexRow>
-        ) : (
-          <ProjectTitle>{projectName}</ProjectTitle>
-        )}
-        {when(
-          loggedIn,
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: 6,
-              scale: '75%',
-              transformOrigin: 'left',
-              paddingLeft: 10,
-            }}
-          >
-            {when(
-              hasUpstreamChanges,
-              <RoundButton
-                color={colorTheme.secondaryOrange.value}
-                onClick={openLeftPaneltoGithubTab}
-                onMouseDown={onMouseDown}
-              >
-                {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Remote</>
-              </RoundButton>,
-            )}
-            {when(
-              hasMergeConflicts,
-              <RoundButton
-                color={colorTheme.error.value}
-                onClick={showMergeConflict}
-                onMouseDown={onMouseDown}
-              >
-                {
-                  <Icons.WarningTriangle
-                    style={{ width: 19, height: 19 }}
-                    color={'on-light-main'}
-                  />
-                }
-                <>Merge Conflicts</>
-              </RoundButton>,
-            )}
-            {when(
-              hasDownstreamChanges,
-              <RoundButton
-                color={colorTheme.secondaryBlue.value}
-                onClick={openLeftPaneltoGithubTab}
-                onMouseDown={onMouseDown}
-              >
-                {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Local</>
-              </RoundButton>,
-            )}
-          </div>,
-        )}
+      >
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.brandNeonPink.value,
+          }}
+        />
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.brandNeonGreen.value,
+          }}
+        />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {currentBranch != null ? (
+            <SimpleFlexRow
+              style={{
+                gap: 5,
+                scale: hasUpstreamChanges || hasMergeConflicts || hasDownstreamChanges ? '75%' : 1,
+                transformOrigin: 'left',
+              }}
+            >
+              {repoName}
+              {<Icons.Branch style={{ width: 19, height: 19 }} />}
+              {currentBranch}
+            </SimpleFlexRow>
+          ) : (
+            <ProjectTitle>{projectName}</ProjectTitle>
+          )}
+          {when(
+            loggedIn,
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 6,
+                scale: '75%',
+                transformOrigin: 'left',
+                paddingLeft: 10,
+              }}
+            >
+              {when(
+                hasUpstreamChanges,
+                <RoundButton
+                  color={colorTheme.secondaryOrange.value}
+                  onClick={openLeftPaneltoGithubTab}
+                  onMouseDown={onMouseDown}
+                >
+                  {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+                  <>Remote</>
+                </RoundButton>,
+              )}
+              {when(
+                hasMergeConflicts,
+                <RoundButton
+                  color={colorTheme.error.value}
+                  onClick={showMergeConflict}
+                  onMouseDown={onMouseDown}
+                >
+                  {
+                    <Icons.WarningTriangle
+                      style={{ width: 19, height: 19 }}
+                      color={'on-light-main'}
+                    />
+                  }
+                  <>Merge Conflicts</>
+                </RoundButton>,
+              )}
+              {when(
+                hasDownstreamChanges,
+                <RoundButton
+                  color={colorTheme.secondaryBlue.value}
+                  onClick={openLeftPaneltoGithubTab}
+                  onMouseDown={onMouseDown}
+                >
+                  {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+                  <>Local</>
+                </RoundButton>,
+              )}
+            </div>,
+          )}
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  }),
+)
 
-export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }) => {
-  const { drag } = useGridPanelDraggable(props.panelData)
+export const TitleBarUserProfile = React.memo(
+  React.forwardRef<HTMLDivElement>((props, ref) => {
+    const theme = useColorTheme()
+    const { loginState } = useEditorState(
+      Substores.restOfStore,
+      (store) => ({
+        loginState: store.userState.loginState,
+      }),
+      'TitleBar loginState',
+    )
+    const userPicture = useGetUserPicture()
 
-  const theme = useColorTheme()
-  const { loginState } = useEditorState(
-    Substores.restOfStore,
-    (store) => ({
-      loginState: store.userState.loginState,
-    }),
-    'TitleBar loginState',
-  )
-  const userPicture = useGetUserPicture()
+    const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
 
-  const loggedIn = React.useMemo(() => loginState.type === 'LOGGED_IN', [loginState])
+    const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+      e.stopPropagation()
+    }, [])
 
-  const onMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
-  }, [])
+    const onClickLoginNewTab = useCallback(() => {
+      window.open(auth0Url('auto-close'), '_blank')
+    }, [])
 
-  const onClickLoginNewTab = useCallback(() => {
-    window.open(auth0Url('auto-close'), '_blank')
-  }, [])
-
-  return (
-    <div
-      ref={drag}
-      className='handle'
-      style={{
-        height: TitleHeight,
-        width: '100%',
-        backgroundColor: theme.inspectorBackground.value,
-        paddingLeft: 10,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: 6,
-      }}
-    >
+    return (
       <div
+        ref={ref}
+        className='handle'
         style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.unavailableGrey.value,
+          height: TitleHeight,
+          width: '100%',
+          backgroundColor: theme.inspectorBackground.value,
+          paddingLeft: 10,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 6,
         }}
-      />
-      <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
-        {unless(
-          loggedIn,
-          <Button
-            highlight
-            style={{
-              paddingLeft: 8,
-              paddingRight: 8,
-              background: colorTheme.dynamicBlue.value,
-              color: colorTheme.bg1.value,
-            }}
-            onClick={onClickLoginNewTab}
-            onMouseDown={onMouseDown}
-          >
-            Sign In To Save
-          </Button>,
-        )}
-        {when(
-          loggedIn,
-          <a href='/projects' target='_blank'>
-            <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />
-          </a>,
-        )}
+      >
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.unavailableGrey.value,
+          }}
+        />
+        <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
+          {unless(
+            loggedIn,
+            <Button
+              highlight
+              style={{
+                paddingLeft: 8,
+                paddingRight: 8,
+                background: colorTheme.dynamicBlue.value,
+                color: colorTheme.bg1.value,
+              }}
+              onClick={onClickLoginNewTab}
+              onMouseDown={onMouseDown}
+            >
+              Sign In To Save
+            </Button>,
+          )}
+          {when(
+            loggedIn,
+            <a href='/projects' target='_blank'>
+              <Avatar userPicture={userPicture} isLoggedIn={loggedIn} />
+            </a>,
+          )}
+        </div>
       </div>
-    </div>
-  )
-})
+    )
+  }),
+)
 
-export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
-  const { drag } = useGridPanelDraggable(props.panelData)
-  const theme = useColorTheme()
-  return (
-    <div
-      ref={drag}
-      className='handle'
-      style={{
-        height: TitleHeight,
-        width: '100%',
-        backgroundColor: theme.inspectorBackground.value,
-        paddingLeft: 10,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-      }}
-    >
+export const TitleBarEmpty = React.memo(
+  React.forwardRef<HTMLDivElement>((props, ref) => {
+    const theme = useColorTheme()
+    return (
       <div
+        ref={ref}
+        className='handle'
         style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.unavailableGrey.value,
+          height: TitleHeight,
+          width: '100%',
+          backgroundColor: theme.inspectorBackground.value,
+          paddingLeft: 10,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 6,
         }}
-      />
-      <div
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.unavailableGrey.value,
-        }}
-      />
-    </div>
-  )
-})
+      >
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.unavailableGrey.value,
+          }}
+        />
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.unavailableGrey.value,
+          }}
+        />
+      </div>
+    )
+  }),
+)
 
 const TitleBar = React.memo(() => {
   const dispatch = useDispatch()
