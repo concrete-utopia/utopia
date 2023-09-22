@@ -4,7 +4,10 @@ import create from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { objectMap } from '../../../core/shared/object-utils'
-import { NavigatorStateKeepDeepEquality } from './store-deep-equality-instances'
+import {
+  NavigatorStateKeepDeepEquality,
+  ProjectServerStateKeepDeepEquality,
+} from './store-deep-equality-instances'
 import type { DerivedState, EditorStorePatched } from './editor-state'
 import {
   logAfterStoreUpdate,
@@ -25,6 +28,7 @@ import type {
   PostActionInteractionSessionSubstate,
   ProjectContentAndMetadataSubstate,
   ProjectContentSubstate,
+  ProjectServerStateSubstate,
   RestOfEditorState,
   SelectedViewsSubstate,
   StoreKey,
@@ -298,6 +302,9 @@ export const Substores = {
     b: ProjectContentAndMetadataSubstate,
   ) => {
     return keysEquality([...projectContentsKeys, ...metadataSubstateKeys], a.editor, b.editor)
+  },
+  projectServerState: (a: ProjectServerStateSubstate, b: ProjectServerStateSubstate) => {
+    return ProjectServerStateKeepDeepEquality(a.projectServerState, b.projectServerState).areEqual
   },
 } as const
 
