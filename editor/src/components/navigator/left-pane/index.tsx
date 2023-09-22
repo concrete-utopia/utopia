@@ -29,11 +29,12 @@ import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
 import type { ResizeCallback } from 're-resizable'
-import type { Menu, Pane } from '../../canvas/floating-panels-state'
+import type { Menu, Pane } from '../../canvas/grid-panels-state'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../../utils/feature-switches'
 import { when } from '../../../utils/react-conditionals'
 import { TitleBarProjectTitle } from '../../titlebar/title-bar'
+import type { StoredPanel } from '../../canvas/grid-panels-state'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -47,15 +48,10 @@ export const LeftPaneComponentId = 'left-pane'
 export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
 
 interface LeftPaneComponentProps {
-  width: number
-  height: number
-  onResize: (menuName: 'navigator', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
-  resizableConfig: ResizableProps
+  panelData: StoredPanel
 }
 
 export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
-  const { onResize, setIsResizing, width, height } = props
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.leftMenu.selectedTab,
@@ -98,30 +94,10 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
   const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
   const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
     (_event, _direction, _ref, delta) => {
-      if (isFeatureEnabled('Draggable Floating Panels')) {
-        onResize('navigator', _direction, _ref?.clientWidth, _ref?.clientHeight)
-        setIsResizing(null)
-      } else {
-        setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
-      }
+      setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
     },
-    [onResize, setIsResizing, setLeftPanelWidth],
+    [setLeftPanelWidth],
   )
-  const onLeftPanelResize = React.useCallback<ResizeCallback>(
-    (_event, _direction, _ref, delta) => {
-      if (isFeatureEnabled('Draggable Floating Panels')) {
-        const newWidth = _ref?.clientWidth
-        const newHeight = _ref?.clientHeight
-        if (newWidth != null && newHeight != null) {
-          onResize('navigator', _direction, newWidth, newHeight)
-        }
-      }
-    },
-    [onResize],
-  )
-  const onResizeStart = React.useCallback(() => {
-    setIsResizing('navigator')
-  }, [setIsResizing])
 
   const leftMenuExpanded = useEditorState(
     Substores.restOfEditor,
@@ -136,16 +112,15 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
   return (
     <LowPriorityStoreProvider>
       <ResizableFlexColumn
+        enable={{ right: !isFeatureEnabled('Draggable Floating Panels') }}
         onResizeStop={onLeftPanelResizeStop}
-        onResize={onLeftPanelResize}
-        onResizeStart={onResizeStart}
         defaultSize={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? width : leftPanelWidth,
+          width: leftPanelWidth,
           height: '100%',
         }}
         size={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? width : leftPanelWidth,
-          height: isFeatureEnabled('Draggable Floating Panels') ? height : '100%',
+          width: leftPanelWidth,
+          height: '100%',
         }}
         style={{
           overscrollBehavior: 'contain',
@@ -156,9 +131,11 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           flexDirection: 'column',
           overflow: 'hidden',
         }}
-        {...props.resizableConfig}
       >
-        {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarProjectTitle />)}
+        {when(
+          isFeatureEnabled('Draggable Floating Panels'),
+          <TitleBarProjectTitle panelData={props.panelData} />,
+        )}
         <div
           id={LeftPaneComponentId}
           className='leftPane'
