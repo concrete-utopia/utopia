@@ -42,7 +42,12 @@ import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { NO_OP } from '../../core/shared/utils'
-import { TitleBarEmpty, TitleBarUserProfile, TitleHeight } from '../titlebar/title-bar'
+import {
+  TitleBarEmpty,
+  TitleBarUserProfile,
+  TitleHeight,
+  TitleBarCode,
+} from '../titlebar/title-bar'
 import { useGridPanelDraggable } from './grid-panels-dnd'
 
 interface NumberSize {
@@ -350,7 +355,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         flexDirection: 'column',
       }}
     >
-      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarEmpty ref={drag} />)}
+      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarCode ref={drag} />)}
       <div
         style={{
           transformOrigin: 'top left',
