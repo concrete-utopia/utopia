@@ -89,10 +89,13 @@ export interface InsertMode {
   subjects: Array<InsertionSubject>
 }
 
+export type SelectModeToolbarMode = 'none' | 'pseudo-insert'
+
 export interface SelectMode {
   type: 'select'
   controlId: string | null
   area: boolean
+  toolbarMode: SelectModeToolbarMode
 }
 
 export interface TextEditMode {
@@ -125,11 +128,16 @@ export const EditorModes = {
       subjects: subjects,
     }
   },
-  selectMode: function (controlId: string | null = null, area: boolean = false): SelectMode {
+  selectMode: function (
+    controlId: string | null,
+    area: boolean,
+    toolbarMode: SelectModeToolbarMode,
+  ): SelectMode {
     return {
       type: 'select',
       controlId: controlId,
       area,
+      toolbarMode: toolbarMode,
     }
   },
   liveMode: function (controlId: string | null = null): LiveCanvasMode {
@@ -177,6 +185,6 @@ export function convertModeToSavedMode(mode: Mode): PersistedMode {
     case 'select':
     case 'insert':
     case 'textEdit':
-      return EditorModes.selectMode()
+      return EditorModes.selectMode(null, false, 'none')
   }
 }

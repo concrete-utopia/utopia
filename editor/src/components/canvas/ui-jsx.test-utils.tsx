@@ -593,7 +593,7 @@ label {
             await asyncTestDispatch(
               [
                 ...actions,
-                switchEditorMode(EditorModes.selectMode()),
+                switchEditorMode(EditorModes.selectMode(null, false, 'none')),
                 setPanelVisibility('codeEditor', false),
                 updateNodeModulesContents(SampleNodeModules),
               ],

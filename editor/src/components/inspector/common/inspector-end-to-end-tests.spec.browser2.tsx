@@ -61,6 +61,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import selectEvent from 'react-select-event'
+import { MixedPlaceholder } from '../../../uuiui/inputs/base-input'
 
 async function getControl(
   controlTestId: string,
@@ -371,28 +372,32 @@ describe('inspector tests with real metadata', () => {
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
-    matchInlineSnapshotBrowser(widthControl.value, `"266"`)
+    matchInlineSnapshotBrowser(widthControl.value, '""')
+    matchInlineSnapshotBrowser(widthControl.placeholder, `"${MixedPlaceholder}"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"multiselect-mixed-simple-or-unset"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"124px"`)
-    matchInlineSnapshotBrowser(heightControl.value, `"124"`)
+    matchInlineSnapshotBrowser(heightControl.value, `""`)
+    matchInlineSnapshotBrowser(heightControl.placeholder, `"${MixedPlaceholder}"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"multiselect-mixed-simple-or-unset"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
-    matchInlineSnapshotBrowser(topControl.value, `"98"`)
+    matchInlineSnapshotBrowser(topControl.value, `""`)
+    matchInlineSnapshotBrowser(topControl.placeholder, `"${MixedPlaceholder}"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"multiselect-mixed-simple-or-unset"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['left'], `"55px"`)
-    matchInlineSnapshotBrowser(leftControl.value, `"55"`)
+    matchInlineSnapshotBrowser(leftControl.value, `""`)
+    matchInlineSnapshotBrowser(leftControl.placeholder, `"${MixedPlaceholder}"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"multiselect-mixed-simple-or-unset"`,

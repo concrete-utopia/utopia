@@ -13,7 +13,7 @@ export const CanvasContextMenuPortalTargetID = 'canvas-contextmenu-portal-target
 export const RETURN_TO_PREPEND = 'return '
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export const NO_OP = () => {}
+export function NO_OP() {}
 
 export type ValueOf<T> = T[keyof T]
 
@@ -23,7 +23,7 @@ export function identity<T>(t: T): T {
   return t
 }
 
-export function fastForEach<T>(a: readonly T[], fn: (t: T, index: number) => void) {
+export function fastForEach<T>(a: readonly T[], fn: (t: T, index: number) => void): void {
   for (var i = 0, len = a.length; i < len; i++) {
     if (i in a) {
       fn(a[i]!, i)

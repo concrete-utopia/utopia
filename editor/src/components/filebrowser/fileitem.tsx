@@ -525,7 +525,7 @@ class FileBrowserItemInner extends React.PureComponent<
     }
 
     this.props.dispatch([
-      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
       EditorActions.setFilebrowserDropTarget(null),
     ])
 
@@ -638,7 +638,7 @@ class FileBrowserItemInner extends React.PureComponent<
   onMouseUp = () =>
     this.props.dispatch([
       CanvasActions.clearInteractionSession(false),
-      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
       EditorActions.setImageDragSessionState(notDragging()),
     ])
 
@@ -928,7 +928,7 @@ export const FileBrowserItem: React.FC<FileBrowserItemProps> = (props: FileBrows
         dispatch([
           CanvasActions.clearInteractionSession(false),
           EditorActions.setImageDragSessionState(notDragging()),
-          EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+          EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
           EditorActions.setFilebrowserDropTarget(null),
         ])
         onDrop(props, item)
