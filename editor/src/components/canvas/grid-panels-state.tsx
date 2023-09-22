@@ -197,20 +197,20 @@ export function updateLayout(
     const leftSide = layout.slice(0, IndexOfCanvas)
     const rightSideReversed = layout.slice(IndexOfCanvas).reverse()
     const leftSideFixed = accumulate(new Array(leftSide.length).fill([]), (acc) => {
-      let iterator = 0
+      let indexInAccumulator = 0
       leftSide.forEach((column) => {
         if (column.length > 0) {
-          acc[iterator] = column
-          iterator++
+          acc[indexInAccumulator] = column
+          indexInAccumulator++
         }
       })
     })
     const rightSideFixed = accumulate(new Array(rightSideReversed.length).fill([]), (acc) => {
-      let iterator = rightSideReversed.length - 1
+      let indexInAccumulator = rightSideReversed.length - 1
       rightSideReversed.forEach((column) => {
         if (column.length > 0) {
-          acc[iterator] = column
-          iterator--
+          acc[indexInAccumulator] = column
+          indexInAccumulator--
         }
       })
     })
