@@ -18,6 +18,8 @@ import type {
   TextFileContents,
   HighlightBoundsWithFileForUids,
   RevisionsStateType,
+  ExportDefaultIdentifier,
+  ExportDefaultFunctionOrClass,
 } from '../shared/project-file-types'
 import {
   RevisionsState,
@@ -28,6 +30,8 @@ import {
   forEachParseSuccess,
   isParseSuccess,
   isExportDefaultFunctionOrClass,
+  isExportDefaultIdentifier,
+  isExportDefault,
 } from '../shared/project-file-types'
 import type {
   JSXElementChild,
@@ -876,7 +880,7 @@ export function getDefaultExportNameAndUidFromFile(
   }
 
   const defaultExportName =
-    file.fileContents.parsed.exportsDetail.find(isExportDefaultFunctionOrClass)?.name ?? null
+    file.fileContents.parsed.exportsDetail.find(isExportDefault)?.name ?? null
 
   if (defaultExportName == null) {
     return null
