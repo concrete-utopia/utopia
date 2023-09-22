@@ -222,18 +222,19 @@ function getUpdateResizedGroupChildrenCommands(
             continue
           }
 
-          let constraints: Array<keyof FrameWithAllPoints> =
-            editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? []
+          let constraints: Set<keyof FrameWithAllPoints> = new Set(
+            editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? [],
+          )
 
           const elementMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, child)
 
           const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
           if (jsxElement != null) {
             if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
-              constraints.push('width')
+              constraints.add('width')
             }
             if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
-              constraints.push('height')
+              constraints.add('height')
             }
           }
 
@@ -243,7 +244,7 @@ function getUpdateResizedGroupChildrenCommands(
               updatedGroupBounds,
               childrenBounds,
               rectangleToSixFramePoints(currentLocalFrame, childrenBounds),
-              constraints,
+              Array.from(constraints),
             ),
           )
 
