@@ -83,10 +83,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     onClickTab(LeftMenuTab.Navigator)
   }, [onClickTab])
 
-  const onClickSettingsTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Settings)
-  }, [onClickTab])
-
   const onClickGithubTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
@@ -179,11 +175,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
                 onClick={onClickProjectTab}
               />
               <MenuTab
-                label={'Settings'}
-                selected={selectedTab === LeftMenuTab.Settings}
-                onClick={onClickSettingsTab}
-              />
-              <MenuTab
                 label={'Github'}
                 selected={selectedTab === LeftMenuTab.Github}
                 onClick={onClickGithubTab}
@@ -192,7 +183,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
             {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
             {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
-            {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
             {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
             {loggedIn ? null : <LoggedOutPane />}
           </div>
