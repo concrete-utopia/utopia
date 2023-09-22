@@ -757,7 +757,12 @@ function editorDispatchInner(
       const priorSimpleLocks = storedState.unpatchedEditor.lockedElements.simpleLock
       const updatedSimpleLocks = doNotUpdateLocks
         ? priorSimpleLocks
-        : updateSimpleLocks(storedState.unpatchedEditor.jsxMetadata, metadata, priorSimpleLocks)
+        : updateSimpleLocks(
+            storedState.unpatchedEditor.jsxMetadata,
+            metadata,
+            elementPathTree,
+            priorSimpleLocks,
+          )
       if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,

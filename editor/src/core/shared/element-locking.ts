@@ -8,6 +8,7 @@ import { MetadataUtils } from '../model/element-metadata-utils'
 export function updateSimpleLocks(
   priorMetadata: ElementInstanceMetadataMap,
   newMetadata: ElementInstanceMetadataMap,
+  pathTree: ElementPathTrees,
   currentSimpleLockedItems: Array<ElementPath>,
 ): Array<ElementPath> {
   let result: Array<ElementPath> = [...currentSimpleLockedItems]
@@ -15,9 +16,11 @@ export function updateSimpleLocks(
     // This entry is the root element of an instance or a remix Outlet, and it isn't present in the previous metadata,
     // which implies that it has been newly added.
     if (
-      (EP.isRootElementOfInstance(value.elementPath) ||
-        MetadataUtils.isProbablyRemixOutlet(newMetadata, value.elementPath)) &&
-      !(key in priorMetadata)
+      !(key in priorMetadata) &&
+      ((EP.isRootElementOfInstance(value.elementPath) &&
+        MetadataUtils.getChildrenPathsOrdered(newMetadata, pathTree, value.elementPath).length >
+          0) ||
+        MetadataUtils.isProbablyRemixOutlet(newMetadata, value.elementPath))
     ) {
       result.push(value.elementPath)
     }
