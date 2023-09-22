@@ -128,7 +128,7 @@ function normalizeColIndex(index: number): number {
 
 export function updateLayout(
   stored: StoredLayout,
-  paneToMove: StoredPanel, // must be referentially equal to the stored panel!
+  paneToMove: StoredPanel,
   update: LayoutUpdate,
 ): StoredLayout {
   const panelToInsert = storedPanel(paneToMove)
