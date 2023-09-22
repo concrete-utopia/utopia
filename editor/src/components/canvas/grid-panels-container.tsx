@@ -68,7 +68,7 @@ export const GridPanelsContainer = React.memo(() => {
     [panelState],
   )
 
-  const columnWidths: Array<`${number}px`> = React.useMemo(
+  const columnWidths: Array<string> = React.useMemo(
     () =>
       panelState.map((column) => {
         if (column.length === 0) {
