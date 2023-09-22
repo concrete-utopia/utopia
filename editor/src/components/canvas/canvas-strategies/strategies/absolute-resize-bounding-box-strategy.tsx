@@ -1,7 +1,8 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, Size } from '../../../../core/shared/math-utils'
 import {
+  isFiniteRectangle,
   isInfinityRectangle,
   roundRectangleToNearestWhole,
   transformFrameUsingBoundingBox,
@@ -51,6 +52,7 @@ import {
   getChildGroupsForNonGroupParents,
   retargetStrategyToChildrenOfFragmentLikeElements,
 } from './fragment-like-helpers'
+import { getSafeGroupChildConstraintsArray } from '../../../inspector/fill-hug-fixed-control'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -178,6 +180,34 @@ export function absoluteResizeBoundingBoxStrategy(
                   originalFrame,
                 ),
               )
+              if (elementIsGroup) {
+                const constrainedFrames = getConstrainedSizes(
+                  canvasState.startingMetadata,
+                  canvasState.startingAllElementProps,
+                  selectedElement,
+                )
+                if (constrainedFrames.length > 0) {
+                  const adjustedHorizontal = getAdjustedOffsets(
+                    constrainedFrames,
+                    'width',
+                    edgePosition,
+                    originalFrame,
+                    newFrame,
+                  )
+                  newFrame.x = adjustedHorizontal.offset
+                  newFrame.width = adjustedHorizontal.size
+
+                  const adjustedVertical = getAdjustedOffsets(
+                    constrainedFrames,
+                    'height',
+                    edgePosition,
+                    originalFrame,
+                    newFrame,
+                  )
+                  newFrame.y = adjustedVertical.offset
+                  newFrame.height = adjustedVertical.size
+                }
+              }
               const metadata = MetadataUtils.findElementByElementPath(
                 canvasState.startingMetadata,
                 selectedElement,
@@ -234,6 +264,72 @@ export function absoluteResizeBoundingBoxStrategy(
       // Fallback for when the checks above are not satisfied.
       return emptyStrategyApplicationResult
     },
+  }
+}
+
+function getConstrainedSizes(
+  jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): Array<Size> {
+  let result: Array<Size> = []
+  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+  for (const child of children) {
+    const constraints = getSafeGroupChildConstraintsArray(allElementProps, child.elementPath)
+    const frame = child.localFrame
+    const constrained = constraints.some(
+      (c) =>
+        c === 'top' ||
+        c === 'bottom' ||
+        c === 'height' ||
+        c === 'left' ||
+        c === 'right' ||
+        c === 'width',
+    )
+    if (frame != null && isFiniteRectangle(frame) && constrained) {
+      result.push({
+        height: constraints.includes('height')
+          ? frame.height
+          : constraints.includes('top') || constraints.includes('bottom')
+          ? frame.height + frame.y
+          : 0,
+        width: constraints.includes('width')
+          ? frame.width
+          : constraints.includes('left') || constraints.includes('right')
+          ? frame.width + frame.x
+          : 0,
+      })
+    }
+  }
+  return result
+}
+
+function getMaxDimension(constrainedFrames: Size[], dimension: 'width' | 'height'): number {
+  return constrainedFrames.reduce((max, frame) => {
+    return frame[dimension] > max ? frame[dimension] : max
+  }, -Infinity)
+}
+
+function getAdjustedOffsets(
+  constrainedFrames: Size[],
+  dimension: 'width' | 'height',
+  edgePosition: EdgePosition,
+  originalRect: CanvasRectangle,
+  currentRect: CanvasRectangle,
+): { offset: number; size: number } {
+  const max = getMaxDimension(constrainedFrames, dimension)
+  const axis = dimension === 'width' ? 'x' : 'y'
+  let offset = currentRect[axis]
+  if (currentRect[dimension] <= max) {
+    if (edgePosition.x === 0) {
+      offset = Math.max(originalRect[axis], originalRect[axis] + originalRect[dimension] - max)
+    } else if (edgePosition[axis] === 1) {
+      offset = originalRect[axis]
+    }
+  }
+  return {
+    offset: offset,
+    size: Math.max(max, currentRect[dimension]),
   }
 }
 
