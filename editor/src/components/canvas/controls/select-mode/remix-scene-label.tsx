@@ -22,6 +22,9 @@ import { unless } from '../../../../utils/react-conditionals'
 export const RemixSceneLabelPathTestId = (path: ElementPath): string =>
   `${EP.toString(path)}-remix-scene-label-path`
 
+export const RemixSceneLabelTestId = (path: ElementPath): string =>
+  `${EP.toString(path)}-remix-scene-label-test-id`
+
 export const LocationDoesNotMatchRoutesTestId = 'location-does-not-match-routes'
 
 export const RemixSceneHomeLabel = '(home)'
@@ -94,7 +97,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
   const currentPath = (navigationData[EP.toString(props.target)] ?? null)?.location.pathname
   const isIndexRoute = currentPath === '/'
 
-  const label = isIndexRoute ? RemixSceneHomeLabel : currentPath
+  const pathLabel = isIndexRoute ? RemixSceneHomeLabel : currentPath
 
   const scenelabel = useEditorState(
     Substores.metadata,
@@ -275,7 +278,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
       >
         <FlexRow style={{ gap: paddingX }}>
           <div
-            data-testid={RemixSceneLabelPathTestId(props.target)}
+            data-testid={RemixSceneLabelTestId(props.target)}
             style={{
               fontWeight: 600,
             }}
@@ -288,7 +291,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
               color: currentLocationMatchesRoutes ? undefined : colorTheme.error.value,
             }}
           >
-            {label}
+            {pathLabel}
           </div>
         </FlexRow>
         <FlexRow style={{ gap: paddingX, alignItems: 'center' }}>
