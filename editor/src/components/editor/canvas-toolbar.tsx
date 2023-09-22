@@ -533,15 +533,16 @@ export const CanvasToolbar = React.memo(() => {
         >
           <Tooltip title='Edit' placement='bottom'>
             <InsertModeButton
-              iconType={insertMenuMode === 'wrap' ? 'designtool-larger' : 'pointer'}
-              iconCategory={insertMenuMode === 'wrap' ? 'semantic' : 'tools'}
+              iconType={'pointer'}
+              iconCategory={'tools'}
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={switchToSelectModeCloseMenus}
             />
           </Tooltip>
-          <Tooltip title='Insert/Edit Text (T)' placement='bottom'>
+          <Tooltip title='Text (T)' placement='bottom'>
             <InsertModeButton
-              iconType='pure-text'
+              iconType='text'
+              iconCategory={'tools'}
               primary={canvasToolbarMode.primary === 'text'}
               onClick={insertTextCallback}
             />
@@ -549,16 +550,16 @@ export const CanvasToolbar = React.memo(() => {
           <Tooltip title='Insert' placement='bottom'>
             <InsertModeButton
               testid={InsertMenuButtonTestId}
-              iconType='plusbutton-larger'
-              iconCategory='semantic'
+              iconType='insert'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'insert'}
               onClick={toggleInsertButtonClicked}
             />
           </Tooltip>
           <Tooltip title='Live Mode' placement='bottom'>
             <InsertModeButton
-              iconType='playbutton'
-              iconCategory='semantic'
+              iconType='play'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'play'}
               onClick={toggleLiveMode}
               keepActiveInLiveMode
@@ -601,36 +602,64 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'closed',
               wrapInSubmenu(
-                <>
-                  <Tooltip title='Group (⌘G)' placement='bottom'>
-                    <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
-                  </Tooltip>
-                  <Tooltip title='Wrap Within' placement='bottom'>
-                    <InsertModeButton
-                      iconType='designtool-larger'
-                      iconCategory='semantic'
-                      onClick={openFloatingWrapInMenuCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip title='Convert Element (C)' placement='bottom'>
-                    <InsertModeButton
-                      iconType='convertobject'
-                      iconCategory='semantic'
-                      onClick={openFloatingConvertMenuCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip
-                    title='Toggle Position Absolute (X)' // help I need better copy
-                    placement='bottom'
+                <FlexRow
+                  style={{
+                    gap: 25,
+                    padding: '0 15px',
+                    alignSelf: 'stretch',
+                  }}
+                >
+                  <FlexRow
+                    onClick={wrapInGroupCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
                   >
-                    <InsertModeButton
-                      iconType='position-absolute' // TODO this needs an icon!
-                      iconCategory='layout/systems'
-                      size={16}
+                    <Icn category='tools' type='group-action' width={18} height={18} />
+                    Group
+                  </FlexRow>
+                  <FlexRow
+                    onClick={openFloatingWrapInMenuCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
+                  >
+                    <Icn category='tools' type='wrap-action' width={18} height={18} />
+                    Wrap
+                  </FlexRow>
+                  <FlexRow
+                    onClick={openFloatingConvertMenuCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
+                  >
+                    <Icn category='tools' type='convert-action' width={18} height={18} />
+                    Convert
+                  </FlexRow>
+                  <Tooltip title='Toggle Position Absolute (X)' placement='bottom'>
+                    <FlexRow
                       onClick={toggleAbsolutePositioningCallback}
-                    />
+                      css={{
+                        gap: 8,
+                        '&:hover': {
+                          color: colorTheme.dynamicBlue.value,
+                        },
+                      }}
+                    >
+                      <Icn category='tools' type='position-action' width={18} height={18} />
+                      Position
+                    </FlexRow>
                   </Tooltip>
-                </>,
+                </FlexRow>,
               ),
             )}
             {when(
