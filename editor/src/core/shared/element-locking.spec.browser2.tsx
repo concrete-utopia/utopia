@@ -20,10 +20,6 @@ export var storyboard = (
     >
       <App data-uid='app' />
     </Scene>
-    {
-      // @utopia/uid=1e7
-      null
-    }
   </Storyboard>
 )
 
