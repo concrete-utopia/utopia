@@ -24,6 +24,9 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
 
   const { isDragActive, draggedPanel } = useGridPanelDragInfo()
 
+  const isDraggingThisPanel =
+    isDragActive && draggedPanel != null && draggedPanel.name === panel.name
+
   const dropAboveElement: LayoutUpdate = React.useMemo(
     () => ({
       type: 'before-index',
@@ -88,13 +91,23 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
         display: 'flex',
         flexDirection: 'column',
         contain: 'layout',
-        paddingLeft: GridPanelHorizontalGapHalf,
-        paddingRight: GridPanelHorizontalGapHalf,
-        paddingTop: GridPanelVerticalGapHalf,
-        paddingBottom: GridPanelVerticalGapHalf,
+        marginLeft: GridPanelHorizontalGapHalf,
+        marginRight: GridPanelHorizontalGapHalf,
+        marginTop: GridPanelVerticalGapHalf,
+        marginBottom: GridPanelVerticalGapHalf,
       }}
     >
       {draggablePanelComponent}
+      <div
+        style={{
+          position: 'absolute',
+          display: isDraggingThisPanel ? 'block' : 'none',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'lightgrey',
+          borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
+        }}
+      />
       <div
         ref={dropBefore}
         style={{
