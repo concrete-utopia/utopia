@@ -61,7 +61,7 @@ export const ColumnDragTargets = React.memo(
             display: isDragActive && canDropBefore ? 'block' : 'none',
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
             height: '100%',
-            left: -(ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf),
+            left: -(ExtraHorizontalDropTargetPadding + GridPanelHorizontalGapHalf),
           }}
         >
           <div
@@ -86,7 +86,7 @@ export const ColumnDragTargets = React.memo(
             display: isDragActive && canDropAfter ? 'block' : 'none',
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
             height: '100%',
-            right: -(ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf),
+            right: -(ExtraHorizontalDropTargetPadding + GridPanelHorizontalGapHalf),
           }}
         >
           <div

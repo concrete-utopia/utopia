@@ -6,7 +6,11 @@ import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
 import type { GridPanelData, LayoutUpdate, StoredPanel } from './grid-panels-state'
-import { GridPanelVerticalGapHalf, GridPanelsNumberOfRows } from './grid-panels-state'
+import {
+  GridPanelHorizontalGapHalf,
+  GridPanelVerticalGapHalf,
+  GridPanelsNumberOfRows,
+} from './grid-panels-state'
 
 interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
@@ -84,6 +88,10 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
         display: 'flex',
         flexDirection: 'column',
         contain: 'layout',
+        paddingLeft: GridPanelHorizontalGapHalf,
+        paddingRight: GridPanelHorizontalGapHalf,
+        paddingTop: GridPanelVerticalGapHalf,
+        paddingBottom: GridPanelVerticalGapHalf,
       }}
     >
       {draggablePanelComponent}
@@ -93,8 +101,9 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
           display: isDragActive && canDropAbove ? 'block' : 'none',
           position: 'absolute',
           width: '100%',
-          height: `calc(50% + ${GridPanelVerticalGapHalf}px)`,
-          top: -GridPanelVerticalGapHalf,
+          height: `50%`,
+          top: 0,
+          left: 0,
         }}
       >
         <div
@@ -114,14 +123,16 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
           display: isDragActive && canDropBelow ? 'block' : 'none',
           position: 'absolute',
           width: '100%',
-          height: `calc(50% + ${GridPanelVerticalGapHalf}px)`,
-          bottom: -GridPanelVerticalGapHalf,
+          height: `50%`,
+          bottom: 0,
+          left: 0,
         }}
       >
         <div
           style={{
             display: isOverAfter ? 'block' : 'none',
             position: 'absolute',
+
             bottom: -1,
             height: 2,
             width: '100%',

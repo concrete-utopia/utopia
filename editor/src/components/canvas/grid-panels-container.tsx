@@ -1,5 +1,5 @@
 import React from 'react'
-import { accumulate, arrayAccumulate } from '../../core/shared/array-utils'
+import { accumulate } from '../../core/shared/array-utils'
 import { GridPanel } from './grid-panel'
 import { ColumnDragTargets } from './grid-panels-drag-targets'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
@@ -74,9 +74,9 @@ export const GridPanelsContainer = React.memo(() => {
         if (column.length === 0) {
           return `0px`
         } else if (column.some((p) => p.type === 'menu')) {
-          return `${GridMenuWidth}px`
+          return `${GridMenuWidth + GridPanelHorizontalGapHalf * 2}px`
         } else {
-          return `${GridPaneWidth}px`
+          return `${GridPaneWidth + GridPanelHorizontalGapHalf * 2}px`
         }
       }),
     [panelState],
@@ -95,8 +95,6 @@ export const GridPanelsContainer = React.memo(() => {
         gridTemplateColumns: `[col] ${columnWidths[0]} [col] ${columnWidths[1]} [canvas] 1fr [col] ${columnWidths[2]} [col] ${columnWidths[3]} [end]`,
         gridTemplateRows: 'repeat(12, 1fr)',
         gridAutoFlow: 'dense',
-        columnGap: GridPanelHorizontalGapHalf * 2,
-        rowGap: GridPanelVerticalGapHalf * 2,
         paddingTop: GridPanelVerticalGapHalf + GridVerticalExtraPadding,
         paddingBottom: GridPanelVerticalGapHalf + GridVerticalExtraPadding,
         paddingLeft: GridPanelHorizontalGapHalf + GridHorizontalExtraPadding,
