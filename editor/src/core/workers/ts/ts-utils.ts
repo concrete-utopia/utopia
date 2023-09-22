@@ -1,4 +1,4 @@
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import type { ErrorMessage } from '../../shared/error-messages'
 import { fastForEach } from '../../shared/utils'
 

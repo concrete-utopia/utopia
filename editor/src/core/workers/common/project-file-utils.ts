@@ -1,4 +1,4 @@
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import type {
   ImportDetails,
   Imports,
