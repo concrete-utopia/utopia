@@ -28,11 +28,7 @@ export function useGridPanelDraggable(draggedPanel: StoredPanel): {
   return { drag, dragPreview }
 }
 
-export function useGridPanelDropArea(
-  columnIndex: number,
-  indexInColumn: number,
-  onDrop: (itemToMove: StoredPanel) => void,
-): {
+export function useGridPanelDropArea(onDrop: (itemToMove: StoredPanel) => void): {
   drop: ConnectDropTarget
   isOver: boolean
 } {
@@ -46,7 +42,7 @@ export function useGridPanelDropArea(
         isOver: monitor.isOver(),
       }),
     }),
-    [columnIndex, indexInColumn, onDrop],
+    [onDrop],
   )
 
   return { drop, isOver }

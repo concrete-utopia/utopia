@@ -33,8 +33,6 @@ export const ColumnDragTargets = React.memo(
     const canDropAfter = draggedPanel != null && canDrop(draggedPanel, dropAfterColumn)
 
     const { drop: dropBefore, isOver: isOverBefore } = useGridPanelDropArea(
-      columnIndex,
-      9,
       React.useCallback(
         (itemToMove: StoredPanel) => onDrop(itemToMove, dropBeforeColumn),
         [onDrop, dropBeforeColumn],
@@ -42,8 +40,6 @@ export const ColumnDragTargets = React.memo(
     )
 
     const { drop: dropAfter, isOver: isOverAfter } = useGridPanelDropArea(
-      columnIndex,
-      0,
       React.useCallback(
         (itemToMove: StoredPanel) => {
           onDrop(itemToMove, dropAfterColumn)

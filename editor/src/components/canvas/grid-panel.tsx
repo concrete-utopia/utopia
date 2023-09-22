@@ -42,16 +42,12 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
   const canDropBelow = draggedPanel != null && canDrop(draggedPanel, dropBelowElement)
 
   const { drop: dropBefore, isOver: isOverBefore } = useGridPanelDropArea(
-    index,
-    order,
     React.useCallback(
       (itemToMove: StoredPanel) => onDrop(itemToMove, dropAboveElement),
       [onDrop, dropAboveElement],
     ),
   )
   const { drop: dropAfter, isOver: isOverAfter } = useGridPanelDropArea(
-    index,
-    order,
     React.useCallback(
       (itemToMove: StoredPanel) => {
         onDrop(itemToMove, dropBelowElement)
