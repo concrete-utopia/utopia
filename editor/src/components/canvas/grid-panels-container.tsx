@@ -16,7 +16,7 @@ import {
   updateLayout,
   wrapAroundColIndex,
 } from './grid-panels-state'
-import { CanvasFloatingToolbars } from './camvas-floating-toolbars'
+import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
 
 export const GridPanelsContainer = React.memo(() => {
   const [panelState, setPanelState] = React.useState(GridMenuDefaultPanels)
