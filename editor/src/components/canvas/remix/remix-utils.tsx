@@ -121,18 +121,6 @@ function patchRemixRoutes(routesFromRemix: RouteManifest<ConfigRoute> | null) {
   return resultRoutes
 }
 
-export function getRoutesFromRouteManifest(
-  routeManifest: RouteManifest<EntryRoute>,
-  futureConfig: FutureConfig,
-): DataRouteObject[] {
-  const routesByParentId = groupRoutesByParentId(routeManifest)
-  try {
-    return createClientRoutes(routeManifest, {}, futureConfig, '', routesByParentId)
-  } catch (e) {
-    return []
-  }
-}
-
 export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest {
   return {
     entry: { imports: [], module: '' },
@@ -324,6 +312,21 @@ function getRemixExportsOfModule(
     rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
   }
 }
+
+function safeGetClientRoutes(
+  routeManifest: RouteManifestWithContents,
+  routeModulesCache: RouteModules,
+  futureConfig: FutureConfig,
+): DataRouteObject[] | null {
+  const routesByParentId = groupRoutesByParentId(routeManifest)
+  try {
+    return createClientRoutes(routeManifest, routeModulesCache, futureConfig, '', routesByParentId)
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}
+
 export function getRoutesAndModulesFromManifest(
   routeManifest: RouteManifestWithContents,
   futureConfig: FutureConfig,
@@ -345,14 +348,10 @@ export function getRoutesAndModulesFromManifest(
     return null
   }
 
-  const routesByParentId = groupRoutesByParentId(routeManifest)
-  const routes: DataRouteObject[] = createClientRoutes(
-    routeManifest,
-    routeModulesCache,
-    futureConfig,
-    '',
-    routesByParentId,
-  )
+  const routes = safeGetClientRoutes(routeManifest, routeModulesCache, futureConfig)
+  if (routes == null) {
+    return null
+  }
 
   if (routes.length !== 1 && routes[0].id !== 'root') {
     throw new Error('The root route module must be `root`')
