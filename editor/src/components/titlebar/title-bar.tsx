@@ -28,6 +28,8 @@ import { EditorStorePatched, githubRepoFullName, LeftMenuTab } from '../editor/s
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
+import { useGridPanelDraggable } from '../canvas/grid-panels-dnd'
+import type { StoredPanel } from '../canvas/grid-panels-state'
 
 interface ProjectTitleProps {}
 
@@ -46,7 +48,9 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
   )
 }
 export const TitleHeight = 40
-export const TitleBarProjectTitle = React.memo(() => {
+export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel }) => {
+  const { drag } = useGridPanelDraggable(props.panelData)
+
   const dispatch = useDispatch()
   const theme = useColorTheme()
   const projectName = useEditorState(
@@ -120,6 +124,7 @@ export const TitleBarProjectTitle = React.memo(() => {
 
   return (
     <div
+      ref={drag}
       className='handle'
       style={{
         height: TitleHeight,
@@ -216,7 +221,9 @@ export const TitleBarProjectTitle = React.memo(() => {
   )
 })
 
-export const TitleBarUserProfile = React.memo(() => {
+export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }) => {
+  const { drag } = useGridPanelDraggable(props.panelData)
+
   const theme = useColorTheme()
   const { loginState } = useEditorState(
     Substores.restOfStore,
@@ -239,6 +246,7 @@ export const TitleBarUserProfile = React.memo(() => {
 
   return (
     <div
+      ref={drag}
       className='handle'
       style={{
         height: TitleHeight,
@@ -288,10 +296,12 @@ export const TitleBarUserProfile = React.memo(() => {
   )
 })
 
-export const TitleBarEmpty = React.memo(() => {
+export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
+  const { drag } = useGridPanelDraggable(props.panelData)
   const theme = useColorTheme()
   return (
     <div
+      ref={drag}
       className='handle'
       style={{
         height: TitleHeight,

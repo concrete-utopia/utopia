@@ -363,7 +363,7 @@ export const PaddingControl = React.memo(() => {
   )
 
   const [controlMode, cycleToNextMode, resetOverridenMode] = useControlModeWithCycle(
-    PaddingControlDefaultMode,
+    initialMode,
     PaddingControlModeOrder,
   )
 

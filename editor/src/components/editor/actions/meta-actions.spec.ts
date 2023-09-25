@@ -14,6 +14,7 @@ describe('cancelInsertModeActions', () => {
           "mode": Object {
             "area": false,
             "controlId": null,
+            "toolbarMode": "none",
             "type": "select",
           },
           "unlessMode": "textEdit",
@@ -41,6 +42,7 @@ describe('cancelInsertModeActions', () => {
           "mode": Object {
             "area": false,
             "controlId": null,
+            "toolbarMode": "none",
             "type": "select",
           },
           "unlessMode": "textEdit",
@@ -64,6 +66,7 @@ describe('cancelInsertModeActions', () => {
           "mode": Object {
             "area": false,
             "controlId": null,
+            "toolbarMode": "none",
             "type": "select",
           },
           "unlessMode": "textEdit",

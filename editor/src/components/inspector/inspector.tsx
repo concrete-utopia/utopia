@@ -46,7 +46,6 @@ import type { CSSTarget, TargetSelectorLength } from './sections/header-section/
 import { cssTarget } from './sections/header-section/target-selector'
 import { ImgSection } from './sections/image-section/image-section'
 import { WarningSubsection } from './sections/layout-section/warning-subsection/warning-subsection'
-import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { ClassNameSubsection } from './sections/style-section/className-subsection/className-subsection'
 import { StyleSection } from './sections/style-section/style-section'
 import type { TargetSelectorSectionProps } from './sections/target-selector-section'
@@ -96,7 +95,6 @@ export interface InspectorPartProps<T> {
 export interface InspectorProps extends TargetSelectorSectionProps {
   setSelectedTarget: React.Dispatch<React.SetStateAction<string[]>>
   selectedViews: Array<ElementPath>
-  elementPath: Array<ElementPathElement>
 }
 
 interface AlignDistributeButtonProps {
@@ -241,7 +239,6 @@ export function shouldInspectorUpdate(
 export const InspectorSectionsContainerTestID = 'inspector-sections-container'
 
 export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
-  const colorTheme = useColorTheme()
   const { selectedViews, setSelectedTarget, targets } = props
 
   const hideAllSections = useEditorState(
@@ -268,62 +265,50 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
   }, [selectedViews, targets, setSelectedTarget])
 
   const dispatch = useDispatch()
-  const { focusedPanel, anyComponents, anyUnknownElements, hasNonDefaultPositionAttributes } =
-    useEditorState(
-      Substores.fullStore,
-      (store) => {
-        const rootMetadata = store.editor.jsxMetadata
-        let anyComponentsInner: boolean = false
-        let anyUnknownElementsInner: boolean = false
-        let hasNonDefaultPositionAttributesInner: boolean = false
+  const { focusedPanel, anyComponents, hasNonDefaultPositionAttributes } = useEditorState(
+    Substores.fullStore,
+    (store) => {
+      const rootMetadata = store.editor.jsxMetadata
+      let anyComponentsInner: boolean = false
+      let hasNonDefaultPositionAttributesInner: boolean = false
 
-        Utils.fastForEach(selectedViews, (view) => {
-          const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
-            view,
-            store.editor,
-          )
-          anyComponentsInner =
-            anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
-          const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
-          const elementProps = store.editor.allElementProps[EP.toString(view)]
-          if (possibleElement != null && elementProps != null) {
-            // Slightly coarse in definition, but element metadata is in a weird little world of
-            // its own compared to the props.
-
-            const metadataNotFound =
-              MetadataUtils.findElementByElementPath(rootMetadata, view) == null
-            if (metadataNotFound) {
-              anyUnknownElementsInner = true
-            }
-            if (isRight(possibleElement.element)) {
-              const elem = possibleElement.element.value
-              if (isJSXElement(elem)) {
-                if (!hasNonDefaultPositionAttributesInner) {
-                  for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
-                    styleStringInArray,
-                  )) {
-                    const attributeAtPath = getJSXAttributesAtPath(
-                      elem.props,
-                      nonDefaultPositionPath,
-                    )
-                    if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
-                      hasNonDefaultPositionAttributesInner = true
-                    }
+      Utils.fastForEach(selectedViews, (view) => {
+        const { components: rootComponents } = getJSXComponentsAndImportsForPathFromState(
+          view,
+          store.editor,
+        )
+        anyComponentsInner =
+          anyComponentsInner || MetadataUtils.isComponentInstance(view, rootComponents)
+        const possibleElement = MetadataUtils.findElementByElementPath(rootMetadata, view)
+        const elementProps = store.editor.allElementProps[EP.toString(view)]
+        if (possibleElement != null && elementProps != null) {
+          // Slightly coarse in definition, but element metadata is in a weird little world of
+          // its own compared to the props.
+          if (isRight(possibleElement.element)) {
+            const elem = possibleElement.element.value
+            if (isJSXElement(elem)) {
+              if (!hasNonDefaultPositionAttributesInner) {
+                for (const nonDefaultPositionPath of buildNonDefaultPositionPaths(
+                  styleStringInArray,
+                )) {
+                  const attributeAtPath = getJSXAttributesAtPath(elem.props, nonDefaultPositionPath)
+                  if (attributeAtPath.attribute.type !== 'ATTRIBUTE_NOT_FOUND') {
+                    hasNonDefaultPositionAttributesInner = true
                   }
                 }
               }
             }
           }
-        })
-        return {
-          focusedPanel: store.editor.focusedPanel,
-          anyComponents: anyComponentsInner,
-          anyUnknownElements: anyUnknownElementsInner,
-          hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
         }
-      },
-      'Inspector',
-    )
+      })
+      return {
+        focusedPanel: store.editor.focusedPanel,
+        anyComponents: anyComponentsInner,
+        hasNonDefaultPositionAttributes: hasNonDefaultPositionAttributesInner,
+      }
+    },
+    'Inspector',
+  )
 
   const onFocus = React.useCallback(
     (event: React.FocusEvent<HTMLElement>) => {
@@ -333,10 +318,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     },
     [dispatch, focusedPanel],
   )
-
-  const shouldShowInspector = React.useMemo(() => {
-    return props.elementPath.length !== 0 && !anyUnknownElements
-  }, [props.elementPath, anyUnknownElements])
 
   const rootElementIsSelected = useEditorState(
     Substores.selectedViews,
@@ -349,14 +330,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
       <React.Fragment>
         <div
           style={{
-            display: shouldShowInspector ? 'none' : undefined,
-          }}
-        >
-          <SettingsPanel />
-        </div>
-        <div
-          style={{
-            display: shouldShowInspector ? undefined : 'none',
             height: '100%',
           }}
           data-testid={InspectorSectionsContainerTestID}
@@ -550,26 +523,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
     getElementsToTarget(selectedViews),
   )
 
-  const elementPath = useKeepReferenceEqualityIfPossible(
-    React.useMemo(() => {
-      if (selectedViews.length === 0) {
-        return []
-      }
-
-      let elements: Array<ElementPathElement> = []
-      Utils.fastForEach(EP.allPathsForLastPart(selectedViews[0]), (path) => {
-        const component = MetadataUtils.findElementByElementPath(jsxMetadata, path)
-        if (component != null) {
-          elements.push({
-            name: MetadataUtils.getElementLabel(allElementProps, path, pathTrees, jsxMetadata),
-            path: path,
-          })
-        }
-      })
-      return elements
-    }, [selectedViews, jsxMetadata, pathTrees, allElementProps]),
-  )
-
   // Memoized Callbacks
   const [selectedTarget, setSelectedTarget] = React.useState<Array<string>>(
     targetsReferentiallyStable[0].path,
@@ -629,7 +582,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
         targets={targetsReferentiallyStable}
         selectedTargetPath={selectedTarget}
         setSelectedTarget={setSelectedTarget}
-        elementPath={elementPath}
         onSelectTarget={onSelectTarget}
         onStyleSelectorRename={onStyleSelectorRename}
         onStyleSelectorDelete={onStyleSelectorDelete}

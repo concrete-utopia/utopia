@@ -6,15 +6,7 @@ import { jsx } from '@emotion/react'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import styled from '@emotion/styled'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
-import {
-  FlexRow,
-  UtopiaTheme,
-  H2,
-  CheckboxInput,
-  FlexColumn,
-  useColorTheme,
-  Subdued,
-} from '../../../../uuiui'
+import { FlexRow, UtopiaTheme, H2, CheckboxInput, FlexColumn, Subdued } from '../../../../uuiui'
 
 import { useDispatch } from '../../../editor/store/dispatch-context'
 
@@ -25,7 +17,6 @@ const StyledFlexRow = styled(FlexRow)({
 })
 
 export const SettingsPanel = React.memo(() => {
-  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
     Substores.restOfEditor,
@@ -61,15 +52,10 @@ export const SettingsPanel = React.memo(() => {
   }, [dispatch])
 
   return (
-    <FlexColumn
-      style={{
-        marginBottom: UtopiaTheme.layout.rowHeight.normal,
-        borderBottom: `1px solid ${colorTheme.subduedBorder.value}`,
-      }}
-    >
-      <StyledFlexRow>
+    <FlexColumn>
+      <FlexRow style={{ marginTop: 8, marginBottom: 12, paddingLeft: 8 }}>
         <H2>Interface</H2>
-      </StyledFlexRow>
+      </FlexRow>
       <StyledFlexRow>
         <CheckboxInput
           style={{ marginRight: 8 }}
