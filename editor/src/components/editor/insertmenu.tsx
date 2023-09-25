@@ -298,7 +298,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
   const mode = React.useMemo(() => (props.selectProps as any).mode as Mode, [props.selectProps])
 
   const currentlyBeingInserted = React.useMemo(() => {
-    if (mode == null || mode.type !== 'insert' || mode.subjects.length !== 1) {
+    if (mode === null || mode.type !== 'insert' || mode.subjects.length !== 1) {
       return null
     }
 
@@ -347,7 +347,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
       currentlyBeingInserted,
       elementBeingInserted(component),
     )
-    return beingInserted || (isActive && isFocused && currentlyBeingInserted == null)
+    return beingInserted || (isActive && isFocused && currentlyBeingInserted !== null)
   }, [component, currentlyBeingInserted, isFocused, isActive])
 
   const [isHovered, setIsHovered] = useState(false)
