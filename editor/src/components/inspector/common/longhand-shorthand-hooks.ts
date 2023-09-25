@@ -68,7 +68,7 @@ function getShadowedLonghandShorthandValue<
     } else {
       // Important: we assume that shorthandValue is an object
       // where the keys are the longhand keys and the values are the individual longhand values
-      if (longhand in shorthandValueObject) {
+      if (shorthandValueObject != null && longhand in shorthandValueObject) {
         return {
           value: (shorthandValueObject as any)?.[longhand] as ParsedProperties[LonghandKey],
           propertyStatus: allPropKeysEqual

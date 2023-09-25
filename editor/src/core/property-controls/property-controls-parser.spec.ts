@@ -55,8 +55,9 @@ import {
 } from '../../utils/value-parser-utils'
 import { pick } from '../shared/object-utils'
 import { fastForEach } from '../shared/utils'
+import type { MapLike } from 'typescript'
 
-function runBaseTestSuite<T>(
+function runBaseTestSuite<T extends MapLike<any>>(
   validObject: T,
   requiredFields: Array<keyof T>,
   parseFn: (value: unknown) => ParseResult<T>,

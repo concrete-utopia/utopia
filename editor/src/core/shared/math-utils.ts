@@ -970,7 +970,8 @@ export function rectanglesEqual<C extends CoordinateMarker>(
 ): boolean {
   if (isInfinityRectangle(first) || isInfinityRectangle(second)) {
     return isInfinityRectangle(first) && isInfinityRectangle(second)
-  } else {
+  } else if (isFiniteRectangle(first) && isFiniteRectangle(second)) {
+    // TODO: why is this extra if necessary? They have to be both finite because of the else branch
     return (
       first.x === second.x &&
       first.y === second.y &&
@@ -978,6 +979,7 @@ export function rectanglesEqual<C extends CoordinateMarker>(
       first.height === second.height
     )
   }
+  return false
 }
 
 export function proportion(from: number, to: number): number {
