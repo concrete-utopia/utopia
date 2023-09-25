@@ -682,26 +682,23 @@ export const CanvasToolbar = React.memo(() => {
                     iconCategory='semantic'
                     onClick={NO_OP}
                   /> */}
-                    <Tooltip title='Wrap in div' placement='bottom'>
+                    <Tooltip title='Div' placement='bottom'>
                       <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
                     </Tooltip>
-                    <Tooltip title='Wrap in div' placement='bottom'>
-                      <InsertModeButton iconType='group-open' onClick={wrapInDivAndClose} />
-                    </Tooltip>
-                    <Tooltip title='Wrap in div' placement='bottom'>
+                    <Tooltip title='Scene' placement='bottom'>
                       <InsertModeButton
                         iconType='scene'
                         iconCategory='component'
                         onClick={wrapInDivAndClose}
                       />
                     </Tooltip>
-                    <Tooltip title='Wrap in div' placement='bottom'>
+                    <Tooltip title='Fragment' placement='bottom'>
                       <InsertModeButton iconType='fragment' onClick={wrapInDivAndClose} />
                     </Tooltip>
-                    <Tooltip title='Wrap in div' placement='bottom'>
+                    <Tooltip title='Clickable Div' placement='bottom'>
                       <InsertModeButton iconType='clickable' onClick={wrapInDivAndClose} />
                     </Tooltip>
-                    <Tooltip title='Wrap in div' placement='bottom'>
+                    <Tooltip title='Conditional' placement='bottom'>
                       <InsertModeButton iconType='conditional' onClick={wrapInDivAndClose} />
                     </Tooltip>
                   </FlexRow>
