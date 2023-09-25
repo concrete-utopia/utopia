@@ -59,7 +59,7 @@ export const DefaultFutureConfig: FutureConfig = {
 
 // This is necessary to create a simple node.fs-like implementation for Utopia projectContents, which
 // can be used by the Remix functions to parse the routes
-export function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): FileOps {
+function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): FileOps {
   return {
     existsSync: (file: string): boolean => getContentsTreeFromPath(projectContents, file) != null,
     readdirSync: (dir: string): Array<string> => {
@@ -130,7 +130,7 @@ export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsM
   }
 }
 
-export interface RouteModuleCreator {
+interface RouteModuleCreator {
   filePath: string
   executionScopeCreator: ExecutionScopeCreator
 }
@@ -146,7 +146,7 @@ export interface RouteModulesWithRelativePaths {
   }
 }
 
-export interface GetRoutesAndModulesFromManifestResult {
+interface GetRoutesAndModulesFromManifestResult {
   routeModuleCreators: RouteIdsToModuleCreators
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
