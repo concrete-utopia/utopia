@@ -1,4 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { CanvasRectangle, Size } from '../../../../core/shared/math-utils'
 import {
@@ -13,9 +14,13 @@ import {
   getElementFromProjectContents,
   trueUpElementChanged,
 } from '../../../editor/store/editor-state'
+import { getSafeGroupChildConstraintsArray } from '../../../inspector/fill-hug-fixed-control'
+import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
-import { EdgePositionTop, EdgePositionLeft, EdgePositionTopLeft } from '../../canvas-types'
+import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../canvas-types'
+import { isEdgePositionEqualTo } from '../../canvas-utils'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -34,25 +39,21 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import {
-  isAnySelectedElementAspectRatioLocked,
+  getChildGroupsForNonGroupParents,
+  retargetStrategyToChildrenOfFragmentLikeElements,
+} from './fragment-like-helpers'
+import { treatElementAsGroupLike } from './group-helpers'
+import {
   getLockedAspectRatio,
+  isAnySelectedElementAspectRatioLocked,
   pickCursorFromEdgePosition,
   resizeBoundingBox,
   supportsAbsoluteResize,
 } from './resize-helpers'
-import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
-import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
-import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { treatElementAsGroupLike } from './group-helpers'
 import type { EnsureFramePointsExist } from './resize-strategy-helpers'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
-import { isEdgePositionEqualTo } from '../../canvas-utils'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
-import {
-  getChildGroupsForNonGroupParents,
-  retargetStrategyToChildrenOfFragmentLikeElements,
-} from './fragment-like-helpers'
-import { getSafeGroupChildConstraintsArray } from '../../../inspector/fill-hug-fixed-control'
+import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
+import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
   canvasState: InteractionCanvasState,
@@ -327,8 +328,14 @@ function getConstrainedSizes(
     const constraintsArray = getSafeGroupChildConstraintsArray(allElementProps, child.elementPath)
     const frame = child.localFrame
     const constraints = {
-      width: constraintsArray.includes('width'),
-      height: constraintsArray.includes('height'),
+      width:
+        constraintsArray.includes('width') ||
+        detectFillHugFixedState('horizontal', jsxMetadata, child.elementPath).fixedHugFill?.type ===
+          'hug',
+      height:
+        constraintsArray.includes('height') ||
+        detectFillHugFixedState('vertical', jsxMetadata, child.elementPath).fixedHugFill?.type ===
+          'hug',
       top: constraintsArray.includes('top'),
       bottom: constraintsArray.includes('bottom'),
       left: constraintsArray.includes('left'),
