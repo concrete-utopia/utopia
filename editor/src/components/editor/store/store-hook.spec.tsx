@@ -16,6 +16,7 @@ import * as EP from '../../../core/shared/element-path'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { notLoggedIn } from '../action-types'
+import { emptyProjectServerState } from './project-server-state'
 
 const initialEditorStore: EditorStorePatched = {
   editor: createEditorState(NO_OP),
@@ -36,6 +37,7 @@ const initialEditorStore: EditorStorePatched = {
   postActionInteractionSession: null,
   builtInDependencies: createBuiltInDependenciesList(null),
   storeName: 'editor-store',
+  projectServerState: emptyProjectServerState(),
 }
 
 function createEmptyEditorStoreHook() {

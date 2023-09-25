@@ -44,8 +44,6 @@ import type { EditorAction } from '../editor/action-types'
 import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
 import { UIGridRow } from '../inspector/widgets/ui-grid-row'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { strictEvery } from '../../core/shared/array-utils'
 
 interface NumberSize {
   width: number
@@ -292,23 +290,6 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
     onClickTab(RightMenuTab.Settings)
   }, [onClickTab])
 
-  const anyKnownElements = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return strictEvery(store.editor.selectedViews, (view) => {
-        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null
-      })
-    },
-    'DesignPanelRoot anyKnownElements',
-  )
-  const tabToShow: RightMenuTab = React.useMemo(() => {
-    if (anyKnownElements || selectedTab === RightMenuTab.Insert) {
-      return selectedTab
-    } else {
-      return RightMenuTab.Settings
-    }
-  }, [anyKnownElements, selectedTab])
-
   if (!isRightMenuExpanded) {
     return null
   }
@@ -366,23 +347,23 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         >
           <MenuTab
             label={'Insert'}
-            selected={tabToShow === RightMenuTab.Insert}
+            selected={selectedTab === RightMenuTab.Insert}
             onClick={onClickInsertTab}
           />
           <MenuTab
             label={'Inspector'}
-            selected={tabToShow === RightMenuTab.Inspector}
+            selected={selectedTab === RightMenuTab.Inspector}
             onClick={onClickInspectorTab}
           />
           <MenuTab
             label={'Settings'}
-            selected={tabToShow === RightMenuTab.Settings}
+            selected={selectedTab === RightMenuTab.Settings}
             onClick={onClickSettingsTab}
           />
         </UIGridRow>
-        {when(tabToShow === RightMenuTab.Insert, <InsertMenuPane />)}
-        {when(tabToShow === RightMenuTab.Inspector, <InspectorEntryPoint />)}
-        {when(tabToShow === RightMenuTab.Settings, <SettingsPane />)}
+        {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
+        {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
+        {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
     </Resizable>

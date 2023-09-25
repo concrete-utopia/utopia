@@ -144,6 +144,7 @@ import { carryDispatchResultFields } from './editor-dispatch-flow'
 import type { FeatureName } from '../../utils/feature-switches'
 import { setFeatureEnabled } from '../../utils/feature-switches'
 import { unpatchedCreateRemixDerivedDataMemo } from '../editor/store/remix-derived-data'
+import { emptyProjectServerState } from '../editor/store/project-server-state'
 
 // eslint-disable-next-line no-unused-expressions
 typeof process !== 'undefined' &&
@@ -530,6 +531,7 @@ export async function renderTestEditorWithModel(
     saveCountThisSession: 0,
     builtInDependencies: builtInDependencies,
     postActionInteractionSession: null,
+    projectServerState: emptyProjectServerState(),
   }
 
   const canvasStoreHook: UtopiaStoreAPI = createStoresAndState(
