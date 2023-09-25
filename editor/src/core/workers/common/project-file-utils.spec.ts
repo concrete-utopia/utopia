@@ -162,6 +162,81 @@ describe('mergeImports', () => {
       '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
     })
   })
+
+  it('merges namespaced import and default import without named imports', () => {
+    {
+      const result = mergeImports(
+        '/src/code.js',
+        { library: importDetails('Library', [], null) },
+        { library: importDetails(null, [], 'Library') },
+      )
+
+      /**
+       * import Library from 'library'
+       * import * as Library from 'library'
+       *
+       * becomes
+       *
+       * import Library from 'library'
+       */
+      expect(result).toEqual({ library: importDetails('Library', [], null) })
+    }
+    {
+      const result = mergeImports(
+        '/src/code.js',
+        { LibraryToo: importDetails(null, [], 'library-too') },
+        { LibraryToo: importDetails('library-too', [], null) },
+      )
+
+      /**
+       * import * as Library from 'library'
+       * import Library from 'library'
+       * (same as the previous test but the other way around)
+       */
+      expect(result).toEqual({ LibraryToo: importDetails('library-too', [], null) })
+    }
+    {
+      const result = mergeImports(
+        '/src/code.js',
+        {
+          'death-star': importDetails(
+            'DeathStar',
+            [importAlias('hello', 'helloFn'), importAlias('General', 'GeneralComponent')],
+            null,
+          ),
+        },
+        {
+          'death-star': importDetails(
+            null,
+            [importAlias('there', 'thereFn'), importAlias('Kenobi', 'KenobiComponent')],
+            'DeathStar',
+          ),
+        },
+      )
+
+      /**
+       * import DeathStar, { hello as helloFn, General as GeneralComponent } from 'death-star'
+       * import * as DeathStar, { there as thereFn, Kenobi as KenobiComponent } from 'death-star'
+       *
+       * becomes
+       *
+       * import DeathStar, { hello as helloFn, General as GeneralComponent, there as thereFn, Kenobi as KenobiComponent } from 'death-star'
+       */
+
+      expect(result).toEqual({
+        'death-star': importDetails(
+          'DeathStar',
+          [
+            importAlias('hello', 'helloFn'),
+            importAlias('General', 'GeneralComponent'),
+            importAlias('there', 'thereFn'),
+            importAlias('Kenobi', 'KenobiComponent'),
+          ],
+          null,
+        ),
+      })
+    }
+  })
 })
 
 describe('addImport', () => {

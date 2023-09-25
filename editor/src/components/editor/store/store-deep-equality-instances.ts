@@ -537,6 +537,30 @@ import type { ElementPathTree, ElementPathTrees } from '../../../core/shared/ele
 import { elementPathTree } from '../../../core/shared/element-path-tree'
 import type { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboard'
 import { elementPaste } from '../actions/action-creators'
+import type { ProjectMetadataFromServer, ProjectServerState } from './project-server-state'
+import { projectServerState, projectMetadataFromServer } from './project-server-state'
+
+export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
+  combine3EqualityCalls(
+    (entry) => entry.title,
+    StringKeepDeepEquality,
+    (entry) => entry.ownerName,
+    NullableStringKeepDeepEquality,
+    (entry) => entry.ownerPicture,
+    NullableStringKeepDeepEquality,
+    projectMetadataFromServer,
+  )
+
+export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectServerState> =
+  combine3EqualityCalls(
+    (entry) => entry.isMyProject,
+    createCallWithTripleEquals<ProjectServerState['isMyProject']>(),
+    (entry) => entry.projectData,
+    nullableDeepEquality(ProjectMetadataFromServerKeepDeepEquality),
+    (entry) => entry.forkedFromProjectData,
+    nullableDeepEquality(ProjectMetadataFromServerKeepDeepEquality),
+    projectServerState,
+  )
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,

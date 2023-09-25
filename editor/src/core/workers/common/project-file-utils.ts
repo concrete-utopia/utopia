@@ -1,4 +1,3 @@
-import * as TS from 'typescript-for-the-editor'
 import type {
   ImportDetails,
   Imports,
@@ -7,21 +6,10 @@ import type {
   ImportAlias,
   RevisionsStateType,
 } from '../../shared/project-file-types'
-import {
-  TextFile,
-  ParseFailure,
-  ParseSuccess,
-  RevisionsState,
-  HighlightBoundsForUids,
-  isParseSuccess,
-  ExportsDetail,
-} from '../../shared/project-file-types'
+import { RevisionsState } from '../../shared/project-file-types'
 import { fastForEach } from '../../shared/utils'
-import { defaultIfNull } from '../../shared/optional-utils'
-import { ErrorMessage } from '../../shared/error-messages'
+import { defaultIfNull, optionalMap } from '../../shared/optional-utils'
 
-import { ArbitraryJSBlock, Comment, TopLevelElement } from '../../shared/element-template'
-import { emptySet } from '../../shared/set-utils'
 import { absolutePathFromRelativePath } from '../../../utils/path-utils'
 import { stripExtension } from '../../../components/custom-code/custom-code-utils'
 
@@ -37,9 +25,12 @@ export function emptyImports(): Imports {
   return {}
 }
 
-function mergeImportDetails(first: ImportDetails, second: ImportDetails): ImportDetails {
-  let importedFromWithin: Array<ImportAlias> = [...first.importedFromWithin]
-  fastForEach(second.importedFromWithin, (secondWithin) => {
+function mergeImportedFromWithin(
+  first: Array<ImportAlias>,
+  second: Array<ImportAlias>,
+): Array<ImportAlias> {
+  let importedFromWithin: Array<ImportAlias> = [...first]
+  fastForEach(second, (secondWithin) => {
     if (
       importedFromWithin.find(
         (i) => i.name === secondWithin.name && i.alias === secondWithin.alias,
@@ -48,58 +39,98 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
       importedFromWithin.push(secondWithin)
     }
   })
+  return importedFromWithin
+}
+
+/**
+ * import * as Name from 'import'
+ * and
+ * import Name from 'import'
+ * are the same
+ */
+function mergedNamespaceImport(first: ImportDetails, second: ImportDetails): ImportDetails | null {
+  if (
+    first.importedWithName != null &&
+    second.importedAs != null &&
+    first.importedWithName == second.importedAs
+  ) {
+    return {
+      importedWithName: first.importedWithName,
+      importedAs: first.importedAs,
+      importedFromWithin: mergeImportedFromWithin(
+        first.importedFromWithin,
+        second.importedFromWithin,
+      ),
+    }
+  }
+  return null
+}
+
+function mergeImportDetails(first: ImportDetails, second: ImportDetails): ImportDetails {
+  let mergedWithSameName =
+    mergedNamespaceImport(first, second) ?? mergedNamespaceImport(second, first)
+  if (mergedWithSameName != null) {
+    return mergedWithSameName
+  }
+
   const importedWithName = defaultIfNull(second.importedWithName, first.importedWithName)
   const importedAs = defaultIfNull(second.importedAs, first.importedAs)
   return {
     importedWithName: importedWithName,
-    importedFromWithin: importedFromWithin,
     importedAs: importedAs,
+    importedFromWithin: mergeImportedFromWithin(
+      first.importedFromWithin,
+      second.importedFromWithin,
+    ),
   }
 }
 
+function mergeMaybeImportDetails(
+  left: ImportDetails | null,
+  right: ImportDetails | null,
+): ImportDetails | null {
+  return (
+    optionalMap((l) => optionalMap((r) => mergeImportDetails(l, r), right), left) ??
+    left ??
+    right ??
+    null
+  )
+}
+
 export function mergeImports(fileUri: string, first: Imports, second: Imports): Imports {
-  const allKeys = new Set([...Object.keys(first), ...Object.keys(second)])
-  let absoluteKeysToRelativeKeys: { [absolutePath: string]: string } = {}
+  const allImportSources = new Set([...Object.keys(first), ...Object.keys(second)])
+  let absoluteImportSourcePathsToRelativeImportSourcePaths: {
+    [absolutePath: string]: string | undefined
+  } = {}
   let imports: Imports = {}
-  allKeys.forEach((key) => {
-    let existingKeyToUse = key
-    const rawAbsolutePath = absolutePathFromRelativePath(fileUri, false, key)
+
+  allImportSources.forEach((importSource) => {
+    const rawAbsolutePath = absolutePathFromRelativePath(fileUri, false, importSource)
     if (fileUri === rawAbsolutePath) {
       // Prevent accidentally importing the current file
       return
     }
 
-    const absoluteKey = stripExtension(rawAbsolutePath)
+    const absoluteImportSource = stripExtension(rawAbsolutePath)
 
-    if (absoluteKeysToRelativeKeys[absoluteKey] == null) {
-      absoluteKeysToRelativeKeys[absoluteKey] = key
-    } else {
-      existingKeyToUse = absoluteKeysToRelativeKeys[absoluteKey]
+    let existingImportSourceToUse: string | undefined =
+      absoluteImportSourcePathsToRelativeImportSourcePaths[absoluteImportSource]
+
+    if (existingImportSourceToUse == null) {
+      absoluteImportSourcePathsToRelativeImportSourcePaths[absoluteImportSource] = importSource
+      existingImportSourceToUse = importSource
     }
-    const firstValue = first[key]
-    const secondValue = second[key]
-    let mergedValues: ImportDetails | undefined
-    if (firstValue === undefined) {
-      if (secondValue === undefined) {
-        mergedValues = undefined
-      } else {
-        mergedValues = secondValue
-      }
-    } else {
-      if (secondValue === undefined) {
-        mergedValues = firstValue
-      } else {
-        mergedValues = mergeImportDetails(firstValue, secondValue)
-      }
-    }
-    // Merge the two values into whatever may already exist.
-    const existingValue = imports[existingKeyToUse]
-    if (mergedValues !== undefined) {
-      if (existingValue === undefined) {
-        imports[existingKeyToUse] = mergedValues
-      } else {
-        imports[existingKeyToUse] = mergeImportDetails(existingValue, mergedValues)
-      }
+
+    const importDetailsFromFirst: ImportDetails | null = first[importSource] ?? null
+    const importDetailsFromSecond: ImportDetails | null = second[importSource] ?? null
+    const existingImport: ImportDetails | null = imports[existingImportSourceToUse] ?? null
+    const merged: ImportDetails | null = mergeMaybeImportDetails(
+      existingImport,
+      mergeMaybeImportDetails(importDetailsFromFirst, importDetailsFromSecond),
+    )
+
+    if (merged != null) {
+      imports[existingImportSourceToUse] = merged
     }
   })
   return imports
