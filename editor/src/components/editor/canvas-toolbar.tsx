@@ -784,6 +784,7 @@ export const CanvasToolbar = React.memo(() => {
                   </Tooltip>
                   <Tooltip title='Conditional' placement='bottom'>
                     <InsertModeButton
+                      testid={InsertConditionalButtonTestId}
                       iconType='conditional'
                       secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
                       onClick={insertConditionalCallback}
