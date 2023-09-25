@@ -131,7 +131,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
       options={options}
       menuPortalTarget={menuPortalTarget}
       filterOption={createFilter({ ignoreAccents: true })}
-      placeholder={'Wrap Within...'}
+      placeholder={'Wrap Inside...'}
       styles={{
         ...componentSelectorStyles,
         menuPortal: (styles: CSSObject): CSSObject => {
@@ -141,7 +141,6 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
             overflow: 'hidden',
             // maxHeight: 150,
             backgroundColor: theme.bg2.value,
-            // background: '#ff00ff20',
             borderRadius: '0px 0px 10px 10px',
             // boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             pointerEvents: 'initial',
@@ -164,7 +163,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
             minWidth: '200px',
             borderRadius: '30px',
             borderWidth: 1,
-            borderColor: theme.primary.value,
+            borderColor: theme.dynamicBlue.value,
             borderStyle: 'solid',
           }
         },
@@ -677,11 +676,6 @@ export const CanvasToolbar = React.memo(() => {
                         style={{ width: undefined }}
                       />
                     </Tooltip>
-                    {/* <InsertModeButton
-                    iconType='designtool-larger'
-                    iconCategory='semantic'
-                    onClick={NO_OP}
-                  /> */}
                     <Tooltip title='Div' placement='bottom'>
                       <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
                     </Tooltip>
@@ -871,7 +865,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
         category={iconCategory}
         type={props.iconType}
         color={
-          isHovered && !props.primary ? 'primary' : props.primary ? 'on-highlight-main' : 'main'
+          isHovered && !props.primary ? 'dynamic' : props.primary ? 'on-highlight-main' : 'main'
         }
         width={props.size ?? 18}
         height={props.size ?? 18}
