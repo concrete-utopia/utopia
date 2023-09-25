@@ -128,21 +128,18 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
       options={options}
       menuPortalTarget={menuPortalTarget}
       filterOption={createFilter({ ignoreAccents: true })}
-      placeholder={'Wrap Inside...'}
+      placeholder={'Search'}
       styles={{
         ...componentSelectorStyles,
         menuPortal: (styles: CSSObject): CSSObject => {
           return {
-            zIndex: 2,
-            // padding: '0 8px',
             overflow: 'hidden',
-            // maxHeight: 150,
             backgroundColor: theme.bg2.value,
             borderRadius: '0px 0px 10px 10px',
-            // boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             pointerEvents: 'initial',
             position: 'relative',
-            top: -10,
+            top: -12,
+            width: 230,
             boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           }
         },
@@ -152,27 +149,23 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
               hasLabel: false,
               controlStyles: getControlStyles('simple'),
             }) as CSSObject),
-            paddingLeft: 8,
+            paddingLeft: 4,
             backgroundColor: colorTheme.seperator.value,
             flexGrow: 1,
             display: 'flex',
             alignItems: 'center',
             minWidth: '200px',
             borderRadius: '30px',
-            borderWidth: 1,
-            borderColor: theme.dynamicBlue.value,
-            borderStyle: 'solid',
+            border: `1px solid ${theme.dynamicBlue.value}`,
           }
         },
         menuList: (styles: CSSObject): CSSObject => {
           return {
             maxHeight: 144,
             padding: '0 8px',
-            width: 230,
             overflowY: 'auto',
             display: 'flex',
             flexDirection: 'column',
-            // gap: 6,
           }
         },
       }}
@@ -707,29 +700,42 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'convert',
               wrapInSubmenu(
-                <>
-                  <Tooltip title='Back' placement='bottom'>
-                    <InsertModeButton
-                      iconCategory='semantic'
-                      iconType='icon-semantic-back'
-                      onClick={switchToSelectModeCloseMenus}
-                    />
-                  </Tooltip>
-                  <Tooltip title='Convert selection' placement='bottom'>
-                    <InsertModeButton
-                      iconType='convertobject'
-                      iconCategory='semantic'
-                      onClick={NO_OP}
-                      secondary={true}
-                    />
-                  </Tooltip>
-                  <Tooltip title='Convert to Fragment' placement='bottom'>
-                    <InsertModeButton iconType='fragment' onClick={convertToFragment} />
-                  </Tooltip>
-                  <Tile style={{ height: '100%' }}>
-                    <CanvasToolbarSearch actionWith={convertToAndClose} />
-                  </Tile>
-                </>,
+                <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
+                  <FlexRow>
+                    <Tooltip title='Back' placement='bottom'>
+                      <InsertModeButton
+                        iconCategory='semantic'
+                        iconType='icon-semantic-back'
+                        onClick={switchToSelectModeCloseMenus}
+                        style={{ width: undefined }}
+                      />
+                    </Tooltip>
+                    {/* TODO callback */}
+                    <Tooltip title='Div' placement='bottom'>
+                      <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    {/* TODO callback */}
+                    <Tooltip title='Scene' placement='bottom'>
+                      <InsertModeButton
+                        iconType='scene'
+                        iconCategory='component'
+                        onClick={wrapInDivAndClose}
+                      />
+                    </Tooltip>
+                    <Tooltip title='Fragment' placement='bottom'>
+                      <InsertModeButton iconType='fragment' onClick={convertToFragment} />
+                    </Tooltip>
+                    {/* TODO callback */}
+                    <Tooltip title='Clickable Div' placement='bottom'>
+                      <InsertModeButton iconType='clickable' onClick={convertToFragment} />
+                    </Tooltip>
+                    {/* TODO callback */}
+                    <Tooltip title='Conditional' placement='bottom'>
+                      <InsertModeButton iconType='conditional' onClick={convertToFragment} />
+                    </Tooltip>
+                  </FlexRow>
+                  <CanvasToolbarSearch actionWith={convertToAndClose} />
+                </FlexColumn>,
               ),
             )}
           </>,
@@ -741,47 +747,51 @@ export const CanvasToolbar = React.memo(() => {
         {/* Insert Mode */}
         {canvasToolbarMode.primary === 'insert'
           ? wrapInSubmenu(
-              <>
-                <Tooltip title='Back' placement='bottom'>
-                  <InsertModeButton
-                    iconCategory='semantic'
-                    iconType='icon-semantic-back'
-                    onClick={switchToSelectModeCloseMenus}
-                  />
-                </Tooltip>
-                <Tooltip title='Insert div' placement='bottom'>
-                  <InsertModeButton
-                    iconType='view'
-                    secondary={canvasToolbarMode.secondary.divInsertionActive}
-                    onClick={insertDivCallback}
-                  />
-                </Tooltip>
-                <Tooltip title='Insert image' placement='bottom'>
-                  <InsertModeButton
-                    iconType='image'
-                    secondary={canvasToolbarMode.secondary.imageInsertionActive}
-                    onClick={insertImgCallback}
-                  />
-                </Tooltip>
-                <Tooltip title='Insert button' placement='bottom'>
-                  <InsertModeButton
-                    iconType='clickable'
-                    secondary={canvasToolbarMode.secondary.buttonInsertionActive}
-                    onClick={insertButtonCallback}
-                  />
-                </Tooltip>
-                <Tooltip title='Insert conditional' placement='bottom'>
-                  <InsertModeButton
-                    testid={InsertConditionalButtonTestId}
-                    iconType='conditional'
-                    secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
-                    onClick={insertConditionalCallback}
-                  />
-                </Tooltip>
-                <Tile style={{ height: '100%' }}>
-                  <CanvasToolbarSearch actionWith={toInsertAndClose} />
-                </Tile>
-              </>,
+              <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
+                <FlexRow>
+                  <Tooltip title='Div' placement='bottom'>
+                    <InsertModeButton
+                      iconType='div'
+                      secondary={canvasToolbarMode.secondary.divInsertionActive}
+                      onClick={insertDivCallback}
+                    />
+                  </Tooltip>
+                  {/* TODO needs callback. and secondary? */}
+                  <Tooltip title='Scene' placement='bottom'>
+                    <InsertModeButton
+                      iconType='scene'
+                      iconCategory='component'
+                      onClick={insertDivCallback}
+                    />
+                  </Tooltip>
+                  <Tooltip title='Insert image' placement='bottom'>
+                    <InsertModeButton
+                      iconType='image'
+                      secondary={canvasToolbarMode.secondary.imageInsertionActive}
+                      onClick={insertImgCallback}
+                    />
+                  </Tooltip>
+                  {/* TODO needs callback. and secondary? */}
+                  <Tooltip title='Fragment' placement='bottom'>
+                    <InsertModeButton iconType='fragment' onClick={insertDivCallback} />
+                  </Tooltip>
+                  <Tooltip title='Clickable Div' placement='bottom'>
+                    <InsertModeButton
+                      iconType='clickable'
+                      secondary={canvasToolbarMode.secondary.buttonInsertionActive}
+                      onClick={insertButtonCallback}
+                    />
+                  </Tooltip>
+                  <Tooltip title='Conditional' placement='bottom'>
+                    <InsertModeButton
+                      iconType='conditional'
+                      secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                      onClick={insertConditionalCallback}
+                    />
+                  </Tooltip>
+                </FlexRow>
+                <CanvasToolbarSearch actionWith={convertToAndClose} />
+              </FlexColumn>,
             )
           : null}
         {/* Live Mode */}
