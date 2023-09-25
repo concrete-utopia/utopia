@@ -10,6 +10,9 @@ import Sinon from 'sinon'
 import type { ClipboardDataPayload } from '../../utils/clipboard'
 import { Clipboard } from '../../utils/clipboard'
 import type { EditorRenderResult } from './ui-jsx.test-utils'
+import { wait } from '../../utils/utils.test-utils'
+import type { WindowPoint } from '../../core/shared/math-utils'
+import { offsetPoint } from '../../core/shared/math-utils'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -909,4 +912,101 @@ export async function openContextMenuAndClickOnItem(
   const contextMenuItem = await renderResult.renderedDOM.findByText(label)
   const contextMenuItemBounds = contextMenuItem.getBoundingClientRect()
   await mouseClickAtPoint(contextMenuItem, contextMenuItemBounds)
+}
+
+const ASYNC_NOOP = async () => NO_OP()
+
+export async function dragElementWithDNDEvents(
+  renderResult: EditorRenderResult,
+  dragTargetID: string,
+  dropTargetID: string,
+  startPoint: WindowPoint,
+  dragDelta: WindowPoint,
+  hoverEvents: 'apply-hover-events' | 'do-not-apply-hover-events',
+  midDragCallback: () => Promise<void> = ASYNC_NOOP,
+): Promise<void> {
+  const dragTarget = renderResult.renderedDOM.getByTestId(dragTargetID)
+  const dropTarget = renderResult.renderedDOM.getByTestId(dropTargetID)
+
+  const endPoint = offsetPoint(startPoint, dragDelta)
+
+  await wait(0)
+
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('dragstart', {
+        bubbles: true,
+        cancelable: true,
+        clientX: startPoint.x,
+        clientY: startPoint.y,
+        buttons: 1,
+      }),
+    )
+  })
+
+  await act(async () => {
+    fireEvent(
+      dragTarget,
+      new MouseEvent('drag', {
+        bubbles: true,
+        cancelable: true,
+        clientX: endPoint.x,
+        clientY: endPoint.y,
+        movementX: dragDelta.x,
+        movementY: dragDelta.y,
+        buttons: 1,
+      }),
+    )
+  })
+
+  await wait(0)
+
+  if (hoverEvents === 'apply-hover-events') {
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragenter', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
+
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          movementX: dragDelta.x,
+          movementY: dragDelta.y,
+          buttons: 1,
+        }),
+      )
+    })
+
+    await wait(0)
+    await midDragCallback()
+
+    await act(async () => {
+      fireEvent(
+        dropTarget,
+        new MouseEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          clientX: endPoint.x,
+          clientY: endPoint.y,
+          buttons: 1,
+        }),
+      )
+    })
+  }
 }

@@ -185,7 +185,6 @@ const ObjectPathImmutable: any = OPI
 export enum LeftMenuTab {
   UIInsert = 'ui-insert',
   Project = 'project',
-  Settings = 'settings',
   Github = 'github',
   Navigator = 'navigator',
 }
@@ -207,6 +206,7 @@ export const CanvasSizeAtom = atomWithPubSub({
 export enum RightMenuTab {
   Insert = 'insert',
   Inspector = 'inspector',
+  Settings = 'settings',
 }
 
 // TODO: this should just contain an NpmDependency and a status
@@ -1607,7 +1607,7 @@ export function mergeStoredEditorStateIntoEditorState(
     return {
       ...editor,
       selectedViews: storedEditorState.selectedViews,
-      mode: storedEditorState.mode ?? EditorModes.selectMode(),
+      mode: storedEditorState.mode ?? EditorModes.selectMode(null, false, 'none'),
     }
   }
 }
@@ -2312,7 +2312,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
       simpleLock: [],
       hierarchyLock: [],
     },
-    mode: EditorModes.selectMode(),
+    mode: EditorModes.selectMode(null, false, 'none'),
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),
@@ -2690,7 +2690,7 @@ export function editorModelFromPersistentModel(
       simpleLock: [],
       hierarchyLock: [],
     },
-    mode: EditorModes.selectMode(),
+    mode: EditorModes.selectMode(null, false, 'none'),
     focusedPanel: 'canvas',
     keysPressed: {},
     mouseButtonsPressed: emptySet(),

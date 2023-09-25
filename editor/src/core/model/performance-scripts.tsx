@@ -519,7 +519,7 @@ export function useTriggerAbsoluteMovePerformanceTest(
     const topToTarget = canvasContainerBounds.top - originalTargetBounds.top + 100
     await dispatch(
       [
-        updateEditorMode(EditorModes.selectMode()),
+        updateEditorMode(EditorModes.selectMode(null, false, 'none')),
         CanvasActions.positionCanvas(canvasPoint({ x: leftToTarget, y: topToTarget })),
       ],
       'everyone',
@@ -706,7 +706,7 @@ export function useTriggerSelectionChangePerformanceTest(): () => void {
     const topToTarget = canvasContainerBounds.top - originalTargetBounds.top + 100
     await dispatch(
       [
-        updateEditorMode(EditorModes.selectMode()),
+        updateEditorMode(EditorModes.selectMode(null, false, 'none')),
         CanvasActions.positionCanvas(canvasPoint({ x: leftToTarget, y: topToTarget })),
       ],
       'everyone',
