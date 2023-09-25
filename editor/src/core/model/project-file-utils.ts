@@ -18,8 +18,6 @@ import type {
   TextFileContents,
   HighlightBoundsWithFileForUids,
   RevisionsStateType,
-  ExportDefaultIdentifier,
-  ExportDefaultFunctionOrClass,
 } from '../shared/project-file-types'
 import {
   RevisionsState,
@@ -30,7 +28,6 @@ import {
   forEachParseSuccess,
   isParseSuccess,
   isExportDefaultFunctionOrClass,
-  isExportDefaultIdentifier,
   isExportDefault,
 } from '../shared/project-file-types'
 import type {
