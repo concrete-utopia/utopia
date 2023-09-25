@@ -25,28 +25,12 @@ export function emptyImports(): Imports {
   return {}
 }
 
-function mergeImportDetails(first: ImportDetails, second: ImportDetails): ImportDetails {
-  /**
-   * import * as Name from 'import'
-   * and
-   * import Name from 'import'
-   * are the same
-   */
-
-  if (
-    first.importedWithName != null &&
-    second.importedAs != null &&
-    first.importedFromWithin.length === 0 &&
-    second.importedFromWithin.length === 0
-  ) {
-    return {
-      importedWithName: first.importedWithName,
-      importedAs: first.importedAs,
-      importedFromWithin: [],
-    }
-  }
-  let importedFromWithin: Array<ImportAlias> = [...first.importedFromWithin]
-  fastForEach(second.importedFromWithin, (secondWithin) => {
+function mergeImportedFromWithin(
+  first: Array<ImportAlias>,
+  second: Array<ImportAlias>,
+): Array<ImportAlias> {
+  let importedFromWithin: Array<ImportAlias> = [...first]
+  fastForEach(second, (secondWithin) => {
     if (
       importedFromWithin.find(
         (i) => i.name === secondWithin.name && i.alias === secondWithin.alias,
@@ -55,12 +39,49 @@ function mergeImportDetails(first: ImportDetails, second: ImportDetails): Import
       importedFromWithin.push(secondWithin)
     }
   })
+  return importedFromWithin
+}
+
+/**
+ * import * as Name from 'import'
+ * and
+ * import Name from 'import'
+ * are the same
+ */
+function mergedNamespaceImport(first: ImportDetails, second: ImportDetails): ImportDetails | null {
+  if (
+    first.importedWithName != null &&
+    second.importedAs != null &&
+    first.importedWithName == second.importedAs
+  ) {
+    return {
+      importedWithName: first.importedWithName,
+      importedAs: first.importedAs,
+      importedFromWithin: mergeImportedFromWithin(
+        first.importedFromWithin,
+        second.importedFromWithin,
+      ),
+    }
+  }
+  return null
+}
+
+function mergeImportDetails(first: ImportDetails, second: ImportDetails): ImportDetails {
+  let mergedWithSameName =
+    mergedNamespaceImport(first, second) ?? mergedNamespaceImport(second, first)
+  if (mergedWithSameName != null) {
+    return mergedWithSameName
+  }
+
   const importedWithName = defaultIfNull(second.importedWithName, first.importedWithName)
   const importedAs = defaultIfNull(second.importedAs, first.importedAs)
   return {
     importedWithName: importedWithName,
-    importedFromWithin: importedFromWithin,
     importedAs: importedAs,
+    importedFromWithin: mergeImportedFromWithin(
+      first.importedFromWithin,
+      second.importedFromWithin,
+    ),
   }
 }
 
