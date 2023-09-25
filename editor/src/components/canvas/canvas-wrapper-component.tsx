@@ -37,8 +37,10 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-import { FloatingPanelSizesAtom } from './floating-panels'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { unless } from '../../utils/react-conditionals'
+import type { StandardLonghandProperties } from 'csstype'
+import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -106,7 +108,6 @@ export const CanvasWrapperComponent = React.memo(() => {
   const scale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, 'scale')
 
   const leftPanelWidthAtom = usePubSubAtomReadOnly(LeftPanelWidthAtom, AlwaysTrue)
-  const columnSize = usePubSubAtomReadOnly(FloatingPanelSizesAtom, AlwaysTrue)
   const leftPanelWidth = React.useMemo(
     () => (isNavigatorOverCanvas ? leftPanelWidthAtom + 10 : 0),
     [leftPanelWidthAtom, isNavigatorOverCanvas],
@@ -162,33 +163,11 @@ export const CanvasWrapperComponent = React.memo(() => {
           dispatch={dispatch}
         />
       ) : null}
-      <FlexRow
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
-          pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
-          left: isFeatureEnabled('Draggable Floating Panels')
-            ? columnSize.left
-            : leftPanelWidth + codeEditorWidth,
-        }}
-      >
-        <FlexRow
-          style={{
-            position: 'absolute',
-            top: 0,
-            alignItems: 'flex-start',
-            margin: 10,
-            gap: 10,
-          }}
-        >
-          <CanvasToolbar />
-          <CanvasStrategyPicker />
-        </FlexRow>
-        {/* The error overlays are deliberately the last here so they hide other canvas UI */}
-        {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-      </FlexRow>
+      {unless(
+        isFeatureEnabled('Draggable Floating Panels'),
+        <CanvasFloatingToolbars style={{ left: leftPanelWidth + codeEditorWidth }} />,
+      )}
+
       <FlexRow
         style={{
           position: 'absolute',
@@ -214,53 +193,6 @@ export const CanvasWrapperComponent = React.memo(() => {
         </div>
       </FlexRow>
     </FlexColumn>
-  )
-})
-
-const ErrorOverlayComponent = React.memo(() => {
-  const { errorRecords, overlayErrors } = useErrorOverlayRecords()
-  const overlayWillShow = shouldShowErrorOverlay(errorRecords, overlayErrors)
-
-  const dispatch = useDispatch()
-
-  const onOpenFile = React.useCallback(
-    (path: string) => {
-      dispatch([openCodeEditorFile(path, true), setFocus('codeEditor')])
-    },
-    [dispatch],
-  )
-
-  const postActionSessionInProgressRef = useRefEditorState(
-    (store) => store.postActionInteractionSession != null,
-  )
-
-  React.useEffect(() => {
-    if (overlayWillShow) {
-      if (postActionSessionInProgressRef.current) {
-        return
-      }
-
-      // If this is showing, we need to clear any canvas drag state and apply the changes it would have resulted in,
-      // since that might have been the cause of the error being thrown, as well as switching back to select mode
-      setTimeout(() => {
-        // wrapping in a setTimeout so we don't dispatch from inside React lifecycle
-
-        dispatch([
-          CanvasActions.clearInteractionSession(true),
-          switchEditorMode(EditorModes.selectMode(null, false, 'none')),
-          clearHighlightedViews(),
-        ])
-      }, 0)
-    }
-  }, [dispatch, overlayWillShow, postActionSessionInProgressRef])
-
-  return (
-    <ReactErrorOverlay
-      currentBuildErrorRecords={errorRecords}
-      currentRuntimeErrorRecords={overlayErrors}
-      onOpenFile={onOpenFile}
-      overlayOffset={0}
-    />
   )
 })
 

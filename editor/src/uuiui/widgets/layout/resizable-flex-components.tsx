@@ -22,6 +22,7 @@ export const ResizableFlexColumn: React.FunctionComponent<
       bottomRight: false,
       bottomLeft: false,
       topLeft: false,
+      ...props.enable,
     }}
     {...props}
   />

@@ -445,6 +445,11 @@ export function arrayAccumulate<T>(callback: (acc: Array<T>) => void): ReadonlyA
   return accumulator
 }
 
+export function accumulate<T>(accumulator: T, callback: (acc: T) => void): Readonly<T> {
+  callback(accumulator)
+  return accumulator
+}
+
 export function zip<A, B, C>(one: A[], other: B[], make: (a: A, b: B) => C): C[] {
   const doZip = (oneInner: A[], otherInner: B[]) =>
     oneInner.map((elem, idx) => make(elem, otherInner[idx]))

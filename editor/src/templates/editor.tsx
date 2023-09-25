@@ -123,6 +123,11 @@ import { createPerformanceMeasure } from '../components/editor/store/editor-disp
 import { runDomWalkerAndSaveResults } from '../components/canvas/editor-dispatch-flow'
 import { simpleStringifyActions } from '../components/editor/actions/action-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
+import {
+  emptyProjectServerState,
+  ProjectServerState,
+  ProjectServerStateUpdater,
+} from '../components/editor/store/project-server-state'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -260,6 +265,7 @@ export class Editor {
       ),
       builtInDependencies: builtInDependencies,
       saveCountThisSession: 0,
+      projectServerState: emptyProjectServerState(),
     }
 
     const store = createStoresAndState(patchedStoreFromFullStore(this.storedState, 'editor-store'))

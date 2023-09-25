@@ -7,7 +7,6 @@ import { projectEditorURL } from '../../../common/server'
 import { Avatar, Section, SectionBodyArea, Subdued, useColorTheme } from '../../../uuiui'
 import { User } from '../../../uuiui-deps'
 import { Link } from '../../../uuiui/link'
-import { useGetProjectMetadata } from '../../common/server-hooks'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 
@@ -19,6 +18,7 @@ export const ForksGiven = React.memo(() => {
     (store) => User.isLoggedIn(store.userState.loginState),
     'ForksGiven isLoggedIn',
   )
+
   const { id, forkedFrom } = useEditorState(
     Substores.restOfEditor,
     (store) => {
@@ -30,13 +30,23 @@ export const ForksGiven = React.memo(() => {
     'ForkPanel',
   )
 
-  const projectOwnerMetadata = useGetProjectMetadata(id)
-  const forkedFromMetadata = useGetProjectMetadata(forkedFrom)
+  const projectOwnerMetadata = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.projectData,
+    'ForksGiven projectOwnerMetadata',
+  )
+
+  const forkedFromMetadata = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.forkedFromProjectData,
+    'ForksGiven forkedFromProjectData',
+  )
 
   const forkedFromText =
     forkedFrom == null ? null : (
       <React.Fragment>
-        Forked from <Link href={projectEditorURL(forkedFrom)}>{forkedFromMetadata?.title}</Link>
+        Forked from{' '}
+        <Link href={projectEditorURL(forkedFrom)}>{forkedFromMetadata?.title ?? forkedFrom}</Link>
       </React.Fragment>
     )
 
