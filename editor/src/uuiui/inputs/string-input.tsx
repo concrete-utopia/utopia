@@ -9,7 +9,7 @@ import type { ControlStyles } from '../../components/inspector/common/control-st
 import { getControlStyles } from '../../components/inspector/common/control-styles'
 import { preventDefault, stopPropagation } from '../../components/inspector/common/inspector-utils'
 import { useColorTheme } from '../styles/theme'
-import { InspectorInputEmotionStyle, getInputPlaceholder } from './base-input'
+import { InspectorInputEmotionStyle, getConrolStylesAwarePlaceholder } from './base-input'
 
 interface StringInputOptions {
   focusOnMount?: boolean
@@ -73,7 +73,7 @@ export const StringInput = React.memo(
         [inputPropsKeyDown],
       )
 
-      const placeholder = getInputPlaceholder(controlStyles)
+      const placeholder = getConrolStylesAwarePlaceholder(controlStyles) ?? initialPlaceHolder
 
       return (
         <form
