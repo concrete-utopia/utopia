@@ -174,6 +174,10 @@ describe('mergeImports', () => {
       /**
        * import Library from 'library'
        * import * as Library from 'library'
+       *
+       * becomes
+       *
+       * import Library from 'library'
        */
       expect(result).toEqual({ library: importDetails('Library', [], null) })
     }
@@ -213,6 +217,10 @@ describe('mergeImports', () => {
       /**
        * import DeathStar, { hello as helloFn, General as GeneralComponent } from 'death-star'
        * import * as DeathStar, { there as thereFn, Kenobi as KenobiComponent } from 'death-star'
+       *
+       * becomes
+       *
+       * import DeathStar, { hello as helloFn, General as GeneralComponent, there as thereFn, Kenobi as KenobiComponent } from 'death-star'
        */
 
       expect(result).toEqual({
