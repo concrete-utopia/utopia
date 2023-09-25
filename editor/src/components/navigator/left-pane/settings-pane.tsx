@@ -38,6 +38,7 @@ import json5 from 'json5'
 import { load } from '../../../components/editor/actions/actions'
 import { when } from '../../../utils/react-conditionals'
 import { useTriggerForkProject } from '../../editor/persistence-hooks'
+import { SettingsPanel } from '../../inspector/sections/settings-panel/inspector-settingspanel'
 
 const themeOptions = [
   {
@@ -213,6 +214,7 @@ export const SettingsPane = React.memo(() => {
         display: 'relative',
         alignItems: 'stretch',
         paddingBottom: 50,
+        overflowY: 'scroll',
       }}
     >
       <Section>
@@ -313,6 +315,7 @@ export const SettingsPane = React.memo(() => {
             />
           </UIGridRow>
         </SectionBodyArea>
+        <SettingsPanel />
         <FeatureSwitchesSection />
       </Section>
     </FlexColumn>
