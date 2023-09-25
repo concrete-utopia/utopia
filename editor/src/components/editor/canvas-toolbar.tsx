@@ -676,6 +676,7 @@ export const CanvasToolbar = React.memo(() => {
                     <Tooltip title='Div' placement='bottom'>
                       <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
                     </Tooltip>
+                    {/* TODO needs callback */}
                     <Tooltip title='Scene' placement='bottom'>
                       <InsertModeButton
                         iconType='scene'
@@ -683,12 +684,15 @@ export const CanvasToolbar = React.memo(() => {
                         onClick={wrapInDivAndClose}
                       />
                     </Tooltip>
+                    {/* TODO needs callback */}
                     <Tooltip title='Fragment' placement='bottom'>
                       <InsertModeButton iconType='fragment' onClick={wrapInDivAndClose} />
                     </Tooltip>
+                    {/* TODO needs callback */}
                     <Tooltip title='Clickable Div' placement='bottom'>
                       <InsertModeButton iconType='clickable' onClick={wrapInDivAndClose} />
                     </Tooltip>
+                    {/* TODO needs callback */}
                     <Tooltip title='Conditional' placement='bottom'>
                       <InsertModeButton iconType='conditional' onClick={wrapInDivAndClose} />
                     </Tooltip>
@@ -710,16 +714,16 @@ export const CanvasToolbar = React.memo(() => {
                         style={{ width: undefined }}
                       />
                     </Tooltip>
-                    {/* TODO callback */}
+                    {/* TODO needs callback */}
                     <Tooltip title='Div' placement='bottom'>
-                      <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
+                      <InsertModeButton iconType='div' onClick={convertToFragment} />
                     </Tooltip>
-                    {/* TODO callback */}
+                    {/* TODO needs callback */}
                     <Tooltip title='Scene' placement='bottom'>
                       <InsertModeButton
                         iconType='scene'
                         iconCategory='component'
-                        onClick={wrapInDivAndClose}
+                        onClick={convertToFragment}
                       />
                     </Tooltip>
                     <Tooltip title='Fragment' placement='bottom'>
@@ -806,7 +810,6 @@ export const CanvasToolbar = React.memo(() => {
                 marginLeft: 15,
                 padding: '0 8px',
                 minHeight: 32,
-                // height: 214,
                 overflow: 'hidden',
                 backgroundColor: colorTheme.bg2.value,
                 borderRadius: '0px 0px 10px 10px',
