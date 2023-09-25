@@ -220,6 +220,7 @@ import type {
   RunDOMWalker,
   WrapInElementWith,
   ScrollToPosition,
+  UpdateProjectServerState,
 } from '../action-types'
 import type { InsertionSubjectWrapper, Mode } from '../editor-modes'
 import { EditorModes, insertionSubject } from '../editor-modes'
@@ -247,6 +248,7 @@ import type { InsertionPath } from '../store/insertion-path'
 import type { TextProp } from '../../text-editor/text-editor'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
+import type { ProjectServerState } from '../store/project-server-state'
 
 export function clearSelection(): EditorAction {
   return {
@@ -1659,5 +1661,14 @@ export function startPostActionSession(data: PostActionMenuData): StartPostActio
 export function clearPostActionData(): ClearPostActionSession {
   return {
     action: 'CLEAR_POST_ACTION_SESSION',
+  }
+}
+
+export function updateProjectServerState(
+  projectServerState: ProjectServerState,
+): UpdateProjectServerState {
+  return {
+    action: 'UPDATE_PROJECT_SERVER_STATE',
+    serverState: projectServerState,
   }
 }

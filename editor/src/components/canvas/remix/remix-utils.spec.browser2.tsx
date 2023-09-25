@@ -5,7 +5,7 @@ import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   DefaultFutureConfig,
   createRouteManifestFromProjectContents,
-  getRoutesFromRouteManifest,
+  getRoutesAndModulesFromManifest,
 } from './remix-utils'
 
 const storyboardFileContent = `
@@ -271,24 +271,34 @@ describe('Routes', () => {
       renderResult.getEditorState().editor.projectContents,
     )
     expect(remixManifest).not.toBeNull()
-    const remixRoutes = getRoutesFromRouteManifest(remixManifest!, DefaultFutureConfig)
+
+    let routeModuleCache = { current: {} }
+    const remixRoutes = getRoutesAndModulesFromManifest(
+      remixManifest!,
+      DefaultFutureConfig,
+      renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,
+      renderResult.getEditorState().editor.codeResultCache.curriedResolveFn,
+      renderResult.getEditorState().editor.projectContents,
+      routeModuleCache.current,
+    )?.routes
+    expect(remixRoutes).toBeDefined()
 
     expect(remixRoutes).toHaveLength(1)
-    expect(remixRoutes[0]).toEqual(
+    expect(remixRoutes![0]).toEqual(
       expect.objectContaining({ id: 'root', path: '', index: undefined }),
     )
-    expect(remixRoutes[0].children).toHaveLength(3)
-    expect(remixRoutes[0]!.children![0]).toEqual(
+    expect(remixRoutes![0].children).toHaveLength(3)
+    expect(remixRoutes![0]!.children![0]).toEqual(
       expect.objectContaining({
         id: 'routes/posts.$postId',
         path: 'posts/:postId',
         index: undefined,
       }),
     )
-    expect(remixRoutes[0]!.children![1]).toEqual(
+    expect(remixRoutes![0]!.children![1]).toEqual(
       expect.objectContaining({ id: 'routes/posts._index', path: 'posts', index: true }),
     )
-    expect(remixRoutes[0]!.children![2]).toEqual(
+    expect(remixRoutes![0]!.children![2]).toEqual(
       expect.objectContaining({ id: 'routes/_index', path: undefined, index: true }),
     )
   })
@@ -311,43 +321,52 @@ describe('Routes', () => {
       renderResult.getEditorState().editor.projectContents,
     )
 
+    let routeModuleCache = { current: {} }
     expect(remixManifest).not.toBeNull()
-    const remixRoutes = getRoutesFromRouteManifest(remixManifest!, DefaultFutureConfig)
+    const remixRoutes = getRoutesAndModulesFromManifest(
+      remixManifest!,
+      DefaultFutureConfig,
+      renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,
+      renderResult.getEditorState().editor.codeResultCache.curriedResolveFn,
+      renderResult.getEditorState().editor.projectContents,
+      routeModuleCache.current,
+    )?.routes
+    expect(remixRoutes).toBeDefined()
 
     expect(remixRoutes).toHaveLength(1)
-    expect(remixRoutes[0]).toEqual(
+    expect(remixRoutes![0]).toEqual(
       expect.objectContaining({ id: 'root', path: '', index: undefined }),
     )
 
-    expect(remixRoutes[0].children).toHaveLength(5)
-    expect(remixRoutes[0]!.children![0]).toEqual(
+    expect(remixRoutes![0].children).toHaveLength(5)
+    expect(remixRoutes![0]!.children![0]).toEqual(
       expect.objectContaining({
         id: 'routes/healthcheck',
         path: 'healthcheck',
         index: undefined,
       }),
     )
-    expect(remixRoutes[0]!.children![1]).toEqual(
+    expect(remixRoutes![0]!.children![1]).toEqual(
       expect.objectContaining({ id: 'routes/_index', path: undefined, index: true }),
     )
-    expect(remixRoutes[0]!.children![2]).toEqual(
+    expect(remixRoutes![0]!.children![2]).toEqual(
       expect.objectContaining({ id: 'routes/logout', path: 'logout', index: undefined }),
     )
-    expect(remixRoutes[0]!.children![3]).toEqual(
+    expect(remixRoutes![0]!.children![3]).toEqual(
       expect.objectContaining({ id: 'routes/notes', path: 'notes', index: undefined }),
     )
-    expect(remixRoutes[0]!.children![4]).toEqual(
+    expect(remixRoutes![0]!.children![4]).toEqual(
       expect.objectContaining({ id: 'routes/join', path: 'join', index: undefined }),
     )
 
-    expect(remixRoutes[0]!.children![3].children).toHaveLength(3)
-    expect(remixRoutes[0]!.children![3].children![0]).toEqual(
+    expect(remixRoutes![0]!.children![3].children).toHaveLength(3)
+    expect(remixRoutes![0]!.children![3].children![0]).toEqual(
       expect.objectContaining({ id: 'routes/notes.$noteId', path: ':noteId', index: undefined }),
     )
-    expect(remixRoutes[0]!.children![3].children![1]).toEqual(
+    expect(remixRoutes![0]!.children![3].children![1]).toEqual(
       expect.objectContaining({ id: 'routes/notes._index', path: undefined, index: true }),
     )
-    expect(remixRoutes[0]!.children![3].children![2]).toEqual(
+    expect(remixRoutes![0]!.children![3].children![2]).toEqual(
       expect.objectContaining({ id: 'routes/notes.new', path: 'new', index: undefined }),
     )
   })

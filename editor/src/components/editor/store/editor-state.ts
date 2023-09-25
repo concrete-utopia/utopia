@@ -179,6 +179,7 @@ import type {
   RemixDerivedDataFactory,
   RemixRoutingTable,
 } from './remix-derived-data'
+import type { ProjectServerState } from './project-server-state'
 
 const ObjectPathImmutable: any = OPI
 
@@ -410,6 +411,7 @@ export type EditorStoreShared = {
   persistence: PersistenceMachine
   builtInDependencies: BuiltInDependencies
   saveCountThisSession: number
+  projectServerState: ProjectServerState
 }
 
 export type EditorStoreFull = EditorStoreShared & {
@@ -823,8 +825,8 @@ export function editorStateCanvasTransientProperty(
 
 export function dragToMoveIndicatorFlags(
   showIndicator: boolean,
-  dragType: 'absolute' | 'static' | 'none',
-  reparent: 'same-component' | 'different-component' | 'none',
+  dragType: DragToMoveIndicatorFlags['dragType'],
+  reparent: DragToMoveIndicatorFlags['reparent'],
   ancestor: boolean,
 ): DragToMoveIndicatorFlags {
   return {

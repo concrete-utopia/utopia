@@ -16,16 +16,13 @@ import {
   Tooltip as TooltipWithoutSpanFixme,
   useColorTheme,
 } from '../../uuiui'
-import { getControlStyles, Utils } from '../../uuiui-deps'
+import { getControlStyles } from '../../uuiui-deps'
 import CanvasActions from '../canvas/canvas-actions'
-import type { EditorAction } from './action-types'
 import {
   applyCommandsAction,
   closeFloatingInsertMenu,
   openFloatingInsertMenu,
   resetCanvas,
-  setPanelVisibility,
-  setRightMenuTab,
   switchEditorMode,
   wrapInElement,
 } from './actions/action-creators'
@@ -39,27 +36,26 @@ import {
   useToInsert,
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
-import { RightMenuTab } from './store/editor-state'
+import type { DragToMoveIndicatorFlags } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
 import { defaultTransparentViewElement } from './defaults'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
-import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
+import {
+  StrategyIndicator,
+  useGetDragStrategyIndicatorFlags,
+} from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { NO_OP } from '../../core/shared/utils'
-import type {
-  InsertableComponentFlatList,
-  InsertMenuItem,
-  InsertMenuItemValue,
-} from '../canvas/ui/floating-insert-menu'
+import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
 import {
   CustomComponentOption,
   useComponentSelectorStyles,
   useGetInsertableComponents,
 } from '../canvas/ui/floating-insert-menu'
-import Select, { components, createFilter } from 'react-select'
+import { createFilter } from 'react-select'
 import WindowedSelect from 'react-windowed-select'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
 import { stopPropagation } from '../inspector/common/inspector-utils'
@@ -74,6 +70,7 @@ import {
 } from '../shared/project-components'
 import { setFocus } from '../common/actions'
 import { useState } from 'react'
+import { replace } from 'tar'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -185,6 +182,38 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
 })
 CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
 
+interface EditButtonIconDetails {
+  iconCategory: string
+  iconType: string
+}
+
+function editButtonIconDetails(iconCategory: string, iconType: string): EditButtonIconDetails {
+  return {
+    iconCategory: iconCategory,
+    iconType: iconType,
+  }
+}
+
+function getEditButtonIcon(
+  dragType: DragToMoveIndicatorFlags['dragType'],
+  reparentStatus: DragToMoveIndicatorFlags['reparent'],
+): EditButtonIconDetails {
+  if (dragType === 'none' && reparentStatus === 'none') {
+    return editButtonIconDetails('tools', 'pointer')
+  } else {
+    if (reparentStatus !== 'none') {
+      return editButtonIconDetails('modalities', 'reparent-large')
+    }
+    if (dragType === 'absolute') {
+      return editButtonIconDetails('modalities', 'moveabs-large')
+    }
+    if (dragType === 'static') {
+      return editButtonIconDetails('modalities', 'reorder-large')
+    }
+    return editButtonIconDetails('tools', 'pointer')
+  }
+}
+
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
   const theme = useColorTheme()
@@ -210,16 +239,6 @@ export const CanvasToolbar = React.memo(() => {
 
   const convertToCallback = useConvertTo()
   const toInsertCallback = useToInsert()
-
-  const openFloatingInsertMenuCallback = React.useCallback(() => {
-    dispatch([
-      openFloatingInsertMenu({
-        insertMenuMode: 'insert',
-        parentPath: null,
-        indexPosition: null,
-      }),
-    ])
-  }, [dispatch])
 
   const openFloatingConvertMenuCallback = React.useCallback(() => {
     dispatch([
@@ -314,34 +333,10 @@ export const CanvasToolbar = React.memo(() => {
     [switchToSelectModeCloseMenus, toInsertCallback],
   )
 
-  const insertMenuSelected = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.rightMenu.selectedTab === RightMenuTab.Insert,
-    'CanvasToolbar insertMenuSelected',
-  )
-
-  const selectInsertMenuPane = React.useCallback(() => {
-    let actions: Array<EditorAction> = []
-    if (!insertMenuSelected) {
-      actions.push(setPanelVisibility('rightmenu', true))
-    }
-    actions.push(setRightMenuTab(RightMenuTab.Insert))
-    dispatch(actions)
-  }, [dispatch, insertMenuSelected])
-
   const zoomLevel = useEditorState(
     Substores.canvas,
     (store) => store.editor.canvas.scale,
     'CanvasToolbar zoomLevel',
-  )
-
-  const zoomIn = React.useCallback(
-    () => dispatch([CanvasActions.zoom(Utils.increaseScale(zoomLevel))]),
-    [dispatch, zoomLevel],
-  )
-  const zoomOut = React.useCallback(
-    () => dispatch([CanvasActions.zoom(Utils.decreaseScale(zoomLevel))]),
-    [dispatch, zoomLevel],
   )
 
   const zoom100pct = React.useCallback(() => dispatch([CanvasActions.zoom(1)]), [dispatch])
@@ -404,6 +399,14 @@ export const CanvasToolbar = React.memo(() => {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'pseudo-insert'))])
     }
   }, [canvasToolbarMode.primary, dispatch, switchToSelectModeCloseMenus])
+
+  const indicatorFlagsInfo = useGetDragStrategyIndicatorFlags()
+  const editButtonIcon = React.useMemo(() => {
+    return getEditButtonIcon(
+      indicatorFlagsInfo?.indicatorFlags.dragType ?? 'none',
+      indicatorFlagsInfo?.indicatorFlags.reparent ?? 'none',
+    )
+  }, [indicatorFlagsInfo?.indicatorFlags.dragType, indicatorFlagsInfo?.indicatorFlags.reparent])
 
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
@@ -592,6 +595,7 @@ export const CanvasToolbar = React.memo(() => {
               iconType='refresh'
               iconCategory='semantic'
               onClick={resetCanvasCallback}
+              keepActiveInLiveMode
             />
           </Tooltip>
           <ElementsOutsideVisibleAreaIndicator />
@@ -794,7 +798,7 @@ export const CanvasToolbar = React.memo(() => {
                 // height: 214,
                 overflow: 'hidden',
                 backgroundColor: colorTheme.bg2.value,
-                borderRadius: '0px 10px 10px 10px',
+                borderRadius: '0px 0px 10px 10px',
                 boxShadow: UtopiaTheme.panelStyles.shadows.medium,
                 pointerEvents: 'initial',
                 zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
