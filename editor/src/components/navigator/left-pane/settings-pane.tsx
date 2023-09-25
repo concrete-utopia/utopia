@@ -317,7 +317,6 @@ export const SettingsPane = React.memo(() => {
             />
           </UIGridRow>
         </SectionBodyArea>
-        <SettingsPanel />
         <FeatureSwitchesSection />
       </Section>
     </FlexColumn>
