@@ -999,7 +999,7 @@ describe('Remix navigation', () => {
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='storyboard'>
+        <Storyboard data-uid='storyboard-dynamic-links'>
           <RemixScene
             style={{
               width: 700,
