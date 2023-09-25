@@ -162,6 +162,16 @@ describe('mergeImports', () => {
       '/src/fileA': importDetails(null, [importAlias('Card'), importAlias('OtherCard')], null),
     })
   })
+
+  it('merges namespaced import and default import without named imports', () => {
+    const result = mergeImports(
+      '/src/code.js',
+      { '/src/fileA.js': importDetails('FileA', [], null) },
+      { '/src/fileA.js': importDetails(null, [], 'FileA') },
+    )
+
+    expect(result).toEqual({ '/src/fileA.js': importDetails('FileA', [], null) })
+  })
 })
 
 describe('addImport', () => {
