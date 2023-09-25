@@ -1,5 +1,5 @@
 import { RemixContext } from '@remix-run/react/dist/components'
-import type { RouteModules } from '@remix-run/react/dist/routeModules'
+import type { RouteModules, RouteModule } from '@remix-run/react/dist/routeModules'
 import React from 'react'
 import type { DataRouteObject, Location } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -15,6 +15,7 @@ import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
+import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
 
 type RouterType = ReturnType<typeof createMemoryRouter>
 
@@ -53,7 +54,7 @@ function useGetRouteModules(basePath: ElementPath) {
         (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
       )
     },
-    '',
+    'useGetRouteModules defaultExports',
   )
 
   return React.useMemo(() => {
@@ -86,10 +87,13 @@ function useGetRouteModules(basePath: ElementPath) {
           )
           .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
-      routeModulesResult[routeId] = {
+      const routeModule: RouteModule = {
         ...value,
         default: PathPropHOC(defaultComponent),
       }
+
+      routeModulesResult[routeId] = routeModule
+      CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current[routeId] = routeModule
     }
 
     return routeModulesResult
