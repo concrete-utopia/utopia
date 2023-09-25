@@ -2,6 +2,7 @@ import React from 'react'
 import {
   FlexColumn,
   FlexRow,
+  Icons,
   ModalityIcons,
   useColorTheme,
   UtopiaStyles,
@@ -65,57 +66,37 @@ export const StrategyIndicator = React.memo(() => {
 })
 
 interface MoveIndicatorItemProps {
-  dragType: 'absolute' | 'static' | 'none'
-  reparentStatus: 'same-component' | 'different-component' | 'none'
+  dragType: DragToMoveIndicatorFlags['dragType']
+  reparentStatus: DragToMoveIndicatorFlags['reparent']
 }
 
 const MoveReorderReparentIndicator = React.memo<MoveIndicatorItemProps>((props) => {
   const colorTheme = useColorTheme()
   return (
-    <FlexRow style={{ height: 32 }}>
-      <FlexRow style={{}}>
-        <div
-          style={{
-            padding: 7,
-          }}
-        >
-          {(() => {
-            if (props.reparentStatus !== 'none') {
-              return <ModalityIcons.Reparent color={'primary'} />
-            }
-            if (props.dragType === 'absolute') {
-              return <ModalityIcons.MoveAbsolute color={'primary'} />
-            }
-            if (props.dragType === 'static') {
-              return <ModalityIcons.Reorder color={'primary'} />
-            }
-            return <ModalityIcons.MoveAbsolute color={'subdued'} />
-          })()}
-        </div>
-      </FlexRow>
-      <div
-        style={{
-          color: props.dragType === 'none' ? colorTheme.fg8.value : colorTheme.primary.value,
-          minWidth: 110,
-        }}
-      >
-        {(() => {
-          if (props.reparentStatus !== 'none') {
-            if (props.dragType === 'absolute') {
-              return 'Absolute Reparent'
-            } else {
-              return 'Reparent'
-            }
-          }
+    <FlexRow
+      style={{
+        height: 32,
+        color: colorTheme.primary.value,
+        minWidth: 110,
+      }}
+    >
+      <Icons.Checkmark color='primary' />
+      {(() => {
+        if (props.reparentStatus !== 'none') {
           if (props.dragType === 'absolute') {
-            return 'Absolute Move'
+            return 'Absolute Reparent'
+          } else {
+            return 'Reparent'
           }
-          if (props.dragType === 'static') {
-            return 'Reorder'
-          }
-          return 'Interaction'
-        })()}
-      </div>
+        }
+        if (props.dragType === 'absolute') {
+          return 'Absolute Move'
+        }
+        if (props.dragType === 'static') {
+          return 'Reorder'
+        }
+        return 'Interaction'
+      })()}
     </FlexRow>
   )
 })
@@ -124,7 +105,6 @@ interface IndicatorItemProps {
   enabled: boolean
 }
 const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
-  const colorTheme = useColorTheme()
   return (
     <FlexRow style={{ alignItems: 'center', paddingRight: 8 }}>
       <div
@@ -135,13 +115,6 @@ const AncestorIndicatorItem = React.memo<IndicatorItemProps>((props) => {
         <VisibilityWrapper visible={props.enabled}>
           <ModalityIcons.Magic color={'main'} />
         </VisibilityWrapper>
-      </div>
-      <div
-        style={{
-          color: colorTheme.fg1.value,
-        }}
-      >
-        {props.enabled ? 'Affects Ancestor' : 'Does not affect Ancestor'}
       </div>
     </FlexRow>
   )
