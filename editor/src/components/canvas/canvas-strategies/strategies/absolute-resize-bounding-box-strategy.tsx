@@ -181,32 +181,46 @@ export function absoluteResizeBoundingBoxStrategy(
                 ),
               )
               if (elementIsGroup) {
-                const constrainedFrames = getConstrainedSizes(
+                const {
+                  sizes: constrainedFrames,
+                  lockedWidth,
+                  lockedHeight,
+                } = getConstrainedSizes(
                   canvasState.startingMetadata,
                   canvasState.startingAllElementProps,
                   selectedElement,
                   originalFrame,
                 )
                 if (constrainedFrames.length > 0) {
-                  const horizontalAdjustments = getAdjustedOffsets(
-                    constrainedFrames,
-                    'width',
-                    edgePosition,
-                    originalFrame,
-                    newFrame,
-                  )
-                  newFrame.x = horizontalAdjustments.offset
-                  newFrame.width = horizontalAdjustments.size
+                  if (!lockedWidth) {
+                    const horizontalAdjustments = getAdjustedOffsets(
+                      constrainedFrames,
+                      'width',
+                      edgePosition,
+                      originalFrame,
+                      newFrame,
+                    )
+                    newFrame.x = horizontalAdjustments.offset
+                    newFrame.width = horizontalAdjustments.size
+                  } else {
+                    newFrame.x = originalFrame.x
+                    newFrame.width = originalFrame.width
+                  }
 
-                  const verticalAdjustments = getAdjustedOffsets(
-                    constrainedFrames,
-                    'height',
-                    edgePosition,
-                    originalFrame,
-                    newFrame,
-                  )
-                  newFrame.y = verticalAdjustments.offset
-                  newFrame.height = verticalAdjustments.size
+                  if (!lockedHeight) {
+                    const verticalAdjustments = getAdjustedOffsets(
+                      constrainedFrames,
+                      'height',
+                      edgePosition,
+                      originalFrame,
+                      newFrame,
+                    )
+                    newFrame.y = verticalAdjustments.offset
+                    newFrame.height = verticalAdjustments.size
+                  } else {
+                    newFrame.y = originalFrame.y
+                    newFrame.height = originalFrame.height
+                  }
                 }
               }
               const metadata = MetadataUtils.findElementByElementPath(
@@ -273,9 +287,11 @@ function getConstrainedSizes(
   allElementProps: AllElementProps,
   path: ElementPath,
   originalRect: CanvasRectangle,
-): Array<Size> {
+): { sizes: Array<Size>; lockedWidth: boolean; lockedHeight: boolean } {
   let result: Array<Size> = []
   const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+  let lockedWidth = false
+  let lockedHeight = false
   for (const child of children) {
     const constraintsArray = getSafeGroupChildConstraintsArray(allElementProps, child.elementPath)
     const frame = child.localFrame
@@ -287,6 +303,10 @@ function getConstrainedSizes(
       left: constraintsArray.includes('left'),
       right: constraintsArray.includes('right'),
     }
+
+    lockedWidth ||= constraints.width && constraints.left && constraints.right
+    lockedHeight ||= constraints.height && constraints.top && constraints.bottom
+
     const constrained =
       constraints.top ||
       constraints.bottom ||
@@ -323,7 +343,7 @@ function getConstrainedSizes(
       })
     }
   }
-  return result
+  return { sizes: result, lockedWidth, lockedHeight }
 }
 
 function getMaxDimension(constrainedFrames: Size[], dimension: 'width' | 'height'): number {
