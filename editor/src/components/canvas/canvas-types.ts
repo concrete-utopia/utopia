@@ -29,6 +29,7 @@ import type { MouseButtonsPressed } from '../../utils/mouse'
 
 export const CanvasContainerID = 'canvas-container'
 
+// TODO: this should not be an enum but a const object
 export enum CSSCursor {
   Select = "-webkit-image-set( url( '/editor/cursors/cursor-default.png ') 1x, url( '/editor/cursors/cursor-default@2x.png ') 2x ) 4 4, default",
   Insert = "-webkit-image-set( url( '/editor/cursors/cursor-insert.png ') 1x, url( '/editor/cursors/cursor-insert@2x.png ') 2x ) 8 8, crosshair",
