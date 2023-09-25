@@ -82,6 +82,8 @@ import {
   groupErrorToastAction,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { FlexCol } from 'utopia-api'
+import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
+import { strictEvery } from '../../core/shared/array-utils'
 
 export interface ElementPathElement {
   name?: string
@@ -325,11 +327,29 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
     'RootElementIndicator aRootElementIsSelected',
   )
 
+  const anyKnownElements = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return strictEvery(store.editor.selectedViews, (view) => {
+        return MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, view) != null
+      })
+    },
+    'Inspector anyKnownElements',
+  )
+
   function renderInspectorContents() {
     return (
       <React.Fragment>
         <div
           style={{
+            display: anyKnownElements ? 'none' : undefined,
+          }}
+        >
+          <SettingsPanel />
+        </div>
+        <div
+          style={{
+            display: anyKnownElements ? undefined : 'none',
             height: '100%',
           }}
           data-testid={InspectorSectionsContainerTestID}

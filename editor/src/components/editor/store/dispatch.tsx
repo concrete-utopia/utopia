@@ -51,6 +51,7 @@ import {
   runExecuteStartPostActionMenuAction,
   runExecuteWithPostActionMenuAction,
   runLocalEditorAction,
+  runUpdateProjectServerState,
 } from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
@@ -161,6 +162,10 @@ function processAction(
     working = runClearPostActionSession(working)
   }
 
+  if (action.action === 'UPDATE_PROJECT_SERVER_STATE') {
+    working = runUpdateProjectServerState(working, action)
+  }
+
   // Process action on the JS side.
   const editorAfterUpdateFunction = runLocalEditorAction(
     working.unpatchedEditor,
@@ -226,6 +231,7 @@ function processAction(
     persistence: working.persistence,
     saveCountThisSession: working.saveCountThisSession,
     builtInDependencies: working.builtInDependencies,
+    projectServerState: working.projectServerState,
   }
 }
 
@@ -559,6 +565,7 @@ export function editorDispatchClosingOut(
     ]),
     saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
+    projectServerState: storedState.projectServerState,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -757,7 +764,12 @@ function editorDispatchInner(
       const priorSimpleLocks = storedState.unpatchedEditor.lockedElements.simpleLock
       const updatedSimpleLocks = doNotUpdateLocks
         ? priorSimpleLocks
-        : updateSimpleLocks(storedState.unpatchedEditor.jsxMetadata, metadata, priorSimpleLocks)
+        : updateSimpleLocks(
+            storedState.unpatchedEditor.jsxMetadata,
+            metadata,
+            elementPathTree,
+            priorSimpleLocks,
+          )
       if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
@@ -885,6 +897,7 @@ function editorDispatchInner(
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
+      projectServerState: storedState.projectServerState,
     }
   } else {
     //empty return
