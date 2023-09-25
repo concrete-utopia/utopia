@@ -191,36 +191,29 @@ export function absoluteResizeBoundingBoxStrategy(
                   selectedElement,
                   originalFrame,
                 )
-                if (constrainedFrames.length > 0) {
-                  if (!lockedWidth) {
-                    const horizontalAdjustments = getAdjustedOffsets(
-                      constrainedFrames,
-                      'width',
-                      edgePosition,
-                      originalFrame,
-                      newFrame,
-                    )
-                    newFrame.x = horizontalAdjustments.offset
-                    newFrame.width = horizontalAdjustments.size
-                  } else {
-                    newFrame.x = originalFrame.x
-                    newFrame.width = originalFrame.width
-                  }
 
-                  if (!lockedHeight) {
-                    const verticalAdjustments = getAdjustedOffsets(
-                      constrainedFrames,
-                      'height',
-                      edgePosition,
-                      originalFrame,
-                      newFrame,
-                    )
-                    newFrame.y = verticalAdjustments.offset
-                    newFrame.height = verticalAdjustments.size
-                  } else {
-                    newFrame.y = originalFrame.y
-                    newFrame.height = originalFrame.height
-                  }
+                if (constrainedFrames.length > 0) {
+                  const { offset: x, size: width } = getAdjustments(
+                    lockedWidth,
+                    'width',
+                    constrainedFrames,
+                    edgePosition,
+                    originalFrame,
+                    newFrame,
+                  )
+                  newFrame.x = x
+                  newFrame.width = width
+
+                  const { offset: y, size: height } = getAdjustments(
+                    lockedHeight,
+                    'height',
+                    constrainedFrames,
+                    edgePosition,
+                    originalFrame,
+                    newFrame,
+                  )
+                  newFrame.y = y
+                  newFrame.height = height
                 }
               }
               const metadata = MetadataUtils.findElementByElementPath(
@@ -279,6 +272,44 @@ export function absoluteResizeBoundingBoxStrategy(
       // Fallback for when the checks above are not satisfied.
       return emptyStrategyApplicationResult
     },
+  }
+}
+
+function getAdjustments(
+  locked: boolean,
+  dimension: 'width' | 'height',
+  constrainedFrames: Size[],
+  edgePosition: EdgePosition,
+  originalRect: CanvasRectangle,
+  currentRect: CanvasRectangle,
+): { offset: number; size: number } {
+  const axis = dimension === 'width' ? 'x' : 'y'
+  const currentOffset = currentRect[axis]
+  const originalOffset = originalRect[axis]
+  const originalDimension = originalRect[dimension]
+  const currentDimension = currentRect[dimension]
+  if (locked) {
+    return { offset: originalOffset, size: originalDimension }
+  }
+
+  const maxDimension = constrainedFrames.reduce((size, frame) => {
+    return frame[dimension] > size ? frame[dimension] : size
+  }, -Infinity)
+
+  let offset = currentOffset
+  if (currentDimension <= maxDimension) {
+    const isLeftEdge = edgePosition[axis] === 0
+    const isTopEdge = edgePosition[axis] === 1
+    if (isLeftEdge) {
+      offset = Math.max(originalOffset, originalOffset + originalDimension - maxDimension)
+    } else if (isTopEdge) {
+      offset = originalOffset
+    }
+  }
+
+  return {
+    offset: offset,
+    size: Math.max(maxDimension, currentDimension),
   }
 }
 
@@ -344,35 +375,6 @@ function getConstrainedSizes(
     }
   }
   return { sizes: result, lockedWidth, lockedHeight }
-}
-
-function getMaxDimension(constrainedFrames: Size[], dimension: 'width' | 'height'): number {
-  return constrainedFrames.reduce((max, frame) => {
-    return frame[dimension] > max ? frame[dimension] : max
-  }, -Infinity)
-}
-
-function getAdjustedOffsets(
-  constrainedFrames: Size[],
-  dimension: 'width' | 'height',
-  edgePosition: EdgePosition,
-  originalRect: CanvasRectangle,
-  currentRect: CanvasRectangle,
-): { offset: number; size: number } {
-  const axis = dimension === 'width' ? 'x' : 'y'
-  const max = getMaxDimension(constrainedFrames, dimension)
-  let offset = currentRect[axis]
-  if (currentRect[dimension] <= max) {
-    if (edgePosition[axis] === 0) {
-      offset = Math.max(originalRect[axis], originalRect[axis] + originalRect[dimension] - max)
-    } else if (edgePosition[axis] === 1) {
-      offset = originalRect[axis]
-    }
-  }
-  return {
-    offset: offset,
-    size: Math.max(max, currentRect[dimension]),
-  }
 }
 
 function snapBoundingBox(
