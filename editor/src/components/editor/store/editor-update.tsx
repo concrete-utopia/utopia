@@ -5,6 +5,7 @@ import type {
   EditorDispatch,
   ExecutePostActionMenuChoice,
   StartPostActionSession,
+  UpdateProjectServerState,
 } from '../action-types'
 import { UPDATE_FNS, restoreEditorState } from '../actions/actions'
 
@@ -443,5 +444,15 @@ export function runClearPostActionSession(working: EditorStoreUnpatched): Editor
   return {
     ...working,
     postActionInteractionSession: null,
+  }
+}
+
+export function runUpdateProjectServerState(
+  working: EditorStoreUnpatched,
+  action: UpdateProjectServerState,
+): EditorStoreUnpatched {
+  return {
+    ...working,
+    projectServerState: action.serverState,
   }
 }

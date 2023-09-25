@@ -27,6 +27,7 @@ export type Substates = {
   github: GithubSubstate
   builtInDependencies: BuiltInDependenciesSubstate
   userState: UserStateSubstate
+  projectServerState: ProjectServerStateSubstate
 }
 
 export type StoreKey = keyof Substates
@@ -169,6 +170,10 @@ export type PostActionInteractionSessionSubstate = {
   postActionInteractionSession: EditorStoreShared['postActionInteractionSession']
 }
 
+export interface ProjectServerStateSubstate {
+  projectServerState: EditorStoreShared['projectServerState']
+}
+
 export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'editor' | 'derived'>> =
   [
     'storeName',
@@ -179,4 +184,5 @@ export const restOfStoreKeys: ReadonlyArray<keyof Omit<EditorStorePatched, 'edit
     'persistence',
     'builtInDependencies',
     'saveCountThisSession',
+    'projectServerState',
   ]

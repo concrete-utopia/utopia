@@ -54,6 +54,7 @@ import type { EditorAction } from './action-types'
 import { EditorCommon } from './editor-component-common'
 import { notice } from '../common/notice'
 import { isFeatureEnabled } from '../../utils/feature-switches'
+import { ProjectServerStateUpdater } from './store/project-server-state'
 
 const liveModeToastId = 'play-mode-toast'
 
@@ -491,11 +492,31 @@ export function EditorComponent(props: EditorProps) {
     'EditorComponent indexedDBFailed',
   )
 
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'EditorComponent projectId',
+  )
+
+  const forkedFromProjectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.forkedFromProjectId,
+    'EditorComponent forkedFromProjectId',
+  )
+
+  const dispatch = useDispatch()
+
   return indexedDBFailed ? (
     <FatalIndexedDBErrorComponent />
   ) : (
     <DndProvider backend={HTML5Backend} context={window}>
-      <EditorComponentInner {...props} />
+      <ProjectServerStateUpdater
+        projectId={projectId}
+        forkedFromProjectId={forkedFromProjectId}
+        dispatch={dispatch}
+      >
+        <EditorComponentInner {...props} />
+      </ProjectServerStateUpdater>
     </DndProvider>
   )
 }
