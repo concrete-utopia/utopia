@@ -11,8 +11,7 @@ import { getContentsTreeFromPath, getProjectFileByFilePath } from '../../assets'
 import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
-import type { ActionFunction, DataRouteObject, LoaderFunction } from 'react-router'
-import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
+import type { DataRouteObject } from 'react-router'
 import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 import type { MapLike } from 'typescript'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -39,6 +38,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
+import { createClientRoutes } from '@remix-run/react/dist/routes'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -112,7 +112,6 @@ function patchRemixRoutes(routesFromRemix: RouteManifest<ConfigRoute> | null) {
       module: `${ROOT_DIR}/${route.file}`,
       hasAction: false,
       hasLoader: false,
-      hasCatchBoundary: false,
       hasErrorBoundary: false,
     }
     return acc
@@ -416,4 +415,20 @@ export function getRouteComponentNameForOutlet(
   }
 
   return defaultExport.name
+}
+
+// Create a map of routes by parentId to use recursively instead of
+// repeatedly filtering the manifest.
+export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
+  let routes: Record<string, Omit<EntryRoute, 'children'>[]> = {}
+
+  Object.values(manifest).forEach((route) => {
+    let parentId = route.parentId || ''
+    if (!routes[parentId]) {
+      routes[parentId] = []
+    }
+    routes[parentId].push(route)
+  })
+
+  return routes
 }
