@@ -353,37 +353,49 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
     if (frame != null && isFiniteRectangle(frame) && constrained) {
-      let width = 0
-      if (constraints.left && constraints.right) {
-        width = originalRect.width
-      } else if (constraints.left) {
-        width = frame.x + frame.width
-      } else if (constraints.right) {
-        width = originalRect.width - frame.x
-      } else if (constraints.width) {
-        width = frame.width
-      }
-
-      let height = 0
-      if (constraints.top && constraints.bottom) {
-        height = originalRect.height
-      } else if (constraints.top) {
-        height = frame.y + frame.height
-      } else if (constraints.bottom) {
-        height = originalRect.height - frame.y
-      } else if (constraints.height) {
-        height = frame.height
-      }
-
       result.push({
-        width: width,
-        height: height,
+        width: getBoundDimension(
+          constraints.left,
+          constraints.right,
+          constraints.width,
+          originalRect.width,
+          frame.x,
+          frame.width,
+        ),
+        height: getBoundDimension(
+          constraints.top,
+          constraints.bottom,
+          constraints.height,
+          originalRect.height,
+          frame.y,
+          frame.height,
+        ),
       })
     }
   }
   return { sizes: result, lockedWidth, lockedHeight }
 }
 
+function getBoundDimension(
+  minBound: boolean,
+  maxBound: boolean,
+  dimensionBound: boolean,
+  originalDimension: number,
+  frameOffset: number,
+  frameDimension: number,
+): number {
+  if (minBound && maxBound) {
+    return originalDimension
+  } else if (minBound) {
+    return frameOffset + frameDimension
+  } else if (maxBound) {
+    return originalDimension - frameOffset
+  } else if (dimensionBound) {
+    return frameDimension
+  } else {
+    return 0
+  }
+}
 function snapBoundingBox(
   selectedElements: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
