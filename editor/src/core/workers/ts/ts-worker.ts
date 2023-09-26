@@ -1,6 +1,6 @@
 import * as Babel from '@babel/standalone'
 import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import * as BrowserFS from 'browserfs'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
 import type { TextFile, ProjectFile } from '../../shared/project-file-types'

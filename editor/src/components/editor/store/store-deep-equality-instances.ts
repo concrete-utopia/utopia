@@ -1634,9 +1634,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientHeightResult &&
       parentFlexDirectionResult &&
       parentJustifyContentEquals &&
-      parentFlexGapEquals &&
-      parentPaddingEquals &&
-      parentHugsOnMainAxisEquals &&
+      parentFlexGapEquals.areEqual &&
+      parentPaddingEquals.areEqual &&
+      parentHugsOnMainAxisEquals.areEqual &&
       gapEquals &&
       flexDirectionResult &&
       justifyContentEquals &&

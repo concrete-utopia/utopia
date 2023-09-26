@@ -5090,7 +5090,7 @@ interface NonTrivialKeyword {
 const nontrivial: NonTrivialKeyword = { trivial: false }
 
 type ParsedPropertiesWithNonTrivial = {
-  [Property in keyof ParsedProperties]: ParsedProperties[Property] | NonTrivialKeyword
+  [Prop in keyof ParsedProperties]: ParsedProperties[Prop] | NonTrivialKeyword
 }
 
 export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
@@ -5258,7 +5258,7 @@ export function toggleBorderEnabled(_: null, oldValue: CSSBorder): CSSBorder {
     return workingNewValue
   } else {
     const widthValue =
-      oldValue.width != null && oldValue.width.value.value > 0
+      oldValue.width != null && isCSSNumber(oldValue.width.value) && oldValue.width.value.value > 0
         ? oldValue.width
         : cssLineWidth(cssNumber(1, 'px'))
     return {
