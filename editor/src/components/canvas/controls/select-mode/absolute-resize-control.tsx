@@ -37,6 +37,7 @@ import { SmallElementSize, useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
+import { isEdgePositionEqualTo } from '../../canvas-utils'
 
 export const AbsoluteResizeControlTestId = (targets: Array<ElementPath>): string =>
   `${targets.map(EP.toString).sort()}-absolute-resize-control`
@@ -246,12 +247,25 @@ const ResizePoint = React.memo(
       ])
     }, [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedElementsRef])
 
+    const hiddenDuringInteraction = useEditorState(
+      Substores.canvas,
+      (store) =>
+        store.editor.canvas.interactionSession != null &&
+        store.editor.canvas.interactionSession.activeControl.type === 'RESIZE_HANDLE' &&
+        !isEdgePositionEqualTo(
+          props.position,
+          store.editor.canvas.interactionSession.activeControl.edgePosition,
+        ),
+      'ResizePoint hiddenDuringInteraction',
+    )
+
     return (
       <div
         ref={ref}
         style={{
           position: 'absolute',
           pointerEvents: 'none',
+          visibility: hiddenDuringInteraction ? 'hidden' : 'visible',
         }}
       >
         <div

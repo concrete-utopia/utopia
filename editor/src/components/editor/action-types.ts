@@ -75,6 +75,7 @@ import type { TextProp } from '../text-editor/text-editor'
 import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import type { FromVSCodeAction } from './actions/actions-from-vscode'
+import type { ProjectServerState } from './store/project-server-state'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -1050,6 +1051,11 @@ export interface ClearPostActionSession {
   action: 'CLEAR_POST_ACTION_SESSION'
 }
 
+export interface UpdateProjectServerState {
+  action: 'UPDATE_PROJECT_SERVER_STATE'
+  serverState: ProjectServerState
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1222,6 +1228,7 @@ export type EditorAction =
   | StartPostActionSession
   | FromVSCodeAction
   | TruncateHistory
+  | UpdateProjectServerState
 
 export type DispatchPriority =
   | 'everyone'
