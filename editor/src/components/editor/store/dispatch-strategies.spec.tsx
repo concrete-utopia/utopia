@@ -155,6 +155,11 @@ const testStrategy: MetaCanvasStrategy = (
         wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
       ])
     },
+    descriptiveLabel: 'A Test Strategy',
+    icon: {
+      category: 'modalities',
+      type: 'magic-large',
+    },
   },
 ]
 
@@ -868,6 +873,11 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             name: 'Test Strategy',
             controlsToRender: [],
             fitness: 10,
+            descriptiveLabel: 'A Test Strategy',
+            icon: {
+              category: 'modalities',
+              type: 'magic-large',
+            },
             apply: function (): StrategyApplicationResult {
               if (interactionSession == null) {
                 return strategyApplicationResult([])

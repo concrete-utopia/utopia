@@ -25,6 +25,8 @@ import { wait } from '../../../../utils/utils.test-utils'
 const BestStrategy: CanvasStrategy = {
   id: 'BEST_STRATEGY',
   name: 'Best Strategy',
+  descriptiveLabel: 'The Best Strategy',
+  icon: { category: 'semantic', type: 'editpencil' },
   controlsToRender: [],
   fitness: 10,
   apply: () => strategyApplicationResult([]),
@@ -33,6 +35,8 @@ const BestStrategy: CanvasStrategy = {
 const AverageStrategy: CanvasStrategy = {
   id: 'AVERAGE_STRATEGY',
   name: 'Average Strategy',
+  descriptiveLabel: 'A Very Average Strategy',
+  icon: { category: 'semantic', type: 'editpencil' },
   controlsToRender: [],
   fitness: 5,
   apply: () => strategyApplicationResult([]),
@@ -41,6 +45,8 @@ const AverageStrategy: CanvasStrategy = {
 const WorstStrategy: CanvasStrategy = {
   id: 'WORST_STRATEGY',
   name: 'Worst Strategy',
+  descriptiveLabel: 'The Worst Strategy',
+  icon: { category: 'semantic', type: 'editpencil' },
   controlsToRender: [],
   fitness: 1,
   apply: () => strategyApplicationResult([]),
@@ -49,6 +55,8 @@ const WorstStrategy: CanvasStrategy = {
 const UnfitStrategy: CanvasStrategy = {
   id: 'UNFIT_STRATEGY',
   name: 'Unfit Strategy',
+  descriptiveLabel: 'Terribly Unfit Strategy',
+  icon: { category: 'semantic', type: 'editpencil' },
   controlsToRender: [],
   fitness: 0,
   apply: () => strategyApplicationResult([]),

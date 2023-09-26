@@ -40,6 +40,11 @@ export function keyboardSetFontSizeStrategy(
   return {
     id: 'set-font-size',
     name: 'Set font size',
+    descriptiveLabel: 'Changing Font Size',
+    icon: {
+      category: 'element',
+      type: 'pure-text',
+    },
     controlsToRender: [],
     fitness: fitness(interactionSession),
     apply: () => {

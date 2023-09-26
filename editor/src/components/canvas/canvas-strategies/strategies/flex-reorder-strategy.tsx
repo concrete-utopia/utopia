@@ -59,6 +59,11 @@ export function flexReorderStrategy(
     strategy: {
       id: 'FLEX_REORDER',
       name: 'Reorder (Flex)',
+      descriptiveLabel: 'Reordering Flex Elements',
+      icon: {
+        category: 'modalities',
+        type: 'reorder-large',
+      },
       controlsToRender: [
         controlWithProps({
           control: DragOutlineControl,

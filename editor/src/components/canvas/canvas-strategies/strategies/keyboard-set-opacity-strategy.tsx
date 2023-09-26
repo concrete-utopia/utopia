@@ -28,6 +28,11 @@ export function keyboardSetOpacityStrategy(
   return {
     id: 'set-opacity',
     name: 'Set opacity',
+    descriptiveLabel: 'Changing Opacity',
+    icon: {
+      category: 'semantic',
+      type: 'twoghosts',
+    },
     controlsToRender: [],
     fitness: fitness(interactionSession),
     apply: () => {
