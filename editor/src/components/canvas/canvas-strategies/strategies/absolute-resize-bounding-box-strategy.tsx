@@ -43,6 +43,7 @@ import type { InteractionSession } from '../interaction-state'
 import {
   getChildGroupsForNonGroupParents,
   retargetStrategyToChildrenOfFragmentLikeElements,
+  treatElementAsFragmentLike,
 } from './fragment-like-helpers'
 import { treatElementAsGroupLike } from './group-helpers'
 import {
@@ -181,6 +182,7 @@ export function absoluteResizeBoundingBoxStrategy(
               const newFrame = applyConstraintsAdjustmentsToFrame(
                 canvasState.startingMetadata,
                 canvasState.startingAllElementProps,
+                canvasState.startingElementPathTree,
                 selectedElement,
                 originalFrame,
                 edgePosition,
@@ -259,11 +261,20 @@ export function absoluteResizeBoundingBoxStrategy(
 function applyConstraintsAdjustmentsToFrame(
   jsxMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   target: ElementPath,
   originalFrame: CanvasRectangle,
   edgePosition: EdgePosition,
   newFrame: CanvasRectangle,
 ): CanvasRectangle {
+  const resizeAffectsChildren =
+    treatElementAsGroupLike(jsxMetadata, target) ||
+    treatElementAsFragmentLike(jsxMetadata, allElementProps, pathTrees, target)
+  if (!resizeAffectsChildren) {
+    // this can become anything that can affect the layout of its children
+    return newFrame
+  }
+
   const { constrainedSizes, lockedWidth, lockedHeight } = getConstrainedSizes(
     jsxMetadata,
     allElementProps,
