@@ -42,8 +42,18 @@ export function handleMessage(
 ) {
   switch (workerMessage.type) {
     case 'linterrequest': {
-      const lintErrors = lintCode(workerMessage.filename, workerMessage.code)
-      sendMessage(createLinterResultMessage(workerMessage.filename, lintErrors))
+      const lintResult = lintCode(workerMessage.filename, workerMessage.code)
+      switch (lintResult.type) {
+        case 'extension-not-supported':
+          sendMessage(createLinterResultMessage(workerMessage.filename, []))
+          break
+        case 'linted':
+          sendMessage(createLinterResultMessage(workerMessage.filename, lintResult.errors))
+          break
+        default:
+          const _exhaustiveCheck: never = lintResult
+          throw new Error(`Unrecognized linter result type: ${_exhaustiveCheck}`)
+      }
       break
     }
   }

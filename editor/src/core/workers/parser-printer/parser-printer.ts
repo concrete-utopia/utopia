@@ -103,6 +103,7 @@ import {
   exportDefaultIdentifier,
   isImportSideEffects,
   isParseSuccess,
+  unparsed,
 } from '../../shared/project-file-types'
 import * as PP from '../../shared/property-path'
 import { assertNever, fastForEach, NO_OP } from '../../shared/utils'
@@ -2080,20 +2081,25 @@ export function lintAndParse(
   shouldTrimBounds: 'trim-bounds' | 'do-not-trim-bounds',
 ): ParsedTextFile {
   const lintResult = lintCode(filename, content)
-  // Only fatal or error messages should bounce the parse.
-  if (lintResult.filter(messageisFatal).length === 0) {
-    const result = parseCode(
-      filename,
-      content,
-      oldParseResultForUIDComparison,
-      alreadyExistingUIDs_MUTABLE,
-    )
-    if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
-      return trimHighlightBounds(result)
+  if (lintResult.type === 'extension-not-supported') {
+    return unparsed
+  } else if (lintResult.type === 'linted') {
+    if (lintResult.errors.filter(messageisFatal).length === 0) {
+      const result = parseCode(
+        filename,
+        content,
+        oldParseResultForUIDComparison,
+        alreadyExistingUIDs_MUTABLE,
+      )
+      if (isParseSuccess(result) && shouldTrimBounds === 'trim-bounds') {
+        return trimHighlightBounds(result)
+      } else {
+        return result
+      }
     } else {
-      return result
+      return parseFailure(null, null, null, lintResult.errors)
     }
   } else {
-    return parseFailure(null, null, null, lintResult)
+    assertNever(lintResult)
   }
 }

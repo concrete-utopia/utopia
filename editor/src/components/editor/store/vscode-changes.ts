@@ -115,7 +115,11 @@ export function collateProjectChanges(
             // has been generated
             (savedContentChanged || (unsavedContentChanged && !fileMarkedDirtyButNoCodeChangeYet))
 
-          if (fileShouldBeWritten) {
+          if (
+            fileShouldBeWritten ||
+            secondContents.content.fileContents.parsed.type === 'UNPARSED'
+          ) {
+            // TODO
             changesToProcess.push(writeProjectFileChange(fullPath, secondContents.content))
           }
         } else {

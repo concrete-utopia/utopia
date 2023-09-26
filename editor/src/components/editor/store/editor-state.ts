@@ -2993,6 +2993,7 @@ export function updatePackageJsonInEditorState(
       updatedPackageJsonFile = codeFile(
         transformPackageJson(packageJsonFile.fileContents.code),
         null,
+        packageJsonFile.versionNumber + 1,
       )
     } else {
       // There is something else called package.json, we should bulldoze over it.
