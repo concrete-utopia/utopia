@@ -265,6 +265,7 @@ specifiers:
   react-onclickoutside: 6.9.0
   react-popper: 2.2.3
   react-router: 6.16.0
+  react-router-dom: 6.16.0
   react-select: 3.1.0
   react-select-event: ^5.5.1
   react-spring: 9.0.0-rc.3
@@ -428,6 +429,7 @@ dependencies:
   react-onclickoutside: 6.9.0_ef5jwxihqo6n7gxfmzogljlgcm
   react-popper: 2.2.3_luamgza7xv6i2k5kfnj4s4czvu
   react-router: 6.16.0_react@18.1.0
+  react-router-dom: 6.16.0_ef5jwxihqo6n7gxfmzogljlgcm
   react-select: 3.1.0_t5nmcyzy5uxlteq6gsp6gbc254_ef5jwxihqo6n7gxfmzogljlgcm
   react-spring: 9.0.0-rc.3_5vzz734aui5gu3jm6wlduec5ym
   react-syntax-highlighter: 12.2.1_react@18.1.0
