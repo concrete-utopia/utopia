@@ -34,54 +34,59 @@ import {
   saveGithubAsset,
 } from '../helpers'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
+import type { GithubOperationContext } from './github-operation-context'
 
-export async function saveAssetsToProject(
-  githubRepo: GithubRepo,
-  projectID: string,
-  branchContent: BranchContent,
-  dispatch: EditorDispatch,
-  currentProjectContents: ProjectContentTreeRoot,
-): Promise<void> {
-  await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
-    const alreadyExistingFile = getProjectFileByFilePath(currentProjectContents, fullPath)
-    // Only for these two types of project file (easing the typechecking of the subsequent check).
-    if (projectFile.type === 'IMAGE_FILE' || projectFile.type === 'ASSET_FILE') {
-      // Pre-requisites (only one needs to apply):
-      // 1. There's no already existing file with this filename.
-      // 2. The file type has changed.
-      // 3. The file has the same type, but the SHA is different.
-      if (
-        alreadyExistingFile == null ||
-        alreadyExistingFile.type !== projectFile.type ||
-        (alreadyExistingFile.type === projectFile.type &&
-          alreadyExistingFile.gitBlobSha !== projectFile.gitBlobSha)
-      ) {
-        switch (projectFile.type) {
-          case 'IMAGE_FILE':
-            await saveGithubAsset(
-              githubRepo,
-              forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
-              projectID,
-              fullPath,
-              dispatch,
-            )
-            break
-          case 'ASSET_FILE':
-            await saveGithubAsset(
-              githubRepo,
-              forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
-              projectID,
-              fullPath,
-              dispatch,
-            )
-            break
-          default:
-          // Do nothing.
+export const saveAssetsToProject =
+  (operationContext: GithubOperationContext) =>
+  async (
+    githubRepo: GithubRepo,
+    projectID: string,
+    branchContent: BranchContent,
+    dispatch: EditorDispatch,
+    currentProjectContents: ProjectContentTreeRoot,
+  ): Promise<void> => {
+    await walkContentsTreeAsync(branchContent.content, async (fullPath, projectFile) => {
+      const alreadyExistingFile = getProjectFileByFilePath(currentProjectContents, fullPath)
+      // Only for these two types of project file (easing the typechecking of the subsequent check).
+      if (projectFile.type === 'IMAGE_FILE' || projectFile.type === 'ASSET_FILE') {
+        // Pre-requisites (only one needs to apply):
+        // 1. There's no already existing file with this filename.
+        // 2. The file type has changed.
+        // 3. The file has the same type, but the SHA is different.
+        if (
+          alreadyExistingFile == null ||
+          alreadyExistingFile.type !== projectFile.type ||
+          (alreadyExistingFile.type === projectFile.type &&
+            alreadyExistingFile.gitBlobSha !== projectFile.gitBlobSha)
+        ) {
+          switch (projectFile.type) {
+            case 'IMAGE_FILE':
+              await saveGithubAsset(
+                githubRepo,
+                forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+                projectID,
+                fullPath,
+                dispatch,
+                operationContext,
+              )
+              break
+            case 'ASSET_FILE':
+              await saveGithubAsset(
+                githubRepo,
+                forceNotNull('Commit sha should exist.', projectFile.gitBlobSha),
+                projectID,
+                fullPath,
+                dispatch,
+                operationContext,
+              )
+              break
+            default:
+            // Do nothing.
+          }
         }
       }
-    }
-  })
-}
+    })
+  }
 
 export async function updateProjectWithBranchContent(
   workers: UtopiaTsWorkers,
@@ -93,6 +98,7 @@ export async function updateProjectWithBranchContent(
   currentDeps: Array<RequestedNpmDependency>,
   builtInDependencies: BuiltInDependencies,
   currentProjectContents: ProjectContentTreeRoot,
+  operationContext: GithubOperationContext,
 ): Promise<void> {
   await runGithubOperation(
     {
@@ -102,7 +108,13 @@ export async function updateProjectWithBranchContent(
     },
     dispatch,
     async (operation: GithubOperation) => {
-      const response = await getBranchContentFromServer(githubRepo, branchName, null, null)
+      const response = await getBranchContentFromServer(
+        githubRepo,
+        branchName,
+        null,
+        null,
+        operationContext,
+      )
       if (!response.ok) {
         throw githubAPIErrorFromResponse(operation, response)
       }
@@ -136,6 +148,7 @@ export async function updateProjectWithBranchContent(
             responseBody.branch,
             dispatch,
             currentProjectContents,
+            operationContext,
           )
 
           const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)

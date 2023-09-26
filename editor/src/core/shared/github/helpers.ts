@@ -65,6 +65,7 @@ import { updatePullRequestsForBranch } from './operations/list-pull-requests-for
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
 import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
+import type { GithubOperationContext } from './operations/github-operation-context'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -259,6 +260,7 @@ export async function getBranchContentFromServer(
   branchName: string,
   commitSha: string | null,
   previousCommitSha: string | null,
+  operationContext: GithubOperationContext,
 ): Promise<Response> {
   const url = urljoin(
     UTOPIA_BACKEND,
@@ -282,7 +284,7 @@ export async function getBranchContentFromServer(
   const searchParams = new URLSearchParams(paramsRecord)
   const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
 
-  return fetch(urlToUse, {
+  return operationContext.fetch(urlToUse, {
     method: 'GET',
     credentials: 'include',
     headers: HEADERS,
@@ -802,7 +804,11 @@ const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
 
 let githubPollingTimeoutId: number | undefined = undefined
 
-export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): void {
+export function startGithubPolling(
+  utopiaStoreAPI: UtopiaStoreAPI,
+  dispatch: EditorDispatch,
+  operationContext: GithubOperationContext,
+): void {
   if (githubPollingTimeoutId != null) {
     window.clearTimeout(githubPollingTimeoutId)
   }
@@ -825,6 +831,7 @@ export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: Edi
         githubUserDetails,
         lastRefreshedCommit,
         originCommitSha,
+        operationContext,
       )
     } finally {
       // Trigger another one to run Xms _after_ this has finished.
@@ -845,6 +852,7 @@ export async function refreshGithubData(
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
   originCommitSha: string | null,
+  operationContext: GithubOperationContext,
 ): Promise<void> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
@@ -853,19 +861,29 @@ export async function refreshGithubData(
     if (githubUserDetails === null) {
       promises.push(getUserDetailsFromServer())
     }
-    promises.push(getUsersPublicGithubRepositories(dispatch))
+    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
     if (githubRepo != null) {
-      promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
+      promises.push(getBranchesForGithubRepository(operationContext)(dispatch, githubRepo))
       promises.push(
-        updateUpstreamChanges(branchName, branchOriginChecksums, githubRepo, previousCommitSha),
+        updateUpstreamChanges(
+          branchName,
+          branchOriginChecksums,
+          githubRepo,
+          previousCommitSha,
+          operationContext,
+        ),
       )
       if (branchName != null) {
         if (branchOriginChecksums == null) {
           if (originCommitSha != null) {
-            promises.push(getBranchChecksums(githubRepo, branchName, originCommitSha))
+            promises.push(
+              getBranchChecksums(operationContext)(githubRepo, branchName, originCommitSha),
+            )
           }
         } else {
-          promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
+          promises.push(
+            updatePullRequestsForBranch(operationContext)(dispatch, githubRepo, branchName),
+          )
         }
       }
     } else {
@@ -899,6 +917,7 @@ async function updateUpstreamChanges(
   branchOriginChecksums: FileChecksumsWithFile | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
+  operationContext: GithubOperationContext,
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
@@ -908,6 +927,7 @@ async function updateUpstreamChanges(
       branchName,
       null,
       previousCommitSha,
+      operationContext,
     )
     if (branchContentResponse.ok) {
       const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
@@ -960,6 +980,7 @@ export async function saveGithubAsset(
   projectID: string,
   path: string,
   dispatch: EditorDispatch,
+  operationContext: GithubOperationContext,
 ): Promise<void> {
   await runGithubOperation(
     { name: 'saveAsset', path: path },
@@ -982,7 +1003,7 @@ export async function saveGithubAsset(
       const searchParams = new URLSearchParams(paramsRecord)
       const urlToUse = `${url}?${searchParams}`
 
-      const response = await fetch(urlToUse, {
+      const response = await operationContext.fetch(urlToUse, {
         method: 'POST',
         credentials: 'include',
         headers: HEADERS,
@@ -1015,6 +1036,7 @@ export async function resolveConflict(
   conflict: Conflict,
   whichChange: 'utopia' | 'branch',
   dispatch: EditorDispatch,
+  operationContext: GithubOperationContext,
 ): Promise<void> {
   async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
     // Update the file in the server first before putting it into the project contents.
@@ -1031,7 +1053,14 @@ export async function resolveConflict(
     if (gitBlobSha == null) {
       saveAssetPromise = Promise.resolve()
     } else {
-      saveAssetPromise = saveGithubAsset(githubRepo, gitBlobSha, projectID, path, dispatch)
+      saveAssetPromise = saveGithubAsset(
+        githubRepo,
+        gitBlobSha,
+        projectID,
+        path,
+        dispatch,
+        operationContext,
+      )
     }
     void saveAssetPromise.then(() => {
       dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')

@@ -6,6 +6,7 @@ import { updateGithubData } from '../../../../components/editor/actions/action-c
 import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import type { GithubBranch, GithubFailure } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
+import type { GithubOperationContext } from './github-operation-context'
 
 export type GetBranchesResult = Array<GithubBranch>
 
@@ -16,44 +17,46 @@ export interface GetBranchesSuccess {
 
 export type GetBranchesResponse = GetBranchesSuccess | GithubFailure
 
-export async function getBranchesForGithubRepository(
-  dispatch: EditorDispatch,
-  githubRepo: GithubRepo,
-): Promise<Array<EditorAction>> {
-  return runGithubOperation(
-    { name: 'listBranches' },
-    dispatch,
-    async (operation: GithubOperation) => {
-      const url = urljoin(
-        UTOPIA_BACKEND,
-        'github',
-        'branches',
-        githubRepo.owner,
-        githubRepo.repository,
-      )
+export const getBranchesForGithubRepository =
+  (operationContext: GithubOperationContext) =>
+  async (dispatch: EditorDispatch, githubRepo: GithubRepo): Promise<Array<EditorAction>> => {
+    return runGithubOperation(
+      { name: 'listBranches' },
+      dispatch,
+      async (operation: GithubOperation) => {
+        const url = urljoin(
+          UTOPIA_BACKEND,
+          'github',
+          'branches',
+          githubRepo.owner,
+          githubRepo.repository,
+        )
 
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: HEADERS,
-        mode: MODE,
-      })
+        const response = await operationContext.fetch(url, {
+          method: 'GET',
+          credentials: 'include',
+          headers: HEADERS,
+          mode: MODE,
+        })
 
-      if (!response.ok) {
-        throw await githubAPIErrorFromResponse(operation, response)
-      }
+        if (!response.ok) {
+          throw await githubAPIErrorFromResponse(operation, response)
+        }
 
-      const responseBody: GetBranchesResponse = await response.json()
+        const responseBody: GetBranchesResponse = await response.json()
 
-      switch (responseBody.type) {
-        case 'FAILURE':
-          throw githubAPIError(operation, responseBody.failureReason)
-        case 'SUCCESS':
-          return [updateGithubData({ branches: responseBody.branches })]
-        default:
-          const _exhaustiveCheck: never = responseBody
-          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
-      }
-    },
-  )
-}
+        switch (responseBody.type) {
+          case 'FAILURE':
+            throw githubAPIError(operation, responseBody.failureReason)
+          case 'SUCCESS':
+            return [updateGithubData({ branches: responseBody.branches })]
+          default:
+            const _exhaustiveCheck: never = responseBody
+            throw githubAPIError(
+              operation,
+              `Unhandled response body ${JSON.stringify(responseBody)}`,
+            )
+        }
+      },
+    )
+  }
