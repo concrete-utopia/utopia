@@ -427,12 +427,13 @@ export function getRouteComponentNameForOutlet(
 
 // Create a map of routes by parentId to use recursively instead of
 // repeatedly filtering the manifest.
+// Copied and updated from https://github.com/remix-run/remix/blob/94695c3d96ac72daeb18dddd77e6dc6590d16bf4/packages/remix-react/routes.tsx
 export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
   let routes: Record<string, Omit<EntryRoute, 'children'>[]> = {}
 
   Object.values(manifest).forEach((route) => {
-    let parentId = route.parentId || ''
-    if (!routes[parentId]) {
+    let parentId = route.parentId ?? ''
+    if (routes[parentId] != null) {
       routes[parentId] = []
     }
     routes[parentId].push(route)
