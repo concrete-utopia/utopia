@@ -1,4 +1,4 @@
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import type { JSXElement } from '../../shared/element-template'
 import { TopLevelElement, UtopiaJSXComponent } from '../../shared/element-template'
 import { fixUtopiaElement, UIDMappings, WithUIDMappings } from '../../shared/uid-utils'

@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import {
   addUniquely,
   flatMapArray,

@@ -109,7 +109,7 @@ export function shouldComponentUpdateAnalysis<P, S>(
 }
 
 export function memoEqualityCheckAnalysis<P>(previousProps: P, nextProps: P): boolean {
-  if (typeof previousProps === 'object') {
+  if (typeof previousProps === 'object' && previousProps != null) {
     let differingPropKeys: Array<string> = []
     for (const propKey of Object.keys(previousProps)) {
       const previousPropValue = (previousProps as any)[propKey]
@@ -162,7 +162,7 @@ export function failSafeReactMemo<T extends React.ComponentType<React.PropsWithC
 
 function failSafeMemoEqualityFunction(componentDisplayName: string, severity: 'strict' | 'gentle') {
   return function <P>(previousProps: P, nextProps: P): boolean {
-    if (typeof previousProps === 'object') {
+    if (typeof previousProps === 'object' && previousProps != null) {
       let differingPropKeys: Array<string> = []
       let propKeysThatAreDifferentYetDeeplyEqual: Array<string> = []
       for (const propKey of Object.keys(previousProps)) {

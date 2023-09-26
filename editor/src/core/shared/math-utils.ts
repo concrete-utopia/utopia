@@ -968,9 +968,7 @@ export function rectanglesEqual<C extends CoordinateMarker>(
   first: MaybeInfinityRectangle<C>,
   second: MaybeInfinityRectangle<C>,
 ): boolean {
-  if (isInfinityRectangle(first) || isInfinityRectangle(second)) {
-    return isInfinityRectangle(first) && isInfinityRectangle(second)
-  } else {
+  if (isFiniteRectangle(first) && isFiniteRectangle(second)) {
     return (
       first.x === second.x &&
       first.y === second.y &&
@@ -978,6 +976,7 @@ export function rectanglesEqual<C extends CoordinateMarker>(
       first.height === second.height
     )
   }
+  return isInfinityRectangle(first) && isInfinityRectangle(second)
 }
 
 export function proportion(from: number, to: number): number {

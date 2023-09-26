@@ -1,4 +1,4 @@
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import { SourceNode } from 'source-map'
 import {
   addUniquely,
