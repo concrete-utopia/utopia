@@ -187,6 +187,10 @@ export function exportFunction(functionName: string): ExportFunction {
   }
 }
 
+export function isExportFunction(e: ExportDetail): e is ExportFunction {
+  return e.type === 'EXPORT_FUNCTION'
+}
+
 // export class ClassName {...}
 export interface ExportClass {
   type: 'EXPORT_CLASS'
