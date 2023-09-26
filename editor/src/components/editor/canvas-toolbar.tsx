@@ -85,6 +85,7 @@ ToolbarSearchListing.displayName = 'ToolbarSearchListing'
 
 export interface CanvasToolbarSearchProps {
   actionWith: (item: InsertMenuItem | null) => void
+  children?: React.ReactNode
 }
 
 export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) => {
@@ -116,61 +117,91 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
     }
   })
 
+  const wrapInDivCallback = useWrapInDiv()
+  const dispatch = useDispatch()
+
+  const switchToSelectModeCloseMenus = React.useCallback(() => {
+    dispatch(
+      [switchEditorMode(EditorModes.selectMode(null, false, 'none')), closeFloatingInsertMenu()],
+      'everyone',
+    )
+  }, [dispatch])
+
+  const wrapInDivAndClose = React.useCallback(
+    (event: React.MouseEvent<Element>) => {
+      wrapInDivCallback(event)
+      switchToSelectModeCloseMenus()
+    },
+    [switchToSelectModeCloseMenus, wrapInDivCallback],
+  )
+
+  const CustomMenu = () => (
+    <div style={{ background: 'lime' }}>
+      {/* help how do I get the icons inside here{props.children} */}
+      <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
+    </div>
+  )
+
   return (
-    <WindowedSelect
-      id={'canvas-toolbar-search'}
-      ref={selectRef}
-      components={{ Option: CustomComponentOption }}
-      openMenuOnFocus={true}
-      openMenuOnClick={true}
-      onBlur={undefined}
-      onChange={props.actionWith}
-      options={options}
-      menuPortalTarget={menuPortalTarget}
-      filterOption={createFilter({ ignoreAccents: true })}
-      placeholder={'Search'}
-      styles={{
-        ...componentSelectorStyles,
-        menuPortal: (styles: CSSObject): CSSObject => {
-          return {
-            overflow: 'hidden',
-            backgroundColor: theme.bg2.value,
-            borderRadius: '0px 0px 10px 10px',
-            pointerEvents: 'initial',
-            position: 'relative',
-            top: -12,
-            width: 230,
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-          }
-        },
-        input: (styles: CSSObject): CSSObject => {
-          return {
-            ...(InspectorInputEmotionStyle({
-              hasLabel: false,
-              controlStyles: getControlStyles('simple'),
-            }) as CSSObject),
-            paddingLeft: 4,
-            backgroundColor: colorTheme.seperator.value,
-            flexGrow: 1,
-            display: 'flex',
-            alignItems: 'center',
-            minWidth: '200px',
-            borderRadius: '30px',
-            border: `1px solid ${theme.dynamicBlue.value}`,
-          }
-        },
-        menuList: (styles: CSSObject): CSSObject => {
-          return {
-            maxHeight: 144,
-            padding: '0 8px',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-          }
-        },
-      }}
-      // maxMenuHeight={138}
-    />
+    <>
+      <WindowedSelect
+        id={'canvas-toolbar-search'}
+        ref={selectRef}
+        openMenuOnFocus={true}
+        openMenuOnClick={true}
+        onBlur={undefined}
+        onChange={props.actionWith}
+        options={options}
+        menuPortalTarget={menuPortalTarget}
+        filterOption={createFilter({ ignoreAccents: true })}
+        placeholder={'Search'}
+        components={{ Menu: CustomMenu, Option: CustomComponentOption }}
+        styles={{
+          ...componentSelectorStyles,
+          menuPortal: (styles: CSSObject): CSSObject => {
+            return {
+              overflow: 'hidden',
+              // backgroundColor: theme.bg2.value,
+              borderRadius: '0px 0px 10px 10px',
+              pointerEvents: 'initial',
+              // position: 'absolute',
+              top: 100,
+              left: 20,
+              width: 230,
+              // boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            }
+          },
+          input: (styles: CSSObject): CSSObject => {
+            return {
+              ...(InspectorInputEmotionStyle({
+                hasLabel: false,
+                controlStyles: getControlStyles('simple'),
+              }) as CSSObject),
+              paddingLeft: 4,
+              backgroundColor: colorTheme.seperator.value,
+              flexGrow: 1,
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: '200px',
+              borderRadius: '30px',
+              border: `1px solid ${theme.dynamicBlue.value}`,
+            }
+          },
+          menuList: (styles: CSSObject): CSSObject => {
+            return {
+              maxHeight: 144,
+              padding: '0 8px',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+            }
+          },
+        }}
+        // maxMenuHeight={138}
+      >
+        {props.children}
+      </WindowedSelect>
+    </>
   )
 })
 CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
@@ -664,40 +695,41 @@ export const CanvasToolbar = React.memo(() => {
               insertMenuMode === 'wrap',
               wrapInSubmenu(
                 <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
-                  <FlexRow>
-                    <Tooltip title='Back' placement='bottom'>
-                      <InsertModeButton
-                        iconCategory='semantic'
-                        iconType='icon-semantic-back'
-                        onClick={switchToSelectModeCloseMenus}
-                        style={{ width: undefined }}
-                      />
-                    </Tooltip>
-                    <Tooltip title='Div' placement='bottom'>
-                      <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
-                    </Tooltip>
-                    {/* TODO needs callback */}
-                    <Tooltip title='Scene' placement='bottom'>
-                      <InsertModeButton
-                        iconType='scene'
-                        iconCategory='component'
-                        onClick={wrapInDivAndClose}
-                      />
-                    </Tooltip>
-                    {/* TODO needs callback */}
-                    <Tooltip title='Fragment' placement='bottom'>
-                      <InsertModeButton iconType='fragment' onClick={wrapInDivAndClose} />
-                    </Tooltip>
-                    {/* TODO needs callback */}
-                    <Tooltip title='Clickable Div' placement='bottom'>
-                      <InsertModeButton iconType='clickable' onClick={wrapInDivAndClose} />
-                    </Tooltip>
-                    {/* TODO needs callback */}
-                    <Tooltip title='Conditional' placement='bottom'>
-                      <InsertModeButton iconType='conditional' onClick={wrapInDivAndClose} />
-                    </Tooltip>
-                  </FlexRow>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} />
+                  <CanvasToolbarSearch actionWith={convertToAndClose}>
+                    <FlexRow>
+                      <Tooltip title='Back' placement='bottom'>
+                        <InsertModeButton
+                          iconCategory='semantic'
+                          iconType='icon-semantic-back'
+                          onClick={switchToSelectModeCloseMenus}
+                          style={{ width: undefined }}
+                        />
+                      </Tooltip>
+                      <Tooltip title='Div' placement='bottom'>
+                        <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
+                      </Tooltip>
+                      {/* TODO needs callback */}
+                      <Tooltip title='Scene' placement='bottom'>
+                        <InsertModeButton
+                          iconType='scene'
+                          iconCategory='component'
+                          onClick={wrapInDivAndClose}
+                        />
+                      </Tooltip>
+                      {/* TODO needs callback */}
+                      <Tooltip title='Fragment' placement='bottom'>
+                        <InsertModeButton iconType='fragment' onClick={wrapInDivAndClose} />
+                      </Tooltip>
+                      {/* TODO needs callback */}
+                      <Tooltip title='Clickable Div' placement='bottom'>
+                        <InsertModeButton iconType='clickable' onClick={wrapInDivAndClose} />
+                      </Tooltip>
+                      {/* TODO needs callback */}
+                      <Tooltip title='Conditional' placement='bottom'>
+                        <InsertModeButton iconType='conditional' onClick={wrapInDivAndClose} />
+                      </Tooltip>
+                    </FlexRow>
+                  </CanvasToolbarSearch>
                 </FlexColumn>,
               ),
             )}
