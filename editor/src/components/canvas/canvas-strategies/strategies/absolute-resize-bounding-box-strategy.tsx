@@ -330,7 +330,10 @@ function getConstrainedFramesAdjustments(
 
   if (locked) {
     // If it's locked, return the original bounds.
-    return { offset: originalOffset, size: originalDimension }
+    return {
+      offset: originalOffset,
+      size: originalDimension,
+    }
   }
 
   // The maximum value of the given constraints, used as the upper bound for the adjustment.
@@ -404,7 +407,26 @@ function getConstrainedSizes(
       constraints.right ||
       constraints.width
 
-    if (isConstrained && element.localFrame != null && isFiniteRectangle(element.localFrame)) {
+    if (
+      isConstrained &&
+      element.localFrame != null &&
+      isFiniteRectangle(element.localFrame) &&
+      element.globalFrame != null &&
+      isFiniteRectangle(element.globalFrame)
+    ) {
+      const constrainedParentFrame = MetadataUtils.getFrameInCanvasCoords(
+        EP.parentPath(element.elementPath),
+        jsxMetadata,
+      )
+      const offsetDiffX =
+        constrainedParentFrame != null && isFiniteRectangle(constrainedParentFrame)
+          ? constrainedParentFrame.x - originalFrame.x
+          : 0
+      const offsetDiffY =
+        constrainedParentFrame != null && isFiniteRectangle(constrainedParentFrame)
+          ? constrainedParentFrame.y - originalFrame.y
+          : 0
+
       constrainedSizes.push({
         width: getBoundDimension(
           constraints.left,
@@ -412,7 +434,7 @@ function getConstrainedSizes(
           constraints.width,
           originalFrame.width,
           element.localFrame.x,
-          element.localFrame.width,
+          element.localFrame.width + offsetDiffX,
         ),
         height: getBoundDimension(
           constraints.top,
@@ -420,7 +442,7 @@ function getConstrainedSizes(
           constraints.height,
           originalFrame.height,
           element.localFrame.y,
-          element.localFrame.height,
+          element.localFrame.height + offsetDiffY,
         ),
       })
     }
