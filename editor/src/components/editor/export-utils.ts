@@ -115,7 +115,7 @@ export function getExportedComponentImports(
               )
             }
             break
-          case 'EXPORT_IDENTIFIER':
+          case 'EXPORT_DEFAULT_IDENTIFIER':
             addToResult(
               exportDetail.name,
               exportDetail.name,

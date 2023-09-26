@@ -124,7 +124,7 @@ export function objectMap<T extends Record<string, unknown>, K extends keyof T, 
   return mappedObj
 }
 
-export function objectMapDropNulls<T, K extends keyof T, U>(
+export function objectMapDropNulls<T extends MapLike<any>, K extends keyof T, U>(
   transform: (t: ValueOf<T>, key: K) => U | null,
   obj: T,
 ): {
@@ -144,7 +144,10 @@ export function objectMapDropNulls<T, K extends keyof T, U>(
   return mappedObj
 }
 
-export function objectFilter<T>(filter: (t: ValueOf<T>, key: keyof T) => boolean, obj: T): T {
+export function objectFilter<T extends MapLike<any>>(
+  filter: (t: ValueOf<T>, key: keyof T) => boolean,
+  obj: T,
+): T {
   const keys = Object.keys(obj) as Array<keyof T>
   let filteredResult = {} as T
   fastForEach(keys, (key) => {
@@ -157,7 +160,10 @@ export function objectFilter<T>(filter: (t: ValueOf<T>, key: keyof T) => boolean
   return filteredResult
 }
 
-export function forEachValue<T>(fn: (val: ValueOf<T>, key: keyof T) => void, obj: T): void {
+export function forEachValue<T extends MapLike<any>>(
+  fn: (val: ValueOf<T>, key: keyof T) => void,
+  obj: T,
+): void {
   const keys = Object.keys(obj) as Array<keyof T>
   fastForEach(keys, (key) => {
     const value = obj[key]
@@ -261,7 +267,10 @@ export function omitWithPredicate<T extends MapLike<any>>(
   return result
 }
 
-export function pick<T, K extends keyof T>(keys: ReadonlyArray<K>, obj: T): Pick<T, K> {
+export function pick<T extends MapLike<any>, K extends keyof T>(
+  keys: ReadonlyArray<K>,
+  obj: T,
+): Pick<T, K> {
   var result = {} as Pick<T, K>
 
   fastForEach(keys, (key) => {
@@ -272,10 +281,13 @@ export function pick<T, K extends keyof T>(keys: ReadonlyArray<K>, obj: T): Pick
   return result
 }
 
-export function objectContainsKey<T>(obj: T, key: keyof T): boolean {
+export function objectContainsKey<T extends MapLike<any>>(obj: T, key: keyof T): boolean {
   return key in obj
 }
 
-export function objectContainsAllKeys<T>(obj: T, keys: Array<keyof T>): boolean {
+export function objectContainsAllKeys<T extends MapLike<any>>(
+  obj: T,
+  keys: Array<keyof T>,
+): boolean {
   return keys.every((key) => objectContainsKey(obj, key))
 }

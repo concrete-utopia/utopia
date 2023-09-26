@@ -8,6 +8,7 @@ import { RouteModules } from '@remix-run/react/dist/routeModules'
 import { DataRouteObject, ShouldRevalidateFunction } from 'react-router'
 import { RemixRoute, RemixRouteError } from '@remix-run/react/dist/components'
 import invariant from './invariant'
+import { isRouteErrorResponse, useRouteError } from '@remix-run/react'
 
 export interface RouteManifest<Route> {
   [routeId: string]: Route
@@ -110,13 +111,13 @@ export function createClientRoutes(
   return (routesByParentId[parentId] || []).map((route) => {
     let hasErrorBoundary =
       future.v2_errorBoundary === true
-        ? route.id === 'root' || route.hasErrorBoundary
-        : route.id === 'root' || route.hasCatchBoundary || route.hasErrorBoundary
+        ? route.hasErrorBoundary
+        : route.hasCatchBoundary || route.hasErrorBoundary
 
     let dataRoute: DataRouteObject = {
       caseSensitive: route.caseSensitive,
       element: <RemixRoute id={route.id} />,
-      errorElement: hasErrorBoundary ? <RemixRouteError id={route.id} /> : undefined,
+      errorElement: hasErrorBoundary ? <RemixRouteError id={route.id} /> : <ErrorThrower />,
       id: route.id,
       index: route.index,
       path: route.path,
@@ -163,5 +164,23 @@ function createShouldRevalidate(
     }
 
     return arg.defaultShouldRevalidate
+  }
+}
+
+function ErrorThrower() {
+  const error = useRouteError()
+
+  if (isRouteErrorResponse(error)) {
+    return (
+      <div>
+        <h1>
+          {error.status} {error.statusText}
+        </h1>
+        <p>{error.data}</p>
+      </div>
+    )
+  } else {
+    // Throw the error so that we can show the error overlay across the entire canvas
+    throw error
   }
 }

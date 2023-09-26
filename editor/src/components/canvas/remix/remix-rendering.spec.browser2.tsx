@@ -125,6 +125,49 @@ describe('Remix content', () => {
     await expectRemixSceneToBeRendered(renderResult)
   })
 
+  it('Renders the remix project with separate export default statement in route file', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div>
+            ${RootTextContent}
+            <Outlet />
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      const Index = () => (<h1>${DefaultRouteTextContent}</h1>)
+      export default Index
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+    await expectRemixSceneToBeRendered(renderResult)
+  })
+
   it('Remix content has metadata', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'

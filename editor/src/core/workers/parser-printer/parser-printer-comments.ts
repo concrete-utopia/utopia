@@ -1,4 +1,4 @@
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import type { Comment, ParsedComments } from '../../shared/element-template'
 import { multiLineComment, parsedComments, singleLineComment } from '../../shared/element-template'
 import { fastForEach } from '../../shared/utils'

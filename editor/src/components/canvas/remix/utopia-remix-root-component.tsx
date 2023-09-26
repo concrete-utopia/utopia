@@ -75,19 +75,25 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
+      const createExecutionScope = () =>
+        value.executionScopeCreator(
+          projectContentsRef.current,
+          fileBlobsRef.current,
+          hiddenInstancesRef.current,
+          displayNoneInstancesRef.current,
+          metadataContext,
+        ).scope
+
       const defaultComponent = (componentProps: any) =>
-        value
-          .executionScopeCreator(
-            projectContentsRef.current,
-            fileBlobsRef.current,
-            hiddenInstancesRef.current,
-            displayNoneInstancesRef.current,
-            metadataContext,
-          )
-          .scope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
+        createExecutionScope()[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
+
+      const errorBoundary = value.createErrorBoundary
+        ? (componentProps: any) => createExecutionScope()['ErrorBoundary']?.(componentProps) ?? null
+        : undefined
 
       routeModulesResult[routeId] = {
         ...value,
+        ErrorBoundary: errorBoundary == undefined ? undefined : PathPropHOC(errorBoundary),
         default: PathPropHOC(defaultComponent),
       }
     }
