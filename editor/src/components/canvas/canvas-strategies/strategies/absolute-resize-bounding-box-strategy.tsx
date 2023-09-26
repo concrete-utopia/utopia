@@ -1,8 +1,10 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { CanvasRectangle, Size } from '../../../../core/shared/math-utils'
 import {
+  canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
   roundRectangleToNearestWhole,
@@ -174,49 +176,23 @@ export function absoluteResizeBoundingBoxStrategy(
                 selectedElement,
               )
 
-              const newFrame = roundRectangleToNearestWhole(
-                transformFrameUsingBoundingBox(
-                  snappedBoundingBox,
-                  originalBoundingBox,
-                  originalFrame,
+              // If there are constrained descendants of the selected elements, adjust the
+              // resized frame to respect the min/max dimensions that come from them.
+              const newFrame = applyConstraintsAdjustmentsToFrame(
+                canvasState.startingMetadata,
+                canvasState.startingAllElementProps,
+                selectedElement,
+                originalFrame,
+                edgePosition,
+                roundRectangleToNearestWhole(
+                  transformFrameUsingBoundingBox(
+                    snappedBoundingBox,
+                    originalBoundingBox,
+                    originalFrame,
+                  ),
                 ),
               )
-              if (elementIsGroup) {
-                const {
-                  sizes: constrainedFrames,
-                  lockedWidth,
-                  lockedHeight,
-                } = getConstrainedSizes(
-                  canvasState.startingMetadata,
-                  canvasState.startingAllElementProps,
-                  selectedElement,
-                  originalFrame,
-                )
 
-                if (constrainedFrames.length > 0) {
-                  const { offset: x, size: width } = getAdjustments(
-                    lockedWidth,
-                    'width',
-                    constrainedFrames,
-                    edgePosition,
-                    originalFrame,
-                    newFrame,
-                  )
-                  newFrame.x = x
-                  newFrame.width = width
-
-                  const { offset: y, size: height } = getAdjustments(
-                    lockedHeight,
-                    'height',
-                    constrainedFrames,
-                    edgePosition,
-                    originalFrame,
-                    newFrame,
-                  )
-                  newFrame.y = y
-                  newFrame.height = height
-                }
-              }
               const metadata = MetadataUtils.findElementByElementPath(
                 canvasState.startingMetadata,
                 selectedElement,
@@ -276,66 +252,130 @@ export function absoluteResizeBoundingBoxStrategy(
   }
 }
 
-function getAdjustments(
+/**
+ * Returns adjusted version of the newFrame that respects any constraints that
+ * may be set on its descendants.
+ */
+function applyConstraintsAdjustmentsToFrame(
+  jsxMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  target: ElementPath,
+  originalFrame: CanvasRectangle,
+  edgePosition: EdgePosition,
+  newFrame: CanvasRectangle,
+): CanvasRectangle {
+  const { constrainedSizes, lockedWidth, lockedHeight } = getConstrainedSizes(
+    jsxMetadata,
+    allElementProps,
+    target,
+    originalFrame,
+  )
+  if (constrainedSizes.length <= 0) {
+    return newFrame
+  }
+
+  const { offset: x, size: width } = getConstrainedFramesAdjustments(
+    lockedWidth,
+    'width',
+    constrainedSizes,
+    edgePosition,
+    originalFrame,
+    newFrame,
+  )
+  const { offset: y, size: height } = getConstrainedFramesAdjustments(
+    lockedHeight,
+    'height',
+    constrainedSizes,
+    edgePosition,
+    originalFrame,
+    newFrame,
+  )
+
+  return canvasRectangle({ x, y, width, height })
+}
+
+/**
+ * Returns a pair of offset and size for the given dimension of the newFrame rectangle,
+ * which respect the given constraints.
+ */
+function getConstrainedFramesAdjustments(
   locked: boolean,
   dimension: 'width' | 'height',
-  constrainedFrames: Size[],
+  constrainedSizes: Array<Size>,
   edgePosition: EdgePosition,
-  originalRect: CanvasRectangle,
-  currentRect: CanvasRectangle,
-): { offset: number; size: number } {
+  originalFrame: CanvasRectangle,
+  newFrame: CanvasRectangle,
+): {
+  offset: number
+  size: number
+} {
   const axis = dimension === 'width' ? 'x' : 'y'
-  const currentOffset = currentRect[axis]
-  const originalOffset = originalRect[axis]
-  const originalDimension = originalRect[dimension]
-  const currentDimension = currentRect[dimension]
+  const currentOffset = newFrame[axis]
+  const originalOffset = originalFrame[axis]
+  const originalDimension = originalFrame[dimension]
+  const currentDimension = newFrame[dimension]
+  const isLeftEdge = edgePosition[axis] === 0
+  const isTopEdge = edgePosition[axis] === 1
+
   if (locked) {
+    // If it's locked, return the original bounds.
     return { offset: originalOffset, size: originalDimension }
   }
 
-  const maxDimension = constrainedFrames.reduce((size, frame) => {
+  // The maximum value of the given constraints, used as the upper bound for the adjustment.
+  const maxDimension = constrainedSizes.reduce((size, frame) => {
     return frame[dimension] > size ? frame[dimension] : size
   }, -Infinity)
 
-  let offset = currentOffset
-  if (currentDimension <= maxDimension) {
-    const isLeftEdge = edgePosition[axis] === 0
-    const isTopEdge = edgePosition[axis] === 1
-    if (isLeftEdge) {
-      offset = Math.max(originalOffset, originalOffset + originalDimension - maxDimension)
-    } else if (isTopEdge) {
-      offset = originalOffset
+  function getOffset() {
+    if (currentDimension <= maxDimension) {
+      if (isLeftEdge) {
+        return Math.max(originalOffset, originalOffset + originalDimension - maxDimension)
+      }
+      if (isTopEdge) {
+        return originalOffset
+      }
     }
+    return currentOffset
   }
 
   return {
-    offset: offset,
+    offset: getOffset(),
     size: Math.max(maxDimension, currentDimension),
   }
+}
+
+function isDimensionConstrained(
+  jsxMetadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+  constraintsArray: any[],
+  dimension: 'width' | 'height',
+): boolean {
+  return (
+    constraintsArray.includes(dimension) ||
+    detectFillHugFixedState(dimension === 'width' ? 'horizontal' : 'vertical', jsxMetadata, path)
+      .fixedHugFill?.type === 'hug' // hug is treated as a constrained dimension
+  )
 }
 
 function getConstrainedSizes(
   jsxMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
-  originalRect: CanvasRectangle,
-): { sizes: Array<Size>; lockedWidth: boolean; lockedHeight: boolean } {
-  let result: Array<Size> = []
-  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+  originalFrame: CanvasRectangle,
+): { constrainedSizes: Array<Size>; lockedWidth: boolean; lockedHeight: boolean } {
   let lockedWidth = false
   let lockedHeight = false
-  for (const child of children) {
-    const constraintsArray = getSafeGroupChildConstraintsArray(allElementProps, child.elementPath)
-    const frame = child.localFrame
+  let constrainedSizes: Array<Size> = []
+
+  const descendants = Object.values(jsxMetadata).filter((element) =>
+    EP.isDescendantOf(element.elementPath, path),
+  )
+  for (const element of descendants) {
+    const constraintsArray = getSafeGroupChildConstraintsArray(allElementProps, element.elementPath)
     const constraints = {
-      width:
-        constraintsArray.includes('width') ||
-        detectFillHugFixedState('horizontal', jsxMetadata, child.elementPath).fixedHugFill?.type ===
-          'hug',
-      height:
-        constraintsArray.includes('height') ||
-        detectFillHugFixedState('vertical', jsxMetadata, child.elementPath).fixedHugFill?.type ===
-          'hug',
+      width: isDimensionConstrained(jsxMetadata, element.elementPath, constraintsArray, 'width'),
+      height: isDimensionConstrained(jsxMetadata, element.elementPath, constraintsArray, 'height'),
       top: constraintsArray.includes('top'),
       bottom: constraintsArray.includes('bottom'),
       left: constraintsArray.includes('left'),
@@ -345,35 +385,41 @@ function getConstrainedSizes(
     lockedWidth ||= constraints.width && constraints.left && constraints.right
     lockedHeight ||= constraints.height && constraints.top && constraints.bottom
 
-    const constrained =
+    const isConstrained =
       constraints.top ||
       constraints.bottom ||
       constraints.height ||
       constraints.left ||
       constraints.right ||
       constraints.width
-    if (frame != null && isFiniteRectangle(frame) && constrained) {
-      result.push({
+
+    if (isConstrained && element.localFrame != null && isFiniteRectangle(element.localFrame)) {
+      constrainedSizes.push({
         width: getBoundDimension(
           constraints.left,
           constraints.right,
           constraints.width,
-          originalRect.width,
-          frame.x,
-          frame.width,
+          originalFrame.width,
+          element.localFrame.x,
+          element.localFrame.width,
         ),
         height: getBoundDimension(
           constraints.top,
           constraints.bottom,
           constraints.height,
-          originalRect.height,
-          frame.y,
-          frame.height,
+          originalFrame.height,
+          element.localFrame.y,
+          element.localFrame.height,
         ),
       })
     }
   }
-  return { sizes: result, lockedWidth, lockedHeight }
+
+  return {
+    constrainedSizes,
+    lockedWidth,
+    lockedHeight,
+  }
 }
 
 function getBoundDimension(
@@ -396,6 +442,7 @@ function getBoundDimension(
     return 0
   }
 }
+
 function snapBoundingBox(
   selectedElements: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
