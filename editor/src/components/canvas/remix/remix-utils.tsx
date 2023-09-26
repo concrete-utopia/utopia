@@ -39,7 +39,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
-import { createClientRoutes } from '../../../third-party/remix/client-routes'
+import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -423,21 +423,4 @@ export function getRouteComponentNameForOutlet(
   }
 
   return defaultExport.name
-}
-
-// Create a map of routes by parentId to use recursively instead of
-// repeatedly filtering the manifest.
-// Copied and updated from https://github.com/remix-run/remix/blob/94695c3d96ac72daeb18dddd77e6dc6590d16bf4/packages/remix-react/routes.tsx
-export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
-  let routes: Record<string, Omit<EntryRoute, 'children'>[]> = {}
-
-  Object.values(manifest).forEach((route) => {
-    let parentId = route.parentId ?? ''
-    if (routes[parentId] == null) {
-      routes[parentId] = []
-    }
-    routes[parentId].push(route)
-  })
-
-  return routes
 }

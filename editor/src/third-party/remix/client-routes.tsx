@@ -49,36 +49,6 @@ export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
   return routes
 }
 
-export function createServerRoutes(
-  manifest: RouteManifest<EntryRoute>,
-  routeModules: RouteModules,
-  future: FutureConfig,
-  parentId: string = '',
-  routesByParentId: Record<string, Omit<EntryRoute, 'children'>[]> = groupRoutesByParentId(
-    manifest,
-  ),
-): DataRouteObject[] {
-  return (routesByParentId[parentId] || []).map((route) => {
-    let hasErrorBoundary = route.id === 'root' || route.hasErrorBoundary
-
-    let dataRoute: DataRouteObject = {
-      caseSensitive: route.caseSensitive,
-      element: <RemixRoute id={route.id} />,
-      errorElement: hasErrorBoundary ? <RemixRouteError id={route.id} /> : undefined,
-      id: route.id,
-      index: route.index,
-      path: route.path,
-      handle: routeModules[route.id].handle,
-      // Note: we don't need loader/action/shouldRevalidate on these routes
-      // since they're for a static render
-    }
-
-    let children = createServerRoutes(manifest, routeModules, future, route.id, routesByParentId)
-    if (children.length > 0) dataRoute.children = children
-    return dataRoute
-  })
-}
-
 export function createClientRoutesWithHMRRevalidationOptOut(
   needsRevalidation: Set<string>,
   manifest: RouteManifest<EntryRoute>,
