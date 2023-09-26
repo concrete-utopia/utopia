@@ -433,7 +433,7 @@ export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
 
   Object.values(manifest).forEach((route) => {
     let parentId = route.parentId ?? ''
-    if (routes[parentId] != null) {
+    if (routes[parentId] == null) {
       routes[parentId] = []
     }
     routes[parentId].push(route)
