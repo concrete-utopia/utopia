@@ -213,6 +213,7 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         height: 18,
         width: 18,
         display: shouldShow ? 'block' : 'none',
+        paddingRight: 1,
       }}
     >
       {when(
@@ -338,10 +339,17 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
     <FlexRow
       style={{
         padding: '0 5px',
-        gap: 1,
         position: 'fixed',
         right: 0,
-        background: props.background,
+        background:
+          props.highlighted ||
+          props.selected ||
+          !props.isVisibleOnCanvas ||
+          isLockedElement ||
+          isLockedHierarchy ||
+          isDescendantOfLocked
+            ? props.background
+            : 'transparent',
       }}
     >
       <OriginalComponentNameLabel
