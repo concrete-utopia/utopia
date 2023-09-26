@@ -365,7 +365,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (myElement.current == null) {
       setTimeout(() => {
         dispatch([
-          updateEditorMode(EditorModes.selectMode()),
+          updateEditorMode(EditorModes.selectMode(null, false, 'none')),
           showToast(
             notice(
               "This element doesn't support children, so it cannot be text edited",
@@ -432,10 +432,10 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       savedContentRef.current = content
       dispatch([
         getSaveAction(elementPath, content, textProp),
-        updateEditorMode(EditorModes.selectMode()),
+        updateEditorMode(EditorModes.selectMode(null, false, 'none')),
       ])
     } else {
-      dispatch([updateEditorMode(EditorModes.selectMode())])
+      dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
   }, [dispatch, elementPath, elementState, textProp])
 

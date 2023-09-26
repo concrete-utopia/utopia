@@ -17,7 +17,7 @@ import type {
   ExportDestructuredAssignment,
   ExportDetail,
   ExportFunction,
-  ExportIdentifier,
+  ExportDefaultIdentifier,
   ExportVariable,
   ExportVariables,
   ExportVariablesWithModifier,
@@ -48,7 +48,7 @@ import {
   exportDefaultFunctionOrClass,
   exportDestructuredAssignment,
   exportFunction,
-  exportIdentifier,
+  exportDefaultIdentifier,
   exportVariable,
   exportVariables,
   exportVariablesWithModifier,
@@ -474,6 +474,7 @@ import type {
   Coordinates,
   TextEditableElementState,
   InsertionSubjectWrapper,
+  SelectModeToolbarMode,
 } from '../editor-modes'
 import {
   EditorModes,
@@ -536,6 +537,30 @@ import type { ElementPathTree, ElementPathTrees } from '../../../core/shared/ele
 import { elementPathTree } from '../../../core/shared/element-path-tree'
 import type { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboard'
 import { elementPaste } from '../actions/action-creators'
+import type { ProjectMetadataFromServer, ProjectServerState } from './project-server-state'
+import { projectServerState, projectMetadataFromServer } from './project-server-state'
+
+export const ProjectMetadataFromServerKeepDeepEquality: KeepDeepEqualityCall<ProjectMetadataFromServer> =
+  combine3EqualityCalls(
+    (entry) => entry.title,
+    StringKeepDeepEquality,
+    (entry) => entry.ownerName,
+    NullableStringKeepDeepEquality,
+    (entry) => entry.ownerPicture,
+    NullableStringKeepDeepEquality,
+    projectMetadataFromServer,
+  )
+
+export const ProjectServerStateKeepDeepEquality: KeepDeepEqualityCall<ProjectServerState> =
+  combine3EqualityCalls(
+    (entry) => entry.isMyProject,
+    createCallWithTripleEquals<ProjectServerState['isMyProject']>(),
+    (entry) => entry.projectData,
+    nullableDeepEquality(ProjectMetadataFromServerKeepDeepEquality),
+    (entry) => entry.forkedFromProjectData,
+    nullableDeepEquality(ProjectMetadataFromServerKeepDeepEquality),
+    projectServerState,
+  )
 
 export function TransientCanvasStateFilesStateKeepDeepEquality(
   oldValue: TransientFilesState,
@@ -1609,9 +1634,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientHeightResult &&
       parentFlexDirectionResult &&
       parentJustifyContentEquals &&
-      parentFlexGapEquals &&
-      parentPaddingEquals &&
-      parentHugsOnMainAxisEquals &&
+      parentFlexGapEquals.areEqual &&
+      parentPaddingEquals.areEqual &&
+      parentHugsOnMainAxisEquals.areEqual &&
       gapEquals &&
       flexDirectionResult &&
       justifyContentEquals &&
@@ -2575,8 +2600,8 @@ export const ExportDefaultFunctionOrClassKeepDeepEquality: KeepDeepEqualityCall<
     exportDefaultFunctionOrClass,
   )
 
-export const ExportIdentifierKeepDeepEquality: KeepDeepEqualityCall<ExportIdentifier> =
-  combine1EqualityCall((expIdent) => expIdent.name, StringKeepDeepEquality, exportIdentifier)
+export const ExportIdentifierKeepDeepEquality: KeepDeepEqualityCall<ExportDefaultIdentifier> =
+  combine1EqualityCall((expIdent) => expIdent.name, StringKeepDeepEquality, exportDefaultIdentifier)
 
 export const ReexportWildcardKeepDeepEquality: KeepDeepEqualityCall<ReexportWildcard> =
   combine2EqualityCalls(
@@ -2631,7 +2656,7 @@ export const ExportDetailKeepDeepEquality: KeepDeepEqualityCall<ExportDetail> = 
         return ExportDefaultFunctionOrClassKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'EXPORT_IDENTIFIER':
+    case 'EXPORT_DEFAULT_IDENTIFIER':
       if (newValue.type === oldValue.type) {
         return ExportIdentifierKeepDeepEquality(oldValue, newValue)
       }
@@ -3154,11 +3179,13 @@ export const InsertModeKeepDeepEquality: KeepDeepEqualityCall<InsertMode> = comb
   EditorModes.insertMode,
 )
 
-export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine2EqualityCalls(
+export const SelectModeKeepDeepEquality: KeepDeepEqualityCall<SelectMode> = combine3EqualityCalls(
   (mode) => mode.controlId,
   NullableStringKeepDeepEquality,
   (mode) => mode.area,
   BooleanKeepDeepEquality,
+  (mode) => mode.toolbarMode,
+  createCallWithTripleEquals<SelectModeToolbarMode>(),
   EditorModes.selectMode,
 )
 

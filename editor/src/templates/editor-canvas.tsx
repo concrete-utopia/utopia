@@ -246,7 +246,9 @@ function handleCanvasEvent(
     model.mode.type === 'select' &&
     model.mode.controlId != null
   ) {
-    optionalControlIdClearAction = [EditorActions.switchEditorMode(EditorModes.selectMode())]
+    optionalControlIdClearAction = [
+      EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
+    ]
   }
 
   // Balazs: for the sake of not breaking too much things, I update the mouse position variable here. I removed it from the state for performance reasons
@@ -942,7 +944,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           }
           this.props.dispatch([
             CanvasActions.clearInteractionSession(false),
-            EditorActions.switchEditorMode(EditorModes.selectMode(null)),
+            EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
           ])
         },
 
@@ -964,7 +966,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
               EditorActions.enableInsertModeForJSXElement(newElement, uid, {}, elementSize),
               EditorActions.setImageDragSessionState(notDragging()),
               CanvasActions.clearInteractionSession(true),
-              EditorActions.switchEditorMode(EditorModes.selectMode()),
+              EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
             ])
             return
           }

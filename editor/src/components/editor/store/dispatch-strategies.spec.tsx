@@ -59,6 +59,7 @@ import {
 } from './dispatch-strategies'
 import type { EditorStoreFull } from './editor-state'
 import { createEditorState, deriveState } from './editor-state'
+import { emptyProjectServerState } from './project-server-state'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
 function createEditorStore(
@@ -109,6 +110,7 @@ function createEditorStore(
     saveCountThisSession: 0,
     builtInDependencies: createBuiltInDependenciesList(null),
     postActionInteractionSession: null,
+    projectServerState: emptyProjectServerState(),
   }
 
   return initialEditorStore

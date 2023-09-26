@@ -290,7 +290,7 @@ export function createDirectInsertImageActions(
     return []
   } else {
     return [
-      EditorActions.switchEditorMode(EditorModes.selectMode()),
+      EditorActions.switchEditorMode(EditorModes.selectMode(null, false, 'none')),
       ...Utils.flatMapArray((image) => {
         const { frame, multiplier } = getFrameAndMultiplier(
           centerPoint,

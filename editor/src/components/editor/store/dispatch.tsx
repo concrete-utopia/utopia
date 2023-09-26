@@ -51,6 +51,7 @@ import {
   runExecuteStartPostActionMenuAction,
   runExecuteWithPostActionMenuAction,
   runLocalEditorAction,
+  runUpdateProjectServerState,
 } from './editor-update'
 import { fastForEach, isBrowserEnvironment } from '../../../core/shared/utils'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
@@ -85,6 +86,7 @@ import {
   parseResultToWorkerUpdates,
 } from '../../../core/shared/parser-projectcontents-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
+import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -160,6 +162,10 @@ function processAction(
     working = runClearPostActionSession(working)
   }
 
+  if (action.action === 'UPDATE_PROJECT_SERVER_STATE') {
+    working = runUpdateProjectServerState(working, action)
+  }
+
   // Process action on the JS side.
   const editorAfterUpdateFunction = runLocalEditorAction(
     working.unpatchedEditor,
@@ -179,10 +185,15 @@ function processAction(
     working.builtInDependencies,
     action as CanvasAction,
   )
-  let editorAfterNavigator = runLocalNavigatorAction(
+  const editorAfterNavigator = runLocalNavigatorAction(
     editorAfterCanvas,
     working.unpatchedDerived,
     action as LocalNavigatorAction,
+  )
+  const withPossiblyClearedPseudoInsert = maybeClearPseudoInsertMode(
+    editorStoreUnpatched.unpatchedEditor,
+    editorAfterNavigator,
+    action,
   )
 
   let newStateHistory: StateHistory
@@ -197,12 +208,12 @@ function processAction(
     case 'NEW':
     case 'LOAD':
       const derivedState = deriveState(
-        editorAfterNavigator,
+        withPossiblyClearedPseudoInsert,
         null,
         'unpatched',
         unpatchedCreateRemixDerivedDataMemo,
       )
-      newStateHistory = History.init(editorAfterNavigator, derivedState)
+      newStateHistory = History.init(withPossiblyClearedPseudoInsert, derivedState)
       break
     default:
       newStateHistory = working.history
@@ -210,7 +221,7 @@ function processAction(
   }
 
   return {
-    unpatchedEditor: editorAfterNavigator,
+    unpatchedEditor: withPossiblyClearedPseudoInsert,
     unpatchedDerived: working.unpatchedDerived,
     strategyState: working.strategyState, // this means the actions cannot update strategyState – this piece of state lives outside our "redux" state
     postActionInteractionSession: working.postActionInteractionSession,
@@ -220,6 +231,7 @@ function processAction(
     persistence: working.persistence,
     saveCountThisSession: working.saveCountThisSession,
     builtInDependencies: working.builtInDependencies,
+    projectServerState: working.projectServerState,
   }
 }
 
@@ -553,6 +565,7 @@ export function editorDispatchClosingOut(
     ]),
     saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
+    projectServerState: storedState.projectServerState,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -751,7 +764,12 @@ function editorDispatchInner(
       const priorSimpleLocks = storedState.unpatchedEditor.lockedElements.simpleLock
       const updatedSimpleLocks = doNotUpdateLocks
         ? priorSimpleLocks
-        : updateSimpleLocks(storedState.unpatchedEditor.jsxMetadata, metadata, priorSimpleLocks)
+        : updateSimpleLocks(
+            storedState.unpatchedEditor.jsxMetadata,
+            metadata,
+            elementPathTree,
+            priorSimpleLocks,
+          )
       if (result.unpatchedEditor.canvas.interactionSession != null) {
         result = {
           ...result,
@@ -879,6 +897,7 @@ function editorDispatchInner(
       entireUpdateFinished: Promise.all([storedState.entireUpdateFinished]),
       saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
+      projectServerState: storedState.projectServerState,
     }
   } else {
     //empty return

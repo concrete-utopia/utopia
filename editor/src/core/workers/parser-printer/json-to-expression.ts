@@ -1,4 +1,4 @@
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 
 export function jsonToExpression(json: any): TS.Expression {
   switch (typeof json) {

@@ -54,4 +54,5 @@ export const UtopiaApiComponents: ComponentDescriptorsForFile = {
   FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle()),
   FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle()),
   Scene: BasicUtopiaComponentDescriptor('Scene', defaultSceneElementStyle(null)),
+  RemixScene: BasicUtopiaComponentDescriptor('RemixScene', defaultSceneElementStyle(null)),
 }

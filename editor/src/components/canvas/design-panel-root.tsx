@@ -1,48 +1,49 @@
-import type { ResizeCallback, ResizeDirection } from 're-resizable'
+/** @jsxRuntime classic */
+/** @jsx jsx */
+/** @jsxFrag React.Fragment */
+
+import { jsx } from '@emotion/react'
+import type { ResizeDirection } from 're-resizable'
 import { Resizable } from 're-resizable'
 import React from 'react'
-import { FancyError, RuntimeErrorInfo } from '../../core/shared/code-exec-utils'
 import * as EditorActions from '../editor/actions/action-creators'
 
-import { ConsoleLog, LeftPanelMinWidth, RightMenuTab } from '../editor/store/editor-state'
+import { RightMenuTab } from '../editor/store/editor-state'
 
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
 
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
-import { NavigatorComponent } from '../navigator/navigator'
 import {
   SimpleFlexRow,
   UtopiaTheme,
-  UtopiaStyles,
   SimpleFlexColumn,
-  background,
   useColorTheme,
-  Icons,
   LargerIcons,
 } from '../../uuiui'
 
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { FloatingInsertMenu } from './ui/floating-insert-menu'
-import { canvasPoint } from '../../core/shared/math-utils'
-import type { Size } from '../../core/shared/math-utils'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
 import { getQueryParam } from '../../common/env-vars'
 import { unless, when } from '../../utils/react-conditionals'
 import { InsertMenuPane } from '../navigator/insert-menu-pane'
-import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import { FloatingPanelsContainer } from './floating-panels'
-import type { Menu, Pane } from './floating-panels-state'
+import { GridMenuWidth } from './grid-panels-state'
+import { GridPanelsContainer } from './grid-panels-container'
+import type { Menu, Pane, StoredPanel } from './grid-panels-state'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { NO_OP } from '../../core/shared/utils'
-import { TitleBarEmpty, TitleBarUserProfile, TitleHeight } from '../titlebar/title-bar'
+import { TitleBarEmpty, TitleBarUserProfile } from '../titlebar/title-bar'
+import type { EditorAction } from '../editor/action-types'
+import { SettingsPane } from '../navigator/left-pane/settings-pane'
+import { MenuTab } from '../../uuiui/menu-tab'
+import { UIGridRow } from '../inspector/widgets/ui-grid-row'
 
 interface NumberSize {
   width: number
@@ -169,18 +170,7 @@ const DesignPanelRootInner = React.memo(() => {
                 id='vscode-editor'
                 style={{ height: 'calc(100% - 20px)', position: 'absolute', margin: 10, zIndex: 1 }}
               >
-                <CodeEditorPane
-                  small={false}
-                  width={0}
-                  height={0}
-                  onResize={NO_OP}
-                  setIsResizing={NO_OP}
-                  resizableConfig={{
-                    enable: {
-                      right: true,
-                    },
-                  }}
-                />
+                <CodeEditorPane panelData={null as any} small={false} />
               </div>,
             )}
             {unless(
@@ -196,18 +186,7 @@ const DesignPanelRootInner = React.memo(() => {
                   margin: 10,
                 }}
               >
-                <LeftPaneComponent
-                  width={0}
-                  height={0}
-                  onResize={NO_OP}
-                  setIsResizing={NO_OP}
-                  resizableConfig={{
-                    minWidth: LeftPanelMinWidth,
-                    enable: {
-                      right: true,
-                    },
-                  }}
-                />
+                <LeftPaneComponent panelData={null as any} />
               </div>,
             )}
             <CanvasWrapperComponent />
@@ -223,26 +202,10 @@ const DesignPanelRootInner = React.memo(() => {
                   margin: 10,
                 }}
               >
-                <ResizableRightPane
-                  width={0}
-                  height={0}
-                  onResize={NO_OP}
-                  setIsResizing={NO_OP}
-                  resizableConfig={{
-                    snap: {
-                      x: [
-                        UtopiaTheme.layout.inspectorSmallWidth,
-                        UtopiaTheme.layout.inspectorLargeWidth,
-                      ],
-                    },
-                    enable: {
-                      left: true,
-                    },
-                  }}
-                />
+                <ResizableRightPane panelData={null as any} />
               </div>,
             )}
-            {when(draggablePanelsEnabled, <FloatingPanelsContainer />)}
+            {when(draggablePanelsEnabled, <GridPanelsContainer />)}
           </SimpleFlexColumn>
         }
       </SimpleFlexRow>
@@ -270,56 +233,28 @@ export const DesignPanelRoot = React.memo(() => {
 DesignPanelRoot.displayName = 'DesignPanelRoot'
 
 interface ResizableRightPaneProps {
-  width: number
-  height: number
-  onResize: (menuName: 'inspector', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
-  resizableConfig: ResizableProps
+  panelData: StoredPanel
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const { onResize: onPanelResize, setIsResizing, width, height } = props
+  const defaultInspectorWidth = isFeatureEnabled('Draggable Floating Panels')
+    ? GridMenuWidth
+    : UtopiaTheme.layout.inspectorSmallWidth
+
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
 
-  const [widthLocal, setWidthLocal] = React.useState<number>(UtopiaTheme.layout.inspectorSmallWidth)
+  const [width, setWidth] = React.useState<number>(defaultInspectorWidth)
 
   const resizableRef = React.useRef<Resizable>(null)
-  const onResizeStart = React.useCallback(() => {
-    setIsResizing('inspector')
-  }, [setIsResizing])
-  const onResize = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: Size,
-    ) => {
-      const newWidth = resizableRef.current?.size.width
-      if (newWidth != null) {
-        // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-        if (isFeatureEnabled('Draggable Floating Panels')) {
-          onPanelResize('inspector', direction, newWidth, elementRef?.clientHeight)
-        } else {
-          setWidthLocal(newWidth)
-        }
-        updateInspectorWidth(newWidth > UtopiaTheme.layout.inspectorSmallWidth ? 'wide' : 'regular')
-      }
-    },
-    [updateInspectorWidth, onPanelResize],
-  )
-  const onResizeStop = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: Size,
-    ) => {
-      setIsResizing(null)
-      onResize(event, direction, elementRef, delta)
-    },
-    [setIsResizing, onResize],
-  )
+  const onResize = React.useCallback(() => {
+    const newWidth = resizableRef.current?.size.width
+    if (newWidth != null) {
+      // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
+      setWidth(newWidth)
+      updateInspectorWidth(newWidth > defaultInspectorWidth ? 'wide' : 'regular')
+    }
+  }, [updateInspectorWidth, defaultInspectorWidth])
 
   const selectedTab = useEditorState(
     Substores.restOfEditor,
@@ -332,6 +267,29 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
     (store) => store.editor.rightMenu.expanded,
     'DesignPanelRoot isRightMenuExpanded',
   )
+  const dispatch = useDispatch()
+
+  const onClickTab = React.useCallback(
+    (menuTab: RightMenuTab) => {
+      let actions: Array<EditorAction> = []
+      actions.push(EditorActions.setRightMenuTab(menuTab))
+      dispatch(actions)
+    },
+    [dispatch],
+  )
+
+  const onClickInsertTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Insert)
+  }, [onClickTab])
+
+  const onClickInspectorTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Inspector)
+  }, [onClickTab])
+
+  const onClickSettingsTab = React.useCallback(() => {
+    onClickTab(RightMenuTab.Settings)
+  }, [onClickTab])
+
   if (!isRightMenuExpanded) {
     return null
   }
@@ -340,12 +298,12 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
     <Resizable
       ref={resizableRef}
       defaultSize={{
-        width: UtopiaTheme.layout.inspectorSmallWidth,
+        width: defaultInspectorWidth,
         height: '100%',
       }}
       size={{
-        width: isFeatureEnabled('Draggable Floating Panels') ? width : widthLocal,
-        height: isFeatureEnabled('Draggable Floating Panels') ? height : '100%',
+        width: width,
+        height: '100%',
       }}
       style={{
         transition: 'width 100ms ease-in-out',
@@ -354,12 +312,20 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
       }}
-      onResizeStart={onResizeStart}
+      onResizeStart={onResize}
       onResize={onResize}
-      onResizeStop={onResizeStop}
-      {...props.resizableConfig}
+      onResizeStop={onResize}
+      snap={{
+        x: [defaultInspectorWidth, UtopiaTheme.layout.inspectorLargeWidth],
+      }}
+      enable={{
+        left: isFeatureEnabled('Draggable Floating Panels') ? false : true,
+      }}
     >
-      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarUserProfile />)}
+      {when(
+        isFeatureEnabled('Draggable Floating Panels'),
+        <TitleBarUserProfile panelData={props.panelData} />,
+      )}
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
@@ -373,8 +339,31 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
           flexShrink: 0,
         }}
       >
-        {selectedTab === RightMenuTab.Insert && <InsertMenuPane />}
-        {selectedTab === RightMenuTab.Inspector && <InspectorEntryPoint />}
+        <UIGridRow
+          variant='|--67px--||--67px--||--67px--||--67px--|'
+          padded={false}
+          css={{ gridColumnGap: 0 }}
+          style={{ alignItems: 'stretch', marginBottom: 10 }}
+        >
+          <MenuTab
+            label={'Insert'}
+            selected={selectedTab === RightMenuTab.Insert}
+            onClick={onClickInsertTab}
+          />
+          <MenuTab
+            label={'Inspector'}
+            selected={selectedTab === RightMenuTab.Inspector}
+            onClick={onClickInspectorTab}
+          />
+          <MenuTab
+            label={'Settings'}
+            selected={selectedTab === RightMenuTab.Settings}
+            onClick={onClickSettingsTab}
+          />
+        </UIGridRow>
+        {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
+        {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
+        {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
     </Resizable>
@@ -382,17 +371,11 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
 })
 
 interface CodeEditorPaneProps {
+  panelData: StoredPanel
   small: boolean
-  width: number
-  height: number
-  onResize: (menuName: 'code-editor', direction: Direction, width: number, height: number) => void
-  setIsResizing: React.Dispatch<React.SetStateAction<Menu | Pane | null>>
-  resizableConfig: ResizableProps
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const { width, height, onResize: onPanelResize, setIsResizing, resizableConfig } = props
-  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const interfaceDesigner = useEditorState(
     Substores.restOfEditor,
@@ -401,11 +384,6 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   )
 
   const codeEditorEnabled = isCodeEditorEnabled()
-  const onResizeStart = React.useCallback(() => {
-    if (isFeatureEnabled('Draggable Floating Panels')) {
-      setIsResizing('code-editor')
-    }
-  }, [setIsResizing])
   const onResizeStop = React.useCallback(
     (
       event: MouseEvent | TouchEvent,
@@ -414,62 +392,48 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
       delta: NumberSize,
     ) => {
       dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
-      const newWidth = elementRef?.clientWidth
-      const newHeight = elementRef?.clientHeight
-
-      if (isFeatureEnabled('Draggable Floating Panels')) {
-        onPanelResize('code-editor', direction, newWidth, newHeight)
-        setIsResizing(null)
-      }
     },
-    [dispatch, onPanelResize, setIsResizing],
-  )
-  const onResize = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      const newWidth = elementRef?.clientWidth
-      const newHeight = elementRef?.clientHeight
-      if (newWidth != null && newHeight != null) {
-        onPanelResize('code-editor', direction, newWidth, newHeight)
-      }
-    },
-    [onPanelResize],
+    [dispatch],
   )
 
   return (
     <Resizable
       defaultSize={{
-        width: interfaceDesigner.codePaneWidth,
+        width: isFeatureEnabled('Draggable Floating Panels')
+          ? '100%'
+          : interfaceDesigner.codePaneWidth,
         height: '100%',
       }}
       size={{
         width: isFeatureEnabled('Draggable Floating Panels')
-          ? width
+          ? '100%'
           : interfaceDesigner.codePaneWidth,
-        height: isFeatureEnabled('Draggable Floating Panels') ? height : '100%',
+        height: '100%',
       }}
-      onResizeStart={onResizeStart}
       onResizeStop={onResizeStop}
-      onResize={onResize}
+      enable={{
+        top: false,
+        right: isFeatureEnabled('Draggable Floating Panels') ? false : true,
+        bottom: false,
+        topRight: false,
+        bottomRight: false,
+        bottomLeft: false,
+        topLeft: false,
+      }}
       className='resizableFlexColumnCanvasCode'
       style={{
         display: props.small ? 'block' : interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? interfaceDesigner.codePaneWidth
-          : undefined,
         position: 'relative',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         flexDirection: 'column',
       }}
-      {...resizableConfig}
     >
-      {when(isFeatureEnabled('Draggable Floating Panels'), <TitleBarEmpty />)}
+      {when(
+        isFeatureEnabled('Draggable Floating Panels'),
+        <TitleBarEmpty panelData={props.panelData} />,
+      )}
       <div
         style={{
           transformOrigin: 'top left',
@@ -486,7 +450,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         <div
           style={{
             display: 'flex',
-            height: props.small ? (height - TitleHeight) / 0.7 - 32 : '100%',
+            height: '100%',
           }}
         >
           {when(codeEditorEnabled, <CodeEditorWrapper />)}
