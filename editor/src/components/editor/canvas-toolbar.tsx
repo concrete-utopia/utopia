@@ -85,6 +85,7 @@ ToolbarSearchListing.displayName = 'ToolbarSearchListing'
 
 export interface CanvasToolbarSearchProps {
   actionWith: (item: InsertMenuItem | null) => void
+  placeholder?: string
   children?: React.ReactNode
 }
 
@@ -135,13 +136,6 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
     [switchToSelectModeCloseMenus, wrapInDivCallback],
   )
 
-  const CustomMenu = () => (
-    <div style={{ background: 'lime' }}>
-      {/* help how do I get the icons inside here{props.children} */}
-      <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
-    </div>
-  )
-
   return (
     <>
       <WindowedSelect
@@ -154,21 +148,21 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         options={options}
         menuPortalTarget={menuPortalTarget}
         filterOption={createFilter({ ignoreAccents: true })}
-        placeholder={'Search'}
-        components={{ Menu: CustomMenu, Option: CustomComponentOption }}
+        placeholder={props.placeholder || 'Default Placeholder'}
+        components={{ Option: CustomComponentOption }}
         styles={{
           ...componentSelectorStyles,
           menuPortal: (styles: CSSObject): CSSObject => {
             return {
               overflow: 'hidden',
-              // backgroundColor: theme.bg2.value,
+              backgroundColor: theme.bg2.value,
               borderRadius: '0px 0px 10px 10px',
               pointerEvents: 'initial',
-              // position: 'absolute',
+              position: 'absolute',
               top: 100,
               left: 20,
               width: 230,
-              // boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             }
           },
           input: (styles: CSSObject): CSSObject => {
@@ -695,7 +689,7 @@ export const CanvasToolbar = React.memo(() => {
               insertMenuMode === 'wrap',
               wrapInSubmenu(
                 <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
-                  <CanvasToolbarSearch actionWith={convertToAndClose}>
+                  <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Wrap In...'>
                     <FlexRow>
                       <Tooltip title='Back' placement='bottom'>
                         <InsertModeButton
@@ -737,6 +731,7 @@ export const CanvasToolbar = React.memo(() => {
               insertMenuMode === 'convert',
               wrapInSubmenu(
                 <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
+                  <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Convert To...' />
                   <FlexRow>
                     <Tooltip title='Back' placement='bottom'>
                       <InsertModeButton
@@ -770,7 +765,7 @@ export const CanvasToolbar = React.memo(() => {
                       <InsertModeButton iconType='conditional' onClick={convertToFragment} />
                     </Tooltip>
                   </FlexRow>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} />
+                  <ToolbarSearchListing />
                 </FlexColumn>,
               ),
             )}
@@ -827,7 +822,8 @@ export const CanvasToolbar = React.memo(() => {
                     />
                   </Tooltip>
                 </FlexRow>
-                <CanvasToolbarSearch actionWith={convertToAndClose} />
+                {/* TODO needs appropriate actionWidth? */}
+                <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Insert...' />
               </FlexColumn>,
             )
           : null}
@@ -854,7 +850,7 @@ export const CanvasToolbar = React.memo(() => {
             </FlexRow>
           </>,
         )}
-        <ToolbarSearchListing />
+        {/* <ToolbarSearchListing /> */}
       </FlexColumn>
     </div>
   )
