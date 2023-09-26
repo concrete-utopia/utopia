@@ -26,7 +26,7 @@ async function renderRemixProject(project: PersistentModel) {
 }
 
 async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
-  const targetElement = editor.renderedDOM.queryAllByTestId(testId)[0]
+  const targetElement = editor.renderedDOM.getByTestId(testId)
   const targetElementBounds = targetElement.getBoundingClientRect()
 
   await mouseClickAtPoint(targetElement, {
@@ -110,7 +110,7 @@ function createProject(withBoundary: boolean) {
 
 export async function runTestReturningErrorBoundaries(
   withCustomBoundary: 'with-custom-boundary' | 'without-custom-boundary',
-): Promise<{ customBoundary: HTMLElement | undefined; canvasOverlay: HTMLElement | undefined }> {
+): Promise<{ customBoundary: HTMLElement | null; canvasOverlay: HTMLElement | null }> {
   const project = createProject(withCustomBoundary === 'with-custom-boundary')
 
   const renderResult = await renderRemixProject(project)
@@ -118,8 +118,8 @@ export async function runTestReturningErrorBoundaries(
   await renderResult.dispatch([switchEditorMode(EditorModes.liveMode())], true)
   await clickLinkWithTestId(renderResult, 'remix-link')
 
-  const [customBoundary] = renderResult.renderedDOM.queryAllByText(CustomBoundaryText)
-  const [canvasOverlay] = renderResult.renderedDOM.queryAllByText(`Error: ${ErrorText}`)
+  const customBoundary = renderResult.renderedDOM.queryByText(CustomBoundaryText)
+  const canvasOverlay = renderResult.renderedDOM.queryByText(`Error: ${ErrorText}`)
 
   return {
     customBoundary: customBoundary,

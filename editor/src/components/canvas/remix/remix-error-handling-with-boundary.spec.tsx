@@ -11,7 +11,7 @@ describe('Remix error handling', () => {
     const { customBoundary, canvasOverlay } = await runTestReturningErrorBoundaries(
       'with-custom-boundary',
     )
-    expect(customBoundary).toBeDefined()
-    expect(canvasOverlay).toBeUndefined()
+    expect(customBoundary).not.toBeNull()
+    expect(canvasOverlay).toBeNull()
   })
 })
