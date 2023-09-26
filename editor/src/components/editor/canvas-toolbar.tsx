@@ -36,13 +36,17 @@ import {
   useToInsert,
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
+import type { DragToMoveIndicatorFlags } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
 import { defaultTransparentViewElement } from './defaults'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
-import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
+import {
+  StrategyIndicator,
+  useGetDragStrategyIndicatorFlags,
+} from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { NO_OP } from '../../core/shared/utils'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
@@ -65,6 +69,7 @@ import {
   insertableComponentGroupFragment,
 } from '../shared/project-components'
 import { setFocus } from '../common/actions'
+import { replace } from 'tar'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -172,6 +177,38 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
   )
 })
 CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
+
+interface EditButtonIconDetails {
+  iconCategory: string
+  iconType: string
+}
+
+function editButtonIconDetails(iconCategory: string, iconType: string): EditButtonIconDetails {
+  return {
+    iconCategory: iconCategory,
+    iconType: iconType,
+  }
+}
+
+function getEditButtonIcon(
+  dragType: DragToMoveIndicatorFlags['dragType'],
+  reparentStatus: DragToMoveIndicatorFlags['reparent'],
+): EditButtonIconDetails {
+  if (dragType === 'none' && reparentStatus === 'none') {
+    return editButtonIconDetails('tools', 'pointer')
+  } else {
+    if (reparentStatus !== 'none') {
+      return editButtonIconDetails('modalities', 'reparent-large')
+    }
+    if (dragType === 'absolute') {
+      return editButtonIconDetails('modalities', 'moveabs-large')
+    }
+    if (dragType === 'static') {
+      return editButtonIconDetails('modalities', 'reorder-large')
+    }
+    return editButtonIconDetails('tools', 'pointer')
+  }
+}
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
@@ -359,6 +396,14 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [canvasToolbarMode.primary, dispatch, switchToSelectModeCloseMenus])
 
+  const indicatorFlagsInfo = useGetDragStrategyIndicatorFlags()
+  const editButtonIcon = React.useMemo(() => {
+    return getEditButtonIcon(
+      indicatorFlagsInfo?.indicatorFlags.dragType ?? 'none',
+      indicatorFlagsInfo?.indicatorFlags.reparent ?? 'none',
+    )
+  }, [indicatorFlagsInfo?.indicatorFlags.dragType, indicatorFlagsInfo?.indicatorFlags.reparent])
+
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
       <FlexRow
@@ -486,8 +531,8 @@ export const CanvasToolbar = React.memo(() => {
         >
           <Tooltip title='Edit' placement='bottom'>
             <InsertModeButton
-              iconType='pointer'
-              iconCategory='tools'
+              iconType={editButtonIcon.iconType}
+              iconCategory={editButtonIcon.iconCategory}
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={switchToSelectModeCloseMenus}
             />

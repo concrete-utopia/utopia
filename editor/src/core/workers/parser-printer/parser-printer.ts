@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as TS from 'typescript'
+import * as TS from 'typescript-for-the-editor'
 import {
   addUniquely,
   flatMapArray,
@@ -100,7 +100,7 @@ import {
   exportVariablesWithModifier,
   parseFailure,
   parseSuccess,
-  exportIdentifier,
+  exportDefaultIdentifier,
   isImportSideEffects,
   isParseSuccess,
 } from '../../shared/project-file-types'
@@ -626,7 +626,7 @@ function getModifersForComponent(
         break
       case 'EXPORT_VARIABLES':
         break
-      case 'EXPORT_IDENTIFIER':
+      case 'EXPORT_DEFAULT_IDENTIFIER':
         break
       case 'EXPORT_DESTRUCTURED_ASSIGNMENT':
         break
@@ -1130,7 +1130,7 @@ function detailsFromExportAssignment(
   declaration: TS.ExportAssignment,
 ): Either<TS.ExportAssignment, ExportDetail> {
   if (TS.isIdentifier(declaration.expression)) {
-    return right(exportIdentifier(declaration.expression.getText(sourceFile)))
+    return right(exportDefaultIdentifier(declaration.expression.getText(sourceFile)))
   } else if (TS.isArrowFunction(declaration.expression)) {
     return right(exportDefaultFunctionOrClass(null))
   } else {
@@ -1365,7 +1365,7 @@ export function parseCode(
         forEachRight(fromAssignment, (toMerge) => {
           detailOfExports = detailOfExports.concat(toMerge)
 
-          if (toMerge.type === 'EXPORT_IDENTIFIER') {
+          if (toMerge.type === 'EXPORT_DEFAULT_IDENTIFIER') {
             pushUnparsedCode(topLevelElement.getText(sourceFile))
           } else {
             pushArbitraryNode(topLevelElement)

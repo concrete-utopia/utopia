@@ -187,6 +187,10 @@ export function exportFunction(functionName: string): ExportFunction {
   }
 }
 
+export function isExportFunction(e: ExportDetail): e is ExportFunction {
+  return e.type === 'EXPORT_FUNCTION'
+}
+
 // export class ClassName {...}
 export interface ExportClass {
   type: 'EXPORT_CLASS'
@@ -262,16 +266,26 @@ export function isExportDefaultFunctionOrClass(e: ExportDetail): e is ExportDefa
 
 // const App = (…) { … }
 // export default App;
-export interface ExportIdentifier {
-  type: 'EXPORT_IDENTIFIER'
+export interface ExportDefaultIdentifier {
+  type: 'EXPORT_DEFAULT_IDENTIFIER'
   name: string
 }
 
-export function exportIdentifier(name: string): ExportIdentifier {
+export function exportDefaultIdentifier(name: string): ExportDefaultIdentifier {
   return {
-    type: 'EXPORT_IDENTIFIER',
+    type: 'EXPORT_DEFAULT_IDENTIFIER',
     name: name,
   }
+}
+
+export function isExportDefaultIdentifier(e: ExportDetail): e is ExportDefaultIdentifier {
+  return e.type === 'EXPORT_DEFAULT_IDENTIFIER'
+}
+
+export function isExportDefault(
+  e: ExportDetail,
+): e is ExportDefaultIdentifier | ExportDefaultFunctionOrClass {
+  return isExportDefaultFunctionOrClass(e) || isExportDefaultIdentifier(e)
 }
 
 // export * from …; // does not set the default export
@@ -320,7 +334,7 @@ export type ExportDetail =
   | ExportVariables
   | ExportDestructuredAssignment
   | ExportDefaultFunctionOrClass
-  | ExportIdentifier
+  | ExportDefaultIdentifier
   | ReexportWildcard
   | ReexportVariables
 

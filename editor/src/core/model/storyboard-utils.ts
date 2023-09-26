@@ -226,7 +226,7 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
                   }
                 }
                 break
-              case 'EXPORT_IDENTIFIER':
+              case 'EXPORT_DEFAULT_IDENTIFIER':
                 {
                   const possibleMainComponentName = PossiblyMainComponentNames.includes(
                     exportDetail.name,

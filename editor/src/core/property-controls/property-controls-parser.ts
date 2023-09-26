@@ -95,7 +95,7 @@ export function parseNumberInputControlDescription(
       return numberInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['number-input']), 'control')(value),
+    objectKeyParser(parseConstant('number-input'), 'control')(value),
     optionalObjectKeyParser(parseNumber, 'max')(value),
     optionalObjectKeyParser(parseNumber, 'min')(value),
     optionalObjectKeyParser(parseString, 'unit')(value),
@@ -142,7 +142,7 @@ export function parsePopUpListControlDescription(
       return popupListControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['popuplist']), 'control')(value),
+    objectKeyParser(parseConstant('popuplist'), 'control')(value),
     objectKeyParser(parseBasicControlOptions, 'options')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -163,7 +163,7 @@ export function parseExpressionPopUpListControlDescription(
       return enumControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['expression-popuplist']), 'control')(value),
+    objectKeyParser(parseConstant('expression-popuplist'), 'control')(value),
     objectKeyParser(parseArray(parseExpressionControlOption), 'options')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -227,7 +227,7 @@ export function parseCheckboxControlDescription(
       return checkboxControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['checkbox']), 'control')(value),
+    objectKeyParser(parseConstant('checkbox'), 'control')(value),
     optionalObjectKeyParser(parseString, 'disabledTitle')(value),
     optionalObjectKeyParser(parseString, 'enabledTitle')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
@@ -250,7 +250,7 @@ export function parseStringInputControlDescription(
       return stringInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['string-input']), 'control')(value),
+    objectKeyParser(parseConstant('string-input'), 'control')(value),
     optionalObjectKeyParser(parseString, 'placeholder')(value),
     optionalObjectKeyParser(parseBoolean, 'obscured')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
@@ -270,7 +270,7 @@ export function parseRadioControlDescription(value: unknown): ParseResult<RadioC
       return radioControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['radio']), 'control')(value),
+    objectKeyParser(parseConstant('radio'), 'control')(value),
     objectKeyParser(parseBasicControlOptions, 'options')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -316,7 +316,7 @@ export function parseColorControlDescription(value: unknown): ParseResult<ColorC
       return colorControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['color']), 'control')(value),
+    objectKeyParser(parseConstant('color'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -335,7 +335,7 @@ export function parseExpressionInputControlDescription(
       return expressionInputControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['expression-input']), 'control')(value),
+    objectKeyParser(parseConstant('expression-input'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -351,7 +351,7 @@ export function parseNoneControlDescription(value: unknown): ParseResult<NoneCon
       return noneControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['none']), 'control')(value),
+    objectKeyParser(parseConstant('none'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -371,7 +371,7 @@ export function parseStyleControlsControlDescription(
       return styleControlsControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['style-controls']), 'control')(value),
+    objectKeyParser(parseConstant('style-controls'), 'control')(value),
     optionalObjectKeyParser(parseObject(parseAny), 'placeholder')(value), // FIXME
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -391,7 +391,7 @@ export function parseArrayControlDescription(value: unknown): ParseResult<ArrayC
       return arrayControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['array']), 'control')(value),
+    objectKeyParser(parseConstant('array'), 'control')(value),
     objectKeyParser(parseRegularControlDescription, 'propertyControl')(value),
     optionalObjectKeyParser(parseNumber, 'maxCount')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
@@ -411,7 +411,7 @@ export function parseTupleControlDescription(value: unknown): ParseResult<TupleC
       return tupleControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['tuple']), 'control')(value),
+    objectKeyParser(parseConstant('tuple'), 'control')(value),
     objectKeyParser(parseArray(parseRegularControlDescription), 'propertyControls')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -432,7 +432,7 @@ export function parseObjectControlDescription(
       return objectControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['object']), 'control')(value),
+    objectKeyParser(parseConstant('object'), 'control')(value),
     objectKeyParser(parseObject(parseRegularControlDescription), 'object')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -450,7 +450,7 @@ export function parseUnionControlDescription(value: unknown): ParseResult<UnionC
       return unionControlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['union']), 'control')(value),
+    objectKeyParser(parseConstant('union'), 'control')(value),
     objectKeyParser(parseArray(parseRegularControlDescription), 'controls')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
@@ -470,7 +470,7 @@ export function parseVector2ControlDescription(
       return controlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['vector2']), 'control')(value),
+    objectKeyParser(parseConstant('vector2'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -489,7 +489,7 @@ export function parseVector3ControlDescription(
       return controlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['vector3']), 'control')(value),
+    objectKeyParser(parseConstant('vector3'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -508,7 +508,7 @@ export function parseVector4ControlDescription(
       return controlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['vector4']), 'control')(value),
+    objectKeyParser(parseConstant('vector4'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -525,7 +525,7 @@ export function parseEulerControlDescription(value: unknown): ParseResult<EulerC
       return controlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['euler']), 'control')(value),
+    objectKeyParser(parseConstant('euler'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -551,7 +551,7 @@ export function parseMatrix3ControlDescription(
       return controlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['matrix3']), 'control')(value),
+    objectKeyParser(parseConstant('matrix3'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -578,7 +578,7 @@ export function parseMatrix4ControlDescription(
       return controlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['matrix4']), 'control')(value),
+    objectKeyParser(parseConstant('matrix4'), 'control')(value),
     optionalObjectKeyParser(parseBoolean, 'visibleByDefault')(value),
   )
 }
@@ -620,7 +620,7 @@ export function parseFolderControlDescription(
       return controlDescription
     },
     optionalObjectKeyParser(parseString, 'label')(value),
-    objectKeyParser(parseEnum(['folder']), 'control')(value),
+    objectKeyParser(parseConstant<'folder'>('folder'), 'control')(value),
     parsedControlDescriptions,
   )
 }

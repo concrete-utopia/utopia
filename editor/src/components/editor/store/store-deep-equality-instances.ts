@@ -17,7 +17,7 @@ import type {
   ExportDestructuredAssignment,
   ExportDetail,
   ExportFunction,
-  ExportIdentifier,
+  ExportDefaultIdentifier,
   ExportVariable,
   ExportVariables,
   ExportVariablesWithModifier,
@@ -48,7 +48,7 @@ import {
   exportDefaultFunctionOrClass,
   exportDestructuredAssignment,
   exportFunction,
-  exportIdentifier,
+  exportDefaultIdentifier,
   exportVariable,
   exportVariables,
   exportVariablesWithModifier,
@@ -1634,9 +1634,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       clientHeightResult &&
       parentFlexDirectionResult &&
       parentJustifyContentEquals &&
-      parentFlexGapEquals &&
-      parentPaddingEquals &&
-      parentHugsOnMainAxisEquals &&
+      parentFlexGapEquals.areEqual &&
+      parentPaddingEquals.areEqual &&
+      parentHugsOnMainAxisEquals.areEqual &&
       gapEquals &&
       flexDirectionResult &&
       justifyContentEquals &&
@@ -2600,8 +2600,8 @@ export const ExportDefaultFunctionOrClassKeepDeepEquality: KeepDeepEqualityCall<
     exportDefaultFunctionOrClass,
   )
 
-export const ExportIdentifierKeepDeepEquality: KeepDeepEqualityCall<ExportIdentifier> =
-  combine1EqualityCall((expIdent) => expIdent.name, StringKeepDeepEquality, exportIdentifier)
+export const ExportIdentifierKeepDeepEquality: KeepDeepEqualityCall<ExportDefaultIdentifier> =
+  combine1EqualityCall((expIdent) => expIdent.name, StringKeepDeepEquality, exportDefaultIdentifier)
 
 export const ReexportWildcardKeepDeepEquality: KeepDeepEqualityCall<ReexportWildcard> =
   combine2EqualityCalls(
@@ -2656,7 +2656,7 @@ export const ExportDetailKeepDeepEquality: KeepDeepEqualityCall<ExportDetail> = 
         return ExportDefaultFunctionOrClassKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'EXPORT_IDENTIFIER':
+    case 'EXPORT_DEFAULT_IDENTIFIER':
       if (newValue.type === oldValue.type) {
         return ExportIdentifierKeepDeepEquality(oldValue, newValue)
       }

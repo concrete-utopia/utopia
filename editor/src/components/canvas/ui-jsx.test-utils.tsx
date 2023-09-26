@@ -269,6 +269,7 @@ export async function renderTestEditorWithModel(
   mockBuiltInDependencies?: BuiltInDependencies,
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
   loginState: LoginState = notLoggedIn,
+  failOnCanvasError: boolean = true,
 ): Promise<EditorRenderResult> {
   for (const [key, value] of Object.entries(startingFeatureSwitches)) {
     setFeatureEnabled(key as FeatureName, value)
@@ -566,7 +567,7 @@ export async function renderTestEditorWithModel(
       }}
     >
       <div id={CanvasContextMenuPortalTargetID}></div>
-      <FailJestOnCanvasError />
+      {failOnCanvasError ? <FailJestOnCanvasError /> : null}
       <style>{`
 div,
 span,
