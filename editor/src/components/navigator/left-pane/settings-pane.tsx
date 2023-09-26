@@ -21,7 +21,6 @@ import { getControlStyles } from '../../../uuiui-deps'
 import { InspectorInputEmotionStyle } from '../../../uuiui/inputs/base-input'
 
 import type { SelectOption } from '../../../uuiui-deps'
-import { useIsMyProject } from '../../common/server-hooks'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { setProjectDescription, setProjectName } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -38,6 +37,7 @@ import json5 from 'json5'
 import { load } from '../../../components/editor/actions/actions'
 import { when } from '../../../utils/react-conditionals'
 import { useTriggerForkProject } from '../../editor/persistence-hooks'
+import { SettingsPanel } from '../../inspector/sections/settings-panel/inspector-settingspanel'
 
 const themeOptions = [
   {
@@ -99,11 +99,10 @@ const FeatureSwitchRow = React.memo((props: { name: FeatureName }) => {
 
 export const SettingsPane = React.memo(() => {
   const dispatch = useDispatch()
-  const { projectId, projectName, projectDescription } = useEditorState(
+  const { projectName, projectDescription } = useEditorState(
     Substores.restOfEditor,
     (store) => {
       return {
-        projectId: store.editor.id,
         projectName: store.editor.projectName,
         projectDescription: store.editor.projectDescription,
       }
@@ -118,7 +117,11 @@ export const SettingsPane = React.memo(() => {
   )
   const themeConfig = userState.themeConfig
 
-  const isMyProject = useIsMyProject(projectId)
+  const isMyProject = useEditorState(
+    Substores.projectServerState,
+    (store) => store.projectServerState.isMyProject,
+    'SettingsPane isMyProject',
+  )
 
   const [theme, setTheme] = React.useState<SelectOption>(
     themeOptions.find((option) => option.value === themeConfig) ?? defaultTheme,
@@ -213,6 +216,7 @@ export const SettingsPane = React.memo(() => {
         display: 'relative',
         alignItems: 'stretch',
         paddingBottom: 50,
+        overflowY: 'scroll',
       }}
     >
       <Section>

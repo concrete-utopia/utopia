@@ -659,7 +659,7 @@ export function attemptToResolveParsedComponents(
                 addToFilteredScope('default', exportDetail.name)
               }
               break
-            case 'EXPORT_IDENTIFIER':
+            case 'EXPORT_DEFAULT_IDENTIFIER':
               addToFilteredScope('default', exportDetail.name)
               break
             case 'EXPORT_CLASS':

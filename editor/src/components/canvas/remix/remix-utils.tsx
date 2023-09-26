@@ -26,6 +26,7 @@ import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import {
+  fileExportsFunctionWithName,
   getDefaultExportNameAndUidFromFile,
   getDefaultExportedTopLevelElement,
   isRemixOutletElement,
@@ -50,7 +51,7 @@ export const DefaultFutureConfig: FutureConfig = {
   v2_dev: true,
   unstable_postcss: false,
   unstable_tailwind: false,
-  v2_errorBoundary: false,
+  v2_errorBoundary: true,
   v2_headers: false,
   v2_meta: false,
   v2_normalizeFormMethod: false,
@@ -59,7 +60,7 @@ export const DefaultFutureConfig: FutureConfig = {
 
 // This is necessary to create a simple node.fs-like implementation for Utopia projectContents, which
 // can be used by the Remix functions to parse the routes
-export function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): FileOps {
+function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): FileOps {
   return {
     existsSync: (file: string): boolean => getContentsTreeFromPath(projectContents, file) != null,
     readdirSync: (dir: string): Array<string> => {
@@ -95,42 +96,35 @@ export function createRouteManifestFromProjectContents(
   if (routesFromRemix == null) {
     return null
   }
-  return patchRemixRoutes(routesFromRemix)
+  return patchRemixRoutes(routesFromRemix, projectContents)
 }
 
-function patchRemixRoutes(routesFromRemix: RouteManifest<ConfigRoute> | null) {
+function patchRemixRoutes(
+  routesFromRemix: RouteManifest<ConfigRoute> | null,
+  projectContents: ProjectContentTreeRoot,
+) {
   const routesFromRemixWithRoot: RouteManifest<ConfigRoute> = {
     ...routesFromRemix,
     root: { path: '', id: 'root', file: 'root.js', parentId: '' },
   }
 
   const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
+    const filePath = `${ROOT_DIR}/${route.file}`
+
     // Maybe we should fill hasAction and hasLoader properly, but it is not used for anything
     acc[route.id] = {
       ...route,
       parentId: route.parentId ?? 'root',
-      module: `${ROOT_DIR}/${route.file}`,
+      module: filePath,
       hasAction: false,
       hasLoader: false,
       hasCatchBoundary: false,
-      hasErrorBoundary: false,
+      hasErrorBoundary: fileExportsFunctionWithName(projectContents, filePath, 'ErrorBoundary'),
     }
     return acc
   }, {} as RouteManifest<EntryRoute>)
 
   return resultRoutes
-}
-
-export function getRoutesFromRouteManifest(
-  routeManifest: RouteManifest<EntryRoute>,
-  futureConfig: FutureConfig,
-): DataRouteObject[] {
-  const routesByParentId = groupRoutesByParentId(routeManifest)
-  try {
-    return createClientRoutes(routeManifest, {}, futureConfig, '', routesByParentId)
-  } catch (e) {
-    return []
-  }
 }
 
 export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsManifest {
@@ -142,8 +136,9 @@ export function createAssetsManifest(routes: RouteManifest<EntryRoute>): AssetsM
   }
 }
 
-export interface RouteModuleCreator {
+interface RouteModuleCreator {
   filePath: string
+  createErrorBoundary: boolean
   executionScopeCreator: ExecutionScopeCreator
 }
 
@@ -158,7 +153,7 @@ export interface RouteModulesWithRelativePaths {
   }
 }
 
-export interface GetRoutesAndModulesFromManifestResult {
+interface GetRoutesAndModulesFromManifestResult {
   routeModuleCreators: RouteIdsToModuleCreators
   routes: Array<DataRouteObject>
   routeModulesToRelativePaths: RouteModulesWithRelativePaths
@@ -324,6 +319,21 @@ function getRemixExportsOfModule(
     rootComponentUid: nameAndUid?.uid ?? 'NO-ROOT',
   }
 }
+
+function safeGetClientRoutes(
+  routeManifest: RouteManifestWithContents,
+  routeModulesCache: RouteModules,
+  futureConfig: FutureConfig,
+): DataRouteObject[] | null {
+  const routesByParentId = groupRoutesByParentId(routeManifest)
+  try {
+    return createClientRoutes(routeManifest, routeModulesCache, futureConfig, '', routesByParentId)
+  } catch (e) {
+    console.error(e)
+    return null
+  }
+}
+
 export function getRoutesAndModulesFromManifest(
   routeManifest: RouteManifestWithContents,
   futureConfig: FutureConfig,
@@ -345,14 +355,10 @@ export function getRoutesAndModulesFromManifest(
     return null
   }
 
-  const routesByParentId = groupRoutesByParentId(routeManifest)
-  const routes: DataRouteObject[] = createClientRoutes(
-    routeManifest,
-    routeModulesCache,
-    futureConfig,
-    '',
-    routesByParentId,
-  )
+  const routes = safeGetClientRoutes(routeManifest, routeModulesCache, futureConfig)
+  if (routes == null) {
+    return null
+  }
 
   if (routes.length !== 1 && routes[0].id !== 'root') {
     throw new Error('The root route module must be `root`')
@@ -375,6 +381,7 @@ export function getRoutesAndModulesFromManifest(
 
     routeModuleCreators[route.id] = {
       filePath: route.module,
+      createErrorBoundary: route.hasErrorBoundary,
       executionScopeCreator: executionScopeCreator,
     }
 

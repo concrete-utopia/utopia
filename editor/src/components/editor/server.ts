@@ -289,7 +289,7 @@ export async function saveAssets(
   const promises = assets.map((asset) =>
     saveAsset(projectId, asset.fileType, asset.base64, asset.fileName),
   )
-  return await Promise.all(promises)
+  return Promise.all(promises)
 }
 
 export async function saveThumbnail(thumbnail: Buffer, projectId: string): Promise<void> {

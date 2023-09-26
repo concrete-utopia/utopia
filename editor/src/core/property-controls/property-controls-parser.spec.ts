@@ -55,11 +55,13 @@ import {
 } from '../../utils/value-parser-utils'
 import { pick } from '../shared/object-utils'
 import { fastForEach } from '../shared/utils'
+import type { MapLike } from 'typescript'
 
-function runBaseTestSuite<T>(
+function runBaseTestSuite<T extends MapLike<any>>(
   validObject: T,
   requiredFields: Array<keyof T>,
   parseFn: (value: unknown) => ParseResult<T>,
+  parseErrorDescription: string,
 ) {
   it('parses a full value correctly', () => {
     expect(parseFn(validObject)).toEqual(right(validObject))
@@ -83,7 +85,7 @@ function runBaseTestSuite<T>(
       control: 'ham sandwich',
     }
     expect(parseFn(value)).toEqual(
-      left(objectFieldParseError('control', descriptionParseError('Not a member of an enum.'))),
+      left(objectFieldParseError('control', descriptionParseError(parseErrorDescription))),
     )
   })
 }
@@ -101,6 +103,7 @@ describe('parseCheckboxControlDescription', () => {
     validCheckboxControlDescriptionValue,
     ['control'],
     parseCheckboxControlDescription,
+    'Value was not checkbox.',
   )
 })
 
@@ -111,7 +114,12 @@ const validColorControlDescriptionValue: ColorControlDescription = {
 }
 
 describe('parseColorControlDescription', () => {
-  runBaseTestSuite(validColorControlDescriptionValue, ['control'], parseColorControlDescription)
+  runBaseTestSuite(
+    validColorControlDescriptionValue,
+    ['control'],
+    parseColorControlDescription,
+    'Value was not color.',
+  )
 })
 
 const validExpressionInputControlDescriptionValue: ExpressionInputControlDescription = {
@@ -125,6 +133,7 @@ describe('parseExpressionInputControlDescription', () => {
     validExpressionInputControlDescriptionValue,
     ['control'],
     parseExpressionInputControlDescription,
+    'Value was not expression-input.',
   )
 })
 
@@ -161,6 +170,7 @@ describe('parsePopUpListControlDescription', () => {
     validPopUpListControlDescriptionValue,
     ['control', 'options'],
     parsePopUpListControlDescription,
+    'Value was not popuplist.',
   )
 })
 
@@ -207,6 +217,7 @@ describe('parseExpressionPopUpListControlDescription', () => {
     validExpressionPopUpListControlDescriptionValue,
     ['control', 'options'],
     parseExpressionPopUpListControlDescription,
+    'Value was not expression-popuplist.',
   )
 })
 
@@ -217,7 +228,12 @@ const validNoneControlDescriptionValue: NoneControlDescription = {
 }
 
 describe('parseNoneControlDescription', () => {
-  runBaseTestSuite(validNoneControlDescriptionValue, ['control'], parseNoneControlDescription)
+  runBaseTestSuite(
+    validNoneControlDescriptionValue,
+    ['control'],
+    parseNoneControlDescription,
+    'Value was not none.',
+  )
 })
 
 const validNumberInputControlDescriptionValue: NumberInputControlDescription = {
@@ -236,6 +252,7 @@ describe('parseNumberInputControlDescription', () => {
     validNumberInputControlDescriptionValue,
     ['control'],
     parseNumberInputControlDescription,
+    'Value was not number-input.',
   )
 })
 
@@ -254,6 +271,7 @@ describe('parseRadioControlDescription', () => {
     validRadioControlDescriptionValue,
     ['control', 'options'],
     parseRadioControlDescription,
+    'Value was not radio.',
   )
 })
 
@@ -270,6 +288,7 @@ describe('parseStringInputControlDescription', () => {
     validStringInputControlDescriptionValue,
     ['control'],
     parseStringInputControlDescription,
+    'Value was not string-input.',
   )
 })
 
@@ -285,6 +304,7 @@ describe('parseStyleControlsControlDescription', () => {
     validStyleControlsControlDescriptionValue,
     ['control'],
     parseStyleControlsControlDescription,
+    'Value was not style-controls.',
   )
 })
 
@@ -295,7 +315,12 @@ const validVector2ControlDescriptionValue: Vector2ControlDescription = {
 }
 
 describe('parseVector2ControlDescription', () => {
-  runBaseTestSuite(validVector2ControlDescriptionValue, ['control'], parseVector2ControlDescription)
+  runBaseTestSuite(
+    validVector2ControlDescriptionValue,
+    ['control'],
+    parseVector2ControlDescription,
+    'Value was not vector2.',
+  )
 })
 
 const validVector3ControlDescriptionValue: Vector3ControlDescription = {
@@ -305,7 +330,12 @@ const validVector3ControlDescriptionValue: Vector3ControlDescription = {
 }
 
 describe('parseVector3ControlDescription', () => {
-  runBaseTestSuite(validVector3ControlDescriptionValue, ['control'], parseVector3ControlDescription)
+  runBaseTestSuite(
+    validVector3ControlDescriptionValue,
+    ['control'],
+    parseVector3ControlDescription,
+    'Value was not vector3.',
+  )
 })
 
 const validVector4ControlDescriptionValue: Vector4ControlDescription = {
@@ -315,7 +345,12 @@ const validVector4ControlDescriptionValue: Vector4ControlDescription = {
 }
 
 describe('parseVector4ControlDescription', () => {
-  runBaseTestSuite(validVector4ControlDescriptionValue, ['control'], parseVector4ControlDescription)
+  runBaseTestSuite(
+    validVector4ControlDescriptionValue,
+    ['control'],
+    parseVector4ControlDescription,
+    'Value was not vector4.',
+  )
 })
 
 const validEulerControlDescriptionValue: EulerControlDescription = {
@@ -325,7 +360,12 @@ const validEulerControlDescriptionValue: EulerControlDescription = {
 }
 
 describe('parseEulerControlDescription', () => {
-  runBaseTestSuite(validEulerControlDescriptionValue, ['control'], parseEulerControlDescription)
+  runBaseTestSuite(
+    validEulerControlDescriptionValue,
+    ['control'],
+    parseEulerControlDescription,
+    'Value was not euler.',
+  )
 })
 
 const validMatrix3ControlDescriptionValue: Matrix3ControlDescription = {
@@ -335,7 +375,12 @@ const validMatrix3ControlDescriptionValue: Matrix3ControlDescription = {
 }
 
 describe('parseMatrix3ControlDescription', () => {
-  runBaseTestSuite(validMatrix3ControlDescriptionValue, ['control'], parseMatrix3ControlDescription)
+  runBaseTestSuite(
+    validMatrix3ControlDescriptionValue,
+    ['control'],
+    parseMatrix3ControlDescription,
+    'Value was not matrix3.',
+  )
 })
 
 const validMatrix4ControlDescriptionValue: Matrix4ControlDescription = {
@@ -345,7 +390,12 @@ const validMatrix4ControlDescriptionValue: Matrix4ControlDescription = {
 }
 
 describe('parseMatrix4ControlDescription', () => {
-  runBaseTestSuite(validMatrix4ControlDescriptionValue, ['control'], parseMatrix4ControlDescription)
+  runBaseTestSuite(
+    validMatrix4ControlDescriptionValue,
+    ['control'],
+    parseMatrix4ControlDescription,
+    'Value was not matrix4.',
+  )
 })
 
 const validArrayControlDescriptionValue: ArrayControlDescription = {
@@ -361,6 +411,7 @@ describe('parseArrayControlDescription', () => {
     validArrayControlDescriptionValue,
     ['control', 'propertyControl'],
     parseArrayControlDescription,
+    'Value was not array.',
   )
 })
 
@@ -379,6 +430,7 @@ describe('parseObjectControlDescription', () => {
     validObjectControlDescriptionValue,
     ['control', 'object'],
     parseObjectControlDescription,
+    'Value was not object.',
   )
 })
 
@@ -396,6 +448,7 @@ describe('parseTupleControlDescription', () => {
     validTupleControlDescriptionValue,
     ['control', 'propertyControls'],
     parseTupleControlDescription,
+    'Value was not tuple.',
   )
 })
 
@@ -412,6 +465,7 @@ describe('parseFolderControlDescription', () => {
     validFolderControlDescriptionValue,
     ['control', 'controls'],
     parseFolderControlDescription,
+    'Value was not folder.',
   )
 })
 

@@ -13,7 +13,6 @@ import {
 import type { ResizableProps } from '../../../uuiui-deps'
 import { User } from '../../../uuiui-deps'
 import { MenuTab } from '../../../uuiui/menu-tab'
-import { useIsMyProject } from '../../common/server-hooks'
 import type { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
 import { clearSelection, setLeftMenuTab } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -90,10 +89,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const onClickNavigatorTab = React.useCallback(() => {
     onClickTab(LeftMenuTab.Navigator)
-  }, [onClickTab])
-
-  const onClickSettingsTab = React.useCallback(() => {
-    onClickTab(LeftMenuTab.Settings)
   }, [onClickTab])
 
   const onClickGithubTab = React.useCallback(() => {
@@ -179,11 +174,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
                 onClick={onClickProjectTab}
               />
               <MenuTab
-                label={'Settings'}
-                selected={selectedTab === LeftMenuTab.Settings}
-                onClick={onClickSettingsTab}
-              />
-              <MenuTab
                 label={'Github'}
                 selected={selectedTab === LeftMenuTab.Github}
                 onClick={onClickGithubTab}
@@ -192,7 +182,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
             {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
             {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
-            {selectedTab === LeftMenuTab.Settings ? <SettingsPane /> : null}
             {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
             {loggedIn ? null : <LoggedOutPane />}
           </div>
