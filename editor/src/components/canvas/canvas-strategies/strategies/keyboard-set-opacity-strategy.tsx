@@ -31,7 +31,7 @@ export function keyboardSetOpacityStrategy(
     descriptiveLabel: 'Changing Opacity',
     icon: {
       category: 'semantic',
-      type: 'twoghosts',
+      type: 'magnifyingglass',
     },
     controlsToRender: [],
     fitness: fitness(interactionSession),
