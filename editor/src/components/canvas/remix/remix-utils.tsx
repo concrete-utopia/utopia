@@ -11,8 +11,7 @@ import { getContentsTreeFromPath, getProjectFileByFilePath } from '../../assets'
 import type { FileOps } from '../../../third-party/remix/flat-routes'
 import { flatRoutes } from '../../../third-party/remix/flat-routes'
 import type { ConfigRoute } from '../../../third-party/remix/routes'
-import type { ActionFunction, DataRouteObject, LoaderFunction } from 'react-router'
-import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
+import type { DataRouteObject } from 'react-router-dom'
 import type { CurriedResolveFn, CurriedUtopiaRequireFn } from '../../custom-code/code-file'
 import type { MapLike } from 'typescript'
 import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
@@ -40,6 +39,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
+import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -118,7 +118,6 @@ function patchRemixRoutes(
       module: filePath,
       hasAction: false,
       hasLoader: false,
-      hasCatchBoundary: false,
       hasErrorBoundary: fileExportsFunctionWithName(projectContents, filePath, 'ErrorBoundary'),
     }
     return acc
