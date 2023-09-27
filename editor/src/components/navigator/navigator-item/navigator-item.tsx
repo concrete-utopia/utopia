@@ -186,7 +186,7 @@ const styleTypeColors: Record<StyleType, { color: keyof ThemeObject; iconColor: 
 }
 
 const selectedTypeBackground: Record<SelectedType, keyof ThemeObject> = {
-  unselected: 'transparent',
+  unselected: 'bg1',
   selected: 'denimBlue',
   descendantOfSelected: 'lightDenimBlue',
 }
@@ -819,6 +819,7 @@ export const NavigatorItem: React.FunctionComponent<
                 dispatch={dispatch}
                 isSlot={isSlot}
                 iconColor={iconColor}
+                background={rowStyle.background}
               />,
             )}
           </FlexRow>
