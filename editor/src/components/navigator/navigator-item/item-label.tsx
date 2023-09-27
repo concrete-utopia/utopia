@@ -33,6 +33,7 @@ interface ItemLabelProps {
   suffix?: string
   inputVisible: boolean
   style?: CSSProperties
+  isLink?: boolean
 }
 
 export const ItemLabel = React.memo((props: ItemLabelProps) => {
@@ -225,9 +226,10 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
           key='item-label'
           data-testid={itemLabelTestIdForEntry(target)}
           style={{
-            backgroundColor: 'transparent',
-            paddingTop: 3,
-            paddingBottom: 3,
+            backgroundColor:
+              props.isLink && !props.selected ? colorTheme.aqua10.value : 'transparent',
+            borderRadius: 30,
+            padding: props.isLink ? '3px 10px' : '3px 0px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
