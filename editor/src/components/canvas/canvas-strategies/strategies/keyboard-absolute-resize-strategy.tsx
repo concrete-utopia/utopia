@@ -128,6 +128,11 @@ export function keyboardAbsoluteResizeStrategy(
   return {
     id: 'KEYBOARD_ABSOLUTE_RESIZE',
     name: 'Resize',
+    descriptiveLabel: 'Resizing Elements',
+    icon: {
+      category: 'modalities',
+      type: 'moveabs-large',
+    },
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,

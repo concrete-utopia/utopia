@@ -130,6 +130,8 @@ export function doNothingStrategy(
   return {
     id: DoNothingStrategyID,
     name: 'No Default Available',
+    descriptiveLabel: 'Doing Nothing',
+    icon: { category: 'semantic', type: 'cross-medium' },
     controlsToRender: [
       controlWithProps({
         control: DragOutlineControl,

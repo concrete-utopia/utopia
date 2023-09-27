@@ -44,6 +44,8 @@ import {
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
 import { cartesianProduct } from '../../../../core/shared/array-utils'
 import { NO_OP } from '../../../../core/shared/utils'
+import { MoveReorderReparentIndicatorID } from '../../controls/select-mode/strategy-indicator'
+import { CanvasToolbarEditButtonID } from '../../../editor/canvas-toolbar'
 
 async function dragByPixels(
   editor: EditorRenderResult,
@@ -611,7 +613,18 @@ describe('Absolute Move Strategy', () => {
     const startPoint = windowPoint({ x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 })
     const dragDelta = windowPoint({ x: 40, y: -25 })
 
-    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers)
+    await dragElement(canvasControlsLayer, startPoint, dragDelta, emptyModifiers, async () => {
+      const moveReorderReparentIndicator = renderResult.renderedDOM.getByTestId(
+        MoveReorderReparentIndicatorID,
+      )
+      expect(moveReorderReparentIndicator.innerText).toEqual('Moving Absolute Elements')
+      const toolbarEditButtonImage = renderResult.renderedDOM.getByTestId(
+        `${CanvasToolbarEditButtonID}-icon`,
+      )
+      expect(toolbarEditButtonImage.getAttribute('src')).toEqual(
+        'http://localhost:9876/editor/icons/light/modalities/moveabs-large-white-18x18@2x.png',
+      )
+    })
 
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(

@@ -49,6 +49,11 @@ export function relativeMoveStrategy(
     strategy: {
       id: 'RELATIVE_MOVE',
       name: 'Move (Relative)',
+      descriptiveLabel: 'Moving Relative Elements',
+      icon: {
+        category: 'modalities',
+        type: 'moveabs-large',
+      },
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,

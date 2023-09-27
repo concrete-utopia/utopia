@@ -203,6 +203,8 @@ export function interactionHardReset(
       const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
+        currentStrategyDescriptiveLabel: strategy.strategy.descriptiveLabel,
+        currentStrategyIcon: strategy.strategy.icon,
         currentStrategyCommands: strategyResult.commands,
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
@@ -370,6 +372,8 @@ export function interactionStart(
       const newStrategyState: StrategyState = {
         currentStrategy: strategy.strategy.id,
         currentStrategyFitness: strategy.fitness,
+        currentStrategyDescriptiveLabel: strategy.strategy.descriptiveLabel,
+        currentStrategyIcon: strategy.strategy.icon,
         currentStrategyCommands: strategyResult.commands,
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
@@ -474,6 +478,8 @@ function handleUserChangedStrategy(
     const newStrategyState: StrategyState = {
       currentStrategy: strategy.strategy.id,
       currentStrategyFitness: strategy.fitness,
+      currentStrategyDescriptiveLabel: strategy.strategy.descriptiveLabel,
+      currentStrategyIcon: strategy.strategy.icon,
       currentStrategyCommands: strategyResult.commands,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,
@@ -557,6 +563,8 @@ function handleAccumulatingKeypresses(
       const newStrategyState: StrategyState = {
         currentStrategy: strategy?.strategy.id ?? null,
         currentStrategyFitness: strategy?.fitness ?? 0,
+        currentStrategyDescriptiveLabel: strategy?.strategy.descriptiveLabel ?? null,
+        currentStrategyIcon: strategy?.strategy.icon ?? null,
         currentStrategyCommands: strategyResult.commands,
         commandDescriptions: commandResult.commandDescriptions,
         sortedApplicableStrategies: sortedApplicableStrategies,
@@ -622,6 +630,8 @@ function handleUpdate(
     const newStrategyState: StrategyState = {
       currentStrategy: strategy?.strategy.id ?? null,
       currentStrategyFitness: strategy?.fitness ?? 0,
+      currentStrategyDescriptiveLabel: strategy?.strategy.descriptiveLabel ?? null,
+      currentStrategyIcon: strategy?.strategy.icon ?? null,
       currentStrategyCommands: strategyResult.commands,
       commandDescriptions: commandResult.commandDescriptions,
       sortedApplicableStrategies: sortedApplicableStrategies,

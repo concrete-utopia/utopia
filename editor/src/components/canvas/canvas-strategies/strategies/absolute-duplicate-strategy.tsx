@@ -59,6 +59,11 @@ export function absoluteDuplicateStrategy(
   return {
     id: 'ABSOLUTE_DUPLICATE',
     name: 'Duplicate',
+    descriptiveLabel: 'Duplicating Elements',
+    icon: {
+      category: 'modalities',
+      type: 'replant-large',
+    },
     controlsToRender: [
       controlWithProps({
         control: ImmediateParentOutlines,

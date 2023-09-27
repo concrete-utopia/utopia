@@ -55,6 +55,11 @@ export function reorderSliderStategy(
   return {
     id: 'REORDER_SLIDER',
     name: 'Reorder (Slider)',
+    descriptiveLabel: 'Reordering Elements',
+    icon: {
+      category: 'modalities',
+      type: 'reorder-large',
+    },
     controlsToRender: [
       controlWithProps({
         control: ReorderSliderControl,

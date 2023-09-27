@@ -73,6 +73,11 @@ export function baseAbsoluteReparentStrategy(
     return {
       id: `ABSOLUTE_REPARENT`,
       name: `Reparent (Abs)`,
+      descriptiveLabel: 'Reparenting Absolute Elements',
+      icon: {
+        category: 'modalities',
+        type: 'reparent-large',
+      },
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,

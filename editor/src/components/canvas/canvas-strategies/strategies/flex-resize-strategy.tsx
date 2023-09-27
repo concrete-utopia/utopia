@@ -112,6 +112,11 @@ export function flexResizeStrategy(
   return {
     id: FLEX_RESIZE_STRATEGY_ID,
     name: 'Flex Resize',
+    descriptiveLabel: 'Resizing Flex Elements',
+    icon: {
+      category: 'modalities',
+      type: 'reorder-large',
+    },
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,

@@ -58,6 +58,11 @@ export function keyboardReorderStrategy(
   return {
     id: 'KEYBOARD_REORDER',
     name: 'Reorder',
+    descriptiveLabel: 'Reordering Elements',
+    icon: {
+      category: 'modalities',
+      type: 'reorder-large',
+    },
     controlsToRender: [],
     fitness: fitness(interactionSession),
     apply: () => {

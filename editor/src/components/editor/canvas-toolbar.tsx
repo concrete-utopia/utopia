@@ -36,17 +36,13 @@ import {
   useToInsert,
 } from './insert-callbacks'
 import { useDispatch } from './store/dispatch-context'
-import type { DragToMoveIndicatorFlags } from './store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import { togglePanel } from './actions/action-creators'
 import { defaultTransparentViewElement } from './defaults'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
 import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
-import {
-  StrategyIndicator,
-  useGetDragStrategyIndicatorFlags,
-} from '../canvas/controls/select-mode/strategy-indicator'
+import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { NO_OP } from '../../core/shared/utils'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
@@ -69,7 +65,7 @@ import {
   insertableComponentGroupFragment,
 } from '../shared/project-components'
 import { setFocus } from '../common/actions'
-import { replace } from 'tar'
+import type { CanvasStrategyIcon } from '../canvas/canvas-strategies/canvas-strategy-types'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -178,37 +174,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
 })
 CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
 
-interface EditButtonIconDetails {
-  iconCategory: string
-  iconType: string
-}
-
-function editButtonIconDetails(iconCategory: string, iconType: string): EditButtonIconDetails {
-  return {
-    iconCategory: iconCategory,
-    iconType: iconType,
-  }
-}
-
-function getEditButtonIcon(
-  dragType: DragToMoveIndicatorFlags['dragType'],
-  reparentStatus: DragToMoveIndicatorFlags['reparent'],
-): EditButtonIconDetails {
-  if (dragType === 'none' && reparentStatus === 'none') {
-    return editButtonIconDetails('tools', 'pointer')
-  } else {
-    if (reparentStatus !== 'none') {
-      return editButtonIconDetails('modalities', 'reparent-large')
-    }
-    if (dragType === 'absolute') {
-      return editButtonIconDetails('modalities', 'moveabs-large')
-    }
-    if (dragType === 'static') {
-      return editButtonIconDetails('modalities', 'reorder-large')
-    }
-    return editButtonIconDetails('tools', 'pointer')
-  }
-}
+export const CanvasToolbarEditButtonID = 'canvas-toolbar-edit-button'
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
@@ -396,13 +362,14 @@ export const CanvasToolbar = React.memo(() => {
     }
   }, [canvasToolbarMode.primary, dispatch, switchToSelectModeCloseMenus])
 
-  const indicatorFlagsInfo = useGetDragStrategyIndicatorFlags()
-  const editButtonIcon = React.useMemo(() => {
-    return getEditButtonIcon(
-      indicatorFlagsInfo?.indicatorFlags.dragType ?? 'none',
-      indicatorFlagsInfo?.indicatorFlags.reparent ?? 'none',
-    )
-  }, [indicatorFlagsInfo?.indicatorFlags.dragType, indicatorFlagsInfo?.indicatorFlags.reparent])
+  const currentStrategyState = useEditorState(
+    Substores.restOfStore,
+    (store) => store.strategyState,
+    'SettingsPanel currentStrategyState',
+  )
+  const editButtonIcon: CanvasStrategyIcon = React.useMemo(() => {
+    return currentStrategyState.currentStrategyIcon ?? { category: 'tools', type: 'pointer' }
+  }, [currentStrategyState.currentStrategyIcon])
 
   const wrapInSubmenu = React.useCallback((wrapped: React.ReactNode) => {
     return (
@@ -531,10 +498,11 @@ export const CanvasToolbar = React.memo(() => {
         >
           <Tooltip title='Edit' placement='bottom'>
             <InsertModeButton
-              iconType={editButtonIcon.iconType}
-              iconCategory={editButtonIcon.iconCategory}
+              iconType={editButtonIcon.type}
+              iconCategory={editButtonIcon.category}
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={switchToSelectModeCloseMenus}
+              testid={CanvasToolbarEditButtonID}
             />
           </Tooltip>
           <Tooltip title='Insert or Edit Text' placement='bottom'>
@@ -806,6 +774,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
         color={props.primary ? 'on-highlight-main' : 'main'}
         width={props.size ?? 18}
         height={props.size ?? 18}
+        testId={props.testid == null ? undefined : `${props.testid}-icon`}
       />
     </SquareButton>
   )

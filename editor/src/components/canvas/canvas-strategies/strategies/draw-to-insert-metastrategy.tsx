@@ -163,6 +163,8 @@ export function drawToInsertStrategyFactory(
   return {
     id: name,
     name: name,
+    descriptiveLabel: 'Drawing To Insert',
+    icon: { category: 'semantic', type: 'editpencil' },
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,

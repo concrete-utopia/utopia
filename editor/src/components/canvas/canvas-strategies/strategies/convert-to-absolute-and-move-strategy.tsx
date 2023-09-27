@@ -120,6 +120,11 @@ export function convertToAbsoluteAndMoveStrategy(
   return {
     id: ConvertToAbsoluteAndMoveStrategyID,
     name: 'Move (Abs)',
+    descriptiveLabel: 'Converting To Absolute And Moving',
+    icon: {
+      category: 'modalities',
+      type: 'moveabs-large',
+    },
     controlsToRender: [
       controlWithProps({
         control: ImmediateParentOutlines,

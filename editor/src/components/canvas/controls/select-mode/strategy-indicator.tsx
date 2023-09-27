@@ -56,21 +56,23 @@ export const StrategyIndicator = React.memo(() => {
       }}
       data-testid='drag-strategy-indicator'
     >
-      <MoveReorderReparentIndicator
-        dragType={indicatorFlagsInfo?.indicatorFlags.dragType ?? 'none'}
-        reparentStatus={indicatorFlagsInfo?.indicatorFlags.reparent ?? 'none'}
-      />
+      <MoveReorderReparentIndicator />
       <AncestorIndicatorItem enabled={indicatorFlagsInfo?.indicatorFlags.ancestor ?? false} />
     </FlexRow>
   )
 })
 
-interface MoveIndicatorItemProps {
-  dragType: DragToMoveIndicatorFlags['dragType']
-  reparentStatus: DragToMoveIndicatorFlags['reparent']
-}
+export const MoveReorderReparentIndicatorID = 'move-reorder-reparent-indicator'
 
-const MoveReorderReparentIndicator = React.memo<MoveIndicatorItemProps>((props) => {
+const MoveReorderReparentIndicator = React.memo(() => {
+  const currentStrategyState = useEditorState(
+    Substores.restOfStore,
+    (store) => store.strategyState,
+    'MoveReorderReparentIndicator currentStrategyState',
+  )
+  const indicatorText = React.useMemo(() => {
+    return currentStrategyState.currentStrategyDescriptiveLabel ?? 'Interaction'
+  }, [currentStrategyState.currentStrategyDescriptiveLabel])
   const colorTheme = useColorTheme()
   return (
     <FlexRow
@@ -79,24 +81,10 @@ const MoveReorderReparentIndicator = React.memo<MoveIndicatorItemProps>((props) 
         color: colorTheme.primary.value,
         minWidth: 110,
       }}
+      data-testid={MoveReorderReparentIndicatorID}
     >
       <Icons.Checkmark color='primary' />
-      {(() => {
-        if (props.reparentStatus !== 'none') {
-          if (props.dragType === 'absolute') {
-            return 'Absolute Reparent'
-          } else {
-            return 'Reparent'
-          }
-        }
-        if (props.dragType === 'absolute') {
-          return 'Absolute Move'
-        }
-        if (props.dragType === 'static') {
-          return 'Reorder'
-        }
-        return 'Interaction'
-      })()}
+      {indicatorText}
     </FlexRow>
   )
 })

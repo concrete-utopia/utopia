@@ -58,6 +58,11 @@ export function flowReorderStrategy(
     strategy: {
       id: 'FLOW_REORDER',
       name: 'Reorder (Flow)',
+      descriptiveLabel: 'Reordering Elements',
+      icon: {
+        category: 'modalities',
+        type: 'reorder-large',
+      },
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,

@@ -168,6 +168,8 @@ function dragToInsertStrategyFactory(
   return {
     id: name,
     name: name,
+    descriptiveLabel: 'Dragging To Insert',
+    icon: { category: 'tools', type: 'pointer' },
     controlsToRender: [
       controlWithProps({
         control: ParentOutlines,

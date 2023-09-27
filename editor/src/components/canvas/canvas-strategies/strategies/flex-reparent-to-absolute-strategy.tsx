@@ -41,6 +41,11 @@ export function baseFlexReparentToAbsoluteStrategy(
     return {
       id: `FLEX_REPARENT_TO_ABSOLUTE`,
       name: `Reparent (Abs)`,
+      descriptiveLabel: 'Reparenting Flex Elements',
+      icon: {
+        category: 'modalities',
+        type: 'reparent-large',
+      },
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
