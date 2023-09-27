@@ -236,6 +236,8 @@ export function updateLayout(
 export function useColumnWidths(
   panelState: StoredLayout,
 ): [Array<number>, (columnIndex: number, newWidth: number) => void] {
+  const panelStateRef = usePropControlledRef_DANGEROUS(panelState)
+
   // start with the default value
   const defaultColumnWidths: Array<number> = React.useMemo(
     () =>
@@ -261,11 +263,17 @@ export function useColumnWidths(
   invariant(columnWidths.current.length === NumberOfColumns)
 
   const setColumnWidths = React.useCallback(
-    (columnIndex: number, newWidth: number) => {
+    (columnIndexIncoming: number, newWidth: number) => {
+      const columnIndex = normalizeColIndex(columnIndexIncoming)
+      const columnContainsMenu = panelStateRef.current[columnIndex].some((p) => p.type === 'menu')
+      if (columnContainsMenu) {
+        // disable resize for now
+        return
+      }
       const setter = columnWidths.current[columnIndex][1]
       setter(newWidth)
     },
-    [columnWidths],
+    [panelStateRef, columnWidths],
   )
 
   const columnWidthValues = [
