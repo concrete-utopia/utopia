@@ -57,6 +57,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
+import { Outlet } from 'react-router'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -655,6 +656,22 @@ export const NavigatorItem: React.FunctionComponent<
     'navigator item isDescendantOfSelected',
   )
 
+  // const isDescendantOfOutlet = useEditorState(
+  //   Substores.metadata,
+  //   (store) => {
+  //     const elementMetadata = MetadataUtils.findElementByElementPath(
+  //       store.editor.jsxMetadata,
+  //       props.navigatorEntry.elementPath,
+  //     )
+  //     if (MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata)) && (MetadataUtils.isDescendantOfOrEqualTo(navigatorEntry.elementPath, outlet.elementPath)) {
+  //       return true
+  //     }
+  //   },
+  //   'navigator item isDescendantOfOutlet',
+  // )
+
+  // MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata)
+
   const isErroredGroup = React.useMemo(() => {
     return elementWarnings.invalidGroup != null || elementWarnings.invalidGroupChild != null
   }, [elementWarnings])
@@ -763,6 +780,8 @@ export const NavigatorItem: React.FunctionComponent<
     <div
       style={{
         outline: `1px solid ${
+          // props.parentOutline === 'solid' && isDescendantOfOrEqualToOutlet
+          //   ? colorTheme.aqua.value :
           props.parentOutline === 'solid'
             ? colorTheme.navigatorResizeHintBorder.value
             : 'transparent'
