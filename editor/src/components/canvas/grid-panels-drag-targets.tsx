@@ -93,8 +93,6 @@ export const ColumnDragTargets = React.memo(
             gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
             width: ResizeColumnWidth,
             height: '100%',
-            opacity: 0.5,
-            backgroundColor: 'yellow',
             ...(leftSideOfGrid
               ? { right: -ResizeColumnWidth / 2 + GridPanelHorizontalGapHalf } // for the left hand side resize columns
               : { left: -ResizeColumnWidth / 2 + GridPanelHorizontalGapHalf }), // right hand side resize columns
