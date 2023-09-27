@@ -2,16 +2,31 @@ import React from 'react'
 import { colorTheme } from '../../uuiui'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
-import { ExtraHorizontalDropTargetPadding, GridPanelHorizontalGapHalf } from './grid-panels-state'
+import {
+  ExtraHorizontalDropTargetPadding,
+  GridPanelHorizontalGapHalf,
+  ResizeColumnWidth,
+  wrapAroundColIndex,
+} from './grid-panels-state'
+import { CSSCursor } from './canvas-types'
+import { usePropControlledRef_DANGEROUS } from '../inspector/common/inspector-utils'
 
 export const ColumnDragTargets = React.memo(
   (props: {
     columnIndex: number
+    columnWidth: number
     canDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
     onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
+    setColumnWidth: (columnIndex: number, newWidth: number) => void
   }) => {
-    const { columnIndex, onDrop, canDrop } = props
+    const { columnIndex: columnIndexProp, onDrop, canDrop, columnWidth, setColumnWidth } = props
+
+    const columnIndex = wrapAroundColIndex(columnIndexProp)
+    const columnWidthRef = usePropControlledRef_DANGEROUS(columnWidth)
+
     const { isDragActive, draggedPanel } = useGridPanelDragInfo()
+
+    const leftSideOfGrid = columnIndex > -1
 
     const dropBeforeColumn: LayoutUpdate = React.useMemo(
       () => ({
@@ -48,8 +63,44 @@ export const ColumnDragTargets = React.memo(
       ),
     )
 
+    const handleResizeMouseDown = React.useCallback(
+      (mouseDownEvent: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        const startingColumnWidth = columnWidthRef.current
+
+        const onMouseMove = (mouseMoveEvent: MouseEvent) => {
+          const mouseDelta = mouseMoveEvent.clientX - mouseDownEvent.clientX
+          setColumnWidth(columnIndex, startingColumnWidth + mouseDelta)
+        }
+        const onMouseUp = () => {
+          window.removeEventListener('mousemove', onMouseMove)
+          window.removeEventListener('mouseup', onMouseUp)
+        }
+        window.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('mouseup', onMouseUp)
+      },
+      [columnIndex, columnWidthRef, setColumnWidth],
+    )
+
     return (
       <>
+        <div
+          onMouseDown={handleResizeMouseDown}
+          style={{
+            position: 'absolute',
+            pointerEvents: 'initial',
+            gridRowStart: 1,
+            gridRowEnd: -1,
+            gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
+            width: ResizeColumnWidth,
+            height: '100%',
+            opacity: 0.5,
+            backgroundColor: 'yellow',
+            ...(leftSideOfGrid
+              ? { right: -ResizeColumnWidth / 2 + GridPanelHorizontalGapHalf } // for the left hand side resize columns
+              : { left: -ResizeColumnWidth / 2 + GridPanelHorizontalGapHalf }), // right hand side resize columns
+            cursor: CSSCursor.ResizeEW,
+          }}
+        />
         <div
           ref={dropBefore}
           style={{
@@ -57,7 +108,7 @@ export const ColumnDragTargets = React.memo(
             pointerEvents: 'initial',
             gridRowStart: 1,
             gridRowEnd: -1,
-            gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
+            gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
             display: isDragActive && canDropBefore ? 'block' : 'none',
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
             height: '100%',
@@ -82,7 +133,7 @@ export const ColumnDragTargets = React.memo(
             pointerEvents: 'initial',
             gridRowStart: 1,
             gridRowEnd: -1,
-            gridColumn: `col ${columnIndex > -1 ? columnIndex + 1 : columnIndex} / span 1`,
+            gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
             display: isDragActive && canDropAfter ? 'block' : 'none',
             width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
             height: '100%',

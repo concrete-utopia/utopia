@@ -1,8 +1,15 @@
 import findLastIndex from 'lodash.findlastindex'
+import React from 'react'
 import { v4 as UUID } from 'uuid'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
 import { mod } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
+import {
+  usePropControlledRef_DANGEROUS,
+  usePropControlledStateV2,
+} from '../inspector/common/inspector-utils'
+import invariant from '../../third-party/remix/invariant'
+import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 
 export const GridMenuWidth = 268
 export const GridPaneWidth = 500
@@ -16,6 +23,8 @@ export const GridPanelHorizontalGapHalf = 6
 export const GridHorizontalExtraPadding = 4
 
 export const ExtraHorizontalDropTargetPadding = 45
+
+export const ResizeColumnWidth = 10
 
 export const GridPanelsNumberOfRows = 12
 
@@ -122,7 +131,7 @@ export function wrapAroundColIndex(index: number): number {
 /**
  * Normalizes the index to 0,1,2,3
  */
-function normalizeColIndex(index: number): number {
+export function normalizeColIndex(index: number): number {
   return mod(index, NumberOfColumns)
 }
 
@@ -222,4 +231,49 @@ export function updateLayout(
 
   // TODO we need to fix the sizes too!
   return withEmptyColumnsInMiddle
+}
+
+export function useColumnWidths(
+  panelState: StoredLayout,
+): [Array<number>, (columnIndex: number, newWidth: number) => void] {
+  // start with the default value
+  const defaultColumnWidths: Array<number> = React.useMemo(
+    () =>
+      panelState.map((column) => {
+        if (column.length === 0) {
+          return 0
+        } else if (column.some((p) => p.type === 'menu')) {
+          return GridMenuWidth + GridPanelHorizontalGapHalf * 2
+        } else {
+          return GridPaneWidth + GridPanelHorizontalGapHalf * 2
+        }
+      }),
+    [panelState],
+  )
+
+  const columnWidths = usePropControlledRef_DANGEROUS([
+    usePropControlledStateV2(defaultColumnWidths[0]),
+    usePropControlledStateV2(defaultColumnWidths[1]),
+    usePropControlledStateV2(defaultColumnWidths[2]),
+    usePropControlledStateV2(defaultColumnWidths[3]),
+  ] as const)
+
+  invariant(columnWidths.current.length === NumberOfColumns)
+
+  const setColumnWidths = React.useCallback(
+    (columnIndex: number, newWidth: number) => {
+      const setter = columnWidths.current[columnIndex][1]
+      setter(newWidth)
+    },
+    [columnWidths],
+  )
+
+  const columnWidthValues = [
+    columnWidths.current[0][0],
+    columnWidths.current[1][0],
+    columnWidths.current[2][0],
+    columnWidths.current[3][0],
+  ]
+
+  return [columnWidthValues, setColumnWidths]
 }
