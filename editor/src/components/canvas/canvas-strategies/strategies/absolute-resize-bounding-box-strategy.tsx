@@ -465,10 +465,14 @@ function getBoundDimension(
 ): number {
   if (minBound && maxBound) {
     return originalDimension
-  } else if (minBound) {
+  } else if (minBound && dimensionBound) {
     return frameOffset + frameDimension
-  } else if (maxBound) {
+  } else if (minBound) {
+    return frameOffset
+  } else if (maxBound && dimensionBound) {
     return originalDimension - frameOffset
+  } else if (maxBound) {
+    return originalDimension - frameDimension
   } else if (dimensionBound) {
     return frameDimension
   } else {
