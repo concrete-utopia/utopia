@@ -10,14 +10,30 @@ import { getBranchesForGithubRepository } from './list-branches'
 import { updatePullRequestsForBranch } from './list-pull-requests-for-branch'
 import { saveAssetsToProject, updateProjectWithBranchContent } from './load-branch'
 import { GithubAuth } from '../../../../utils/github-auth'
-import type { EditorDispatch } from '../../../../components/editor/action-types'
-import { setGithubState } from '../../../../components/editor/actions/action-creators'
+import {
+  setGithubState,
+  setLoginState,
+} from '../../../../components/editor/actions/action-creators'
 import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
 import { resolveConflict, startGithubPolling } from '../helpers'
+import type { AsyncEditorDispatch } from '../../../../components/canvas/ui-jsx.test-utils'
 
-export function setGithubAuthenticatedForTests(dispatch: EditorDispatch) {
-  dispatch([setGithubState({ authenticated: true })], 'everyone')
+export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
+  await dispatch(
+    [
+      setLoginState({ type: 'LOGGED_IN', user: { userId: 'user' } }),
+      setGithubState({ authenticated: true }),
+    ],
+    true,
+  )
+}
+
+export function fakeResponse<T>(payload: T): Response {
+  return {
+    ok: true,
+    json: async () => payload,
+  } as Response
 }
 
 interface FakeGithubApiConfig {
@@ -42,9 +58,11 @@ const MockOperationContext = (options: MockOperationContextOptions): GithubOpera
 
 function wrapWithDeferResolve<Args extends any[], Return>(
   deferred: { current: Defer<void> },
+  name: string,
   operation: (...operationParameters: Args) => Promise<Return>,
 ): (...parameters: Args) => Promise<Return> {
   return (...args) => {
+    // console.log(`>>> calling ${name}`)
     const result = operation(...args)
     deferred.current.resolve()
     deferred.current = defer()
@@ -53,32 +71,48 @@ function wrapWithDeferResolve<Args extends any[], Return>(
 }
 
 export class MockGithubOperations {
-  githubOperationDone: Defer<void> = defer()
-  sandbox: Sinon.SinonSandbox | null = null
+  private sandbox: Sinon.SinonSandbox | null = null
+  private privatePromise: Defer<void> = defer()
+  getUsersPublicGithubRepositories: Defer<void> = defer()
+  getBranchesForGithubRepository: Defer<void> = defer()
+  updateProjectWithBranchContent: Defer<void> = defer()
 
   mock(options: MockOperationContextOptions): MockGithubOperations {
     beforeEach(() => {
       this.sandbox = Sinon.createSandbox()
-      this.githubOperationDone = defer()
+      this.privatePromise = defer()
 
       const startGithubAuthenticationStub = this.sandbox.stub(
         GithubAuth,
         'startGithubAuthentication',
       )
-      startGithubAuthenticationStub.callsFake(async () => {})
+      startGithubAuthenticationStub.callsFake(
+        wrapWithDeferResolve(
+          { current: this.privatePromise },
+          'startGithubAuthentication',
+          async () => {},
+        ),
+      )
 
       const isAuthenticatedWithGithubStub = this.sandbox.stub(
         GithubAuth,
         'isAuthenticatedWithGithub',
       )
-      isAuthenticatedWithGithubStub.callsFake(async () => true)
+      isAuthenticatedWithGithubStub.callsFake(
+        wrapWithDeferResolve(
+          { current: this.privatePromise },
+          'isAuthenticatedWithGithub',
+          async () => true,
+        ),
+      )
 
       const operationContext = MockOperationContext(options)
 
       const saveProjectToGithubStub = this.sandbox.stub(GithubOperations, 'saveProjectToGithub')
       saveProjectToGithubStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.privatePromise },
+          'saveProjectToGithub',
           saveProjectToGithub(operationContext),
         ),
       )
@@ -86,7 +120,8 @@ export class MockGithubOperations {
       const getBranchCheckSumsStub = this.sandbox.stub(GithubOperations, 'getBranchCheckSums')
       getBranchCheckSumsStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.privatePromise },
+          'getBranchCheckSums',
           getBranchChecksums(operationContext),
         ),
       )
@@ -97,7 +132,8 @@ export class MockGithubOperations {
       )
       getBranchesForGithubRepositoryStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.getBranchesForGithubRepository },
+          'getBranchesForGithubRepository',
           getBranchesForGithubRepository(operationContext),
         ),
       )
@@ -108,7 +144,8 @@ export class MockGithubOperations {
       )
       updatePullRequestsForBranchStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.privatePromise },
+          'updatePullRequestsForBranch',
           updatePullRequestsForBranch(operationContext),
         ),
       )
@@ -116,7 +153,8 @@ export class MockGithubOperations {
       const saveAssetsToProjectStub = this.sandbox.stub(GithubOperations, 'saveAssetsToProject')
       saveAssetsToProjectStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.privatePromise },
+          'saveAssetsToProject',
           saveAssetsToProject(operationContext),
         ),
       )
@@ -127,7 +165,8 @@ export class MockGithubOperations {
       )
       getUsersPublicGithubRepositoriesStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.getUsersPublicGithubRepositories },
+          'getUsersPublicGithubRepositories',
           getUsersPublicGithubRepositories(operationContext),
         ),
       )
@@ -138,7 +177,8 @@ export class MockGithubOperations {
       )
       updateProjectAgainstGithubStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.privatePromise },
+          'updateProjectAgainstGithub',
           updateProjectAgainstGithub(operationContext),
         ),
       )
@@ -146,7 +186,8 @@ export class MockGithubOperations {
       const startGithubPollingStub = this.sandbox.stub(GithubOperations, 'startGithubPolling')
       startGithubPollingStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.privatePromise },
+          'startGithubPolling',
           startGithubPolling(operationContext),
         ),
       )
@@ -154,7 +195,8 @@ export class MockGithubOperations {
       const resolveConflictStub = this.sandbox.stub(GithubOperations, 'resolveConflict')
       resolveConflictStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.privatePromise },
+          'resolveConflict',
           resolveConflict(operationContext),
         ),
       )
@@ -165,7 +207,8 @@ export class MockGithubOperations {
       )
       updateProjectWithBranchContentStub.callsFake(
         wrapWithDeferResolve(
-          { current: this.githubOperationDone },
+          { current: this.updateProjectWithBranchContent },
+          'updateProjectWithBranchContent',
           updateProjectWithBranchContent(operationContext),
         ),
       )
@@ -180,6 +223,6 @@ export class MockGithubOperations {
   }
 
   resetDoneSignal(): void {
-    this.githubOperationDone = defer()
+    this.privatePromise = defer()
   }
 }

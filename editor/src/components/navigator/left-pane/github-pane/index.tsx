@@ -292,7 +292,8 @@ const BranchBlock = () => {
             borderRadius: 2,
           }}
         >
-          {filteredBranches.map((branch, index) => {
+          {(branchesForRepository ?? []).map((branch, index) => {
+            // TODO
             function selectBranch() {
               if (isListingBranches) {
                 return
@@ -382,17 +383,17 @@ const BranchBlock = () => {
       </UIGridRow>
     )
   }, [
-    targetRepository,
-    dispatch,
-    githubOperations,
-    currentBranch,
-    isListingBranches,
-    refreshBranches,
     branchFilter,
     updateBranchFilter,
-    filteredBranches,
+    branchesForRepository,
+    refreshBranches,
+    isListingBranches,
+    currentBranch,
     clearBranch,
-    repositoryData,
+    githubOperations,
+    targetRepository,
+    repositoryData?.defaultBranch,
+    dispatch,
   ])
 
   const githubAuthenticated = useEditorState(
