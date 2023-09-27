@@ -338,7 +338,7 @@ function getConstrainedFramesAdjustments(
 
   // The maximum value of the given constraints, used as the upper bound for the adjustment.
   const maxDimension = constrainedSizes.reduce((size, frame) => {
-    return frame[dimension] > size ? frame[dimension] : size
+    return Math.max(frame[dimension], size)
   }, -Infinity)
 
   function getOffset() {
