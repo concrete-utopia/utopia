@@ -88,8 +88,6 @@ describe('Github integration', () => {
     await mock.updateProjectWithBranchContent
 
     expect(renderResult.renderedDOM.getByText('Editor from Github')).toBeDefined()
-
-    expect('it works so far').toBeDefined()
   })
 })
 
