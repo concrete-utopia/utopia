@@ -19,7 +19,7 @@ async function checkIfAuthenticatedWithGithub(): Promise<boolean> {
   }
 }
 
-export async function isAuthenticatedWithGithub(loginState: LoginState): Promise<boolean> {
+async function isAuthenticatedWithGithub(loginState: LoginState): Promise<boolean> {
   if (loginState.type === 'LOGGED_IN') {
     return checkIfAuthenticatedWithGithub()
   } else {
@@ -29,7 +29,7 @@ export async function isAuthenticatedWithGithub(loginState: LoginState): Promise
 
 const timeToWait = 1000 * 5
 
-export async function startGithubAuthentication(dispatch: EditorDispatch): Promise<void> {
+async function startGithubAuthentication(dispatch: EditorDispatch): Promise<void> {
   // Open the window that starts the authentication flow.
   const url = GithubEndpoints.authenticationStart()
   window.open(url)

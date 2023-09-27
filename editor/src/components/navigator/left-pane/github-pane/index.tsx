@@ -12,7 +12,6 @@ import {
   githubFileChangesToList,
   useGithubFileChanges,
 } from '../../../../core/shared/github/helpers'
-import { startGithubAuthentication } from '../../../../utils/github-auth'
 import { unless, when } from '../../../../utils/react-conditionals'
 import {
   Button,
@@ -50,6 +49,7 @@ import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
 import { GithubOperations } from '../../../../core/shared/github/operations'
+import { GithubAuth } from '../../../../utils/github-auth'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -66,7 +66,7 @@ const AccountBlock = () => {
   const state = React.useMemo(() => (authenticated ? 'successful' : 'incomplete'), [authenticated])
   const dispatch = useDispatch()
   const triggerAuthentication = React.useCallback(() => {
-    void startGithubAuthentication(dispatch)
+    void GithubAuth.startGithubAuthentication(dispatch)
   }, [dispatch])
 
   if (authenticated) {
