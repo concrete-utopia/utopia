@@ -80,7 +80,6 @@ describe('Route manifest', () => {
         module: '/src/routes/posts.$postId.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/posts._index': {
@@ -92,7 +91,6 @@ describe('Route manifest', () => {
         module: '/src/routes/posts._index.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       root: {
@@ -103,13 +101,11 @@ describe('Route manifest', () => {
         module: '/src/root.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/_index': {
         file: 'routes/_index.js',
         hasAction: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
         hasLoader: false,
         id: 'routes/_index',
@@ -160,7 +156,6 @@ describe('Route manifest', () => {
         module: '/src/routes/notes.$noteId.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/notes._index': {
@@ -171,7 +166,6 @@ describe('Route manifest', () => {
         module: '/src/routes/notes._index.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/healthcheck': {
@@ -182,7 +176,6 @@ describe('Route manifest', () => {
         module: '/src/routes/healthcheck.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/notes.new': {
@@ -193,7 +186,6 @@ describe('Route manifest', () => {
         module: '/src/routes/notes.new.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/_index': {
@@ -204,7 +196,6 @@ describe('Route manifest', () => {
         module: '/src/routes/_index.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/logout': {
@@ -215,7 +206,6 @@ describe('Route manifest', () => {
         module: '/src/routes/logout.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/notes': {
@@ -226,7 +216,6 @@ describe('Route manifest', () => {
         module: '/src/routes/notes.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       'routes/join': {
@@ -237,7 +226,6 @@ describe('Route manifest', () => {
         module: '/src/routes/join.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
       root: {
@@ -248,7 +236,6 @@ describe('Route manifest', () => {
         module: '/src/root.js',
         hasAction: false,
         hasLoader: false,
-        hasCatchBoundary: false,
         hasErrorBoundary: false,
       },
     })

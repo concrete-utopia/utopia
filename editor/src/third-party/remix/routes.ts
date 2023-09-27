@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/8779b24d0e51cc49a887d16afab9789557b80124/packages/remix-dev/config/routes.ts
+// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/94695c3d96ac72daeb18dddd77e6dc6590d16bf4/packages/remix-dev/config/routes.ts
 
 /**
  * A route that was created using `defineRoutes` or created conventionally from
@@ -24,7 +24,7 @@ export interface ConfigRoute {
 
   /**
    * The unique id for this route, named like its `file` but without the
-   * extension. So `app/routes/gists/$username.tsx` will have an `id` of
+   * extension. So `app/routes/gists/$username.jsx` will have an `id` of
    * `routes/gists/$username`.
    */
   id: string

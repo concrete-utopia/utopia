@@ -51,7 +51,6 @@ import {
   INSERT_ELLIPSE_SHORTCUT,
   INSERT_IMAGE_SHORTCUT,
   INSERT_RECTANGLE_SHORTCUT,
-  INSERT_VIEW_SHORTCUT,
   JUMP_TO_PARENT_SHORTCUT,
   MOVE_ELEMENT_BACKWARD_SHORTCUT,
   MOVE_ELEMENT_FORWARD_SHORTCUT,
@@ -692,22 +691,6 @@ export function handleKeyDown(
             toggleStylePropPath(PP.create('style', 'boxShadow'), toggleShadow),
           ),
         )
-      },
-      [INSERT_VIEW_SHORTCUT]: () => {
-        if (isSelectMode(editor.mode) || isInsertMode(editor.mode)) {
-          const newUID = generateUidWithExistingComponents(editor.projectContents)
-          return addCreateHoverInteractionActionToSwitchModeAction(
-            EditorActions.enableInsertModeForJSXElement(
-              defaultViewElement(newUID),
-              newUID,
-              { 'utopia-api': importDetails(null, [importAlias('View')], null) },
-              null,
-            ),
-            modifiers,
-          )
-        } else {
-          return []
-        }
       },
       [INSERT_DIV_SHORTCUT]: () => {
         if (!isSelectMode(editor.mode) && !isInsertMode(editor.mode)) {

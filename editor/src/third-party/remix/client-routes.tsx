@@ -6,9 +6,9 @@ import React from 'react'
 import { FutureConfig } from '@remix-run/react/dist/entry'
 import { RouteModules } from '@remix-run/react/dist/routeModules'
 import { DataRouteObject, ShouldRevalidateFunction } from 'react-router'
-import { RemixRoute, RemixRouteError } from '@remix-run/react/dist/components'
 import invariant from './invariant'
 import { isRouteErrorResponse, useRouteError } from '@remix-run/react'
+import { RemixRoute, RemixRouteError } from './remix-route'
 
 export interface RouteManifest<Route> {
   [routeId: string]: Route
@@ -27,7 +27,6 @@ interface Route {
 export interface EntryRoute extends Route {
   hasAction: boolean
   hasLoader: boolean
-  hasCatchBoundary: boolean
   hasErrorBoundary: boolean
   imports?: string[]
   module: string
@@ -48,38 +47,6 @@ export function groupRoutesByParentId(manifest: RouteManifest<EntryRoute>) {
   })
 
   return routes
-}
-
-export function createServerRoutes(
-  manifest: RouteManifest<EntryRoute>,
-  routeModules: RouteModules,
-  future: FutureConfig,
-  parentId: string = '',
-  routesByParentId: Record<string, Omit<EntryRoute, 'children'>[]> = groupRoutesByParentId(
-    manifest,
-  ),
-): DataRouteObject[] {
-  return (routesByParentId[parentId] || []).map((route) => {
-    let hasErrorBoundary =
-      future.v2_errorBoundary === true
-        ? route.id === 'root' || route.hasErrorBoundary
-        : route.id === 'root' || route.hasCatchBoundary || route.hasErrorBoundary
-    let dataRoute: DataRouteObject = {
-      caseSensitive: route.caseSensitive,
-      element: <RemixRoute id={route.id} />,
-      errorElement: hasErrorBoundary ? <RemixRouteError id={route.id} /> : undefined,
-      id: route.id,
-      index: route.index,
-      path: route.path,
-      handle: routeModules[route.id].handle,
-      // Note: we don't need loader/action/shouldRevalidate on these routes
-      // since they're for a static render
-    }
-
-    let children = createServerRoutes(manifest, routeModules, future, route.id, routesByParentId)
-    if (children.length > 0) dataRoute.children = children
-    return dataRoute
-  })
 }
 
 export function createClientRoutesWithHMRRevalidationOptOut(
@@ -109,10 +76,7 @@ export function createClientRoutes(
   needsRevalidation?: Set<string>,
 ): DataRouteObject[] {
   return (routesByParentId[parentId] || []).map((route) => {
-    let hasErrorBoundary =
-      future.v2_errorBoundary === true
-        ? route.hasErrorBoundary
-        : route.hasCatchBoundary || route.hasErrorBoundary
+    let hasErrorBoundary = route.hasErrorBoundary
 
     let dataRoute: DataRouteObject = {
       caseSensitive: route.caseSensitive,

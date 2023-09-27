@@ -57,7 +57,6 @@ export const INSERT_ELLIPSE_SHORTCUT = 'insert-ellipse'
 export const ADD_ELEMENT_SHORTCUT = 'add-element'
 export const SAVE_CURRENT_FILE_SHORTCUT = 'save-current-file'
 export const TOGGLE_SHADOW_SHORTCUT = 'toggle-shadow'
-export const INSERT_VIEW_SHORTCUT = 'insert-view'
 export const INSERT_DIV_SHORTCUT = 'insert-div'
 export const CUT_SELECTION_SHORTCUT = 'cut-selection'
 export const UNDO_CHANGES_SHORTCUT = 'undo-changes'
@@ -175,7 +174,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     'Toggle the shadow of the currently selected element.',
     key('s', []),
   ),
-  [INSERT_VIEW_SHORTCUT]: shortcut('Insert a view.', key('v', [])),
   [INSERT_DIV_SHORTCUT]: shortcut('Insert a div.', [key('d', []), key('f', [])]),
   [CUT_SELECTION_SHORTCUT]: shortcut(
     'Cut the current selection to the clipboard.',
