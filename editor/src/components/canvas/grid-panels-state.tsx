@@ -4,7 +4,7 @@ import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/
 import { mod } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
 
-export const GridMenuWidth = 260
+export const GridMenuWidth = 268
 export const GridPaneWidth = 500
 
 export const NumberOfColumns = 4
