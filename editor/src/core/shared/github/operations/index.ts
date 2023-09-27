@@ -1,18 +1,28 @@
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
+import { resolveConflict, startGithubPolling } from '../helpers'
 import { saveProjectToGithub } from './commit-and-push'
 import { getBranchChecksums } from './get-branch-checksums'
 import type { GithubOperationContext } from './github-operation-context'
 import { getBranchesForGithubRepository } from './list-branches'
 import { updatePullRequestsForBranch } from './list-pull-requests-for-branch'
+import { saveAssetsToProject, updateProjectWithBranchContent } from './load-branch'
+import { getUsersPublicGithubRepositories } from './load-repositories'
+import { updateProjectAgainstGithub } from './update-against-branch'
 
-const ProdOperationContext: GithubOperationContext = {
-  fetch: fetch,
+const OperationContext: GithubOperationContext = {
+  fetch: (...args) => window.fetch(...args),
   updateProjectContentsWithParseResults: updateProjectContentsWithParseResults,
 }
 
 export const GithubOperations = {
-  saveProjectToGithub: saveProjectToGithub(ProdOperationContext),
-  getBranchCheckSums: getBranchChecksums(ProdOperationContext),
-  getBranchesForGithubRepository: getBranchesForGithubRepository(ProdOperationContext),
-  updatePullRequestsForBranch: updatePullRequestsForBranch(ProdOperationContext),
+  saveProjectToGithub: saveProjectToGithub(OperationContext),
+  getBranchCheckSums: getBranchChecksums(OperationContext),
+  getBranchesForGithubRepository: getBranchesForGithubRepository(OperationContext),
+  updatePullRequestsForBranch: updatePullRequestsForBranch(OperationContext),
+  saveAssetsToProject: saveAssetsToProject(OperationContext),
+  getUsersPublicGithubRepositories: getUsersPublicGithubRepositories(OperationContext),
+  updateProjectAgainstGithub: updateProjectAgainstGithub(OperationContext),
+  startGithubPolling: startGithubPolling(OperationContext),
+  resolveConflict: resolveConflict(OperationContext),
+  updateProjectWithBranchContent: updateProjectWithBranchContent(OperationContext),
 } as const

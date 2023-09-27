@@ -89,13 +89,12 @@ export const updateProjectAgainstGithub =
         )
 
         // Save assets to the server from Github.
-        await saveAssetsToProject(
+        await saveAssetsToProject(operationContext)(
           githubRepo,
           projectID,
           branchLatestContent.branch,
           dispatch,
           currentProjectContents,
-          operationContext,
         )
 
         dispatch(

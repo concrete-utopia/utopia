@@ -60,3 +60,8 @@ export async function startGithubAuthentication(dispatch: EditorDispatch): Promi
   // Try this for a maximum of 5 minutes.
   await checkAuthenticatedPeriodically(1000 * 60 * 5)
 }
+
+export const GithubAuth = {
+  isAuthenticatedWithGithub: isAuthenticatedWithGithub,
+  startGithubAuthentication: startGithubAuthentication,
+} as const

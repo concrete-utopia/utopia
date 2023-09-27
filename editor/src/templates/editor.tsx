@@ -128,6 +128,7 @@ import {
   ProjectServerState,
   ProjectServerStateUpdater,
 } from '../components/editor/store/project-server-state'
+import { GithubOperations } from '../core/shared/github/operations'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -291,7 +292,7 @@ export class Editor {
 
     void renderRootEditor()
 
-    startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
+    void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
 
     reduxDevtoolsSendInitialState(this.storedState)
 
@@ -450,7 +451,7 @@ export class Editor {
       )
       const anyLoadActions = dispatchedActions.some((action) => action.action === 'LOAD')
       if (anyLoadActions) {
-        startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
+        void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
       }
 
       invalidateDomWalkerIfNecessary(
