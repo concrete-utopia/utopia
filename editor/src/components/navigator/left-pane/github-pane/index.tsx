@@ -292,8 +292,7 @@ const BranchBlock = () => {
             borderRadius: 2,
           }}
         >
-          {(branchesForRepository ?? []).map((branch, index) => {
-            // TODO
+          {filteredBranches.map((branch, index) => {
             function selectBranch() {
               if (isListingBranches) {
                 return
@@ -385,7 +384,7 @@ const BranchBlock = () => {
   }, [
     branchFilter,
     updateBranchFilter,
-    branchesForRepository,
+    filteredBranches,
     refreshBranches,
     isListingBranches,
     currentBranch,

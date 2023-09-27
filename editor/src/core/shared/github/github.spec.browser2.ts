@@ -6,6 +6,7 @@ import {
   renderTestEditorWithCode,
 } from '../../../components/canvas/ui-jsx.test-utils'
 import { createTestProjectWithCode } from '../../../sample-projects/sample-project-utils.test-utils'
+import { wait } from '../../model/performance-scripts'
 import { GithubEndpoints } from './endpoints'
 import type { GetBranchContentResponse, GetGithubUserSuccess } from './helpers'
 import {
@@ -33,7 +34,7 @@ describe('Github integration', () => {
         type: 'SUCCESS',
         repositories: [
           {
-            fullName: 'www.github.com/bob/awesome-project',
+            fullName: 'bob/awesome-project',
             name: 'Awesome Project',
             avatarUrl: null,
             isPrivate: false,
@@ -79,7 +80,7 @@ describe('Github integration', () => {
     await clickTextOnScreen(renderResult, 'Github')
     await mock.getUsersPublicGithubRepositories
 
-    await clickTextOnScreen(renderResult, 'www.github.com/bob/awesome-project')
+    await clickTextOnScreen(renderResult, 'bob/awesome-project')
     await mock.getBranchesForGithubRepository
 
     await clickTextOnScreen(renderResult, 'main')
