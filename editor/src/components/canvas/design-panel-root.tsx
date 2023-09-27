@@ -24,7 +24,6 @@ import {
 } from '../../uuiui'
 
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
-import { FloatingInsertMenu } from './ui/floating-insert-menu'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'
 import { CanvasStrategyInspector } from './canvas-strategies/canvas-strategy-inspector'
@@ -190,7 +189,6 @@ const DesignPanelRootInner = React.memo(() => {
               </div>,
             )}
             <CanvasWrapperComponent />
-            <FloatingInsertMenu />
             {unless(
               draggablePanelsEnabled,
               <div
