@@ -1,5 +1,5 @@
 import * as React from 'react'
-import type { ProjectListing } from 'src/common/persistence'
+import type { ProjectListing } from '../../../common/persistence'
 import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { fetchProjectMetadata } from '../../../common/server'
 import type { EditorDispatch } from '../action-types'

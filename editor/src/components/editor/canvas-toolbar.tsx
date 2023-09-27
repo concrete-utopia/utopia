@@ -82,6 +82,8 @@ export interface CanvasToolbarSearchProps {
   actionWith: (item: InsertMenuItem | null) => void
 }
 
+export const CanvasToolbarSearchTestID = 'canvas-toolbar-search'
+
 export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) => {
   const insertMenuMode = useEditorState(
     Substores.restOfEditor,
@@ -112,64 +114,66 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
   })
 
   return (
-    <WindowedSelect
-      id={'canvas-toolbar-search'}
-      ref={selectRef}
-      components={{ Option: CustomComponentOption }}
-      openMenuOnFocus={true}
-      openMenuOnClick={true}
-      onBlur={undefined}
-      onChange={props.actionWith}
-      options={options}
-      menuPortalTarget={menuPortalTarget}
-      filterOption={createFilter({ ignoreAccents: true })}
-      styles={{
-        ...componentSelectorStyles,
-        menuPortal: (styles: CSSObject): CSSObject => {
-          return {
-            zIndex: -2,
-            padding: '0 8px',
-            overflow: 'hidden',
-            height: 'auto',
-            backgroundColor: theme.bg2.value,
-            borderRadius: '0px 10px 10px 10px',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-          }
-        },
-        input: (styles: CSSObject): CSSObject => {
-          return {
-            ...(InspectorInputEmotionStyle({
-              hasLabel: false,
-              controlStyles: getControlStyles('simple'),
-            }) as CSSObject),
-            paddingLeft: 4,
-            backgroundColor: colorTheme.seperator.value,
-            flexGrow: 1,
-            display: 'flex',
-            alignItems: 'center',
-            minWidth: '200px',
-            borderRadius: '10px',
-            borderWidth: 1,
-            borderColor: theme.primary.value,
-            borderStyle: 'solid',
-          }
-        },
-        menuList: (styles: CSSObject): CSSObject => {
-          return {
-            position: 'relative',
-            maxHeight: 210,
-            paddingLeft: 8,
-            paddingRight: 8,
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 6,
-          }
-        },
-      }}
-      maxMenuHeight={138}
-    />
+    <div data-testid={CanvasToolbarSearchTestID}>
+      <WindowedSelect
+        id={CanvasToolbarSearchTestID}
+        ref={selectRef}
+        components={{ Option: CustomComponentOption }}
+        openMenuOnFocus={true}
+        openMenuOnClick={true}
+        onBlur={undefined}
+        onChange={props.actionWith}
+        options={options}
+        menuPortalTarget={menuPortalTarget}
+        filterOption={createFilter({ ignoreAccents: true })}
+        styles={{
+          ...componentSelectorStyles,
+          menuPortal: (styles: CSSObject): CSSObject => {
+            return {
+              zIndex: -2,
+              padding: '0 8px',
+              overflow: 'hidden',
+              height: 'auto',
+              backgroundColor: theme.bg2.value,
+              borderRadius: '0px 10px 10px 10px',
+              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+              pointerEvents: 'initial',
+            }
+          },
+          input: (styles: CSSObject): CSSObject => {
+            return {
+              ...(InspectorInputEmotionStyle({
+                hasLabel: false,
+                controlStyles: getControlStyles('simple'),
+              }) as CSSObject),
+              paddingLeft: 4,
+              backgroundColor: colorTheme.seperator.value,
+              flexGrow: 1,
+              display: 'flex',
+              alignItems: 'center',
+              minWidth: '200px',
+              borderRadius: '10px',
+              borderWidth: 1,
+              borderColor: theme.primary.value,
+              borderStyle: 'solid',
+            }
+          },
+          menuList: (styles: CSSObject): CSSObject => {
+            return {
+              position: 'relative',
+              maxHeight: 210,
+              paddingLeft: 8,
+              paddingRight: 8,
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 6,
+            }
+          },
+        }}
+        maxMenuHeight={138}
+      />
+    </div>
   )
 })
 CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
