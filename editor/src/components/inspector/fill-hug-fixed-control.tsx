@@ -774,7 +774,7 @@ function groupChildConstraintOption(type: GroupChildConstraintOptionType): Selec
   }
 }
 
-function getSafeGroupChildConstraintsArray(
+export function getSafeGroupChildConstraintsArray(
   allElementProps: AllElementProps,
   path: ElementPath,
 ): any[] {
