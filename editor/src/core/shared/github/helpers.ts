@@ -1,8 +1,6 @@
 import { mergeDiff3 } from 'node-diff3'
 import { createSelector } from 'reselect'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import urljoin from 'url-join'
-import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { HEADERS, MODE } from '../../../common/server'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../components/assets'
 import {
@@ -66,6 +64,7 @@ import { getUsersPublicGithubRepositories } from './operations/load-repositories
 import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
 import type { GithubOperationContext } from './operations/github-operation-context'
+import { GithubEndpoints } from './endpoints'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -262,15 +261,7 @@ export async function getBranchContentFromServer(
   previousCommitSha: string | null,
   operationContext: GithubOperationContext,
 ): Promise<Response> {
-  const url = urljoin(
-    UTOPIA_BACKEND,
-    'github',
-    'branches',
-    githubRepo.owner,
-    githubRepo.repository,
-    'branch',
-    branchName,
-  )
+  const url = GithubEndpoints.branchContents(githubRepo, branchName)
   let includeQueryParams: boolean = false
   let paramsRecord: Record<string, string> = {}
   if (commitSha != null) {
@@ -293,7 +284,7 @@ export async function getBranchContentFromServer(
 }
 
 export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'user')
+  const url = GithubEndpoints.userDetails()
 
   const response = await fetch(url, {
     method: 'GET',
@@ -984,15 +975,7 @@ export async function saveGithubAsset(
     { name: 'saveAsset', path: path },
     dispatch,
     async (operation: GithubOperation) => {
-      const url = urljoin(
-        UTOPIA_BACKEND,
-        'github',
-        'branches',
-        githubRepo.owner,
-        githubRepo.repository,
-        'asset',
-        assetSha,
-      )
+      const url = GithubEndpoints.asset(githubRepo, assetSha)
 
       const paramsRecord: Record<string, string> = {
         project_id: projectID,

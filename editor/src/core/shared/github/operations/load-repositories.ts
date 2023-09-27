@@ -1,5 +1,3 @@
-import urljoin from 'url-join'
-import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
 import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import {
@@ -9,6 +7,7 @@ import {
 } from '../../../../components/editor/actions/action-creators'
 import type { GithubOperation } from '../../../../components/editor/store/editor-state'
 import { emptyGithubSettings } from '../../../../components/editor/store/editor-state'
+import { GithubEndpoints } from '../endpoints'
 import type { GithubFailure, RepositoryEntry } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
@@ -27,7 +26,7 @@ export const getUsersPublicGithubRepositories =
       { name: 'loadRepositories' },
       dispatch,
       async (operation: GithubOperation) => {
-        const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
+        const url = GithubEndpoints.repositories()
 
         const response = await operationContext.fetch(url, {
           method: 'GET',

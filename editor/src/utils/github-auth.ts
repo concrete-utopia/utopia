@@ -1,13 +1,12 @@
-import { UTOPIA_BACKEND } from '../common/env-vars'
 import { MODE } from '../common/server'
-import urljoin from 'url-join'
 import type { LoginState } from '../common/user'
 import type { EditorDispatch } from '../components/editor/action-types'
 import { setGithubState } from '../components/editor/actions/action-creators'
+import { GithubEndpoints } from '../core/shared/github/endpoints'
 import { updateUserDetailsWhenAuthenticated } from '../core/shared/github/helpers'
 
 async function checkIfAuthenticatedWithGithub(): Promise<boolean> {
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'status')
+  const url = GithubEndpoints.authenticationStatus()
   const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
@@ -32,7 +31,7 @@ const timeToWait = 1000 * 5
 
 export async function startGithubAuthentication(dispatch: EditorDispatch): Promise<void> {
   // Open the window that starts the authentication flow.
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'start')
+  const url = GithubEndpoints.authenticationStart()
   window.open(url)
 
   async function checkAuthenticatedPeriodically(timeLeftMS: number): Promise<void> {

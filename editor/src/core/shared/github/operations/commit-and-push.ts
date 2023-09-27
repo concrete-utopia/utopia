@@ -1,7 +1,4 @@
-import urljoin from 'url-join'
-import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
-import { getProjectContentsChecksums } from '../../../../components/assets'
 import { notice } from '../../../../components/common/notice'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
@@ -26,6 +23,7 @@ import {
 } from '../helpers'
 import { getBranchesForGithubRepository } from './list-branches'
 import type { GithubOperationContext } from './github-operation-context'
+import { GithubEndpoints } from '../endpoints'
 
 export interface SaveProjectToGithubOptions {
   branchName: string | null
@@ -86,7 +84,7 @@ export const saveProjectToGithub =
           },
         }
 
-        const url = urljoin(UTOPIA_BACKEND, 'github', 'save', projectID)
+        const url = GithubEndpoints.save(projectID)
 
         let includeQueryParams: boolean = false
         let paramsRecord: Record<string, string> = {}
@@ -136,10 +134,9 @@ export const saveProjectToGithub =
             )
 
             // refresh the branches after the content was saved
-            // TODO why not an await?
-            void dispatchPromiseActions(
+            await dispatchPromiseActions(
               dispatch,
-              getBranchesForGithubRepository(dispatch, targetRepository, operationContext),
+              getBranchesForGithubRepository(operationContext)(dispatch, targetRepository),
             )
             break
           default:

@@ -2,7 +2,6 @@ import type { UtopiaTsWorkers } from '../../../../core/workers/common/worker-typ
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import { getProjectFileByFilePath } from '../../../../components/assets'
 import {
-  getProjectContentsChecksums,
   packageJsonFileFromProjectContents,
   walkContentsTreeAsync,
 } from '../../../../components/assets'

@@ -1,5 +1,3 @@
-import urljoin from 'url-join'
-import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
 import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { updateGithubData } from '../../../../components/editor/actions/action-creators'
@@ -8,6 +6,7 @@ import type {
   GithubRepo,
   PullRequest,
 } from '../../../../components/editor/store/editor-state'
+import { GithubEndpoints } from '../endpoints'
 import type { GithubFailure } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
@@ -44,16 +43,7 @@ export const updatePullRequestsForBranch =
       },
       dispatch,
       async (operation: GithubOperation) => {
-        const url = urljoin(
-          UTOPIA_BACKEND,
-          'github',
-          'branches',
-          githubRepo.owner,
-          githubRepo.repository,
-          'branch',
-          branchName,
-          'pullrequest',
-        )
+        const url = GithubEndpoints.updatePullRequests(githubRepo, branchName)
 
         const response = await operationContext.fetch(url, {
           method: 'GET',
