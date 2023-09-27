@@ -17,7 +17,7 @@ import {
   TestAppUID,
   TestSceneUID,
 } from '../ui-jsx.test-utils'
-import { FloatingMenuTestId } from './floating-insert-menu'
+import { FloatingMenuTestId } from '../../insert-menu-utils'
 import { expectNoAction } from '../../../utils/utils.test-utils'
 import { PlaygroundFilePath, StoryboardFilePath } from '../../editor/store/editor-state'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'

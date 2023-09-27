@@ -45,12 +45,12 @@ import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { NO_OP } from '../../core/shared/utils'
-import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
+import type { InsertMenuItem } from '../insert-menu-utils'
 import {
   CustomComponentOption,
   useComponentSelectorStyles,
   useGetInsertableComponents,
-} from '../canvas/ui/floating-insert-menu'
+} from '../insert-menu-utils'
 import { createFilter } from 'react-select'
 import WindowedSelect from 'react-windowed-select'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
@@ -567,7 +567,7 @@ export const CanvasToolbar = React.memo(() => {
                   <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
                     <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
                   </Tooltip>
-                  <Tooltip title='Wrap selection in an element' placement='bottom'>
+                  <Tooltip title='Wrap selection in an element (W)' placement='bottom'>
                     <InsertModeButton
                       iconType='designtool-larger'
                       iconCategory='semantic'

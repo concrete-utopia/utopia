@@ -28,7 +28,7 @@ import { useRefEditorState } from './store/store-hook'
 import { getInsertionPath } from './store/insertion-path'
 import type { RemixRoutingTable } from './store/remix-derived-data'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
+import type { InsertMenuItem, InsertMenuItemValue } from '../insert-menu-utils'
 
 export function changeConditionalOrFragment(
   projectContents: ProjectContentTreeRoot,

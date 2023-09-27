@@ -21,7 +21,7 @@ import {
 import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
-import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
+import type { InsertMenuItem } from '../insert-menu-utils'
 import { getActionsToApplyChange } from './convert-callbacks'
 import { floatingInsertMenuStateInsert } from './store/editor-state'
 
