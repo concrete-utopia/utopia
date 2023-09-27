@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import type { CanvasRectangle, Size } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   isFiniteRectangle,
@@ -312,7 +312,7 @@ function applyConstraintsAdjustmentsToFrame(
 function getConstrainedFramesAdjustments(
   locked: boolean,
   dimension: 'width' | 'height',
-  constrainedSizes: Array<Size>,
+  constrainedSizes: Array<NullableSize>,
   edgePosition: EdgePosition,
   originalFrame: CanvasRectangle,
   newFrame: CanvasRectangle,
@@ -338,7 +338,8 @@ function getConstrainedFramesAdjustments(
 
   // The maximum value of the given constraints, used as the upper bound for the adjustment.
   const maxDimension = constrainedSizes.reduce((size, frame) => {
-    return Math.max(frame[dimension], size)
+    const frameDimension = frame[dimension]
+    return frameDimension != null ? Math.max(frameDimension, size) : size
   }, -Infinity)
 
   function getOffset() {
@@ -372,15 +373,20 @@ function isDimensionConstrained(
   )
 }
 
+type NullableSize = {
+  width: number | null
+  height: number | null
+}
+
 function getConstrainedSizes(
   jsxMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   path: ElementPath,
   originalFrame: CanvasRectangle,
-): { constrainedSizes: Array<Size>; lockedWidth: boolean; lockedHeight: boolean } {
+): { constrainedSizes: Array<NullableSize>; lockedWidth: boolean; lockedHeight: boolean } {
   let lockedWidth = false
   let lockedHeight = false
-  let constrainedSizes: Array<Size> = []
+  let constrainedSizes: Array<NullableSize> = []
 
   const descendants = Object.values(jsxMetadata).filter((element) =>
     EP.isDescendantOf(element.elementPath, path),
@@ -462,7 +468,7 @@ function getBoundDimension(
   originalDimension: number,
   frameOffset: number,
   frameDimension: number,
-): number {
+): number | null {
   if (minBound && maxBound) {
     return originalDimension
   } else if (minBound && dimensionBound) {
@@ -476,7 +482,7 @@ function getBoundDimension(
   } else if (dimensionBound) {
     return frameDimension
   } else {
-    return 0
+    return null
   }
 }
 
