@@ -1,4 +1,4 @@
-import { MapLike } from 'typescript'
+// import { MapLike } from 'typescript'
 import { UtopiColor, createUtopiColor, enforceUtopiColorTheme } from '../utopi-color-helpers'
 import type { dark } from './dark'
 
@@ -34,6 +34,7 @@ const lightBase = {
   unavailableGrey: createUtopiColor('oklch(0% 0 0 / 22%)'),
   unavailableGrey10: createUtopiColor('oklch(0% 0 0 / 10%)'),
   aqua: createUtopiColor('oklch(0.74 0.18 218.28)'),
+  aqua10: createUtopiColor('oklch(0.74 0.18 218.28 / 10%)'),
   aqua05solid: createUtopiColor('oklch(0.95 0.02 208.7)'),
   bg510solid: createUtopiColor('oklch(0.95 0 0)'),
   bg0: createUtopiColor('hsl(0,0%,100%)'),

@@ -392,6 +392,7 @@ const elementWarningsSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 type CodeItemType = 'conditional' | 'map' | 'code' | 'none' | 'remix'
+type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
 
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
@@ -551,13 +552,35 @@ export const NavigatorItem: React.FunctionComponent<
       }
       if (
         MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata) ||
-        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
+        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata) ||
+        MetadataUtils.isProbablyRemixLinkFromMetadata(elementMetadata)
       ) {
         return 'remix'
       }
       return 'none'
     },
     'NavigatorItem codeItemType',
+  )
+
+  const remixItemType: RemixItemType = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.navigatorEntry.elementPath,
+      )
+      if (MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)) {
+        return 'scene'
+      }
+      if (MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata)) {
+        return 'outlet'
+      }
+      if (MetadataUtils.isProbablyRemixLinkFromMetadata(elementMetadata)) {
+        return 'link'
+      }
+      return 'none'
+    },
+    'NavigatorItem remixItemType',
   )
 
   const isConditional = codeItemType === 'conditional'
@@ -801,6 +824,7 @@ export const NavigatorItem: React.FunctionComponent<
                 renamingTarget={props.renamingTarget}
                 selected={props.selected}
                 codeItemType={codeItemType}
+                remixItemType={remixItemType}
                 dispatch={props.dispatch}
                 isDynamic={isDynamic}
                 iconColor={iconColor}
@@ -839,6 +863,7 @@ interface NavigatorRowLabelProps {
   renamingTarget: ElementPath | null
   selected: boolean
   codeItemType: CodeItemType
+  remixItemType: RemixItemType
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
@@ -851,6 +876,10 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isRemixItem = props.codeItemType === 'remix'
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
+
+  const isRemixScene = props.remixItemType === 'scene'
+  const isOutlet = props.remixItemType === 'outlet'
+  const isLink = props.remixItemType === 'link'
 
   return (
     <div
@@ -865,7 +894,11 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         paddingLeft: 10,
         paddingRight: props.codeItemType === 'map' ? 0 : 10,
         backgroundColor:
-          isCodeItem && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
+          isCodeItem && !props.selected
+            ? colorTheme.dynamicBlue10.value
+            : isOutlet && !props.selected
+            ? colorTheme.aqua10.value
+            : 'transparent',
         color: isCodeItem
           ? colorTheme.dynamicBlue.value
           : isRemixItem

@@ -33,6 +33,7 @@ const darkBase = {
   unavailableGrey: createUtopiColor('oklch(100% 0 0 / 22%)'),
   unavailableGrey10: createUtopiColor('oklch(100% 0 0 / 10%)'),
   aqua: createUtopiColor('oklch(86% 0.135 208.71)'),
+  aqua10: createUtopiColor('oklch(86% 0.135 208.71 / 10%)'),
   aqua05solid: createUtopiColor('oklch(0.41 0.03 238.48)'),
   bg510solid: createUtopiColor('oklch(0.41 0.02 269.74)'),
   bg0: createUtopiColor('#000000'),
