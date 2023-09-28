@@ -1,5 +1,3 @@
-import urljoin from 'url-join'
-import { UTOPIA_BACKEND } from '../../../../common/env-vars'
 import { HEADERS, MODE } from '../../../../common/server'
 import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import {
@@ -9,8 +7,10 @@ import {
 } from '../../../../components/editor/actions/action-creators'
 import type { GithubOperation } from '../../../../components/editor/store/editor-state'
 import { emptyGithubSettings } from '../../../../components/editor/store/editor-state'
+import { GithubEndpoints } from '../endpoints'
 import type { GithubFailure, RepositoryEntry } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
+import type { GithubOperationContext } from './github-operation-context'
 
 export interface GetUsersPublicRepositoriesSuccess {
   type: 'SUCCESS'
@@ -19,48 +19,51 @@ export interface GetUsersPublicRepositoriesSuccess {
 
 export type GetUsersPublicRepositoriesResponse = GetUsersPublicRepositoriesSuccess | GithubFailure
 
-export async function getUsersPublicGithubRepositories(
-  dispatch: EditorDispatch,
-): Promise<Array<EditorAction>> {
-  return runGithubOperation(
-    { name: 'loadRepositories' },
-    dispatch,
-    async (operation: GithubOperation) => {
-      const url = urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories')
+export const getUsersPublicGithubRepositories =
+  (operationContext: GithubOperationContext) =>
+  async (dispatch: EditorDispatch): Promise<Array<EditorAction>> => {
+    return runGithubOperation(
+      { name: 'loadRepositories' },
+      dispatch,
+      async (operation: GithubOperation) => {
+        const url = GithubEndpoints.repositories()
 
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: HEADERS,
-        mode: MODE,
-      })
-      if (!response.ok) {
-        throw await githubAPIErrorFromResponse(operation, response)
-      }
+        const response = await operationContext.fetch(url, {
+          method: 'GET',
+          credentials: 'include',
+          headers: HEADERS,
+          mode: MODE,
+        })
+        if (!response.ok) {
+          throw await githubAPIErrorFromResponse(operation, response)
+        }
 
-      const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
-      switch (responseBody.type) {
-        case 'FAILURE':
-          if (responseBody.failureReason.includes('Authentication')) {
-            dispatch(
-              [
-                updateGithubSettings(emptyGithubSettings()),
-                setGithubState({ authenticated: false }),
-              ],
-              'everyone',
+        const responseBody: GetUsersPublicRepositoriesResponse = await response.json()
+        switch (responseBody.type) {
+          case 'FAILURE':
+            if (responseBody.failureReason.includes('Authentication')) {
+              dispatch(
+                [
+                  updateGithubSettings(emptyGithubSettings()),
+                  setGithubState({ authenticated: false }),
+                ],
+                'everyone',
+              )
+            }
+            throw githubAPIError(operation, responseBody.failureReason)
+          case 'SUCCESS':
+            return [
+              updateGithubData({
+                publicRepositories: responseBody.repositories.filter((repo) => !repo.isPrivate),
+              }),
+            ]
+          default:
+            const _exhaustiveCheck: never = responseBody
+            throw githubAPIError(
+              operation,
+              `Unhandled response body ${JSON.stringify(responseBody)}`,
             )
-          }
-          throw githubAPIError(operation, responseBody.failureReason)
-        case 'SUCCESS':
-          return [
-            updateGithubData({
-              publicRepositories: responseBody.repositories.filter((repo) => !repo.isPrivate),
-            }),
-          ]
-        default:
-          const _exhaustiveCheck: never = responseBody
-          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
-      }
-    },
-  )
-}
+        }
+      },
+    )
+  }
