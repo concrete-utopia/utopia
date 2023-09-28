@@ -61,7 +61,8 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
           >
             <div
               style={{
-                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                // backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                backgroundColor: colorTheme.aqua.value,
                 height: 2,
                 flexGrow: 1,
               }}
@@ -73,7 +74,8 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
                 width: NavigatorHintCircleDiameter,
                 height: NavigatorHintCircleDiameter,
                 contain: 'layout',
-                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                // border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                border: `2px solid ${colorTheme.aqua.value}`,
                 borderRadius: '50%',
               }}
             />
