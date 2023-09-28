@@ -135,6 +135,7 @@ callGithub githubSemaphore makeRequest queryParameters handleErrorCases accessTo
   let options = WR.defaults
               & WR.header "User-Agent" .~ ["concrete-utopia/utopia"]
               & WR.header "Accept" .~ ["application/vnd.github.v3+json"]
+              & WR.header "X-GitHub-Api-Version" .~ ["2022-11-28"]
               & WR.header "Authorization" .~ ["Bearer " <> (encodeUtf8 $ atoken accessToken)]
               & WR.checkResponse .~ (Just $ \_ _ -> return ())
               & WR.params .~ queryParameters
