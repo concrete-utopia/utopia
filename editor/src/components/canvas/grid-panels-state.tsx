@@ -279,9 +279,10 @@ export function useColumnWidths(): [
         if (columnContainsMenu) {
           // menu resize!
           return immutableUpdate(current, { [columnIndex]: { menuWidth: { $set: newWidth } } })
+        } else {
+          // pane resize!
+          return immutableUpdate(current, { [columnIndex]: { paneWidth: { $set: newWidth } } })
         }
-        // pane resize!
-        return immutableUpdate(current, { [columnIndex]: { paneWidth: { $set: newWidth } } })
       })
     },
     [setPanelState],
