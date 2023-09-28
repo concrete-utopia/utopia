@@ -18,6 +18,7 @@ import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
 import { resolveConflict, startGithubPolling } from '../helpers'
 import type { AsyncEditorDispatch } from '../../../../components/canvas/ui-jsx.test-utils'
+import type { IGithubEndpoints } from '../endpoints'
 
 export async function loginUserToGithubForTests(dispatch: AsyncEditorDispatch) {
   await dispatch(
@@ -42,6 +43,7 @@ interface FakeGithubApiConfig {
 
 interface MockOperationContextOptions {
   apiConfig: FakeGithubApiConfig
+  githubEndpoints: IGithubEndpoints
   fakeResolvedProjectContents: ProjectContentTreeRoot
 }
 
@@ -53,6 +55,7 @@ const MockOperationContext = (options: MockOperationContextOptions): GithubOpera
     }
     return response
   },
+  githubEndpoints: options.githubEndpoints,
   updateProjectContentsWithParseResults: async () => options.fakeResolvedProjectContents,
 })
 

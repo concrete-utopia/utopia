@@ -1,4 +1,5 @@
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
+import { GithubEndpoints2 } from '../endpoints'
 import { resolveConflict, startGithubPolling } from '../helpers'
 import { saveProjectToGithub } from './commit-and-push'
 import { getBranchChecksums } from './get-branch-checksums'
@@ -11,6 +12,7 @@ import { updateProjectAgainstGithub } from './update-against-branch'
 
 const OperationContext: GithubOperationContext = {
   fetch: (...args) => window.fetch(...args),
+  githubEndpoints: GithubEndpoints2,
   updateProjectContentsWithParseResults: updateProjectContentsWithParseResults,
 }
 

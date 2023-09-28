@@ -26,14 +26,8 @@ export const getUsersPublicGithubRepositories =
       { name: 'loadRepositories' },
       dispatch,
       async (operation: GithubOperation) => {
-        const url = GithubEndpoints.repositories()
+        const response = await operationContext.githubEndpoints.repositories()
 
-        const response = await operationContext.fetch(url, {
-          method: 'GET',
-          credentials: 'include',
-          headers: HEADERS,
-          mode: MODE,
-        })
         if (!response.ok) {
           throw await githubAPIErrorFromResponse(operation, response)
         }

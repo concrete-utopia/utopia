@@ -283,15 +283,10 @@ export async function getBranchContentFromServer(
   })
 }
 
-export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
-  const url = GithubEndpoints.userDetails()
-
-  const response = await fetch(url, {
-    method: 'GET',
-    credentials: 'include',
-    headers: HEADERS,
-    mode: MODE,
-  })
+export async function getUserDetailsFromServer(
+  operationContext: GithubOperationContext,
+): Promise<Array<EditorAction>> {
+  const response = await operationContext.githubEndpoints.userDetails()
 
   if (response.ok) {
     const responseBody: GetGithubUserResponse = await response.json()
