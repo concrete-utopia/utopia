@@ -263,7 +263,7 @@ export function useColumnWidths(): [
   const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
 
   // start with the default value
-  const defaultColumnWidths: Array<number> = React.useMemo(
+  const columnWidths: Array<number> = React.useMemo(
     () =>
       panelState.map((_, index) => {
         return getColumnWidth(panelState, index)
@@ -287,7 +287,7 @@ export function useColumnWidths(): [
     [setPanelState],
   )
 
-  return [defaultColumnWidths, setColumnWidths]
+  return [columnWidths, setColumnWidths]
 }
 
 export function getColumnWidth(panelState: StoredLayout, columnIndex: number): number {
