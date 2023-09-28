@@ -3,7 +3,13 @@
 
 import { jsx } from '@emotion/react'
 import React from 'react'
-import type { FormatOptionLabelMeta, InputProps, OptionsType, ValueType } from 'react-select'
+import type {
+  FormatOptionLabelMeta,
+  InputProps,
+  OptionTypeBase,
+  OptionsType,
+  ValueType,
+} from 'react-select'
 import { components } from 'react-select'
 import CreatableSelect from 'react-select/creatable'
 import type { IndicatorContainerProps } from 'react-select/src/components/containers'
@@ -122,11 +128,13 @@ function formatOptionLabel(
   )
 }
 
-function isOptionsType<T>(valueType: T | OptionsType<T>): valueType is OptionsType<T> {
+function isOptionsType<T extends OptionTypeBase>(
+  valueType: T | OptionsType<T>,
+): valueType is OptionsType<T> {
   return Array.isArray(valueType)
 }
 
-function valueTypeAsArray<T>(valueType: ValueType<T>): ReadonlyArray<T> {
+function valueTypeAsArray<T extends OptionTypeBase>(valueType: ValueType<T>): ReadonlyArray<T> {
   if (valueType == null) {
     return []
   } else if (isOptionsType(valueType)) {

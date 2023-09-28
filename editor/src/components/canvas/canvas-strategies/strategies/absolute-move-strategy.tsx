@@ -46,6 +46,11 @@ export function absoluteMoveStrategy(
     strategy: {
       id: 'ABSOLUTE_MOVE',
       name: 'Move',
+      descriptiveLabel: 'Moving Absolute Elements',
+      icon: {
+        category: 'modalities',
+        type: 'moveabs-large',
+      },
       controlsToRender: [
         controlWithProps({
           control: ImmediateParentOutlines,

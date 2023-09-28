@@ -20,7 +20,11 @@ import type { EdgePiece, EdgePosition } from '../canvas-types'
 import { MoveIntoDragThreshold } from '../canvas-utils'
 import type { CanvasCommand } from '../commands/commands'
 import type { ApplicableStrategy } from './canvas-strategies'
-import type { CanvasStrategyId, CustomStrategyState } from './canvas-strategy-types'
+import type {
+  CanvasStrategyIcon,
+  CanvasStrategyId,
+  CustomStrategyState,
+} from './canvas-strategy-types'
 import { defaultCustomStrategyState } from './canvas-strategy-types'
 import { ElementPasteWithMetadata } from '../../../utils/clipboard'
 
@@ -144,6 +148,8 @@ export interface StrategyState {
   // Need to track here which strategy is being applied.
   currentStrategy: CanvasStrategyId | null
   currentStrategyFitness: number
+  currentStrategyDescriptiveLabel: string | null
+  currentStrategyIcon: CanvasStrategyIcon | null
   currentStrategyCommands: Array<CanvasCommand>
   commandDescriptions: Array<CommandDescription>
   sortedApplicableStrategies: Array<ApplicableStrategy> | null
@@ -164,6 +170,8 @@ export function createEmptyStrategyState(
   return {
     currentStrategy: null,
     currentStrategyFitness: 0,
+    currentStrategyDescriptiveLabel: null,
+    currentStrategyIcon: null,
     currentStrategyCommands: [],
     commandDescriptions: [],
     sortedApplicableStrategies: null,

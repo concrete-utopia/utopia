@@ -8,7 +8,6 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import type { InsertionSubject } from '../../editor/editor-modes'
 import type { CanvasCommand } from '../commands/commands'
 import type { StrategyApplicationStatus } from './interaction-state'
-import { InteractionSession } from './interaction-state'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
 
@@ -155,6 +154,11 @@ export type CanvasStrategyId = string
 
 export type InteractionLifecycle = 'mid-interaction' | 'end-interaction'
 
+export interface CanvasStrategyIcon {
+  category: string
+  type: string
+}
+
 export interface CanvasStrategy {
   id: CanvasStrategyId // We'd need to do something to guarantee uniqueness here if using this for the commands' reason
   name: string
@@ -167,6 +171,12 @@ export interface CanvasStrategy {
 
   // Returns the commands that inform how the model and the editor should be updated
   apply: (strategyLifecycle: InteractionLifecycle) => StrategyApplicationResult
+
+  // Label to be shown to the user, not necessarily unique.
+  descriptiveLabel: string
+
+  // Icon to be shown in the UI when this strategy is active.
+  icon: CanvasStrategyIcon
 }
 
 export const ControlDelay = 600

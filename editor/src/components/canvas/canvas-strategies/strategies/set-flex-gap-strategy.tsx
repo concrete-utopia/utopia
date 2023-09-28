@@ -136,6 +136,11 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
   return {
     id: SetFlexGapStrategyId,
     name: 'Set flex gap',
+    descriptiveLabel: 'Changing Flex Gap',
+    icon: {
+      category: 'modalities',
+      type: 'reorder-large',
+    },
     controlsToRender: controlsToRender,
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'FLEX_GAP_HANDLE', 1),
     apply: () => {

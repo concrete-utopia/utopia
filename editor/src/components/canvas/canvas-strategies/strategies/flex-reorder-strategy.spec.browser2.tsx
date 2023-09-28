@@ -20,6 +20,8 @@ import {
 import type { FragmentLikeType } from './fragment-like-helpers'
 import { AllFragmentLikeNonDomElementTypes, AllFragmentLikeTypes } from './fragment-like-helpers'
 import { fromString } from '../../../../core/shared/element-path'
+import { MoveReorderReparentIndicatorID } from '../../controls/select-mode/strategy-indicator'
+import { CanvasToolbarEditButtonID } from '../../../../components/editor/canvas-toolbar'
 
 const TestProject = (direction: string) => `
 <div
@@ -242,6 +244,16 @@ describe('Flex Reorder Strategy', () => {
         {
           modifiers: emptyModifiers,
           midDragCallback: async () => {
+            const moveReorderReparentIndicator = renderResult.renderedDOM.getByTestId(
+              MoveReorderReparentIndicatorID,
+            )
+            expect(moveReorderReparentIndicator.innerText).toEqual('Reordering Flex Elements')
+            const toolbarEditButtonImage = renderResult.renderedDOM.getByTestId(
+              `${CanvasToolbarEditButtonID}-icon`,
+            )
+            expect(toolbarEditButtonImage.getAttribute('src')).toEqual(
+              'http://localhost:9876/editor/icons/light/modalities/reorder-large-white-18x18@2x.png',
+            )
             expect(renderResult.getEditorState().strategyState.currentStrategy).toEqual(
               'FLEX_REORDER',
             )

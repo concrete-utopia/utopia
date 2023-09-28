@@ -52,6 +52,11 @@ export function keyboardAbsoluteMoveStrategy(
   return {
     id: 'KEYBOARD_ABSOLUTE_MOVE',
     name: 'Move',
+    descriptiveLabel: 'Moving Elements',
+    icon: {
+      category: 'modalities',
+      type: 'moveabs-large',
+    },
     controlsToRender: [], // Uses existing hooks in select-mode-hooks.tsx
     fitness: getFitness(interactionSession),
     apply: () => {

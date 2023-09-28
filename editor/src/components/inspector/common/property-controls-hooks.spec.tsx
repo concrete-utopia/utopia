@@ -33,6 +33,7 @@ import {
   sameFileOrigin,
 } from '../../../core/shared/element-template'
 import type { PropertyControls } from 'utopia-api/core'
+import { emptyProjectServerState } from '../../editor/store/project-server-state'
 
 const TestAppUID2 = 'app-entity-2'
 const TestOtherComponentUID = 'other-component-entity-1'
@@ -213,6 +214,7 @@ function callPropertyControlsHook(
     saveCountThisSession: 0,
     builtInDependencies: [],
     storeName: 'editor-store',
+    projectServerState: emptyProjectServerState(),
   }
 
   const storeHook = createStoresAndState(initialEditorStore)

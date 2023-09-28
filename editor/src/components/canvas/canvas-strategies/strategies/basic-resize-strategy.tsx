@@ -95,6 +95,11 @@ export function basicResizeStrategy(
   return {
     id: BASIC_RESIZE_STRATEGY_ID,
     name: 'Resize (Basic)',
+    descriptiveLabel: 'Resizing Elements',
+    icon: {
+      category: 'modalities',
+      type: 'moveabs-large',
+    },
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,

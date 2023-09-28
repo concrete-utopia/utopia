@@ -24,6 +24,7 @@ import * as PP from '../../../core/shared/property-path'
 import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creators'
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
+import { emptyProjectServerState } from '../../editor/store/project-server-state'
 
 const TestSelectedComponent = EP.elementPath([['scene1'], ['aaa', 'bbb']])
 
@@ -64,6 +65,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       saveCountThisSession: 0,
       builtInDependencies: [],
       storeName: 'editor-store',
+      projectServerState: emptyProjectServerState(),
     }
 
     const storeHook: UtopiaStoreAPI = createStoresAndState(initialEditorStore)

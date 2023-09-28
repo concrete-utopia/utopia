@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/8779b24d0e51cc49a887d16afab9789557b80124/packages/remix-dev/config/flat-routes.ts
+// Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/94695c3d96ac72daeb18dddd77e6dc6590d16bf4/packages/remix-dev/config/flat-routes.ts
 // Instead of the 'fs' module (which is not usable in the browser and not compatible with the utopia file system), a
 // FileOps object needs to be injected, which contains the necessary file system functions.
 
@@ -9,15 +9,15 @@ import { makeRe } from 'minimatch'
 
 import type { ConfigRoute, RouteManifest } from './routes'
 import { normalizeSlashes } from './routes'
-import {
-  escapeEnd,
-  escapeStart,
-  isSegmentSeparator,
-  optionalEnd,
-  optionalStart,
-  paramPrefixChar,
-  routeModuleExts,
-} from './routes-convention'
+
+export const routeModuleExts = ['.js', '.jsx', '.ts', '.tsx', '.md', '.mdx']
+
+export let paramPrefixChar = '$' as const
+export let escapeStart = '[' as const
+export let escapeEnd = ']' as const
+
+export let optionalStart = '(' as const
+export let optionalEnd = ')' as const
 
 // This is necessary to create a simple node.fs-like implementation for Utopia projectContents, which
 // can be used by the Remix functions to parse the routes
@@ -539,4 +539,9 @@ export function findConfig(
   }
 
   return undefined
+}
+
+export function isSegmentSeparator(checkChar: string | undefined) {
+  if (!checkChar) return false
+  return ['/', '.'].includes(checkChar)
 }

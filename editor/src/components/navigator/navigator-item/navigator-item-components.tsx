@@ -213,6 +213,7 @@ export const SelectionLockedIndicator: React.FunctionComponent<
         height: 18,
         width: 18,
         display: shouldShow ? 'block' : 'none',
+        paddingRight: 1,
       }}
     >
       {when(
@@ -268,6 +269,7 @@ interface NavigatorItemActionSheetProps {
   instanceOriginalComponentName: string | null
   isSlot: boolean
   iconColor: IcnProps['color']
+  background?: string | any
   dispatch: EditorDispatch
 }
 
@@ -334,7 +336,22 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   const isConditionalClauseTitle = isConditionalClauseNavigatorEntry(props.navigatorEntry)
 
   return (
-    <FlexRow style={{ marginRight: 5, gap: 1 }}>
+    <FlexRow
+      style={{
+        padding: '0 5px',
+        position: 'fixed',
+        right: 0,
+        background:
+          props.highlighted ||
+          props.selected ||
+          !props.isVisibleOnCanvas ||
+          isLockedElement ||
+          isLockedHierarchy ||
+          isDescendantOfLocked
+            ? props.background
+            : 'transparent',
+      }}
+    >
       <OriginalComponentNameLabel
         selected={props.selected}
         instanceOriginalComponentName={props.instanceOriginalComponentName}

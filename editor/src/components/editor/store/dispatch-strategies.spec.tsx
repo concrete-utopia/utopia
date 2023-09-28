@@ -59,6 +59,7 @@ import {
 } from './dispatch-strategies'
 import type { EditorStoreFull } from './editor-state'
 import { createEditorState, deriveState } from './editor-state'
+import { emptyProjectServerState } from './project-server-state'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
 function createEditorStore(
@@ -109,6 +110,7 @@ function createEditorStore(
     saveCountThisSession: 0,
     builtInDependencies: createBuiltInDependenciesList(null),
     postActionInteractionSession: null,
+    projectServerState: emptyProjectServerState(),
   }
 
   return initialEditorStore
@@ -153,6 +155,11 @@ const testStrategy: MetaCanvasStrategy = (
         wildcardPatch('always', { canvas: { scale: { $set: 100 } } }),
       ])
     },
+    descriptiveLabel: 'A Test Strategy',
+    icon: {
+      category: 'modalities',
+      type: 'magic-large',
+    },
   },
 ]
 
@@ -176,7 +183,9 @@ describe('interactionStart', () => {
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
+        "currentStrategyDescriptiveLabel": null,
         "currentStrategyFitness": 0,
+        "currentStrategyIcon": null,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -235,7 +244,9 @@ describe('interactionStart', () => {
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
+        "currentStrategyDescriptiveLabel": null,
         "currentStrategyFitness": 0,
+        "currentStrategyIcon": null,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -311,7 +322,12 @@ describe('interactionUpdate', () => {
             "whenToRun": "always",
           },
         ],
+        "currentStrategyDescriptiveLabel": "A Test Strategy",
         "currentStrategyFitness": 10,
+        "currentStrategyIcon": Object {
+          "category": "modalities",
+          "type": "magic-large",
+        },
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -325,7 +341,12 @@ describe('interactionUpdate', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
+              "descriptiveLabel": "A Test Strategy",
               "fitness": 10,
+              "icon": Object {
+                "category": "modalities",
+                "type": "magic-large",
+              },
               "id": "TEST_STRATEGY",
               "name": "Test Strategy",
             },
@@ -385,7 +406,9 @@ describe('interactionUpdate', () => {
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
+        "currentStrategyDescriptiveLabel": null,
         "currentStrategyFitness": 0,
+        "currentStrategyIcon": null,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -455,7 +478,12 @@ describe('interactionHardReset', () => {
             "whenToRun": "always",
           },
         ],
+        "currentStrategyDescriptiveLabel": "A Test Strategy",
         "currentStrategyFitness": 10,
+        "currentStrategyIcon": Object {
+          "category": "modalities",
+          "type": "magic-large",
+        },
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -469,7 +497,12 @@ describe('interactionHardReset', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
+              "descriptiveLabel": "A Test Strategy",
               "fitness": 10,
+              "icon": Object {
+                "category": "modalities",
+                "type": "magic-large",
+              },
               "id": "TEST_STRATEGY",
               "name": "Test Strategy",
             },
@@ -531,7 +564,9 @@ describe('interactionHardReset', () => {
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
+        "currentStrategyDescriptiveLabel": null,
         "currentStrategyFitness": 0,
+        "currentStrategyIcon": null,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -615,7 +650,12 @@ describe('interactionUpdate with user changed strategy', () => {
             "whenToRun": "always",
           },
         ],
+        "currentStrategyDescriptiveLabel": "A Test Strategy",
         "currentStrategyFitness": 10,
+        "currentStrategyIcon": Object {
+          "category": "modalities",
+          "type": "magic-large",
+        },
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -629,7 +669,12 @@ describe('interactionUpdate with user changed strategy', () => {
             "strategy": Object {
               "apply": [Function],
               "controlsToRender": Array [],
+              "descriptiveLabel": "A Test Strategy",
               "fitness": 10,
+              "icon": Object {
+                "category": "modalities",
+                "type": "magic-large",
+              },
               "id": "TEST_STRATEGY",
               "name": "Test Strategy",
             },
@@ -692,7 +737,9 @@ describe('interactionUpdate with user changed strategy', () => {
         "commandDescriptions": Array [],
         "currentStrategy": null,
         "currentStrategyCommands": Array [],
+        "currentStrategyDescriptiveLabel": null,
         "currentStrategyFitness": 0,
+        "currentStrategyIcon": null,
         "customStrategyState": Object {
           "duplicatedElementNewUids": Object {},
           "elementsToRerender": Array [],
@@ -866,6 +913,11 @@ describe('only update metadata on SAVE_DOM_REPORT', () => {
             name: 'Test Strategy',
             controlsToRender: [],
             fitness: 10,
+            descriptiveLabel: 'A Test Strategy',
+            icon: {
+              category: 'modalities',
+              type: 'magic-large',
+            },
             apply: function (): StrategyApplicationResult {
               if (interactionSession == null) {
                 return strategyApplicationResult([])

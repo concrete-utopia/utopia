@@ -57,7 +57,7 @@ export function baseReparentAsStaticStrategy(
     }
 
     return {
-      ...getIdAndNameOfReparentToStaticStrategy(targetLayout),
+      ...getDescriptivePropertiesOfReparentToStaticStrategy(targetLayout),
       controlsToRender: [
         controlWithProps({
           control: ParentOutlines,
@@ -103,20 +103,29 @@ export function baseReparentAsStaticStrategy(
   }
 }
 
-function getIdAndNameOfReparentToStaticStrategy(targetLayout: 'flex' | 'flow'): {
-  id: string
-  name: string
-} {
+function getDescriptivePropertiesOfReparentToStaticStrategy(
+  targetLayout: 'flex' | 'flow',
+): Pick<CanvasStrategy, 'id' | 'name' | 'descriptiveLabel' | 'icon'> {
   switch (targetLayout) {
     case 'flex':
       return {
         id: 'REPARENT_TO_FLEX',
         name: 'Reparent (Flex)',
+        descriptiveLabel: 'Reparenting Into A Flex Element',
+        icon: {
+          category: 'modalities',
+          type: 'reparent-large',
+        },
       }
     case 'flow':
       return {
         id: 'REPARENT_TO_FLOW',
         name: 'Reparent (Flow)',
+        descriptiveLabel: 'Reparenting Into A Flow Element',
+        icon: {
+          category: 'modalities',
+          type: 'reparent-large',
+        },
       }
     default:
       assertNever(targetLayout)

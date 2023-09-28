@@ -94,6 +94,11 @@ export function flexResizeBasicStrategy(
   return {
     id: 'FLEX_RESIZE_BASIC',
     name: 'Flex Resize (Basic)',
+    descriptiveLabel: 'Resizing Flex Elements',
+    icon: {
+      category: 'modalities',
+      type: 'reorder-large',
+    },
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,

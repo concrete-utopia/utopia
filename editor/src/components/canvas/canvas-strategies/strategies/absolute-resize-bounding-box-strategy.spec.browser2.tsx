@@ -15,7 +15,7 @@ import {
 } from '../../../editor/actions/action-creators'
 import CanvasActions from '../../canvas-actions'
 import { createInteractionViaMouse, updateInteractionViaMouse } from '../interaction-state'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasVector, Delta } from '../../../../core/shared/math-utils'
 import { canvasPoint, windowPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { altModifier, emptyModifiers, shiftModifier } from '../../../../utils/modifiers'
@@ -45,6 +45,7 @@ import {
 import {
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
+  mouseDownAtPoint,
   mouseDragFromPointWithDelta,
 } from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
@@ -1994,6 +1995,537 @@ export var storyboard = (
         expect(span.clientHeight).toEqual(28)
       })
     })
+    describe('constrained children', () => {
+      async function resizeTarget(
+        input: string,
+        target: ElementPath,
+        delta: Delta,
+        edgePosition: EdgePosition,
+      ) {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(input),
+          'await-first-dom-report',
+        )
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+
+        await resizeElement(renderResult, delta, edgePosition, emptyModifiers)
+
+        return getPrintedUiJsCode(renderResult.getEditorState())
+      }
+
+      const tests: {
+        name: string
+        input: string
+        target: ElementPath
+        edgePosition: EdgePosition
+        delta: Delta
+        want: string
+      }[] = [
+        {
+          name: 'respects min width for a constraint on left',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} data-constraints={['left']} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 100, height: 50, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 33, height: 17, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 0, height: 17, background: 'blue', top: 33, left: 100 }} data-constraints={['left']} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on left and width',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} data-constraints={['left', 'width']} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 50, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 50, height: 17, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 50, height: 17, background: 'blue', top: 33, left: 100 }} data-constraints={['left', 'width']} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on right',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} data-constraints={['right']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 100, height: 50, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 0, height: 17, background: 'red', top: 0, left: 0 }} data-constraints={['right']} />
+                <div data-uid='bar' style={{ position:'absolute', width: 33, height: 17, background: 'blue', top: 33, left: 67 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on right and width',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} data-constraints={['right', 'width']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 50, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 50, height: 17, background: 'red', top: 0, left: 0 }} data-constraints={['right', 'width']} />
+                <div data-uid='bar' style={{ position:'absolute', width: 50, height: 17, background: 'blue', top: 33, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on top',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} data-constraints={['top']} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 100, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 17, height: 33, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 17, height: 0, background: 'blue', top: 100, left: 33 }} data-constraints={['top']} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on top and height',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} data-constraints={['top', 'height']} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 150, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 17, height: 50, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 17, height: 50, background: 'blue', top: 100, left: 33 }} data-constraints={['top', 'height']} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on bottom',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} data-constraints={['bottom']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 100, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 17, height: 0, background: 'red', top: 0, left: 0 }} data-constraints={['bottom']} />
+                <div data-uid='bar' style={{ position:'absolute', width: 17, height: 33, background: 'blue', top: 67, left: 33 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on bottom and height',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} data-constraints={['bottom', 'height']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 150, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 17, height: 50, background: 'red', top: 0, left: 0 }} data-constraints={['bottom', 'height']} />
+                <div data-uid='bar' style={{ position:'absolute', width: 17, height: 50, background: 'blue', top: 100, left: 33 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on width',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 50, left: 50 }} data-constraints={['width']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 50, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 17, height: 17, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 17, background: 'cyan', top: 17, left: 0 }} data-constraints={['width']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 17, height: 17, background: 'blue', top: 33, left: 33 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on height',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 50, left: 50 }} data-constraints={['height']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 50, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 17, height: 17, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 17, height: 50, background: 'cyan', top: 0, left: 17 }} data-constraints={['height']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 17, height: 17, background: 'blue', top: 33, left: 33 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on both width and height',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 50, left: 50 }} data-constraints={['width', 'height']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 50, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 17, height: 17, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 0, left: 0 }} data-constraints={['width', 'height']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 17, height: 17, background: 'blue', top: 33, left: 33 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on both left and right',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 50, left: 50, right: 50 }} data-constraints={['left', 'right']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 50, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 17, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 17, background: 'cyan', top: 17, left: 50, right: 50 }} data-constraints={['left', 'right']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 17, background: 'blue', top: 33, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'respects min width for a constraint on both top and bottom',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 50, left: 50, bottom: 50 }} data-constraints={['top', 'bottom']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: -200, y: -100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 50, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 17, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 17, height: 50, background: 'cyan', top: 50, left: 17, bottom: 50 }} data-constraints={['top', 'bottom']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 17, height: 50, background: 'blue', top: 100, left: 33 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'locks max height for a constraint on both top and bottom and height',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 50, left: 50, bottom: 50 }} data-constraints={['top', 'bottom', 'height']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: 200, y: 100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 350, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 117, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 117, height: 50, background: 'cyan', top: 50, left: 117, bottom: 50 }} data-constraints={['top', 'bottom', 'height']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 117, height: 50, background: 'blue', top: 100, left: 233 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+        {
+          name: 'locks max width for a constraint on both left and right and width',
+          input: `
+            import * as React from 'react'
+            import { Storyboard, Group } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='storyboard'>
+                <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 50, background: 'cyan', top: 50, left: 50, right: 50 }} data-constraints={['left', 'right', 'width']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+                </Group>
+              </Storyboard>
+            )
+          `,
+          target: EP.fromString('storyboard/group'),
+          edgePosition: EdgePositionBottomRight,
+          delta: { x: 200, y: 100 },
+          want: `
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 250, background: 'black' }}>
+                  <div data-uid='foo' style={{ position:'absolute', width: 50, height: 83, background: 'red', top: 0, left: 0 }} />
+                  <div data-uid='baz' style={{ position: 'absolute', width: 50, height: 83, background: 'cyan', top: 83, left: 50, right: 50 }} data-constraints={['left', 'right', 'width']} />
+                  <div data-uid='bar' style={{ position:'absolute', width: 50, height: 83, background: 'blue', top: 167, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `,
+        },
+      ]
+
+      for (let idx = 0; idx < tests.length; idx++) {
+        const tt = tests[idx]
+        it(`(${idx + 1}) ${tt.name}`, async () => {
+          const got = await resizeTarget(tt.input, tt.target, tt.delta, tt.edgePosition)
+          expect(got).toEqual(formatTestProjectCode(tt.want))
+        })
+      }
+    })
   })
 })
 
@@ -2390,11 +2922,12 @@ describe('Absolute Resize Group-like behaviors', () => {
 })
 
 describe('Absolute Resize Control', () => {
-  it('Resize control is placed on small elements outside of the draggable frame area, with a safe gap', async () => {
-    const width = SmallElementSize
-    const height = SmallElementSize
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`
+  describe('safe gap', () => {
+    it('Resize control is placed on small elements outside of the draggable frame area, with a safe gap', async () => {
+      const width = SmallElementSize
+      const height = SmallElementSize
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
@@ -2403,47 +2936,115 @@ describe('Absolute Resize Control', () => {
           />
         </div>
       `),
-      'await-first-dom-report',
-    )
+        'await-first-dom-report',
+      )
 
-    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
-    await selectComponentsForTest(renderResult, [target])
+      const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+      await selectComponentsForTest(renderResult, [target])
 
-    const resizeControlTop = renderResult.renderedDOM.getByTestId(
-      `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
-    )
-    expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
-    expect(resizeControlTop.style.top).toEqual('')
-    expect(resizeControlTop.style.left).toEqual('')
-    expect(resizeControlTop.style.width).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
-    expect(resizeControlTop.style.height).toEqual('10px')
+      const resizeControlTop = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+      )
+      expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+      expect(resizeControlTop.style.top).toEqual('')
+      expect(resizeControlTop.style.left).toEqual('')
+      expect(resizeControlTop.style.width).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
+      expect(resizeControlTop.style.height).toEqual('10px')
 
-    const resizeControlRight = renderResult.renderedDOM.getByTestId(
-      `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
-    )
-    expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
-    expect(resizeControlRight.style.top).toEqual('')
-    expect(resizeControlRight.style.left).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
-    expect(resizeControlRight.style.width).toEqual('10px')
-    expect(resizeControlRight.style.height).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
+      const resizeControlRight = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+      )
+      expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
+      expect(resizeControlRight.style.top).toEqual('')
+      expect(resizeControlRight.style.left).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
+      expect(resizeControlRight.style.width).toEqual('10px')
+      expect(resizeControlRight.style.height).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
 
-    const resizeControlBottom = renderResult.renderedDOM.getByTestId(
-      `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
-    )
-    expect(resizeControlBottom.style.transform).toEqual('translate(0px, -5px)')
-    expect(resizeControlBottom.style.top).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
-    expect(resizeControlBottom.style.left).toEqual('')
-    expect(resizeControlBottom.style.width).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
-    expect(resizeControlBottom.style.height).toEqual('10px')
+      const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+      )
+      expect(resizeControlBottom.style.transform).toEqual('translate(0px, -5px)')
+      expect(resizeControlBottom.style.top).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
+      expect(resizeControlBottom.style.left).toEqual('')
+      expect(resizeControlBottom.style.width).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
+      expect(resizeControlBottom.style.height).toEqual('10px')
 
-    const resizeControlLeft = renderResult.renderedDOM.getByTestId(
-      `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
-    )
-    expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
-    expect(resizeControlLeft.style.top).toEqual('')
-    expect(resizeControlLeft.style.left).toEqual('')
-    expect(resizeControlLeft.style.width).toEqual('10px')
-    expect(resizeControlLeft.style.height).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
+      const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+      )
+      expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+      expect(resizeControlLeft.style.top).toEqual('')
+      expect(resizeControlLeft.style.left).toEqual('')
+      expect(resizeControlLeft.style.width).toEqual('10px')
+      expect(resizeControlLeft.style.height).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
+    })
+    it("Doesn't show the safe gap during resize and mouse down", async () => {
+      const width = SmallElementSize
+      const height = SmallElementSize
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: ${width}, height: ${height} }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+        'await-first-dom-report',
+      )
+
+      const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+      await selectComponentsForTest(renderResult, [target])
+
+      const bottomRightHandle = await renderResult.renderedDOM.findByTestId(`resize-control-1-1`)
+      const topRightHandle = await renderResult.renderedDOM.findByTestId(`resize-control-1-0`)
+      const topLeftHandle = await renderResult.renderedDOM.findByTestId(`resize-control-0-0`)
+      const bottomLeftHandle = await renderResult.renderedDOM.findByTestId(`resize-control-0-1`)
+
+      await mouseDownAtPoint(bottomRightHandle, { x: 2, y: 2 })
+
+      expect(bottomRightHandle.parentElement?.style.visibility).toEqual('visible')
+      expect(topRightHandle.parentElement?.style.visibility).toEqual('hidden')
+      expect(topLeftHandle.parentElement?.style.visibility).toEqual('hidden')
+      expect(bottomLeftHandle.parentElement?.style.visibility).toEqual('hidden')
+
+      const resizeControlTop = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionTop.x}-${EdgePositionTop.y}`,
+      )
+      expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
+      expect(resizeControlTop.style.top).toEqual('')
+      expect(resizeControlTop.style.left).toEqual('')
+      expect(resizeControlTop.style.width).toEqual(`${width}px`)
+      expect(resizeControlTop.style.height).toEqual('5px')
+
+      const resizeControlRight = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
+      )
+      expect(resizeControlRight.style.transform).toEqual('translate(0px, 0px)')
+      expect(resizeControlRight.style.top).toEqual('')
+      expect(resizeControlRight.style.left).toEqual(`${width}px`)
+      expect(resizeControlRight.style.width).toEqual('5px')
+      expect(resizeControlRight.style.height).toEqual(`${height}px`)
+
+      const resizeControlBottom = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
+      )
+      expect(resizeControlBottom.style.transform).toEqual('translate(0px, 0px)')
+      expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+      expect(resizeControlBottom.style.left).toEqual('')
+      expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+      expect(resizeControlBottom.style.height).toEqual('5px')
+
+      const resizeControlLeft = renderResult.renderedDOM.getByTestId(
+        `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
+      )
+      expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
+      expect(resizeControlLeft.style.top).toEqual('')
+      expect(resizeControlLeft.style.left).toEqual('')
+      expect(resizeControlLeft.style.width).toEqual('5px')
+      expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+    })
   })
   it('Resize control on non-small elements extend into the draggable frame area', async () => {
     const width = SmallElementSize + 1

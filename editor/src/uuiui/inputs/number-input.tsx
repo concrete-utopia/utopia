@@ -43,7 +43,11 @@ import { Icn } from '../icn'
 import { useColorTheme, UtopiaTheme } from '../styles/theme'
 import { FlexRow } from '../widgets/layout/flex-row'
 import type { BaseInputProps, BoxCorners, ChainedType } from './base-input'
-import { getBorderRadiusStyles, getInputPlaceholder, InspectorInput } from './base-input'
+import {
+  getBorderRadiusStyles,
+  getControlStylesAwarePlaceholder,
+  InspectorInput,
+} from './base-input'
 import { usePropControlledStateV2 } from '../../components/inspector/common/inspector-utils'
 
 export type LabelDragDirection = 'horizontal' | 'vertical'
@@ -618,7 +622,7 @@ export const NumberInput = React.memo<NumberInputProps>(
       [scrubOnMouseMove, scrubOnMouseUp, setGlobalCursor, value],
     )
 
-    const placeholder = getInputPlaceholder(controlStyles)
+    const placeholder = getControlStylesAwarePlaceholder(controlStyles)
 
     const chainedStyles: Interpolation<any> | undefined =
       (chained === 'first' || chained === 'middle') && !isFocused
