@@ -44,7 +44,7 @@ export interface LeftPaneProps {
 
 export const LeftPaneComponentId = 'left-pane'
 
-export const LeftPaneOverflowScrollId = 'left-pane-overflow-scroll'
+export const LeftPaneContentId = 'left-pane-content'
 
 interface LeftPaneComponentProps {
   panelData: StoredPanel
@@ -135,56 +135,41 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           id={LeftPaneComponentId}
           className='leftPane'
           style={{
-            height: '100%',
+            flexGrow: 1,
             position: 'relative',
             color: colorTheme.fg1.value,
             display: 'flex',
-            overflow: 'scroll',
+            flexDirection: 'column',
+            overflowY: 'scroll',
           }}
         >
-          <div
-            id={LeftPaneOverflowScrollId}
-            className='overflow-y-scroll'
-            style={{
-              height: '100%',
-              flexGrow: 1,
-            }}
-            onMouseDown={(mouseEvent: React.MouseEvent<HTMLDivElement>) => {
-              if (mouseEvent.target instanceof HTMLDivElement) {
-                if (mouseEvent.target.id === LeftPaneOverflowScrollId) {
-                  dispatch([clearSelection()])
-                }
-              }
-            }}
+          <UIGridRow
+            variant='|--67px--||--67px--||--67px--||--67px--|'
+            padded={false}
+            css={{ gridColumnGap: 0 }}
+            style={{ alignItems: 'stretch', marginBottom: 10 }}
           >
-            <UIGridRow
-              variant='|--67px--||--67px--||--67px--||--67px--|'
-              padded={false}
-              css={{ gridColumnGap: 0 }}
-              style={{ alignItems: 'stretch', marginBottom: 10 }}
-            >
-              <MenuTab
-                label={'Navigator'}
-                selected={selectedTab === LeftMenuTab.Navigator}
-                onClick={onClickNavigatorTab}
-              />
-              <MenuTab
-                label={'Project'}
-                selected={selectedTab === LeftMenuTab.Project}
-                onClick={onClickProjectTab}
-              />
-              <MenuTab
-                label={'Github'}
-                selected={selectedTab === LeftMenuTab.Github}
-                onClick={onClickGithubTab}
-              />
-            </UIGridRow>
+            <MenuTab
+              label={'Navigator'}
+              selected={selectedTab === LeftMenuTab.Navigator}
+              onClick={onClickNavigatorTab}
+            />
+            <MenuTab
+              label={'Project'}
+              selected={selectedTab === LeftMenuTab.Project}
+              onClick={onClickProjectTab}
+            />
+            <MenuTab
+              label={'Github'}
+              selected={selectedTab === LeftMenuTab.Github}
+              onClick={onClickGithubTab}
+            />
+          </UIGridRow>
 
-            {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
-            {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
-            {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-            {loggedIn ? null : <LoggedOutPane />}
-          </div>
+          {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
+          {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
+          {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
+          {loggedIn ? null : <LoggedOutPane />}
         </div>
       </ResizableFlexColumn>
     </LowPriorityStoreProvider>

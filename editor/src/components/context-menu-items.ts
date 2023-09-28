@@ -21,6 +21,7 @@ import { treatElementAsFragmentLike } from './canvas/canvas-strategies/strategie
 import { createWrapInGroupActions } from './canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { areAllSelectedElementsNonAbsolute } from './canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { windowToCanvasCoordinates } from './canvas/dom-lookup'
+import { setFocus } from './common/actions'
 import type { EditorDispatch } from './editor/action-types'
 import * as EditorActions from './editor/actions/action-creators'
 import {
@@ -330,6 +331,7 @@ export const insert: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch) => {
     requireDispatch(dispatch)([
+      setFocus('canvas'),
       EditorActions.openFloatingInsertMenu({
         insertMenuMode: 'insert',
         parentPath: null,
@@ -349,7 +351,10 @@ export const convert: ContextMenuItem<CanvasData> = {
     })
   },
   action: (data, dispatch) => {
-    requireDispatch(dispatch)([EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' })])
+    requireDispatch(dispatch)([
+      setFocus('canvas'),
+      EditorActions.openFloatingInsertMenu({ insertMenuMode: 'convert' }),
+    ])
   },
 }
 
@@ -400,7 +405,7 @@ export const wrapInPicker: ContextMenuItem<CanvasData> = {
   enabled: true,
   action: (data, dispatch?: EditorDispatch) => {
     requireDispatch(dispatch)(
-      [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
+      [setFocus('canvas'), EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })],
       'everyone',
     )
   },
