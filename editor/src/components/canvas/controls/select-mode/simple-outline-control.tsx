@@ -10,6 +10,12 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import type { ThemeObject } from '../../../../uuiui/styles/theme/theme-helpers'
 
+export const MultiSelectOutlineTestId = 'multiselect-outline'
+
+export function getMultiSelectElementOutlineTestId(p: ElementPath) {
+  return `multiselect-element-outline-${EP.toString(p)}`
+}
+
 interface MultiSelectOutlineControlProps {
   localSelectedElements: Array<ElementPath>
 }
@@ -25,37 +31,24 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
       (sv) => !hiddenInstances.includes(sv) && !EP.isStoryboardPath(sv),
     )
 
-    if (EP.areAllUidsTheSame(localSelectedElements)) {
-      return (
-        <CanvasOffsetWrapper>
-          {...localSelectedElements.map((path) => {
-            const outlineId = `multiselect-element-outline-${EP.toString(path)}`
-            return (
-              <OutlineControl
-                testId={outlineId}
-                key={outlineId}
-                targets={[path]}
-                color='primary'
-                outlineStyle='solid'
-              />
-            )
-          })}
-        </CanvasOffsetWrapper>
-      )
-    }
+    const showMultiselectOutline = !EP.areAllUidsTheSame(localSelectedElements)
 
     return (
       <CanvasOffsetWrapper>
         {[
-          <OutlineControl
-            testId={`multiselect-outline`}
-            key='multiselect-outline'
-            targets={localSelectedElements}
-            color='multiselect-bounds'
-            outlineStyle='solid'
-          />,
+          ...(showMultiselectOutline
+            ? [
+                <OutlineControl
+                  testId={MultiSelectOutlineTestId}
+                  key='multiselect-outline'
+                  targets={localSelectedElements}
+                  color='multiselect-bounds'
+                  outlineStyle='solid'
+                />,
+              ]
+            : []),
           ...localSelectedElements.map((path) => {
-            const outlineId = `multiselect-element-outline-${EP.toString(path)}`
+            const outlineId = getMultiSelectElementOutlineTestId(path)
             return (
               <OutlineControl
                 testId={outlineId}
