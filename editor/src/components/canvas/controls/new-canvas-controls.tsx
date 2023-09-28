@@ -544,7 +544,8 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
             {when(
-              isSelectOrInsertMode(editorMode) && !EP.areAllUidsTheSame(localSelectedViews),
+              isSelectOrInsertMode(editorMode) &&
+                !EP.multipleElementPathsWithTheSameUid(localSelectedViews),
               <>
                 {strategyControls.map((c) => (
                   <RenderControlMemoized

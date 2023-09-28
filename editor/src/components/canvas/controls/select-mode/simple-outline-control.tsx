@@ -31,7 +31,7 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
       (sv) => !hiddenInstances.includes(sv) && !EP.isStoryboardPath(sv),
     )
 
-    const showMultiselectOutline = !EP.areAllUidsTheSame(localSelectedElements)
+    const showMultiselectOutline = !EP.multipleElementPathsWithTheSameUid(localSelectedElements)
 
     return (
       <CanvasOffsetWrapper>
