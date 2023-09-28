@@ -13,15 +13,18 @@ import {
   getConditionalFlag,
 } from '../../../core/model/conditionals'
 import { colorTheme, flexRowStyle, StringInput } from '../../../uuiui'
-import type { EditorDispatch } from '../../editor/action-types'
+import type { EditorDispatch, ElementPaste } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { renameComponent } from '../actions'
 import type { RemixItemType } from './navigator-item'
 import { NavigatorItemTestId } from './navigator-item'
 import { useAtom } from 'jotai'
+import type { RemixNavigationAtomData } from '../../canvas/remix/utopia-remix-root-component'
 import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
 import * as EP from '../../../core/shared/element-path'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { Location } from 'react-router'
 
 export function itemLabelTestIdForEntry(navigatorEntry: NavigatorEntry): string {
   return `${NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}-label`
@@ -103,12 +106,24 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     'ItemLabel maybeLinkTarget',
   )
 
+  const [remixNavigationData] = useAtom(RemixNavigationAtom)
+
+  const maybePathForOutlet = React.useMemo(() => {
+    if (props.remixItemType !== 'outlet') {
+      return null
+    }
+    return remixSceneLocationFromOutletPath(props.target.elementPath, remixNavigationData)?.pathname
+  }, [props.remixItemType, props.target.elementPath, remixNavigationData])
+
   const label = React.useMemo(() => {
     if (maybeLinkTarget != null) {
       return maybeLinkTarget
     }
+    if (maybePathForOutlet != null) {
+      return maybePathForOutlet === '/' ? '(home)' : maybePathForOutlet
+    }
     return suffix == null ? name : `${name} ${suffix}`
-  }, [maybeLinkTarget, suffix, name])
+  }, [maybeLinkTarget, maybePathForOutlet, suffix, name])
 
   const cancelRename = React.useCallback(() => {
     setName(name)
@@ -273,3 +288,18 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     </div>
   )
 })
+
+function remixSceneLocationFromOutletPath(
+  outletPath: ElementPath,
+  remixNavigationData: RemixNavigationAtomData,
+): Location | null {
+  let parentPath = EP.dropNPathParts(outletPath, 1)
+  while (!EP.pathsEqual(parentPath, EP.emptyElementPath)) {
+    const maybeRemixData = remixNavigationData[EP.toString(parentPath)]
+    if (maybeRemixData != null) {
+      return maybeRemixData.location
+    }
+    parentPath = EP.dropNPathParts(parentPath, 1)
+  }
+  return null
+}
