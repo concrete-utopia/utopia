@@ -72,11 +72,11 @@ export const ColumnDragTargets = React.memo(
           setColumnWidth(columnIndex, startingColumnWidth + mouseDelta)
         }
         const onMouseUp = () => {
-          window.removeEventListener('mousemove', onMouseMove)
-          window.removeEventListener('mouseup', onMouseUp)
+          window.removeEventListener('mousemove', onMouseMove, { capture: true })
+          window.removeEventListener('mouseup', onMouseUp, { capture: true })
         }
-        window.addEventListener('mousemove', onMouseMove)
-        window.addEventListener('mouseup', onMouseUp)
+        window.addEventListener('mousemove', onMouseMove, { capture: true })
+        window.addEventListener('mouseup', onMouseUp, { capture: true })
       },
       [columnIndex, columnWidthRef, setColumnWidth],
     )

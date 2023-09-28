@@ -10,6 +10,7 @@ import {
 } from '../inspector/common/inspector-utils'
 import invariant from '../../third-party/remix/invariant'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
+import { atom, useAtomValue } from 'jotai'
 
 export const GridMenuWidth = 268
 export const GridPaneWidth = 500
@@ -95,6 +96,8 @@ export const GridMenuDefaultPanels: StoredLayout = [
   [],
   [storedPanel({ name: 'inspector', type: 'menu' })],
 ]
+
+export const GridPanelsStateAtom = atom(GridMenuDefaultPanels)
 
 export function storedLayoutToResolvedPanels(stored: StoredLayout): {
   [index in PanelName]: GridPanelData
@@ -241,14 +244,8 @@ export function useColumnWidths(
   // start with the default value
   const defaultColumnWidths: Array<number> = React.useMemo(
     () =>
-      panelState.map((column) => {
-        if (column.length === 0) {
-          return 0
-        } else if (column.some((p) => p.type === 'menu')) {
-          return GridMenuWidth + GridPanelHorizontalGapHalf * 2
-        } else {
-          return GridPaneWidth + GridPanelHorizontalGapHalf * 2
-        }
+      panelState.map((_, index) => {
+        return getColumnWidth(panelState, index)
       }),
     [panelState],
   )
@@ -285,3 +282,18 @@ export function useColumnWidths(
 
   return [columnWidthValues, setColumnWidths]
 }
+
+export function getColumnWidth(panelState: StoredLayout, columnIndex: number): number {
+  const column = panelState[normalizeColIndex(columnIndex)]
+  const narrowestPanelInColumn = column.reduce((narrowestWidth, panelOrMenu) => {
+    const panelWidth = panelOrMenu.type === 'menu' ? GridMenuWidth : GridPaneWidth
+    return Math.min(narrowestWidth, panelWidth)
+  }, Infinity)
+
+  if (narrowestPanelInColumn == Infinity) {
+    return 0
+  }
+  return narrowestPanelInColumn
+}
+
+// export function usePanelHorizontalReize(): (columnIndex: number, newWidth: number) => void {}
