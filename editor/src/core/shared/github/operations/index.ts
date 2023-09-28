@@ -1,5 +1,5 @@
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
-import { GithubEndpoints2 } from '../endpoints'
+import { GithubApiEndpoints } from '../endpoints'
 import { resolveConflict, startGithubPolling } from '../helpers'
 import { saveProjectToGithub } from './commit-and-push'
 import { getBranchChecksums } from './get-branch-checksums'
@@ -11,7 +11,7 @@ import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
 
 const OperationContext: GithubOperationContext = {
-  githubEndpoints: GithubEndpoints2,
+  githubEndpoints: GithubApiEndpoints,
   updateProjectContentsWithParseResults: updateProjectContentsWithParseResults,
 }
 

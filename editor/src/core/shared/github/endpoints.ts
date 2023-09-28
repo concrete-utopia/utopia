@@ -54,7 +54,7 @@ function createQueryParamsString(params: Record<string, string | null | undefine
   return `?${searchParams}`
 }
 
-export const GithubEndpoints2: IGithubEndpoints = {
+export const GithubApiEndpoints: IGithubEndpoints = {
   repositories: () =>
     fetch(urljoin(UTOPIA_BACKEND, 'github', 'user', 'repositories'), {
       method: 'GET',
@@ -85,7 +85,7 @@ export const GithubEndpoints2: IGithubEndpoints = {
         githubRepo.repository,
         'branch',
         branchName,
-      ) + createQueryParamsString({ commitSha, previousCommitSha })
+      ) + createQueryParamsString({ commit_sha: commitSha, previus_commit_sha: previousCommitSha })
 
     return fetch(urlToUse, {
       method: 'GET',
@@ -102,7 +102,7 @@ export const GithubEndpoints2: IGithubEndpoints = {
   ) => {
     const urlToUse =
       urljoin(UTOPIA_BACKEND, 'github', 'save', projectId) +
-      createQueryParamsString({ branchName, commitMessage })
+      createQueryParamsString({ branch_name: branchName, commit_message: commitMessage })
 
     const postBody = JSON.stringify(persistentModel)
 
@@ -143,7 +143,7 @@ export const GithubEndpoints2: IGithubEndpoints = {
         githubRepo.repository,
         'asset',
         assetSha,
-      ) + createQueryParamsString({ projectId, path })
+      ) + createQueryParamsString({ project_id: projectId, path: path })
 
     return fetch(urlToUse, {
       method: 'POST',
