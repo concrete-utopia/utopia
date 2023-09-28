@@ -90,6 +90,7 @@ export const NavigatorDragLayer = React.memo(() => {
             selected={selected}
             dispatch={NO_OP}
             inputVisible={false}
+            remixItemType={'none'}
           />
         </FlexRow>
       </FlexRow>
