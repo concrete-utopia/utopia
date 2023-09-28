@@ -119,16 +119,19 @@ export interface NavigatorItemDragAndDropWrapperProps
 
 export interface SyntheticNavigatorItemContainerProps
   extends NavigatorItemDragAndDropWrapperPropsBase {
+  isOutletOrDescendantOfOutlet: boolean
   elementPath: ElementPath
   childOrAttribute: JSXElementChild
 }
 
 export interface ConditionalClauseNavigatorItemContainerProps
   extends NavigatorItemDragAndDropWrapperPropsBase {
+  isOutletOrDescendantOfOutlet: boolean
   navigatorEntry: ConditionalClauseNavigatorEntry
 }
 
 export interface ErrorNavigatorItemContainerProps extends NavigatorItemDragAndDropWrapperPropsBase {
+  isOutletOrDescendantOfOutlet: boolean
   navigatorEntry: InvalidOverrideNavigatorEntry
 }
 
@@ -852,6 +855,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           selected={props.selected}
           parentOutline={parentOutline}
           visibleNavigatorTargets={props.visibleNavigatorTargets}
+          isOutletOrDescendantOfOutlet={isOutletOrDescendantOfOutlet}
         />
       </div>
       <NavigatorHintBottom
@@ -997,6 +1001,7 @@ export const SyntheticNavigatorItemContainer = React.memo(
             selected={props.selected}
             parentOutline={parentOutline}
             visibleNavigatorTargets={props.visibleNavigatorTargets}
+            isOutletOrDescendantOfOutlet={props.isOutletOrDescendantOfOutlet}
           />
         </div>
       </div>
@@ -1032,6 +1037,7 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
             selected={props.selected}
             parentOutline={'none'}
             visibleNavigatorTargets={props.visibleNavigatorTargets}
+            isOutletOrDescendantOfOutlet={props.isOutletOrDescendantOfOutlet}
           />
         </div>
       </div>
@@ -1066,6 +1072,7 @@ export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItem
           selected={props.selected}
           parentOutline={'none'}
           visibleNavigatorTargets={props.visibleNavigatorTargets}
+          isOutletOrDescendantOfOutlet={props.isOutletOrDescendantOfOutlet}
         />
       </div>
     </div>

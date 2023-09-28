@@ -408,6 +408,7 @@ export interface NavigatorItemInnerProps {
   renamingTarget: ElementPath | null
   selected: boolean
   parentOutline: ParentOutline
+  isOutletOrDescendantOfOutlet: boolean
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
@@ -421,6 +422,7 @@ export const NavigatorItem: React.FunctionComponent<
     selected,
     collapsed,
     navigatorEntry,
+    isOutletOrDescendantOfOutlet,
     getSelectedViewsInRange,
     index,
   } = props
@@ -764,7 +766,9 @@ export const NavigatorItem: React.FunctionComponent<
     <div
       style={{
         outline: `1px solid ${
-          props.parentOutline === 'solid'
+          props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
+            ? colorTheme.aqua.value
+            : props.parentOutline === 'solid'
             ? colorTheme.navigatorResizeHintBorder.value
             : 'transparent'
         }`,

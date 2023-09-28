@@ -348,6 +348,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
       ...navigatorItemProps,
       childOrAttribute: props.navigatorEntry.childOrAttribute,
       elementPath: props.navigatorEntry.elementPath,
+      isOutletOrDescendantOfOutlet: false,
     }
     return <SyntheticNavigatorItemContainer {...entryProps} />
   }
@@ -356,6 +357,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     const entryProps: ConditionalClauseNavigatorItemContainerProps = {
       ...navigatorItemProps,
       navigatorEntry: props.navigatorEntry,
+      isOutletOrDescendantOfOutlet: false,
     }
     return <ConditionalClauseNavigatorItemContainer {...entryProps} />
   }
@@ -364,6 +366,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     const entryProps: ErrorNavigatorItemContainerProps = {
       ...navigatorItemProps,
       navigatorEntry: props.navigatorEntry,
+      isOutletOrDescendantOfOutlet: false,
     }
 
     return <ErrorNavigatorItemContainer {...entryProps} />
