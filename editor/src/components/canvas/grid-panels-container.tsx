@@ -38,7 +38,7 @@ export const GridPanelsContainer = React.memo(() => {
         acc.add(wrapAroundColIndex(NumberOfColumns - 1))
 
         panelState.forEach((column, colIndex) => {
-          if (column.length > 0) {
+          if (column.panels.length > 0) {
             acc.add(wrapAroundColIndex(colIndex))
           }
         })
@@ -58,8 +58,8 @@ export const GridPanelsContainer = React.memo(() => {
       return true // for now, just enable all drop areas while we are tweaking the behavior
       const wouldBePanelState = updateLayout(panelState, itemToMove, newPosition)
       const wouldBePanelStateEqualsCurrentPanelState = panelState.every((column, colIndex) =>
-        column.every(
-          (item, itemIndex) => item.name === wouldBePanelState[colIndex]?.[itemIndex]?.name,
+        column.panels.every(
+          (item, itemIndex) => item.name === wouldBePanelState[colIndex]?.panels[itemIndex]?.name,
         ),
       )
 
