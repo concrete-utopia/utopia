@@ -217,7 +217,7 @@ describe('Remix navigator', () => {
     expect(navigatorItemElement.style.color).toEqual('var(--utopitheme-fg0)')
   })
 
-  it('Remix Outlet navigator item label contains route component name', async () => {
+  it('Remix Outlet navigator item label contains the suffix of the full path', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
@@ -277,7 +277,7 @@ describe('Remix navigator', () => {
         ),
       ),
     )
-    expect(outletItemElement.textContent).toEqual('Outlet: Index')
+    expect(outletItemElement.textContent).toEqual('(home)')
   })
 })
 describe('Reparenting in Remix projects in the navigator', () => {
