@@ -23,7 +23,6 @@ export const ColumnDragTargets = React.memo(
     const { columnIndex: columnIndexProp, onDrop, canDrop, columnWidth, setColumnWidth } = props
 
     const columnIndex = wrapAroundColIndex(columnIndexProp)
-    const columnWidthRef = usePropControlledRef_DANGEROUS(columnWidth)
 
     const { isDragActive, draggedPanel } = useGridPanelDragInfo()
 
@@ -64,7 +63,76 @@ export const ColumnDragTargets = React.memo(
       ),
     )
 
+    return (
+      <>
+        <div
+          ref={dropBefore}
+          style={{
+            position: 'absolute',
+            pointerEvents: 'initial',
+            gridRowStart: 1,
+            gridRowEnd: -1,
+            gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
+            display: isDragActive && canDropBefore ? 'block' : 'none',
+            width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
+            height: '100%',
+            left: -(ExtraHorizontalDropTargetPadding + GridPanelHorizontalGapHalf),
+          }}
+        >
+          <div
+            style={{
+              display: isOverBefore ? 'block' : 'none',
+              position: 'absolute',
+              left: `calc(50% - 1px)`,
+              width: 2,
+              height: '100%',
+              backgroundColor: colorTheme.primary.value,
+            }}
+          />
+        </div>
+        <div
+          ref={dropAfter}
+          style={{
+            position: 'absolute',
+            pointerEvents: 'initial',
+            gridRowStart: 1,
+            gridRowEnd: -1,
+            gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
+            display: isDragActive && canDropAfter ? 'block' : 'none',
+            width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
+            height: '100%',
+            right: -(ExtraHorizontalDropTargetPadding + GridPanelHorizontalGapHalf),
+          }}
+        >
+          <div
+            style={{
+              display: isOverAfter ? 'block' : 'none',
+              position: 'absolute',
+              left: `calc(50% - 1px)`,
+              width: 2,
+              height: '100%',
+              backgroundColor: colorTheme.primary.value,
+            }}
+          />
+        </div>
+      </>
+    )
+  },
+)
+
+export const GridColumnResizeHandle = React.memo(
+  (props: {
+    columnIndex: number
+    columnWidth: number
+    setColumnWidth: (columnIndex: number, newWidth: number) => void
+  }) => {
+    const { columnIndex: columnIndexProp, columnWidth, setColumnWidth } = props
+
+    const columnIndex = wrapAroundColIndex(columnIndexProp)
+    const columnWidthRef = usePropControlledRef_DANGEROUS(columnWidth)
     const [isResizing, setIsResizing] = React.useState(false)
+
+    const leftSideOfGrid = columnIndex > -1
 
     const handleResizeMouseDown = React.useCallback(
       (mouseDownEvent: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -129,56 +197,6 @@ export const ColumnDragTargets = React.memo(
             />,
           )
         }
-        <div
-          ref={dropBefore}
-          style={{
-            position: 'absolute',
-            pointerEvents: 'initial',
-            gridRowStart: 1,
-            gridRowEnd: -1,
-            gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
-            display: isDragActive && canDropBefore ? 'block' : 'none',
-            width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
-            height: '100%',
-            left: -(ExtraHorizontalDropTargetPadding + GridPanelHorizontalGapHalf),
-          }}
-        >
-          <div
-            style={{
-              display: isOverBefore ? 'block' : 'none',
-              position: 'absolute',
-              left: `calc(50% - 1px)`,
-              width: 2,
-              height: '100%',
-              backgroundColor: colorTheme.primary.value,
-            }}
-          />
-        </div>
-        <div
-          ref={dropAfter}
-          style={{
-            position: 'absolute',
-            pointerEvents: 'initial',
-            gridRowStart: 1,
-            gridRowEnd: -1,
-            gridColumn: `col ${leftSideOfGrid ? columnIndex + 1 : columnIndex} / span 1`,
-            display: isDragActive && canDropAfter ? 'block' : 'none',
-            width: 2 * ExtraHorizontalDropTargetPadding + 2 * GridPanelHorizontalGapHalf,
-            height: '100%',
-            right: -(ExtraHorizontalDropTargetPadding + GridPanelHorizontalGapHalf),
-          }}
-        >
-          <div
-            style={{
-              display: isOverAfter ? 'block' : 'none',
-              position: 'absolute',
-              left: `calc(50% - 1px)`,
-              width: 2,
-              height: '100%',
-              backgroundColor: colorTheme.primary.value,
-            }}
-          />
-        </div>
       </>
     )
   },

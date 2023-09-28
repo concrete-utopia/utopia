@@ -1,7 +1,7 @@
 import React from 'react'
 import { accumulate } from '../../core/shared/array-utils'
 import { GridPanel } from './grid-panel'
-import { ColumnDragTargets } from './grid-panels-drag-targets'
+import { ColumnDragTargets, GridColumnResizeHandle } from './grid-panels-drag-targets'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
   GridHorizontalExtraPadding,
@@ -117,14 +117,22 @@ export const GridPanelsContainer = React.memo(() => {
       />
       {/* All future Panels need to be explicitly listed here */}
       {nonEmptyColumns.map((columnIndex) => (
-        <ColumnDragTargets
-          key={columnIndex}
-          columnIndex={columnIndex}
-          onDrop={onDrop}
-          canDrop={canDrop}
-          columnWidth={columnWidths[normalizeColIndex(columnIndex)]}
-          setColumnWidth={setColumnWidth}
-        />
+        <React.Fragment key={columnIndex}>
+          <GridColumnResizeHandle
+            key={`resize-${columnIndex}`}
+            columnIndex={columnIndex}
+            columnWidth={columnWidths[normalizeColIndex(columnIndex)]}
+            setColumnWidth={setColumnWidth}
+          />
+          <ColumnDragTargets
+            key={`droptarget-${columnIndex}`}
+            columnIndex={columnIndex}
+            onDrop={onDrop}
+            canDrop={canDrop}
+            columnWidth={columnWidths[normalizeColIndex(columnIndex)]}
+            setColumnWidth={setColumnWidth}
+          />
+        </React.Fragment>
       ))}
     </div>
   )
