@@ -14,41 +14,63 @@ interface MultiSelectOutlineControlProps {
   localSelectedElements: Array<ElementPath>
 }
 
-export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlProps>((props) => {
-  const hiddenInstances = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.hiddenInstances,
-    'MultiSelectOutlineControl hiddenInstances',
-  )
-  const localSelectedElements = props.localSelectedElements.filter(
-    (sv) => !hiddenInstances.includes(sv) && !EP.isStoryboardPath(sv),
-  )
-  return (
-    <CanvasOffsetWrapper>
-      {[
-        <OutlineControl
-          testId={`multiselect-outline`}
-          key='multiselect-outline'
-          targets={localSelectedElements}
-          color='multiselect-bounds'
-          outlineStyle='solid'
-        />,
-        ...localSelectedElements.map((path) => {
-          const outlineId = `multiselect-element-outline-${EP.toString(path)}`
-          return (
-            <OutlineControl
-              testId={outlineId}
-              key={outlineId}
-              targets={[path]}
-              color='primary'
-              outlineStyle='solid'
-            />
-          )
-        }),
-      ]}
-    </CanvasOffsetWrapper>
-  )
-})
+export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlProps>(
+  (props: MultiSelectOutlineControlProps) => {
+    const hiddenInstances = useEditorState(
+      Substores.restOfEditor,
+      (store) => store.editor.hiddenInstances,
+      'MultiSelectOutlineControl hiddenInstances',
+    )
+    const localSelectedElements = props.localSelectedElements.filter(
+      (sv) => !hiddenInstances.includes(sv) && !EP.isStoryboardPath(sv),
+    )
+
+    if (areAllUidsTheSame(localSelectedElements)) {
+      return (
+        <CanvasOffsetWrapper>
+          {...localSelectedElements.map((path) => {
+            const outlineId = `multiselect-element-outline-${EP.toString(path)}`
+            return (
+              <OutlineControl
+                testId={outlineId}
+                key={outlineId}
+                targets={[path]}
+                color='primary'
+                outlineStyle='solid'
+              />
+            )
+          })}
+        </CanvasOffsetWrapper>
+      )
+    }
+
+    return (
+      <CanvasOffsetWrapper>
+        {[
+          <OutlineControl
+            testId={`multiselect-outline`}
+            key='multiselect-outline'
+            targets={localSelectedElements}
+            color='multiselect-bounds'
+            outlineStyle='solid'
+          />,
+          ...localSelectedElements.map((path) => {
+            const outlineId = `multiselect-element-outline-${EP.toString(path)}`
+            return (
+              <OutlineControl
+                testId={outlineId}
+                key={outlineId}
+                targets={[path]}
+                color='primary'
+                outlineStyle='solid'
+              />
+            )
+          }),
+        ]}
+      </CanvasOffsetWrapper>
+    )
+  },
+)
 
 interface OutlineControlProps {
   testId: string
@@ -122,4 +144,16 @@ export function getSelectionColor(
   } else {
     return colorTheme.canvasSelectionNotFocusable.value
   }
+}
+
+function areAllUidsTheSame(selectedViews: Array<ElementPath>): boolean {
+  if (selectedViews.length <= 1) {
+    return false
+  }
+
+  const firstUid = EP.toUid(selectedViews[0])
+  if (selectedViews.every((v) => EP.toUid(v) === firstUid)) {
+    return true
+  }
+  return false
 }
