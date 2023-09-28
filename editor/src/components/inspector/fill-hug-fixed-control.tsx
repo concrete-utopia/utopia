@@ -609,7 +609,7 @@ const GroupConstraintSelect = React.memo(
     const mainColor = React.useMemo(() => {
       switch (type) {
         case 'constrained':
-          return colorTheme.brandNeonPink.value
+          return colorTheme.fg0.value
         case 'mixed':
           return colorTheme.fg6Opacity50.value
         case 'not-constrained':
