@@ -12,12 +12,7 @@ import {
 import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GetBranchContentResponse } from '../helpers'
-import {
-  getBranchContentFromServer,
-  githubAPIError,
-  githubAPIErrorFromResponse,
-  runGithubOperation,
-} from '../helpers'
+import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import { saveAssetsToProject } from './load-branch'
 import type { GithubOperationContext } from './github-operation-context'
 
@@ -36,19 +31,17 @@ export const updateProjectAgainstGithub =
       { name: 'updateAgainstBranch' },
       dispatch,
       async (operation: GithubOperation) => {
-        const branchLatestRequest = getBranchContentFromServer(
+        const branchLatestRequest = operationContext.githubEndpoints.branchContents(
           githubRepo,
           branchName,
           null,
           null,
-          operationContext,
         )
-        const specificCommitRequest = getBranchContentFromServer(
+        const specificCommitRequest = operationContext.githubEndpoints.branchContents(
           githubRepo,
           branchName,
           commitSha,
           null,
-          operationContext,
         )
 
         const branchLatestResponse = await branchLatestRequest

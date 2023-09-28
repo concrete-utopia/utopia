@@ -15,7 +15,6 @@ import { projectGithubSettings } from '../../../../components/editor/store/edito
 import type { GetBranchContentResponse, GithubFailure } from '../helpers'
 import {
   dispatchPromiseActions,
-  getBranchContentFromServer,
   githubAPIError,
   githubAPIErrorFromResponse,
   runGithubOperation,
@@ -58,12 +57,11 @@ export const saveProjectToGithub =
         // and avoid a fast forward error.
         let originCommit = persistentModel.githubSettings.originCommit
         if (originCommit == null && targetRepository != null && branchName != null) {
-          const getBranchResponse = await getBranchContentFromServer(
+          const getBranchResponse = await operationContext.githubEndpoints.branchContents(
             targetRepository,
             branchName,
             null,
             null,
-            operationContext,
           )
           if (getBranchResponse.ok) {
             const content: GetBranchContentResponse = await getBranchResponse.json()

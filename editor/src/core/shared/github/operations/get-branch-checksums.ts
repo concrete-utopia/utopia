@@ -2,7 +2,6 @@ import type { EditorAction } from '../../../../components/editor/action-types'
 import { updateBranchContents } from '../../../../components/editor/actions/action-creators'
 import type { GithubRepo } from '../../../../components/editor/store/editor-state'
 import type { GetBranchContentResponse } from '../helpers'
-import { getBranchContentFromServer } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
 
 export const getBranchChecksums =
@@ -12,12 +11,11 @@ export const getBranchChecksums =
     branchName: string,
     commitSha: string,
   ): Promise<Array<EditorAction>> => {
-    const specificCommitRequest = getBranchContentFromServer(
+    const specificCommitRequest = operationContext.githubEndpoints.branchContents(
       githubRepo,
       branchName,
       commitSha,
       null,
-      operationContext,
     )
 
     const specificCommitResponse = await specificCommitRequest

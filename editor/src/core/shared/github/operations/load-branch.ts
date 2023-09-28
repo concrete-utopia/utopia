@@ -26,7 +26,6 @@ import { isTextFile } from '../../project-file-types'
 import type { BranchContent, GetBranchContentResponse } from '../helpers'
 import {
   connectRepo,
-  getBranchContentFromServer,
   githubAPIError,
   githubAPIErrorFromResponse,
   runGithubOperation,
@@ -108,12 +107,11 @@ export const updateProjectWithBranchContent =
       },
       dispatch,
       async (operation: GithubOperation) => {
-        const response = await getBranchContentFromServer(
+        const response = await operationContext.githubEndpoints.branchContents(
           githubRepo,
           branchName,
           null,
           null,
-          operationContext,
         )
         if (!response.ok) {
           throw githubAPIErrorFromResponse(operation, response)

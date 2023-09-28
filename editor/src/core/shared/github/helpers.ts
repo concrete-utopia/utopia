@@ -254,22 +254,6 @@ export function connectRepo(
   ]
 }
 
-export async function getBranchContentFromServer(
-  githubRepo: GithubRepo,
-  branchName: string,
-  commitSha: string | null,
-  previousCommitSha: string | null,
-  operationContext: GithubOperationContext,
-): Promise<Response> {
-  // TODO: this whole function becomes unnecessary
-  return operationContext.githubEndpoints.branchContents(
-    githubRepo,
-    branchName,
-    commitSha,
-    previousCommitSha,
-  )
-}
-
 export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
   const url = GithubEndpoints.userDetails()
 
@@ -898,12 +882,11 @@ async function updateUpstreamChanges(
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
   if (branchName != null && branchOriginChecksums != null) {
-    const branchContentResponse = await getBranchContentFromServer(
+    const branchContentResponse = await operationContext.githubEndpoints.branchContents(
       githubRepo,
       branchName,
       null,
       previousCommitSha,
-      operationContext,
     )
     if (branchContentResponse.ok) {
       const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
