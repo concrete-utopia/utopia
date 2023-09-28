@@ -44,7 +44,7 @@ import type { ProjectContentTreeRoot } from '../../assets'
 import { LayoutParentControl } from './layout-parent-control'
 import { unless, when } from '../../../utils/react-conditionals'
 import { useGetApplicableStrategyControls } from '../canvas-strategies/canvas-strategies'
-import { MultiSelectOutlineControl, areAllUidsTheSame } from './select-mode/simple-outline-control'
+import { MultiSelectOutlineControl } from './select-mode/simple-outline-control'
 import { GuidelineControls } from './guideline-controls'
 import { showContextMenu } from '../../editor/actions/action-creators'
 import { InsertionControls } from './insertion-plus-button'
@@ -544,7 +544,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <MultiSelectOutlineControl localSelectedElements={localSelectedViews} />
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
             {when(
-              isSelectOrInsertMode(editorMode) && !areAllUidsTheSame(localSelectedViews),
+              isSelectOrInsertMode(editorMode) && !EP.areAllUidsTheSame(localSelectedViews),
               <>
                 {strategyControls.map((c) => (
                   <RenderControlMemoized

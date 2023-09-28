@@ -25,7 +25,7 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
       (sv) => !hiddenInstances.includes(sv) && !EP.isStoryboardPath(sv),
     )
 
-    if (areAllUidsTheSame(localSelectedElements)) {
+    if (EP.areAllUidsTheSame(localSelectedElements)) {
       return (
         <CanvasOffsetWrapper>
           {...localSelectedElements.map((path) => {
@@ -144,16 +144,4 @@ export function getSelectionColor(
   } else {
     return colorTheme.canvasSelectionNotFocusable.value
   }
-}
-
-export function areAllUidsTheSame(selectedViews: Array<ElementPath>): boolean {
-  if (selectedViews.length <= 1) {
-    return false
-  }
-
-  const firstUid = EP.toUid(selectedViews[0])
-  if (selectedViews.every((v) => EP.toUid(v) === firstUid)) {
-    return true
-  }
-  return false
 }

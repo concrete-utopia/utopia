@@ -1139,3 +1139,15 @@ export function getStoryboardPathFromPath(path: ElementPath): ElementPath | null
 export function appendTwoPaths(base: ElementPath, other: ElementPath): ElementPath {
   return elementPath([...base.parts, ...other.parts])
 }
+
+export function areAllUidsTheSame(paths: Array<ElementPath>): boolean {
+  if (paths.length <= 1) {
+    return false
+  }
+
+  const firstUid = toUid(paths[0])
+  if (paths.every((v) => toUid(v) === firstUid)) {
+    return true
+  }
+  return false
+}
