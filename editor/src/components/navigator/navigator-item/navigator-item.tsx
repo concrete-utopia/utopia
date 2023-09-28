@@ -900,6 +900,21 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isOutlet = props.remixItemType === 'outlet'
   const isLink = props.remixItemType === 'link'
 
+  const backgroundLozengeColor =
+    isCodeItem && !props.selected
+      ? colorTheme.dynamicBlue10.value
+      : isOutlet && !props.selected
+      ? colorTheme.aqua10.value
+      : 'transparent'
+
+  const textColor = isCodeItem
+    ? colorTheme.dynamicBlue.value
+    : isRemixItem
+    ? colorTheme.aqua.value
+    : isComponentScene
+    ? colorTheme.componentPurple.value
+    : undefined
+
   return (
     <div
       style={{
@@ -912,19 +927,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         height: 22,
         paddingLeft: 10,
         paddingRight: props.codeItemType === 'map' ? 0 : 10,
-        backgroundColor:
-          isCodeItem && !props.selected
-            ? colorTheme.dynamicBlue10.value
-            : isOutlet && !props.selected
-            ? colorTheme.aqua10.value
-            : 'transparent',
-        color: isCodeItem
-          ? colorTheme.dynamicBlue.value
-          : isRemixItem
-          ? colorTheme.aqua.value
-          : isComponentScene
-          ? colorTheme.componentPurple.value
-          : undefined,
+        backgroundColor: backgroundLozengeColor,
+        color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >

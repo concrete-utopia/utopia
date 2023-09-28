@@ -208,6 +208,9 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     return undefined
   })()
 
+  const backgroundLozengeColor =
+    props.remixItemType === 'link' && !props.selected ? colorTheme.aqua10.value : 'transparent'
+
   return (
     <div
       ref={elementRef}
@@ -259,10 +262,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
           key='item-label'
           data-testid={itemLabelTestIdForEntry(target)}
           style={{
-            backgroundColor:
-              props.remixItemType === 'link' && !props.selected
-                ? colorTheme.aqua10.value
-                : 'transparent',
+            backgroundColor: backgroundLozengeColor,
             borderRadius: 30,
             padding: props.remixItemType === 'link' ? '3px 10px' : '3px 0px',
             overflow: 'hidden',
