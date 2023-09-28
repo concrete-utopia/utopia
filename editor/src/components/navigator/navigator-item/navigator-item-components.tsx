@@ -61,8 +61,7 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
           >
             <div
               style={{
-                // backgroundColor: colorTheme.navigatorResizeHintBorder.value,
-                backgroundColor: colorTheme.aqua.value,
+                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
                 height: 2,
                 flexGrow: 1,
               }}
@@ -74,8 +73,7 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
                 width: NavigatorHintCircleDiameter,
                 height: NavigatorHintCircleDiameter,
                 contain: 'layout',
-                // border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
-                border: `2px solid ${colorTheme.aqua.value}`,
+                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
                 borderRadius: '50%',
               }}
             />
@@ -340,7 +338,7 @@ export const NavigatorItemActionSheet: React.FunctionComponent<
   return (
     <FlexRow
       style={{
-        padding: '5px',
+        padding: '4px 5px',
         position: 'fixed',
         right: 0,
         background:
