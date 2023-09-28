@@ -26,7 +26,7 @@ interface RemixNavigationContext {
   entries: Array<Location>
 }
 
-interface RemixNavigationAtomData {
+export interface RemixNavigationAtomData {
   [pathString: string]: RemixNavigationContext | undefined
 }
 

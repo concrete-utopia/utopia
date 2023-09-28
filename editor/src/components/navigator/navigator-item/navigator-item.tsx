@@ -393,7 +393,7 @@ const elementWarningsSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 type CodeItemType = 'conditional' | 'map' | 'code' | 'none' | 'remix'
-type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
+export type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
 
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
@@ -947,7 +947,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         selected={props.selected}
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
-        isLink={isLink}
+        remixItemType={props.remixItemType}
       />
       <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
       <ComponentPreview
