@@ -15,12 +15,10 @@ import { when } from '../../utils/react-conditionals'
 export const ColumnDragTargets = React.memo(
   (props: {
     columnIndex: number
-    columnWidth: number
     canDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
     onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void
-    setColumnWidth: (columnIndex: number, newWidth: number) => void
   }) => {
-    const { columnIndex: columnIndexProp, onDrop, canDrop, columnWidth, setColumnWidth } = props
+    const { columnIndex: columnIndexProp, onDrop, canDrop } = props
 
     const columnIndex = wrapAroundColIndex(columnIndexProp)
 
