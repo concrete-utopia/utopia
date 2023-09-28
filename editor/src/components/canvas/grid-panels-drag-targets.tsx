@@ -73,7 +73,8 @@ export const ColumnDragTargets = React.memo(
 
         const onMouseMove = (mouseMoveEvent: MouseEvent) => {
           const mouseDelta = mouseMoveEvent.clientX - mouseDownEvent.clientX
-          setColumnWidth(columnIndex, startingColumnWidth + mouseDelta)
+          const negateDelta = leftSideOfGrid ? 1 : -1
+          setColumnWidth(columnIndex, startingColumnWidth + mouseDelta * negateDelta)
         }
         const onMouseUp = () => {
           setIsResizing(false)
@@ -83,7 +84,7 @@ export const ColumnDragTargets = React.memo(
         window.addEventListener('mousemove', onMouseMove, { capture: true })
         window.addEventListener('mouseup', onMouseUp, { capture: true })
       },
-      [columnIndex, columnWidthRef, setColumnWidth],
+      [leftSideOfGrid, columnIndex, columnWidthRef, setColumnWidth],
     )
 
     return (
