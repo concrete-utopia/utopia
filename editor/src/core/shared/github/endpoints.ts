@@ -1,17 +1,57 @@
 import urljoin from 'url-join'
 import { UTOPIA_BACKEND } from '../../../common/env-vars'
-import type { GithubRepo } from '../../../components/editor/store/editor-state'
+import type { GithubRepo, PersistentModel } from '../../../components/editor/store/editor-state'
 import type { GetUsersPublicRepositoriesResponse } from './operations/load-repositories'
-import type { GetGithubUserResponse } from './helpers'
 import { HEADERS, MODE } from '../../../common/server'
+import type { GetBranchesResponse } from './operations/list-branches'
+import type { GetBranchContentResponse, GithubSaveAssetResponse } from './helpers'
+import type { SaveToGithubResponse } from './operations/commit-and-push'
+import type { GetBranchPullRequestResponse } from './operations/list-pull-requests-for-branch'
 
 type TypedResponse<T> = Response & { json: () => Promise<T> }
 
-type GetRequest<T> = () => Promise<TypedResponse<T>>
-
 export interface IGithubEndpoints {
-  repositories: GetRequest<GetUsersPublicRepositoriesResponse>
-  userDetails: GetRequest<GetGithubUserResponse>
+  repositories: () => Promise<TypedResponse<GetUsersPublicRepositoriesResponse>>
+  getBranches: (repo: GithubRepo) => Promise<TypedResponse<GetBranchesResponse>>
+  branchContents: (
+    githubRepo: GithubRepo,
+    branchName: string,
+    commitSha: string | null,
+    previousCommitSha: string | null,
+  ) => Promise<TypedResponse<GetBranchContentResponse>>
+  save: (
+    projectId: string,
+    branchName: string | null,
+    commitMessage: string | null,
+    postBody: PersistentModel,
+  ) => Promise<TypedResponse<SaveToGithubResponse>>
+  updatePullRequests: (
+    githubRepo: GithubRepo,
+    branchName: string,
+  ) => Promise<TypedResponse<GetBranchPullRequestResponse>>
+  asset: (
+    githubRepo: GithubRepo,
+    assetSha: string,
+    projectId: string,
+    path: string,
+  ) => Promise<TypedResponse<GithubSaveAssetResponse>>
+}
+
+function createQueryParamsString(params: Record<string, string | null | undefined>): string {
+  let shouldIncludeQueryParams = false
+  let paramsRecord: Record<string, string> = {}
+  for (const [key, value] of Object.entries(params)) {
+    if (value != null) {
+      shouldIncludeQueryParams = true
+      paramsRecord[key] = value
+    }
+  }
+  if (!shouldIncludeQueryParams) {
+    return ''
+  }
+
+  const searchParams = new URLSearchParams(paramsRecord)
+  return `?${searchParams}`
 }
 
 export const GithubEndpoints2: IGithubEndpoints = {
@@ -23,50 +63,99 @@ export const GithubEndpoints2: IGithubEndpoints = {
       mode: MODE,
     }),
 
-  userDetails: () =>
-    fetch(urljoin(UTOPIA_BACKEND, 'github', 'user'), {
+  getBranches: ({ owner, repository }: GithubRepo) =>
+    fetch(urljoin(UTOPIA_BACKEND, 'github', 'branches', owner, repository), {
       method: 'GET',
       credentials: 'include',
       headers: HEADERS,
       mode: MODE,
     }),
+  branchContents: (
+    githubRepo: GithubRepo,
+    branchName: string,
+    commitSha: string | null,
+    previousCommitSha: string | null,
+  ) => {
+    const urlToUse =
+      urljoin(
+        UTOPIA_BACKEND,
+        'github',
+        'branches',
+        githubRepo.owner,
+        githubRepo.repository,
+        'branch',
+        branchName,
+      ) + createQueryParamsString({ commitSha, previousCommitSha })
+
+    return fetch(urlToUse, {
+      method: 'GET',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
+  },
+  save: (
+    projectId: string,
+    branchName: string | null,
+    commitMessage: string | null,
+    persistentModel: PersistentModel,
+  ) => {
+    const urlToUse =
+      urljoin(UTOPIA_BACKEND, 'github', 'save', projectId) +
+      createQueryParamsString({ branchName, commitMessage })
+
+    const postBody = JSON.stringify(persistentModel)
+
+    return fetch(urlToUse, {
+      method: 'POST',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+      body: postBody,
+    })
+  },
+  updatePullRequests: (githubRepo: GithubRepo, branchName: string) =>
+    fetch(
+      urljoin(
+        UTOPIA_BACKEND,
+        'github',
+        'branches',
+        githubRepo.owner,
+        githubRepo.repository,
+        'branch',
+        branchName,
+        'pullrequest',
+      ),
+      {
+        method: 'GET',
+        credentials: 'include',
+        headers: HEADERS,
+        mode: MODE,
+      },
+    ),
+  asset: (githubRepo: GithubRepo, assetSha: string, projectId: string, path: string) => {
+    const urlToUse =
+      urljoin(
+        UTOPIA_BACKEND,
+        'github',
+        'branches',
+        githubRepo.owner,
+        githubRepo.repository,
+        'asset',
+        assetSha,
+      ) + createQueryParamsString({ projectId, path })
+
+    return fetch(urlToUse, {
+      method: 'POST',
+      credentials: 'include',
+      headers: HEADERS,
+      mode: MODE,
+    })
+  },
 }
 
 export const GithubEndpoints = {
-  save: (projectID: string) => urljoin(UTOPIA_BACKEND, 'github', 'save', projectID),
-  getBranches: ({ owner, repository }: GithubRepo) =>
-    urljoin(UTOPIA_BACKEND, 'github', 'branches', owner, repository),
-  branchContents: (githubRepo: GithubRepo, branchName: string) =>
-    urljoin(
-      UTOPIA_BACKEND,
-      'github',
-      'branches',
-      githubRepo.owner,
-      githubRepo.repository,
-      'branch',
-      branchName,
-    ),
-  asset: (githubRepo: GithubRepo, assetSha: string) =>
-    urljoin(
-      UTOPIA_BACKEND,
-      'github',
-      'branches',
-      githubRepo.owner,
-      githubRepo.repository,
-      'asset',
-      assetSha,
-    ),
-  updatePullRequests: (githubRepo: GithubRepo, branchName: string) =>
-    urljoin(
-      UTOPIA_BACKEND,
-      'github',
-      'branches',
-      githubRepo.owner,
-      githubRepo.repository,
-      'branch',
-      branchName,
-      'pullrequest',
-    ),
+  userDetails: () => urljoin(UTOPIA_BACKEND, 'github', 'user'),
   authenticationStatus: () => urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'status'),
   authenticationStart: () => urljoin(UTOPIA_BACKEND, 'github', 'authentication', 'start'),
 } as const

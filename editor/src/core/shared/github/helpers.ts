@@ -261,32 +261,24 @@ export async function getBranchContentFromServer(
   previousCommitSha: string | null,
   operationContext: GithubOperationContext,
 ): Promise<Response> {
-  const url = GithubEndpoints.branchContents(githubRepo, branchName)
-  let includeQueryParams: boolean = false
-  let paramsRecord: Record<string, string> = {}
-  if (commitSha != null) {
-    includeQueryParams = true
-    paramsRecord.commit_sha = commitSha
-  }
-  if (previousCommitSha != null) {
-    includeQueryParams = true
-    paramsRecord.previous_commit_sha = previousCommitSha
-  }
-  const searchParams = new URLSearchParams(paramsRecord)
-  const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
+  // TODO: this whole function becomes unnecessary
+  return operationContext.githubEndpoints.branchContents(
+    githubRepo,
+    branchName,
+    commitSha,
+    previousCommitSha,
+  )
+}
 
-  return operationContext.fetch(urlToUse, {
+export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
+  const url = GithubEndpoints.userDetails()
+
+  const response = await fetch(url, {
     method: 'GET',
     credentials: 'include',
     headers: HEADERS,
     mode: MODE,
   })
-}
-
-export async function getUserDetailsFromServer(
-  operationContext: GithubOperationContext,
-): Promise<Array<EditorAction>> {
-  const response = await operationContext.githubEndpoints.userDetails()
 
   if (response.ok) {
     const responseBody: GetGithubUserResponse = await response.json()
@@ -956,7 +948,7 @@ interface GithubSaveAssetResponseSuccess {
   type: 'SUCCESS'
 }
 
-type GithubSaveAssetResponse = GithubSaveAssetResponseSuccess | GithubFailure
+export type GithubSaveAssetResponse = GithubSaveAssetResponseSuccess | GithubFailure
 
 export async function saveGithubAsset(
   githubRepo: GithubRepo,
@@ -970,21 +962,12 @@ export async function saveGithubAsset(
     { name: 'saveAsset', path: path },
     dispatch,
     async (operation: GithubOperation) => {
-      const url = GithubEndpoints.asset(githubRepo, assetSha)
-
-      const paramsRecord: Record<string, string> = {
-        project_id: projectID,
-        path: path,
-      }
-      const searchParams = new URLSearchParams(paramsRecord)
-      const urlToUse = `${url}?${searchParams}`
-
-      const response = await operationContext.fetch(urlToUse, {
-        method: 'POST',
-        credentials: 'include',
-        headers: HEADERS,
-        mode: MODE,
-      })
+      const response = await operationContext.githubEndpoints.asset(
+        githubRepo,
+        assetSha,
+        projectID,
+        path,
+      )
       if (!response.ok) {
         throw githubAPIErrorFromResponse(operation, response)
       }

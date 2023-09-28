@@ -1,4 +1,3 @@
-import { HEADERS, MODE } from '../../../../common/server'
 import { notice } from '../../../../components/common/notice'
 import type { EditorDispatch } from '../../../../components/editor/action-types'
 import {
@@ -23,7 +22,6 @@ import {
 } from '../helpers'
 import { getBranchesForGithubRepository } from './list-branches'
 import type { GithubOperationContext } from './github-operation-context'
-import { GithubEndpoints } from '../endpoints'
 
 export interface SaveProjectToGithubOptions {
   branchName: string | null
@@ -84,29 +82,12 @@ export const saveProjectToGithub =
           },
         }
 
-        const url = GithubEndpoints.save(projectID)
-
-        let includeQueryParams: boolean = false
-        let paramsRecord: Record<string, string> = {}
-        if (branchName != null) {
-          includeQueryParams = true
-          paramsRecord.branch_name = branchName
-        }
-        if (commitMessage != null) {
-          includeQueryParams = true
-          paramsRecord.commit_message = commitMessage
-        }
-        const searchParams = new URLSearchParams(paramsRecord)
-        const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
-
-        const postBody = JSON.stringify(patchedModel)
-        const response = await operationContext.fetch(urlToUse, {
-          method: 'POST',
-          credentials: 'include',
-          headers: HEADERS,
-          mode: MODE,
-          body: postBody,
-        })
+        const response = await operationContext.githubEndpoints.save(
+          projectID,
+          branchName,
+          commitMessage,
+          patchedModel,
+        )
         if (!response.ok) {
           throw await githubAPIErrorFromResponse(operation, response)
         }

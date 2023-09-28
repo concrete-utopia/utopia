@@ -37,24 +37,12 @@ export function fakeResponse<T>(payload: T): Response {
   } as Response
 }
 
-interface FakeGithubApiConfig {
-  [url: string]: Response | undefined
-}
-
 interface MockOperationContextOptions {
-  apiConfig: FakeGithubApiConfig
   githubEndpoints: IGithubEndpoints
   fakeResolvedProjectContents: ProjectContentTreeRoot
 }
 
 const MockOperationContext = (options: MockOperationContextOptions): GithubOperationContext => ({
-  fetch: async (url) => {
-    const response = options.apiConfig[url]
-    if (response == null) {
-      throw new Error(`No response defined for URL ${url}`)
-    }
-    return response
-  },
   githubEndpoints: options.githubEndpoints,
   updateProjectContentsWithParseResults: async () => options.fakeResolvedProjectContents,
 })

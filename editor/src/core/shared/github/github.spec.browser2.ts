@@ -6,9 +6,7 @@ import {
   renderTestEditorWithCode,
 } from '../../../components/canvas/ui-jsx.test-utils'
 import { createTestProjectWithCode } from '../../../sample-projects/sample-project-utils.test-utils'
-import { wait } from '../../model/performance-scripts'
-import { GithubEndpoints } from './endpoints'
-import type { GetBranchContentResponse, GetGithubUserSuccess } from './helpers'
+import type { GetBranchContentResponse } from './helpers'
 import {
   MockGithubOperations,
   fakeResponse,
@@ -25,43 +23,49 @@ describe('Github integration', () => {
     `),
     ).projectContents,
 
-    apiConfig: {
-      [GithubEndpoints.userDetails()]: fakeResponse<GetGithubUserSuccess>({
-        type: 'SUCCESS',
-        user: { login: 'login', name: 'Bob', avatarURL: 'avatar', htmlURL: 'www.example.com' },
-      }),
-      [GithubEndpoints.repositories()]: fakeResponse<GetUsersPublicRepositoriesSuccess>({
-        type: 'SUCCESS',
-        repositories: [
-          {
-            fullName: 'bob/awesome-project',
-            name: 'Awesome Project',
-            avatarUrl: null,
-            isPrivate: false,
-            description: 'An Awesome Project',
-            updatedAt: '1',
-            defaultBranch: 'main',
-            permissions: { admin: true, push: true, pull: true },
-          },
-        ],
-      }),
-      [GithubEndpoints.getBranches({ owner: 'bob', repository: 'awesome-project' })]:
+    githubEndpoints: {
+      repositories: async () =>
+        fakeResponse<GetUsersPublicRepositoriesSuccess>({
+          type: 'SUCCESS',
+          repositories: [
+            {
+              fullName: 'bob/awesome-project',
+              name: 'Awesome Project',
+              avatarUrl: null,
+              isPrivate: false,
+              description: 'An Awesome Project',
+              updatedAt: '1',
+              defaultBranch: 'main',
+              permissions: { admin: true, push: true, pull: true },
+            },
+          ],
+        }),
+      getBranches: async () =>
         fakeResponse<GetBranchesSuccess>({
           type: 'SUCCESS',
           branches: [{ name: 'main' }, { name: 'dev' }],
         }),
-      [GithubEndpoints.branchContents({ owner: 'bob', repository: 'awesome-project' }, 'main')]:
+      branchContents: async () =>
         fakeResponse<GetBranchContentResponse>({
           type: 'SUCCESS',
           branch: {
             originCommit: 'initial',
             content: createTestProjectWithCode(
               makeTestProjectCodeWithSnippet(`
-            <h1>Editor from Github</h1>
-            `),
+          <h1>Editor from Github</h1>
+          `),
             ).projectContents,
           },
         }),
+      save: async () => {
+        throw new Error('fake data missing for `save` endpoint')
+      },
+      updatePullRequests: async () => {
+        throw new Error('fake data missing for `updatePullRequests` endpoint')
+      },
+      asset: async () => {
+        throw new Error('fake data missing for `asset` endpoint')
+      },
     },
   })
 

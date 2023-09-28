@@ -1,8 +1,6 @@
-import { HEADERS, MODE } from '../../../../common/server'
 import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { updateGithubData } from '../../../../components/editor/actions/action-creators'
 import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
-import { GithubEndpoints } from '../endpoints'
 import type { GithubBranch, GithubFailure } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
@@ -23,14 +21,7 @@ export const getBranchesForGithubRepository =
       { name: 'listBranches' },
       dispatch,
       async (operation: GithubOperation) => {
-        const url = GithubEndpoints.getBranches(githubRepo)
-
-        const response = await operationContext.fetch(url, {
-          method: 'GET',
-          credentials: 'include',
-          headers: HEADERS,
-          mode: MODE,
-        })
+        const response = await operationContext.githubEndpoints.getBranches(githubRepo)
 
         if (!response.ok) {
           throw await githubAPIErrorFromResponse(operation, response)

@@ -1,4 +1,3 @@
-import { HEADERS, MODE } from '../../../../common/server'
 import type { EditorAction, EditorDispatch } from '../../../../components/editor/action-types'
 import { updateGithubData } from '../../../../components/editor/actions/action-creators'
 import type {
@@ -6,7 +5,6 @@ import type {
   GithubRepo,
   PullRequest,
 } from '../../../../components/editor/store/editor-state'
-import { GithubEndpoints } from '../endpoints'
 import type { GithubFailure } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import type { GithubOperationContext } from './github-operation-context'
@@ -43,15 +41,10 @@ export const updatePullRequestsForBranch =
       },
       dispatch,
       async (operation: GithubOperation) => {
-        const url = GithubEndpoints.updatePullRequests(githubRepo, branchName)
-
-        const response = await operationContext.fetch(url, {
-          method: 'GET',
-          credentials: 'include',
-          headers: HEADERS,
-          mode: MODE,
-        })
-
+        const response = await operationContext.githubEndpoints.updatePullRequests(
+          githubRepo,
+          branchName,
+        )
         if (!response.ok) {
           throw await githubAPIErrorFromResponse(operation, response)
         }

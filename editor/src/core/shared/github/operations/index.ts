@@ -11,7 +11,6 @@ import { getUsersPublicGithubRepositories } from './load-repositories'
 import { updateProjectAgainstGithub } from './update-against-branch'
 
 const OperationContext: GithubOperationContext = {
-  fetch: (...args) => window.fetch(...args),
   githubEndpoints: GithubEndpoints2,
   updateProjectContentsWithParseResults: updateProjectContentsWithParseResults,
 }
