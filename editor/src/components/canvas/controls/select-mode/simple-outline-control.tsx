@@ -146,7 +146,7 @@ export function getSelectionColor(
   }
 }
 
-function areAllUidsTheSame(selectedViews: Array<ElementPath>): boolean {
+export function areAllUidsTheSame(selectedViews: Array<ElementPath>): boolean {
   if (selectedViews.length <= 1) {
     return false
   }

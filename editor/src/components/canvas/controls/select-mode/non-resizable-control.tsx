@@ -8,6 +8,8 @@ import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strat
 import type { EdgePosition } from '../../canvas-types'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
+import { areAllUidsTheSame } from './simple-outline-control'
+import * as EP from '../../../../core/shared/element-path'
 
 const selectedElementsSelector = (store: { editor: { selectedViews: ElementPath[] } }) =>
   store.editor.selectedViews
@@ -18,7 +20,23 @@ export const NonResizableControl = controlForStrategyMemoized(() => {
     selectedElementsSelector,
     'NonResizableControl selectedElements',
   )
+  if (areAllUidsTheSame(selectedElements)) {
+    return (
+      <>
+        {selectedElements.map((e) => (
+          <NonResizableControlInner key={EP.toString(e)} selectedElements={[e]} />
+        ))}
+      </>
+    )
+  }
+  return <NonResizableControlInner selectedElements={selectedElements} />
+})
 
+const NonResizableControlInner = ({
+  selectedElements,
+}: {
+  selectedElements: Array<ElementPath>
+}) => {
   const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
     ref.current.style.display = 'block'
     ref.current.style.left = boundingBox.x + 'px'
@@ -60,7 +78,7 @@ export const NonResizableControl = controlForStrategyMemoized(() => {
       </div>
     </CanvasOffsetWrapper>
   )
-})
+}
 
 interface NonResizablePointProps {
   position: EdgePosition
