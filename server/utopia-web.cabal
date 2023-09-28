@@ -90,7 +90,7 @@ executable utopia-web
     , filepath
     , free
     , generic-lens
-    , github
+    , github ==0.27
     , hashable
     , hoauth2
     , http-api-data
@@ -229,7 +229,7 @@ test-suite utopia-web-test
     , filepath
     , free
     , generic-lens
-    , github
+    , github ==0.27
     , hashable
     , hedgehog
     , hoauth2
