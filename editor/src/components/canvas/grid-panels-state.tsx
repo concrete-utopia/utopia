@@ -2,7 +2,7 @@ import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
 import { v4 as UUID } from 'uuid'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
-import { mod } from '../../core/shared/math-utils'
+import { clamp, mod } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
 import {
   usePropControlledRef_DANGEROUS,
@@ -14,6 +14,9 @@ import { atom, useAtom, useAtomValue } from 'jotai'
 import immutableUpdate from 'immutability-helper'
 
 export const GridMenuWidth = 268
+export const GridMenuMinWidth = 200
+export const GridMenuMaxWidth = 300
+
 export const GridPaneWidth = 500
 
 export const NumberOfColumns = 4
@@ -277,8 +280,12 @@ export function useColumnWidths(): [
         const columnIndex = normalizeColIndex(columnIndexIncoming)
         const columnContainsMenu = current[columnIndex].panels.some((p) => p.type === 'menu')
         if (columnContainsMenu) {
-          // menu resize!
-          return immutableUpdate(current, { [columnIndex]: { menuWidth: { $set: newWidth } } })
+          // menu resize – clamped!
+          return immutableUpdate(current, {
+            [columnIndex]: {
+              menuWidth: { $set: clamp(GridMenuMinWidth, GridMenuMaxWidth, newWidth) },
+            },
+          })
         } else {
           // pane resize!
           return immutableUpdate(current, { [columnIndex]: { paneWidth: { $set: newWidth } } })
