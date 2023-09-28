@@ -110,11 +110,11 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
         enable={{ right: !isFeatureEnabled('Draggable Floating Panels') }}
         onResizeStop={onLeftPanelResizeStop}
         defaultSize={{
-          width: leftPanelWidth,
+          width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : leftPanelWidth,
           height: '100%',
         }}
         size={{
-          width: leftPanelWidth,
+          width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : leftPanelWidth,
           height: '100%',
         }}
         style={{
