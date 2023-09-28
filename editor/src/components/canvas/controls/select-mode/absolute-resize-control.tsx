@@ -400,19 +400,43 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
   }
 }
 
-type SizeLabel = { h: string; v: string } | 'group'
+export type SizeLabelSize = {
+  type: 'SIZE_LABEL_WITH_DIMENSIONS'
+  h: string
+  v: string
+}
+
+function sizeLabelWithDimensions(h: string, v: string): SizeLabelSize {
+  return {
+    type: 'SIZE_LABEL_WITH_DIMENSIONS',
+    h: h,
+    v: v,
+  }
+}
+
+export type SizeLabelGroup = {
+  type: 'SIZE_LABEL_GROUP'
+}
+
+function sizeLabelGroup(): SizeLabelGroup {
+  return {
+    type: 'SIZE_LABEL_GROUP',
+  }
+}
+
+export type SizeLabelContents = SizeLabelSize | SizeLabelGroup
 
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
-): SizeLabel | null {
+): SizeLabelContents | null {
   if (selectedElements.length === 0) {
     return null
   }
 
   if (selectedElements.length === 1) {
     if (treatElementAsGroupLike(metadata, selectedElements[0])) {
-      return 'group'
+      return sizeLabelGroup()
     }
 
     const globalFrame = MetadataUtils.findElementByElementPath(
@@ -429,17 +453,17 @@ function sizeLabelContents(
     const vertical =
       detectFillHugFixedState('vertical', metadata, selectedElements[0]).fixedHugFill?.type ??
       'fixed'
-    return {
-      h: sizeLabel(horizontal, globalFrame.width),
-      v: sizeLabel(vertical, globalFrame.height),
-    }
+    return sizeLabelWithDimensions(
+      sizeLabel(horizontal, globalFrame.width),
+      sizeLabel(vertical, globalFrame.height),
+    )
   }
 
   const boundingBox = boundingRectangleArray(
     selectedElements.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
   )
   if (boundingBox != null) {
-    return { h: `${boundingBox.width}`, v: `${boundingBox.height}` }
+    return sizeLabelWithDimensions(`${boundingBox.width}`, `${boundingBox.height}`)
   }
 
   return null
@@ -456,14 +480,17 @@ const ExplicitHeightHacked = 20
 const BorderRadius = 2
 const SizeLabelMarginTop = 8
 
-function getLabelText(label: SizeLabel | null) {
-  switch (label) {
-    case null:
-      return null
-    case 'group':
+function getLabelText(label: SizeLabelContents | null): string | null {
+  if (label == null) {
+    return null
+  }
+  switch (label.type) {
+    case 'SIZE_LABEL_GROUP':
       return 'Group'
-    default:
+    case 'SIZE_LABEL_WITH_DIMENSIONS':
       return `${label.h} x ${label.v}`
+    default:
+      assertNever(label)
   }
 }
 
