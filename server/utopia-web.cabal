@@ -90,7 +90,7 @@ executable utopia-web
     , filepath
     , free
     , generic-lens
-    , github
+    , github ==0.27
     , hashable
     , hoauth2
     , http-api-data
@@ -121,13 +121,13 @@ executable utopia-web
     , protolude
     , resource-pool
     , rio
-    , servant
+    , servant ==0.19.1
     , servant-blaze
     , servant-client
     , servant-conduit
     , servant-rawm-client
-    , servant-rawm-server
-    , servant-server
+    , servant-rawm-server ==1.0.0.1
+    , servant-server ==0.19.2
     , servant-websockets
     , serversession ==1.0.2
     , split
@@ -229,7 +229,7 @@ test-suite utopia-web-test
     , filepath
     , free
     , generic-lens
-    , github
+    , github ==0.27
     , hashable
     , hedgehog
     , hoauth2
@@ -264,14 +264,14 @@ test-suite utopia-web-test
     , random
     , resource-pool
     , rio
-    , servant
+    , servant ==0.19.1
     , servant-blaze
     , servant-client
     , servant-client-core
     , servant-conduit
     , servant-rawm-client
-    , servant-rawm-server
-    , servant-server
+    , servant-rawm-server ==1.0.0.1
+    , servant-server ==0.19.2
     , servant-websockets
     , serversession ==1.0.2
     , split

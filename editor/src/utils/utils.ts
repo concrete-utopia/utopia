@@ -894,10 +894,12 @@ function update<T>(index: number, newValue: T, array: Array<T>): Array<T> {
   return result
 }
 
-export function defer<T>(): Promise<T> & {
+export type Defer<T> = Promise<T> & {
   resolve: (value?: T) => void
   reject: (reason?: any) => void
-} {
+}
+
+export function defer<T>(): Defer<T> {
   var res, rej
 
   var promise = new Promise<T>((resolve, reject) => {

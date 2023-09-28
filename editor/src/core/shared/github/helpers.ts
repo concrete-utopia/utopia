@@ -1,8 +1,6 @@
 import { mergeDiff3 } from 'node-diff3'
 import { createSelector } from 'reselect'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
-import urljoin from 'url-join'
-import { UTOPIA_BACKEND } from '../../../common/env-vars'
 import { HEADERS, MODE } from '../../../common/server'
 import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../components/assets'
 import {
@@ -65,6 +63,8 @@ import { updatePullRequestsForBranch } from './operations/list-pull-requests-for
 import { getUsersPublicGithubRepositories } from './operations/load-repositories'
 import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
+import type { GithubOperationContext } from './operations/github-operation-context'
+import { GithubEndpoints } from './endpoints'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -259,16 +259,9 @@ export async function getBranchContentFromServer(
   branchName: string,
   commitSha: string | null,
   previousCommitSha: string | null,
+  operationContext: GithubOperationContext,
 ): Promise<Response> {
-  const url = urljoin(
-    UTOPIA_BACKEND,
-    'github',
-    'branches',
-    githubRepo.owner,
-    githubRepo.repository,
-    'branch',
-    branchName,
-  )
+  const url = GithubEndpoints.branchContents(githubRepo, branchName)
   let includeQueryParams: boolean = false
   let paramsRecord: Record<string, string> = {}
   if (commitSha != null) {
@@ -282,7 +275,7 @@ export async function getBranchContentFromServer(
   const searchParams = new URLSearchParams(paramsRecord)
   const urlToUse = includeQueryParams ? `${url}?${searchParams}` : url
 
-  return fetch(urlToUse, {
+  return operationContext.fetch(urlToUse, {
     method: 'GET',
     credentials: 'include',
     headers: HEADERS,
@@ -291,7 +284,7 @@ export async function getBranchContentFromServer(
 }
 
 export async function getUserDetailsFromServer(): Promise<Array<EditorAction>> {
-  const url = urljoin(UTOPIA_BACKEND, 'github', 'user')
+  const url = GithubEndpoints.userDetails()
 
   const response = await fetch(url, {
     method: 'GET',
@@ -802,39 +795,42 @@ const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
 
 let githubPollingTimeoutId: number | undefined = undefined
 
-export function startGithubPolling(utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): void {
-  if (githubPollingTimeoutId != null) {
-    window.clearTimeout(githubPollingTimeoutId)
-  }
-  function pollGithub(): void {
-    try {
-      const currentState = utopiaStoreAPI.getState()
-      const githubAuthenticated = currentState.userState.githubState.authenticated
-      const githubRepo = currentState.editor.githubSettings.targetRepository
-      const branchName = currentState.editor.githubSettings.branchName
-      const branchOriginContentsChecksums = currentState.derived.branchOriginContentsChecksums
-      const githubUserDetails = currentState.editor.githubData.githubUserDetails
-      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
-      const originCommitSha = currentState.editor.githubSettings.originCommit
-      void refreshGithubData(
-        dispatch,
-        githubAuthenticated,
-        githubRepo,
-        branchName,
-        branchOriginContentsChecksums,
-        githubUserDetails,
-        lastRefreshedCommit,
-        originCommitSha,
-      )
-    } finally {
-      // Trigger another one to run Xms _after_ this has finished.
-      githubPollingTimeoutId = window.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+export const startGithubPolling =
+  (operationContext: GithubOperationContext) =>
+  async (utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): Promise<void> => {
+    if (githubPollingTimeoutId != null) {
+      window.clearTimeout(githubPollingTimeoutId)
     }
-  }
+    function pollGithub(): void {
+      try {
+        const currentState = utopiaStoreAPI.getState()
+        const githubAuthenticated = currentState.userState.githubState.authenticated
+        const githubRepo = currentState.editor.githubSettings.targetRepository
+        const branchName = currentState.editor.githubSettings.branchName
+        const branchOriginContentsChecksums = currentState.derived.branchOriginContentsChecksums
+        const githubUserDetails = currentState.editor.githubData.githubUserDetails
+        const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
+        const originCommitSha = currentState.editor.githubSettings.originCommit
+        void refreshGithubData(
+          dispatch,
+          githubAuthenticated,
+          githubRepo,
+          branchName,
+          branchOriginContentsChecksums,
+          githubUserDetails,
+          lastRefreshedCommit,
+          originCommitSha,
+          operationContext,
+        )
+      } finally {
+        // Trigger another one to run Xms _after_ this has finished.
+        githubPollingTimeoutId = window.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+      }
+    }
 
-  // Trigger a poll initially.
-  githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
-}
+    // Trigger a poll initially.
+    githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
+  }
 
 export async function refreshGithubData(
   dispatch: EditorDispatch,
@@ -845,6 +841,7 @@ export async function refreshGithubData(
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
   originCommitSha: string | null,
+  operationContext: GithubOperationContext,
 ): Promise<void> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
@@ -853,19 +850,29 @@ export async function refreshGithubData(
     if (githubUserDetails === null) {
       promises.push(getUserDetailsFromServer())
     }
-    promises.push(getUsersPublicGithubRepositories(dispatch))
+    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
     if (githubRepo != null) {
-      promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
+      promises.push(getBranchesForGithubRepository(operationContext)(dispatch, githubRepo))
       promises.push(
-        updateUpstreamChanges(branchName, branchOriginChecksums, githubRepo, previousCommitSha),
+        updateUpstreamChanges(
+          branchName,
+          branchOriginChecksums,
+          githubRepo,
+          previousCommitSha,
+          operationContext,
+        ),
       )
       if (branchName != null) {
         if (branchOriginChecksums == null) {
           if (originCommitSha != null) {
-            promises.push(getBranchChecksums(githubRepo, branchName, originCommitSha))
+            promises.push(
+              getBranchChecksums(operationContext)(githubRepo, branchName, originCommitSha),
+            )
           }
         } else {
-          promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
+          promises.push(
+            updatePullRequestsForBranch(operationContext)(dispatch, githubRepo, branchName),
+          )
         }
       }
     } else {
@@ -899,6 +906,7 @@ async function updateUpstreamChanges(
   branchOriginChecksums: FileChecksumsWithFile | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
+  operationContext: GithubOperationContext,
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
@@ -908,6 +916,7 @@ async function updateUpstreamChanges(
       branchName,
       null,
       previousCommitSha,
+      operationContext,
     )
     if (branchContentResponse.ok) {
       const branchLatestContent: GetBranchContentResponse = await branchContentResponse.json()
@@ -960,20 +969,13 @@ export async function saveGithubAsset(
   projectID: string,
   path: string,
   dispatch: EditorDispatch,
+  operationContext: GithubOperationContext,
 ): Promise<void> {
   await runGithubOperation(
     { name: 'saveAsset', path: path },
     dispatch,
     async (operation: GithubOperation) => {
-      const url = urljoin(
-        UTOPIA_BACKEND,
-        'github',
-        'branches',
-        githubRepo.owner,
-        githubRepo.repository,
-        'asset',
-        assetSha,
-      )
+      const url = GithubEndpoints.asset(githubRepo, assetSha)
 
       const paramsRecord: Record<string, string> = {
         project_id: projectID,
@@ -982,7 +984,7 @@ export async function saveGithubAsset(
       const searchParams = new URLSearchParams(paramsRecord)
       const urlToUse = `${url}?${searchParams}`
 
-      const response = await fetch(urlToUse, {
+      const response = await operationContext.fetch(urlToUse, {
         method: 'POST',
         credentials: 'include',
         headers: HEADERS,
@@ -1008,80 +1010,89 @@ export async function saveGithubAsset(
   )
 }
 
-export async function resolveConflict(
-  githubRepo: GithubRepo,
-  projectID: string,
-  path: string,
-  conflict: Conflict,
-  whichChange: 'utopia' | 'branch',
-  dispatch: EditorDispatch,
-): Promise<void> {
-  async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
-    // Update the file in the server first before putting it into the project contents.
-    const projectFile = getProjectFileFromContents(file)
-    let gitBlobSha: string | undefined = undefined
-    switch (projectFile.type) {
-      case 'IMAGE_FILE':
-      case 'ASSET_FILE':
-        gitBlobSha = projectFile.gitBlobSha
+export const resolveConflict =
+  (operationContext: GithubOperationContext) =>
+  async (
+    githubRepo: GithubRepo,
+    projectID: string,
+    path: string,
+    conflict: Conflict,
+    whichChange: 'utopia' | 'branch',
+    dispatch: EditorDispatch,
+  ): Promise<void> => {
+    async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
+      // Update the file in the server first before putting it into the project contents.
+      const projectFile = getProjectFileFromContents(file)
+      let gitBlobSha: string | undefined = undefined
+      switch (projectFile.type) {
+        case 'IMAGE_FILE':
+        case 'ASSET_FILE':
+          gitBlobSha = projectFile.gitBlobSha
+          break
+        default:
+      }
+      let saveAssetPromise: Promise<void>
+      if (gitBlobSha == null) {
+        saveAssetPromise = Promise.resolve()
+      } else {
+        saveAssetPromise = saveGithubAsset(
+          githubRepo,
+          gitBlobSha,
+          projectID,
+          path,
+          dispatch,
+          operationContext,
+        )
+      }
+      void saveAssetPromise.then(() => {
+        dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')
+      })
+    }
+
+    async function removeFromContents(): Promise<void> {
+      return new Promise((resolve) => {
+        dispatch([deleteFile(path), removeFileConflict(path)], 'everyone')
+        resolve()
+      })
+    }
+
+    // Handle the varying cases here.
+    switch (conflict.type) {
+      case 'DIFFERING_TYPES':
+        switch (whichChange) {
+          case 'utopia':
+            return updateFileInProjectContents(conflict.currentContents)
+          case 'branch':
+            return updateFileInProjectContents(conflict.branchContents)
+          default:
+            const _exhaustiveCheck: never = whichChange
+            throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+        }
+        break
+      case 'CURRENT_DELETED_BRANCH_CHANGED':
+        switch (whichChange) {
+          case 'utopia':
+            return removeFromContents()
+          case 'branch':
+            return updateFileInProjectContents(conflict.branchContents)
+          default:
+            const _exhaustiveCheck: never = whichChange
+            throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+        }
+        break
+      case 'CURRENT_CHANGED_BRANCH_DELETED':
+        switch (whichChange) {
+          case 'utopia':
+            return updateFileInProjectContents(conflict.currentContents)
+          case 'branch':
+            return removeFromContents()
+          default:
+            const _exhaustiveCheck: never = whichChange
+            throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+        }
         break
       default:
+        const _exhaustiveCheck: never = conflict
+        throw new Error(`Unhandled conflict ${JSON.stringify(conflict)}`)
     }
-    let saveAssetPromise: Promise<void>
-    if (gitBlobSha == null) {
-      saveAssetPromise = Promise.resolve()
-    } else {
-      saveAssetPromise = saveGithubAsset(githubRepo, gitBlobSha, projectID, path, dispatch)
-    }
-    void saveAssetPromise.then(() => {
-      dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')
-    })
   }
-
-  async function removeFromContents(): Promise<void> {
-    return new Promise((resolve) => {
-      dispatch([deleteFile(path), removeFileConflict(path)], 'everyone')
-      resolve()
-    })
-  }
-
-  // Handle the varying cases here.
-  switch (conflict.type) {
-    case 'DIFFERING_TYPES':
-      switch (whichChange) {
-        case 'utopia':
-          return updateFileInProjectContents(conflict.currentContents)
-        case 'branch':
-          return updateFileInProjectContents(conflict.branchContents)
-        default:
-          const _exhaustiveCheck: never = whichChange
-          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
-      }
-      break
-    case 'CURRENT_DELETED_BRANCH_CHANGED':
-      switch (whichChange) {
-        case 'utopia':
-          return removeFromContents()
-        case 'branch':
-          return updateFileInProjectContents(conflict.branchContents)
-        default:
-          const _exhaustiveCheck: never = whichChange
-          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
-      }
-      break
-    case 'CURRENT_CHANGED_BRANCH_DELETED':
-      switch (whichChange) {
-        case 'utopia':
-          return updateFileInProjectContents(conflict.currentContents)
-        case 'branch':
-          return removeFromContents()
-        default:
-          const _exhaustiveCheck: never = whichChange
-          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
-      }
-      break
-    default:
-      const _exhaustiveCheck: never = conflict
-      throw new Error(`Unhandled conflict ${JSON.stringify(conflict)}`)
-  }
-}
