@@ -73,7 +73,7 @@ export const GridPanelsContainer = React.memo(() => {
     [panelState],
   )
 
-  const [columnWidths, setColumnWidth] = useColumnWidths(panelState)
+  const [columnWidths, setColumnWidth] = useColumnWidths()
 
   return (
     <div

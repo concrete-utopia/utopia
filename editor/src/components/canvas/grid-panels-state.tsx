@@ -10,7 +10,8 @@ import {
 } from '../inspector/common/inspector-utils'
 import invariant from '../../third-party/remix/invariant'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
-import { atom, useAtomValue } from 'jotai'
+import { atom, useAtom, useAtomValue } from 'jotai'
+import immutableUpdate from 'immutability-helper'
 
 export const GridMenuWidth = 268
 export const GridPaneWidth = 500
@@ -64,10 +65,12 @@ function storedPanel({ name, type }: { name: PanelName; type: 'menu' | 'pane' })
 
 interface StoredColumn {
   panels: Array<StoredPanel>
+  paneWidth: number // the width to use if they only contain Panes
+  menuWidth: number // the width to use if they contain at least one Menu
 }
 
 function storedColumn(panels: Array<StoredPanel>): StoredColumn {
-  return { panels: panels }
+  return { panels: panels, paneWidth: GridPaneWidth, menuWidth: GridMenuWidth }
 }
 
 type StoredLayout = Array<StoredColumn>
@@ -253,10 +256,11 @@ export function updateLayout(
   return withEmptyColumnsInMiddle
 }
 
-export function useColumnWidths(
-  panelState: StoredLayout,
-): [Array<number>, (columnIndex: number, newWidth: number) => void] {
-  const panelStateRef = usePropControlledRef_DANGEROUS(panelState)
+export function useColumnWidths(): [
+  Array<number>,
+  (columnIndex: number, newWidth: number) => void,
+] {
+  const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
 
   // start with the default value
   const defaultColumnWidths: Array<number> = React.useMemo(
@@ -267,52 +271,33 @@ export function useColumnWidths(
     [panelState],
   )
 
-  const columnWidths = usePropControlledRef_DANGEROUS([
-    usePropControlledStateV2(defaultColumnWidths[0]),
-    usePropControlledStateV2(defaultColumnWidths[1]),
-    usePropControlledStateV2(defaultColumnWidths[2]),
-    usePropControlledStateV2(defaultColumnWidths[3]),
-  ] as const)
-
-  invariant(columnWidths.current.length === NumberOfColumns)
-
   const setColumnWidths = React.useCallback(
     (columnIndexIncoming: number, newWidth: number) => {
-      const columnIndex = normalizeColIndex(columnIndexIncoming)
-      const columnContainsMenu = panelStateRef.current[columnIndex].panels.some(
-        (p) => p.type === 'menu',
-      )
-      if (columnContainsMenu) {
-        // disable resize for now
-        return
-      }
-      const setter = columnWidths.current[columnIndex][1]
-      setter(newWidth)
+      setPanelState((current) => {
+        const columnIndex = normalizeColIndex(columnIndexIncoming)
+        const columnContainsMenu = current[columnIndex].panels.some((p) => p.type === 'menu')
+        if (columnContainsMenu) {
+          // menu resize!
+          return immutableUpdate(current, { [columnIndex]: { menuWidth: { $set: newWidth } } })
+        }
+        // pane resize!
+        return immutableUpdate(current, { [columnIndex]: { paneWidth: { $set: newWidth } } })
+      })
     },
-    [panelStateRef, columnWidths],
+    [setPanelState],
   )
 
-  const columnWidthValues = [
-    columnWidths.current[0][0],
-    columnWidths.current[1][0],
-    columnWidths.current[2][0],
-    columnWidths.current[3][0],
-  ]
-
-  return [columnWidthValues, setColumnWidths]
+  return [defaultColumnWidths, setColumnWidths]
 }
 
 export function getColumnWidth(panelState: StoredLayout, columnIndex: number): number {
   const column = panelState[normalizeColIndex(columnIndex)]
-  const narrowestPanelInColumn = column.panels.reduce((narrowestWidth, panelOrMenu) => {
-    const panelWidth = panelOrMenu.type === 'menu' ? GridMenuWidth : GridPaneWidth
-    return Math.min(narrowestWidth, panelWidth)
-  }, Infinity)
-
-  if (narrowestPanelInColumn == Infinity) {
+  if (column.panels.length === 0) {
+    // empty columns are zero width
     return 0
   }
-  return narrowestPanelInColumn
+  const width = column.panels.some((p) => p.type === 'menu') ? column.menuWidth : column.paneWidth
+  return width
 }
 
 // export function usePanelHorizontalReize(): (columnIndex: number, newWidth: number) => void {}
