@@ -20,11 +20,17 @@ import type { SelectionLocked } from '../../canvas/canvas-types'
 
 export const NavigatorHintCircleDiameter = 8
 
+const outletAwareBackgroundColor = (
+  colorTheme: ReturnType<typeof useColorTheme>,
+  isOutlet: boolean,
+) => (isOutlet ? colorTheme.aqua.value : colorTheme.navigatorResizeHintBorder.value)
+
 interface NavigatorHintProps {
   testId: string
   shouldBeShown: boolean
   shouldAcceptMouseEvents: boolean
   margin: number
+  isOutletOrDescendantOfOutlet: boolean
 }
 
 export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintProps>(
@@ -61,7 +67,10 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
           >
             <div
               style={{
-                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                backgroundColor: outletAwareBackgroundColor(
+                  colorTheme,
+                  props.isOutletOrDescendantOfOutlet,
+                ),
                 height: 2,
                 flexGrow: 1,
               }}
@@ -73,7 +82,10 @@ export const NavigatorHintTop = React.forwardRef<HTMLDivElement, NavigatorHintPr
                 width: NavigatorHintCircleDiameter,
                 height: NavigatorHintCircleDiameter,
                 contain: 'layout',
-                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                border: `2px solid ${outletAwareBackgroundColor(
+                  colorTheme,
+                  props.isOutletOrDescendantOfOutlet,
+                )}`,
                 borderRadius: '50%',
               }}
             />
@@ -118,7 +130,10 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
           >
             <div
               style={{
-                backgroundColor: colorTheme.navigatorResizeHintBorder.value,
+                backgroundColor: outletAwareBackgroundColor(
+                  colorTheme,
+                  props.isOutletOrDescendantOfOutlet,
+                ),
                 height: 2,
                 flexGrow: 1,
               }}
@@ -130,7 +145,10 @@ export const NavigatorHintBottom = React.forwardRef<HTMLDivElement, NavigatorHin
                 width: NavigatorHintCircleDiameter,
                 height: NavigatorHintCircleDiameter,
                 contain: 'layout',
-                border: `2px solid ${colorTheme.navigatorResizeHintBorder.value}`,
+                border: `2px solid ${outletAwareBackgroundColor(
+                  colorTheme,
+                  props.isOutletOrDescendantOfOutlet,
+                )}`,
                 borderRadius: '50%',
               }}
             />

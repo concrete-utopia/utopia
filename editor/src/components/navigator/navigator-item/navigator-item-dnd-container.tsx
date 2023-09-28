@@ -66,6 +66,8 @@ import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-wi
 import type { CanvasPoint } from '../../../core/shared/math-utils'
 import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { createNavigatorReparentPostActionActions } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
+import createCachedSelector from 're-reselect'
+import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
 
 export const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -304,6 +306,14 @@ function getHintPaddingForDepth(depth: number): number {
     NavigatorHintCircleDiameter
   )
 }
+
+const isDescendantOfOutletOrOutletSelector = createCachedSelector(
+  metadataSelector,
+  (_: MetadataSubstate, x: ElementPath) => x,
+  (metadata, path) => {
+    return isDescendantOfOutletOrOutlet(path, metadata)
+  },
+)((_, x) => EP.toString(x))
 
 function onHoverDropTargetLine(
   propsOfDraggedItem: NavigatorItemDragAndDropWrapperProps,
@@ -797,6 +807,12 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props.elementPath],
   )
 
+  const isOutletOrDescendantOfOutlet = useEditorState(
+    Substores.metadata,
+    (store) => isDescendantOfOutletOrOutletSelector(store, props.elementPath),
+    'NavigatorItemContainer isOutlet',
+  )
+
   return (
     <div
       data-testid={DragItemTestId(safeComponentId)}
@@ -813,6 +829,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
           shouldBeShown={shouldShowTopHint}
           shouldAcceptMouseEvents={shouldTopDropLineInterceptMouseEvents}
           margin={margin}
+          isOutletOrDescendantOfOutlet={isOutletOrDescendantOfOutlet}
         />,
       )}
       <div
@@ -843,6 +860,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
         shouldBeShown={shouldShowBottomHint}
         shouldAcceptMouseEvents={shouldBottomDropLineInterceptMouseEvents}
         margin={margin}
+        isOutletOrDescendantOfOutlet={isOutletOrDescendantOfOutlet}
       />
     </div>
   )
@@ -1053,3 +1071,17 @@ export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItem
     </div>
   )
 })
+
+function isDescendantOfOutletOrOutlet(
+  path: ElementPath,
+  metadata: ElementInstanceMetadataMap,
+): boolean {
+  let currentPath = path
+  while (!EP.pathsEqual(currentPath, EP.emptyElementPath)) {
+    if (MetadataUtils.isProbablyRemixOutlet(metadata, currentPath)) {
+      return true
+    }
+    currentPath = EP.dropNPathParts(currentPath, 1)
+  }
+  return false
+}
