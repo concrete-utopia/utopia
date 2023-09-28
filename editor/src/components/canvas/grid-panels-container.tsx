@@ -129,8 +129,6 @@ export const GridPanelsContainer = React.memo(() => {
             columnIndex={columnIndex}
             onDrop={onDrop}
             canDrop={canDrop}
-            columnWidth={columnWidths[normalizeColIndex(columnIndex)]}
-            setColumnWidth={setColumnWidth}
           />
         </React.Fragment>
       ))}
