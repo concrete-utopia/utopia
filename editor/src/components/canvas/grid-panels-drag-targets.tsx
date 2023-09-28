@@ -10,6 +10,7 @@ import {
 } from './grid-panels-state'
 import { CSSCursor } from './canvas-types'
 import { usePropControlledRef_DANGEROUS } from '../inspector/common/inspector-utils'
+import { when } from '../../utils/react-conditionals'
 
 export const ColumnDragTargets = React.memo(
   (props: {
@@ -63,15 +64,19 @@ export const ColumnDragTargets = React.memo(
       ),
     )
 
+    const [isResizing, setIsResizing] = React.useState(false)
+
     const handleResizeMouseDown = React.useCallback(
       (mouseDownEvent: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         const startingColumnWidth = columnWidthRef.current
+        setIsResizing(true)
 
         const onMouseMove = (mouseMoveEvent: MouseEvent) => {
           const mouseDelta = mouseMoveEvent.clientX - mouseDownEvent.clientX
           setColumnWidth(columnIndex, startingColumnWidth + mouseDelta)
         }
         const onMouseUp = () => {
+          setIsResizing(false)
           window.removeEventListener('mousemove', onMouseMove, { capture: true })
           window.removeEventListener('mouseup', onMouseUp, { capture: true })
         }
@@ -97,8 +102,32 @@ export const ColumnDragTargets = React.memo(
               ? { right: -ResizeColumnWidth / 2 + GridPanelHorizontalGapHalf } // for the left hand side resize columns
               : { left: -ResizeColumnWidth / 2 + GridPanelHorizontalGapHalf }), // right hand side resize columns
             cursor: CSSCursor.ResizeEW,
+            userSelect: isResizing ? 'none' : 'auto',
           }}
         />
+        {
+          // this is a mouse catcher div only visible during a resize, to prevent VSCode from capturing our mouse, and to prevent the flickering of the horizontal resize cursor
+          when(
+            isResizing,
+            <div
+              style={{
+                pointerEvents: 'initial',
+                height: '100%',
+                width: '100%',
+                backgroundColor: 'rgba(0,0,0,0)',
+                opacity: 0,
+                position: 'fixed',
+                zIndex: 9999,
+                top: '0',
+                left: '0',
+                bottom: '0',
+                right: '0',
+                cursor: CSSCursor.ResizeEW,
+                userSelect: 'none',
+              }}
+            />,
+          )
+        }
         <div
           ref={dropBefore}
           style={{
