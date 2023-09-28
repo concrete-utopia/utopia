@@ -1,5 +1,8 @@
 import React from 'react'
+import { when } from '../../utils/react-conditionals'
 import { colorTheme } from '../../uuiui'
+import { usePropControlledRef_DANGEROUS } from '../inspector/common/inspector-utils'
+import { CSSCursor } from './canvas-types'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
@@ -8,9 +11,6 @@ import {
   ResizeColumnWidth,
   wrapAroundColIndex,
 } from './grid-panels-state'
-import { CSSCursor } from './canvas-types'
-import { usePropControlledRef_DANGEROUS } from '../inspector/common/inspector-utils'
-import { when } from '../../utils/react-conditionals'
 
 export const ColumnDragTargets = React.memo(
   (props: {
