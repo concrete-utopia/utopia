@@ -81,13 +81,13 @@ dependencies:
   - protolude
   - resource-pool
   - rio
-  - servant
+  - servant ==0.19.1
   - servant-blaze
   - servant-client
   - servant-conduit
   - servant-rawm-client
-  - servant-rawm-server
-  - servant-server
+  - servant-rawm-server ==1.0.0.1
+  - servant-server ==0.19.2
   - servant-websockets
   - serversession ==1.0.2
   - split
