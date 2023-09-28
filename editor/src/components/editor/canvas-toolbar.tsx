@@ -45,12 +45,6 @@ import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
 import { NO_OP } from '../../core/shared/utils'
-import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
-import {
-  CustomComponentOption,
-  useComponentSelectorStyles,
-  useGetInsertableComponents,
-} from '../canvas/ui/floating-insert-menu'
 import { createFilter } from 'react-select'
 import WindowedSelect from 'react-windowed-select'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
@@ -66,6 +60,13 @@ import {
 } from '../shared/project-components'
 import { setFocus } from '../common/actions'
 import type { CanvasStrategyIcon } from '../canvas/canvas-strategies/canvas-strategy-types'
+import type { EditorDispatch } from './action-types'
+import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
+import {
+  CustomComponentOption,
+  useComponentSelectorStyles,
+  useGetInsertableComponents,
+} from '../canvas/ui/floating-insert-menu'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
@@ -85,6 +86,7 @@ export interface CanvasToolbarSearchProps {
 export const CanvasToolbarSearchTestID = 'canvas-toolbar-search'
 
 export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) => {
+  const dispatch = useDispatch()
   const insertMenuMode = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.floatingInsertMenu.insertMenuMode,
@@ -113,6 +115,15 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
     }
   })
 
+  const onKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        switchToSelectModeCloseMenus(dispatch)
+      }
+    },
+    [dispatch],
+  )
+
   return (
     <div data-testid={CanvasToolbarSearchTestID}>
       <WindowedSelect
@@ -122,6 +133,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         openMenuOnFocus={true}
         openMenuOnClick={true}
         onBlur={undefined}
+        onKeyDown={onKeyDown}
         onChange={props.actionWith}
         options={options}
         menuPortalTarget={menuPortalTarget}
@@ -179,6 +191,13 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
 CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
 
 export const CanvasToolbarEditButtonID = 'canvas-toolbar-edit-button'
+
+function switchToSelectModeCloseMenus(dispatch: EditorDispatch) {
+  dispatch(
+    [switchEditorMode(EditorModes.selectMode(null, false, 'none')), closeFloatingInsertMenu()],
+    'everyone',
+  )
+}
 
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
@@ -248,19 +267,16 @@ export const CanvasToolbar = React.memo(() => {
   }, [dispatch, editorStateRef])
 
   // Back to select mode, close the "floating" menu and turn off the forced insert mode.
-  const switchToSelectModeCloseMenus = React.useCallback(() => {
-    dispatch(
-      [switchEditorMode(EditorModes.selectMode(null, false, 'none')), closeFloatingInsertMenu()],
-      'everyone',
-    )
+  const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
+    switchToSelectModeCloseMenus(dispatch)
   }, [dispatch])
 
   const convertToAndClose = React.useCallback(
     (convertTo: InsertMenuItem | null) => {
       convertToCallback(convertTo)
-      switchToSelectModeCloseMenus()
+      dispatchSwitchToSelectModeCloseMenus()
     },
-    [convertToCallback, switchToSelectModeCloseMenus],
+    [convertToCallback, dispatchSwitchToSelectModeCloseMenus],
   )
 
   const convertToFragment = React.useCallback(() => {
@@ -286,17 +302,17 @@ export const CanvasToolbar = React.memo(() => {
   const wrapInDivAndClose = React.useCallback(
     (event: React.MouseEvent<Element>) => {
       wrapInDivCallback(event)
-      switchToSelectModeCloseMenus()
+      dispatchSwitchToSelectModeCloseMenus()
     },
-    [switchToSelectModeCloseMenus, wrapInDivCallback],
+    [dispatchSwitchToSelectModeCloseMenus, wrapInDivCallback],
   )
 
   const toInsertAndClose = React.useCallback(
     (toInsert: InsertMenuItem | null) => {
       toInsertCallback(toInsert)
-      switchToSelectModeCloseMenus()
+      dispatchSwitchToSelectModeCloseMenus()
     },
-    [switchToSelectModeCloseMenus, toInsertCallback],
+    [dispatchSwitchToSelectModeCloseMenus, toInsertCallback],
   )
 
   const zoomLevel = useEditorState(
@@ -360,11 +376,11 @@ export const CanvasToolbar = React.memo(() => {
 
   const toggleInsertButtonClicked = React.useCallback(() => {
     if (canvasToolbarMode.primary === 'insert') {
-      switchToSelectModeCloseMenus()
+      dispatchSwitchToSelectModeCloseMenus()
     } else {
       dispatch([switchEditorMode(EditorModes.selectMode(null, false, 'pseudo-insert'))])
     }
-  }, [canvasToolbarMode.primary, dispatch, switchToSelectModeCloseMenus])
+  }, [canvasToolbarMode.primary, dispatch, dispatchSwitchToSelectModeCloseMenus])
 
   const currentStrategyState = useEditorState(
     Substores.restOfStore,
@@ -505,7 +521,7 @@ export const CanvasToolbar = React.memo(() => {
               iconType={editButtonIcon.type}
               iconCategory={editButtonIcon.category}
               primary={canvasToolbarMode.primary === 'edit'}
-              onClick={switchToSelectModeCloseMenus}
+              onClick={dispatchSwitchToSelectModeCloseMenus}
               testid={CanvasToolbarEditButtonID}
             />
           </Tooltip>
@@ -571,7 +587,7 @@ export const CanvasToolbar = React.memo(() => {
                   <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
                     <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
                   </Tooltip>
-                  <Tooltip title='Wrap selection in an element' placement='bottom'>
+                  <Tooltip title='Wrap selection in an element (W)' placement='bottom'>
                     <InsertModeButton
                       iconType='designtool-larger'
                       iconCategory='semantic'
@@ -610,7 +626,7 @@ export const CanvasToolbar = React.memo(() => {
                     <InsertModeButton
                       iconCategory='semantic'
                       iconType='icon-semantic-back'
-                      onClick={switchToSelectModeCloseMenus}
+                      onClick={dispatchSwitchToSelectModeCloseMenus}
                     />
                   </Tooltip>
                   <Tooltip title='Wrap selection' placement='bottom'>
@@ -638,7 +654,7 @@ export const CanvasToolbar = React.memo(() => {
                     <InsertModeButton
                       iconCategory='semantic'
                       iconType='icon-semantic-back'
-                      onClick={switchToSelectModeCloseMenus}
+                      onClick={dispatchSwitchToSelectModeCloseMenus}
                     />
                   </Tooltip>
                   <Tooltip title='Convert selection' placement='bottom'>
@@ -672,7 +688,7 @@ export const CanvasToolbar = React.memo(() => {
                   <InsertModeButton
                     iconCategory='semantic'
                     iconType='icon-semantic-back'
-                    onClick={switchToSelectModeCloseMenus}
+                    onClick={dispatchSwitchToSelectModeCloseMenus}
                   />
                 </Tooltip>
                 <Tooltip title='Insert div' placement='bottom'>
