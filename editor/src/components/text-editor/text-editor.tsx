@@ -342,7 +342,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     return () => {
       const content = currentElement.textContent
       if (content != null) {
-        if (elementState === 'new' && content.replace(/\n/g, '') === '') {
+        if (content.replace(/\n/g, '') === '') {
           requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
         } else {
           if (elementState != null && savedContentRef.current !== content) {

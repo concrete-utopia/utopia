@@ -357,7 +357,7 @@ describe('Use the text editor', () => {
   })
   describe('blur', () => {
     describe('when the element is empty', () => {
-      it('keeps existing elements', async () => {
+      it('deletes existing elements', async () => {
         const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
         await enterTextEditMode(editor)
@@ -375,20 +375,7 @@ describe('Use the text editor', () => {
 
 
             export var storyboard = (
-              <Storyboard data-uid='sb'>
-                <div
-                  data-testid='div'
-                  style={{
-                    backgroundColor: '#0091FFAA',
-                    position: 'absolute',
-                    left: 0,
-                    top: 0,
-                    width: 288,
-                    height: 362,
-                  }}
-                  data-uid='39e'
-                />
-              </Storyboard>
+              <Storyboard data-uid='sb' />
             )`),
         )
       })
