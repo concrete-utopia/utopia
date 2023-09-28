@@ -326,7 +326,7 @@ function updateInteractionDataViaMouse(
     case 'DRAG':
       switch (currentData.type) {
         case 'DRAG':
-          const dragThresholdPassed = dragExceededThreshold(mousePoint)
+          const dragThresholdPassed = currentData.drag != null || dragExceededThreshold(mousePoint)
           return {
             type: 'DRAG',
             dragStart: currentData.dragStart,
