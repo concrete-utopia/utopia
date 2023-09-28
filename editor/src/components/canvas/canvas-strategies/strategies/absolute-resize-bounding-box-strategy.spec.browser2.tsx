@@ -1497,6 +1497,32 @@ export var storyboard = (
     })
   })
   describe('groups', () => {
+    it('has a "Group" size label', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='storyboard'>
+              <Group data-uid='group' style={{ position: 'absolute', width: 150, height: 150, background: 'black' }}>
+                <div data-uid='foo' style={{ position:'absolute', width: 50, height: 50, background: 'red', top: 0, left: 0 }} />
+                <div data-uid='bar' style={{ position:'absolute', width: 50, height: 50, background: 'blue', top: 100, left: 100 }} />
+              </Group>
+            </Storyboard>
+          )
+        `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [selectComponents([EP.fromString('storyboard/group')], false)],
+        true,
+      )
+
+      const label = await renderResult.renderedDOM.findByTestId(SizeLabelTestId)
+      expect(label.textContent).toEqual('Group')
+    })
     it('resizes groups correctly when dragging from top/left without existing left/top props (left)', async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`

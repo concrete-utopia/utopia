@@ -38,6 +38,7 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
+import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 
 export const AbsoluteResizeControlTestId = (targets: Array<ElementPath>): string =>
   `${targets.map(EP.toString).sort()}-absolute-resize-control`
@@ -399,15 +400,21 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
   }
 }
 
+type SizeLabel = { h: string; v: string } | 'group'
+
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
-): { h: string; v: string } | null {
+): SizeLabel | null {
   if (selectedElements.length === 0) {
     return null
   }
 
   if (selectedElements.length === 1) {
+    if (treatElementAsGroupLike(metadata, selectedElements[0])) {
+      return 'group'
+    }
+
     const globalFrame = MetadataUtils.findElementByElementPath(
       metadata,
       selectedElements[0],
@@ -449,6 +456,17 @@ const ExplicitHeightHacked = 20
 const BorderRadius = 2
 const SizeLabelMarginTop = 8
 
+function getLabelText(label: SizeLabel | null) {
+  switch (label) {
+    case null:
+      return null
+    case 'group':
+      return 'Group'
+    default:
+      return `${label.h} x ${label.v}`
+  }
+}
+
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
     const scale = useEditorState(
@@ -464,8 +482,7 @@ const SizeLabel = React.memo(
     )
 
     const label = sizeLabelContents(metadata, targets)
-
-    const labelText = label == null ? null : `${label.h} x ${label.v}`
+    const labelText = getLabelText(label)
 
     return (
       <div
