@@ -17,7 +17,11 @@ import type { EditorDispatch } from '../../editor/action-types'
 import * as EditorActions from '../../editor/actions/action-creators'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
 import { renameComponent } from '../actions'
+import type { RemixItemType } from './navigator-item'
 import { NavigatorItemTestId } from './navigator-item'
+import { useAtom } from 'jotai'
+import { RemixNavigationAtom } from '../../canvas/remix/utopia-remix-root-component'
+import * as EP from '../../../core/shared/element-path'
 
 export function itemLabelTestIdForEntry(navigatorEntry: NavigatorEntry): string {
   return `${NavigatorItemTestId(varSafeNavigatorEntryToKey(navigatorEntry))}-label`
@@ -33,7 +37,7 @@ interface ItemLabelProps {
   suffix?: string
   inputVisible: boolean
   style?: CSSProperties
-  isLink?: boolean
+  remixItemType: RemixItemType
 }
 
 export const ItemLabel = React.memo((props: ItemLabelProps) => {
@@ -88,9 +92,23 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     }
   }, [inputVisible, testId])
 
-  const value = React.useMemo(() => {
+  const maybeLinkTarget = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (props.remixItemType !== 'link') {
+        return null
+      }
+      return store.editor.allElementProps[EP.toString(props.target.elementPath)]?.['to'] ?? null
+    },
+    'ItemLabel maybeLinkTarget',
+  )
+
+  const label = React.useMemo(() => {
+    if (maybeLinkTarget != null) {
+      return maybeLinkTarget
+    }
     return suffix == null ? name : `${name} ${suffix}`
-  }, [suffix, name])
+  }, [maybeLinkTarget, suffix, name])
 
   const cancelRename = React.useCallback(() => {
     setName(name)
@@ -227,9 +245,11 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
           data-testid={itemLabelTestIdForEntry(target)}
           style={{
             backgroundColor:
-              props.isLink && !props.selected ? colorTheme.aqua10.value : 'transparent',
+              props.remixItemType === 'link' && !props.selected
+                ? colorTheme.aqua10.value
+                : 'transparent',
             borderRadius: 30,
-            padding: props.isLink ? '3px 10px' : '3px 0px',
+            padding: props.remixItemType === 'link' ? '3px 10px' : '3px 0px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
@@ -247,7 +267,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
             }
           }}
         >
-          {value}
+          {label}
         </div>
       )}
     </div>
