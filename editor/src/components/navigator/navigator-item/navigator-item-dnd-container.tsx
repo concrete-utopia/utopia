@@ -797,6 +797,13 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     [props.elementPath],
   )
 
+  const mouseEventStopPropagation = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
+    // Prevent mouse events from passing through this element so that the same event
+    // on a containing element will only trigger de-selection if the event doesn't hit
+    // any entries in the navigator.
+    event.stopPropagation()
+  }, [])
+
   return (
     <div
       data-testid={DragItemTestId(safeComponentId)}
@@ -804,6 +811,9 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
       style={{
         ...props.windowStyle,
       }}
+      onMouseDown={mouseEventStopPropagation}
+      onMouseUp={mouseEventStopPropagation}
+      onClick={mouseEventStopPropagation}
     >
       {when(
         isFirstSibling,
@@ -949,6 +959,13 @@ export const SyntheticNavigatorItemContainer = React.memo(
       preview(getEmptyImage(), { captureDraggingState: true })
     })
 
+    const mouseEventStopPropagation = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
+      // Prevent mouse events from passing through this element so that the same event
+      // on a containing element will only trigger de-selection if the event doesn't hit
+      // any entries in the navigator.
+      event.stopPropagation()
+    }, [])
+
     const parentOutline = isOver ? 'child' : 'none'
     const safeComponentId = varSafeNavigatorEntryToKey(navigatorEntry)
     return (
@@ -958,6 +975,9 @@ export const SyntheticNavigatorItemContainer = React.memo(
         style={{
           ...props.windowStyle,
         }}
+        onMouseDown={mouseEventStopPropagation}
+        onMouseUp={mouseEventStopPropagation}
+        onClick={mouseEventStopPropagation}
       >
         <div
           ref={reparentDropRef}
@@ -989,11 +1009,22 @@ export const SyntheticNavigatorItemContainer = React.memo(
 export const ConditionalClauseNavigatorItemContainer = React.memo(
   (props: ConditionalClauseNavigatorItemContainerProps) => {
     const safeComponentId = varSafeNavigatorEntryToKey(props.navigatorEntry)
+
+    const mouseEventStopPropagation = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
+      // Prevent mouse events from passing through this element so that the same event
+      // on a containing element will only trigger de-selection if the event doesn't hit
+      // any entries in the navigator.
+      event.stopPropagation()
+    }, [])
+
     return (
       <div
         style={{
           ...props.windowStyle,
         }}
+        onMouseDown={mouseEventStopPropagation}
+        onMouseUp={mouseEventStopPropagation}
+        onClick={mouseEventStopPropagation}
       >
         <div
           key='navigatorItem'
@@ -1023,11 +1054,21 @@ export const ConditionalClauseNavigatorItemContainer = React.memo(
 
 export const ErrorNavigatorItemContainer = React.memo((props: ErrorNavigatorItemContainerProps) => {
   const safeComponentId = varSafeNavigatorEntryToKey(props.navigatorEntry)
+  const mouseEventStopPropagation = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
+    // Prevent mouse events from passing through this element so that the same event
+    // on a containing element will only trigger de-selection if the event doesn't hit
+    // any entries in the navigator.
+    event.stopPropagation()
+  }, [])
+
   return (
     <div
       style={{
         ...props.windowStyle,
       }}
+      onMouseDown={mouseEventStopPropagation}
+      onMouseUp={mouseEventStopPropagation}
+      onClick={mouseEventStopPropagation}
     >
       <div
         key='navigatorItem'
