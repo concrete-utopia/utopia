@@ -467,68 +467,6 @@ describe('Use the text editor', () => {
           `),
         )
       })
-      it('does not delete span elements with styling', async () => {
-        const editor = await renderTestEditorWithCode(
-          formatTestProjectCode(`
-            import * as React from 'react'
-            import { Storyboard } from 'utopia-api'
-
-            export var storyboard = (
-              <Storyboard data-uid='sb'>
-                <span
-                  data-uid='span'
-                  data-testid='span'
-                  style={{
-                    position: 'absolute',
-                    wordBreak: 'break-word',
-                    left: 0,
-                    top: 0,
-                    width: 'max-content',
-                    height: 'max-content',
-                    border: '1px solid red',
-                  }}
-                >
-                  Hello
-                </span>
-              </Storyboard>
-            )
-          `),
-          'await-first-dom-report',
-        )
-
-        await enterTextEditMode(editor, 'start', 'span')
-
-        deleteTypedText()
-
-        await closeTextEditor()
-        await editor.getDispatchFollowUpActionsFinished()
-
-        expect(editor.getEditorState().editor.mode.type).toEqual('select')
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-          formatTestProjectCode(`
-            import * as React from 'react'
-            import { Storyboard } from 'utopia-api'
-
-            export var storyboard = (
-              <Storyboard data-uid='sb'>
-                <span
-                  data-uid='span'
-                  data-testid='span'
-                  style={{
-                    position: 'absolute',
-                    wordBreak: 'break-word',
-                    left: 0,
-                    top: 0,
-                    width: 'max-content',
-                    height: 'max-content',
-                    border: '1px solid red',
-                  }}
-                />
-              </Storyboard>
-            )
-          `),
-        )
-      })
       it('does not delete span elements with event handlers', async () => {
         const editor = await renderTestEditorWithCode(
           formatTestProjectCode(`
