@@ -215,16 +215,23 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     return createMemoryRouter(routes, { initialEntries: initialEntries })
   }, [routes])
 
-  const updateNavigationData = React.useCallback(
-    (innerRouter: RouterType, location: Location) => {
+  const setNavigationDataForRouter = React.useCallback(
+    (
+      innerRouter: RouterType,
+      location: Location,
+      updateEntries: 'update-entries' | 'do-not-update-entries',
+    ) => {
       setNavigationData((current) => {
         const key = EP.toString(basePath)
         const existingEntries = current[key]?.entries ?? []
 
-        const updatedEntries =
-          existingEntries.at(-1)?.pathname === location.pathname
-            ? existingEntries
-            : existingEntries.concat(location)
+        const shouldUpdateEntries =
+          updateEntries === 'update-entries' &&
+          existingEntries.at(-1)?.pathname !== location.pathname
+
+        const updatedEntries = shouldUpdateEntries
+          ? existingEntries.concat(location)
+          : existingEntries
 
         return {
           ...current,
@@ -241,17 +248,32 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     [basePath, setNavigationData],
   )
 
+  const updateNavigationData = React.useCallback(
+    (innerRouter: RouterType, location: Location) => {
+      setNavigationDataForRouter(innerRouter, location, 'update-entries')
+    },
+    [setNavigationDataForRouter],
+  )
+
+  const initialiseNavigationData = React.useCallback(
+    (innerRouter: RouterType) => {
+      setNavigationDataForRouter(innerRouter, innerRouter.state.location, 'do-not-update-entries')
+    },
+    [setNavigationDataForRouter],
+  )
+
   const setActiveRemixScene = useSetAtom(ActiveRemixSceneAtom)
   React.useLayoutEffect(() => {
     setActiveRemixScene(basePath)
   }, [basePath, setActiveRemixScene])
 
-  // initialize navigation data
+  // Initialise navigation data. We also need to do this if the router has changed,
+  // so that the navigation functions use the current router
   React.useLayoutEffect(() => {
-    if (router != null && navigationData[EP.toString(basePath)] == null) {
-      updateNavigationData(router, router.state.location)
+    if (router != null) {
+      initialiseNavigationData(router)
     }
-  }, [router, navigationData, basePath, updateNavigationData])
+  }, [router, initialiseNavigationData])
 
   // apply changes navigation data
   React.useLayoutEffect(() => {
