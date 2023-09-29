@@ -30,24 +30,30 @@ import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 import { useGridPanelDraggable } from '../canvas/grid-panels-dnd'
 import type { StoredPanel } from '../canvas/grid-panels-state'
+import { FlexRow } from 'utopia-api'
 
 interface ProjectTitleProps {}
 
+export const TitleHeight = 40
+
 const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ children }) => {
   return (
-    <div
+    <FlexRow
       style={{
         fontWeight: 400,
         fontSize: 12,
         padding: '0 10px',
         color: colorTheme.fg0.value,
+        height: TitleHeight,
+        alignItems: 'center',
       }}
+      css={undefined}
     >
       {children}
-    </div>
+    </FlexRow>
   )
 }
-export const TitleHeight = 40
+
 export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel }) => {
   const { drag } = useGridPanelDraggable(props.panelData)
 
@@ -173,7 +179,6 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
               gap: 6,
               scale: '75%',
               transformOrigin: 'left',
-              paddingLeft: 10,
             }}
           >
             {when(
