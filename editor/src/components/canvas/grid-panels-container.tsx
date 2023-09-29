@@ -59,7 +59,6 @@ export const GridPanelsContainer = React.memo(() => {
 
   const canDrop = React.useCallback(
     (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
-      return true // for now, just enable all drop areas while we are tweaking the behavior
       const wouldBePanelState = updateLayout(panelState, itemToMove, newPosition)
       const wouldBePanelStateEqualsCurrentPanelState = panelState.every((column, colIndex) =>
         column.panels.every(
