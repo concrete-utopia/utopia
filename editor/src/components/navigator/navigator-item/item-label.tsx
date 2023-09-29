@@ -284,17 +284,13 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
   )
 })
 
+// here
 function remixSceneLocationFromOutletPath(
   outletPath: ElementPath,
   remixNavigationData: RemixNavigationAtomData,
 ): Location | null {
-  let parentPath = EP.dropNPathParts(outletPath, 1)
-  while (!EP.pathsEqual(parentPath, EP.emptyElementPath)) {
-    const maybeRemixData = remixNavigationData[EP.toString(parentPath)]
-    if (maybeRemixData != null) {
-      return maybeRemixData.location
-    }
-    parentPath = EP.dropNPathParts(parentPath, 1)
-  }
-  return null
+  return EP.findAmongAncestorsOfPath(
+    outletPath,
+    (p) => remixNavigationData[EP.toString(p)]?.location ?? null,
+  )
 }

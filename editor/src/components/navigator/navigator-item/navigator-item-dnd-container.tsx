@@ -1083,12 +1083,9 @@ function isDescendantOfOutletOrOutlet(
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ): boolean {
-  let currentPath = path
-  while (!EP.pathsEqual(currentPath, EP.emptyElementPath)) {
-    if (MetadataUtils.isProbablyRemixOutlet(metadata, currentPath)) {
-      return true
-    }
-    currentPath = EP.dropNPathParts(currentPath, 1)
-  }
-  return false
+  return (
+    EP.findAmongAncestorsOfPath(path, (p) =>
+      MetadataUtils.isProbablyRemixOutlet(metadata, p) ? true : null,
+    ) === true
+  )
 }
