@@ -87,6 +87,7 @@ export const CONVERT_TO_FLEX_CONTAINER = 'convert-to-flex-container'
 export const REMOVE_ABSOLUTE_POSITIONING = 'remove-absolute-positioning'
 export const RESIZE_TO_FIT = 'resize-to-fit'
 export const OPEN_INSERT_MENU = 'open-insert-menu'
+export const WRAP_IN_DIV = 'wrap-in-div'
 
 export type ShortcutDetails = { [key: string]: Shortcut }
 
@@ -250,6 +251,7 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
   [PASTE_TO_REPLACE]: shortcut('Paste to replace', key('v', ['shift', 'cmd'])),
   [RESIZE_TO_FIT]: shortcut('Resize selected elements to fit', key('r', ['alt', 'cmd', 'shift'])),
   [OPEN_INSERT_MENU]: shortcut('Open insert menu', key('k', ['cmd'])),
+  [WRAP_IN_DIV]: shortcut('Wrap the selected elements into a div', key('enter', ['cmd'])),
 }
 
 export type ShortcutConfiguration = { [key: string]: Array<Key> }

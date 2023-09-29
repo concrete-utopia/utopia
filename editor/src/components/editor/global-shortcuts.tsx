@@ -101,6 +101,7 @@ import {
   JUMP_TO_PARENT_SHORTCUT_BACKSLASH,
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
+  WRAP_IN_DIV,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
 import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
@@ -958,6 +959,18 @@ export function handleKeyDown(
         return [
           EditorActions.setPanelVisibility('rightmenu', true),
           EditorActions.setRightMenuTab(RightMenuTab.Insert),
+        ]
+      },
+      [WRAP_IN_DIV]: () => {
+        if (!isSelectMode(editor.mode)) {
+          return []
+        }
+        let uid = generateUidWithExistingComponents(editor.projectContents)
+        return [
+          EditorActions.wrapInElement(editor.selectedViews, {
+            element: defaultDivElement(uid),
+            importsToAdd: {},
+          }),
         ]
       },
     })
