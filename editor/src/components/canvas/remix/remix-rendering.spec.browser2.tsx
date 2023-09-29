@@ -1045,6 +1045,81 @@ describe('Remix navigation', () => {
     })
   })
 
+  it('Can navigate through dynamic link', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard-dynamic-links'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+      
+      export default function Index() {
+        return (
+          <Link
+            to='/1'
+            data-testid='remix-link'
+            data-uid='remix-link'
+          >
+            Go
+          </Link>
+        )
+      }      
+      `,
+      ['/src/routes/$postId.js']: `import React from 'react'
+      import { Link, useParams } from '@remix-run/react'
+      
+      export default function PostForId() {
+        const { postId } = useParams()
+        const postIdParsed = parseInt(postId)
+        return (
+          <div>
+            <h1>post id: {postId}</h1>
+            <Link to={${'`/${postIdParsed + 1}`'}} data-testid='remix-link'>Next</Link>
+          </div>
+        )
+      }
+      
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+    await switchToLiveMode(renderResult)
+    expect(renderResult.renderedDOM.queryAllByText('Go')).toHaveLength(1)
+
+    for (let i = 1; i < 7; i++) {
+      await clickRemixLink(renderResult)
+      expect(renderResult.renderedDOM.queryAllByText(`post id: ${i}`)).toHaveLength(1)
+    }
+  })
+
   describe('remix scene label', () => {
     it('can navigate with the scene label nav buttons, in live mode', async () => {
       const renderResult = await renderRemixProject(projectWithMultipleRoutes('sb1'))
