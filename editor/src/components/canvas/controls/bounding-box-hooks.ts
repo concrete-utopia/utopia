@@ -41,7 +41,8 @@ export function useBoundingBox<T = HTMLDivElement>(
 }
 
 export const SmallElementSize = 20
-export const RESIZE_CONTROL_SAFE_GAP = 6 // safe gap applied when the dimension of an element is smaller than SmallElementSize
+export const SafeGapSmallElementSize = 12
+export const RESIZE_CONTROL_SAFE_GAP = 4 // safe gap applied when the dimension of an element is smaller than SmallElementSize
 
 function useBoundingBoxFromMetadataRef(
   selectedElements: ReadonlyArray<ElementPath>,
@@ -60,7 +61,7 @@ function useBoundingBoxFromMetadataRef(
 
   const shouldApplySafeGap = React.useCallback(
     (dimension: number, scale: number): boolean => {
-      return isNotDuringInteraction && dimension <= SmallElementSize / scale
+      return isNotDuringInteraction && dimension <= SafeGapSmallElementSize / scale
     },
     [isNotDuringInteraction],
   )

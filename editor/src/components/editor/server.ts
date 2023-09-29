@@ -15,7 +15,7 @@ import urljoin from 'url-join'
 import JSZip from 'jszip'
 import type { AssetFileWithFileName } from '../assets'
 import { gitBlobChecksumFromBuffer } from '../assets'
-import { isLoginLost, isNotLoggedIn } from '../../common/user'
+import { isLoginLost } from '../../common/user'
 import { notice } from '../common/notice'
 import type { EditorDispatch } from './action-types'
 import { isLoggedIn } from './action-types'
@@ -26,9 +26,8 @@ import {
   setUserConfiguration,
   setGithubState,
 } from './actions/action-creators'
-import { getFileExtension } from '../../core/shared/file-utils'
-import { isAuthenticatedWithGithub } from '../../utils/github-auth'
 import { updateUserDetailsWhenAuthenticated } from '../../core/shared/github/helpers'
+import { GithubAuth } from '../../utils/github-auth'
 
 export { fetchProjectList, fetchShowcaseProjects, getLoginState } from '../../common/server'
 
@@ -397,7 +396,7 @@ export function startPollingLoginState(
         // Fetch the github auth status
         void updateUserDetailsWhenAuthenticated(
           dispatch,
-          isAuthenticatedWithGithub(loginState),
+          GithubAuth.isAuthenticatedWithGithub(loginState),
         ).then((authenticatedWithGithub) =>
           dispatch([
             setGithubState({
