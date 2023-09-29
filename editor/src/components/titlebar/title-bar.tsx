@@ -31,7 +31,11 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 import { useGridPanelDraggable } from '../canvas/grid-panels-dnd'
-import type { StoredPanel } from '../canvas/grid-panels-state'
+import {
+  useUpdateGridPanelLayout,
+  type StoredPanel,
+  useUpdateGridPanelLayoutPutCodeEditorBelowNavigator,
+} from '../canvas/grid-panels-state'
 
 interface ProjectTitleProps {}
 
@@ -339,6 +343,14 @@ export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
 export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
   const { drag } = useGridPanelDraggable(props.panelData)
   const theme = useColorTheme()
+
+  const updatePanelLayout = useUpdateGridPanelLayout()
+  const onMaximize = React.useCallback(() => {
+    updatePanelLayout('code-editor', { type: 'before-column', columnIndex: 0 })
+  }, [updatePanelLayout])
+
+  const onMinimize = useUpdateGridPanelLayoutPutCodeEditorBelowNavigator()
+
   return (
     <div
       ref={drag}
@@ -356,19 +368,21 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
       }}
     >
       <div
+        onClick={onMinimize}
         style={{
           width: 8,
           height: 8,
           borderRadius: 8,
-          backgroundColor: '#C0EADB',
+          backgroundColor: '#F5BF4F',
         }}
       />
       <div
+        onClick={onMaximize}
         style={{
           width: 8,
           height: 8,
           borderRadius: 8,
-          backgroundColor: '#F7CBCA',
+          backgroundColor: '#61C454',
         }}
       />
       <span style={{ marginLeft: 8 }}>Code </span>
