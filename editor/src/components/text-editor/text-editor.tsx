@@ -31,7 +31,7 @@ import { EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { printCSSNumber } from '../inspector/common/css-utils'
+import { DOMEventHandlerNames, printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
   toggleTextItalic,
@@ -43,6 +43,8 @@ import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
 import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
+import type { AllElementProps } from '../editor/store/editor-state'
+import { toString } from '../../core/shared/element-path'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -305,6 +307,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   )
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const savedContentRef = React.useRef<string | null>(null)
 
@@ -442,11 +445,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (
       content != null &&
       content.replace(/^\n/, '').length === 0 &&
-      canDeleteWhenEmpty(metadataRef.current, elementPath)
+      canDeleteWhenEmpty(metadataRef.current, elementPath, allElementPropsRef.current)
     ) {
       requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
     }
-  }, [dispatch, elementPath, elementState, textProp, metadataRef])
+  }, [dispatch, elementPath, elementState, textProp, metadataRef, allElementPropsRef])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -603,7 +606,26 @@ function getSaveAction(
   return updateText(elementPath, escapeHTML(content, textProp), textProp)
 }
 
-function canDeleteWhenEmpty(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+const allowedStyleKeysForDeletion: string[] = [
+  'position',
+  'top',
+  'left',
+  'bottom',
+  'right',
+  'width',
+  'height',
+  'wordBreak',
+  'fontSize',
+  'fontWeight',
+  'fontFamily',
+  'font',
+]
+
+function canDeleteWhenEmpty(
+  jsxMetadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+  allElementProps: AllElementProps,
+): boolean {
   const element = MetadataUtils.findElementByElementPath(jsxMetadata, path)
   if (element == null) {
     return false
@@ -611,5 +633,24 @@ function canDeleteWhenEmpty(jsxMetadata: ElementInstanceMetadataMap, path: Eleme
   if (!MetadataUtils.isSpan(element)) {
     return false
   }
+
+  const elementProps = allElementProps[toString(path)]
+  if (elementProps == null) {
+    return false
+  }
+
+  // it must not have defined styling
+  if (
+    elementProps.style != null &&
+    Object.keys(elementProps.style).some((key) => !allowedStyleKeysForDeletion.includes(key))
+  ) {
+    return false
+  }
+
+  // it must not have defined event handlers
+  if (Object.keys(elementProps).some((prop) => DOMEventHandlerNames.includes(prop as any))) {
+    return false
+  }
+
   return true
 }
