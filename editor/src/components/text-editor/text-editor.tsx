@@ -342,7 +342,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     return () => {
       const content = currentElement.textContent
       if (content != null) {
-        if (content.replace(/\n/g, '') === '') {
+        if (elementState === 'new' && content.replace(/\n/g, '') === '') {
           requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
         } else {
           if (elementState != null && savedContentRef.current !== content) {
@@ -437,7 +437,18 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-  }, [dispatch, elementPath, elementState, textProp])
+
+    // remove dangling empty spans
+    if (
+      content != null &&
+      content.replace(/^\n/, '').length === 0 &&
+      MetadataUtils.isMaybeSpan(
+        MetadataUtils.findElementByElementPath(metadataRef.current, elementPath),
+      )
+    ) {
+      requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+    }
+  }, [dispatch, elementPath, elementState, textProp, metadataRef])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
