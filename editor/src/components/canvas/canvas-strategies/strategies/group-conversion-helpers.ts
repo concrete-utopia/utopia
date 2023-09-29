@@ -8,6 +8,7 @@ import {
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import {
+  removeBackgroundProperties,
   removeMarginProperties,
   removePaddingProperties,
 } from '../../../../core/model/margin-and-padding'
@@ -590,8 +591,8 @@ export function convertFrameToGroup(
   }
 
   const { children, uid, props } = instance.element.value
-  // Remove the padding properties from the parent.
-  const propsWithoutPadding = removePaddingProperties(props)
+  // Remove the padding and background properties from the parent.
+  const propsWithoutPadding = removeBackgroundProperties(removePaddingProperties(props))
   // Remove the margin properties for the children of the newly created group.
   const toPropsOptic = traverseArray<JSXElementChild>()
     .compose(fromTypeGuard(isJSXElement))

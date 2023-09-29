@@ -33,10 +33,25 @@ export const PaddingPropertyPaths: Array<PropertyPath> = [
   PP.create('style', 'paddingTop'),
 ]
 
+export const BackgroundPropertyPaths: Array<PropertyPath> = [
+  PP.create('style', 'background'),
+  PP.create('style', 'backgroundAttachment'),
+  PP.create('style', 'backgroundClip'),
+  PP.create('style', 'backgroundColor'),
+  PP.create('style', 'backgroundOrigin'),
+  PP.create('style', 'backgroundPosition'),
+  PP.create('style', 'backgroundRepeat'),
+  PP.create('style', 'backgroundSize'),
+]
+
 export function removePaddingProperties(jsxAttributes: JSXAttributes): JSXAttributes {
   return defaultEither(jsxAttributes, unsetJSXValuesAtPaths(jsxAttributes, PaddingPropertyPaths))
 }
 
 export function removeMarginProperties(jsxAttributes: JSXAttributes): JSXAttributes {
   return defaultEither(jsxAttributes, unsetJSXValuesAtPaths(jsxAttributes, MarginPropertyPaths))
+}
+
+export function removeBackgroundProperties(jsxAttributes: JSXAttributes): JSXAttributes {
+  return defaultEither(jsxAttributes, unsetJSXValuesAtPaths(jsxAttributes, BackgroundPropertyPaths))
 }
