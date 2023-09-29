@@ -120,9 +120,9 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
       return maybeLinkTarget
     }
     if (maybePathForOutlet != null) {
-      return maybePathForOutlet === '/' ? '(home)' : maybePathForOutlet
+      return maybePathForOutlet === '/' ? 'Outlet: (home)' : `Outlet: ${maybePathForOutlet}`
     }
-    return suffix == null ? name : `${name} ${suffix}`
+    return suffix == null ? name : `Outlet: ${name} ${suffix}`
   }, [maybeLinkTarget, maybePathForOutlet, suffix, name])
 
   const cancelRename = React.useCallback(() => {
@@ -208,9 +208,6 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
     return undefined
   })()
 
-  const backgroundLozengeColor =
-    props.remixItemType === 'link' && !props.selected ? colorTheme.aqua10.value : 'transparent'
-
   return (
     <div
       ref={elementRef}
@@ -262,9 +259,7 @@ export const ItemLabel = React.memo((props: ItemLabelProps) => {
           key='item-label'
           data-testid={itemLabelTestIdForEntry(target)}
           style={{
-            backgroundColor: backgroundLozengeColor,
-            borderRadius: 30,
-            padding: props.remixItemType === 'link' ? '3px 10px' : '3px 0px',
+            padding: '3px 0px',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
