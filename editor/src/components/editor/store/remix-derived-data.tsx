@@ -36,7 +36,7 @@ export interface RemixDerivedData {
   routingTable: RemixRoutingTable
 }
 
-const CreateRemixDerivedDataRefs: {
+export const CreateRemixDerivedDataRefsGLOBAL: {
   mutableContext: { current: MutableUtopiaCtxRefData }
   topLevelComponentRendererComponents: { current: MapLike<MapLike<ComponentRendererComponent>> }
   routeModulesCache: { current: RouteModules }
@@ -66,7 +66,7 @@ export function createRemixDerivedData(
     curriedRequireFn,
     curriedResolveFn,
     projectContents,
-    CreateRemixDerivedDataRefs.routeModulesCache.current,
+    CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current,
   )
 
   if (routesAndModulesFromManifestResult == null) {
