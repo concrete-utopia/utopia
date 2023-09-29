@@ -47,6 +47,7 @@ import {
   mouseDoubleClickAtPoint,
   mouseDownAtPoint,
   mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import type { CSSProperties } from 'react'
@@ -3008,7 +3009,7 @@ describe('Absolute Resize Control', () => {
       expect(resizeControlLeft.style.width).toEqual('5px')
       expect(resizeControlLeft.style.height).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
     })
-    it("Doesn't show the safe gap during resize and mouse down", async () => {
+    it("Doesn't show the safe gap during resize after threshold is passed", async () => {
       const width = SmallElementSize
       const height = SmallElementSize
       const renderResult = await renderTestEditorWithCode(
@@ -3033,6 +3034,9 @@ describe('Absolute Resize Control', () => {
       const bottomLeftHandle = await renderResult.renderedDOM.findByTestId(`resize-control-0-1`)
 
       await mouseDownAtPoint(bottomRightHandle, { x: 2, y: 2 })
+      await mouseMoveToPoint(bottomRightHandle, { x: 10, y: 0 })
+
+      const threshold = 2 // px
 
       expect(bottomRightHandle.parentElement?.style.visibility).toEqual('visible')
       expect(topRightHandle.parentElement?.style.visibility).toEqual('hidden')
@@ -3045,25 +3049,25 @@ describe('Absolute Resize Control', () => {
       expect(resizeControlTop.style.transform).toEqual('translate(0px, -5px)')
       expect(resizeControlTop.style.top).toEqual('')
       expect(resizeControlTop.style.left).toEqual('')
-      expect(resizeControlTop.style.width).toEqual(`${width}px`)
+      expect(resizeControlTop.style.width).toEqual(`${width + 10 - threshold}px`)
       expect(resizeControlTop.style.height).toEqual('5px')
 
       const resizeControlRight = renderResult.renderedDOM.getByTestId(
         `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
       )
-      expect(resizeControlRight.style.transform).toEqual('translate(0px, 0px)')
+      expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
       expect(resizeControlRight.style.top).toEqual('')
-      expect(resizeControlRight.style.left).toEqual(`${width}px`)
-      expect(resizeControlRight.style.width).toEqual('5px')
-      expect(resizeControlRight.style.height).toEqual(`${height}px`)
+      expect(resizeControlRight.style.left).toEqual(`${width + 10 - threshold}px`)
+      expect(resizeControlRight.style.width).toEqual('10px')
+      expect(resizeControlRight.style.height).toEqual(`${height - threshold}px`)
 
       const resizeControlBottom = renderResult.renderedDOM.getByTestId(
         `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
       )
       expect(resizeControlBottom.style.transform).toEqual('translate(0px, 0px)')
-      expect(resizeControlBottom.style.top).toEqual(`${height}px`)
+      expect(resizeControlBottom.style.top).toEqual(`${height - 2}px`)
       expect(resizeControlBottom.style.left).toEqual('')
-      expect(resizeControlBottom.style.width).toEqual(`${width}px`)
+      expect(resizeControlBottom.style.width).toEqual(`${width + 10 - threshold}px`)
       expect(resizeControlBottom.style.height).toEqual('5px')
 
       const resizeControlLeft = renderResult.renderedDOM.getByTestId(
@@ -3072,8 +3076,8 @@ describe('Absolute Resize Control', () => {
       expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
       expect(resizeControlLeft.style.top).toEqual('')
       expect(resizeControlLeft.style.left).toEqual('')
-      expect(resizeControlLeft.style.width).toEqual('5px')
-      expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+      expect(resizeControlLeft.style.width).toEqual('10px')
+      expect(resizeControlLeft.style.height).toEqual(`${height - threshold}px`)
     })
   })
   it('Resize control on non-small elements extend into the draggable frame area', async () => {
