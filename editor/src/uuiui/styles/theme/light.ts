@@ -1,4 +1,3 @@
-// import { MapLike } from 'typescript'
 import { UtopiColor, createUtopiColor, enforceUtopiColorTheme } from '../utopi-color-helpers'
 import type { dark } from './dark'
 
