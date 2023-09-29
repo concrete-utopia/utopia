@@ -69,6 +69,8 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { allElemsEqual } from '../../../../core/shared/array-utils'
+import { addPropIfDoesntExist } from '../../commands/add-prop-if-doesnt-exist'
+import * as PP from '../../../../core/shared/property-path'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
 
@@ -123,6 +125,16 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
       ? 'individual'
       : 'all'
 
+  const addOverflowHiddenCommand = addPropIfDoesntExist(
+    'always',
+    selectedElement,
+    PP.create('style', 'overflow'),
+    'hidden',
+    'Element now hides overflowing content',
+  )
+
+  const allCommands: Array<CanvasCommand> = [...commands(selectedElement), addOverflowHiddenCommand]
+
   return {
     id: SetBorderRadiusStrategyId,
     name: 'Set border radius',
@@ -145,12 +157,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
         show: 'visible-except-when-other-strategy-is-active',
       }),
     ],
-    apply: () =>
-      strategyApplicationResult([
-        setCursorCommand(CSSCursor.Radius),
-        ...commands(selectedElement),
-        setElementsToRerenderCommand(selectedElements),
-      ]),
+    apply: () => strategyApplicationResult(allCommands),
   }
 }
 
