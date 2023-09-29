@@ -183,12 +183,14 @@ type ActionsCausingDuplicateUIDs = Array<{
   duplicateUIDs: DuplicateUIDsResult
 }>
 
+export type AsyncEditorDispatch = (
+  actions: ReadonlyArray<EditorAction>,
+  waitForDOMReport: boolean,
+  overrideDefaultStrategiesArray?: Array<MetaCanvasStrategy>,
+) => Promise<void>
+
 export interface EditorRenderResult {
-  dispatch: (
-    actions: ReadonlyArray<EditorAction>,
-    waitForDOMReport: boolean,
-    overrideDefaultStrategiesArray?: Array<MetaCanvasStrategy>,
-  ) => Promise<void>
+  dispatch: AsyncEditorDispatch
   getDispatchFollowUpActionsFinished: () => Promise<void>
   getEditorState: () => EditorStorePatched
   renderedDOM: RenderResult
@@ -260,6 +262,14 @@ export async function renderTestEditorWithProjectContent(
     strategiesToUse,
     loginState,
   )
+}
+
+const optedInToCheckFileTimestamps = { current: true }
+export function optOutFromCheckFileTimestamps() {
+  optedInToCheckFileTimestamps.current = false
+  afterEach(() => {
+    optedInToCheckFileTimestamps.current = true
+  })
 }
 
 export async function renderTestEditorWithModel(
@@ -334,7 +344,8 @@ export async function renderTestEditorWithModel(
         action.action === 'REDO' ||
         action.action === 'EXECUTE_POST_ACTION_MENU_CHOICE',
     )
-    const shouldCheckFileTimestamps = !(anyWorkerUpdates || anyUndoOrRedoOrPostAction)
+    const shouldCheckFileTimestamps =
+      optedInToCheckFileTimestamps.current && !(anyWorkerUpdates || anyUndoOrRedoOrPostAction)
 
     if (shouldCheckFileTimestamps) {
       // We compare both the patched and unpatched versions of the new project contents

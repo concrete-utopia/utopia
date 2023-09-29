@@ -301,7 +301,7 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
         setPopupLeft(referenceRect.left)
         setAlignRight(false)
       }
-      setPopupHeight(menuHeight + 20)
+      setPopupHeight(menuHeight + 8)
       setPopupTop(menuTop)
       setCroppedTop(isCroppedTop)
       setCroppedBottom(isCroppedBottom)

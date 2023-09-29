@@ -6675,6 +6675,9 @@ export var storyboard = (
         </div>`,
         ),
       )
+      expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+        `utopia-storyboard-uid/scene-aaa/app-entity:aaa/${testUID}`,
+      ])
     })
     it(`Wraps 2 elements inside a flex layout`, async () => {
       const testUID = 'zzz'

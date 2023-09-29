@@ -16,6 +16,8 @@ import {
 } from '../../editor/store/store-hook'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { getMetadata } from '../../editor/store/editor-state'
+import { elementHasOnlyTextChildren } from '../canvas-utils'
+import { isFixedHugFillModeApplied } from '../../inspector/inspector-common'
 
 interface NotNullRefObject<T> {
   readonly current: T
@@ -41,7 +43,8 @@ export function useBoundingBox<T = HTMLDivElement>(
 }
 
 export const SmallElementSize = 20
-export const RESIZE_CONTROL_SAFE_GAP = 6 // safe gap applied when the dimension of an element is smaller than SmallElementSize
+export const SafeGapSmallElementSize = 12
+export const RESIZE_CONTROL_SAFE_GAP = 4 // safe gap applied when the dimension of an element is smaller than SmallElementSize
 
 function useBoundingBoxFromMetadataRef(
   selectedElements: ReadonlyArray<ElementPath>,
@@ -50,19 +53,37 @@ function useBoundingBoxFromMetadataRef(
   const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
 
-  const isNotDuringInteraction = useEditorState(
+  const isInteractionDraggingPastThreshold = useEditorState(
     Substores.canvas,
     (store) => {
-      return store.editor.canvas.interactionSession?.interactionData == null
+      return (
+        store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
+        store.editor.canvas.interactionSession?.interactionData.drag != null
+      )
     },
-    'useBoundingBoxFromMetadataRef isNotDuringInteraction',
+    'useBoundingBoxFromMetadataRef isInteractionDraggingPastThreshold',
   )
 
   const shouldApplySafeGap = React.useCallback(
     (dimension: number, scale: number): boolean => {
-      return isNotDuringInteraction && dimension <= SmallElementSize / scale
+      if (selectedElements.length === 1) {
+        // For text elements only show the safe gaps if they have been resized past the initial max-content dimensions
+        const meta = MetadataUtils.findElementByElementPath(
+          metadataRef.current,
+          selectedElements[0],
+        )
+        if (
+          meta != null &&
+          elementHasOnlyTextChildren(meta) &&
+          isFixedHugFillModeApplied(metadataRef.current, selectedElements[0], 'hug')
+        ) {
+          return false
+        }
+      }
+
+      return !isInteractionDraggingPastThreshold && dimension <= SmallElementSize / scale
     },
-    [isNotDuringInteraction],
+    [isInteractionDraggingPastThreshold, metadataRef, selectedElements],
   )
 
   const boundingBoxCallbackRef = React.useRef(boundingBoxCallback)

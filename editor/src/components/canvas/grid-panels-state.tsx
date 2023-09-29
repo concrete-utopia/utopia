@@ -1,10 +1,22 @@
 import findLastIndex from 'lodash.findlastindex'
+import React from 'react'
 import { v4 as UUID } from 'uuid'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
-import { mod } from '../../core/shared/math-utils'
+import { clamp, mod } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
+import {
+  usePropControlledRef_DANGEROUS,
+  usePropControlledStateV2,
+} from '../inspector/common/inspector-utils'
+import invariant from '../../third-party/remix/invariant'
+import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
+import { atom, useAtom, useAtomValue } from 'jotai'
+import immutableUpdate from 'immutability-helper'
 
-export const GridMenuWidth = 260
+export const GridMenuWidth = 268
+export const GridMenuMinWidth = 200
+export const GridMenuMaxWidth = 300
+
 export const GridPaneWidth = 500
 
 export const NumberOfColumns = 4
@@ -16,6 +28,8 @@ export const GridPanelHorizontalGapHalf = 6
 export const GridHorizontalExtraPadding = 4
 
 export const ExtraHorizontalDropTargetPadding = 45
+
+export const ResizeColumnWidth = 10
 
 export const GridPanelsNumberOfRows = 12
 
@@ -52,7 +66,17 @@ function storedPanel({ name, type }: { name: PanelName; type: 'menu' | 'pane' })
   }
 }
 
-type StoredLayout = Array<Array<StoredPanel>>
+interface StoredColumn {
+  panels: Array<StoredPanel>
+  paneWidth: number // the width to use if they only contain Panes
+  menuWidth: number // the width to use if they contain at least one Menu
+}
+
+function storedColumn(panels: Array<StoredPanel>): StoredColumn {
+  return { panels: panels, paneWidth: GridPaneWidth, menuWidth: GridMenuWidth }
+}
+
+type StoredLayout = Array<StoredColumn>
 
 type BeforeColumn = {
   type: 'before-column'
@@ -78,22 +102,24 @@ type RowUpdate = BeforeIndex | AfterIndex
 export type LayoutUpdate = ColumnUpdate | RowUpdate
 
 export const GridMenuDefaultPanels: StoredLayout = [
-  [
+  storedColumn([
     storedPanel({ name: 'navigator', type: 'menu' }),
     storedPanel({ name: 'code-editor', type: 'pane' }),
-  ],
-  [],
-  [],
-  [storedPanel({ name: 'inspector', type: 'menu' })],
+  ]),
+  storedColumn([]),
+  storedColumn([]),
+  storedColumn([storedPanel({ name: 'inspector', type: 'menu' })]),
 ]
+
+export const GridPanelsStateAtom = atom(GridMenuDefaultPanels)
 
 export function storedLayoutToResolvedPanels(stored: StoredLayout): {
   [index in PanelName]: GridPanelData
 } {
   const panels = accumulate<{ [index in PanelName]: GridPanelData }>({} as any, (acc) => {
     stored.forEach((column, colIndex) => {
-      const panelsForColumn = column.length
-      column.forEach((panel, panelIndex) => {
+      const panelsForColumn = column.panels.length
+      column.panels.forEach((panel, panelIndex) => {
         acc[panel.name] = {
           panel: panel,
           span: GridPanelsNumberOfRows / panelsForColumn, // TODO introduce resize function
@@ -122,7 +148,7 @@ export function wrapAroundColIndex(index: number): number {
 /**
  * Normalizes the index to 0,1,2,3
  */
-function normalizeColIndex(index: number): number {
+export function normalizeColIndex(index: number): number {
   return mod(index, NumberOfColumns)
 }
 
@@ -135,14 +161,14 @@ export function updateLayout(
 
   function insertPanel(layout: StoredLayout) {
     if (update.type === 'before-column' || update.type === 'after-column') {
-      const atLeastOneEmptyColumn = layout.some((col) => col.length === 0)
+      const atLeastOneEmptyColumn = layout.some((col) => col.panels.length === 0)
       if (!atLeastOneEmptyColumn) {
         // the user wants to create a new column and fill it with the moved Panel.
         // if there's zero empty columns, it means we cannot create a new column, so we must bail out
 
         return layout // BAIL OUT! TODO we should show a Toast
       }
-      const newColumn: Array<StoredPanel> = [panelToInsert]
+      const newColumn: StoredColumn = storedColumn([panelToInsert])
 
       const normalizedIndex = normalizeColIndex(update.columnIndex)
 
@@ -154,8 +180,8 @@ export function updateLayout(
       const withOldPanelRemoved = removeOldPanel(withElementInserted)
 
       const indexOfFirstEmptyColumn = rightHandSide
-        ? findLastIndex(withOldPanelRemoved, (col) => col.length === 0)
-        : withOldPanelRemoved.findIndex((col) => col.length === 0)
+        ? findLastIndex(withOldPanelRemoved, (col) => col.panels.length === 0)
+        : withOldPanelRemoved.findIndex((col) => col.panels.length === 0)
 
       return removeIndexFromArray(indexOfFirstEmptyColumn, withOldPanelRemoved)
     }
@@ -163,10 +189,10 @@ export function updateLayout(
       const working = [...layout]
 
       // insert
-      working[update.columnIndex] = insert(
+      working[update.columnIndex].panels = insert(
         update.indexInColumn,
         panelToInsert,
-        working[update.columnIndex],
+        working[update.columnIndex].panels,
       )
 
       return removeOldPanel(working)
@@ -175,10 +201,10 @@ export function updateLayout(
       const working = [...layout]
 
       // insert
-      working[update.columnIndex] = insert(
+      working[update.columnIndex].panels = insert(
         update.indexInColumn + 1,
         panelToInsert,
-        working[update.columnIndex],
+        working[update.columnIndex].panels,
       )
 
       return removeOldPanel(working)
@@ -187,33 +213,42 @@ export function updateLayout(
     assertNever(update)
   }
 
-  function removeOldPanel(layout: StoredLayout) {
+  function removeOldPanel(layout: StoredLayout): StoredLayout {
     return layout.map((column) => {
-      return removeAll(column, [paneToMove], (l, r) => l.uid === r.uid)
+      return {
+        ...column,
+        panels: removeAll(column.panels, [paneToMove], (l, r) => l.uid === r.uid),
+      }
     })
   }
 
   function floatColumnsTowardsEdges(layout: StoredLayout) {
     const leftSide = layout.slice(0, IndexOfCanvas)
     const rightSideReversed = layout.slice(IndexOfCanvas).reverse()
-    const leftSideFixed = accumulate(new Array(leftSide.length).fill([]), (acc) => {
-      let indexInAccumulator = 0
-      leftSide.forEach((column) => {
-        if (column.length > 0) {
-          acc[indexInAccumulator] = column
-          indexInAccumulator++
-        }
-      })
-    })
-    const rightSideFixed = accumulate(new Array(rightSideReversed.length).fill([]), (acc) => {
-      let indexInAccumulator = rightSideReversed.length - 1
-      rightSideReversed.forEach((column) => {
-        if (column.length > 0) {
-          acc[indexInAccumulator] = column
-          indexInAccumulator--
-        }
-      })
-    })
+    const leftSideFixed = accumulate(
+      new Array<StoredColumn>(leftSide.length).fill(storedColumn([])),
+      (acc) => {
+        let indexInAccumulator = 0
+        leftSide.forEach((column) => {
+          if (column.panels.length > 0) {
+            acc[indexInAccumulator] = column
+            indexInAccumulator++
+          }
+        })
+      },
+    )
+    const rightSideFixed = accumulate(
+      new Array<StoredColumn>(rightSideReversed.length).fill(storedColumn([])),
+      (acc) => {
+        let indexInAccumulator = rightSideReversed.length - 1
+        rightSideReversed.forEach((column) => {
+          if (column.panels.length > 0) {
+            acc[indexInAccumulator] = column
+            indexInAccumulator--
+          }
+        })
+      },
+    )
     return [...leftSideFixed, ...rightSideFixed]
   }
 
@@ -222,4 +257,53 @@ export function updateLayout(
 
   // TODO we need to fix the sizes too!
   return withEmptyColumnsInMiddle
+}
+
+export function useColumnWidths(): [
+  Array<number>,
+  (columnIndex: number, newWidth: number) => void,
+] {
+  const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
+
+  // start with the default value
+  const columnWidths: Array<number> = React.useMemo(
+    () =>
+      panelState.map((_, index) => {
+        return getColumnWidth(panelState, index)
+      }),
+    [panelState],
+  )
+
+  const setColumnWidths = React.useCallback(
+    (columnIndexIncoming: number, newWidth: number) => {
+      setPanelState((current) => {
+        const columnIndex = normalizeColIndex(columnIndexIncoming)
+        const columnContainsMenu = current[columnIndex].panels.some((p) => p.type === 'menu')
+        if (columnContainsMenu) {
+          // menu resize – clamped!
+          return immutableUpdate(current, {
+            [columnIndex]: {
+              menuWidth: { $set: clamp(GridMenuMinWidth, GridMenuMaxWidth, newWidth) },
+            },
+          })
+        } else {
+          // pane resize!
+          return immutableUpdate(current, { [columnIndex]: { paneWidth: { $set: newWidth } } })
+        }
+      })
+    },
+    [setPanelState],
+  )
+
+  return [columnWidths, setColumnWidths]
+}
+
+export function getColumnWidth(panelState: StoredLayout, columnIndex: number): number {
+  const column = panelState[normalizeColIndex(columnIndex)]
+  if (column.panels.length === 0) {
+    // empty columns are zero width
+    return 0
+  }
+  const width = column.panels.some((p) => p.type === 'menu') ? column.menuWidth : column.paneWidth
+  return width
 }

@@ -11,19 +11,26 @@ import { GoogleFontsResourcesList } from '../external-resources/google-fonts-res
 
 export const ContentsPane = React.memo(() => {
   return (
-    <FlexColumn
-      id='leftPaneContents'
-      key='leftPaneContents'
+    <div
       style={{
-        display: 'relative',
-        alignItems: 'stretch',
-        paddingBottom: 50,
+        overflowY: 'scroll',
+        height: '100%',
       }}
     >
-      <FileBrowser />
-      <DependencyList />
-      <GenericExternalResourcesList />
-      <GoogleFontsResourcesList />
-    </FlexColumn>
+      <FlexColumn
+        id='leftPaneContents'
+        key='leftPaneContents'
+        style={{
+          display: 'relative',
+          alignItems: 'stretch',
+          paddingBottom: 50,
+        }}
+      >
+        <FileBrowser />
+        <DependencyList />
+        <GenericExternalResourcesList />
+        <GoogleFontsResourcesList />
+      </FlexColumn>
+    </div>
   )
 })

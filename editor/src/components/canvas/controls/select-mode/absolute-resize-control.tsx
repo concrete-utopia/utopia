@@ -2,9 +2,10 @@ import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  canvasRectangle,
   isInfinityRectangle,
   nullIfInfinity,
   windowPoint,
@@ -32,12 +33,13 @@ import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strat
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import type { EdgePosition } from '../../canvas-types'
 import { CSSCursor } from '../../canvas-types'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
+import { getAllTargetsUnderAreaAABB, windowToCanvasCoordinates } from '../../dom-lookup'
 import { SmallElementSize, useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
+import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 
 export const AbsoluteResizeControlTestId = (targets: Array<ElementPath>): string =>
   `${targets.map(EP.toString).sort()}-absolute-resize-control`
@@ -46,6 +48,7 @@ interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
 }
 
+export const SizeLabelID = 'SizeLabel'
 export const SizeLabelTestId = 'SizeLabelTestId'
 
 function shouldUseSmallElementResizeControl(size: number, scale: number): boolean {
@@ -145,7 +148,6 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
           ref={controlRef}
           style={{
             position: 'absolute',
-            pointerEvents: 'none',
           }}
         >
           <ResizeEdge
@@ -399,15 +401,46 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
   }
 }
 
+export type SizeLabelSize = {
+  type: 'SIZE_LABEL_WITH_DIMENSIONS'
+  h: string
+  v: string
+}
+
+function sizeLabelWithDimensions(h: string, v: string): SizeLabelSize {
+  return {
+    type: 'SIZE_LABEL_WITH_DIMENSIONS',
+    h: h,
+    v: v,
+  }
+}
+
+export type SizeLabelGroup = {
+  type: 'SIZE_LABEL_GROUP'
+}
+
+function sizeLabelGroup(): SizeLabelGroup {
+  return {
+    type: 'SIZE_LABEL_GROUP',
+  }
+}
+
+export type SizeLabelContents = SizeLabelSize | SizeLabelGroup
+
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
-): { h: string; v: string } | null {
+  boundingBox: CanvasRectangle | null,
+): SizeLabelContents | null {
   if (selectedElements.length === 0) {
     return null
   }
 
   if (selectedElements.length === 1) {
+    if (treatElementAsGroupLike(metadata, selectedElements[0])) {
+      return sizeLabelGroup()
+    }
+
     const globalFrame = MetadataUtils.findElementByElementPath(
       metadata,
       selectedElements[0],
@@ -422,17 +455,14 @@ function sizeLabelContents(
     const vertical =
       detectFillHugFixedState('vertical', metadata, selectedElements[0]).fixedHugFill?.type ??
       'fixed'
-    return {
-      h: sizeLabel(horizontal, globalFrame.width),
-      v: sizeLabel(vertical, globalFrame.height),
-    }
+    return sizeLabelWithDimensions(
+      sizeLabel(horizontal, globalFrame.width),
+      sizeLabel(vertical, globalFrame.height),
+    )
   }
 
-  const boundingBox = boundingRectangleArray(
-    selectedElements.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
-  )
   if (boundingBox != null) {
-    return { h: `${boundingBox.width}`, v: `${boundingBox.height}` }
+    return sizeLabelWithDimensions(`${boundingBox.width}`, `${boundingBox.height}`)
   }
 
   return null
@@ -449,6 +479,20 @@ const ExplicitHeightHacked = 20
 const BorderRadius = 2
 const SizeLabelMarginTop = 8
 
+function getLabelText(label: SizeLabelContents | null): string | null {
+  if (label == null) {
+    return null
+  }
+  switch (label.type) {
+    case 'SIZE_LABEL_GROUP':
+      return 'Group'
+    case 'SIZE_LABEL_WITH_DIMENSIONS':
+      return `${label.h} x ${label.v}`
+    default:
+      assertNever(label)
+  }
+}
+
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
     const scale = useEditorState(
@@ -463,16 +507,60 @@ const SizeLabel = React.memo(
       'ResizeLabel metadata',
     )
 
-    const label = sizeLabelContents(metadata, targets)
+    const boundingBox = boundingRectangleArray(
+      targets.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
+    )
 
-    const labelText = label == null ? null : `${label.h} x ${label.v}`
+    const label = sizeLabelContents(metadata, targets, boundingBox)
+    const labelText = getLabelText(label)
+
+    const [dimmed, setDimmed] = React.useState(false)
+
+    const editorRef = useRefEditorState((store) => ({
+      scale: store.editor.canvas.scale,
+      offset: store.editor.canvas.roundedCanvasOffset,
+      jsxMetadata: store.editor.jsxMetadata,
+      elementPathTree: store.editor.elementPathTree,
+      allElementProps: store.editor.allElementProps,
+      hiddenInstances: store.editor.hiddenInstances,
+    }))
+
+    const onMouseEnter = React.useCallback(() => {
+      const distanceBetweenBoxAndLabel = 10 // px
+      const labelRect = document.getElementById(SizeLabelID)?.getBoundingClientRect()
+      if (boundingBox != null && labelRect != null) {
+        const area = canvasRectangle({
+          x: boundingBox.x + (boundingBox.width - labelRect.width) / 2,
+          y:
+            boundingBox.y +
+            boundingBox.height +
+            distanceBetweenBoxAndLabel / editorRef.current.scale,
+          width: labelRect.width,
+          height: labelRect.height,
+        })
+        const elementsUnderLabel = getAllTargetsUnderAreaAABB(
+          editorRef.current.jsxMetadata,
+          [],
+          editorRef.current.hiddenInstances,
+          'no-filter',
+          area,
+          editorRef.current.elementPathTree,
+          editorRef.current.allElementProps,
+          true,
+        )
+        setDimmed(elementsUnderLabel.length > 0)
+      }
+    }, [editorRef, boundingBox])
+
+    const onMouseLeave = React.useCallback(() => {
+      setDimmed(false)
+    }, [])
 
     return (
       <div
         ref={ref}
         style={{
           position: 'absolute',
-          pointerEvents: 'none',
           display: 'flex',
           justifyContent: 'center',
         }}
@@ -481,6 +569,7 @@ const SizeLabel = React.memo(
         {when(
           labelText != null,
           <div
+            id={SizeLabelID}
             data-testid={SizeLabelTestId}
             style={{
               display: 'flex',
@@ -492,7 +581,11 @@ const SizeLabel = React.memo(
               backgroundColor: colorTheme.primary.value,
               fontSize: FontSize / scale,
               height: ExplicitHeightHacked / scale,
+              opacity: dimmed ? 0.075 : 1,
+              transition: '0.1s',
             }}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
           >
             {labelText}
           </div>,

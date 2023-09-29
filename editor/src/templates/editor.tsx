@@ -105,7 +105,6 @@ import {
 import { isFeatureEnabled } from '../utils/feature-switches'
 import { shouldInspectorUpdate as shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
-import { isAuthenticatedWithGithub } from '../utils/github-auth'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
 import type { ElementPath } from '../core/shared/project-file-types'
@@ -128,6 +127,8 @@ import {
   ProjectServerState,
   ProjectServerStateUpdater,
 } from '../components/editor/store/project-server-state'
+import { GithubOperations } from '../core/shared/github/operations'
+import { GithubAuth } from '../utils/github-auth'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -291,7 +292,7 @@ export class Editor {
 
     void renderRootEditor()
 
-    startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
+    void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
 
     reduxDevtoolsSendInitialState(this.storedState)
 
@@ -339,7 +340,7 @@ export class Editor {
 
         void updateUserDetailsWhenAuthenticated(
           this.boundDispatch,
-          isAuthenticatedWithGithub(loginState),
+          GithubAuth.isAuthenticatedWithGithub(loginState),
         ).then((authenticatedWithGithub) => {
           this.storedState.userState = {
             ...this.storedState.userState,
@@ -450,7 +451,7 @@ export class Editor {
       )
       const anyLoadActions = dispatchedActions.some((action) => action.action === 'LOAD')
       if (anyLoadActions) {
-        startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
+        void GithubOperations.startGithubPolling(this.utopiaStoreHook, this.boundDispatch)
       }
 
       invalidateDomWalkerIfNecessary(

@@ -1,7 +1,7 @@
 import React from 'react'
 import { accumulate } from '../../core/shared/array-utils'
 import { GridPanel } from './grid-panel'
-import { ColumnDragTargets } from './grid-panels-drag-targets'
+import { ColumnDragTargets, GridColumnResizeHandle } from './grid-panels-drag-targets'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
   GridHorizontalExtraPadding,
@@ -10,16 +10,21 @@ import {
   GridPaneWidth,
   GridPanelHorizontalGapHalf,
   GridPanelVerticalGapHalf,
+  GridPanelsStateAtom,
   GridVerticalExtraPadding,
   NumberOfColumns,
+  normalizeColIndex,
   storedLayoutToResolvedPanels,
   updateLayout,
+  useColumnWidths,
   wrapAroundColIndex,
 } from './grid-panels-state'
 import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
+import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
+import { useAtom } from 'jotai'
 
 export const GridPanelsContainer = React.memo(() => {
-  const [panelState, setPanelState] = React.useState(GridMenuDefaultPanels)
+  const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
 
   const orderedPanels = React.useMemo(() => {
     return storedLayoutToResolvedPanels(panelState)
@@ -29,11 +34,11 @@ export const GridPanelsContainer = React.memo(() => {
     return Array.from(
       accumulate(new Set<number>(), (acc: Set<number>) => {
         // we always include the first and last columns
-        acc.add(0)
-        acc.add(NumberOfColumns - 1)
+        acc.add(wrapAroundColIndex(0))
+        acc.add(wrapAroundColIndex(NumberOfColumns - 1))
 
         panelState.forEach((column, colIndex) => {
-          if (column.length > 0) {
+          if (column.panels.length > 0) {
             acc.add(wrapAroundColIndex(colIndex))
           }
         })
@@ -53,8 +58,8 @@ export const GridPanelsContainer = React.memo(() => {
       return true // for now, just enable all drop areas while we are tweaking the behavior
       const wouldBePanelState = updateLayout(panelState, itemToMove, newPosition)
       const wouldBePanelStateEqualsCurrentPanelState = panelState.every((column, colIndex) =>
-        column.every(
-          (item, itemIndex) => item.name === wouldBePanelState[colIndex]?.[itemIndex]?.name,
+        column.panels.every(
+          (item, itemIndex) => item.name === wouldBePanelState[colIndex]?.panels[itemIndex]?.name,
         ),
       )
 
@@ -68,19 +73,7 @@ export const GridPanelsContainer = React.memo(() => {
     [panelState],
   )
 
-  const columnWidths: Array<string> = React.useMemo(
-    () =>
-      panelState.map((column) => {
-        if (column.length === 0) {
-          return `0px`
-        } else if (column.some((p) => p.type === 'menu')) {
-          return `${GridMenuWidth + GridPanelHorizontalGapHalf * 2}px`
-        } else {
-          return `${GridPaneWidth + GridPanelHorizontalGapHalf * 2}px`
-        }
-      }),
-    [panelState],
-  )
+  const [columnWidths, setColumnWidth] = useColumnWidths()
 
   return (
     <div
@@ -92,7 +85,7 @@ export const GridPanelsContainer = React.memo(() => {
         display: 'grid',
         width: '100%',
         height: '100%',
-        gridTemplateColumns: `[col] ${columnWidths[0]} [col] ${columnWidths[1]} [canvas] 1fr [col] ${columnWidths[2]} [col] ${columnWidths[3]} [end]`,
+        gridTemplateColumns: `[col] ${columnWidths[0]}px [col] ${columnWidths[1]}px [canvas] 1fr [col] ${columnWidths[2]}px [col] ${columnWidths[3]}px [end]`,
         gridTemplateRows: 'repeat(12, 1fr)',
         gridAutoFlow: 'dense',
         paddingTop: GridPanelVerticalGapHalf + GridVerticalExtraPadding,
@@ -124,12 +117,20 @@ export const GridPanelsContainer = React.memo(() => {
       />
       {/* All future Panels need to be explicitly listed here */}
       {nonEmptyColumns.map((columnIndex) => (
-        <ColumnDragTargets
-          key={columnIndex}
-          columnIndex={columnIndex}
-          onDrop={onDrop}
-          canDrop={canDrop}
-        />
+        <React.Fragment key={columnIndex}>
+          <GridColumnResizeHandle
+            key={`resize-${columnIndex}`}
+            columnIndex={columnIndex}
+            columnWidth={columnWidths[normalizeColIndex(columnIndex)]}
+            setColumnWidth={setColumnWidth}
+          />
+          <ColumnDragTargets
+            key={`droptarget-${columnIndex}`}
+            columnIndex={columnIndex}
+            onDrop={onDrop}
+            canDrop={canDrop}
+          />
+        </React.Fragment>
       ))}
     </div>
   )
