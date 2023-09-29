@@ -3,7 +3,6 @@ import type { EditorDispatch } from '../../components/editor/action-types'
 import type { GithubRepo } from '../../components/editor/store/editor-state'
 import type { Conflict } from './github/helpers'
 import { resolveConflict } from './github/helpers'
-import { GithubOperations } from './github/operations'
 
 export function getConflictMenuItems(
   githubRepo: GithubRepo,
@@ -14,14 +13,7 @@ export function getConflictMenuItems(
   submenuName: string | undefined,
 ): Array<ContextMenuItem<unknown>> {
   function applyChange(whichChange: 'utopia' | 'branch'): void {
-    void GithubOperations.resolveConflict(
-      githubRepo,
-      projectID,
-      path,
-      conflict,
-      whichChange,
-      dispatch,
-    )
+    void resolveConflict(githubRepo, projectID, path, conflict, whichChange, dispatch)
   }
   switch (conflict.type) {
     case 'DIFFERING_TYPES':

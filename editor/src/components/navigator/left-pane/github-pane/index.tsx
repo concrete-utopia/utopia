@@ -48,8 +48,11 @@ import { cleanupBranchName } from './helpers'
 import { PullRequestPane } from './pull-request-pane'
 import { RefreshIcon } from './refresh-icon'
 import { RepositoryListing } from './repository-listing'
-import { GithubOperations } from '../../../../core/shared/github/operations'
 import { GithubAuth } from '../../../../utils/github-auth'
+import { getBranchesForGithubRepository } from '../../../../core/shared/github/operations/list-branches'
+import { updateProjectWithBranchContent } from '../../../../core/shared/github/operations/load-branch'
+import { updateProjectAgainstGithub } from '../../../../core/shared/github/operations/update-against-branch'
+import { saveProjectToGithub } from '../../../../core/shared/github/operations/commit-and-push'
 
 const compactTimeagoFormatter = (value: number, unit: string) => {
   return `${value}${unit.charAt(0)}`
@@ -182,7 +185,7 @@ const BranchBlock = () => {
     if (targetRepository != null) {
       void dispatchPromiseActions(
         dispatch,
-        GithubOperations.getBranchesForGithubRepository(dispatch, targetRepository),
+        getBranchesForGithubRepository(dispatch, targetRepository),
       )
     }
   }, [dispatch, targetRepository])
@@ -490,7 +493,7 @@ const RemoteChangesBlock = () => {
   )
   const triggerUpdateAgainstGithub = React.useCallback(() => {
     if (repo != null && branch != null && commit != null) {
-      void GithubOperations.updateProjectAgainstGithub(
+      void updateProjectAgainstGithub(
         workersRef.current,
         dispatch,
         repo,
@@ -659,7 +662,7 @@ const LocalChangesBlock = () => {
       console.warn('project id is not set')
       return
     }
-    void GithubOperations.saveProjectToGithub(
+    void saveProjectToGithub(
       projectId,
       repo,
       persistentModelForProjectContents(projectContents),
@@ -868,7 +871,7 @@ const BranchNotLoadedBlock = () => {
 
   const loadFromBranch = React.useCallback(() => {
     if (githubRepo != null && branchName != null) {
-      void GithubOperations.updateProjectWithBranchContent(
+      void updateProjectWithBranchContent(
         workersRef.current,
         dispatch,
         forceNotNull('Should have a project ID by now.', projectID),
@@ -925,7 +928,7 @@ const BranchNotLoadedBlock = () => {
     if (githubRepo == null || branchName == null || projectId == null) {
       return
     }
-    void GithubOperations.saveProjectToGithub(
+    void saveProjectToGithub(
       projectId,
       githubRepo,
       persistentModelForProjectContents(projectContents),

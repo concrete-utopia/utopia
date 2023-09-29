@@ -64,7 +64,7 @@ import { getUsersPublicGithubRepositories } from './operations/load-repositories
 import { set } from '../optics/optic-utilities'
 import { fromField } from '../optics/optic-creators'
 import type { GithubOperationContext } from './operations/github-operation-context'
-import { GithubEndpoints } from './endpoints'
+import { GithubApiEndpoints, GithubEndpoints } from './endpoints'
 
 export function dispatchPromiseActions(
   dispatch: EditorDispatch,
@@ -766,42 +766,42 @@ const GITHUB_REFRESH_INTERVAL_MILLISECONDS = 30_000
 
 let githubPollingTimeoutId: number | undefined = undefined
 
-export const startGithubPolling =
-  (operationContext: GithubOperationContext) =>
-  async (utopiaStoreAPI: UtopiaStoreAPI, dispatch: EditorDispatch): Promise<void> => {
-    if (githubPollingTimeoutId != null) {
-      window.clearTimeout(githubPollingTimeoutId)
-    }
-    function pollGithub(): void {
-      try {
-        const currentState = utopiaStoreAPI.getState()
-        const githubAuthenticated = currentState.userState.githubState.authenticated
-        const githubRepo = currentState.editor.githubSettings.targetRepository
-        const branchName = currentState.editor.githubSettings.branchName
-        const branchOriginContentsChecksums = currentState.derived.branchOriginContentsChecksums
-        const githubUserDetails = currentState.editor.githubData.githubUserDetails
-        const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
-        const originCommitSha = currentState.editor.githubSettings.originCommit
-        void refreshGithubData(
-          dispatch,
-          githubAuthenticated,
-          githubRepo,
-          branchName,
-          branchOriginContentsChecksums,
-          githubUserDetails,
-          lastRefreshedCommit,
-          originCommitSha,
-          operationContext,
-        )
-      } finally {
-        // Trigger another one to run Xms _after_ this has finished.
-        githubPollingTimeoutId = window.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
-      }
-    }
-
-    // Trigger a poll initially.
-    githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
+export async function startGithubPolling(
+  utopiaStoreAPI: UtopiaStoreAPI,
+  dispatch: EditorDispatch,
+): Promise<void> {
+  if (githubPollingTimeoutId != null) {
+    window.clearTimeout(githubPollingTimeoutId)
   }
+  function pollGithub(): void {
+    try {
+      const currentState = utopiaStoreAPI.getState()
+      const githubAuthenticated = currentState.userState.githubState.authenticated
+      const githubRepo = currentState.editor.githubSettings.targetRepository
+      const branchName = currentState.editor.githubSettings.branchName
+      const branchOriginContentsChecksums = currentState.derived.branchOriginContentsChecksums
+      const githubUserDetails = currentState.editor.githubData.githubUserDetails
+      const lastRefreshedCommit = currentState.editor.githubData.lastRefreshedCommit
+      const originCommitSha = currentState.editor.githubSettings.originCommit
+      void refreshGithubData(
+        dispatch,
+        githubAuthenticated,
+        githubRepo,
+        branchName,
+        branchOriginContentsChecksums,
+        githubUserDetails,
+        lastRefreshedCommit,
+        originCommitSha,
+      )
+    } finally {
+      // Trigger another one to run Xms _after_ this has finished.
+      githubPollingTimeoutId = window.setTimeout(pollGithub, GITHUB_REFRESH_INTERVAL_MILLISECONDS)
+    }
+  }
+
+  // Trigger a poll initially.
+  githubPollingTimeoutId = window.setTimeout(pollGithub, 0)
+}
 
 export async function refreshGithubData(
   dispatch: EditorDispatch,
@@ -812,7 +812,6 @@ export async function refreshGithubData(
   githubUserDetails: GithubUser | null,
   previousCommitSha: string | null,
   originCommitSha: string | null,
-  operationContext: GithubOperationContext,
 ): Promise<void> {
   // Collect actions which are the results of the various requests,
   // but not those that show which Github operations are running.
@@ -821,29 +820,19 @@ export async function refreshGithubData(
     if (githubUserDetails === null) {
       promises.push(getUserDetailsFromServer())
     }
-    promises.push(getUsersPublicGithubRepositories(operationContext)(dispatch))
+    promises.push(getUsersPublicGithubRepositories(dispatch))
     if (githubRepo != null) {
-      promises.push(getBranchesForGithubRepository(operationContext)(dispatch, githubRepo))
+      promises.push(getBranchesForGithubRepository(dispatch, githubRepo))
       promises.push(
-        updateUpstreamChanges(
-          branchName,
-          branchOriginChecksums,
-          githubRepo,
-          previousCommitSha,
-          operationContext,
-        ),
+        updateUpstreamChanges(branchName, branchOriginChecksums, githubRepo, previousCommitSha),
       )
       if (branchName != null) {
         if (branchOriginChecksums == null) {
           if (originCommitSha != null) {
-            promises.push(
-              getBranchChecksums(operationContext)(githubRepo, branchName, originCommitSha),
-            )
+            promises.push(getBranchChecksums(githubRepo, branchName, originCommitSha))
           }
         } else {
-          promises.push(
-            updatePullRequestsForBranch(operationContext)(dispatch, githubRepo, branchName),
-          )
+          promises.push(updatePullRequestsForBranch(dispatch, githubRepo, branchName))
         }
       }
     } else {
@@ -877,12 +866,11 @@ async function updateUpstreamChanges(
   branchOriginChecksums: FileChecksumsWithFile | null,
   githubRepo: GithubRepo,
   previousCommitSha: string | null,
-  operationContext: GithubOperationContext,
 ): Promise<Array<EditorAction>> {
   const actions: Array<EditorAction> = []
   let upstreamChangesSuccess = false
   if (branchName != null && branchOriginChecksums != null) {
-    const branchContentResponse = await operationContext.githubEndpoints.branchContents(
+    const branchContentResponse = await GithubApiEndpoints.branchContents(
       githubRepo,
       branchName,
       null,
@@ -939,18 +927,12 @@ export async function saveGithubAsset(
   projectID: string,
   path: string,
   dispatch: EditorDispatch,
-  operationContext: GithubOperationContext,
 ): Promise<void> {
   await runGithubOperation(
     { name: 'saveAsset', path: path },
     dispatch,
     async (operation: GithubOperation) => {
-      const response = await operationContext.githubEndpoints.asset(
-        githubRepo,
-        assetSha,
-        projectID,
-        path,
-      )
+      const response = await GithubApiEndpoints.asset(githubRepo, assetSha, projectID, path)
       if (!response.ok) {
         throw githubAPIErrorFromResponse(operation, response)
       }
@@ -971,89 +953,80 @@ export async function saveGithubAsset(
   )
 }
 
-export const resolveConflict =
-  (operationContext: GithubOperationContext) =>
-  async (
-    githubRepo: GithubRepo,
-    projectID: string,
-    path: string,
-    conflict: Conflict,
-    whichChange: 'utopia' | 'branch',
-    dispatch: EditorDispatch,
-  ): Promise<void> => {
-    async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
-      // Update the file in the server first before putting it into the project contents.
-      const projectFile = getProjectFileFromContents(file)
-      let gitBlobSha: string | undefined = undefined
-      switch (projectFile.type) {
-        case 'IMAGE_FILE':
-        case 'ASSET_FILE':
-          gitBlobSha = projectFile.gitBlobSha
-          break
-        default:
-      }
-      let saveAssetPromise: Promise<void>
-      if (gitBlobSha == null) {
-        saveAssetPromise = Promise.resolve()
-      } else {
-        saveAssetPromise = saveGithubAsset(
-          githubRepo,
-          gitBlobSha,
-          projectID,
-          path,
-          dispatch,
-          operationContext,
-        )
-      }
-      void saveAssetPromise.then(() => {
-        dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')
-      })
-    }
-
-    async function removeFromContents(): Promise<void> {
-      return new Promise((resolve) => {
-        dispatch([deleteFile(path), removeFileConflict(path)], 'everyone')
-        resolve()
-      })
-    }
-
-    // Handle the varying cases here.
-    switch (conflict.type) {
-      case 'DIFFERING_TYPES':
-        switch (whichChange) {
-          case 'utopia':
-            return updateFileInProjectContents(conflict.currentContents)
-          case 'branch':
-            return updateFileInProjectContents(conflict.branchContents)
-          default:
-            const _exhaustiveCheck: never = whichChange
-            throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
-        }
-        break
-      case 'CURRENT_DELETED_BRANCH_CHANGED':
-        switch (whichChange) {
-          case 'utopia':
-            return removeFromContents()
-          case 'branch':
-            return updateFileInProjectContents(conflict.branchContents)
-          default:
-            const _exhaustiveCheck: never = whichChange
-            throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
-        }
-        break
-      case 'CURRENT_CHANGED_BRANCH_DELETED':
-        switch (whichChange) {
-          case 'utopia':
-            return updateFileInProjectContents(conflict.currentContents)
-          case 'branch':
-            return removeFromContents()
-          default:
-            const _exhaustiveCheck: never = whichChange
-            throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
-        }
+export async function resolveConflict(
+  githubRepo: GithubRepo,
+  projectID: string,
+  path: string,
+  conflict: Conflict,
+  whichChange: 'utopia' | 'branch',
+  dispatch: EditorDispatch,
+): Promise<void> {
+  async function updateFileInProjectContents(file: ProjectContentsTree): Promise<void> {
+    // Update the file in the server first before putting it into the project contents.
+    const projectFile = getProjectFileFromContents(file)
+    let gitBlobSha: string | undefined = undefined
+    switch (projectFile.type) {
+      case 'IMAGE_FILE':
+      case 'ASSET_FILE':
+        gitBlobSha = projectFile.gitBlobSha
         break
       default:
-        const _exhaustiveCheck: never = conflict
-        throw new Error(`Unhandled conflict ${JSON.stringify(conflict)}`)
     }
+    let saveAssetPromise: Promise<void>
+    if (gitBlobSha == null) {
+      saveAssetPromise = Promise.resolve()
+    } else {
+      saveAssetPromise = saveGithubAsset(githubRepo, gitBlobSha, projectID, path, dispatch)
+    }
+    void saveAssetPromise.then(() => {
+      dispatch([updateFile(path, projectFile, true), removeFileConflict(path)], 'everyone')
+    })
   }
+
+  async function removeFromContents(): Promise<void> {
+    return new Promise((resolve) => {
+      dispatch([deleteFile(path), removeFileConflict(path)], 'everyone')
+      resolve()
+    })
+  }
+
+  // Handle the varying cases here.
+  switch (conflict.type) {
+    case 'DIFFERING_TYPES':
+      switch (whichChange) {
+        case 'utopia':
+          return updateFileInProjectContents(conflict.currentContents)
+        case 'branch':
+          return updateFileInProjectContents(conflict.branchContents)
+        default:
+          const _exhaustiveCheck: never = whichChange
+          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+      }
+      break
+    case 'CURRENT_DELETED_BRANCH_CHANGED':
+      switch (whichChange) {
+        case 'utopia':
+          return removeFromContents()
+        case 'branch':
+          return updateFileInProjectContents(conflict.branchContents)
+        default:
+          const _exhaustiveCheck: never = whichChange
+          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+      }
+      break
+    case 'CURRENT_CHANGED_BRANCH_DELETED':
+      switch (whichChange) {
+        case 'utopia':
+          return updateFileInProjectContents(conflict.currentContents)
+        case 'branch':
+          return removeFromContents()
+        default:
+          const _exhaustiveCheck: never = whichChange
+          throw new Error(`Unhandled change ${JSON.stringify(whichChange)}`)
+      }
+      break
+    default:
+      const _exhaustiveCheck: never = conflict
+      throw new Error(`Unhandled conflict ${JSON.stringify(conflict)}`)
+  }
+}

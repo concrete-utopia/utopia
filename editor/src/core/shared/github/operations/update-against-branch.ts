@@ -7,108 +7,105 @@ import {
   updateAgainstGithub,
   updateBranchContents,
   updateGithubData,
-  updateProjectContents,
 } from '../../../../components/editor/actions/action-creators'
 import type { GithubOperation, GithubRepo } from '../../../../components/editor/store/editor-state'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GetBranchContentResponse } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
 import { saveAssetsToProject } from './load-branch'
-import type { GithubOperationContext } from './github-operation-context'
+import { GithubApiEndpoints } from '../endpoints'
 
-export const updateProjectAgainstGithub =
-  (operationContext: GithubOperationContext) =>
-  async (
-    workers: UtopiaTsWorkers,
-    dispatch: EditorDispatch,
-    githubRepo: GithubRepo,
-    branchName: string,
-    commitSha: string,
-    projectID: string,
-    currentProjectContents: ProjectContentTreeRoot,
-  ): Promise<void> => {
-    await runGithubOperation(
-      { name: 'updateAgainstBranch' },
-      dispatch,
-      async (operation: GithubOperation) => {
-        const branchLatestRequest = operationContext.githubEndpoints.branchContents(
-          githubRepo,
-          branchName,
-          null,
-          null,
+export async function updateProjectAgainstGithub(
+  workers: UtopiaTsWorkers,
+  dispatch: EditorDispatch,
+  githubRepo: GithubRepo,
+  branchName: string,
+  commitSha: string,
+  projectID: string,
+  currentProjectContents: ProjectContentTreeRoot,
+): Promise<void> {
+  await runGithubOperation(
+    { name: 'updateAgainstBranch' },
+    dispatch,
+    async (operation: GithubOperation) => {
+      const branchLatestRequest = GithubApiEndpoints.branchContents(
+        githubRepo,
+        branchName,
+        null,
+        null,
+      )
+      const specificCommitRequest = GithubApiEndpoints.branchContents(
+        githubRepo,
+        branchName,
+        commitSha,
+        null,
+      )
+
+      const branchLatestResponse = await branchLatestRequest
+      const specificCommitResponse = await specificCommitRequest
+
+      if (!branchLatestResponse.ok) {
+        throw await githubAPIErrorFromResponse(operation, branchLatestResponse)
+      }
+      if (!specificCommitResponse.ok) {
+        throw await githubAPIErrorFromResponse(operation, specificCommitResponse)
+      }
+
+      const branchLatestContent: GetBranchContentResponse = await branchLatestResponse.json()
+
+      if (branchLatestContent.type === 'FAILURE') {
+        throw githubAPIError(operation, branchLatestContent.failureReason)
+      }
+      if (branchLatestContent.branch == null) {
+        throw githubAPIError(operation, `Could not find latest code for branch ${branchName}`)
+      }
+
+      const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
+      if (specificCommitContent.type === 'FAILURE') {
+        throw githubAPIError(operation, specificCommitContent.failureReason)
+      }
+      if (specificCommitContent.branch == null) {
+        throw githubAPIError(
+          operation,
+          `Could not find commit ${commitSha} for branch ${branchName}`,
         )
-        const specificCommitRequest = operationContext.githubEndpoints.branchContents(
-          githubRepo,
-          branchName,
-          commitSha,
-          null,
-        )
+      }
+      // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
+      // So that it will override any existing files that might already exist in the project when sending them to VS Code.
+      // TODO: Ideally this should only do a partial parse based on what has changed.
+      const parsedLatestContent = await updateProjectContentsWithParseResults(
+        workers,
+        branchLatestContent.branch.content,
+      )
 
-        const branchLatestResponse = await branchLatestRequest
-        const specificCommitResponse = await specificCommitRequest
+      // Save assets to the server from Github.
+      await saveAssetsToProject(
+        githubRepo,
+        projectID,
+        branchLatestContent.branch,
+        dispatch,
+        currentProjectContents,
+      )
 
-        if (!branchLatestResponse.ok) {
-          throw await githubAPIErrorFromResponse(operation, branchLatestResponse)
-        }
-        if (!specificCommitResponse.ok) {
-          throw await githubAPIErrorFromResponse(operation, specificCommitResponse)
-        }
-
-        const branchLatestContent: GetBranchContentResponse = await branchLatestResponse.json()
-
-        if (branchLatestContent.type === 'FAILURE') {
-          throw githubAPIError(operation, branchLatestContent.failureReason)
-        }
-        if (branchLatestContent.branch == null) {
-          throw githubAPIError(operation, `Could not find latest code for branch ${branchName}`)
-        }
-
-        const specificCommitContent: GetBranchContentResponse = await specificCommitResponse.json()
-        if (specificCommitContent.type === 'FAILURE') {
-          throw githubAPIError(operation, specificCommitContent.failureReason)
-        }
-        if (specificCommitContent.branch == null) {
-          throw githubAPIError(
-            operation,
-            `Could not find commit ${commitSha} for branch ${branchName}`,
-          )
-        }
-        // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
-        // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-        // TODO: Ideally this should only do a partial parse based on what has changed.
-        const parsedLatestContent = await updateProjectContentsWithParseResults(
-          workers,
-          branchLatestContent.branch.content,
-        )
-
-        // Save assets to the server from Github.
-        await saveAssetsToProject(operationContext)(
-          githubRepo,
-          projectID,
-          branchLatestContent.branch,
-          dispatch,
-          currentProjectContents,
-        )
-
-        dispatch(
-          [
-            updateBranchContents(parsedLatestContent),
-            updateAgainstGithub(
-              parsedLatestContent,
-              specificCommitContent.branch.content,
-              branchLatestContent.branch.originCommit,
-            ),
-            updateGithubData({
-              upstreamChanges: null,
-              lastRefreshedCommit: branchLatestContent.branch.originCommit,
-            }),
-            showToast(
-              notice(`Github: Updated the project against the branch ${branchName}.`, 'SUCCESS'),
-            ),
-          ],
-          'everyone',
-        )
-        return []
-      },
-    )
-  }
+      dispatch(
+        [
+          updateBranchContents(parsedLatestContent),
+          updateAgainstGithub(
+            parsedLatestContent,
+            specificCommitContent.branch.content,
+            branchLatestContent.branch.originCommit,
+          ),
+          updateGithubData({
+            upstreamChanges: null,
+            lastRefreshedCommit: branchLatestContent.branch.originCommit,
+          }),
+          showToast(
+            notice(`Github: Updated the project against the branch ${branchName}.`, 'SUCCESS'),
+          ),
+        ],
+        'everyone',
+      )
+      return []
+    },
+  )
+}

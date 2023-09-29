@@ -5,9 +5,9 @@ import type {
   GithubRepo,
   PullRequest,
 } from '../../../../components/editor/store/editor-state'
+import { GithubApiEndpoints } from '../endpoints'
 import type { GithubFailure } from '../helpers'
 import { githubAPIError, githubAPIErrorFromResponse, runGithubOperation } from '../helpers'
-import type { GithubOperationContext } from './github-operation-context'
 
 export interface GetBranchPullRequestSuccess {
   type: 'SUCCESS'
@@ -26,50 +26,42 @@ export function getPullRequestNumberFromUrl(url: string): number {
   }
 }
 
-export const updatePullRequestsForBranch =
-  (operationContext: GithubOperationContext) =>
-  async (
-    dispatch: EditorDispatch,
-    githubRepo: GithubRepo,
-    branchName: string,
-  ): Promise<Array<EditorAction>> => {
-    return runGithubOperation(
-      {
-        name: 'listPullRequestsForBranch',
-        githubRepo: githubRepo,
-        branchName: branchName,
-      },
-      dispatch,
-      async (operation: GithubOperation) => {
-        const response = await operationContext.githubEndpoints.updatePullRequests(
-          githubRepo,
-          branchName,
-        )
-        if (!response.ok) {
-          throw await githubAPIErrorFromResponse(operation, response)
-        }
+export async function updatePullRequestsForBranch(
+  dispatch: EditorDispatch,
+  githubRepo: GithubRepo,
+  branchName: string,
+): Promise<Array<EditorAction>> {
+  return runGithubOperation(
+    {
+      name: 'listPullRequestsForBranch',
+      githubRepo: githubRepo,
+      branchName: branchName,
+    },
+    dispatch,
+    async (operation: GithubOperation) => {
+      const response = await GithubApiEndpoints.updatePullRequests(githubRepo, branchName)
+      if (!response.ok) {
+        throw await githubAPIErrorFromResponse(operation, response)
+      }
 
-        const responseBody: GetBranchPullRequestResponse = await response.json()
+      const responseBody: GetBranchPullRequestResponse = await response.json()
 
-        switch (responseBody.type) {
-          case 'FAILURE':
-            throw githubAPIError(operation, responseBody.failureReason)
-          case 'SUCCESS':
-            return [
-              updateGithubData({
-                currentBranchPullRequests: responseBody.pullRequests.map((pr) => ({
-                  ...pr,
-                  number: getPullRequestNumberFromUrl(pr.htmlURL),
-                })),
-              }),
-            ]
-          default:
-            const _exhaustiveCheck: never = responseBody
-            throw githubAPIError(
-              operation,
-              `Unhandled response body ${JSON.stringify(responseBody)}`,
-            )
-        }
-      },
-    )
-  }
+      switch (responseBody.type) {
+        case 'FAILURE':
+          throw githubAPIError(operation, responseBody.failureReason)
+        case 'SUCCESS':
+          return [
+            updateGithubData({
+              currentBranchPullRequests: responseBody.pullRequests.map((pr) => ({
+                ...pr,
+                number: getPullRequestNumberFromUrl(pr.htmlURL),
+              })),
+            }),
+          ]
+        default:
+          const _exhaustiveCheck: never = responseBody
+          throw githubAPIError(operation, `Unhandled response body ${JSON.stringify(responseBody)}`)
+      }
+    },
+  )
+}

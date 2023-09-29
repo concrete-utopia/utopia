@@ -7,11 +7,7 @@ import {
 } from '../../../components/canvas/ui-jsx.test-utils'
 import { createTestProjectWithCode } from '../../../sample-projects/sample-project-utils.test-utils'
 import type { GetBranchContentResponse } from './helpers'
-import {
-  MockGithubOperations,
-  fakeResponse,
-  loginUserToGithubForTests,
-} from './operations/github-operations.test-utils'
+import { loginUserToGithubForTests } from './operations/github-operations.test-utils'
 import type { GetBranchesSuccess } from './operations/list-branches'
 import type { GetUsersPublicRepositoriesSuccess } from './operations/load-repositories'
 

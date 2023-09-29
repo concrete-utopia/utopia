@@ -28,7 +28,6 @@ import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { Ellipsis } from './github-file-changes-list'
 import { GithubSpinner } from './github-spinner'
 import { RefreshIcon } from './refresh-icon'
-import { GithubOperations } from '../../../../core/shared/github/operations'
 
 interface RepositoryRowProps extends RepositoryEntry {
   importPermitted: boolean
@@ -240,7 +239,7 @@ export const RepositoryListing = React.memo(
     const dispatch = useDispatch()
 
     const refreshRepos = React.useCallback(() => {
-      void GithubOperations.getUsersPublicGithubRepositories(dispatch).then((actions) => {
+      void getUsersPublicGithubRepositories(dispatch).then((actions) => {
         dispatch(actions, 'everyone')
       })
     }, [dispatch])
