@@ -41,7 +41,6 @@ export interface DragInteractionData {
   _accumulatedMovement: CanvasVector
   spacePressed: boolean
   zeroDragPermitted: ZeroDragPermitted // Will still complete the interaction with no drag distance applied.
-  hasBeenPastThreshold: boolean
 }
 
 export interface HoverInteractionData {
@@ -202,7 +201,6 @@ export function createInteractionViaMouse(
       _accumulatedMovement: zeroCanvasPoint,
       spacePressed: false,
       zeroDragPermitted: zeroDragPermitted,
-      hasBeenPastThreshold: false,
     },
     activeControl: activeControl,
     lastInteractionTime: Date.now(),
@@ -263,8 +261,6 @@ export function updateInteractionViaDragDelta(
         _accumulatedMovement: accumulatedMovement,
         spacePressed: currentState.interactionData.spacePressed,
         zeroDragPermitted: currentState.interactionData.zeroDragPermitted,
-        hasBeenPastThreshold:
-          currentState.interactionData.hasBeenPastThreshold || dragThresholdPassed,
       },
       activeControl: sourceOfUpdate ?? currentState.activeControl,
       lastInteractionTime: Date.now(),
@@ -338,7 +334,6 @@ function updateInteractionDataViaMouse(
             _accumulatedMovement: currentData._accumulatedMovement,
             spacePressed: currentData.spacePressed,
             zeroDragPermitted: currentData.zeroDragPermitted,
-            hasBeenPastThreshold: currentData.hasBeenPastThreshold || dragThresholdPassed,
           }
         case 'HOVER':
           return {
@@ -352,7 +347,6 @@ function updateInteractionDataViaMouse(
             _accumulatedMovement: zeroCanvasPoint,
             spacePressed: false,
             zeroDragPermitted: currentData.zeroDragPermitted,
-            hasBeenPastThreshold: false,
           }
         default:
           assertNever(currentData)
@@ -444,9 +438,6 @@ export function updateInteractionViaKeyboard(
           _accumulatedMovement: currentState.interactionData._accumulatedMovement,
           spacePressed: isSpacePressed,
           zeroDragPermitted: currentState.interactionData.zeroDragPermitted,
-          hasBeenPastThreshold:
-            currentState.interactionData.hasBeenPastThreshold ||
-            dragExceededThreshold(currentState.interactionData.drag),
         },
         activeControl: currentState.activeControl,
         lastInteractionTime: Date.now(),

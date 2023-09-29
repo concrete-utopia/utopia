@@ -2056,7 +2056,7 @@ export const ModifiersKeepDeepEquality: KeepDeepEqualityCall<Modifiers> = combin
 )
 
 export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInteractionData> =
-  combine10EqualityCalls(
+  combine9EqualityCalls(
     (data) => data.dragStart,
     CanvasPointKeepDeepEquality,
     (data) => data.drag,
@@ -2075,8 +2075,6 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
     BooleanKeepDeepEquality,
     (data) => data.zeroDragPermitted,
     createCallWithTripleEquals<ZeroDragPermitted>(),
-    (data) => data.hasBeenPastThreshold,
-    BooleanKeepDeepEquality,
     (
       dragStart,
       drag,
@@ -2087,7 +2085,6 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
       accumulatedMovement,
       spacePressed,
       zeroDragPermitted,
-      hasBeenPastThreshold,
     ) => {
       return {
         type: 'DRAG',
@@ -2100,7 +2097,6 @@ export const DragInteractionDataKeepDeepEquality: KeepDeepEqualityCall<DragInter
         _accumulatedMovement: accumulatedMovement,
         spacePressed: spacePressed,
         zeroDragPermitted: zeroDragPermitted,
-        hasBeenPastThreshold: hasBeenPastThreshold,
       }
     },
   )

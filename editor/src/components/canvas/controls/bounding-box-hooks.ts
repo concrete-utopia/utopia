@@ -57,7 +57,7 @@ function useBoundingBoxFromMetadataRef(
     (store) => {
       return (
         store.editor.canvas.interactionSession?.interactionData.type === 'DRAG' &&
-        store.editor.canvas.interactionSession?.interactionData.hasBeenPastThreshold
+        store.editor.canvas.interactionSession?.interactionData.drag != null
       )
     },
     'useBoundingBoxFromMetadataRef isInteractionDraggingPastThreshold',

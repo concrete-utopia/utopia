@@ -214,7 +214,6 @@ describe('interactionStart', () => {
           "x": 100,
           "y": 200,
         },
-        "hasBeenPastThreshold": false,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -376,7 +375,6 @@ describe('interactionUpdate', () => {
           "x": 100,
           "y": 200,
         },
-        "hasBeenPastThreshold": true,
         "hasMouseMoved": true,
         "modifiers": Object {
           "alt": false,
@@ -533,7 +531,6 @@ describe('interactionHardReset', () => {
           "x": 110,
           "y": 210,
         },
-        "hasBeenPastThreshold": false,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
@@ -706,7 +703,6 @@ describe('interactionUpdate with user changed strategy', () => {
           "x": 110,
           "y": 210,
         },
-        "hasBeenPastThreshold": false,
         "hasMouseMoved": false,
         "modifiers": Object {
           "alt": false,
