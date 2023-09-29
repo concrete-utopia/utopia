@@ -357,11 +357,11 @@ const TextEditor = React.memo((props: TextEditorProps) => {
           if (elementState != null && savedContentRef.current !== content) {
             savedContentRef.current = content
             requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
-          }
 
-          // remove dangling empty spans
-          if (content != null && content.replace(/^\n/, '').length === 0 && canDeleteWhenEmpty) {
-            requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+            // remove dangling empty spans
+            if (content != null && content.replace(/^\n/, '').length === 0 && canDeleteWhenEmpty) {
+              requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+            }
           }
         }
       }
