@@ -165,6 +165,8 @@ import {
 import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import { generateConsistentUID } from '../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -965,7 +967,10 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
-        let uid = generateUidWithExistingComponents(editor.projectContents)
+        let uid = generateConsistentUID(
+          'wrapper',
+          new Set(getAllUniqueUids(editor.projectContents).uniqueIDs),
+        )
         return [
           EditorActions.wrapInElement(editor.selectedViews, {
             element: defaultDivElement(uid),
