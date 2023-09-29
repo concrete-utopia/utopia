@@ -342,6 +342,12 @@ const TextEditor = React.memo((props: TextEditorProps) => {
       currentElement.style.minWidth = '0.5px'
     }
 
+    const canDeleteWhenEmpty = canDeleteElementWhenEmpty(
+      metadataRef.current,
+      elementPath,
+      allElementPropsRef.current,
+    )
+
     return () => {
       const content = currentElement.textContent
       if (content != null) {
@@ -352,10 +358,15 @@ const TextEditor = React.memo((props: TextEditorProps) => {
             savedContentRef.current = content
             requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
           }
+
+          // remove dangling empty spans
+          if (content != null && content.replace(/^\n/, '').length === 0 && canDeleteWhenEmpty) {
+            requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+          }
         }
       }
     }
-  }, [dispatch, elementPath, elementState, metadataRef, textProp])
+  }, [dispatch, elementPath, elementState, textProp, metadataRef, allElementPropsRef])
 
   React.useLayoutEffect(() => {
     if (myElement.current == null) {
@@ -440,16 +451,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     } else {
       dispatch([updateEditorMode(EditorModes.selectMode(null, false, 'none'))])
     }
-
-    // remove dangling empty spans
-    if (
-      content != null &&
-      content.replace(/^\n/, '').length === 0 &&
-      canDeleteWhenEmpty(metadataRef.current, elementPath, allElementPropsRef.current)
-    ) {
-      requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
-    }
-  }, [dispatch, elementPath, elementState, textProp, metadataRef, allElementPropsRef])
+  }, [dispatch, elementPath, elementState, textProp])
 
   const editorProps: React.DetailedHTMLProps<
     React.HTMLAttributes<HTMLSpanElement>,
@@ -621,7 +623,7 @@ const allowedStyleKeysForDeletion: string[] = [
   'font',
 ]
 
-function canDeleteWhenEmpty(
+function canDeleteElementWhenEmpty(
   jsxMetadata: ElementInstanceMetadataMap,
   path: ElementPath,
   allElementProps: AllElementProps,

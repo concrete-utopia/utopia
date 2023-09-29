@@ -357,7 +357,7 @@ describe('Use the text editor', () => {
   })
   describe('blur', () => {
     describe('when the element is empty', () => {
-      it('deletes existing elements', async () => {
+      it('keeps existing elements', async () => {
         const editor = await renderTestEditorWithCode(projectWithText, 'await-first-dom-report')
 
         await enterTextEditMode(editor)
@@ -375,7 +375,20 @@ describe('Use the text editor', () => {
 
 
             export var storyboard = (
-              <Storyboard data-uid='sb' />
+              <Storyboard data-uid='sb'>
+                <div
+                  data-testid='div'
+                  style={{
+                    backgroundColor: '#0091FFAA',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 288,
+                    height: 362,
+                  }}
+                  data-uid='39e'
+                />
+              </Storyboard>
             )`),
         )
       })
@@ -405,6 +418,177 @@ describe('Use the text editor', () => {
             export var storyboard = (
               <Storyboard data-uid='sb' />
             )`),
+        )
+      })
+      it('deletes existing span elements', async () => {
+        const editor = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <span
+                  data-uid='span'
+                  data-testid='span'
+                  style={{
+                    position: 'absolute',
+                    wordBreak: 'break-word',
+                    left: 0,
+                    top: 0,
+                    width: 'max-content',
+                    height: 'max-content',
+                  }}
+                >
+                  Hello
+                </span>
+              </Storyboard>
+            )
+          `),
+          'await-first-dom-report',
+        )
+
+        await enterTextEditMode(editor, 'span')
+
+        deleteTypedText()
+
+        await closeTextEditor()
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb' />
+            )
+          `),
+        )
+      })
+      it('does not delete span elements with styling', async () => {
+        const editor = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <span
+                  data-uid='span'
+                  data-testid='span'
+                  style={{
+                    position: 'absolute',
+                    wordBreak: 'break-word',
+                    left: 0,
+                    top: 0,
+                    width: 'max-content',
+                    height: 'max-content',
+                    border: '1px solid red',
+                  }}
+                >
+                  Hello
+                </span>
+              </Storyboard>
+            )
+          `),
+          'await-first-dom-report',
+        )
+
+        await enterTextEditMode(editor, 'span')
+
+        deleteTypedText()
+
+        await closeTextEditor()
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <span
+                  data-uid='span'
+                  data-testid='span'
+                  style={{
+                    position: 'absolute',
+                    wordBreak: 'break-word',
+                    left: 0,
+                    top: 0,
+                    width: 'max-content',
+                    height: 'max-content',
+                    border: '1px solid red',
+                  }}
+                />
+              </Storyboard>
+            )
+          `),
+        )
+      })
+      it('does not delete span elements with event handlers', async () => {
+        const editor = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <span
+                  data-uid='span'
+                  data-testid='span'
+                  style={{
+                    position: 'absolute',
+                    wordBreak: 'break-word',
+                    left: 0,
+                    top: 0,
+                    width: 'max-content',
+                    height: 'max-content',
+                  }}
+                  onClick={() => console.log('click')}
+                >
+                  Hello
+                </span>
+              </Storyboard>
+            )
+          `),
+          'await-first-dom-report',
+        )
+
+        await enterTextEditMode(editor, 'span')
+
+        deleteTypedText()
+
+        await closeTextEditor()
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(editor.getEditorState().editor.mode.type).toEqual('select')
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          formatTestProjectCode(`
+            import * as React from 'react'
+            import { Storyboard } from 'utopia-api'
+
+            export var storyboard = (
+              <Storyboard data-uid='sb'>
+                <span
+                  data-uid='span'
+                  data-testid='span'
+                  style={{
+                    position: 'absolute',
+                    wordBreak: 'break-word',
+                    left: 0,
+                    top: 0,
+                    width: 'max-content',
+                    height: 'max-content',
+                  }}
+                  onClick={() => console.log('click')}
+                />
+              </Storyboard>
+            )
+          `),
         )
       })
     })
@@ -1784,20 +1968,23 @@ async function testModifierExpectingWayTooManySavesTheFirstTime(
   return { before, after }
 }
 
-async function enterTextEditMode(editor: EditorRenderResult): Promise<void> {
+async function enterTextEditMode(
+  editor: EditorRenderResult,
+  testId: string = 'div',
+): Promise<void> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
-  const div = editor.renderedDOM.getByTestId('div')
-  const divBounds = div.getBoundingClientRect()
-  const divCorner = {
-    x: divBounds.x + 50,
-    y: divBounds.y + 40,
+  const element = editor.renderedDOM.getByTestId(testId)
+  const bounds = element.getBoundingClientRect()
+  const corner = {
+    x: bounds.x + 1,
+    y: bounds.y + 1,
   }
 
   FOR_TESTS_setNextGeneratedUid('text-span')
 
   await pressKey('t')
   await editor.getDispatchFollowUpActionsFinished()
-  await mouseClickAtPoint(canvasControlsLayer, divCorner)
+  await mouseClickAtPoint(canvasControlsLayer, corner)
   await editor.getDispatchFollowUpActionsFinished()
 }
 
@@ -1905,6 +2092,66 @@ function projectWithoutTextWithExtraStyle(extraStyleProps: { [prop: string]: str
           style={${JSON.stringify(styleProps)}}
           data-uid='39e'
         />
+      </Storyboard>
+    )
+  `)
+}
+
+const projectWithTextSpan = formatTestProjectCode(`
+import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <span
+      data-testid='span'
+      style={{
+        position: 'absolute',
+        wordBreak: 'break-word',
+        left: 0,
+        top: 0,
+        width: 'max-content',
+        height: 'max-content',
+      }}
+    >
+      Hello
+    </span>
+  </Storyboard>
+)
+`)
+
+function projectWithoutTextSpanWithExtraStyle(extraStyleProps: { [prop: string]: string }) {
+  const styleProps = {
+    backgroundColor: '#0091FFAA',
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    width: 288,
+    height: 362,
+    ...extraStyleProps,
+  }
+
+  return formatTestProjectCode(`
+    import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+
+
+    export var storyboard = (
+      <Storyboard data-uid='sb'>
+        <span
+          data-testid='span'
+          style={{
+            position: 'absolute',
+            wordBreak: 'break-word',
+            left: 0,
+            top: 0,
+            width: 'max-content',
+            height: 'max-content',
+          }}
+        >
+          Hello
+        </span>
       </Storyboard>
     )
   `)
