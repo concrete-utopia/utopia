@@ -1981,6 +1981,7 @@ describe('Canvas controls with Remix', () => {
 
     await renderResult.dispatch([selectComponents([path1, path2], false)], true)
     await renderResult.getDispatchFollowUpActionsFinished()
+    await wait(1)
 
     const nonResizableControl = renderResult.renderedDOM.queryByTestId(NonResizableControlTestId)
     expect(nonResizableControl).toBeNull()
