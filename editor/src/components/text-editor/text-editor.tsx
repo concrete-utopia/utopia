@@ -442,9 +442,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (
       content != null &&
       content.replace(/^\n/, '').length === 0 &&
-      MetadataUtils.isMaybeSpan(
-        MetadataUtils.findElementByElementPath(metadataRef.current, elementPath),
-      )
+      canDeleteWhenEmpty(metadataRef.current, elementPath)
     ) {
       requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
     }
@@ -603,4 +601,15 @@ function getSaveAction(
   textProp: TextProp,
 ): EditorAction {
   return updateText(elementPath, escapeHTML(content, textProp), textProp)
+}
+
+function canDeleteWhenEmpty(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (element == null) {
+    return false
+  }
+  if (!MetadataUtils.isSpan(element)) {
+    return false
+  }
+  return true
 }

@@ -903,9 +903,6 @@ export const MetadataUtils = {
   isSpan(instance: ElementInstanceMetadata): boolean {
     return this.isElementOfType(instance, 'span')
   },
-  isMaybeSpan(instance: ElementInstanceMetadata | null): boolean {
-    return instance != null && this.isElementOfType(instance, 'span')
-  },
   targetIsScene(metadata: ElementInstanceMetadataMap, path: ElementPath): boolean {
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, path)
     return elementMetadata != null && isSceneFromMetadata(elementMetadata)
