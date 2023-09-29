@@ -11,8 +11,10 @@ import {
   Icons,
   LargerIcons,
   SimpleFlexRow,
+  SquareButton,
   UNSAFE_getIconURL,
   useColorTheme,
+  UtopiaTheme,
 } from '../../uuiui'
 import type { LoginState } from '../../uuiui-deps'
 import type { EditorAction } from '../editor/action-types'
@@ -334,6 +336,47 @@ export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
   )
 })
 
+export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
+  const { drag } = useGridPanelDraggable(props.panelData)
+  const theme = useColorTheme()
+  return (
+    <div
+      ref={drag}
+      className='handle'
+      style={{
+        height: 28,
+        width: '100%',
+        backgroundColor: theme.inspectorBackground.value,
+        paddingLeft: 10,
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        fontWeight: 600,
+      }}
+    >
+      <div
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: 8,
+          backgroundColor: '#C0EADB',
+        }}
+      />
+      <div
+        style={{
+          width: 8,
+          height: 8,
+          borderRadius: 8,
+          backgroundColor: '#F7CBCA',
+        }}
+      />
+      <span style={{ marginLeft: 8 }}>Code </span>
+      {/* <SquareButton highlight>+</SquareButton> */}
+    </div>
+  )
+})
+
 const TitleBar = React.memo(() => {
   const dispatch = useDispatch()
   const { loginState } = useEditorState(
@@ -516,6 +559,7 @@ const TitleBar = React.memo(() => {
               paddingRight: 8,
               background: colorTheme.dynamicBlue.value,
               color: colorTheme.bg1.value,
+              borderRadius: 20,
             }}
             onClick={onClickLoginNewTab}
           >
