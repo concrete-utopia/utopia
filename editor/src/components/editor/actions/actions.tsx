@@ -484,6 +484,7 @@ import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
+  fixParentContainingBlockSettings,
   isTextContainingConditional,
   unwrapConditionalClause,
   unwrapTextContainingConditional,
@@ -2139,12 +2140,13 @@ export const UPDATE_FNS = {
         if (newPath == null) {
           return editor
         }
+        const withFixedParents = fixParentContainingBlockSettings(updatedEditor, newPath)
 
         // TODO maybe update frames and position
         const frameChanges: Array<PinOrFlexFrameChange> = []
         const withWrapperViewAdded = {
           ...setCanvasFramesInnerNew(
-            includeToast(detailsOfUpdate, updatedEditor),
+            includeToast(detailsOfUpdate, withFixedParents),
             frameChanges,
             null,
           ),
@@ -2164,18 +2166,16 @@ export const UPDATE_FNS = {
           return childInsertionPath(newPath)
         }
 
-        const actualInsertionPath = insertionPath()
-
         const { editor: editorWithElementsInserted, newPaths } = insertIntoWrapper(
           orderedActionTargets,
-          actualInsertionPath,
+          insertionPath(),
           includeToast(detailsOfUpdate, withWrapperViewAdded),
           derived,
         )
 
         return {
           ...editorWithElementsInserted,
-          selectedViews: [actualInsertionPath.intendedParentPath],
+          selectedViews: newPaths,
           highlightedViews: [],
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...editorWithElementsInserted.trueUpGroupsForElementAfterDomWalkerRuns,
