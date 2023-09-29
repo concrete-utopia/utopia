@@ -2164,16 +2164,18 @@ export const UPDATE_FNS = {
           return childInsertionPath(newPath)
         }
 
+        const actualInsertionPath = insertionPath()
+
         const { editor: editorWithElementsInserted, newPaths } = insertIntoWrapper(
           orderedActionTargets,
-          insertionPath(),
+          actualInsertionPath,
           includeToast(detailsOfUpdate, withWrapperViewAdded),
           derived,
         )
 
         return {
           ...editorWithElementsInserted,
-          selectedViews: newPaths,
+          selectedViews: [actualInsertionPath.intendedParentPath],
           highlightedViews: [],
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...editorWithElementsInserted.trueUpGroupsForElementAfterDomWalkerRuns,
