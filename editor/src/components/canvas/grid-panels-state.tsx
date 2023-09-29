@@ -12,6 +12,7 @@ import invariant from '../../third-party/remix/invariant'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { atom, useAtom, useAtomValue } from 'jotai'
 import immutableUpdate from 'immutability-helper'
+import { deepFreeze } from '../../utils/deep-freeze'
 
 export const GridMenuWidth = 268
 export const GridMenuMinWidth = 200
@@ -160,6 +161,8 @@ export function updateLayout(
   const panelToInsert = storedPanel(paneToMove)
 
   function insertPanel(layout: StoredLayout) {
+    deepFreeze(layout)
+
     if (update.type === 'before-column' || update.type === 'after-column') {
       const atLeastOneEmptyColumn = layout.some((col) => col.panels.length === 0)
       if (!atLeastOneEmptyColumn) {
@@ -189,11 +192,10 @@ export function updateLayout(
       const working = [...layout]
 
       // insert
-      working[update.columnIndex].panels = insert(
-        update.indexInColumn,
-        panelToInsert,
-        working[update.columnIndex].panels,
-      )
+      working[update.columnIndex] = {
+        ...working[update.columnIndex],
+        panels: insert(update.indexInColumn, panelToInsert, working[update.columnIndex].panels),
+      }
 
       return removeOldPanel(working)
     }
@@ -201,11 +203,10 @@ export function updateLayout(
       const working = [...layout]
 
       // insert
-      working[update.columnIndex].panels = insert(
-        update.indexInColumn + 1,
-        panelToInsert,
-        working[update.columnIndex].panels,
-      )
+      working[update.columnIndex] = {
+        ...working[update.columnIndex],
+        panels: insert(update.indexInColumn + 1, panelToInsert, working[update.columnIndex].panels),
+      }
 
       return removeOldPanel(working)
     }
