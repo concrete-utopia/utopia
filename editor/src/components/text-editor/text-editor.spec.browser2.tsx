@@ -448,7 +448,7 @@ describe('Use the text editor', () => {
           'await-first-dom-report',
         )
 
-        await enterTextEditMode(editor, 'span')
+        await enterTextEditMode(editor, 'start', 'span')
 
         deleteTypedText()
 
@@ -496,7 +496,7 @@ describe('Use the text editor', () => {
           'await-first-dom-report',
         )
 
-        await enterTextEditMode(editor, 'span')
+        await enterTextEditMode(editor, 'start', 'span')
 
         deleteTypedText()
 
@@ -558,7 +558,7 @@ describe('Use the text editor', () => {
           'await-first-dom-report',
         )
 
-        await enterTextEditMode(editor, 'span')
+        await enterTextEditMode(editor, 'start', 'span')
 
         deleteTypedText()
 
@@ -1970,14 +1970,15 @@ async function testModifierExpectingWayTooManySavesTheFirstTime(
 
 async function enterTextEditMode(
   editor: EditorRenderResult,
+  where: 'start' | 'end' = 'end',
   testId: string = 'div',
 ): Promise<void> {
   const canvasControlsLayer = editor.renderedDOM.getByTestId(CanvasControlsContainerID)
   const element = editor.renderedDOM.getByTestId(testId)
   const bounds = element.getBoundingClientRect()
   const corner = {
-    x: bounds.x + 1,
-    y: bounds.y + 1,
+    x: bounds.x + (where === 'start' ? 1 : 50),
+    y: bounds.y + (where === 'start' ? 1 : 40),
   }
 
   FOR_TESTS_setNextGeneratedUid('text-span')
@@ -1987,7 +1988,6 @@ async function enterTextEditMode(
   await mouseClickAtPoint(canvasControlsLayer, corner)
   await editor.getDispatchFollowUpActionsFinished()
 }
-
 function typeText(text: string) {
   document.execCommand('insertText', false, text)
 }
