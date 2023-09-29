@@ -38,6 +38,7 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
+import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
 
 export const AbsoluteResizeControlTestId = (targets: Array<ElementPath>): string =>
   `${targets.map(EP.toString).sort()}-absolute-resize-control`
@@ -399,15 +400,45 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
   }
 }
 
+export type SizeLabelSize = {
+  type: 'SIZE_LABEL_WITH_DIMENSIONS'
+  h: string
+  v: string
+}
+
+function sizeLabelWithDimensions(h: string, v: string): SizeLabelSize {
+  return {
+    type: 'SIZE_LABEL_WITH_DIMENSIONS',
+    h: h,
+    v: v,
+  }
+}
+
+export type SizeLabelGroup = {
+  type: 'SIZE_LABEL_GROUP'
+}
+
+function sizeLabelGroup(): SizeLabelGroup {
+  return {
+    type: 'SIZE_LABEL_GROUP',
+  }
+}
+
+export type SizeLabelContents = SizeLabelSize | SizeLabelGroup
+
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
-): { h: string; v: string } | null {
+): SizeLabelContents | null {
   if (selectedElements.length === 0) {
     return null
   }
 
   if (selectedElements.length === 1) {
+    if (treatElementAsGroupLike(metadata, selectedElements[0])) {
+      return sizeLabelGroup()
+    }
+
     const globalFrame = MetadataUtils.findElementByElementPath(
       metadata,
       selectedElements[0],
@@ -422,17 +453,17 @@ function sizeLabelContents(
     const vertical =
       detectFillHugFixedState('vertical', metadata, selectedElements[0]).fixedHugFill?.type ??
       'fixed'
-    return {
-      h: sizeLabel(horizontal, globalFrame.width),
-      v: sizeLabel(vertical, globalFrame.height),
-    }
+    return sizeLabelWithDimensions(
+      sizeLabel(horizontal, globalFrame.width),
+      sizeLabel(vertical, globalFrame.height),
+    )
   }
 
   const boundingBox = boundingRectangleArray(
     selectedElements.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
   )
   if (boundingBox != null) {
-    return { h: `${boundingBox.width}`, v: `${boundingBox.height}` }
+    return sizeLabelWithDimensions(`${boundingBox.width}`, `${boundingBox.height}`)
   }
 
   return null
@@ -449,6 +480,20 @@ const ExplicitHeightHacked = 20
 const BorderRadius = 2
 const SizeLabelMarginTop = 8
 
+function getLabelText(label: SizeLabelContents | null): string | null {
+  if (label == null) {
+    return null
+  }
+  switch (label.type) {
+    case 'SIZE_LABEL_GROUP':
+      return 'Group'
+    case 'SIZE_LABEL_WITH_DIMENSIONS':
+      return `${label.h} x ${label.v}`
+    default:
+      assertNever(label)
+  }
+}
+
 const SizeLabel = React.memo(
   React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
     const scale = useEditorState(
@@ -464,8 +509,7 @@ const SizeLabel = React.memo(
     )
 
     const label = sizeLabelContents(metadata, targets)
-
-    const labelText = label == null ? null : `${label.h} x ${label.v}`
+    const labelText = getLabelText(label)
 
     return (
       <div
