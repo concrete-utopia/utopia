@@ -158,6 +158,7 @@ export const GridColumnResizeHandle = React.memo(
         <div
           onMouseDown={handleResizeMouseDown}
           style={{
+            zIndex: 1, // I feel really bad about this, but _something_ is over this draggable div if there are multiple panels in a column
             position: 'absolute',
             pointerEvents: 'initial',
             gridRowStart: 1,
