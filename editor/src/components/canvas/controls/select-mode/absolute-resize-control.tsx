@@ -2,7 +2,7 @@ import React from 'react'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   canvasRectangle,
@@ -430,6 +430,7 @@ export type SizeLabelContents = SizeLabelSize | SizeLabelGroup
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
+  boundingBox: CanvasRectangle | null,
 ): SizeLabelContents | null {
   if (selectedElements.length === 0) {
     return null
@@ -460,9 +461,6 @@ function sizeLabelContents(
     )
   }
 
-  const boundingBox = boundingRectangleArray(
-    selectedElements.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
-  )
   if (boundingBox != null) {
     return sizeLabelWithDimensions(`${boundingBox.width}`, `${boundingBox.height}`)
   }
@@ -509,7 +507,11 @@ const SizeLabel = React.memo(
       'ResizeLabel metadata',
     )
 
-    const label = sizeLabelContents(metadata, targets)
+    const boundingBox = boundingRectangleArray(
+      targets.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
+    )
+
+    const label = sizeLabelContents(metadata, targets, boundingBox)
     const labelText = getLabelText(label)
 
     const [dimmed, setDimmed] = React.useState(false)
@@ -524,23 +526,19 @@ const SizeLabel = React.memo(
     }))
 
     const onMouseEnter = React.useCallback(() => {
+      const distanceBetweenBoxAndLabel = 10 // px
       const labelRect = document.getElementById(SizeLabelID)?.getBoundingClientRect()
-      if (labelRect != null) {
-        const coords = windowToCanvasCoordinates(
-          editorRef.current.scale,
-          editorRef.current.offset,
-          windowPoint({
-            x: labelRect.x * editorRef.current.scale,
-            y: labelRect.y * editorRef.current.scale,
-          }),
-        )
+      if (boundingBox != null && labelRect != null) {
         const area = canvasRectangle({
-          x: coords.canvasPositionRounded.x,
-          y: coords.canvasPositionRounded.y,
+          x: boundingBox.x + (boundingBox.width - labelRect.width) / 2,
+          y:
+            boundingBox.y +
+            boundingBox.height +
+            distanceBetweenBoxAndLabel / editorRef.current.scale,
           width: labelRect.width,
           height: labelRect.height,
         })
-        const underLabel = getAllTargetsUnderAreaAABB(
+        const elementsUnderLabel = getAllTargetsUnderAreaAABB(
           editorRef.current.jsxMetadata,
           [],
           editorRef.current.hiddenInstances,
@@ -550,9 +548,10 @@ const SizeLabel = React.memo(
           editorRef.current.allElementProps,
           true,
         )
-        setDimmed(underLabel.length > 0)
+        setDimmed(elementsUnderLabel.length > 0)
       }
-    }, [editorRef])
+    }, [editorRef, boundingBox])
+
     const onMouseLeave = React.useCallback(() => {
       setDimmed(false)
     }, [])
