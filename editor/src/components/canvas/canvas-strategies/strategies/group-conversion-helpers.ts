@@ -115,6 +115,7 @@ import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
 import { createMoveCommandsForElement } from './shared-move-strategies-helpers'
 import { getConditionalActiveCase } from '../../../../core/model/conditionals'
+import { showToastCommand } from '../../commands/show-toast-command'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -643,6 +644,11 @@ export function convertFrameToGroup(
     }),
     ...moveChildrenCommands,
     queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
+    showToastCommand(
+      'Converted to group and removed styling',
+      'INFO',
+      'convert-frame-to-group-toast',
+    ),
   ]
 }
 
