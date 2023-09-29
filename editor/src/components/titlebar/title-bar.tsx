@@ -141,6 +141,7 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
+        flexShrink: 0,
       }}
     >
       <div
@@ -497,11 +498,10 @@ const TitleBar = React.memo(() => {
           paddingRight: 16,
           borderRadius: 16,
           background: colorTheme.bg1.value,
-          height: 27,
         }}
       >
         {currentBranch != null ? (
-          <SimpleFlexRow style={{ gap: 5 }}>
+          <SimpleFlexRow style={{ gap: 5, flexShrink: 0 }}>
             {repoName}
             {<Icons.Branch style={{ width: 19, height: 19 }} />}
             {currentBranch}
