@@ -233,8 +233,8 @@ export function createHoverInteractionViaMouse(
   }
 }
 
-export function dragExceededThreshold(drag: CanvasVector | null): boolean {
-  return drag != null && magnitude(drag) > MoveIntoDragThreshold
+function dragExceededThreshold(drag: CanvasVector): boolean {
+  return magnitude(drag) > MoveIntoDragThreshold
 }
 
 export function updateInteractionViaDragDelta(
