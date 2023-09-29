@@ -140,21 +140,28 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 10,
         flexShrink: 0,
       }}
     >
-      <div
-        style={{ width: 8, height: 8, borderRadius: 8, backgroundColor: theme.brandNeonPink.value }}
-      />
-      <div
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.brandNeonGreen.value,
-        }}
-      />
+      <FlexRow css={{ gap: 6 }}>
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.unavailableGrey.value,
+          }}
+        />
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.unavailableGrey.value,
+          }}
+        />
+      </FlexRow>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {currentBranch != null ? (
           <SimpleFlexRow
