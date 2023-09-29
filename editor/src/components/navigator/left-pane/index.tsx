@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
+import { FlexRow, ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
 import type { ResizableProps } from '../../../uuiui-deps'
 import { User } from '../../../uuiui-deps'
 import { MenuTab } from '../../../uuiui/menu-tab'
@@ -19,7 +19,6 @@ import {
 } from '../../editor/store/editor-state'
 import { LowPriorityStoreProvider } from '../../editor/store/store-context-providers'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ContentsPane } from './contents-pane'
 import { ForksGiven } from './forks-given'
 import { GithubPane } from './github-pane'
@@ -143,12 +142,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
             overflowY: 'scroll',
           }}
         >
-          <UIGridRow
-            variant='|--67px--||--67px--||--67px--||--67px--|'
-            padded={false}
-            css={{ gridColumnGap: 0 }}
-            style={{ alignItems: 'stretch', marginBottom: 10 }}
-          >
+          <FlexRow style={{ marginBottom: 10, gap: 10 }} css={undefined}>
             <MenuTab
               label={'Navigator'}
               selected={selectedTab === LeftMenuTab.Navigator}
@@ -164,8 +158,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
               selected={selectedTab === LeftMenuTab.Github}
               onClick={onClickGithubTab}
             />
-          </UIGridRow>
-
+          </FlexRow>
           {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
           {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
           {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}

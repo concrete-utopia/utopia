@@ -42,7 +42,7 @@ import { TitleBarEmpty, TitleBarUserProfile } from '../titlebar/title-bar'
 import type { EditorAction } from '../editor/action-types'
 import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
-import { UIGridRow } from '../inspector/widgets/ui-grid-row'
+import { FlexRow } from 'utopia-api'
 
 interface NumberSize {
   width: number
@@ -337,28 +337,23 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
           flexShrink: 0,
         }}
       >
-        <UIGridRow
-          variant='|--67px--||--67px--||--67px--||--67px--|'
-          padded={false}
-          css={{ gridColumnGap: 0 }}
-          style={{ alignItems: 'stretch', marginBottom: 10 }}
-        >
-          <MenuTab
-            label={'Insert'}
-            selected={selectedTab === RightMenuTab.Insert}
-            onClick={onClickInsertTab}
-          />
+        <FlexRow style={{ marginBottom: 10, gap: 10 }} css={undefined}>
           <MenuTab
             label={'Inspector'}
             selected={selectedTab === RightMenuTab.Inspector}
             onClick={onClickInspectorTab}
           />
           <MenuTab
+            label={'Insert'}
+            selected={selectedTab === RightMenuTab.Insert}
+            onClick={onClickInsertTab}
+          />
+          <MenuTab
             label={'Settings'}
             selected={selectedTab === RightMenuTab.Settings}
             onClick={onClickSettingsTab}
           />
-        </UIGridRow>
+        </FlexRow>
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
