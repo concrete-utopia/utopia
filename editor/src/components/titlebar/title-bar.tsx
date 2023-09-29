@@ -278,6 +278,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
               paddingRight: 8,
               background: colorTheme.dynamicBlue.value,
               color: colorTheme.bg1.value,
+              fontWeight: 600,
             }}
             onClick={onClickLoginNewTab}
             onMouseDown={onMouseDown}
@@ -516,6 +517,7 @@ const TitleBar = React.memo(() => {
               paddingRight: 8,
               background: colorTheme.dynamicBlue.value,
               color: colorTheme.bg1.value,
+              fontWeight: 600,
             }}
             onClick={onClickLoginNewTab}
           >
