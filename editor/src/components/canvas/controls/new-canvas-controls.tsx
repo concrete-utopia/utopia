@@ -545,7 +545,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
             <ZeroSizedElementControls.control showAllPossibleElements={false} />
             {when(
               isSelectOrInsertMode(editorMode) &&
-                !EP.multipleElementPathsWithTheSameUid(localSelectedViews),
+                !EP.multiplePathsAllWithTheSameUID(localSelectedViews),
               <>
                 {strategyControls.map((c) => (
                   <RenderControlMemoized

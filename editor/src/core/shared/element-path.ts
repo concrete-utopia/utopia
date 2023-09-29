@@ -1140,7 +1140,7 @@ export function appendTwoPaths(base: ElementPath, other: ElementPath): ElementPa
   return elementPath([...base.parts, ...other.parts])
 }
 
-export function multipleElementPathsWithTheSameUid(paths: Array<ElementPath>): boolean {
+export function multiplePathsAllWithTheSameUID(paths: Array<ElementPath>): boolean {
   if (paths.length <= 1) {
     return false
   }
