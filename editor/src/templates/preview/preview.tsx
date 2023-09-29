@@ -177,10 +177,10 @@ const initPreview = () => {
     }
   }
 
-  const renderProject = (projectContents: ProjectContentTreeRoot) => {
+  const renderProject = (projectContents: ProjectContentTreeRoot): void => {
     loadingModel = true
     queuedModel = null
-    previewRender(projectContents).finally(handlePossiblyQueuedModel)
+    void previewRender(projectContents).finally(handlePossiblyQueuedModel)
   }
 
   const rerenderPreview = () => {
