@@ -68,7 +68,11 @@ import { isRight } from '../../../../core/shared/either'
 import { ImmediateParentOutlinesTestId } from '../../controls/parent-outlines'
 import { ImmediateParentBoundsTestId } from '../../controls/parent-bounds'
 import { getResizeControl, resizeElement } from './absolute-resize.test-utils'
-import { RESIZE_CONTROL_SAFE_GAP, SmallElementSize } from '../../controls/bounding-box-hooks'
+import {
+  RESIZE_CONTROL_SAFE_GAP,
+  SafeGapSmallElementSize,
+  SmallElementSize,
+} from '../../controls/bounding-box-hooks'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
@@ -2950,8 +2954,8 @@ describe('Absolute Resize Group-like behaviors', () => {
 describe('Absolute Resize Control', () => {
   describe('safe gap', () => {
     it('Resize control is placed on small elements outside of the draggable frame area, with a safe gap', async () => {
-      const width = SmallElementSize
-      const height = SmallElementSize
+      const width = SafeGapSmallElementSize
+      const height = SafeGapSmallElementSize
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
@@ -2975,25 +2979,25 @@ describe('Absolute Resize Control', () => {
       expect(resizeControlTop.style.top).toEqual('')
       expect(resizeControlTop.style.left).toEqual('')
       expect(resizeControlTop.style.width).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
-      expect(resizeControlTop.style.height).toEqual('10px')
+      expect(resizeControlTop.style.height).toEqual('5px')
 
       const resizeControlRight = renderResult.renderedDOM.getByTestId(
         `resize-control-${EdgePositionRight.x}-${EdgePositionRight.y}`,
       )
-      expect(resizeControlRight.style.transform).toEqual('translate(-5px, 0px)')
+      expect(resizeControlRight.style.transform).toEqual('translate(0px, 0px)')
       expect(resizeControlRight.style.top).toEqual('')
       expect(resizeControlRight.style.left).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
-      expect(resizeControlRight.style.width).toEqual('10px')
+      expect(resizeControlRight.style.width).toEqual('5px')
       expect(resizeControlRight.style.height).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
 
       const resizeControlBottom = renderResult.renderedDOM.getByTestId(
         `resize-control-${EdgePositionBottom.x}-${EdgePositionBottom.y}`,
       )
-      expect(resizeControlBottom.style.transform).toEqual('translate(0px, -5px)')
+      expect(resizeControlBottom.style.transform).toEqual('translate(0px, 0px)')
       expect(resizeControlBottom.style.top).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
       expect(resizeControlBottom.style.left).toEqual('')
       expect(resizeControlBottom.style.width).toEqual(`${width + RESIZE_CONTROL_SAFE_GAP * 2}px`)
-      expect(resizeControlBottom.style.height).toEqual('10px')
+      expect(resizeControlBottom.style.height).toEqual('5px')
 
       const resizeControlLeft = renderResult.renderedDOM.getByTestId(
         `resize-control-${EdgePositionLeft.x}-${EdgePositionLeft.y}`,
@@ -3001,7 +3005,7 @@ describe('Absolute Resize Control', () => {
       expect(resizeControlLeft.style.transform).toEqual('translate(-5px, 0px)')
       expect(resizeControlLeft.style.top).toEqual('')
       expect(resizeControlLeft.style.left).toEqual('')
-      expect(resizeControlLeft.style.width).toEqual('10px')
+      expect(resizeControlLeft.style.width).toEqual('5px')
       expect(resizeControlLeft.style.height).toEqual(`${height + RESIZE_CONTROL_SAFE_GAP * 2}px`)
     })
     it("Doesn't show the safe gap during resize and mouse down", async () => {
