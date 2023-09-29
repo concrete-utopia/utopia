@@ -5,6 +5,7 @@ import type { ElementInstanceMetadataMap } from '../../../../core/shared/element
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  canvasRectangle,
   isInfinityRectangle,
   nullIfInfinity,
   windowPoint,
@@ -32,7 +33,7 @@ import { controlForStrategyMemoized } from '../../canvas-strategies/canvas-strat
 import { createInteractionViaMouse } from '../../canvas-strategies/interaction-state'
 import type { EdgePosition } from '../../canvas-types'
 import { CSSCursor } from '../../canvas-types'
-import { windowToCanvasCoordinates } from '../../dom-lookup'
+import { getAllTargetsUnderAreaAABB, windowToCanvasCoordinates } from '../../dom-lookup'
 import { SmallElementSize, useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
@@ -47,6 +48,7 @@ interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
 }
 
+export const SizeLabelID = 'SizeLabel'
 export const SizeLabelTestId = 'SizeLabelTestId'
 
 function shouldUseSmallElementResizeControl(size: number, scale: number): boolean {
@@ -146,7 +148,6 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
           ref={controlRef}
           style={{
             position: 'absolute',
-            pointerEvents: 'none',
           }}
         >
           <ResizeEdge
@@ -511,12 +512,56 @@ const SizeLabel = React.memo(
     const label = sizeLabelContents(metadata, targets)
     const labelText = getLabelText(label)
 
+    const [dimmed, setDimmed] = React.useState(false)
+
+    const editorRef = useRefEditorState((store) => ({
+      scale: store.editor.canvas.scale,
+      offset: store.editor.canvas.roundedCanvasOffset,
+      jsxMetadata: store.editor.jsxMetadata,
+      elementPathTree: store.editor.elementPathTree,
+      allElementProps: store.editor.allElementProps,
+      hiddenInstances: store.editor.hiddenInstances,
+    }))
+
+    const onMouseEnter = React.useCallback(() => {
+      const labelRect = document.getElementById(SizeLabelID)?.getBoundingClientRect()
+      if (labelRect != null) {
+        const coords = windowToCanvasCoordinates(
+          editorRef.current.scale,
+          editorRef.current.offset,
+          windowPoint({
+            x: labelRect.x * editorRef.current.scale,
+            y: labelRect.y * editorRef.current.scale,
+          }),
+        )
+        const area = canvasRectangle({
+          x: coords.canvasPositionRounded.x,
+          y: coords.canvasPositionRounded.y,
+          width: labelRect.width,
+          height: labelRect.height,
+        })
+        const underLabel = getAllTargetsUnderAreaAABB(
+          editorRef.current.jsxMetadata,
+          [],
+          editorRef.current.hiddenInstances,
+          'no-filter',
+          area,
+          editorRef.current.elementPathTree,
+          editorRef.current.allElementProps,
+          true,
+        )
+        setDimmed(underLabel.length > 0)
+      }
+    }, [editorRef])
+    const onMouseLeave = React.useCallback(() => {
+      setDimmed(false)
+    }, [])
+
     return (
       <div
         ref={ref}
         style={{
           position: 'absolute',
-          pointerEvents: 'none',
           display: 'flex',
           justifyContent: 'center',
         }}
@@ -525,6 +570,7 @@ const SizeLabel = React.memo(
         {when(
           labelText != null,
           <div
+            id={SizeLabelID}
             data-testid={SizeLabelTestId}
             style={{
               display: 'flex',
@@ -536,7 +582,10 @@ const SizeLabel = React.memo(
               backgroundColor: colorTheme.primary.value,
               fontSize: FontSize / scale,
               height: ExplicitHeightHacked / scale,
+              opacity: dimmed ? 0.075 : 1,
             }}
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
           >
             {labelText}
           </div>,
