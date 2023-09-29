@@ -307,5 +307,3 @@ export function getColumnWidth(panelState: StoredLayout, columnIndex: number): n
   const width = column.panels.some((p) => p.type === 'menu') ? column.menuWidth : column.paneWidth
   return width
 }
-
-// export function usePanelHorizontalReize(): (columnIndex: number, newWidth: number) => void {}
