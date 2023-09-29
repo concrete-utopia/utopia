@@ -1,7 +1,7 @@
 import React from 'react'
 import { accumulate } from '../../core/shared/array-utils'
 import { GridPanel } from './grid-panel'
-import { ColumnDragTargets } from './grid-panels-drag-targets'
+import { CanvasPaneDragTargets, ColumnDragTargets } from './grid-panels-drag-targets'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
   GridHorizontalExtraPadding,
@@ -123,6 +123,7 @@ export const GridPanelsContainer = React.memo(() => {
         style={{ position: 'absolute', gridColumn: 'canvas / span 1', gridRow: '1 / -1' }}
       />
       {/* All future Panels need to be explicitly listed here */}
+      <CanvasPaneDragTargets onDrop={onDrop} canDrop={canDrop} />
       {nonEmptyColumns.map((columnIndex) => (
         <ColumnDragTargets
           key={columnIndex}
