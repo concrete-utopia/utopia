@@ -58,6 +58,7 @@ export const RemixNavigationBar = React.memo(() => {
     <FlexRow
       style={{
         gap: 10,
+        padding: '4px 8px',
         alignSelf: 'stretch',
         alignItems: 'center',
         justifyContent: 'center',
