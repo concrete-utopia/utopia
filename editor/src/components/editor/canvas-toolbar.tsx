@@ -118,84 +118,64 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
     }
   })
 
-  const wrapInDivCallback = useWrapInDiv()
-  const dispatch = useDispatch()
-
-  const switchToSelectModeCloseMenus = React.useCallback(() => {
-    dispatch(
-      [switchEditorMode(EditorModes.selectMode(null, false, 'none')), closeFloatingInsertMenu()],
-      'everyone',
-    )
-  }, [dispatch])
-
-  const wrapInDivAndClose = React.useCallback(
-    (event: React.MouseEvent<Element>) => {
-      wrapInDivCallback(event)
-      switchToSelectModeCloseMenus()
-    },
-    [switchToSelectModeCloseMenus, wrapInDivCallback],
-  )
-
   return (
-    <>
-      <WindowedSelect
-        id={'canvas-toolbar-search'}
-        ref={selectRef}
-        openMenuOnFocus={true}
-        openMenuOnClick={true}
-        onBlur={undefined}
-        onChange={props.actionWith}
-        options={options}
-        menuPortalTarget={menuPortalTarget}
-        filterOption={createFilter({ ignoreAccents: true })}
-        placeholder={props.placeholder || 'Default Placeholder'}
-        components={{ Option: CustomComponentOption }}
-        styles={{
-          ...componentSelectorStyles,
-          menuPortal: (styles: CSSObject): CSSObject => {
-            return {
-              overflow: 'hidden',
-              backgroundColor: theme.bg2.value,
-              borderRadius: '0px 0px 10px 10px',
-              pointerEvents: 'initial',
-              position: 'absolute',
-              top: 100,
-              left: 20,
-              width: 230,
-              boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            }
-          },
-          input: (styles: CSSObject): CSSObject => {
-            return {
-              ...(InspectorInputEmotionStyle({
-                hasLabel: false,
-                controlStyles: getControlStyles('simple'),
-              }) as CSSObject),
-              paddingLeft: 4,
-              backgroundColor: colorTheme.seperator.value,
-              flexGrow: 1,
-              display: 'flex',
-              alignItems: 'center',
-              minWidth: '200px',
-              borderRadius: '30px',
-              border: `1px solid ${theme.dynamicBlue.value}`,
-            }
-          },
-          menuList: (styles: CSSObject): CSSObject => {
-            return {
-              maxHeight: 144,
-              padding: '0 8px',
-              overflowY: 'auto',
-              display: 'flex',
-              flexDirection: 'column',
-            }
-          },
-        }}
-        // maxMenuHeight={138}
-      >
-        {props.children}
-      </WindowedSelect>
-    </>
+    <WindowedSelect
+      id={'canvas-toolbar-search'}
+      ref={selectRef}
+      openMenuOnFocus={true}
+      openMenuOnClick={true}
+      onBlur={undefined}
+      onChange={props.actionWith}
+      options={options}
+      menuPortalTarget={menuPortalTarget}
+      filterOption={createFilter({ ignoreAccents: true })}
+      placeholder={props.placeholder || 'Default Placeholder'}
+      components={{ Option: CustomComponentOption }}
+      styles={{
+        ...componentSelectorStyles,
+        menuPortal: (styles: CSSObject): CSSObject => {
+          return {
+            overflow: 'hidden',
+            // backgroundColor: theme.bg2.value,
+            borderRadius: '0px 0px 10px 10px',
+            pointerEvents: 'initial',
+            // position: 'absolute',
+            // top: 100,
+            // left: 20,
+            // width: 230,
+            // boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+            // padding: '0 8px',
+          }
+        },
+        input: (styles: CSSObject): CSSObject => {
+          return {
+            // ...(InspectorInputEmotionStyle({
+            //   hasLabel: false,
+            //   controlStyles: getControlStyles('simple'),
+            // }) as CSSObject),
+            // padding: '0 2px',
+            // margin: '0 6px',
+            backgroundColor: colorTheme.seperator.value,
+            flexGrow: 1,
+            display: 'flex',
+            alignItems: 'center',
+            // minWidth: '200px',
+            borderRadius: '3px',
+            border: `1px solid ${theme.dynamicBlue.value}`,
+          }
+        },
+        menuList: (styles: CSSObject): CSSObject => {
+          return {
+            maxHeight: 144,
+            // padding: '0 2px',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+          }
+        },
+      }}
+      // maxMenuHeight={138}
+    ></WindowedSelect>
   )
 })
 CanvasToolbarSearch.displayName = 'CanvasToolbarSearch'
@@ -432,11 +412,14 @@ export const CanvasToolbar = React.memo(() => {
         data-testid='canvas-toolbar-submenu'
         style={{
           alignItems: 'start',
-          marginLeft: 15,
-          padding: '0 8px',
-          minHeight: 32,
+          marginLeft: 20,
+          // padding: '0 8px',
+          minHeight: 36,
+          width: 'min-content',
+          // width: 220,
           overflow: 'hidden',
-          backgroundColor: colorTheme.bg2.value,
+          // backgroundColor: colorTheme.bg2.value,
+          backgroundColor: colorTheme.bg1.value,
           borderRadius: '0px 10px 10px 10px',
           boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           pointerEvents: 'initial',
@@ -558,6 +541,7 @@ export const CanvasToolbar = React.memo(() => {
                 iconCategory={'tools'}
                 primary={canvasToolbarMode.primary === 'edit'}
                 onClick={switchToSelectModeCloseMenus}
+                style={{ width: 36 }}
               />
             </Tooltip>
             <Tooltip title='Text (T)' placement='bottom'>
@@ -566,6 +550,7 @@ export const CanvasToolbar = React.memo(() => {
                 iconCategory={'tools'}
                 primary={canvasToolbarMode.primary === 'text'}
                 onClick={insertTextCallback}
+                style={{ width: 36 }}
               />
             </Tooltip>
             <Tooltip title='Insert' placement='bottom'>
@@ -575,6 +560,7 @@ export const CanvasToolbar = React.memo(() => {
                 iconCategory='tools'
                 primary={canvasToolbarMode.primary === 'insert'}
                 onClick={toggleInsertButtonClicked}
+                style={{ width: 36 }}
               />
             </Tooltip>
             <Tooltip title='Live Mode' placement='bottom'>
@@ -584,6 +570,7 @@ export const CanvasToolbar = React.memo(() => {
                 primary={canvasToolbarMode.primary === 'play'}
                 onClick={toggleLiveMode}
                 keepActiveInLiveMode
+                style={{ width: 36 }}
               />
             </Tooltip>
           </FlexRow>
@@ -628,12 +615,12 @@ export const CanvasToolbar = React.memo(() => {
                 <FlexRow
                   style={{
                     gap: 25,
-                    padding: '0 12px',
+                    padding: '0 20px',
                     alignSelf: 'stretch',
                   }}
                 >
                   <FlexRow
-                    onClick={wrapInGroupCallback}
+                    onClick={openFloatingConvertMenuCallback}
                     css={{
                       gap: 8,
                       '&:hover': {
@@ -641,8 +628,8 @@ export const CanvasToolbar = React.memo(() => {
                       },
                     }}
                   >
-                    <Icn category='tools' type='group-action' width={18} height={18} />
-                    Group
+                    <Icn category='tools' type='convert-action' width={18} height={18} />
+                    Convert
                   </FlexRow>
                   <FlexRow
                     onClick={openFloatingWrapInMenuCallback}
@@ -656,8 +643,9 @@ export const CanvasToolbar = React.memo(() => {
                     <Icn category='tools' type='wrap-action' width={18} height={18} />
                     Wrap
                   </FlexRow>
+
                   <FlexRow
-                    onClick={openFloatingConvertMenuCallback}
+                    onClick={wrapInGroupCallback}
                     css={{
                       gap: 8,
                       '&:hover': {
@@ -665,8 +653,8 @@ export const CanvasToolbar = React.memo(() => {
                       },
                     }}
                   >
-                    <Icn category='tools' type='convert-action' width={18} height={18} />
-                    Convert
+                    <Icn category='tools' type='group-action' width={18} height={18} />
+                    Group
                   </FlexRow>
                   <Tooltip title='Toggle Position Absolute (X)' placement='bottom'>
                     <FlexRow
@@ -688,50 +676,49 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'wrap',
               wrapInSubmenu(
-                <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Wrap In...'>
-                    <FlexRow>
-                      <Tooltip title='Back' placement='bottom'>
-                        <InsertModeButton
-                          iconCategory='semantic'
-                          iconType='icon-semantic-back'
-                          onClick={switchToSelectModeCloseMenus}
-                          style={{ width: undefined }}
-                        />
-                      </Tooltip>
-                      <Tooltip title='Div' placement='bottom'>
-                        <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
-                      </Tooltip>
-                      {/* TODO needs callback */}
-                      <Tooltip title='Scene' placement='bottom'>
-                        <InsertModeButton
-                          iconType='scene'
-                          iconCategory='component'
-                          onClick={wrapInDivAndClose}
-                        />
-                      </Tooltip>
-                      {/* TODO needs callback */}
-                      <Tooltip title='Fragment' placement='bottom'>
-                        <InsertModeButton iconType='fragment' onClick={wrapInDivAndClose} />
-                      </Tooltip>
-                      {/* TODO needs callback */}
-                      <Tooltip title='Clickable Div' placement='bottom'>
-                        <InsertModeButton iconType='clickable' onClick={wrapInDivAndClose} />
-                      </Tooltip>
-                      {/* TODO needs callback */}
-                      <Tooltip title='Conditional' placement='bottom'>
-                        <InsertModeButton iconType='conditional' onClick={wrapInDivAndClose} />
-                      </Tooltip>
-                    </FlexRow>
-                  </CanvasToolbarSearch>
+                <FlexColumn style={{ height: 'min-contents', padding: '6px  8px' }}>
+                  <FlexRow>
+                    <Tooltip title='Back' placement='bottom'>
+                      <InsertModeButton
+                        iconCategory='semantic'
+                        iconType='icon-semantic-back'
+                        onClick={switchToSelectModeCloseMenus}
+                        style={{ width: undefined }}
+                      />
+                    </Tooltip>
+                    <Tooltip title='Div' placement='bottom'>
+                      <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    {/* TODO needs callback */}
+                    <Tooltip title='Scene' placement='bottom'>
+                      <InsertModeButton
+                        iconType='scene'
+                        iconCategory='component'
+                        onClick={wrapInDivAndClose}
+                      />
+                    </Tooltip>
+                    {/* TODO needs callback */}
+                    <Tooltip title='Fragment' placement='bottom'>
+                      <InsertModeButton iconType='fragment' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    {/* TODO needs callback */}
+                    <Tooltip title='Clickable Div' placement='bottom'>
+                      <InsertModeButton iconType='clickable' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                    {/* TODO needs callback */}
+                    <Tooltip title='Conditional' placement='bottom'>
+                      <InsertModeButton iconType='conditional' onClick={wrapInDivAndClose} />
+                    </Tooltip>
+                  </FlexRow>
+                  <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Wrap In...' />
+                  <ToolbarSearchListing />
                 </FlexColumn>,
               ),
             )}
             {when(
               insertMenuMode === 'convert',
               wrapInSubmenu(
-                <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
-                  <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Convert To...' />
+                <FlexColumn style={{ height: 'min-contents', padding: '6px  8px ' }}>
                   <FlexRow>
                     <Tooltip title='Back' placement='bottom'>
                       <InsertModeButton
@@ -765,6 +752,7 @@ export const CanvasToolbar = React.memo(() => {
                       <InsertModeButton iconType='conditional' onClick={convertToFragment} />
                     </Tooltip>
                   </FlexRow>
+                  <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Convert To...' />
                   <ToolbarSearchListing />
                 </FlexColumn>,
               ),
@@ -778,52 +766,64 @@ export const CanvasToolbar = React.memo(() => {
         {/* Insert Mode */}
         {canvasToolbarMode.primary === 'insert'
           ? wrapInSubmenu(
-              <FlexColumn style={{ height: 'min-contents', paddingBottom: 8 }}>
-                <FlexRow>
-                  <Tooltip title='Div' placement='bottom'>
+              <FlexColumn style={{ height: 'min-contents', padding: '4px  8px ' }}>
+                <FlexRow style={{ justifyContent: 'space-between' }}>
+                  <FlexRow>
+                    <Tooltip title='Div' placement='bottom'>
+                      <InsertModeButton
+                        iconType='div'
+                        secondary={canvasToolbarMode.secondary.divInsertionActive}
+                        onClick={insertDivCallback}
+                      />
+                    </Tooltip>
+                    {/* TODO needs callback. and secondary? */}
+                    <Tooltip title='Scene' placement='bottom'>
+                      <InsertModeButton
+                        iconType='scene'
+                        iconCategory='component'
+                        onClick={insertDivCallback}
+                      />
+                    </Tooltip>
+                    <Tooltip title='Image' placement='bottom'>
+                      <InsertModeButton
+                        iconType='image'
+                        secondary={canvasToolbarMode.secondary.imageInsertionActive}
+                        onClick={insertImgCallback}
+                      />
+                    </Tooltip>
+                    {/* TODO needs callback. and secondary? */}
+                    <Tooltip title='Fragment' placement='bottom'>
+                      <InsertModeButton iconType='fragment' onClick={insertDivCallback} />
+                    </Tooltip>
+                    <Tooltip title='Clickable Div' placement='bottom'>
+                      <InsertModeButton
+                        iconType='clickable'
+                        secondary={canvasToolbarMode.secondary.buttonInsertionActive}
+                        onClick={insertButtonCallback}
+                      />
+                    </Tooltip>
+                    <Tooltip title='Conditional' placement='bottom'>
+                      <InsertModeButton
+                        testid={InsertConditionalButtonTestId}
+                        iconType='conditional'
+                        secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
+                        onClick={insertConditionalCallback}
+                      />
+                    </Tooltip>
+                  </FlexRow>
+                  <Tooltip title='Close' placement='bottom'>
                     <InsertModeButton
-                      iconType='div'
-                      secondary={canvasToolbarMode.secondary.divInsertionActive}
-                      onClick={insertDivCallback}
-                    />
-                  </Tooltip>
-                  {/* TODO needs callback. and secondary? */}
-                  <Tooltip title='Scene' placement='bottom'>
-                    <InsertModeButton
-                      iconType='scene'
-                      iconCategory='component'
-                      onClick={insertDivCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip title='Insert image' placement='bottom'>
-                    <InsertModeButton
-                      iconType='image'
-                      secondary={canvasToolbarMode.secondary.imageInsertionActive}
-                      onClick={insertImgCallback}
-                    />
-                  </Tooltip>
-                  {/* TODO needs callback. and secondary? */}
-                  <Tooltip title='Fragment' placement='bottom'>
-                    <InsertModeButton iconType='fragment' onClick={insertDivCallback} />
-                  </Tooltip>
-                  <Tooltip title='Clickable Div' placement='bottom'>
-                    <InsertModeButton
-                      iconType='clickable'
-                      secondary={canvasToolbarMode.secondary.buttonInsertionActive}
-                      onClick={insertButtonCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip title='Conditional' placement='bottom'>
-                    <InsertModeButton
-                      testid={InsertConditionalButtonTestId}
-                      iconType='conditional'
-                      secondary={canvasToolbarMode.secondary.conditionalInsertionActive}
-                      onClick={insertConditionalCallback}
+                      iconCategory='semantic'
+                      iconType='cross-medium'
+                      onClick={switchToSelectModeCloseMenus}
+                      style={{ width: undefined }}
+                      size={16}
                     />
                   </Tooltip>
                 </FlexRow>
                 {/* TODO needs appropriate actionWidth? */}
                 <CanvasToolbarSearch actionWith={convertToAndClose} placeholder='Insert...' />
+                <ToolbarSearchListing />
               </FlexColumn>,
             )
           : null}
@@ -850,7 +850,6 @@ export const CanvasToolbar = React.memo(() => {
             </FlexRow>
           </>,
         )}
-        {/* <ToolbarSearchListing /> */}
       </FlexColumn>
     </div>
   )
