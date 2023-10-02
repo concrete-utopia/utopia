@@ -332,7 +332,7 @@ describe('Insertion Plus Button', () => {
     }
 
     await checkInsertButtonPosition('blue-dot-control-0', 375.5, 606.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 705.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
     await checkInsertButtonPosition('blue-dot-control-2', 375.5, 805.5)
   })
 
@@ -358,7 +358,7 @@ describe('Insertion Plus Button', () => {
     }
 
     await checkInsertButtonPosition('blue-dot-control-0', 375.5, 806.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 705.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
     await checkInsertButtonPosition('blue-dot-control-2', 375.5, 605.5)
   })
 
