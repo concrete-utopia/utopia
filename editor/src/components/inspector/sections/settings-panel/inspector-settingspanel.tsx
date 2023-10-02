@@ -7,8 +7,9 @@ import * as EditorActions from '../../../editor/actions/action-creators'
 import styled from '@emotion/styled'
 import { Substores, useEditorState } from '../../../editor/store/store-hook'
 import { FlexRow, UtopiaTheme, H2, CheckboxInput, FlexColumn, Subdued } from '../../../../uuiui'
-
 import { useDispatch } from '../../../editor/store/dispatch-context'
+import { User } from '../../../../uuiui-deps'
+import { LoggedOutPane } from '../../../../components/navigator/left-pane/logged-out-pane'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -51,8 +52,15 @@ export const SettingsPanel = React.memo(() => {
     dispatch([EditorActions.toggleInterfaceDesignerAdditionalControls()])
   }, [dispatch])
 
+  const loggedIn = useEditorState(
+    Substores.restOfStore,
+    (store) => User.isLoggedIn(store.userState.loginState),
+    'LeftPaneComponent loggedIn',
+  )
+
   return (
     <FlexColumn>
+      {loggedIn ? null : <LoggedOutPane />}
       <FlexRow style={{ marginTop: 8, marginBottom: 12, paddingLeft: 8 }}>
         <H2>Interface</H2>
       </FlexRow>

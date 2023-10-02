@@ -12,17 +12,14 @@ import {
   SectionTitleRow,
   Subdued,
   Title,
+  colorTheme,
 } from '../../../uuiui'
 import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
+import { FlexCol } from 'utopia-api'
 
 export const LoggedOutPane = React.memo(() => {
   return (
     <Section data-name='Storyboards' tabIndex={-1}>
-      <SectionTitleRow minimised={false} hideButton>
-        <FlexRow flexGrow={1} style={{ position: 'relative' }}>
-          <Title>Sign in to</Title>
-        </FlexRow>
-      </SectionTitleRow>
       <SectionBodyArea minimised={false}>
         <UIGridRow
           padded
@@ -42,6 +39,7 @@ export const LoggedOutPane = React.memo(() => {
             fontSize: '11px',
           }}
         >
+          <Title>Sign In To:</Title>
           <ul style={{ paddingLeft: 16 }}>
             <li>Design and code from anywhere</li>
             <li>Save and preview your projects</li>
@@ -49,13 +47,19 @@ export const LoggedOutPane = React.memo(() => {
             <li>Load and save projects on Github</li>
           </ul>
         </UIGridRow>
-        <UIGridRow style={{ gap: 8 }} padded variant='<--1fr--><--1fr-->'>
-          <Button primary highlight>
+        <FlexCol css={{ padding: '0 8px', gap: 8, alignItems: 'center', justifyContent: 'center' }}>
+          <Button
+            style={{
+              background: colorTheme.dynamicBlue.value,
+              color: colorTheme.bg0.value,
+              width: 180,
+            }}
+          >
             <b>Sign In</b>&nbsp;
-            <Icons.ExternalLinkSmaller color='on-highlight-main' />
+            <Icons.ExternalLinkSmaller color='on-light-main' />
           </Button>
           <Subdued>Free and Open Source</Subdued>
-        </UIGridRow>
+        </FlexCol>
       </SectionBodyArea>
     </Section>
   )

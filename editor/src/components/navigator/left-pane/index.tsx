@@ -23,7 +23,6 @@ import { UIGridRow } from '../../inspector/widgets/ui-grid-row'
 import { ContentsPane } from './contents-pane'
 import { ForksGiven } from './forks-given'
 import { GithubPane } from './github-pane'
-import { LoggedOutPane } from './logged-out-pane'
 import { SettingsPane } from './settings-pane'
 import { NavigatorComponent } from '../navigator'
 import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
@@ -169,7 +168,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           {selectedTab === LeftMenuTab.Navigator ? <NavigatorComponent /> : null}
           {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
           {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
-          {loggedIn ? null : <LoggedOutPane />}
         </div>
       </ResizableFlexColumn>
     </LowPriorityStoreProvider>
