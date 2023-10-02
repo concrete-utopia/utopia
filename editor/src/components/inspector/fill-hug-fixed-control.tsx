@@ -638,7 +638,10 @@ const GroupConstraintSelect = React.memo(
         onSubmitValue={onSubmitValue}
         value={listValue}
         options={groupChildConstraintOptions}
-        style={{ position: 'relative' }}
+        style={{
+          position: 'relative',
+          fontSize: listValue.value === 'not-constrained' ? 9 : 'inherit',
+        }}
         containerMode={type === 'constrained' ? 'default' : 'showBorderOnHover'}
         controlStyles={{
           ...getControlStyles('simple'),
@@ -766,9 +769,9 @@ type GroupChildConstraintOptionType = 'constrained' | 'not-constrained'
 function groupChildConstraintOption(type: GroupChildConstraintOptionType): SelectOption {
   switch (type) {
     case 'constrained':
-      return { value: 'constrained', label: 'Constrained' }
+      return { value: 'constrained', label: 'Fixed' }
     case 'not-constrained':
-      return { value: 'not-constrained', label: 'Unconstrained' }
+      return { value: 'not-constrained', label: 'Scale with parent' }
     default:
       assertNever(type)
   }
