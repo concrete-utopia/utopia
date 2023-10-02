@@ -1,6 +1,6 @@
 /* eslint-disable jest/expect-expect */
 import { act, within } from '@testing-library/react'
-import { forElementOptic } from '../../core/model/common-optics'
+import { forElementChildOptic } from '../../core/model/common-optics'
 import { conditionalWhenTrueOptic, maybeConditionalExpression } from '../../core/model/conditionals'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isRight } from '../../core/shared/either'
@@ -195,7 +195,7 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const helloWorldUIDOptic: Optic<EditorStorePatched, string> = forElementOptic(
+      const helloWorldUIDOptic: Optic<EditorStorePatched, string> = forElementChildOptic(
         EP.appendNewElementPath(TestScenePath, ['aaa', 'conditional']),
       )
         .compose(fromTypeGuard(isJSXConditionalExpression))

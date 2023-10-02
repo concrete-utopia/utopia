@@ -13,7 +13,6 @@ import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { CircularHandleTestId } from '../../controls/select-mode/border-radius-control'
 import {
   mouseClickAtPoint,
-  mouseDoubleClickAtPoint,
   mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseEnterAtPoint,
@@ -187,7 +186,8 @@ describe('set border radius strategy', () => {
       codeForDragTest(`borderTopLeftRadius: '24px',
                        borderTopRightRadius: '15px',
                        borderBottomRightRadius: '16px',
-                       borderBottomLeftRadius: '17px'`),
+                       borderBottomLeftRadius: '17px',
+                       overflow: 'hidden'`),
     )
   })
 
@@ -202,7 +202,7 @@ describe('set border radius strategy', () => {
 
     await doDragTest(editor, 'tl', 400, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      codeForDragTest(`borderRadius: '${expectedBorderRadius}px'`),
+      codeForDragTest(`borderRadius: '${expectedBorderRadius}px', overflow: 'hidden'`),
     )
   })
 
@@ -213,7 +213,7 @@ describe('set border radius strategy', () => {
     )
     await doDragTest(editor, 'tl', -20, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      codeForDragTest(`borderRadius: '0px'`),
+      codeForDragTest(`borderRadius: '0px', overflow: 'hidden'`),
     )
   })
 
@@ -240,7 +240,7 @@ describe('set border radius strategy', () => {
     await doDragTest(editor, 'tl', 400, emptyModifiers)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      codeForDragTest(`borderRadius: '200px'`),
+      codeForDragTest(`borderRadius: '200px', overflow: 'hidden'`),
     )
 
     await resizeElement(
@@ -267,6 +267,7 @@ describe('set border radius strategy', () => {
               width: 300,
               height: 100,
               borderRadius: '40px',
+              overflow: 'hidden',
             }}
           />
         </div>`),
@@ -280,7 +281,7 @@ describe('set border radius strategy', () => {
     )
     await doDragTest(editor, 'tl', 10, emptyModifiers)
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-      codeForDragTest(`borderRadius: '22px'`),
+      codeForDragTest(`borderRadius: '22px', overflow: 'hidden'`),
     )
   })
 
@@ -292,7 +293,7 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'tl', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '24px'`),
+        codeForDragTest(`borderRadius: '24px', overflow: 'hidden'`),
       )
     })
 
@@ -303,7 +304,7 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'tr', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '24px'`),
+        codeForDragTest(`borderRadius: '24px', overflow: 'hidden'`),
       )
     })
 
@@ -314,7 +315,7 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'bl', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '24px'`),
+        codeForDragTest(`borderRadius: '24px', overflow: 'hidden'`),
       )
     })
 
@@ -325,7 +326,7 @@ describe('set border radius strategy', () => {
       )
       await doDragTest(editor, 'br', 10, emptyModifiers)
       expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
-        codeForDragTest(`borderRadius: '24px'`),
+        codeForDragTest(`borderRadius: '24px', overflow: 'hidden'`),
       )
     })
   })
@@ -341,7 +342,8 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderTopLeftRadius: '24px',
                           borderTopRightRadius: '14px',
                           borderBottomRightRadius: '14px',
-                          borderBottomLeftRadius: '14px',`),
+                          borderBottomLeftRadius: '14px',
+                          overflow: 'hidden'`),
       )
     })
 
@@ -355,7 +357,8 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderTopLeftRadius: '14px',
                           borderTopRightRadius: '24px',
                           borderBottomRightRadius: '14px',
-                          borderBottomLeftRadius: '14px',`),
+                          borderBottomLeftRadius: '14px',
+                          overflow: 'hidden'`),
       )
     })
 
@@ -369,7 +372,8 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderTopLeftRadius: '14px',
                           borderTopRightRadius: '14px',
                           borderBottomRightRadius: '14px',
-                          borderBottomLeftRadius: '24px',`),
+                          borderBottomLeftRadius: '24px',
+                          overflow: 'hidden'`),
       )
     })
 
@@ -383,8 +387,41 @@ describe('set border radius strategy', () => {
         codeForDragTest(`borderTopLeftRadius: '14px',
                           borderTopRightRadius: '14px',
                           borderBottomRightRadius: '24px',
-                          borderBottomLeftRadius: '14px',`),
+                          borderBottomLeftRadius: '14px',
+                          overflow: 'hidden'`),
       )
+    })
+  })
+
+  describe('Overflow property handling', () => {
+    it('does not overwrite existing overflow property', async () => {
+      const editor = await renderTestEditorWithCode(
+        codeForDragTest(`borderRadius: '14px', overflow: 'visible',`),
+        'await-first-dom-report',
+      )
+      await doDragTest(editor, 'tl', 10, cmdModifier)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        codeForDragTest(`overflow: 'visible',
+                          borderTopLeftRadius: '24px',
+                          borderTopRightRadius: '14px',
+                          borderBottomRightRadius: '14px',
+                          borderBottomLeftRadius: '14px'`),
+      )
+    })
+
+    it('shows toast message', async () => {
+      const editor = await renderTestEditorWithCode(
+        codeForDragTest(`borderRadius: '14px',`),
+        'await-first-dom-report',
+      )
+      await doDragTest(editor, 'tl', 10, cmdModifier)
+      expect(editor.getEditorState().editor.toasts).toHaveLength(1)
+      expect(editor.getEditorState().editor.toasts[0]).toEqual({
+        id: 'property-added',
+        level: 'NOTICE',
+        message: 'Element now hides overflowing content',
+        persistent: false,
+      })
     })
   })
 })
