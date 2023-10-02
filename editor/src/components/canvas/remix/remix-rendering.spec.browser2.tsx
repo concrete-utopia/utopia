@@ -45,6 +45,7 @@ import {
   RemixNavigationBarHomeLabel,
   RemixNavigationBarPathTestId,
 } from '../../editor/remix-navigation-bar'
+import { updateFromCodeEditor } from '../../editor/actions/actions-from-vscode'
 
 const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
@@ -348,6 +349,83 @@ describe('Remix content', () => {
     expect(
       renderResult.renderedDOM.queryAllByTestId(LocationDoesNotMatchRoutesTestId),
     ).toHaveLength(1) // location not matching warning is rendered
+  })
+
+  it("changing a route whilst 404 is shown doesn't break the navigation", async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+      import { Link } from '@remix-run/react'
+
+      export default function Index() {
+        return <Link to='/about' data-testid='remix-link' data-uid='remix-link'>${DefaultRouteTextContent}</Link>
+      }
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+
+    await switchToLiveMode(renderResult)
+
+    await clickRemixLink(renderResult)
+
+    expect(renderResult.renderedDOM.queryByText('404 Not Found')).not.toBeNull() // default 404 page is rendered
+
+    // Make a change to a route, which will in turn update the router
+    const newRouteTextContent = 'I have changed!'
+    await renderResult.dispatch(
+      [
+        updateFromCodeEditor(
+          '/src/routes/_index.js',
+          `import React from 'react'
+    import { Link } from '@remix-run/react'
+
+    export default function Index() {
+      return <Link to='/about' data-testid='remix-link' data-uid='remix-link'>${newRouteTextContent}</Link>
+    }
+    `,
+          null,
+        ),
+      ],
+      true,
+    )
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    // Ensure we can still hit the back button and navigate back to the previous route, with the new content
+    const pathToRemixScene = EP.fromString('sb/remix-scene')
+    await navigateWithRemixSceneLabelButton(renderResult, pathToRemixScene, 'back')
+    expect(renderResult.renderedDOM.queryByText(newRouteTextContent)).not.toBeNull()
+    expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual('(home)')
   })
 
   it('Two remix scenes, both have metadata', async () => {
