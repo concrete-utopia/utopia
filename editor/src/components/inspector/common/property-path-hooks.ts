@@ -1161,6 +1161,7 @@ const StyleSubSectionForType: { [key: string]: SubSectionAvailable } = {
   background: subSectionAllowAll,
   img: subSectionPermitList(['img']),
   transform: subSectionAllowAll,
+  overflow: subSectionDenyList(['img', 'video']),
 }
 
 const PropsToDiscard = [...UtopiaKeys, 'skipDeepFreeze', 'data-utopia-instance-path']
