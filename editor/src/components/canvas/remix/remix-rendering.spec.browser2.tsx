@@ -2066,7 +2066,6 @@ describe('Canvas controls with Remix', () => {
         p.endsWith('remix-div'),
       ),
     ).toEqual([EP.toString(path1), EP.toString(path2)])
-    await wait(1)
 
     const nonResizableControl = renderResult.renderedDOM.queryByTestId(NonResizableControlTestId)
     expect(nonResizableControl).toBeNull()
@@ -2075,12 +2074,12 @@ describe('Canvas controls with Remix', () => {
       renderResult.renderedDOM.queryByTestId(MultiSelectOutlineTestId)
     expect(multiselectOutlineControl).toBeNull()
 
-    const elementOutlineControl1 = renderResult.renderedDOM.queryByTestId(
+    const elementOutlineControl1 = await renderResult.renderedDOM.findByTestId(
       getMultiSelectElementOutlineTestId(path1),
     )
     expect(elementOutlineControl1).not.toBeNull()
 
-    const elementOutlineControl2 = renderResult.renderedDOM.queryByTestId(
+    const elementOutlineControl2 = await renderResult.renderedDOM.findByTestId(
       getMultiSelectElementOutlineTestId(path2),
     )
     expect(elementOutlineControl2).not.toBeNull()
