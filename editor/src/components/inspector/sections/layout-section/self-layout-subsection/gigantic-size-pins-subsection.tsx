@@ -94,6 +94,7 @@ export const PinsLayoutNumberControl = React.memo((props: PinsLayoutNumberContro
       data={{}}
     >
       <NumberInput
+        data-controlstatus={pointInfo.controlStatus}
         value={pointInfo.value}
         id={`position-${props.prop}-number-input`}
         testId={`position-${props.prop}-number-input`}
@@ -325,7 +326,7 @@ const PinControls = React.memo((props: PinControlsProps) => {
   )
 })
 
-function pinsLayoutNumberControl(prop: LayoutPinnedProp) {
+export function pinsLayoutNumberControl(prop: LayoutPinnedProp) {
   return <PinsLayoutNumberControl label={pinLabels[prop]} prop={prop} fixedSizeHandler={null} />
 }
 
