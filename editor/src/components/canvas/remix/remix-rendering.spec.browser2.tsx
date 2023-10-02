@@ -12,7 +12,11 @@ import {
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
   wait,
 } from '../../../utils/utils.test-utils'
-import { runDOMWalker, switchEditorMode } from '../../editor/actions/action-creators'
+import {
+  runDOMWalker,
+  selectComponents,
+  switchEditorMode,
+} from '../../editor/actions/action-creators'
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
 import type { PersistentModel } from '../../editor/store/editor-state'
@@ -45,6 +49,11 @@ import {
   RemixNavigationBarHomeLabel,
   RemixNavigationBarPathTestId,
 } from '../../editor/remix-navigation-bar'
+import { NonResizableControlTestId } from '../controls/select-mode/non-resizable-control'
+import {
+  MultiSelectOutlineTestId,
+  getMultiSelectElementOutlineTestId,
+} from '../controls/select-mode/simple-outline-control'
 import { updateFromCodeEditor } from '../../editor/actions/actions-from-vscode'
 
 const DefaultRouteTextContent = 'Hello Remix!'
@@ -1974,6 +1983,101 @@ export default function Index() {
         'regular-sb/remix-scene:app/outlet:index/absolute-div',
       ],
     )
+  })
+})
+
+describe('Canvas controls with Remix', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
+  it('Multiselect from the same element in different scenes does not render multiselect outline', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+      
+      export var storyboard = (
+        <Storyboard data-uid='storyboard-multiselect-uids'>
+          <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 212,
+              top: 128,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene'
+          />
+           <RemixScene
+            style={{
+              width: 700,
+              height: 759,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }}
+            data-label='Playground'
+            data-uid='remix-scene-2'
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+      
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            ${RootTextContent}
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      ['/src/routes/_index.js']: `import React from 'react'
+
+      export default function Index() {
+        return <div
+          style={{
+            width: 200,
+            height: 200,
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='remix-div'
+        >
+          ${DefaultRouteTextContent}
+        </div>
+      }
+      `,
+    })
+
+    const renderResult = await renderRemixProject(project)
+
+    // Both are the same elements (with same uid) from different Remix scenes
+    const path1 = EP.fromString('storyboard-multiselect-uids/remix-scene:rootdiv/outlet:remix-div')
+    const path2 = EP.fromString(
+      'storyboard-multiselect-uids/remix-scene-2:rootdiv/outlet:remix-div',
+    )
+
+    await renderResult.dispatch([selectComponents([path1, path2], false)], true)
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    const nonResizableControl = renderResult.renderedDOM.queryByTestId(NonResizableControlTestId)
+    expect(nonResizableControl).toBeNull()
+
+    const multiselectOutlineControl =
+      renderResult.renderedDOM.queryByTestId(MultiSelectOutlineTestId)
+    expect(multiselectOutlineControl).toBeNull()
+
+    const elementOutlineControl1 = await renderResult.renderedDOM.findByTestId(
+      getMultiSelectElementOutlineTestId(path1),
+    )
+    expect(elementOutlineControl1).not.toBeNull()
+
+    const elementOutlineControl2 = await renderResult.renderedDOM.findByTestId(
+      getMultiSelectElementOutlineTestId(path2),
+    )
+    expect(elementOutlineControl2).not.toBeNull()
   })
 })
 
