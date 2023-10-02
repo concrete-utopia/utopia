@@ -1338,6 +1338,39 @@ export var storyboard = (
     const resizeControl = getResizeControl(renderResult, EdgePositionBottomRight)
     expect(resizeControl).toBeNull()
   })
+  it('resize does not affect the top/left coordinates', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40.5, top: 50.5, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    await resizeElement(renderResult, dragDelta, EdgePositionBottomRight, emptyModifiers)
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40.5, top: 50.5, width: 240, height: 95 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+    )
+  })
   describe('snap lines', () => {
     it('horizontal snap lines are shown when resizing a multiselection', async () => {
       const editor = await renderTestEditorWithCode(

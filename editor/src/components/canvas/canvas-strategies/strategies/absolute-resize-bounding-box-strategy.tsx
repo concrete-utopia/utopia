@@ -8,7 +8,7 @@ import {
   canvasRectangle,
   isFiniteRectangle,
   isInfinityRectangle,
-  roundRectangleToNearestWhole,
+  roundRectangleWidthHeightToNearestHalf,
   transformFrameUsingBoundingBox,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -192,7 +192,7 @@ export function absoluteResizeBoundingBoxStrategy(
                 selectedElement,
                 originalFrame,
                 edgePosition,
-                roundRectangleToNearestWhole(
+                roundRectangleWidthHeightToNearestHalf(
                   transformFrameUsingBoundingBox(
                     snappedBoundingBox,
                     originalBoundingBox,
