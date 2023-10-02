@@ -577,6 +577,7 @@ export const CanvasToolbar = React.memo(() => {
               iconCategory='semantic'
               onClick={resetCanvasCallback}
               keepActiveInLiveMode
+              size={16}
             />
           </Tooltip>
           <ElementsOutsideVisibleAreaIndicator />
