@@ -386,7 +386,6 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
         }}
       />
       <span style={{ marginLeft: 8 }}>Code </span>
-      {/* <SquareButton highlight>+</SquareButton> */}
     </div>
   )
 })
