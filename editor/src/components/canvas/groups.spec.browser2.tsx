@@ -278,7 +278,6 @@ describe('Groups', () => {
           `<div>
         <Group
           style={{
-            backgroundColor: 'blue',
             position: 'absolute',
             left: 93,
             top: 174,

@@ -72,6 +72,7 @@ import {
   groupJSXElement,
   groupJSXElementImportsToAdd,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { safeIndex } from '../../../core/shared/array-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -6707,7 +6708,7 @@ export var storyboard = (
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
+          <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10, contain: 'layout'}}>
             <div data-uid='ccc' style={{width: 100, height: 60}} />
             <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
               <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
@@ -6716,6 +6717,12 @@ export var storyboard = (
           </div>
         </div>`,
         ),
+      )
+      expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+      const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
+      expect(firstToast?.level).toEqual('INFO')
+      expect(firstToast?.message).toEqual(
+        "Added `contain: 'layout'` to the parent of the newly added element.",
       )
     })
     it(`Wraps 2 elements with a fragment`, async () => {
@@ -6812,7 +6819,7 @@ export var storyboard = (
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
+              <div data-uid='aaa' style={{ contain: 'layout' }}>
                 <Group
                   style={{ position: 'absolute', left: 0, top: 0 }}
                   data-uid='grp'
@@ -6826,6 +6833,13 @@ export var storyboard = (
               </div>
           `),
           ),
+        )
+
+        expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+        const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
+        expect(firstToast?.level).toEqual('INFO')
+        expect(firstToast?.message).toEqual(
+          "Added `contain: 'layout'` to the parent of the newly added element.",
         )
       })
 
@@ -6949,7 +6963,7 @@ export var storyboard = (
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
-              <div data-uid='aaa'>
+              <div data-uid='aaa' style={{ contain: 'layout' }}>
                 <Group
                   style={{ position: 'absolute', left: 0, top: 0 }}
                   data-uid='grp'
@@ -6968,6 +6982,13 @@ export var storyboard = (
               </div>
           `),
           ),
+        )
+
+        expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+        const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
+        expect(firstToast?.level).toEqual('INFO')
+        expect(firstToast?.message).toEqual(
+          "Added `contain: 'layout'` to the parent of the newly added element.",
         )
       })
 

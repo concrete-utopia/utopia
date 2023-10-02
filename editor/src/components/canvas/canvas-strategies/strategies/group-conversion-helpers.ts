@@ -8,6 +8,7 @@ import {
 } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import {
+  removeBackgroundProperties,
   removeMarginProperties,
   removePaddingProperties,
 } from '../../../../core/model/margin-and-padding'
@@ -114,6 +115,7 @@ import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
 import { createMoveCommandsForElement } from './shared-move-strategies-helpers'
 import { getConditionalActiveCase } from '../../../../core/model/conditionals'
+import { showToastCommand } from '../../commands/show-toast-command'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -590,8 +592,8 @@ export function convertFrameToGroup(
   }
 
   const { children, uid, props } = instance.element.value
-  // Remove the padding properties from the parent.
-  const propsWithoutPadding = removePaddingProperties(props)
+  // Remove the padding and background properties from the parent.
+  const propsWithoutPadding = removeBackgroundProperties(removePaddingProperties(props))
   // Remove the margin properties for the children of the newly created group.
   const toPropsOptic = traverseArray<JSXElementChild>()
     .compose(fromTypeGuard(isJSXElement))
@@ -642,6 +644,11 @@ export function convertFrameToGroup(
     }),
     ...moveChildrenCommands,
     queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
+    showToastCommand(
+      'Converted to group and removed styling',
+      'INFO',
+      'convert-frame-to-group-toast',
+    ),
   ]
 }
 
