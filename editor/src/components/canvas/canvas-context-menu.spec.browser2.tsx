@@ -1,5 +1,5 @@
 import { fireEvent } from '@testing-library/react'
-import { forElementOptic } from '../../core/model/common-optics'
+import { forElementChildOptic } from '../../core/model/common-optics'
 import {
   conditionalWhenFalseOptic,
   jsxConditionalExpressionOptic,
@@ -912,7 +912,7 @@ describe('canvas context menu', () => {
       const conditionalPath = EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/conditional`,
       )
-      const inactiveElementOptic = forElementOptic(conditionalPath)
+      const inactiveElementOptic = forElementChildOptic(conditionalPath)
         .compose(jsxConditionalExpressionOptic)
         .compose(conditionalWhenFalseOptic)
       const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState())

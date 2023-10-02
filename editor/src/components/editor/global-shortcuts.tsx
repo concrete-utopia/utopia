@@ -101,6 +101,7 @@ import {
   JUMP_TO_PARENT_SHORTCUT_BACKSLASH,
   OPEN_INSERT_MENU,
   PASTE_TO_REPLACE,
+  WRAP_IN_DIV,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
 import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
@@ -164,6 +165,8 @@ import {
 import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
+import { generateConsistentUID } from '../../core/shared/uid-utils'
+import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -958,6 +961,21 @@ export function handleKeyDown(
         return [
           EditorActions.setPanelVisibility('rightmenu', true),
           EditorActions.setRightMenuTab(RightMenuTab.Insert),
+        ]
+      },
+      [WRAP_IN_DIV]: () => {
+        if (!isSelectMode(editor.mode)) {
+          return []
+        }
+        let uid = generateConsistentUID(
+          'wrapper',
+          new Set(getAllUniqueUids(editor.projectContents).uniqueIDs),
+        )
+        return [
+          EditorActions.wrapInElement(editor.selectedViews, {
+            element: defaultDivElement(uid),
+            importsToAdd: {},
+          }),
         ]
       },
     })

@@ -10,8 +10,9 @@ import {
 } from '../inspector/common/inspector-utils'
 import invariant from '../../third-party/remix/invariant'
 import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
-import { atom, useAtom, useAtomValue } from 'jotai'
+import { atom, useAtom, useAtomValue, useSetAtom, useStore } from 'jotai'
 import immutableUpdate from 'immutability-helper'
+import { deepFreeze } from '../../utils/deep-freeze'
 
 export const GridMenuWidth = 268
 export const GridMenuMinWidth = 200
@@ -23,9 +24,9 @@ export const NumberOfColumns = 4
 export const IndexOfCanvas = 2
 
 export const GridPanelVerticalGapHalf = 6
-export const GridVerticalExtraPadding = 4
+export const GridVerticalExtraPadding = -4
 export const GridPanelHorizontalGapHalf = 6
-export const GridHorizontalExtraPadding = 4
+export const GridHorizontalExtraPadding = -4
 
 export const ExtraHorizontalDropTargetPadding = 45
 
@@ -160,6 +161,8 @@ export function updateLayout(
   const panelToInsert = storedPanel(paneToMove)
 
   function insertPanel(layout: StoredLayout) {
+    deepFreeze(layout)
+
     if (update.type === 'before-column' || update.type === 'after-column') {
       const atLeastOneEmptyColumn = layout.some((col) => col.panels.length === 0)
       if (!atLeastOneEmptyColumn) {
@@ -189,11 +192,10 @@ export function updateLayout(
       const working = [...layout]
 
       // insert
-      working[update.columnIndex].panels = insert(
-        update.indexInColumn,
-        panelToInsert,
-        working[update.columnIndex].panels,
-      )
+      working[update.columnIndex] = {
+        ...working[update.columnIndex],
+        panels: insert(update.indexInColumn, panelToInsert, working[update.columnIndex].panels),
+      }
 
       return removeOldPanel(working)
     }
@@ -201,11 +203,10 @@ export function updateLayout(
       const working = [...layout]
 
       // insert
-      working[update.columnIndex].panels = insert(
-        update.indexInColumn + 1,
-        panelToInsert,
-        working[update.columnIndex].panels,
-      )
+      working[update.columnIndex] = {
+        ...working[update.columnIndex],
+        panels: insert(update.indexInColumn + 1, panelToInsert, working[update.columnIndex].panels),
+      }
 
       return removeOldPanel(working)
     }
@@ -257,6 +258,65 @@ export function updateLayout(
 
   // TODO we need to fix the sizes too!
   return withEmptyColumnsInMiddle
+}
+
+export function useUpdateGridPanelLayout(): (panelName: PanelName, update: LayoutUpdate) => void {
+  const setStoredState = useSetAtom(GridPanelsStateAtom)
+
+  return React.useCallback(
+    (panelName: PanelName, update: LayoutUpdate) => {
+      setStoredState((stored) => {
+        const paneToMove: StoredPanel = (() => {
+          for (const column of stored) {
+            for (const panel of column.panels) {
+              if (panel.name === panelName) {
+                return panel
+              }
+            }
+          }
+          throw new Error(`Invariant error: we should have found a panel by now: '${panelName}'`)
+        })()
+        return updateLayout(stored, paneToMove, update)
+      })
+    },
+    [setStoredState],
+  )
+}
+
+export function useUpdateGridPanelLayoutPutCodeEditorBelowNavigator(): () => void {
+  const setStoredState = useSetAtom(GridPanelsStateAtom)
+
+  return React.useCallback(() => {
+    setStoredState((stored) => {
+      const codeEditorPane: StoredPanel = (() => {
+        for (const column of stored) {
+          for (const panel of column.panels) {
+            if (panel.name === 'code-editor') {
+              return panel
+            }
+          }
+        }
+        throw new Error('Invariant error: we should have found a code-editor panel by now')
+      })()
+      const update: LayoutUpdate = (() => {
+        for (let columnIndex = 0; columnIndex < stored.length; columnIndex++) {
+          const column = stored[columnIndex]
+          for (let indexInColumn = 0; indexInColumn < column.panels.length; indexInColumn++) {
+            const panel = column.panels[indexInColumn]
+            if (panel.name === 'navigator') {
+              return {
+                type: 'after-index',
+                columnIndex: columnIndex,
+                indexInColumn: indexInColumn,
+              }
+            }
+          }
+        }
+        throw new Error('Invariant error: we should have found a navigator panel by now')
+      })()
+      return updateLayout(stored, codeEditorPane, update)
+    })
+  }, [setStoredState])
 }
 
 export function useColumnWidths(): [
