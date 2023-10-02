@@ -58,7 +58,7 @@ describe('Pasting an image onto the canvas', () => {
           style={{
             position: 'absolute',
             left: 719,
-            top: 419.5,
+            top: 419,
             width: 1,
             height: 1,
           }}
