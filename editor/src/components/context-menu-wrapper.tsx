@@ -160,6 +160,9 @@ export class ContextMenuWrapper<T> extends ReactComponent<
   ContextMenuWrapperProps<T> & { dispatch: EditorDispatch; children?: React.ReactNode }
 > {
   getData = () => this.props.data
+  wrapperStopPropagation = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation()
+  }
   render() {
     const name = `${this.props.id}-context-menu-wrapper`
     return (
@@ -167,6 +170,9 @@ export class ContextMenuWrapper<T> extends ReactComponent<
         key={name}
         className={name + ' ' + (this.props.className ?? '')}
         style={this.props.style}
+        onMouseDown={this.wrapperStopPropagation}
+        onMouseUp={this.wrapperStopPropagation}
+        onClick={this.wrapperStopPropagation}
       >
         <MenuProvider
           key={`${this.props.id}-provider`}

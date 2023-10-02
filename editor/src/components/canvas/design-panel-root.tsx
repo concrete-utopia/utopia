@@ -296,11 +296,11 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
     <Resizable
       ref={resizableRef}
       defaultSize={{
-        width: defaultInspectorWidth,
+        width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : defaultInspectorWidth,
         height: '100%',
       }}
       size={{
-        width: width,
+        width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : width,
         height: '100%',
       }}
       style={{

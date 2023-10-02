@@ -31,7 +31,7 @@ import { EditorModes } from '../editor/editor-modes'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { MainEditorStoreProvider } from '../editor/store/store-context-providers'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { printCSSNumber } from '../inspector/common/css-utils'
+import { DOMEventHandlerNames, printCSSNumber } from '../inspector/common/css-utils'
 import {
   toggleTextBold,
   toggleTextItalic,
@@ -43,6 +43,8 @@ import { mapArrayToDictionary } from '../../core/shared/array-utils'
 import { TextRelatedProperties } from '../../core/properties/css-properties'
 import { assertNever } from '../../core/shared/utils'
 import { notice } from '../common/notice'
+import type { AllElementProps } from '../editor/store/editor-state'
+import { toString } from '../../core/shared/element-path'
 
 export const TextEditorSpanId = 'text-editor'
 
@@ -305,6 +307,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   )
 
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const savedContentRef = React.useRef<string | null>(null)
 
@@ -330,6 +333,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
 
     currentElement.focus()
     savedContentRef.current = currentElement.textContent
+    const initialText = currentElement.textContent
 
     const elementCanvasFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
       elementPath,
@@ -338,6 +342,12 @@ const TextEditor = React.memo((props: TextEditorProps) => {
     if (elementCanvasFrame.width === 0) {
       currentElement.style.minWidth = '0.5px'
     }
+
+    const canDeleteWhenEmpty = canDeleteElementWhenEmpty(
+      metadataRef.current,
+      elementPath,
+      allElementPropsRef.current,
+    )
 
     return () => {
       const content = currentElement.textContent
@@ -349,10 +359,19 @@ const TextEditor = React.memo((props: TextEditorProps) => {
             savedContentRef.current = content
             requestAnimationFrame(() => dispatch([getSaveAction(elementPath, content, textProp)]))
           }
+          // remove dangling empty spans
+          if (
+            content != null &&
+            initialText !== content &&
+            content.replace(/^\n/, '').length === 0 &&
+            canDeleteWhenEmpty
+          ) {
+            requestAnimationFrame(() => dispatch([deleteView(elementPath)]))
+          }
         }
       }
     }
-  }, [dispatch, elementPath, elementState, metadataRef, textProp])
+  }, [dispatch, elementPath, elementState, textProp, metadataRef, allElementPropsRef])
 
   React.useLayoutEffect(() => {
     if (myElement.current == null) {
@@ -592,4 +611,30 @@ function getSaveAction(
   textProp: TextProp,
 ): EditorAction {
   return updateText(elementPath, escapeHTML(content, textProp), textProp)
+}
+
+function canDeleteElementWhenEmpty(
+  jsxMetadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+  allElementProps: AllElementProps,
+): boolean {
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (element == null) {
+    return false
+  }
+  if (!MetadataUtils.isSpan(element)) {
+    return false
+  }
+
+  const elementProps = allElementProps[toString(path)]
+  if (elementProps == null) {
+    return false
+  }
+
+  // it must not have defined event handlers
+  if (Object.keys(elementProps).some((prop) => DOMEventHandlerNames.includes(prop as any))) {
+    return false
+  }
+
+  return true
 }

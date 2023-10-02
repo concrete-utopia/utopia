@@ -180,6 +180,7 @@ import type {
   RemixRoutingTable,
 } from './remix-derived-data'
 import type { ProjectServerState } from './project-server-state'
+import { GridMenuWidth } from '../../canvas/grid-panels-state'
 
 const ObjectPathImmutable: any = OPI
 
@@ -192,7 +193,7 @@ export enum LeftMenuTab {
 
 export const LeftPaneMinimumWidth = 5
 
-export const LeftPaneDefaultWidth = 260
+export const LeftPaneDefaultWidth = GridMenuWidth
 export const LeftPanelMinWidth = 240
 export const DefaultNavigatorWidth = 280
 export const LeftPanelWidthAtom = atomWithPubSub({
