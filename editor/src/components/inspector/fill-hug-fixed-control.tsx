@@ -785,6 +785,8 @@ export function getSafeGroupChildConstraintsArray(
   return value
 }
 
+export type ConstraintsMode = 'add' | 'remove'
+
 function setGroupChildConstraint(
   dispatch: EditorDispatch,
   option: GroupChildConstraintOptionType | 'toggle',
@@ -792,17 +794,7 @@ function setGroupChildConstraint(
   allElementProps: AllElementProps,
   dimension: LayoutPinnedProp,
 ) {
-  function makeNewProps(current: any[], mode: 'add' | 'remove'): any[] {
-    switch (mode) {
-      case 'add':
-        return [...current, dimension]
-      case 'remove':
-        return current.filter((other) => other !== dimension)
-      default:
-        assertNever(mode)
-    }
-  }
-  function getMode(): 'add' | 'remove' {
+  function getMode(): ConstraintsMode {
     if (option !== 'toggle') {
       return option === 'constrained' ? 'add' : 'remove'
     }
@@ -817,12 +809,80 @@ function setGroupChildConstraint(
 
   const actions: EditorAction[] = mapDropNulls((path) => {
     const constraints = getSafeGroupChildConstraintsArray(allElementProps, path)
-    const newProps = makeNewProps(constraints, mode)
-    const uniqueNewProps = uniqBy(newProps, (a, b) => a === b)
-    return uniqueNewProps.length === 0
+    const newProps = makeUpdatedConstraintsPropArray(constraints, mode, dimension)
+    return newProps.length === 0
       ? unsetProperty(path, prop)
-      : setProp_UNSAFE(path, prop, jsExpressionValue(uniqueNewProps, emptyComments))
+      : setProp_UNSAFE(path, prop, jsExpressionValue(newProps, emptyComments))
   }, selectedViews)
 
   dispatch(actions)
+}
+
+export function makeUpdatedConstraintsPropArray(
+  constraints: any[],
+  mode: ConstraintsMode,
+  dimension: LayoutPinnedProp,
+): any[] {
+  const newProps = new Set(constraints)
+  switch (mode) {
+    case 'add':
+      newProps.add(dimension)
+      break
+    case 'remove':
+      newProps.delete(dimension)
+      break
+    default:
+      assertNever(mode)
+  }
+
+  if (mode === 'add') {
+    switch (dimension) {
+      case 'width':
+        maybeRemoveOldestComplement(newProps, constraints, ['left', 'right'])
+        break
+      case 'height':
+        maybeRemoveOldestComplement(newProps, constraints, ['top', 'bottom'])
+        break
+      case 'top':
+        maybeRemoveComplementaryDimension(newProps, 'bottom', 'height')
+        break
+      case 'left':
+        maybeRemoveComplementaryDimension(newProps, 'right', 'width')
+        break
+      case 'bottom':
+        maybeRemoveComplementaryDimension(newProps, 'top', 'height')
+        break
+      case 'right':
+        maybeRemoveComplementaryDimension(newProps, 'left', 'width')
+        break
+      default:
+        assertNever(dimension)
+    }
+  }
+
+  return Array.from(newProps)
+}
+
+function maybeRemoveOldestComplement(
+  set: Set<any>,
+  constraints: any[],
+  complements: [LayoutPinnedProp, LayoutPinnedProp],
+) {
+  if (set.has(complements[0]) && set.has(complements[1])) {
+    const oldest =
+      constraints.indexOf(complements[0]) < constraints.indexOf(complements[1])
+        ? complements[0]
+        : complements[1]
+    set.delete(oldest)
+  }
+}
+
+function maybeRemoveComplementaryDimension(
+  set: Set<any>,
+  complement: LayoutPinnedProp,
+  dimensionToDelete: LayoutPinnedProp,
+) {
+  if (set.has(complement)) {
+    set.delete(dimensionToDelete)
+  }
 }
