@@ -42,6 +42,10 @@ export const BackgroundPropertyPaths: Array<PropertyPath> = [
   PP.create('style', 'backgroundPosition'),
   PP.create('style', 'backgroundRepeat'),
   PP.create('style', 'backgroundSize'),
+  PP.create('style', 'backgroundImage'),
+  PP.create('style', 'backgroundBlendMode'),
+  PP.create('style', 'backgroundPositionX'),
+  PP.create('style', 'backgroundPositionY'),
 ]
 
 export function removePaddingProperties(jsxAttributes: JSXAttributes): JSXAttributes {
