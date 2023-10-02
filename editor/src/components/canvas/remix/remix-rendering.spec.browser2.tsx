@@ -1916,7 +1916,7 @@ describe('Canvas controls with Remix', () => {
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='storyboard'>
+        <Storyboard data-uid='storyboard-multiselect-uids'>
           <RemixScene
             style={{
               width: 700,
@@ -1976,8 +1976,10 @@ describe('Canvas controls with Remix', () => {
     const renderResult = await renderRemixProject(project)
 
     // Both are the same elements (with same uid) from different Remix scenes
-    const path1 = EP.fromString('storyboard/remix-scene:rootdiv/outlet:remix-div')
-    const path2 = EP.fromString('storyboard/remix-scene-2:rootdiv/outlet:remix-div')
+    const path1 = EP.fromString('storyboard-multiselect-uids/remix-scene:rootdiv/outlet:remix-div')
+    const path2 = EP.fromString(
+      'storyboard-multiselect-uids/remix-scene-2:rootdiv/outlet:remix-div',
+    )
 
     await renderResult.dispatch([selectComponents([path1, path2], false)], true)
     await renderResult.getDispatchFollowUpActionsFinished()
