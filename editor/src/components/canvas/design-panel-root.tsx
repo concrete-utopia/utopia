@@ -38,7 +38,7 @@ import type { Menu, Pane, StoredPanel } from './grid-panels-state'
 import type { ResizableProps } from '../../uuiui-deps'
 import type { Direction } from 're-resizable/lib/resizer'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { TitleBarEmpty, TitleBarUserProfile } from '../titlebar/title-bar'
+import { TitleBarCode, TitleBarUserProfile } from '../titlebar/title-bar'
 import type { EditorAction } from '../editor/action-types'
 import { SettingsPane } from '../navigator/left-pane/settings-pane'
 import { MenuTab } from '../../uuiui/menu-tab'
@@ -430,7 +430,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
     >
       {when(
         isFeatureEnabled('Draggable Floating Panels'),
-        <TitleBarEmpty panelData={props.panelData} />,
+        <TitleBarCode panelData={props.panelData} />,
       )}
       <div
         style={{
