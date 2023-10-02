@@ -1,3 +1,4 @@
+import type { LayoutPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
@@ -368,7 +369,7 @@ function getConstrainedFramesAdjustments(
 function isDimensionConstrained(
   jsxMetadata: ElementInstanceMetadataMap,
   path: ElementPath,
-  constraintsArray: any[],
+  constraintsArray: LayoutPinnedProp[],
   dimension: 'width' | 'height',
 ): boolean {
   return (

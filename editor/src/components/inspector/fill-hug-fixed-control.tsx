@@ -47,7 +47,7 @@ import { UIGridRow } from './widgets/ui-grid-row'
 import { mapDropNulls, safeIndex, uniqBy } from '../../core/shared/array-utils'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { when } from '../../utils/react-conditionals'
-import type { LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
+import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import type { EditorDispatch, EditorAction } from '../editor/action-types'
@@ -777,12 +777,12 @@ function groupChildConstraintOption(type: GroupChildConstraintOptionType): Selec
 export function getSafeGroupChildConstraintsArray(
   allElementProps: AllElementProps,
   path: ElementPath,
-): any[] {
+): LayoutPinnedProp[] {
   const value = allElementProps[EP.toString(path)]?.['data-constraints'] ?? []
   if (!Array.isArray(value)) {
     return []
   }
-  return value
+  return value.filter((v) => typeof v === 'string' && isLayoutPinnedProp(v))
 }
 
 export type ConstraintsMode = 'add' | 'remove'
@@ -819,10 +819,10 @@ function setGroupChildConstraint(
 }
 
 export function makeUpdatedConstraintsPropArray(
-  constraints: any[],
+  constraints: LayoutPinnedProp[],
   mode: ConstraintsMode,
   dimension: LayoutPinnedProp,
-): any[] {
+): LayoutPinnedProp[] {
   const newProps = new Set(constraints)
   switch (mode) {
     case 'add':
@@ -864,8 +864,8 @@ export function makeUpdatedConstraintsPropArray(
 }
 
 function maybeRemoveOldestComplement(
-  set: Set<any>,
-  constraints: any[],
+  set: Set<LayoutPinnedProp>,
+  constraints: LayoutPinnedProp[],
   complements: [LayoutPinnedProp, LayoutPinnedProp],
 ) {
   if (set.has(complements[0]) && set.has(complements[1])) {
@@ -878,7 +878,7 @@ function maybeRemoveOldestComplement(
 }
 
 function maybeRemoveComplementaryDimension(
-  set: Set<any>,
+  set: Set<LayoutPinnedProp>,
   complement: LayoutPinnedProp,
   dimensionToDelete: LayoutPinnedProp,
 ) {
