@@ -2260,4 +2260,329 @@ describe('Spy Wrapper Multifile With Cyclic Dependencies', () => {
     `,
     )
   })
+
+  it('elements inside files imported multiple times can still be focused', async () => {
+    const { dispatch, getEditorState } = await createAndRenderModifiedProject({
+      [StoryboardFilePath]: exampleProject,
+
+      '/src/hi-inner.js': `
+        import * as React from "react";
+
+        export const HiElementInner = (props) => {
+          return (
+            <div data-uid="hi-element-inner-root">
+              <div data-uid="actual-text">hi!</div>
+            </div>
+          )
+        }`,
+
+      '/src/hi-outer.js': `
+        import * as React from "react";
+        import { HiElementInner } from "./hi-inner";
+        export const HiElement = (props) => {
+          return (
+            <div data-uid="hi-element-root">
+              <HiElementInner data-uid="hi-element-inner" />
+            </div>
+          )
+        }`,
+
+      'src/card-inner.js': `
+        import * as React from "react";
+        import { HiElement } from "./hi-outer";
+
+        const Button = (props) => {
+          return <div data-uid="button-root">{props.children}</div>;
+        };
+        export const CardInner = () => {
+          return (
+            <Button data-uid="button-instance">
+              {
+                // @utopia/uid=expr
+                [0, 1, 2].map(i => (
+                  <HiElement data-uid="hi-element" />
+                ))
+              }
+            </Button>
+          );
+        };`,
+
+      '/src/card.js': `
+        import * as React from "react";
+        import { HiElement } from "./hi-outer";
+        import { CardInner } from "./card-inner";
+
+        export const Card = () => {
+          return (
+            <CardInner data-uid="card-inner-instance" />
+          );
+        };`,
+    })
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
+            ['card-inner-instance'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
+            ['card-inner-instance'],
+            ['button-instance', 'expr', 'hi-element~~~2'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch(
+      [
+        setFocusedElement(
+          EP.elementPath([
+            ['storyboard', 'scene-2', 'app2'],
+            ['app-outer-div', 'card-instance'],
+            ['card-inner-instance'],
+            ['button-instance', 'expr', 'hi-element~~~2'],
+            ['hi-element-root', 'hi-element-inner'],
+          ]),
+        ),
+      ],
+      true,
+    )
+
+    await dispatch([CanvasActions.scrollCanvas(canvasPoint(point(0, 1)))], true) // TODO fix the dom walker so it runs _after_ rendering the canvas so we can avoid this horrible hack here
+
+    const spiedMetadata = getEditorState().editor.spyMetadata
+    const sanitizedSpyData = simplifiedMetadataMap(spiedMetadata)
+
+    const domMetadata = getEditorState().editor.domMetadata
+    const sanitizedDomMetadata = simplifiedMetadataMap(domMetadata)
+
+    const finalMetadata = getEditorState().editor.jsxMetadata
+    const sanitizedFinalMetadata = simplifiedMetadataMap(finalMetadata)
+
+    matchInlineSnapshotBrowser(
+      sanitizedSpyData,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene-1": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene-1/app": Object {
+          "name": "SameFileApp",
+        },
+        "storyboard/scene-1/app:other-app-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
+          "name": "Card",
+        },
+        "storyboard/scene-2": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene-2/app2": Object {
+          "name": "App",
+        },
+        "storyboard/scene-2/app2:app-outer-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
+          "name": "Card",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance": Object {
+          "name": "CardInner",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance": Object {
+          "name": "Button",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~1": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner": Object {
+          "name": "HiElementInner",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root/actual-text": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~3": Object {
+          "name": "HiElement",
+        },
+      }
+    `,
+    )
+
+    matchInlineSnapshotBrowser(
+      sanitizedDomMetadata,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene-1": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~1": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root/actual-text": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~3": Object {
+          "name": "div",
+        },
+      }
+    `,
+    )
+
+    matchInlineSnapshotBrowser(
+      sanitizedFinalMetadata,
+      `
+      Object {
+        "storyboard": Object {
+          "name": "Storyboard",
+        },
+        "storyboard/scene-1": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene-1/app": Object {
+          "name": "SameFileApp",
+        },
+        "storyboard/scene-1/app:other-app-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene-1/app:other-app-root/other-inner-div/other-card-instance": Object {
+          "name": "Card",
+        },
+        "storyboard/scene-2": Object {
+          "name": "Scene",
+        },
+        "storyboard/scene-2/app2": Object {
+          "name": "App",
+        },
+        "storyboard/scene-2/app2:app-outer-div": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance": Object {
+          "name": "Card",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance": Object {
+          "name": "CardInner",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance": Object {
+          "name": "Button",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr": Object {
+          "name": "not-jsx-element",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~1": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2": Object {
+          "name": "HiElement",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner": Object {
+          "name": "HiElementInner",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~2:hi-element-root/hi-element-inner:hi-element-inner-root/actual-text": Object {
+          "name": "div",
+        },
+        "storyboard/scene-2/app2:app-outer-div/card-instance:card-inner-instance:button-instance/expr/hi-element~~~3": Object {
+          "name": "HiElement",
+        },
+      }
+    `,
+    )
+  })
 })
