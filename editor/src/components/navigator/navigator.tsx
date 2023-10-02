@@ -14,7 +14,11 @@ import { useKeepReferenceEqualityIfPossible } from '../../utils/react-performanc
 import Utils from '../../utils/utils'
 import { FlexColumn, Section, SectionBodyArea } from '../../uuiui'
 import { setFocus } from '../common/actions'
-import { clearHighlightedViews, showContextMenu } from '../editor/actions/action-creators'
+import {
+  clearHighlightedViews,
+  clearSelection,
+  showContextMenu,
+} from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { NavigatorEntry } from '../editor/store/editor-state'
 import {
@@ -247,6 +251,16 @@ export const NavigatorComponent = React.memo(() => {
     }
   }
 
+  const containerClick = React.useCallback(
+    (mouseEvent: React.MouseEvent<HTMLElement>) => {
+      // Ensure this is a left click.
+      if (mouseEvent.button === 0) {
+        dispatch([clearSelection()])
+      }
+    },
+    [dispatch],
+  )
+
   return (
     <Section
       data-name='Navigator'
@@ -270,6 +284,7 @@ export const NavigatorComponent = React.memo(() => {
           '--paneHoverOpacity': 1,
         },
       }}
+      onClick={containerClick}
     >
       <SectionBodyArea
         minimised={minimised}

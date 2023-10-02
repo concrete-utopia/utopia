@@ -1117,7 +1117,7 @@ export const GithubPane = React.memo(() => {
     }
   }, [githubUser])
   return (
-    <>
+    <div style={{ height: '100%', overflowY: 'scroll' }}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
           <FlexRow flexGrow={1}>
@@ -1164,6 +1164,6 @@ export const GithubPane = React.memo(() => {
           <PullRequestButton />
         </Section>,
       )}
-    </>
+    </div>
   )
 })
