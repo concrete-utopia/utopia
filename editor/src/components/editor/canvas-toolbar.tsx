@@ -166,7 +166,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
               minWidth: '200px',
               borderRadius: '10px',
               borderWidth: 1,
-              borderColor: theme.primary.value,
+              borderColor: colorTheme.dynamicBlue.value,
               borderStyle: 'solid',
             }
           },
