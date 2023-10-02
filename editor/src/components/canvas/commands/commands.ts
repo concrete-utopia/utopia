@@ -85,8 +85,6 @@ import { runAddElements } from './add-elements-command'
 import type { QueueGroupTrueUp } from './queue-group-true-up-command'
 import { runQueueGroupTrueUp } from './queue-group-true-up-command'
 import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
-import type { AddPropIfDoesntExist } from './add-prop-if-doesnt-exist'
-import { runAddPropIfDoesntExist } from './add-prop-if-doesnt-exist'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -142,7 +140,6 @@ export type CanvasCommand =
   | DeleteElement
   | WrapInContainerCommand
   | QueueGroupTrueUp
-  | AddPropIfDoesntExist
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -228,8 +225,6 @@ export function runCanvasCommand(
       return runWrapInContainerCommand(editorState, derivedState, command)
     case 'QUEUE_GROUP_TRUE_UP':
       return runQueueGroupTrueUp(editorState, derivedState, command)
-    case 'ADD_PROP_IF_DOESNT_EXIST':
-      return runAddPropIfDoesntExist(editorState, derivedState, command, commandLifecycle)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
