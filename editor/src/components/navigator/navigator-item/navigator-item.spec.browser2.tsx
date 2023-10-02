@@ -305,12 +305,10 @@ describe('Navigator item row icons', () => {
       { category: 'element', type: 'fragment' },
       visibleNavigatorTargets[16],
     )
-    // Sizeless divs now display a warning icon rather than their expected icon
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'element', type: 'group-open' },
+      { category: 'element', type: 'sizeless-div' },
       visibleNavigatorTargets[17],
-      'expect-warning-icon',
     )
     await checkNavigatorIcon(
       'Generated text',
