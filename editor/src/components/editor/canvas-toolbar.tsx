@@ -396,8 +396,7 @@ export const CanvasToolbar = React.memo(() => {
       <FlexRow
         data-testid='canvas-toolbar-submenu'
         style={{
-          alignItems: 'start',
-          marginLeft: 15,
+          marginLeft: 8,
           padding: '0 8px',
           height: 32,
           overflow: 'hidden',
@@ -657,16 +656,17 @@ export const CanvasToolbar = React.memo(() => {
                       iconCategory='semantic'
                       iconType='icon-semantic-back'
                       onClick={dispatchSwitchToSelectModeCloseMenus}
+                      style={{ width: undefined }}
                     />
                   </Tooltip>
-                  <Tooltip title='Wrap selection' placement='bottom'>
-                    <InsertModeButton
-                      iconType='wrap-action'
-                      iconCategory='tools'
-                      onClick={NO_OP}
-                      secondary={true}
-                    />
-                  </Tooltip>
+                  <Icn
+                    category='tools'
+                    type='wrap-action'
+                    width={18}
+                    height={18}
+                    style={{ marginRight: 10 }}
+                  />
+
                   <Tooltip title='Wrap in div' placement='bottom'>
                     <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
                   </Tooltip>
@@ -685,16 +685,16 @@ export const CanvasToolbar = React.memo(() => {
                       iconCategory='semantic'
                       iconType='icon-semantic-back'
                       onClick={dispatchSwitchToSelectModeCloseMenus}
+                      style={{ width: undefined }}
                     />
                   </Tooltip>
-                  <Tooltip title='Convert selection' placement='bottom'>
-                    <InsertModeButton
-                      iconType='convert-action'
-                      iconCategory='tools'
-                      onClick={NO_OP}
-                      secondary={true}
-                    />
-                  </Tooltip>
+                  <Icn
+                    category='tools'
+                    type='convert-action'
+                    width={18}
+                    height={18}
+                    style={{ marginRight: 10 }}
+                  />
                   <Tooltip title='Convert to Fragment' placement='bottom'>
                     <InsertModeButton iconType='fragment' onClick={convertToFragment} />
                   </Tooltip>
@@ -719,6 +719,7 @@ export const CanvasToolbar = React.memo(() => {
                     iconCategory='semantic'
                     iconType='icon-semantic-back'
                     onClick={dispatchSwitchToSelectModeCloseMenus}
+                    style={{ width: undefined }}
                   />
                 </Tooltip>
                 <Tooltip title='Insert div' placement='bottom'>
