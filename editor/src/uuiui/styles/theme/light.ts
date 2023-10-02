@@ -30,6 +30,7 @@ const lightBase = {
   componentPurple05solid: createUtopiColor('oklch(0.96 0.02 287)'),
   dynamicBlue: createUtopiColor('oklch(59% 0.25 254)'),
   dynamicBlue10: createUtopiColor('oklch(58.98% 0.246 254.39 / 10%)'),
+  dynamicBlue30: createUtopiColor('oklch(58.98% 0.246 254.39 / 30%)'),
   unavailable: createUtopiColor('oklch(54.52% 0 0 / 5%)'),
   unavailableGrey: createUtopiColor('oklch(0% 0 0 / 22%)'),
   unavailableGrey10: createUtopiColor('oklch(0% 0 0 / 10%)'),
