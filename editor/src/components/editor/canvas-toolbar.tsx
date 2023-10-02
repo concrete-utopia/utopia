@@ -558,17 +558,19 @@ export const CanvasToolbar = React.memo(() => {
           <Separator />
           <Tooltip title='Zoom to 100%' placement='bottom'>
             <SquareButton
-              highlight
               style={{
-                textAlign: 'center',
-                width: 'min-content',
-                minWidth: 32,
                 height: 32,
+                width: 'min-content',
                 padding: '0 8px',
+              }}
+              css={{
+                '&:hover': {
+                  color: colorTheme.dynamicBlue.value,
+                },
               }}
               onClick={zoom100pct}
             >
-              {zoomLevel}x
+              {zoomLevel * 100}%
             </SquareButton>
           </Tooltip>
           <Tooltip title='Reset Canvas' placement='bottom'>
