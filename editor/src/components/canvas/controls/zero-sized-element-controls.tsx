@@ -1,5 +1,6 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
+/** @jsxFrag React.Fragment */
 import React from 'react'
 import { jsx } from '@emotion/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -178,21 +179,29 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
   } else {
     const frame = element.globalFrame
     return (
-      <div
-        onMouseDown={onControlMouseDown}
-        onMouseOver={onControlMouseOver}
-        onMouseOut={onControlMouseOut}
-        style={{
-          position: 'absolute',
-          ...zeroSizedControlDimensions(offsetRect(frame, canvasOffset), scale, true),
-        }}
-        css={{
-          boxShadow: zeroSizedControlBoxShadow(scale, colorTheme.primary.value, 'thin'),
-          '&:hover': {
-            boxShadow: zeroSizedControlBoxShadow(scale, colorTheme.primary.value, 'thick'),
-          },
-        }}
-      />
+      <>
+        <div
+          style={{
+            position: 'absolute',
+            ...zeroSizedControlDimensions(offsetRect(frame, canvasOffset), scale, true),
+          }}
+          css={{
+            boxShadow: zeroSizedControlBoxShadow(scale, colorTheme.primary.value, 'thin'),
+            '&:hover': {
+              boxShadow: zeroSizedControlBoxShadow(scale, colorTheme.primary.value, 'thick'),
+            },
+          }}
+        />
+        <div
+          onMouseDown={onControlMouseDown}
+          onMouseOver={onControlMouseOver}
+          onMouseOut={onControlMouseOut}
+          style={{
+            position: 'absolute',
+            ...zeroSizedEventControlDimensions(offsetRect(frame, canvasOffset), scale),
+          }}
+        />
+      </>
     )
   }
 })
@@ -401,15 +410,22 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
   return (
     <CanvasOffsetWrapper>
       <div
-        onMouseMove={onControlMouseMove}
-        onMouseDown={onControlMouseDown}
-        onMouseUp={onControlMouseUp}
-        onDoubleClick={onControlDoubleClick}
         className='role-resize-no-size'
         data-testid={ZeroSizedControlTestID}
         style={{
           position: 'absolute',
           ...zeroSizedControlDimensions(props.frame, props.scale),
+        }}
+      />
+      <div
+        onMouseMove={onControlMouseMove}
+        onMouseDown={onControlMouseDown}
+        onMouseUp={onControlMouseUp}
+        onDoubleClick={onControlDoubleClick}
+        data-testid={`${ZeroSizedControlTestID}-events`}
+        style={{
+          position: 'absolute',
+          ...zeroSizedEventControlDimensions(props.frame, props.scale),
         }}
       />
     </CanvasOffsetWrapper>
@@ -477,6 +493,28 @@ function zeroSizedControlDimensions(
     width: rect.width + ZeroControlSize * ratio,
     height: rect.height + ZeroControlSize * ratio,
     borderRadius: borderRadius ? (ZeroControlSize / 2) * ratio : undefined,
+  }
+}
+
+// So that we can capture events on what looks like the border
+// we need some bounds that overlap around the dimensions of the
+// control.
+function zeroSizedEventControlDimensions(
+  rect: CanvasRectangle,
+  scale: number,
+): {
+  left: number
+  top: number
+  width: number
+  height: number
+} {
+  const ratio = getScaleRatio(scale)
+  const borderAdjustment = ZeroControlSize / 2
+  return {
+    left: rect.x - ZeroControlSize / 2 - borderAdjustment,
+    top: rect.y - ZeroControlSize / 2 - borderAdjustment,
+    width: rect.width + ZeroControlSize * ratio + borderAdjustment * 2,
+    height: rect.height + ZeroControlSize * ratio + borderAdjustment * 2,
   }
 }
 
