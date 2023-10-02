@@ -28,7 +28,9 @@ export const MultiSelectOutlineControl = React.memo<MultiSelectOutlineControlPro
       'MultiSelectOutlineControl hiddenInstances',
     )
     const localSelectedElements = props.localSelectedElements.filter(
-      (sv) => !hiddenInstances.includes(sv) && !EP.isStoryboardPath(sv),
+      (sv) =>
+        hiddenInstances.find((hiddenInstance) => EP.pathsEqual(sv, hiddenInstance)) == null &&
+        !EP.isStoryboardPath(sv),
     )
 
     const showMultiselectOutline = !EP.multiplePathsAllWithTheSameUID(localSelectedElements)
