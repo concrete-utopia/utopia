@@ -219,14 +219,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     (
       innerRouter: RouterType,
       location: Location,
-      updateEntries: 'update-entries' | 'do-not-update-entries',
+      updateEntries: 'append-to-entries' | 'replace-entries',
     ) => {
       setNavigationData((current) => {
         const key = EP.toString(basePath)
         const existingEntries = current[key]?.entries ?? []
 
         const shouldUpdateEntries =
-          updateEntries === 'update-entries' &&
+          updateEntries === 'append-to-entries' &&
           existingEntries.at(-1)?.pathname !== location.pathname
 
         const updatedEntries = shouldUpdateEntries
@@ -250,14 +250,14 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const updateNavigationData = React.useCallback(
     (innerRouter: RouterType, location: Location) => {
-      setNavigationDataForRouter(innerRouter, location, 'update-entries')
+      setNavigationDataForRouter(innerRouter, location, 'append-to-entries')
     },
     [setNavigationDataForRouter],
   )
 
   const initialiseNavigationData = React.useCallback(
     (innerRouter: RouterType) => {
-      setNavigationDataForRouter(innerRouter, innerRouter.state.location, 'do-not-update-entries')
+      setNavigationDataForRouter(innerRouter, innerRouter.state.location, 'replace-entries')
     },
     [setNavigationDataForRouter],
   )
