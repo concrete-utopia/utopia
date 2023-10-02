@@ -1981,6 +1981,11 @@ describe('Canvas controls with Remix', () => {
 
     await renderResult.dispatch([selectComponents([path1, path2], false)], true)
     await renderResult.getDispatchFollowUpActionsFinished()
+    expect(
+      Object.keys(renderResult.getEditorState().editor.jsxMetadata).filter((p) =>
+        p.endsWith('remix-div'),
+      ),
+    ).toEqual([EP.toString(path1), EP.toString(path2)])
     await wait(1)
 
     const nonResizableControl = renderResult.renderedDOM.queryByTestId(NonResizableControlTestId)
