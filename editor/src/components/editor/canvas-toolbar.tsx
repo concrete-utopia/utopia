@@ -588,39 +588,62 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'closed',
               wrapInSubmenu(
-                <>
-                  <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
-                    <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
-                  </Tooltip>
-                  <Tooltip title='Wrap selection in an element (W)' placement='bottom'>
-                    <InsertModeButton
-                      iconType='designtool-larger'
-                      iconCategory='semantic'
-                      onClick={openFloatingWrapInMenuCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip
-                    title='Converts an element or component into another (C)'
-                    placement='bottom'
+                <FlexRow
+                  style={{
+                    gap: 25,
+                    padding: '0 10px',
+                    alignSelf: 'stretch',
+                  }}
+                >
+                  <FlexRow
+                    onClick={wrapInGroupCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
                   >
-                    <InsertModeButton
-                      iconType='convertobject'
-                      iconCategory='semantic'
-                      onClick={openFloatingConvertMenuCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip
-                    title='Toggle between absolute and static positioning (X)' // help I need better copy
-                    placement='bottom'
+                    <Icn category='tools' type='group-action' width={18} height={18} />
+                    Group
+                  </FlexRow>
+                  <FlexRow
+                    onClick={openFloatingWrapInMenuCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
                   >
-                    <InsertModeButton
-                      iconType='position-absolute' // TODO this needs an icon!
-                      iconCategory='layout/systems'
-                      size={16}
-                      onClick={toggleAbsolutePositioningCallback}
-                    />
-                  </Tooltip>
-                </>,
+                    <Icn category='tools' type='wrap-action' width={18} height={18} />
+                    Wrap
+                  </FlexRow>
+                  <FlexRow
+                    onClick={openFloatingConvertMenuCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
+                  >
+                    <Icn category='tools' type='convert-action' width={18} height={18} />
+                    Convert
+                  </FlexRow>
+                  <FlexRow
+                    onClick={toggleAbsolutePositioningCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
+                  >
+                    <Icn category='tools' type='position-action' width={18} height={18} />
+                    Position
+                  </FlexRow>
+                </FlexRow>,
               ),
             )}
             {when(
@@ -636,8 +659,8 @@ export const CanvasToolbar = React.memo(() => {
                   </Tooltip>
                   <Tooltip title='Wrap selection' placement='bottom'>
                     <InsertModeButton
-                      iconType='designtool-larger'
-                      iconCategory='semantic'
+                      iconType='wrap-action'
+                      iconCategory='tools'
                       onClick={NO_OP}
                       secondary={true}
                     />
@@ -664,8 +687,8 @@ export const CanvasToolbar = React.memo(() => {
                   </Tooltip>
                   <Tooltip title='Convert selection' placement='bottom'>
                     <InsertModeButton
-                      iconType='convertobject'
-                      iconCategory='semantic'
+                      iconType='convert-action'
+                      iconCategory='tools'
                       onClick={NO_OP}
                       secondary={true}
                     />
