@@ -523,31 +523,36 @@ export const CanvasToolbar = React.memo(() => {
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={dispatchSwitchToSelectModeCloseMenus}
               testid={CanvasToolbarEditButtonID}
+              style={{ width: 36 }}
             />
           </Tooltip>
           <Tooltip title='Insert or Edit Text' placement='bottom'>
             <InsertModeButton
-              iconType='pure-text'
+              iconType='text'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'text'}
               onClick={insertTextCallback}
+              style={{ width: 36 }}
             />
           </Tooltip>
-          <Tooltip title='Insert...' placement='bottom'>
+          <Tooltip title='Insert' placement='bottom'>
             <InsertModeButton
               testid={InsertMenuButtonTestId}
-              iconType='plusbutton-larger'
-              iconCategory='semantic'
+              iconType='insert'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'insert'}
               onClick={toggleInsertButtonClicked}
+              style={{ width: 36 }}
             />
           </Tooltip>
-          <Tooltip title='Toggle Live Mode' placement='bottom'>
+          <Tooltip title='Live Mode' placement='bottom'>
             <InsertModeButton
-              iconType='playbutton'
-              iconCategory='semantic'
+              iconType='play'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'play'}
               onClick={toggleLiveMode}
               keepActiveInLiveMode
+              style={{ width: 36 }}
             />
           </Tooltip>
           <Separator />
@@ -780,7 +785,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   return (
     <SquareButton
       data-testid={props.testid}
-      style={{ ...props.style, height: 32, width: 32 }}
+      style={{ height: 32, width: 32, ...props.style }}
       primary={primary}
       spotlight={secondary}
       highlight
