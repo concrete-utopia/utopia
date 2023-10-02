@@ -108,7 +108,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         style: { opacity: 'var(--iconOpacity)' },
       }
       if (isZeroSized) {
-        return <Icn category='semantic' type='clipboard' color={'main'} width={18} height={18} />
+        return <Icn category='element' type='sizeless-div' color={'main'} width={18} height={18} />
       }
       if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
         return (
