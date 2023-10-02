@@ -2718,6 +2718,19 @@ export function getSimpleAttributeAtPath(
   )
 }
 
+export function propertyHasSimpleValue(
+  attributes: PropsOrJSXAttributes,
+  property: PropertyPath,
+  value: string | number | boolean | null | undefined,
+): boolean {
+  const propertyFromProps = getSimpleAttributeAtPath(attributes, property)
+  return foldEither(
+    () => false,
+    (valueFromProps) => valueFromProps === value,
+    propertyFromProps,
+  )
+}
+
 // This function creates a fake metadata for the given element
 // Useful when metadata is needed before the real on is created.
 export function createFakeMetadataForElement(

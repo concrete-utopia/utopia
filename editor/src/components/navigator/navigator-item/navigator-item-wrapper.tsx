@@ -46,6 +46,7 @@ import {
   ConditionalClauseNavigatorItemContainer,
   ErrorNavigatorItemContainer,
   NavigatorItemContainer,
+  NavigatorItemDragType,
   SyntheticNavigatorItemContainer,
 } from './navigator-item-dnd-container'
 import { navigatorDepth } from '../navigator-utils'
@@ -317,6 +318,7 @@ export const NavigatorItemWrapper: React.FunctionComponent<
     )
 
   const navigatorItemProps: NavigatorItemDragAndDropWrapperPropsBase = {
+    type: NavigatorItemDragType,
     index: props.index,
     editorDispatch: dispatch,
     entryDepth: entryDepth,

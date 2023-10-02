@@ -3957,7 +3957,7 @@ describe('inspector tests with real metadata', () => {
               throw new Error('cannot find select')
             }
 
-            await selectEvent.select(control, 'Constrained')
+            await selectEvent.select(control, 'Fixed')
           },
           want: `
             <div

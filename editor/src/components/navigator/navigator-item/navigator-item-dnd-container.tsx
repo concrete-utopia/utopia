@@ -91,7 +91,10 @@ export interface DragSelection {
   index: number
 }
 
+export const NavigatorItemDragType = 'navigator-item-drag-item' as const
+
 export interface NavigatorItemDragAndDropWrapperPropsBase {
+  type: typeof NavigatorItemDragType
   index: number
   entryDepth: number
   appropriateDropTargetHint: DropTargetHint | null
