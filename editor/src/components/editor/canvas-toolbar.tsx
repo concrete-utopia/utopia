@@ -397,10 +397,9 @@ export const CanvasToolbar = React.memo(() => {
         data-testid='canvas-toolbar-submenu'
         style={{
           marginLeft: 8,
-          padding: '0 8px',
           height: 32,
           overflow: 'hidden',
-          backgroundColor: colorTheme.bg2.value,
+          backgroundColor: 'colorTheme.bg2.value',
           borderRadius: '0px 10px 10px 10px',
           boxShadow: UtopiaTheme.panelStyles.shadows.medium,
           pointerEvents: 'initial',
@@ -592,7 +591,7 @@ export const CanvasToolbar = React.memo(() => {
                 <FlexRow
                   style={{
                     gap: 25,
-                    padding: '0 10px',
+                    padding: '0 18px',
                     alignSelf: 'stretch',
                   }}
                 >
@@ -650,7 +649,7 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'wrap',
               wrapInSubmenu(
-                <>
+                <FlexRow style={{ padding: '0 8px' }}>
                   <Tooltip title='Back' placement='bottom'>
                     <InsertModeButton
                       iconCategory='semantic'
@@ -673,13 +672,13 @@ export const CanvasToolbar = React.memo(() => {
                   <Tile style={{ height: '100%' }}>
                     <CanvasToolbarSearch actionWith={convertToAndClose} />
                   </Tile>
-                </>,
+                </FlexRow>,
               ),
             )}
             {when(
               insertMenuMode === 'convert',
               wrapInSubmenu(
-                <>
+                <FlexRow style={{ padding: '0 8px' }}>
                   <Tooltip title='Back' placement='bottom'>
                     <InsertModeButton
                       iconCategory='semantic'
@@ -701,7 +700,7 @@ export const CanvasToolbar = React.memo(() => {
                   <Tile style={{ height: '100%' }}>
                     <CanvasToolbarSearch actionWith={convertToAndClose} />
                   </Tile>
-                </>,
+                </FlexRow>,
               ),
             )}
           </>,
@@ -713,7 +712,7 @@ export const CanvasToolbar = React.memo(() => {
         {/* Insert Mode */}
         {canvasToolbarMode.primary === 'insert'
           ? wrapInSubmenu(
-              <>
+              <FlexRow style={{ padding: '0 8px' }}>
                 <Tooltip title='Back' placement='bottom'>
                   <InsertModeButton
                     iconCategory='semantic'
@@ -754,32 +753,11 @@ export const CanvasToolbar = React.memo(() => {
                 <Tile style={{ height: '100%' }}>
                   <CanvasToolbarSearch actionWith={toInsertAndClose} />
                 </Tile>
-              </>,
+              </FlexRow>,
             )
           : null}
         {/* Live Mode */}
-        {when(
-          canvasToolbarMode.primary === 'play',
-          <>
-            <FlexRow
-              data-testid='canvas-toolbar-submenu'
-              style={{
-                alignItems: 'start',
-                marginLeft: 15,
-                padding: '0 8px',
-                height: 32,
-                overflow: 'hidden',
-                backgroundColor: colorTheme.bg2.value,
-                borderRadius: '0px 0px 10px 10px',
-                boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-                pointerEvents: 'initial',
-                zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
-              }}
-            >
-              <RemixNavigationBar />
-            </FlexRow>
-          </>,
-        )}
+        {canvasToolbarMode.primary === 'play' ? wrapInSubmenu(<RemixNavigationBar />) : null}
         <ToolbarSearchListing />
       </FlexColumn>
     </div>
