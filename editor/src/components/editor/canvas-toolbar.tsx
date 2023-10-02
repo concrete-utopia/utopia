@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import type { CSSObject } from '@emotion/react'
 import { jsx } from '@emotion/react'
-import * as React from 'react'
+import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
 import { Tile } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
@@ -797,6 +797,7 @@ interface InsertModeButtonProps {
   size?: number
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+  const [isHovered, setIsHovered] = useState(false)
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
   const secondary = props.secondary ?? false
@@ -806,6 +807,20 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
     'CanvasToolbar canvasInLiveMode',
   )
   const iconCategory = props.iconCategory ?? 'element'
+  const onClickHandler = React.useCallback(
+    (event: React.MouseEvent<Element>) => {
+      event.stopPropagation()
+      props.onClick(event)
+    },
+    [props],
+  )
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
 
   return (
     <SquareButton
@@ -817,14 +832,18 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       onClick={props.onClick}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
       overriddenBackground={secondary ? colorTheme.bg5.value : undefined}
+      onMouseEnter={setIsHoveredTrue}
+      onMouseLeave={setIsHoveredFalse}
     >
       <Icn
         category={iconCategory}
         type={props.iconType}
-        color={props.primary ? 'on-highlight-main' : 'main'}
         width={props.size ?? 18}
         height={props.size ?? 18}
         testId={props.testid == null ? undefined : `${props.testid}-icon`}
+        color={
+          isHovered && !props.primary ? 'dynamic' : props.primary ? 'on-highlight-main' : 'main'
+        }
       />
     </SquareButton>
   )
