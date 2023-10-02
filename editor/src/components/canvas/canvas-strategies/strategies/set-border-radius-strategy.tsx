@@ -12,6 +12,7 @@ import {
   isJSXElement,
   jsxElementName,
   jsxElementNameEquals,
+  modifiableAttributeIsAttributeNotFound,
 } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
@@ -69,6 +70,11 @@ import {
 import type { InteractionSession } from '../interaction-state'
 import { deleteProperties } from '../../commands/delete-properties-command'
 import { allElemsEqual } from '../../../../core/shared/array-utils'
+import * as PP from '../../../../core/shared/property-path'
+import { withUnderlyingTarget } from '../../../editor/store/editor-state'
+import type { ProjectContentTreeRoot } from '../../../assets'
+import { getModifiableJSXAttributeAtPath } from '../../../../core/shared/jsx-attributes'
+import { showToastCommand } from '../../commands/show-toast-command'
 
 export const SetBorderRadiusStrategyId = 'SET_BORDER_RADIUS_STRATEGY'
 
@@ -149,6 +155,7 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
       strategyApplicationResult([
         setCursorCommand(CSSCursor.Radius),
         ...commands(selectedElement),
+        ...getAddOverflowHiddenCommands(selectedElement, canvasState.projectContents),
         setElementsToRerenderCommand(selectedElements),
       ]),
   }
@@ -586,3 +593,30 @@ const setShorthandStylePropertyCommand =
       ]),
       setProperty('always', target, StyleProp('borderRadius'), value),
     ]
+
+function getAddOverflowHiddenCommands(
+  target: ElementPath,
+  projectContents: ProjectContentTreeRoot,
+): Array<CanvasCommand> {
+  const overflowProp = PP.create('style', 'overflow')
+
+  const propertyExists = withUnderlyingTarget(target, projectContents, false, (_, element) => {
+    if (isJSXElement(element)) {
+      return foldEither(
+        () => false,
+        (value) => !modifiableAttributeIsAttributeNotFound(value),
+        getModifiableJSXAttributeAtPath(element.props, overflowProp),
+      )
+    } else {
+      return false
+    }
+  })
+
+  if (propertyExists) {
+    return []
+  }
+  return [
+    showToastCommand('Element now hides overflowing content', 'NOTICE', 'property-added'),
+    setProperty('always', target, overflowProp, 'hidden'),
+  ]
+}
