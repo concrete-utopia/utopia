@@ -1981,7 +1981,6 @@ describe('Canvas controls with Remix', () => {
 
     await renderResult.dispatch([selectComponents([path1, path2], false)], true)
     await renderResult.getDispatchFollowUpActionsFinished()
-    await wait(1)
 
     const nonResizableControl = renderResult.renderedDOM.queryByTestId(NonResizableControlTestId)
     expect(nonResizableControl).toBeNull()
@@ -1990,12 +1989,12 @@ describe('Canvas controls with Remix', () => {
       renderResult.renderedDOM.queryByTestId(MultiSelectOutlineTestId)
     expect(multiselectOutlineControl).toBeNull()
 
-    const elementOutlineControl1 = renderResult.renderedDOM.queryByTestId(
+    const elementOutlineControl1 = await renderResult.renderedDOM.findByTestId(
       getMultiSelectElementOutlineTestId(path1),
     )
     expect(elementOutlineControl1).not.toBeNull()
 
-    const elementOutlineControl2 = renderResult.renderedDOM.queryByTestId(
+    const elementOutlineControl2 = await renderResult.renderedDOM.findByTestId(
       getMultiSelectElementOutlineTestId(path2),
     )
     expect(elementOutlineControl2).not.toBeNull()
