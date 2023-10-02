@@ -67,6 +67,8 @@ import { foldEither, right } from '../../../core/shared/either'
 import { editorStateToElementChildOptic } from '../../../core/model/common-optics'
 import { fromField, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import { addToastToState } from './toast-helpers'
+import { notice } from '../../../components/common/notice'
 
 export function unwrapConditionalClause(
   editor: EditorState,
@@ -315,7 +317,12 @@ export function fixParentContainingBlockSettings(
       editorState,
     )
     if (attributesUpdated) {
-      return updatedEditorState
+      // Add a toast indicating that `contain: 'layout'` has been added.
+      const toast = notice(
+        "Added `contain: 'layout'` to the parent of the newly added element.",
+        'INFO',
+      )
+      return addToastToState(updatedEditorState, toast)
     }
   }
 

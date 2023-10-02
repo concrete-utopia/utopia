@@ -72,6 +72,7 @@ import {
   groupJSXElement,
   groupJSXElementImportsToAdd,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import { safeIndex } from '../../../core/shared/array-utils'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -6717,6 +6718,12 @@ export var storyboard = (
         </div>`,
         ),
       )
+      expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+      const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
+      expect(firstToast?.level).toEqual('INFO')
+      expect(firstToast?.message).toEqual(
+        "Added `contain: 'layout'` to the parent of the newly added element.",
+      )
     })
     it(`Wraps 2 elements with a fragment`, async () => {
       const testUID = 'zzz'
@@ -6826,6 +6833,13 @@ export var storyboard = (
               </div>
           `),
           ),
+        )
+
+        expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+        const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
+        expect(firstToast?.level).toEqual('INFO')
+        expect(firstToast?.message).toEqual(
+          "Added `contain: 'layout'` to the parent of the newly added element.",
         )
       })
 
@@ -6968,6 +6982,13 @@ export var storyboard = (
               </div>
           `),
           ),
+        )
+
+        expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+        const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
+        expect(firstToast?.level).toEqual('INFO')
+        expect(firstToast?.message).toEqual(
+          "Added `contain: 'layout'` to the parent of the newly added element.",
         )
       })
 
