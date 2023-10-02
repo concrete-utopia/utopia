@@ -9,6 +9,8 @@ import type { EdgePosition } from '../../canvas-types'
 import { useBoundingBox } from '../bounding-box-hooks'
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 
+export const NonResizableControlTestId = 'non-resizable-control'
+
 const selectedElementsSelector = (store: { editor: { selectedViews: ElementPath[] } }) =>
   store.editor.selectedViews
 
@@ -51,7 +53,7 @@ export const NonResizableControl = controlForStrategyMemoized(() => {
           position: 'absolute',
           pointerEvents: 'none',
         }}
-        data-testid={'non-resizable-control'}
+        data-testid={NonResizableControlTestId}
       >
         <NonResizablePoint ref={topLeftRef} position={{ x: 0, y: 0 }} />
         <NonResizablePoint ref={topRightRef} position={{ x: 1, y: 0 }} />

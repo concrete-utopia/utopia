@@ -1,7 +1,11 @@
 import React from 'react'
 import { accumulate } from '../../core/shared/array-utils'
 import { GridPanel } from './grid-panel'
-import { ColumnDragTargets, GridColumnResizeHandle } from './grid-panels-drag-targets'
+import {
+  CanvasPaneDragTargets,
+  ColumnDragTargets,
+  GridColumnResizeHandle,
+} from './grid-panels-drag-targets'
 import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
   GridHorizontalExtraPadding,
@@ -55,7 +59,6 @@ export const GridPanelsContainer = React.memo(() => {
 
   const canDrop = React.useCallback(
     (itemToMove: StoredPanel, newPosition: LayoutUpdate) => {
-      return true // for now, just enable all drop areas while we are tweaking the behavior
       const wouldBePanelState = updateLayout(panelState, itemToMove, newPosition)
       const wouldBePanelStateEqualsCurrentPanelState = panelState.every((column, colIndex) =>
         column.panels.every(
@@ -116,6 +119,7 @@ export const GridPanelsContainer = React.memo(() => {
         style={{ position: 'absolute', gridColumn: 'canvas / span 1', gridRow: '1 / -1' }}
       />
       {/* All future Panels need to be explicitly listed here */}
+      <CanvasPaneDragTargets onDrop={onDrop} canDrop={canDrop} />
       {nonEmptyColumns.map((columnIndex) => (
         <React.Fragment key={columnIndex}>
           <GridColumnResizeHandle

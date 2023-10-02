@@ -385,7 +385,7 @@ export function difference<T>(
   return result
 }
 
-export function insert<T>(index: number, element: T, array: Array<T>): Array<T> {
+export function insert<T>(index: number, element: T, array: ReadonlyArray<T>): Array<T> {
   const clampedIndex = clamp(0, array.length, index)
   return [...array.slice(0, clampedIndex), element, ...array.slice(clampedIndex, array.length)]
 }
