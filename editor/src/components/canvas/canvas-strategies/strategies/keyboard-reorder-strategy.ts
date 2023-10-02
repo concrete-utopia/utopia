@@ -1,7 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import * as EP from '../../../../core/shared/element-path'
-import type { ElementInstanceMetadata } from '../../../../core/shared/element-template'
-import { shallowEqual } from '../../../../core/shared/equality-utils'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { absolute } from '../../../../utils/utils'
 import { reorderElement } from '../../commands/reorder-element-command'
@@ -9,8 +13,8 @@ import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rer
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import type {
   CanvasStrategy,
-  CustomStrategyState,
   InteractionCanvasState,
+  StrategyApplicationResult,
 } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
@@ -19,39 +23,103 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { isReorderAllowed } from './reorder-utils'
+import type { AccumulatedPresses } from './shared-keyboard-strategy-helpers'
 import { accumulatePresses } from './shared-keyboard-strategy-helpers'
 
 type ArrowKey = 'left' | 'right' | 'up' | 'down'
 
-export function keyboardReorderStrategy(
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
-  customStrategyState: CustomStrategyState,
-): CanvasStrategy | null {
-  if (interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL') {
-    return null
-  }
+interface KeyboardReorderData {
+  elementMetadata: ElementInstanceMetadata | null
+  target: ElementPath
+  siblings: ElementPath[]
+}
 
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
+export function isKeyboardReorderApplicable(
+  selectedElements: ElementPath[],
+  startingMetadata: ElementInstanceMetadataMap,
+  startingElementPathTree: ElementPathTrees,
+): KeyboardReorderData | null {
   if (selectedElements.length !== 1) {
     return null
   }
   const target = selectedElements[0]
   const siblings = MetadataUtils.getSiblingsOrdered(
-    canvasState.startingMetadata,
-    canvasState.startingElementPathTree,
+    startingMetadata,
+    startingElementPathTree,
     target,
   ).map((element) => element.elementPath)
-  const elementMetadata = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata,
-    target,
-  )
+  const elementMetadata = MetadataUtils.findElementByElementPath(startingMetadata, target)
   const isFlexOrFlow =
     MetadataUtils.isParentYogaLayoutedContainerForElementAndElementParticipatesInLayout(
       elementMetadata,
     ) || MetadataUtils.isPositionedByFlow(elementMetadata)
 
   if (siblings.length <= 1 || !isReorderAllowed(siblings) || !isFlexOrFlow) {
+    return null
+  }
+
+  return { elementMetadata, target, siblings }
+}
+
+export function doKeyboardReorder(
+  accumulatedPresses: AccumulatedPresses[],
+  keyboardReorderData: KeyboardReorderData,
+): StrategyApplicationResult {
+  const { elementMetadata, siblings, target } = keyboardReorderData
+  let keyboardResult: number = 0
+  accumulatedPresses.forEach((accumulatedPress) => {
+    accumulatedPress.keysPressed.forEach((key) => {
+      if (key === 'left' || key === 'right' || key === 'up' || key === 'down') {
+        const keyPressIndexChange = getIndexChangeDeltaFromKey(
+          key,
+          accumulatedPress.count,
+          elementMetadata,
+        )
+        keyboardResult = keyboardResult + keyPressIndexChange
+      }
+    })
+  })
+
+  const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
+  const result = unpatchedIndex + keyboardResult
+  const newIndex = Math.min(Math.max(0, result), siblings.length - 1)
+
+  if (newIndex === unpatchedIndex) {
+    return strategyApplicationResult(
+      [updateHighlightedViews('mid-interaction', []), setElementsToRerenderCommand(siblings)],
+      {
+        lastReorderIdx: newIndex,
+      },
+    )
+  } else {
+    return strategyApplicationResult(
+      [
+        reorderElement('always', target, absolute(newIndex)),
+        setElementsToRerenderCommand(siblings),
+        updateHighlightedViews('mid-interaction', []),
+      ],
+      {
+        lastReorderIdx: newIndex,
+      },
+    )
+  }
+}
+
+export function keyboardReorderStrategy(
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession | null,
+): CanvasStrategy | null {
+  if (interactionSession?.activeControl.type !== 'KEYBOARD_CATCHER_CONTROL') {
+    return null
+  }
+
+  const data = isKeyboardReorderApplicable(
+    getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+    canvasState.startingMetadata,
+    canvasState.startingElementPathTree,
+  )
+
+  if (data == null) {
     return null
   }
 
@@ -68,43 +136,7 @@ export function keyboardReorderStrategy(
     apply: () => {
       if (interactionSession != null && interactionSession.interactionData.type === 'KEYBOARD') {
         const accumulatedPresses = accumulatePresses(interactionSession.interactionData.keyStates)
-        let keyboardResult: number = 0
-        accumulatedPresses.forEach((accumulatedPress) => {
-          accumulatedPress.keysPressed.forEach((key) => {
-            if (key === 'left' || key === 'right' || key === 'up' || key === 'down') {
-              const keyPressIndexChange = getIndexChangeDeltaFromKey(
-                key,
-                accumulatedPress.count,
-                elementMetadata,
-              )
-              keyboardResult = keyboardResult + keyPressIndexChange
-            }
-          })
-        })
-
-        const unpatchedIndex = siblings.findIndex((sibling) => EP.pathsEqual(sibling, target))
-        const result = unpatchedIndex + keyboardResult
-        const newIndex = Math.min(Math.max(0, result), siblings.length - 1)
-
-        if (newIndex === unpatchedIndex) {
-          return strategyApplicationResult(
-            [updateHighlightedViews('mid-interaction', []), setElementsToRerenderCommand(siblings)],
-            {
-              lastReorderIdx: newIndex,
-            },
-          )
-        } else {
-          return strategyApplicationResult(
-            [
-              reorderElement('always', target, absolute(newIndex)),
-              setElementsToRerenderCommand(siblings),
-              updateHighlightedViews('mid-interaction', []),
-            ],
-            {
-              lastReorderIdx: newIndex,
-            },
-          )
-        }
+        return doKeyboardReorder(accumulatedPresses, data)
       } else {
         return emptyStrategyApplicationResult
       }

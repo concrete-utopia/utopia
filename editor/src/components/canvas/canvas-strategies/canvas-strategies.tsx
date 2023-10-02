@@ -83,7 +83,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
     [
       absoluteDuplicateStrategy,
       keyboardAbsoluteMoveStrategy,
-      keyboardReorderStrategy,
+      // keyboardReorderStrategy, // TODO delete or uncomment before merge
       convertToAbsoluteAndMoveStrategy,
       reorderSliderStategy,
     ],

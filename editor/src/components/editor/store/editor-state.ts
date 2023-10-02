@@ -155,6 +155,7 @@ import type { Theme } from '../../../uuiui/styles/theme'
 import { getPreferredColorScheme } from '../../../uuiui/styles/theme'
 import type {
   InteractionSession,
+  KeyState,
   StrategyState,
 } from '../../canvas/canvas-strategies/interaction-state'
 import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
@@ -1307,11 +1308,20 @@ export interface NavigatorReparentPostActionMenuData {
   allElementProps: AllElementProps
 }
 
+export interface KeyboardReorderPostActionMenuData {
+  type: 'KEYBOARD_REORDER'
+  keyStates: KeyState[]
+  selectedElements: ElementPath[]
+  startingMetadata: ElementInstanceMetadataMap
+  startingElementPathTree: ElementPathTrees
+}
+
 export type PostActionMenuData =
   | PastePostActionMenuData
   | PasteHerePostActionMenuData
   | PasteToReplacePostActionMenuData
   | NavigatorReparentPostActionMenuData
+  | KeyboardReorderPostActionMenuData
 
 export interface PostActionMenuSession {
   activeChoiceId: string | null

@@ -24,6 +24,7 @@ import {
   PropsPreservedNavigatorReparentPostActionChoice,
   PropsReplacedNavigatorReparentPostActionChoice,
 } from './navigator-reparent'
+import { KeyboardReorderPostActionChoice } from './post-action-keyboard-reorder'
 import {
   PropsPreservedPastePostActionChoice,
   PropsReplacedPastePostActionChoice,
@@ -65,6 +66,8 @@ export function generatePostactionChoices(data: PostActionMenuData): PostActionC
         PropsReplacedNavigatorReparentPostActionChoice(data),
         PropsPreservedNavigatorReparentPostActionChoice(data),
       ])
+    case 'KEYBOARD_REORDER':
+      return stripNulls([KeyboardReorderPostActionChoice(data)])
     default:
       assertNever(data)
   }
