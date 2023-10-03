@@ -15,6 +15,7 @@ import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
 } from '../../../core/shared/jsx-attributes'
+import { roundTo } from '../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { DerivedState, EditorState } from '../../editor/store/editor-state'
@@ -359,7 +360,7 @@ function updatePercentageValueByPixel(
   const currentValuePercent = currentValue.value
   const offsetInPercent = (byValue / parentDimensionPx) * 100
   const newValueCssNumber: CSSNumber = {
-    value: currentValuePercent + offsetInPercent,
+    value: roundTo(currentValuePercent + offsetInPercent, 2),
     unit: currentValue.unit,
   }
   const newValue = printCSSNumber(newValueCssNumber, null)

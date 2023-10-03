@@ -1338,6 +1338,64 @@ export var storyboard = (
     const resizeControl = getResizeControl(renderResult, EdgePositionBottomRight)
     expect(resizeControl).toBeNull()
   })
+  it('percent values are rounded to 2 decimal places after resizing', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 92,
+          top: 162,
+          width: 430,
+          height: 378,
+        }}
+        data-uid='aaa'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '100%',
+            height: '100%',
+            contain: 'layout',
+          }}
+          data-uid='bbb'
+        />
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    await resizeElement(renderResult, { x: -10, y: -10 }, EdgePositionBottomRight, emptyModifiers)
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 92,
+          top: 162,
+          width: 430,
+          height: 378,
+        }}
+        data-uid='aaa'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '97.67%',
+            height: '97.35%',
+            contain: 'layout',
+          }}
+          data-uid='bbb'
+        />
+      </div>
+      `),
+    )
+  })
   describe('snap lines', () => {
     it('horizontal snap lines are shown when resizing a multiselection', async () => {
       const editor = await renderTestEditorWithCode(
