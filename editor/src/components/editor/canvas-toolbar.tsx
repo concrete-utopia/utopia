@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import type { CSSObject } from '@emotion/react'
 import { jsx } from '@emotion/react'
-import * as React from 'react'
+import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
 import { Tile } from '../../uuiui'
 import { UtopiaTheme } from '../../uuiui'
@@ -166,7 +166,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
               minWidth: '200px',
               borderRadius: '10px',
               borderWidth: 1,
-              borderColor: theme.primary.value,
+              borderColor: colorTheme.dynamicBlue.value,
               borderStyle: 'solid',
             }
           },
@@ -396,9 +396,7 @@ export const CanvasToolbar = React.memo(() => {
       <FlexRow
         data-testid='canvas-toolbar-submenu'
         style={{
-          alignItems: 'start',
-          marginLeft: 15,
-          padding: '0 8px',
+          marginLeft: 8,
           height: 32,
           overflow: 'hidden',
           backgroundColor: colorTheme.bg2.value,
@@ -523,47 +521,54 @@ export const CanvasToolbar = React.memo(() => {
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={dispatchSwitchToSelectModeCloseMenus}
               testid={CanvasToolbarEditButtonID}
+              style={{ width: 36 }}
             />
           </Tooltip>
           <Tooltip title='Insert or Edit Text' placement='bottom'>
             <InsertModeButton
-              iconType='pure-text'
+              iconType='text'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'text'}
               onClick={insertTextCallback}
+              style={{ width: 36 }}
             />
           </Tooltip>
-          <Tooltip title='Insert...' placement='bottom'>
+          <Tooltip title='Insert' placement='bottom'>
             <InsertModeButton
               testid={InsertMenuButtonTestId}
-              iconType='plusbutton-larger'
-              iconCategory='semantic'
+              iconType='insert'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'insert'}
               onClick={toggleInsertButtonClicked}
+              style={{ width: 36 }}
             />
           </Tooltip>
-          <Tooltip title='Toggle Live Mode' placement='bottom'>
+          <Tooltip title='Live Mode' placement='bottom'>
             <InsertModeButton
-              iconType='playbutton'
-              iconCategory='semantic'
+              iconType='play'
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'play'}
               onClick={toggleLiveMode}
               keepActiveInLiveMode
+              style={{ width: 36 }}
             />
           </Tooltip>
           <Separator />
           <Tooltip title='Zoom to 100%' placement='bottom'>
             <SquareButton
-              highlight
               style={{
-                textAlign: 'center',
-                width: 'min-content',
-                minWidth: 32,
                 height: 32,
+                width: 'min-content',
                 padding: '0 8px',
+              }}
+              css={{
+                '&:hover': {
+                  color: colorTheme.dynamicBlue.value,
+                },
               }}
               onClick={zoom100pct}
             >
-              {zoomLevel}x
+              {zoomLevel * 100}%
             </SquareButton>
           </Tooltip>
           <Tooltip title='Reset Canvas' placement='bottom'>
@@ -572,6 +577,7 @@ export const CanvasToolbar = React.memo(() => {
               iconCategory='semantic'
               onClick={resetCanvasCallback}
               keepActiveInLiveMode
+              size={16}
             />
           </Tooltip>
           <ElementsOutsideVisibleAreaIndicator />
@@ -583,95 +589,119 @@ export const CanvasToolbar = React.memo(() => {
             {when(
               insertMenuMode === 'closed',
               wrapInSubmenu(
-                <>
-                  <Tooltip title='Wrap selection in Group (⌘G)' placement='bottom'>
-                    <InsertModeButton iconType='group-open' onClick={wrapInGroupCallback} />
-                  </Tooltip>
-                  <Tooltip title='Wrap selection in an element (W)' placement='bottom'>
-                    <InsertModeButton
-                      iconType='designtool-larger'
-                      iconCategory='semantic'
-                      onClick={openFloatingWrapInMenuCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip
-                    title='Converts an element or component into another (C)'
-                    placement='bottom'
+                <FlexRow
+                  style={{
+                    gap: 25,
+                    padding: '0 18px',
+                    alignSelf: 'stretch',
+                  }}
+                >
+                  <FlexRow
+                    onClick={wrapInGroupCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
                   >
-                    <InsertModeButton
-                      iconType='convertobject'
-                      iconCategory='semantic'
-                      onClick={openFloatingConvertMenuCallback}
-                    />
-                  </Tooltip>
-                  <Tooltip
-                    title='Toggle between absolute and static positioning (X)' // help I need better copy
-                    placement='bottom'
+                    <Icn category='tools' type='group-action' width={18} height={18} />
+                    Group
+                  </FlexRow>
+                  <FlexRow
+                    onClick={openFloatingWrapInMenuCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
                   >
-                    <InsertModeButton
-                      iconType='position-absolute' // TODO this needs an icon!
-                      iconCategory='layout/systems'
-                      size={16}
-                      onClick={toggleAbsolutePositioningCallback}
-                    />
-                  </Tooltip>
-                </>,
+                    <Icn category='tools' type='wrap-action' width={18} height={18} />
+                    Wrap
+                  </FlexRow>
+                  <FlexRow
+                    onClick={openFloatingConvertMenuCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
+                  >
+                    <Icn category='tools' type='convert-action' width={18} height={18} />
+                    Convert
+                  </FlexRow>
+                  <FlexRow
+                    onClick={toggleAbsolutePositioningCallback}
+                    css={{
+                      gap: 8,
+                      '&:hover': {
+                        color: colorTheme.dynamicBlue.value,
+                      },
+                    }}
+                  >
+                    <Icn category='tools' type='position-action' width={18} height={18} />
+                    Position
+                  </FlexRow>
+                </FlexRow>,
               ),
             )}
             {when(
               insertMenuMode === 'wrap',
               wrapInSubmenu(
-                <>
+                <FlexRow style={{ padding: '0 8px' }}>
                   <Tooltip title='Back' placement='bottom'>
                     <InsertModeButton
                       iconCategory='semantic'
                       iconType='icon-semantic-back'
                       onClick={dispatchSwitchToSelectModeCloseMenus}
+                      style={{ width: undefined }}
                     />
                   </Tooltip>
-                  <Tooltip title='Wrap selection' placement='bottom'>
-                    <InsertModeButton
-                      iconType='designtool-larger'
-                      iconCategory='semantic'
-                      onClick={NO_OP}
-                      secondary={true}
-                    />
-                  </Tooltip>
+                  <Icn
+                    category='tools'
+                    type='wrap-action'
+                    width={18}
+                    height={18}
+                    style={{ marginRight: 10 }}
+                  />
+
                   <Tooltip title='Wrap in div' placement='bottom'>
                     <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
                   </Tooltip>
                   <Tile style={{ height: '100%' }}>
                     <CanvasToolbarSearch actionWith={convertToAndClose} />
                   </Tile>
-                </>,
+                </FlexRow>,
               ),
             )}
             {when(
               insertMenuMode === 'convert',
               wrapInSubmenu(
-                <>
+                <FlexRow style={{ padding: '0 8px' }}>
                   <Tooltip title='Back' placement='bottom'>
                     <InsertModeButton
                       iconCategory='semantic'
                       iconType='icon-semantic-back'
                       onClick={dispatchSwitchToSelectModeCloseMenus}
+                      style={{ width: undefined }}
                     />
                   </Tooltip>
-                  <Tooltip title='Convert selection' placement='bottom'>
-                    <InsertModeButton
-                      iconType='convertobject'
-                      iconCategory='semantic'
-                      onClick={NO_OP}
-                      secondary={true}
-                    />
-                  </Tooltip>
+                  <Icn
+                    category='tools'
+                    type='convert-action'
+                    width={18}
+                    height={18}
+                    style={{ marginRight: 10 }}
+                  />
                   <Tooltip title='Convert to Fragment' placement='bottom'>
                     <InsertModeButton iconType='fragment' onClick={convertToFragment} />
                   </Tooltip>
                   <Tile style={{ height: '100%' }}>
                     <CanvasToolbarSearch actionWith={convertToAndClose} />
                   </Tile>
-                </>,
+                </FlexRow>,
               ),
             )}
           </>,
@@ -683,12 +713,13 @@ export const CanvasToolbar = React.memo(() => {
         {/* Insert Mode */}
         {canvasToolbarMode.primary === 'insert'
           ? wrapInSubmenu(
-              <>
+              <FlexRow style={{ padding: '0 8px' }}>
                 <Tooltip title='Back' placement='bottom'>
                   <InsertModeButton
                     iconCategory='semantic'
                     iconType='icon-semantic-back'
                     onClick={dispatchSwitchToSelectModeCloseMenus}
+                    style={{ width: undefined }}
                   />
                 </Tooltip>
                 <Tooltip title='Insert div' placement='bottom'>
@@ -723,32 +754,11 @@ export const CanvasToolbar = React.memo(() => {
                 <Tile style={{ height: '100%' }}>
                   <CanvasToolbarSearch actionWith={toInsertAndClose} />
                 </Tile>
-              </>,
+              </FlexRow>,
             )
           : null}
         {/* Live Mode */}
-        {when(
-          canvasToolbarMode.primary === 'play',
-          <>
-            <FlexRow
-              data-testid='canvas-toolbar-submenu'
-              style={{
-                alignItems: 'start',
-                marginLeft: 15,
-                padding: '0 8px',
-                height: 32,
-                overflow: 'hidden',
-                backgroundColor: colorTheme.bg2.value,
-                borderRadius: '0px 0px 10px 10px',
-                boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-                pointerEvents: 'initial',
-                zIndex: -1, // it sits below the main menu row, but we want the main menu's shadow to cast over this one
-              }}
-            >
-              <RemixNavigationBar />
-            </FlexRow>
-          </>,
-        )}
+        {canvasToolbarMode.primary === 'play' ? wrapInSubmenu(<RemixNavigationBar />) : null}
         <ToolbarSearchListing />
       </FlexColumn>
     </div>
@@ -767,6 +777,7 @@ interface InsertModeButtonProps {
   size?: number
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
+  const [isHovered, setIsHovered] = useState(false)
   const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
   const primary = props.primary ?? false
   const secondary = props.secondary ?? false
@@ -776,25 +787,43 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
     'CanvasToolbar canvasInLiveMode',
   )
   const iconCategory = props.iconCategory ?? 'element'
+  const onClickHandler = React.useCallback(
+    (event: React.MouseEvent<Element>) => {
+      event.stopPropagation()
+      props.onClick(event)
+    },
+    [props],
+  )
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
 
   return (
     <SquareButton
       data-testid={props.testid}
-      style={{ ...props.style, height: 32, width: 32 }}
+      style={{ height: 32, width: 32, ...props.style }}
       primary={primary}
       spotlight={secondary}
       highlight
       onClick={props.onClick}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
       overriddenBackground={secondary ? colorTheme.bg5.value : undefined}
+      onMouseEnter={setIsHoveredTrue}
+      onMouseLeave={setIsHoveredFalse}
     >
       <Icn
         category={iconCategory}
         type={props.iconType}
-        color={props.primary ? 'on-highlight-main' : 'main'}
         width={props.size ?? 18}
         height={props.size ?? 18}
         testId={props.testid == null ? undefined : `${props.testid}-icon`}
+        color={
+          isHovered && !props.primary ? 'dynamic' : props.primary ? 'on-highlight-main' : 'main'
+        }
       />
     </SquareButton>
   )

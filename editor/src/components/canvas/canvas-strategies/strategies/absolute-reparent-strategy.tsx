@@ -23,7 +23,7 @@ import {
 } from '../canvas-strategy-types'
 import type { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import { honoursPropsPosition } from './absolute-utils'
+import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
@@ -98,7 +98,13 @@ export function baseAbsoluteReparentStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: fitness,
+      fitness: shouldKeepMovingDraggedGroupChildren(
+        canvasState.startingMetadata,
+        selectedElements,
+        reparentTarget.newParent,
+      )
+        ? 1
+        : fitness,
       apply: (strategyLifecycle) => {
         const { projectContents, openFile, nodeModules } = canvasState
         return ifAllowedToReparent(

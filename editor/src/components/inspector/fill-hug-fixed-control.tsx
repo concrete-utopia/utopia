@@ -113,15 +113,15 @@ const fixedHugFillOptionsSelector = createSelector(
 )
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const isGroupChild = useEditorState(
+  const onlyGroupChildrenSelected = useEditorState(
     Substores.metadata,
     allElementsAreGroupChildren,
-    'groupChildrenSelected',
+    'FillHugFixedControl groupChildrenSelected',
   )
 
   const gridTemplate = React.useMemo((): GridRowVariant => {
-    return isGroupChild ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
-  }, [isGroupChild])
+    return onlyGroupChildrenSelected ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
+  }, [onlyGroupChildrenSelected])
 
   return (
     <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
@@ -130,7 +130,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         <FlexCol css={{ gap: 0 }}>
           <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
             <WidthHeightNumberControl dimension='width' />
-            {isGroupChild ? (
+            {onlyGroupChildrenSelected ? (
               <GroupConstraintSelect dimension={'width'} />
             ) : (
               <FixedHugDropdown dimension='width' />
@@ -138,7 +138,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
           </UIGridRow>
           <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
             <WidthHeightNumberControl dimension='height' />
-            {isGroupChild ? (
+            {onlyGroupChildrenSelected ? (
               <GroupConstraintSelect dimension={'height'} />
             ) : (
               <FixedHugDropdown dimension='height' />
@@ -158,7 +158,7 @@ const GroupChildPinControl = React.memo(() => {
   const onlyGroupChildrenSelected = useEditorState(
     Substores.metadata,
     allElementsAreGroupChildren,
-    'groupChildrenSelected',
+    'GroupChildPinControl onlyGroupChildrenSelected',
   )
 
   const handleGroupConstraintPinMouseDown = React.useCallback(
@@ -208,7 +208,7 @@ const GroupChildPinControl = React.memo(() => {
         store.editor.allElementProps,
       ),
     }),
-    'FillHugFixedControl constraints',
+    'GroupChildPinControl groupChildConstraints',
   )
 
   const framePoints: FramePinsInfo = React.useMemo(() => {
@@ -273,7 +273,7 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
         metadataSelector(store),
         selectedViewsSelector(store),
       ),
-    'FillHugFixedControl heightCurrentValue',
+    'WidthHeightNumberControl currentValue',
     isFixedHugFillEqual,
   )
 
@@ -409,7 +409,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
             : currentComputedValue
         const strategy = strategyForChangingFillFixedHugType(
           valueToUse,
-          dimension === 'width' ? 'horizontal' : 'vertical',
+          axis,
           value,
           fillsOtherAxisRef.current,
         )
@@ -425,6 +425,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
     }
   }, [
     dimension,
+    axis,
     allElementPropsRef,
     dispatch,
     metadataRef,
@@ -448,14 +449,14 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
         metadataSelector(store),
         selectedViewsSelector(store),
       ),
-    'FillHugFixedControl heightCurrentValue',
+    'FillHugFixedControl currentValue',
     isFixedHugFillEqual,
   )
 
   const fixedHugFillOptions = useEditorState(
     Substores.metadata,
     fixedHugFillOptionsSelector,
-    'DimensionRow options',
+    'FixedHugDropdown fixedHugFillOptions',
   )
 
   const onSubmitFixedFillHugType = useOnSubmitFixedFillHugType(dimension)
@@ -475,7 +476,7 @@ const GroupConstraintSelect = React.memo(({ dimension }: { dimension: LayoutPinn
   const dispatch = useDispatch()
   const colorTheme = useColorTheme()
 
-  const type = useEditorState(
+  const constraintType = useEditorState(
     Substores.metadata,
     (store) =>
       checkGroupChildConstraint(
@@ -483,7 +484,7 @@ const GroupConstraintSelect = React.memo(({ dimension }: { dimension: LayoutPinn
         store.editor.selectedViews,
         store.editor.allElementProps,
       ),
-    'GroupConstraintSelect checkGroupChildConstraint',
+    'GroupConstraintSelect constraintType',
   )
 
   const editorRef = useRefEditorState((store) => ({
@@ -505,11 +506,11 @@ const GroupConstraintSelect = React.memo(({ dimension }: { dimension: LayoutPinn
   }
 
   const listValue = React.useMemo(() => {
-    return optionFromType(type)
-  }, [type])
+    return optionFromType(constraintType)
+  }, [constraintType])
 
   const mainColor = React.useMemo(() => {
-    switch (type) {
+    switch (constraintType) {
       case 'constrained':
         return colorTheme.fg0.value
       case 'mixed':
@@ -517,9 +518,9 @@ const GroupConstraintSelect = React.memo(({ dimension }: { dimension: LayoutPinn
       case 'not-constrained':
         return colorTheme.subduedForeground.value
       default:
-        assertNever(type)
+        assertNever(constraintType)
     }
-  }, [type, colorTheme])
+  }, [constraintType, colorTheme])
 
   const onSubmitValue = React.useCallback(
     (option: SelectOption) => {
@@ -544,7 +545,7 @@ const GroupConstraintSelect = React.memo(({ dimension }: { dimension: LayoutPinn
         position: 'relative',
         fontSize: listValue.value === 'not-constrained' ? 9 : 'inherit',
       }}
-      containerMode={type === 'constrained' ? 'default' : 'showBorderOnHover'}
+      containerMode={constraintType === 'constrained' ? 'default' : 'showBorderOnHover'}
       controlStyles={{
         ...getControlStyles('simple'),
         mainColor: mainColor,

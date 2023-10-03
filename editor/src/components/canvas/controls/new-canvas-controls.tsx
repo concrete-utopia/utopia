@@ -447,6 +447,7 @@ const NewCanvasControlsInner = (props: NewCanvasControlsInnerProps) => {
               frame={frame}
               scale={scale}
               canvasOffset={canvasOffset}
+              displayZeroSized={'display-zero-sized'}
             />
           )
         })

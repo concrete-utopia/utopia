@@ -25,14 +25,29 @@ interface NotNullRefObject<T> {
 
 export function useBoundingBox<T = HTMLDivElement>(
   selectedElements: ReadonlyArray<ElementPath>,
-  onChangeCallback: (ref: NotNullRefObject<T>, boundingBox: CanvasRectangle, scale: number) => void,
+  onChangeCallback: (
+    ref: NotNullRefObject<T>,
+    safeGappedBoundingBox: CanvasRectangle,
+    realBoundingBox: CanvasRectangle,
+    scale: number,
+  ) => void,
 ): React.RefObject<T> {
   const controlRef = React.useRef<T>(null)
   const boundingBoxCallback = React.useCallback(
-    (boundingBox: CanvasRectangle | null, scale: number) => {
-      const maybeZeroBoundingBox = zeroRectIfNullOrInfinity(boundingBox)
+    (
+      safeGappedBoundingBox: CanvasRectangle | null,
+      realBoundingBox: CanvasRectangle | null,
+      scale: number,
+    ) => {
+      const maybeZeroSafeGappedBoundingBox = zeroRectIfNullOrInfinity(safeGappedBoundingBox)
+      const maybeZeroRealBoundingBox = zeroRectIfNullOrInfinity(realBoundingBox)
       if (controlRef.current != null) {
-        onChangeCallback(controlRef as NotNullRefObject<T>, maybeZeroBoundingBox, scale)
+        onChangeCallback(
+          controlRef as NotNullRefObject<T>,
+          maybeZeroSafeGappedBoundingBox,
+          maybeZeroRealBoundingBox,
+          scale,
+        )
       }
     },
     [onChangeCallback],
@@ -48,7 +63,11 @@ export const RESIZE_CONTROL_SAFE_GAP = 4 // safe gap applied when the dimension 
 
 function useBoundingBoxFromMetadataRef(
   selectedElements: ReadonlyArray<ElementPath>,
-  boundingBoxCallback: (boundingRectangle: CanvasRectangle | null, scale: number) => void,
+  boundingBoxCallback: (
+    safeGappedBoundingRectangle: CanvasRectangle | null,
+    realBoundingRectangle: CanvasRectangle | null,
+    scale: number,
+  ) => void,
 ): void {
   const metadataRef = useRefEditorState((store) => getMetadata(store.editor))
   const scaleRef = useRefEditorState((store) => store.editor.canvas.scale)
@@ -120,9 +139,10 @@ function useBoundingBoxFromMetadataRef(
       }
       return canvasRectangle(adjustedBoundingBox)
     }
-    const boundingBox = getAdjustedBoundingBox(boundingRectangleArray(frames))
+    const realBoundingBox = boundingRectangleArray(frames)
+    const safeGappedBoundingBox = getAdjustedBoundingBox(realBoundingBox)
 
-    boundingBoxCallbackRef.current(boundingBox, scaleRef.current)
+    boundingBoxCallbackRef.current(safeGappedBoundingBox, realBoundingBox, scaleRef.current)
   }, [selectedElements, metadataRef, scaleRef, shouldApplySafeGap])
 
   useSelectorWithCallback(

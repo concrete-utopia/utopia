@@ -83,17 +83,20 @@ export const OutlineControl = React.memo<OutlineControlProps>((props) => {
     'OutlineControl scale',
   )
 
-  const outlineRef = useBoundingBox(targets, (ref, boundingBox, canvasScale) => {
-    if (isZeroSizedElement(boundingBox)) {
-      ref.current.style.display = 'none'
-    } else {
-      ref.current.style.display = 'block'
-      ref.current.style.left = `${boundingBox.x - 0.5 / canvasScale}px`
-      ref.current.style.top = `${boundingBox.y - 0.5 / canvasScale}px`
-      ref.current.style.width = `${boundingBox.width + 1 / canvasScale}px`
-      ref.current.style.height = `${boundingBox.height + 1 / canvasScale}px`
-    }
-  })
+  const outlineRef = useBoundingBox(
+    targets,
+    (ref, safeGappedBoundingBox, realBoundingBox, canvasScale) => {
+      if (isZeroSizedElement(realBoundingBox)) {
+        ref.current.style.display = 'none'
+      } else {
+        ref.current.style.display = 'block'
+        ref.current.style.left = `${safeGappedBoundingBox.x - 0.5 / canvasScale}px`
+        ref.current.style.top = `${safeGappedBoundingBox.y - 0.5 / canvasScale}px`
+        ref.current.style.width = `${safeGappedBoundingBox.width + 1 / canvasScale}px`
+        ref.current.style.height = `${safeGappedBoundingBox.height + 1 / canvasScale}px`
+      }
+    },
+  )
 
   if (targets.length > 0) {
     return (

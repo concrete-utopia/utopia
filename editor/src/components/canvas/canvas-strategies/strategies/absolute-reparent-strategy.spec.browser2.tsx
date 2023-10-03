@@ -1704,6 +1704,169 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
     })
   })
+
+  describe('groups', () => {
+    it("does not reparent outside of a group (if it's not inside a scene)", async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: 300, height: 250 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 25, top: 25, width: 175, height: 120, backgroundColor: 'white' }}>
+                  <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+                  <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 125, top: 77, width: 50, height: 43 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+        'await-first-dom-report',
+      )
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await renderResult.dispatch(
+        selectComponents([EP.fromString('sb/div/group/child1')], true),
+        true,
+      )
+
+      const dragme = (await renderResult.renderedDOM.findByTestId('child1')).getBoundingClientRect()
+
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        { x: dragme.x + 10, y: dragme.y + 10 },
+        { x: -100, y: 0 },
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <div data-uid='div' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: 300, height: 250 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: -75, top: 25, width: 275, height: 120, backgroundColor: 'white' }}>
+                  <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+                  <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 225, top: 77, width: 50, height: 43 }} />
+                </Group>
+              </div>
+            </Storyboard>
+          )
+        `),
+      )
+    })
+    it("does reparent outside of a group (if it's inside a scene)", async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Scene, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene data-uid='scene' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: 300, height: 250 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 25, top: 25, width: 175, height: 120, backgroundColor: 'white' }}>
+                  <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+                  <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 125, top: 77, width: 50, height: 43 }} />
+                </Group>
+              </Scene>
+            </Storyboard>
+          )
+        `),
+        'await-first-dom-report',
+      )
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await renderResult.dispatch(
+        selectComponents([EP.fromString('sb/scene/group/child1')], true),
+        true,
+      )
+
+      const dragme = (await renderResult.renderedDOM.findByTestId('child1')).getBoundingClientRect()
+
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        { x: dragme.x + 10, y: dragme.y + 10 },
+        { x: -100, y: 0 },
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Storyboard, Scene, Group } from 'utopia-api'
+
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <Scene data-uid='scene' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', width: 300, height: 250 }}>
+                <Group data-uid='group' style={{ position: 'absolute', left: 150, top: 102, width: 50, height: 43, backgroundColor: 'white' }}>
+                  <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+                </Group>
+              </Scene>
+              <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -75, top: 25, width: 50, height: 43 }} />
+            </Storyboard>
+          )
+        `),
+      )
+    })
+    it("does reparent outside of a group (if it's inside a scene app)", async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <Group data-uid='group' style={{ position: 'absolute', left: 25, top: 25, width: 175, height: 120, backgroundColor: 'white' }}>
+              <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+              <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 125, top: 77, width: 50, height: 43 }} />
+            </Group>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await renderResult.dispatch(
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:group/child1')],
+          true,
+        ),
+        true,
+      )
+
+      const dragme = (await renderResult.renderedDOM.findByTestId('child1')).getBoundingClientRect()
+
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        { x: dragme.x + 10, y: dragme.y + 10 },
+        { x: -100, y: 0 },
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+          export var App = (props) => {
+            return (
+              <Group data-uid='group' style={{ position: 'absolute', left: 150, top: 102, width: 50, height: 43, backgroundColor: 'white' }}>
+                <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+              </Group>
+            )
+          }
+
+          export var storyboard = (props) => {
+            return (
+              <Storyboard data-uid='utopia-storyboard-uid'>
+                <Scene style={{ left: 0, top: 0, width: 400, height: 400 }} data-uid='scene-aaa'>
+                  <App data-uid='app-entity' style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }} />
+                </Scene>
+                <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -75, top: 25, width: 50, height: 43 }} />
+              </Storyboard>
+            )
+          }
+        `),
+      )
+    })
+  })
 })
 
 function testProjectWithUnstyledDivOrFragment(type: FragmentLikeType): string {

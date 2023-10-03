@@ -94,7 +94,7 @@ export type GroupValidity = 'valid' | 'warning' | 'error'
 
 export type InvalidGroupState =
   | 'child-not-position-absolute'
-  | 'child-has-percentage-pins-without-group-size'
+  | 'child-has-percentage-pins'
   | 'child-has-missing-pins'
   | 'child-does-not-honour-props-position'
   | 'child-does-not-honour-props-size'
@@ -103,7 +103,7 @@ export type InvalidGroupState =
 
 export function groupValidityFromInvalidGroupState(groupState: InvalidGroupState): GroupValidity {
   switch (groupState) {
-    case 'child-has-percentage-pins-without-group-size':
+    case 'child-has-percentage-pins':
     case 'child-has-missing-pins':
     case 'group-has-percentage-pins':
       return 'warning'
@@ -139,8 +139,8 @@ export function invalidGroupStateToString(state: InvalidGroupState): string {
     // children state
     case 'child-not-position-absolute':
       return 'All children of group should have absolute position'
-    case 'child-has-percentage-pins-without-group-size':
-      return 'Group needs dimensions to use children with % pins'
+    case 'child-has-percentage-pins':
+      return 'Children of a group should not have percentage pins'
     case 'child-has-missing-pins':
       return 'All children of group should have valid pins'
     case 'child-does-not-honour-props-position':
@@ -261,7 +261,6 @@ function maybeInvalidGroupChildren(
   allElementProps: AllElementProps,
   projectContents: ProjectContentTreeRoot,
 ): InvalidGroupState | 'valid' {
-  const groupHasExplicitSize = checkGroupHasExplicitSize(group)
   const childPaths = MetadataUtils.getChildrenUnordered(metadata, path).map(
     (child) => child.elementPath,
   )
@@ -274,11 +273,7 @@ function maybeInvalidGroupChildren(
   for (const childPath of flattenedChildPaths) {
     const childMetadata = MetadataUtils.findElementByElementPath(metadata, childPath)
     if (childMetadata != null) {
-      const childGroupState = getGroupChildState(
-        projectContents,
-        childMetadata,
-        groupHasExplicitSize,
-      )
+      const childGroupState = getGroupChildState(projectContents, childMetadata)
       if (isInvalidGroupState(childGroupState)) {
         return childGroupState
       }
@@ -287,13 +282,10 @@ function maybeInvalidGroupChildren(
   return 'valid'
 }
 
-export function getGroupChildStateFromJSXElement(
-  jsxElement: JSXElement,
-  groupHasExplicitSize: boolean,
-): GroupState {
+export function getGroupChildStateFromJSXElement(jsxElement: JSXElement): GroupState {
   return (
     maybeGroupChildNotPositionAbsolutely(jsxElement) ??
-    maybeGroupChildHasPercentagePinsWithoutGroupSize(jsxElement, groupHasExplicitSize) ??
+    maybeGroupChildHasPercentagePinsWithoutGroupSize(jsxElement) ??
     maybeGroupChildHasMissingPins(jsxElement) ??
     'valid'
   )
@@ -313,7 +305,6 @@ export function getGroupValidity(
 function getGroupChildState(
   projectContents: ProjectContentTreeRoot,
   elementMetadata: ElementInstanceMetadata | null,
-  groupHasExplicitSize: boolean,
 ): GroupState {
   if (elementMetadata == null) {
     return 'unknown'
@@ -332,7 +323,7 @@ function getGroupChildState(
     return 'child-does-not-honour-props-size'
   }
 
-  return getGroupChildStateFromJSXElement(jsxElement, groupHasExplicitSize)
+  return getGroupChildStateFromJSXElement(jsxElement)
 }
 
 export function getGroupChildStateWithGroupMetadata(
@@ -345,11 +336,7 @@ export function getGroupChildStateWithGroupMetadata(
     return 'unknown'
   }
 
-  return getGroupChildState(
-    projectContents,
-    elementMetadata,
-    checkGroupHasExplicitSize(groupElement),
-  )
+  return getGroupChildState(projectContents, elementMetadata)
 }
 
 export function isMaybeGroupForWrapping(element: JSXElementChild, imports: Imports): boolean {
@@ -415,20 +402,11 @@ export function maybeGroupChildNotPositionAbsolutely(
 
 export function maybeGroupChildHasPercentagePinsWithoutGroupSize(
   jsxElement: JSXElement | null,
-  groupHasExplicitSize: boolean,
 ): InvalidGroupState | null {
   if (jsxElement == null) {
     return 'unknown'
   }
-  return !groupHasExplicitSize && elementHasPercentagePins(jsxElement)
-    ? 'child-has-percentage-pins-without-group-size'
-    : null
-}
-
-export function maybeGroupChildWithoutFixedSizeForFill(
-  group: JSXElement | null,
-): InvalidGroupState | null {
-  return !checkGroupHasExplicitSize(group) ? 'child-has-percentage-pins-without-group-size' : null
+  return elementHasPercentagePins(jsxElement) ? 'child-has-percentage-pins' : null
 }
 
 export function groupErrorToastCommand(state: InvalidGroupState): ShowToastCommand {
@@ -500,8 +478,7 @@ export function groupStateFromJSXElement(
     )
   } else if (treatElementAsGroupLike(metadata, EP.parentPath(path))) {
     // group child
-    const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
-    return getGroupChildStateFromJSXElement(element, checkGroupHasExplicitSize(group))
+    return getGroupChildStateFromJSXElement(element)
   } else {
     // not a group
     return null
