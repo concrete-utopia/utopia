@@ -129,7 +129,7 @@ import {
   runDomWalker,
 } from './dom-walker'
 import { flushSync } from 'react-dom'
-import { shouldInspectorUpdate } from '../inspector/inspector'
+import { shouldUpdateLowPriorityUI } from '../inspector/inspector'
 import { SampleNodeModules } from '../custom-code/code-file.test-utils'
 import type { MetaCanvasStrategy } from './canvas-strategies/canvas-strategies'
 import { RegisteredCanvasStrategies } from './canvas-strategies/canvas-strategies'
@@ -501,7 +501,7 @@ export async function renderTestEditorWithModel(
     flushSync(() => {
       storeHook.setState(patchedStoreFromFullStore(workingEditorState, 'editor-store'))
       if (
-        shouldInspectorUpdate(
+        shouldUpdateLowPriorityUI(
           workingEditorState.strategyState,
           workingEditorState.patchedEditor.canvas.elementsToRerender,
         )

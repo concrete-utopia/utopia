@@ -527,6 +527,10 @@ export function isKeyboardAbsoluteStrategy(currentStrategy: string | null): bool
   }
 }
 
+export function isKeyboardReorderStrategy(currentStrategy: string | null): boolean {
+  return currentStrategy === 'KEYBOARD_REORDER'
+}
+
 export function interactionInProgress(interactionSession: InteractionSession | null): boolean {
   if (interactionSession == null) {
     return false

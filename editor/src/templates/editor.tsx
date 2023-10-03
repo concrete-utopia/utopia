@@ -103,7 +103,7 @@ import {
   invalidateDomWalkerIfNecessary,
 } from '../components/canvas/dom-walker'
 import { isFeatureEnabled } from '../utils/feature-switches'
-import { shouldInspectorUpdate as shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
+import { shouldUpdateLowPriorityUI } from '../components/inspector/inspector'
 import * as EP from '../core/shared/element-path'
 import { waitUntil } from '../core/shared/promise-utils'
 import { sendSetVSCodeTheme } from '../core/vscode/vscode-bridge'
