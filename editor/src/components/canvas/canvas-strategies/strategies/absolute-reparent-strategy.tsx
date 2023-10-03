@@ -194,7 +194,7 @@ export function baseAbsoluteReparentStrategy(
                   ...commands.flatMap((c) => c.commands),
                   updateSelectedViews('always', newPaths),
                   setElementsToRerenderCommand(elementsToRerender),
-                  setCursorCommand(CSSCursor.Move),
+                  setCursorCommand(CSSCursor.Reparent),
                 ],
                 {
                   elementsToRerender,
