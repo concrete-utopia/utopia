@@ -3,6 +3,9 @@ import { FlexColumn, FlexRow, InspectorSubsectionHeader } from '../../../../../u
 import { EditorContractDropdown } from '../../../editor-contract-section'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { pinsLayoutNumberControl } from './gigantic-size-pins-subsection'
+import { FixedHugDropdown } from '../../../fill-hug-fixed-control'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
+import { BooleanControl } from '../../../controls/boolean-control'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   return (
@@ -18,7 +21,7 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
           <EditorContractDropdown />
         </FlexRow>
       </InspectorSubsectionHeader>
-      <FlexColumn style={{ gap: 8 }}>
+      <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
         <UIGridRow
           padded={false}
           variant='<--1fr--><--1fr-->'
@@ -35,8 +38,51 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
           {pinsLayoutNumberControl('width')}
           {pinsLayoutNumberControl('height')}
         </UIGridRow>
+        <UIGridRow
+          padded={false}
+          variant='<--1fr--><--1fr-->'
+          style={{ minHeight: undefined, gap: 4 }}
+        >
+          <FixedHugDropdown dimension='width' />
+          <FixedHugDropdown dimension='height' />
+        </UIGridRow>
+        <FlexRow style={{ minHeight: undefined, gap: 4 }}>
+          <ClipContentControl />
+        </FlexRow>
       </FlexColumn>
     </FlexColumn>
   )
 })
 SimplifiedLayoutSubsection.displayName = 'SimplifiedLayoutSubsection'
+
+const ClipContentControl = React.memo(() => {
+  const isVisible = useIsSubSectionVisible('overflow')
+
+  const { value, controlStatus, controlStyles, onSubmitValue, onUnsetValues } =
+    useInspectorStyleInfo(
+      'overflow',
+      (parsed) => !parsed.overflow,
+      (clipContent: boolean) => ({
+        overflow: !clipContent,
+      }),
+    )
+
+  if (!isVisible) {
+    return null
+  }
+
+  return (
+    <>
+      <BooleanControl
+        key='clip-content-control'
+        id='clip-content-control'
+        testId='clip-content-control'
+        value={value}
+        controlStatus={controlStatus}
+        controlStyles={controlStyles}
+        onSubmitValue={onSubmitValue}
+      />
+      Clip content
+    </>
+  )
+})
