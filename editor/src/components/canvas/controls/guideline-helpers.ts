@@ -4,6 +4,7 @@ import {
   isFiniteRectangle,
   offsetPoint,
   offsetRect,
+  roundPointToNearestWhole,
   zeroRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -172,7 +173,7 @@ export function getSnapDelta(
     return Utils.offsetPoint(working, guideline.snappingVector)
   }, Utils.zeroPoint as CanvasPoint)
   return {
-    delta: Utils.roundPointToNearestHalf(delta),
+    delta: roundPointToNearestWhole(delta),
     guidelinesWithSnappingVector: winningGuidelines,
   }
 }

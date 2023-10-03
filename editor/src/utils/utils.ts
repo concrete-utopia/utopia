@@ -15,9 +15,6 @@ import type {
 } from '../core/shared/math-utils'
 import {
   roundTo,
-  roundToNearestHalf,
-  roundPointToNearestHalf,
-  roundPointTo,
   normalizeDegrees,
   degreesToRadians,
   radiansToDegrees,
@@ -959,9 +956,6 @@ export default {
   generateUUID: generateUUID,
   assert: assert,
   roundTo: roundTo,
-  roundToNearestHalf: roundToNearestHalf,
-  roundPointToNearestHalf: roundPointToNearestHalf,
-  roundPointTo: roundPointTo,
   normalizeDegrees: normalizeDegrees,
   degreesToRadians: degreesToRadians,
   radiansToDegrees: radiansToDegrees,

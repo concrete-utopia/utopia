@@ -10,7 +10,7 @@ import type {
   LocalRectangle,
   CanvasRectangle,
 } from '../../core/shared/math-utils'
-import { canvasPoint, isInfinityRectangle } from '../../core/shared/math-utils'
+import { canvasPoint } from '../../core/shared/math-utils'
 
 export interface XAxisGuideline {
   type: 'XAxisGuideline'
@@ -216,29 +216,6 @@ export const Guidelines = {
     // FIXME RJB Kill remaining frame controls from the old canvas controls
     console.error('This code path should be dead')
     return dragResult
-  },
-  applySnappingToPoint<C extends CoordinateMarker>(
-    point: Point<C>,
-    guidelines: Array<Guideline>,
-    snappingThreshold: number,
-    scale: number,
-    constrainedDragAxis: ConstrainedDragAxis | null,
-  ): Vector<C> {
-    return guidelines.reduce((workingPoint, guideline) => {
-      const snappingVector = Guidelines.getOffsetToSnapToGuideline(
-        [workingPoint.x],
-        [workingPoint.y],
-        [],
-        guideline,
-        constrainedDragAxis,
-      )
-      const distance = Utils.magnitude(snappingVector)
-      if (distance <= snappingThreshold / scale) {
-        return Utils.roundPointToNearestHalf(Utils.offsetPoint(workingPoint, snappingVector))
-      } else {
-        return workingPoint
-      }
-    }, point)
   },
   guidelinesForFrame: function (
     frame: LocalRectangle | CanvasRectangle,

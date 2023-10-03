@@ -21,6 +21,7 @@ import {
   boundingRectangleArray,
   nullIfInfinity,
   offsetRect,
+  roundRectangleToNearestWhole,
   zeroCanvasPoint,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
@@ -267,7 +268,7 @@ export function createMoveCommandsForElement(
     if (globalFrame == null) {
       return []
     } else {
-      const intendedGlobalFrame = offsetRect(globalFrame, drag)
+      const intendedGlobalFrame = roundRectangleToNearestWhole(offsetRect(globalFrame, drag))
       return [{ target: mappedPath, frame: intendedGlobalFrame }]
     }
   })()

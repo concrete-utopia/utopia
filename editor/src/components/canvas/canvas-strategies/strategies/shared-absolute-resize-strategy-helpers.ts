@@ -9,7 +9,11 @@ import type {
   JSXElement,
 } from '../../../../core/shared/element-template'
 import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
-import { canvasPoint, pointDifference } from '../../../../core/shared/math-utils'
+import {
+  canvasPoint,
+  pointDifference,
+  roundRectangleToNearestWhole,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
@@ -72,12 +76,8 @@ export function createResizeCommands(
     elementGlobalFrame == null
       ? null
       : {
-          frame: resizeBoundingBox(
-            elementGlobalFrame,
-            drag,
-            edgePosition,
-            null,
-            'non-center-based',
+          frame: roundRectangleToNearestWhole(
+            resizeBoundingBox(elementGlobalFrame, drag, edgePosition, null, 'non-center-based'),
           ),
           target: selectedElement,
         }
@@ -146,12 +146,8 @@ export function runLegacyAbsoluteResizeSnapping(
   )
 
   const snapDelta = pointDifference(draggedPointMovedWithoutSnap, snappedPointOnCanvas)
-  const snappedBounds = resizeBoundingBox(
-    resizedBounds,
-    snapDelta,
-    draggedCorner,
-    lockedAspectRatio,
-    centerBased,
+  const snappedBounds = roundRectangleToNearestWhole(
+    resizeBoundingBox(resizedBounds, snapDelta, draggedCorner, lockedAspectRatio, centerBased),
   )
 
   const updatedGuidelinesWithSnapping = pointGuidelineToBoundsEdge(

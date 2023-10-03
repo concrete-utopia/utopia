@@ -1,4 +1,4 @@
-import { roundUpToNearestHalf, wrapValue } from './math-utils'
+import { wrapValue } from './math-utils'
 
 describe('math utils', () => {
   describe('wrapValue', () => {
@@ -20,27 +20,5 @@ describe('math utils', () => {
       expect(wrapValue(-11, -7, -3)).toEqual(-6)
       expect(wrapValue(-2, -7, -3)).toEqual(-7)
     })
-  })
-  describe('roundUpToNearestHalf', () => {
-    const testValues: Array<[number, number]> = [
-      [-1000, -1000],
-      [-1000.1, -1000],
-      [-999.9, -999.5],
-      [-1, -1],
-      [-1.4, -1],
-      [-0.9, -0.5],
-      [-0.1, -0],
-      [0.1, 0.5],
-      [0.4, 0.5],
-      [0.5, 0.5],
-      [0.999, 1],
-      [9.1, 9.5],
-      [9.9, 10],
-    ]
-    for (const [inputValue, expectedResult] of testValues) {
-      it(`With ${inputValue} as an input, should return ${expectedResult}`, () => {
-        expect(roundUpToNearestHalf(inputValue)).toEqual(expectedResult)
-      })
-    }
   })
 })

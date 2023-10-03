@@ -10,9 +10,14 @@ import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { getJSXElementNameLastPart } from '../../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
-import { canvasRectangle, offsetPoint, zeroCanvasPoint } from '../../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  offsetPoint,
+  roundPointToNearestWhole,
+  zeroCanvasPoint,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { CSSCursor, Utils } from '../../../../uuiui-deps'
+import { CSSCursor } from '../../../../uuiui-deps'
 import type { InsertionSubject } from '../../../editor/editor-modes'
 import type {
   DerivedState,
@@ -146,9 +151,7 @@ function dragToInsertStrategyFactory(
       return []
     }
 
-    const pointOnCanvas = Utils.roundPointToNearestHalf(
-      interactionSession.interactionData.dragStart,
-    )
+    const pointOnCanvas = roundPointToNearestWhole(interactionSession.interactionData.dragStart)
     return insertionSubjects.map((s) => ({
       subject: s,
       frame: canvasRectangle({
