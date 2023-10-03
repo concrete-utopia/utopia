@@ -113,183 +113,11 @@ const fixedHugFillOptionsSelector = createSelector(
 )
 
 export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
-  const dispatch = useDispatch()
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-  const elementOrParentGroupRef = useRefEditorState(anySelectedElementGroupOrChildOfGroup)
-  const groupChildrenSelected = useEditorState(
+  const isGroupChild = useEditorState(
     Substores.metadata,
     allElementsAreGroupChildren,
     'groupChildrenSelected',
   )
-
-  const widthCurrentValue = useEditorState(
-    Substores.metadata,
-    (store) =>
-      detectFillHugFixedStateMultiselect(
-        'horizontal',
-        metadataSelector(store),
-        selectedViewsSelector(store),
-      ),
-    'FillHugFixedControl widthCurrentValue',
-    isFixedHugFillEqual,
-  )
-
-  const widthInputControlStatus = React.useMemo(
-    () =>
-      isNumberInputEnabled(widthCurrentValue.fixedHugFill)
-        ? widthCurrentValue.controlStatus
-        : 'disabled',
-    [widthCurrentValue],
-  )
-
-  const heightCurrentValue = useEditorState(
-    Substores.metadata,
-    (store) =>
-      detectFillHugFixedStateMultiselect(
-        'vertical',
-        metadataSelector(store),
-        selectedViewsSelector(store),
-      ),
-    'FillHugFixedControl heightCurrentValue',
-    isFixedHugFillEqual,
-  )
-
-  const heightInputControlStatus = React.useMemo(
-    () =>
-      isNumberInputEnabled(heightCurrentValue.fixedHugFill)
-        ? heightCurrentValue.controlStatus
-        : 'disabled',
-    [heightCurrentValue],
-  )
-
-  const onAdjustHeight = React.useCallback(
-    (value: UnknownOrEmptyInput<CSSNumber>) => {
-      if (
-        'type' in value &&
-        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
-      ) {
-        return
-      }
-      if (elementOrParentGroupRef.current) {
-        if (value.unit != null && value.unit !== 'px') {
-          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
-          return
-        }
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFixedStrategies('always', 'vertical', value),
-        )
-        return
-      }
-      if (heightCurrentValue.fixedHugFill?.type === 'fill') {
-        if (value.unit != null && value.unit !== '%') {
-          // fill mode only accepts percentage or valueless numbers
-          return
-        }
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFillStrategies('vertical', value.value, false),
-        )
-      }
-      if (
-        heightCurrentValue.fixedHugFill?.type === 'fixed' ||
-        heightCurrentValue.fixedHugFill?.type === 'computed'
-      ) {
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFixedStrategies('always', 'vertical', value),
-        )
-      }
-    },
-    [
-      allElementPropsRef,
-      dispatch,
-      heightCurrentValue.fixedHugFill?.type,
-      metadataRef,
-      elementPathTreeRef,
-      selectedViewsRef,
-      elementOrParentGroupRef,
-    ],
-  )
-
-  const onAdjustWidth = React.useCallback(
-    (value: UnknownOrEmptyInput<CSSNumber>) => {
-      if (
-        'type' in value &&
-        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
-      ) {
-        return
-      }
-      if (elementOrParentGroupRef.current) {
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFixedStrategies('always', 'horizontal', value),
-        )
-        return
-      }
-      if (widthCurrentValue.fixedHugFill?.type === 'fill') {
-        if (value.unit != null && value.unit !== '%') {
-          // fill mode only accepts percentage or valueless numbers
-          return
-        }
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFillStrategies('horizontal', value.value, false),
-        )
-      }
-      if (
-        widthCurrentValue.fixedHugFill?.type === 'fixed' ||
-        widthCurrentValue.fixedHugFill?.type === 'computed'
-      ) {
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFixedStrategies('always', 'horizontal', value),
-        )
-      }
-    },
-    [
-      allElementPropsRef,
-      dispatch,
-      metadataRef,
-      selectedViewsRef,
-      elementPathTreeRef,
-      widthCurrentValue.fixedHugFill?.type,
-      elementOrParentGroupRef,
-    ],
-  )
-
-  const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
-  const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
-
-  const isGroupChild = groupChildrenSelected
 
   const gridTemplate = React.useMemo((): GridRowVariant => {
     return isGroupChild ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
@@ -301,23 +129,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         <GroupChildPinControl />
         <FlexCol css={{ gap: 0 }}>
           <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
-            <NumberInput
-              labelInner={'W'}
-              id={FillFixedHugControlId('width')}
-              testId={FillFixedHugControlId('width')}
-              value={widthValue}
-              onSubmitValue={onAdjustWidth}
-              onTransientSubmitValue={onAdjustWidth}
-              onForcedSubmitValue={onAdjustWidth}
-              controlStatus={widthInputControlStatus}
-              numberType={pickNumberType(widthCurrentValue.fixedHugFill)}
-              incrementControls={true}
-              stepSize={1}
-              minimum={0}
-              maximum={Infinity}
-              defaultUnitToHide={null}
-              focusOnMount={false}
-            />
+            <WidthHeightNumberControl dimension='width' />
             {isGroupChild ? (
               <GroupConstraintSelect dimension={'width'} />
             ) : (
@@ -325,23 +137,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
             )}
           </UIGridRow>
           <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
-            <NumberInput
-              labelInner={'H'}
-              id={FillFixedHugControlId('height')}
-              testId={FillFixedHugControlId('height')}
-              value={heightValue}
-              onSubmitValue={onAdjustHeight}
-              onTransientSubmitValue={onAdjustHeight}
-              onForcedSubmitValue={onAdjustHeight}
-              controlStatus={heightInputControlStatus}
-              numberType={pickNumberType(heightCurrentValue.fixedHugFill)}
-              incrementControls={true}
-              stepSize={1}
-              minimum={0}
-              maximum={Infinity}
-              defaultUnitToHide={null}
-              focusOnMount={false}
-            />
+            <WidthHeightNumberControl dimension='height' />
             {isGroupChild ? (
               <GroupConstraintSelect dimension={'height'} />
             ) : (
@@ -456,6 +252,123 @@ const GroupChildPinControl = React.memo(() => {
   )
 })
 GroupChildPinControl.displayName = 'GroupChildPinControl'
+
+const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'height' }) => {
+  const { dimension } = props
+  const axis = dimension === 'width' ? 'horizontal' : 'vertical'
+
+  const dispatch = useDispatch()
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
+  const elementOrParentGroupRef = useRefEditorState(anySelectedElementGroupOrChildOfGroup)
+
+  const currentValue = useEditorState(
+    Substores.metadata,
+    (store) =>
+      detectFillHugFixedStateMultiselect(
+        axis,
+        metadataSelector(store),
+        selectedViewsSelector(store),
+      ),
+    'FillHugFixedControl heightCurrentValue',
+    isFixedHugFillEqual,
+  )
+
+  const fixedValue = optionalMap(pickFixedValue, currentValue.fixedHugFill) ?? null
+
+  const inputControlStatus = isNumberInputEnabled(currentValue.fixedHugFill)
+    ? currentValue.controlStatus
+    : 'disabled'
+
+  const onAdjustValue = React.useCallback(
+    (value: UnknownOrEmptyInput<CSSNumber>) => {
+      if (
+        'type' in value &&
+        (value.type === 'EMPTY_INPUT_VALUE' || value.type === 'UNKNOWN_INPUT')
+      ) {
+        return
+      }
+      if (elementOrParentGroupRef.current) {
+        if (value.unit != null && value.unit !== 'px') {
+          // if the element or its parent is a group, we only allow setting the size to Fixed pixels to avoid inconsistent behavior
+          return
+        }
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFixedStrategies('always', axis, value),
+        )
+        return
+      }
+      if (currentValue.fixedHugFill?.type === 'fill') {
+        if (value.unit != null && value.unit !== '%') {
+          // fill mode only accepts percentage or valueless numbers
+          return
+        }
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFillStrategies(axis, value.value, false),
+        )
+      }
+      if (
+        currentValue.fixedHugFill?.type === 'fixed' ||
+        currentValue.fixedHugFill?.type === 'computed'
+      ) {
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          setPropFixedStrategies('always', axis, value),
+        )
+      }
+    },
+    [
+      dispatch,
+      axis,
+      currentValue.fixedHugFill?.type,
+      metadataRef,
+      allElementPropsRef,
+      elementPathTreeRef,
+      selectedViewsRef,
+      elementOrParentGroupRef,
+    ],
+  )
+
+  const innerLabel = dimension.charAt(0).toUpperCase()
+
+  return (
+    <NumberInput
+      labelInner={innerLabel}
+      id={FillFixedHugControlId(dimension)}
+      testId={FillFixedHugControlId(dimension)}
+      value={fixedValue}
+      onSubmitValue={onAdjustValue}
+      onTransientSubmitValue={onAdjustValue}
+      onForcedSubmitValue={onAdjustValue}
+      controlStatus={inputControlStatus}
+      numberType={pickNumberType(currentValue.fixedHugFill)}
+      incrementControls={true}
+      stepSize={1}
+      minimum={0}
+      maximum={Infinity}
+      defaultUnitToHide={null}
+      focusOnMount={false}
+    />
+  )
+})
+WidthHeightNumberControl.displayName = 'WidthHeightNumberControl'
 
 function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   const axis = dimension === 'width' ? 'horizontal' : 'vertical'
