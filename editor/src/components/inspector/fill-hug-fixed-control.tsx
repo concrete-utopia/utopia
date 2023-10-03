@@ -150,17 +150,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     [widthCurrentValue],
   )
 
-  const fillsContainerHorizontallyRef = useRefEditorState(
-    (store) =>
-      detectFillHugFixedStateMultiselect(
-        'horizontal',
-        metadataSelector(store),
-        selectedViewsSelector(store),
-      ).fixedHugFill?.type === 'fill',
-  )
-
-  const widthComputedValueRef = useComputedSizeRef('width')
-
   const heightCurrentValue = useEditorState(
     Substores.metadata,
     (store) =>
@@ -184,77 +173,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
         : 'disabled',
     [heightCurrentValue],
   )
-
-  const fillsContainerVerticallyRef = useRefEditorState(
-    (store) =>
-      detectFillHugFixedStateMultiselect(
-        'vertical',
-        metadataSelector(store),
-        selectedViewsSelector(store),
-      ).fixedHugFill?.type === 'fill',
-  )
-
-  const heightComputedValueRef = useComputedSizeRef('height')
-
-  const onSubmitFixedFillHugType = React.useMemo(() => {
-    const onSubmitFFH =
-      (axis: Axis) =>
-      ({ value: anyValue }: SelectOption) => {
-        const value = anyValue as FixedHugFillMode
-
-        const currentComputedValue =
-          (axis === 'horizontal'
-            ? widthComputedValueRef.current
-            : heightComputedValueRef.current) ?? 0
-
-        const otherAxisSetToFill =
-          axis === 'horizontal'
-            ? fillsContainerVerticallyRef.current
-            : fillsContainerHorizontallyRef.current
-
-        const firstSelectedView = safeIndex(selectedViewsRef.current, 0)
-        if (firstSelectedView != null) {
-          const valueToUse =
-            axis === 'horizontal'
-              ? fixedSizeDimensionHandlingText(
-                  metadataRef.current,
-                  elementPathTreeRef.current,
-                  firstSelectedView,
-                  currentComputedValue,
-                )
-              : currentComputedValue
-          const strategy = strategyForChangingFillFixedHugType(
-            valueToUse,
-            axis,
-            value,
-            otherAxisSetToFill,
-          )
-          executeFirstApplicableStrategy(
-            dispatch,
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            strategy,
-          )
-        }
-      }
-
-    return {
-      width: onSubmitFFH('horizontal'),
-      height: onSubmitFFH('vertical'),
-    }
-  }, [
-    allElementPropsRef,
-    dispatch,
-    fillsContainerHorizontallyRef,
-    fillsContainerVerticallyRef,
-    widthComputedValueRef,
-    heightComputedValueRef,
-    metadataRef,
-    elementPathTreeRef,
-    selectedViewsRef,
-  ])
 
   const onAdjustHeight = React.useCallback(
     (value: UnknownOrEmptyInput<CSSNumber>) => {
@@ -455,12 +373,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
   const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
 
-  const fixedHugFillOptions = useEditorState(
-    Substores.metadata,
-    fixedHugFillOptionsSelector,
-    'DimensionRow options',
-  )
-
   const isGroupChild = groupChildrenSelected
 
   const gridTemplate = React.useMemo((): GridRowVariant => {
@@ -502,12 +414,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
             {isGroupChild ? (
               <GroupConstraintSelect dimension={'width'} type={groupChildConstraints.width} />
             ) : (
-              <PopupList
-                value={optionalMap(selectOption, widthCurrentValue.fixedHugFill?.type) ?? undefined}
-                options={fixedHugFillOptions}
-                onSubmitValue={onSubmitFixedFillHugType['width']}
-                controlStyles={widthControlStyles}
-              />
+              <FixedHugDropdown dimension='width' />
             )}
           </UIGridRow>
           <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
@@ -531,14 +438,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
             {isGroupChild ? (
               <GroupConstraintSelect dimension={'height'} type={groupChildConstraints.height} />
             ) : (
-              <PopupList
-                value={
-                  optionalMap(selectOption, heightCurrentValue.fixedHugFill?.type) ?? undefined
-                }
-                options={fixedHugFillOptions}
-                onSubmitValue={onSubmitFixedFillHugType['height']}
-                controlStyles={heightControlStyles}
-              />
+              <FixedHugDropdown dimension='height' />
             )}
           </UIGridRow>
         </FlexCol>
@@ -546,6 +446,132 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     </FlexCol>
   )
 })
+
+function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
+  const dispatch = useDispatch()
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
+  const fillsContainerHorizontallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedStateMultiselect(
+        'horizontal',
+        metadataSelector(store),
+        selectedViewsSelector(store),
+      ).fixedHugFill?.type === 'fill',
+  )
+
+  const widthComputedValueRef = useComputedSizeRef('width')
+
+  const fillsContainerVerticallyRef = useRefEditorState(
+    (store) =>
+      detectFillHugFixedStateMultiselect(
+        'vertical',
+        metadataSelector(store),
+        selectedViewsSelector(store),
+      ).fixedHugFill?.type === 'fill',
+  )
+
+  const heightComputedValueRef = useComputedSizeRef('height')
+
+  const onSubmitFixedFillHugType = React.useMemo(() => {
+    const onSubmitFFH =
+      (axis: Axis) =>
+      ({ value: anyValue }: SelectOption) => {
+        const value = anyValue as FixedHugFillMode
+
+        const currentComputedValue =
+          (axis === 'horizontal'
+            ? widthComputedValueRef.current
+            : heightComputedValueRef.current) ?? 0
+
+        const otherAxisSetToFill =
+          axis === 'horizontal'
+            ? fillsContainerVerticallyRef.current
+            : fillsContainerHorizontallyRef.current
+
+        const firstSelectedView = safeIndex(selectedViewsRef.current, 0)
+        if (firstSelectedView != null) {
+          const valueToUse =
+            axis === 'horizontal'
+              ? fixedSizeDimensionHandlingText(
+                  metadataRef.current,
+                  elementPathTreeRef.current,
+                  firstSelectedView,
+                  currentComputedValue,
+                )
+              : currentComputedValue
+          const strategy = strategyForChangingFillFixedHugType(
+            valueToUse,
+            axis,
+            value,
+            otherAxisSetToFill,
+          )
+          executeFirstApplicableStrategy(
+            dispatch,
+            metadataRef.current,
+            selectedViewsRef.current,
+            elementPathTreeRef.current,
+            allElementPropsRef.current,
+            strategy,
+          )
+        }
+      }
+
+    return {
+      width: onSubmitFFH('horizontal'),
+      height: onSubmitFFH('vertical'),
+    }
+  }, [
+    allElementPropsRef,
+    dispatch,
+    fillsContainerHorizontallyRef,
+    fillsContainerVerticallyRef,
+    widthComputedValueRef,
+    heightComputedValueRef,
+    metadataRef,
+    elementPathTreeRef,
+    selectedViewsRef,
+  ])
+
+  return onSubmitFixedFillHugType[dimension]
+}
+
+export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'height' }) => {
+  const { dimension } = props
+
+  const currentValue = useEditorState(
+    Substores.metadata,
+    (store) =>
+      detectFillHugFixedStateMultiselect(
+        dimension === 'width' ? 'horizontal' : 'vertical',
+        metadataSelector(store),
+        selectedViewsSelector(store),
+      ),
+    'FillHugFixedControl heightCurrentValue',
+    isFixedHugFillEqual,
+  )
+
+  const fixedHugFillOptions = useEditorState(
+    Substores.metadata,
+    fixedHugFillOptionsSelector,
+    'DimensionRow options',
+  )
+
+  const onSubmitFixedFillHugType = useOnSubmitFixedFillHugType(dimension)
+
+  return (
+    <PopupList
+      value={optionalMap(selectOption, currentValue.fixedHugFill?.type) ?? undefined}
+      options={fixedHugFillOptions}
+      onSubmitValue={onSubmitFixedFillHugType}
+      controlStyles={getControlStyles(currentValue.controlStatus)}
+    />
+  )
+})
+FixedHugDropdown.displayName = 'FixedHugDropdown'
 
 const GroupConstraintSelect = React.memo(
   ({
