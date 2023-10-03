@@ -97,7 +97,7 @@ export function flexResizeBasicStrategy(
     descriptiveLabel: 'Resizing Flex Elements',
     icon: {
       category: 'modalities',
-      type: 'moveabs-large',
+      type: 'resize',
     },
     controlsToRender: [
       controlWithProps({
