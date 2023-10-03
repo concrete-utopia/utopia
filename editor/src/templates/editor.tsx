@@ -129,6 +129,7 @@ import {
 } from '../components/editor/store/project-server-state'
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
+import { Provider as JotaiProvider } from 'jotai'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -706,21 +707,23 @@ export const EditorRoot: React.FunctionComponent<{
 }) => {
   return (
     <AtomsDevtools>
-      <DispatchContext.Provider value={dispatch}>
-        <OriginalMainEditorStateContext.Provider value={mainStore}>
-          <EditorStateContext.Provider value={mainStore}>
-            <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
-              <CanvasStateContext.Provider value={canvasStore}>
-                <LowPriorityStateContext.Provider value={lowPriorityStore}>
-                  <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
-                    <EditorComponent />
-                  </UiJsxCanvasCtxAtom.Provider>
-                </LowPriorityStateContext.Provider>
-              </CanvasStateContext.Provider>
-            </DomWalkerMutableStateCtx.Provider>
-          </EditorStateContext.Provider>
-        </OriginalMainEditorStateContext.Provider>
-      </DispatchContext.Provider>
+      <JotaiProvider>
+        <DispatchContext.Provider value={dispatch}>
+          <OriginalMainEditorStateContext.Provider value={mainStore}>
+            <EditorStateContext.Provider value={mainStore}>
+              <DomWalkerMutableStateCtx.Provider value={domWalkerMutableState}>
+                <CanvasStateContext.Provider value={canvasStore}>
+                  <LowPriorityStateContext.Provider value={lowPriorityStore}>
+                    <UiJsxCanvasCtxAtom.Provider value={spyCollector}>
+                      <EditorComponent />
+                    </UiJsxCanvasCtxAtom.Provider>
+                  </LowPriorityStateContext.Provider>
+                </CanvasStateContext.Provider>
+              </DomWalkerMutableStateCtx.Provider>
+            </EditorStateContext.Provider>
+          </OriginalMainEditorStateContext.Provider>
+        </DispatchContext.Provider>
+      </JotaiProvider>
     </AtomsDevtools>
   )
 }
