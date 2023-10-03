@@ -138,10 +138,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
-  const widthControlStyles = React.useMemo(
-    () => getControlStyles(widthCurrentValue.controlStatus),
-    [widthCurrentValue],
-  )
   const widthInputControlStatus = React.useMemo(
     () =>
       isNumberInputEnabled(widthCurrentValue.fixedHugFill)
@@ -162,10 +158,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     isFixedHugFillEqual,
   )
 
-  const heightControlStyles = React.useMemo(
-    () => getControlStyles(heightCurrentValue.controlStatus),
-    [heightCurrentValue],
-  )
   const heightInputControlStatus = React.useMemo(
     () =>
       isNumberInputEnabled(heightCurrentValue.fixedHugFill)
@@ -294,6 +286,8 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     ],
   )
 
+  const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
+  const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
   const groupChildConstraints = useEditorState(
     Substores.metadata,
     (store) => ({
