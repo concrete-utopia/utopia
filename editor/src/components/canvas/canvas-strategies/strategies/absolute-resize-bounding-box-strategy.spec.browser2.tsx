@@ -1338,7 +1338,7 @@ export var storyboard = (
     const resizeControl = getResizeControl(renderResult, EdgePositionBottomRight)
     expect(resizeControl).toBeNull()
   })
-  it('percent values are rounded to decimal digits after resizing', async () => {
+  it('percent values are rounded to 2 decimal places after resizing', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
       <div
