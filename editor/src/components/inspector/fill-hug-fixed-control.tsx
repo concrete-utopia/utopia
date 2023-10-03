@@ -477,54 +477,47 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   const heightComputedValueRef = useComputedSizeRef('height')
 
   const onSubmitFixedFillHugType = React.useMemo(() => {
-    const onSubmitFFH =
-      (axis: Axis) =>
-      ({ value: anyValue }: SelectOption) => {
-        const value = anyValue as FixedHugFillMode
+    return ({ value: anyValue }: SelectOption) => {
+      const value = anyValue as FixedHugFillMode
 
-        const currentComputedValue =
-          (axis === 'horizontal'
-            ? widthComputedValueRef.current
-            : heightComputedValueRef.current) ?? 0
+      const currentComputedValue =
+        (dimension === 'width' ? widthComputedValueRef.current : heightComputedValueRef.current) ??
+        0
 
-        const otherAxisSetToFill =
-          axis === 'horizontal'
-            ? fillsContainerVerticallyRef.current
-            : fillsContainerHorizontallyRef.current
+      const otherAxisSetToFill =
+        dimension === 'width'
+          ? fillsContainerVerticallyRef.current
+          : fillsContainerHorizontallyRef.current
 
-        const firstSelectedView = safeIndex(selectedViewsRef.current, 0)
-        if (firstSelectedView != null) {
-          const valueToUse =
-            axis === 'horizontal'
-              ? fixedSizeDimensionHandlingText(
-                  metadataRef.current,
-                  elementPathTreeRef.current,
-                  firstSelectedView,
-                  currentComputedValue,
-                )
-              : currentComputedValue
-          const strategy = strategyForChangingFillFixedHugType(
-            valueToUse,
-            axis,
-            value,
-            otherAxisSetToFill,
-          )
-          executeFirstApplicableStrategy(
-            dispatch,
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            strategy,
-          )
-        }
+      const firstSelectedView = safeIndex(selectedViewsRef.current, 0)
+      if (firstSelectedView != null) {
+        const valueToUse =
+          dimension === 'width'
+            ? fixedSizeDimensionHandlingText(
+                metadataRef.current,
+                elementPathTreeRef.current,
+                firstSelectedView,
+                currentComputedValue,
+              )
+            : currentComputedValue
+        const strategy = strategyForChangingFillFixedHugType(
+          valueToUse,
+          dimension === 'width' ? 'horizontal' : 'vertical',
+          value,
+          otherAxisSetToFill,
+        )
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          strategy,
+        )
       }
-
-    return {
-      width: onSubmitFFH('horizontal'),
-      height: onSubmitFFH('vertical'),
     }
   }, [
+    dimension,
     allElementPropsRef,
     dispatch,
     fillsContainerHorizontallyRef,
@@ -536,7 +529,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
     selectedViewsRef,
   ])
 
-  return onSubmitFixedFillHugType[dimension]
+  return onSubmitFixedFillHugType
 }
 
 export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'height' }) => {
