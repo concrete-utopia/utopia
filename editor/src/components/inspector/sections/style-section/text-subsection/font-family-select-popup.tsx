@@ -387,15 +387,7 @@ export const FontFamilySelectPopup = React.memo(
         [filteredData, selectedOption],
       )
 
-      const onStringInputKeyDown = React.useCallback((e: React.KeyboardEvent) => {
-        if (
-          !(e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter' || e.key === 'Escape')
-        ) {
-          e.stopPropagation()
-        }
-      }, [])
-
-      const onWrapperKeyDown = React.useCallback(
+      const onStringInputKeyDown = React.useCallback(
         (e: React.KeyboardEvent) => {
           e.stopPropagation()
           switch (e.key) {
@@ -408,7 +400,6 @@ export const FontFamilySelectPopup = React.memo(
               break
             }
             case 'Enter': {
-              closePopup()
               if (selectedOption != null) {
                 submitNewValue(
                   onSubmitFontVariant,
@@ -418,18 +409,17 @@ export const FontFamilySelectPopup = React.memo(
                   pushNewFontFamilyVariant,
                 )
               }
+              closePopup()
               break
             }
             case 'Escape': {
               closePopup()
               break
             }
-            default: {
-              if (stringInputRef.current != null) {
-                stringInputRef.current.focus()
-                onStringInputKeyDown(e)
+            default:
+              if (filteredData.length > 0 && isSelectableItemData(filteredData[0])) {
+                setSelectedOption(filteredData[0])
               }
-            }
           }
         },
         [
@@ -440,7 +430,6 @@ export const FontFamilySelectPopup = React.memo(
           onSubmitFontVariant,
           pushNewFontFamilyVariant,
           selectedOption,
-          onStringInputKeyDown,
         ],
       )
 
@@ -488,57 +477,71 @@ export const FontFamilySelectPopup = React.memo(
       }, [])
 
       React.useEffect(() => {
-        if (stringInputRef.current != null) {
-          stringInputRef.current.focus()
-        }
-      })
+        setTimeout(() => {
+          if (stringInputRef.current != null) {
+            stringInputRef.current.focus()
+          }
+        }, 0)
+      }, [stringInputRef])
 
       return (
-        <FlexColumn
-          ref={wrapperRef}
-          tabIndex={0}
+        <div
           style={{
-            ...style,
-            backgroundColor: colorTheme.inspectorBackground.value,
-            width: UtopiaTheme.layout.inspectorSmallPaddedWidth, // TODO should this be resize-aware
-            boxShadow: '#0002 0px 0px 0px 1px, #0002 0px 4px 11px',
+            background: 'transparent',
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             zIndex: 1,
-            borderRadius: UtopiaTheme.inputBorderRadius,
           }}
-          onKeyDown={onWrapperKeyDown}
+          onClick={closePopup}
         >
-          <FlexRow style={{ padding: 12 }}>
-            <StringInput
-              testId='font-family-search'
-              ref={stringInputRef}
-              placeholder='Search for fonts…'
-              value={searchTerm}
-              onKeyDown={onStringInputKeyDown}
-              onChange={onChange}
-              style={{ flexGrow: 1 }}
-            />
-          </FlexRow>
-          <VariableSizeList
-            ref={variableSizeListRef}
-            itemSize={getItemSize}
-            itemData={{
-              onSubmitFontFamily: onSubmitFontVariant,
-              itemsArray: filteredData,
-              fontWeight,
-              fontStyle,
-              closePopup,
-              selectedIndex,
-              setSelectedOption,
-              pushNewFontFamilyVariant,
-              updateSizes,
+          <FlexColumn
+            ref={wrapperRef}
+            tabIndex={0}
+            style={{
+              ...style,
+              backgroundColor: colorTheme.inspectorBackground.value,
+              width: UtopiaTheme.layout.inspectorSmallPaddedWidth, // TODO should this be resize-aware
+              boxShadow: '#0002 0px 0px 0px 1px, #0002 0px 4px 11px',
+              zIndex: 1,
+              borderRadius: UtopiaTheme.inputBorderRadius,
             }}
-            width={'100%'}
-            height={270}
-            itemCount={filteredData.length}
           >
-            {FontFamilySelectPopupItem}
-          </VariableSizeList>
-        </FlexColumn>
+            <FlexRow style={{ padding: 12 }}>
+              <StringInput
+                testId='font-family-search'
+                ref={stringInputRef}
+                placeholder='Search for fonts…'
+                value={searchTerm}
+                onKeyDown={onStringInputKeyDown}
+                onChange={onChange}
+                style={{ flexGrow: 1 }}
+              />
+            </FlexRow>
+            <VariableSizeList
+              ref={variableSizeListRef}
+              itemSize={getItemSize}
+              itemData={{
+                onSubmitFontFamily: onSubmitFontVariant,
+                itemsArray: filteredData,
+                fontWeight,
+                fontStyle,
+                closePopup,
+                selectedIndex,
+                setSelectedOption,
+                pushNewFontFamilyVariant,
+                updateSizes,
+              }}
+              width={'100%'}
+              height={270}
+              itemCount={filteredData.length}
+            >
+              {FontFamilySelectPopupItem}
+            </VariableSizeList>
+          </FlexColumn>
+        </div>
       )
     },
   ),
