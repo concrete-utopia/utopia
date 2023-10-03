@@ -129,7 +129,7 @@ import {
 } from '../components/editor/store/project-server-state'
 import { GithubOperations } from '../core/shared/github/operations'
 import { GithubAuth } from '../utils/github-auth'
-import { Provider } from 'jotai'
+import { Provider as JotaiProvider } from 'jotai'
 
 if (PROBABLY_ELECTRON) {
   let { webFrame } = requireElectron()
@@ -707,7 +707,7 @@ export const EditorRoot: React.FunctionComponent<{
 }) => {
   return (
     <AtomsDevtools>
-      <Provider>
+      <JotaiProvider>
         <DispatchContext.Provider value={dispatch}>
           <OriginalMainEditorStateContext.Provider value={mainStore}>
             <EditorStateContext.Provider value={mainStore}>
@@ -723,7 +723,7 @@ export const EditorRoot: React.FunctionComponent<{
             </EditorStateContext.Provider>
           </OriginalMainEditorStateContext.Provider>
         </DispatchContext.Provider>
-      </Provider>
+      </JotaiProvider>
     </AtomsDevtools>
   )
 }
