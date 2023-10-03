@@ -23,7 +23,6 @@ import {
 } from '../../canvas/commands/set-css-length-command'
 import {
   groupErrorToastCommand,
-  maybeGroupChildWithoutFixedSizeForFill,
   maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
@@ -45,8 +44,7 @@ export const fillContainerStrategyFlow = (
     const invalidGroupState = maybeInvalidGroupState(elements, metadata, {
       onGroup: () => 'group-has-percentage-pins',
       onGroupChild: (path) => {
-        const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
-        return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+        return 'child-has-percentage-pins'
       },
     })
     if (invalidGroupState != null) {

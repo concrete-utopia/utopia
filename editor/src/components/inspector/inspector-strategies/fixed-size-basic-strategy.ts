@@ -13,7 +13,6 @@ import type { InspectorStrategy } from './inspector-strategy'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import {
   groupErrorToastCommand,
-  maybeGroupChildWithoutFixedSizeForFill,
   maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { trueUpElementChanged } from '../../../components/editor/store/editor-state'
@@ -32,8 +31,7 @@ export const fixedSizeBasicStrategy = (
     const invalidGroupState = maybeInvalidGroupState(elementPaths, metadata, {
       onGroup: () => (value.unit === '%' ? 'group-has-percentage-pins' : null),
       onGroupChild: (path) => {
-        const group = MetadataUtils.getJSXElementFromMetadata(metadata, EP.parentPath(path))
-        return value.unit === '%' ? maybeGroupChildWithoutFixedSizeForFill(group) : null
+        return value.unit === '%' ? 'child-has-percentage-pins' : null
       },
     })
     if (invalidGroupState != null) {
