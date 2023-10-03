@@ -13,7 +13,6 @@ export const TextEditableControl = React.memo((props: TextEditableControlProps) 
   const colorTheme = useColorTheme()
   const outlineWidth = 1.5 / props.scale
   const outlineColor = colorTheme.textEditableOutline.value
-  const backgroundColor = colorTheme.textEditableFill.value
 
   if (isZeroSizedElement(props.frame)) {
     return null
@@ -29,7 +28,6 @@ export const TextEditableControl = React.memo((props: TextEditableControlProps) 
         width: props.frame.width,
         height: props.frame.height,
         boxShadow: `0px 0px 0px ${outlineWidth}px ${outlineColor}`,
-        background: backgroundColor,
         pointerEvents: 'none',
       }}
     />
