@@ -30,6 +30,7 @@ import {
   getTargetPathsFromInteractionTarget,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
+import { shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
 import { ifAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getStaticReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -90,7 +91,13 @@ export function baseReparentAsStaticStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness: fitness,
+      fitness: shouldKeepMovingDraggedGroupChildren(
+        canvasState.startingMetadata,
+        selectedElements,
+        reparentTarget.newParent,
+      )
+        ? 1
+        : fitness,
       apply: () => {
         return applyStaticReparent(
           canvasState,
