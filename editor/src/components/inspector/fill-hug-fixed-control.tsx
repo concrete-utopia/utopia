@@ -409,7 +409,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
             : currentComputedValue
         const strategy = strategyForChangingFillFixedHugType(
           valueToUse,
-          dimension === 'width' ? 'horizontal' : 'vertical',
+          axis,
           value,
           fillsOtherAxisRef.current,
         )
