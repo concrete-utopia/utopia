@@ -448,46 +448,30 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 })
 
 function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
+  const axis = dimension === 'width' ? 'horizontal' : 'vertical'
+
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const fillsContainerHorizontallyRef = useRefEditorState(
+  const currentValueRef = useComputedSizeRef(dimension)
+
+  const fillsOtherAxisRef = useRefEditorState(
     (store) =>
       detectFillHugFixedStateMultiselect(
-        'horizontal',
+        axis === 'vertical' ? 'horizontal' : 'vertical',
         metadataSelector(store),
         selectedViewsSelector(store),
       ).fixedHugFill?.type === 'fill',
   )
-
-  const widthComputedValueRef = useComputedSizeRef('width')
-
-  const fillsContainerVerticallyRef = useRefEditorState(
-    (store) =>
-      detectFillHugFixedStateMultiselect(
-        'vertical',
-        metadataSelector(store),
-        selectedViewsSelector(store),
-      ).fixedHugFill?.type === 'fill',
-  )
-
-  const heightComputedValueRef = useComputedSizeRef('height')
 
   const onSubmitFixedFillHugType = React.useMemo(() => {
     return ({ value: anyValue }: SelectOption) => {
       const value = anyValue as FixedHugFillMode
 
-      const currentComputedValue =
-        (dimension === 'width' ? widthComputedValueRef.current : heightComputedValueRef.current) ??
-        0
-
-      const otherAxisSetToFill =
-        dimension === 'width'
-          ? fillsContainerVerticallyRef.current
-          : fillsContainerHorizontallyRef.current
+      const currentComputedValue = currentValueRef.current ?? 0
 
       const firstSelectedView = safeIndex(selectedViewsRef.current, 0)
       if (firstSelectedView != null) {
@@ -504,7 +488,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
           valueToUse,
           dimension === 'width' ? 'horizontal' : 'vertical',
           value,
-          otherAxisSetToFill,
+          fillsOtherAxisRef.current,
         )
         executeFirstApplicableStrategy(
           dispatch,
@@ -520,13 +504,11 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
     dimension,
     allElementPropsRef,
     dispatch,
-    fillsContainerHorizontallyRef,
-    fillsContainerVerticallyRef,
-    widthComputedValueRef,
-    heightComputedValueRef,
     metadataRef,
     elementPathTreeRef,
     selectedViewsRef,
+    currentValueRef,
+    fillsOtherAxisRef,
   ])
 
   return onSubmitFixedFillHugType
