@@ -815,7 +815,7 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
     (store) => isDescendantOfOutletOrOutletSelector(store, props.elementPath),
     'NavigatorItemContainer isOutlet',
   )
-  
+
   const mouseEventStopPropagation = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
     // Prevent mouse events from passing through this element so that the same event
     // on a containing element will only trigger de-selection if the event doesn't hit

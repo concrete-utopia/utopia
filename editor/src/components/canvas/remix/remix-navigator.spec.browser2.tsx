@@ -277,7 +277,7 @@ describe('Remix navigator', () => {
         ),
       ),
     )
-    expect(outletItemElement.textContent).toEqual('(home)')
+    expect(outletItemElement.textContent).toEqual('Outlet: (home)')
   })
 })
 describe('Reparenting in Remix projects in the navigator', () => {
