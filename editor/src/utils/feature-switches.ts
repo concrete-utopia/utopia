@@ -14,6 +14,7 @@ export type FeatureName =
   | 'Project Thumbnail Generation'
   | 'Draggable Floating Panels'
   | 'Remix support'
+  | 'Simplified Layout Section'
   | 'Debug - Print UIDs'
 
 export const AllFeatureNames: FeatureName[] = [
@@ -29,6 +30,7 @@ export const AllFeatureNames: FeatureName[] = [
   'Project Thumbnail Generation',
   'Draggable Floating Panels',
   'Remix support',
+  'Simplified Layout Section',
   'Debug - Print UIDs',
 ]
 
@@ -44,6 +46,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Project Thumbnail Generation': false,
   'Draggable Floating Panels': false,
   'Remix support': false,
+  'Simplified Layout Section': false,
   'Debug - Print UIDs': false,
 }
 

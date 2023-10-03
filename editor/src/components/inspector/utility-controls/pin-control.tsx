@@ -6,7 +6,7 @@ import { getControlStyles } from '../common/control-styles'
 import { FramePoint } from 'utopia-api/core'
 import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'
-import { UtopiaTheme, SquareButton } from '../../../uuiui'
+import { UtopiaTheme, SquareButton, colorTheme } from '../../../uuiui'
 
 interface PinControlProps {
   handlePinMouseDown: (frameProp: LayoutPinnedProp) => void
@@ -240,6 +240,67 @@ interface PinWidthControlProps {
   mixed?: boolean
   toggleWidth: () => void
 }
+
+export const PinWidthSVG = React.memo(() => {
+  return (
+    <svg width='20' height='20'>
+      <g id='dimensioncontrols-pin-width' stroke={colorTheme.fg1.value}>
+        <path
+          d={`M${DimensionStart},${VerticalDimensionButtStart} l0,${DimensionButt}`}
+          id='dimensioncontrols-pin-width-EdgeEnd-l'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${HorizontalDimensionEnd},${VerticalDimensionButtStart} l0,${DimensionButt}`}
+          id='dimensioncontrols-pin-width-EdgeEnd-r'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${DimensionStart},${DimensionVerticalMid} L${HorizontalDimensionEnd},${DimensionVerticalMid}`}
+          id='dimensioncontrols-pin-width-line'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M 0,0 0,${DimensionHeight} ${DimensionWidth},0 ${DimensionWidth},${DimensionHeight} z`}
+          strokeLinecap='butt'
+          id='dimensioncontrols-pin-width-transparent'
+          stroke='transparent'
+          fill='transparent'
+        />
+      </g>
+    </svg>
+  )
+})
+
+export const PinHeightSVG = React.memo(() => {
+  return (
+    <svg width='20' height='20'>
+      <g id='dimensioncontrols-pin-height' stroke={colorTheme.fg1.value}>
+        <path
+          d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
+          id='dimensioncontrols-pin-height-EdgeEnd-t'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${HorizontalDimensionButtStart},${VerticalDimensionEnd} l${DimensionButt},0`}
+          id='dimensioncontrols-pin-height-EdgeEnd-b'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
+          id='dimensioncontrols-pin-height-line'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M 0,0 ${DimensionWidth},0 0,${DimensionHeight} ${DimensionWidth},${DimensionHeight} z`}
+          id='dimensioncontrols-pin-width-transparent'
+          stroke='transparent'
+          fill='transparent'
+        />
+      </g>
+    </svg>
+  )
+})
 
 export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)

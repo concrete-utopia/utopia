@@ -1,6 +1,6 @@
 import React from 'react'
 import { FlexRow, InspectorSubsectionHeader } from '../../uuiui'
-import { FillHugFixedControl } from './fill-hug-fixed-control'
+import { FillHugFixedControlOld } from './fill-hug-fixed-control'
 import { ResizeToFitControl } from './resize-to-fit-control'
 
 interface SizingSectionProps {}
@@ -19,7 +19,7 @@ export const SizingSection = React.memo<SizingSectionProps>(() => {
           <ResizeToFitControl />
         </FlexRow>
       </InspectorSubsectionHeader>
-      <FillHugFixedControl />
+      <FillHugFixedControlOld />
     </>
   )
 })

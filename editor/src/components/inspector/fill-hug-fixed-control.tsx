@@ -6,7 +6,14 @@ import { createSelector } from 'reselect'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever } from '../../core/shared/utils'
-import { NumberInput, PopupList, useColorTheme, UtopiaTheme } from '../../uuiui'
+import {
+  FlexRow,
+  InspectorSubsectionHeader,
+  NumberInput,
+  PopupList,
+  useColorTheme,
+  UtopiaTheme,
+} from '../../uuiui'
 import type {
   ControlStatus,
   ControlStyles,
@@ -56,6 +63,7 @@ import { FlexCol } from 'utopia-api'
 import { PinControl } from './controls/pin-control'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { MixedPlaceholder } from '../../uuiui/inputs/base-input'
+import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -93,8 +101,6 @@ function selectOption(mode: FixedHugFillMode): SelectOption {
   }
 }
 
-interface FillHugFixedControlProps {}
-
 const fixedHugFillOptionsSelector = createSelector(
   metadataSelector,
   pathTreesSelector,
@@ -112,7 +118,83 @@ const fixedHugFillOptionsSelector = createSelector(
   },
 )
 
-export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
+export const FillHugFixedControlOld = React.memo(() => {
+  const onlyGroupChildrenSelected = useEditorState(
+    Substores.metadata,
+    allElementsAreGroupChildren,
+    'FillHugFixedControl groupChildrenSelected',
+  )
+
+  const gridTemplate = React.useMemo((): GridRowVariant => {
+    return onlyGroupChildrenSelected ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
+  }, [onlyGroupChildrenSelected])
+
+  return (
+    <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
+      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
+        <GroupChildPinControl />
+        <FlexCol css={{ gap: 0 }}>
+          <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
+            <WidthHeightNumberControl dimension='width' />
+            {onlyGroupChildrenSelected ? (
+              <GroupConstraintSelect dimension={'width'} />
+            ) : (
+              <FixedHugDropdown dimension='width' />
+            )}
+          </UIGridRow>
+          <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
+            <WidthHeightNumberControl dimension='height' />
+            {onlyGroupChildrenSelected ? (
+              <GroupConstraintSelect dimension={'height'} />
+            ) : (
+              <FixedHugDropdown dimension='height' />
+            )}
+          </UIGridRow>
+        </FlexCol>
+      </UIGridRow>
+    </FlexCol>
+  )
+})
+
+export const ConstraintsSection = React.memo(() => {
+  const onlyGroupChildrenSelected = useEditorState(
+    Substores.metadata,
+    allElementsAreGroupChildren,
+    'FillHugFixedControl groupChildrenSelected',
+  )
+
+  return (
+    <React.Fragment>
+      <InspectorSubsectionHeader>
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            height: 42,
+          }}
+        >
+          <span style={{ flex: 1 }}>Constraints</span>
+        </FlexRow>
+      </InspectorSubsectionHeader>
+      <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
+        <UIGridRow padded variant='<-auto-><----------1fr--------->'>
+          <GroupChildPinControl />
+          <FlexCol css={{ gap: 0 }}>
+            <FlexRow css={InspectorRowHoverCSS}>
+              <PinWidthSVG />
+              <GroupConstraintSelect dimension={'width'} />
+            </FlexRow>
+            <FlexRow css={InspectorRowHoverCSS}>
+              <PinHeightSVG />
+              <GroupConstraintSelect dimension={'height'} />
+            </FlexRow>
+          </FlexCol>
+        </UIGridRow>
+      </FlexCol>
+    </React.Fragment>
+  )
+})
+
+const FillHugFixedControlGroupChild = React.memo(() => {
   const onlyGroupChildrenSelected = useEditorState(
     Substores.metadata,
     allElementsAreGroupChildren,

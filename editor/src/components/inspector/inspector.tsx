@@ -86,6 +86,8 @@ import { FlexCol } from 'utopia-api'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
+import { isFeatureEnabled } from '../../utils/feature-switches'
+import { ConstraintsSection } from './fill-hug-fixed-control'
 
 export interface ElementPathElement {
   name?: string
@@ -400,11 +402,22 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   multiselectedContract === 'fragment',
                   // Position and Sizing sections are shown if Frame or Group is selected
                   <>
-                    <SimplifiedLayoutSubsection />
-                    <PositionSection
-                      hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-                    />
-                    <SizingSection />
+                    {when(
+                      isFeatureEnabled('Simplified Layout Section'),
+                      <>
+                        <SimplifiedLayoutSubsection />
+                        <ConstraintsSection />
+                      </>,
+                    )}
+                    {unless(
+                      isFeatureEnabled('Simplified Layout Section'),
+                      <>
+                        <PositionSection
+                          hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
+                        />
+                        <SizingSection />
+                      </>,
+                    )}
                   </>,
                 )}
                 {unless(
