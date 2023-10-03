@@ -333,7 +333,7 @@ describe('Insertion Plus Button', () => {
 
     await checkInsertButtonPosition('blue-dot-control-0', 375.5, 606.5)
     await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 805.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 806.5)
   })
 
   it(`shows the buttons in the correct places for a flex container with a direction of 'column-reverse' that already has children`, async () => {
@@ -359,7 +359,7 @@ describe('Insertion Plus Button', () => {
 
     await checkInsertButtonPosition('blue-dot-control-0', 375.5, 806.5)
     await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 605.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 606.5)
   })
 
   it('shows the buttons in the correct places for a flex container that has no children', async () => {
