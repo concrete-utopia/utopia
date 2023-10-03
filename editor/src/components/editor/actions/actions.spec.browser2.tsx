@@ -1586,9 +1586,9 @@ describe('actions', () => {
             <div data-uid='root'>
               <div data-uid='foo' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 200, top: 200 }} />
               <Group data-uid='group' style={{ background: 'yellow' }}>
-                <div data-uid='bar' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 0, left: 10 }} />
-                <div data-uid='baz' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 100, left: 30 }} />
-                <div data-uid='aai' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 0, top: 30 }} />
+                <div data-uid='bar' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 0, left: 0 }} />
+                <div data-uid='baz' style={{ width: 10, height: 10, background: 'red', position: 'absolute', top: 100, left: 20 }} />
+                <div data-uid='aai' style={{ width: 50, height: 50, background: 'blue', position: 'absolute', left: 200, top: 200 }} />
               </Group>
             </div>
           `,
