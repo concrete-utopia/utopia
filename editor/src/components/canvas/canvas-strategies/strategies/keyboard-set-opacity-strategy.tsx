@@ -30,8 +30,8 @@ export function keyboardSetOpacityStrategy(
     name: 'Set opacity',
     descriptiveLabel: 'Changing Opacity',
     icon: {
-      category: 'semantic',
-      type: 'magnifyingglass',
+      category: 'tools',
+      type: 'pointer',
     },
     controlsToRender: [],
     fitness: fitness(interactionSession),
