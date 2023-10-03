@@ -425,6 +425,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
     }
   }, [
     dimension,
+    axis,
     allElementPropsRef,
     dispatch,
     metadataRef,
