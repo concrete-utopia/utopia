@@ -1,4 +1,4 @@
-import { GoogleFontsTypeface } from '../src/components/navigator/external-resources/google-fonts-utils'
+import type { GoogleFontsTypeface } from '../src/components/navigator/external-resources/google-fonts-utils'
 
 /** This is auto-generated using this workflow action: https://github.com/concrete-utopia/get-google-fonts-list-file */
 export const googleFontsList: Array<GoogleFontsTypeface> = [
