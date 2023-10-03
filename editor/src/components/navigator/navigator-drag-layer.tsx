@@ -2,7 +2,10 @@ import React from 'react'
 import { useDragLayer } from 'react-dnd'
 import type { RegularNavigatorEntry } from '../editor/store/editor-state'
 import { navigatorEntryToKey, regularNavigatorEntry } from '../editor/store/editor-state'
-import type { NavigatorItemDragAndDropWrapperProps } from './navigator-item/navigator-item-dnd-container'
+import {
+  NavigatorItemDragType,
+  type NavigatorItemDragAndDropWrapperProps,
+} from './navigator-item/navigator-item-dnd-container'
 import type { WindowPoint } from '../../core/shared/math-utils'
 import { windowPoint, zeroPoint } from '../../core/shared/math-utils'
 import { ItemLabel } from './navigator-item/item-label'
@@ -35,7 +38,8 @@ export const NavigatorDragLayer = React.memo(() => {
     [item?.elementPath],
   )
 
-  const hidden = item == null
+  const draggedItemIsNavigatorItem = item != null && item.type === NavigatorItemDragType
+  const hidden = !draggedItemIsNavigatorItem
 
   const entryNavigatorDepth = useEditorState(
     Substores.metadata,

@@ -8,7 +8,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../../components/canvas/ui-jsx.test-utils'
-import { forElementOptic } from '../../core/model/common-optics'
+import { forElementChildOptic } from '../../core/model/common-optics'
 import type { ConditionalCase } from '../../core/model/conditionals'
 import {
   conditionalClauseAsBoolean,
@@ -1097,7 +1097,7 @@ describe('conditionals in the navigator', () => {
     )
 
     // Need the underlying value in the clause to be able to construct the navigator entry.
-    const inactiveElementOptic = forElementOptic(EP.parentPath(elementPathToDrag))
+    const inactiveElementOptic = forElementChildOptic(EP.parentPath(elementPathToDrag))
       .compose(jsxConditionalExpressionOptic)
       .compose(conditionalWhenFalseOptic)
     const inactiveElement = unsafeGet(inactiveElementOptic, renderResult.getEditorState())
@@ -1148,7 +1148,7 @@ describe('conditionals in the navigator', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Need the underlying value in the clause to be able to construct the navigator entry.
-    const removedOriginalLocationOptic = forElementOptic(EP.parentPath(elementPathToDrag))
+    const removedOriginalLocationOptic = forElementChildOptic(EP.parentPath(elementPathToDrag))
       .compose(jsxConditionalExpressionOptic)
       .compose(conditionalWhenFalseOptic)
     const removedOriginalLocation = unsafeGet(
@@ -1247,7 +1247,7 @@ describe('conditionals in the navigator', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Need the underlying value in the clause to be able to construct the navigator entry.
-    const removedOriginalLocationOptic = forElementOptic(EP.parentPath(elementPathToDrag))
+    const removedOriginalLocationOptic = forElementChildOptic(EP.parentPath(elementPathToDrag))
       .compose(jsxConditionalExpressionOptic)
       .compose(conditionalWhenTrueOptic)
     const removedOriginalLocation = unsafeGet(
@@ -1353,7 +1353,7 @@ describe('conditionals in the navigator', () => {
       `${BakedInStoryboardUID}/${TestSceneUID}/containing-div/conditional1/else-div`,
     )
     const elseDivElement = unsafeGet(
-      forElementOptic(elementPathToDelete),
+      forElementChildOptic(elementPathToDelete),
       renderResult.getEditorState(),
     )
 
@@ -1385,7 +1385,7 @@ describe('conditionals in the navigator', () => {
     await renderResult.getDispatchFollowUpActionsFinished()
 
     // Need the underlying value in the clause to be able to construct the navigator entry.
-    const removedOriginalLocationOptic = forElementOptic(EP.parentPath(elementPathToDelete))
+    const removedOriginalLocationOptic = forElementChildOptic(EP.parentPath(elementPathToDelete))
       .compose(jsxConditionalExpressionOptic)
       .compose(conditionalWhenFalseOptic)
     const removedOriginalLocation = unsafeGet(
@@ -1515,7 +1515,7 @@ describe('conditionals in the navigator', () => {
         startingEditorStore: EditorStorePatched,
         endingEditorStore: EditorStorePatched,
       ) => {
-        const expectedPasteTargetOptic = forElementOptic(
+        const expectedPasteTargetOptic = forElementChildOptic(
           EP.parentPath(pasteTestCase.pathToPasteInto),
         )
           .compose(fromTypeGuard(isJSXConditionalExpression))
@@ -1546,7 +1546,7 @@ describe('conditionals in the navigator', () => {
 
       // Getting info relating to what element will be pasted into.
       const elementToPasteInto = unsafeGet(
-        forElementOptic(pasteTestCase.pathToPasteInto),
+        forElementChildOptic(pasteTestCase.pathToPasteInto),
         renderResult.getEditorState(),
       )
 
@@ -1872,7 +1872,7 @@ describe('Navigator conditional override toggling', () => {
     const elementPath = EP.fromString(`${BakedInStoryboardUID}/conditional/${elementUID}`)
 
     // Need the underlying value in the clause to be able to construct the navigator entry.
-    const inactiveElementOptic = forElementOptic(EP.parentPath(elementPath))
+    const inactiveElementOptic = forElementChildOptic(EP.parentPath(elementPath))
       .compose(jsxConditionalExpressionOptic)
       .compose(elementUID === 'true-div' ? conditionalWhenTrueOptic : conditionalWhenFalseOptic)
 

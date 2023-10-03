@@ -20,6 +20,7 @@ import { defaultCustomStrategyState } from './canvas-strategy-types'
 import type { InteractionSession } from './interaction-state'
 import { boundingArea } from './interaction-state'
 import { createMouseInteractionForTests } from './interaction-state.test-utils'
+import { NonResizableControlTestId } from '../controls/select-mode/non-resizable-control'
 
 interface StyleRectangle {
   left: string
@@ -863,7 +864,7 @@ describe('special case controls', () => {
       await dispatchDone
     })
 
-    const nonResizableControl = renderResult.renderedDOM.queryByTestId('non-resizable-control')
+    const nonResizableControl = renderResult.renderedDOM.queryByTestId(NonResizableControlTestId)
     expect(nonResizableControl).toEqual(null)
   })
 })

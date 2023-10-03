@@ -22,6 +22,7 @@ import { last } from '../../core/shared/array-utils'
 import type { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { fileResultUploadAction } from '../editor/image-insert'
+import type { IcnColor } from '../../uuiui'
 import {
   Icn,
   Icons,
@@ -32,7 +33,6 @@ import {
   UtopiaTheme,
   SimpleFlexRow,
   Button,
-  FlexRow,
 } from '../../uuiui'
 import { notice } from '../common/notice'
 import { appendToPath, getParentDirectory } from '../../utils/path-utils'
@@ -52,6 +52,7 @@ import type { GithubFileStatus } from '../../core/shared/github/helpers'
 import { getFilenameParts } from '../images'
 import { getConflictMenuItems } from '../../core/shared/github-ui'
 import { useDispatch } from '../editor/store/dispatch-context'
+import type { ErrorMessage } from '../../core/shared/error-messages'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -827,7 +828,7 @@ class FileBrowserItemInner extends React.PureComponent<
               {this.props.errorMessages.length > 0 ? (
                 <span style={{ margin: '0px 4px' }}>
                   <WarningIcon
-                    color='error'
+                    color={warningIconColor(this.props.errorMessages)}
                     tooltipText={this.props.errorMessages
                       .map(
                         (errorMessage) =>
@@ -986,4 +987,11 @@ function draggedImagePropertiesFromImageFile(
     width: optionalMap((w) => w / imageMultiplier, imageFile.width) ?? 200,
     height: optionalMap((h) => h / imageMultiplier, imageFile.height) ?? 200,
   }
+}
+
+function warningIconColor(errors: ErrorMessage[]): IcnColor {
+  if (errors.every((e) => e.severity === 'warning')) {
+    return 'warning'
+  }
+  return 'error'
 }

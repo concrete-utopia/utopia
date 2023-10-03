@@ -349,6 +349,53 @@ describe('Fixed / Fill / Hug control', () => {
         absoluteProjectWithInjectedStyle(`width: '100%', height: '100%'`),
       )
     })
+
+    it('detects fill container on a static element', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '100%',
+            height: '100%',
+            contain: 'layout',
+          }}
+          data-uid='thediv'
+        />
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:thediv`),
+      ])
+
+      expect(editor.renderedDOM.getAllByText(FillContainerLabel).length).toEqual(2)
+    })
+
+    it('percent values that are not 100% are not classified as fill container', async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: '90%',
+            height: '90%',
+            contain: 'layout',
+          }}
+          data-uid='thediv'
+        />
+        `),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:thediv`),
+      ])
+
+      expect(editor.renderedDOM.queryAllByText(FillContainerLabel).length).toEqual(0)
+      expect(editor.renderedDOM.getAllByText(FixedLabel).length).toEqual(2)
+    })
   })
 
   describe('hug contents', () => {

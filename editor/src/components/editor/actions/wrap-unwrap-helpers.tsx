@@ -4,7 +4,11 @@ import {
   getConditionalActiveCase,
   getConditionalBranch,
 } from '../../../core/model/conditionals'
-import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import {
+  MetadataUtils,
+  getSimpleAttributeAtPath,
+  propertyHasSimpleValue,
+} from '../../../core/model/element-metadata-utils'
 import {
   generateUidWithExistingComponents,
   insertJSXElementChildren,
@@ -15,6 +19,7 @@ import {
   getUtopiaJSXComponentsFromSuccess,
 } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
+import * as PP from '../../../core/shared/property-path'
 import type {
   ElementInstanceMetadataMap,
   JSXConditionalExpression,
@@ -32,14 +37,17 @@ import {
   jsxFragment,
   jsxTextBlock,
 } from '../../../core/shared/element-template'
-import { modify } from '../../../core/shared/optics/optic-utilities'
+import { modify, toFirst } from '../../../core/shared/optics/optic-utilities'
 import { forceNotNull, optionalMap } from '../../../core/shared/optional-utils'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
 import { absolute } from '../../../utils/utils'
 import type { EditorDispatch } from '../action-types'
 import type { DerivedState, EditorState } from '../store/editor-state'
-import { modifyUnderlyingTargetElement } from '../store/editor-state'
+import {
+  modifyUnderlyingTargetElement,
+  withUnderlyingTargetFromEditorState,
+} from '../store/editor-state'
 import type { ConditionalClauseInsertionPath, InsertionPath } from '../store/insertion-path'
 import {
   childInsertionPath,
@@ -55,6 +63,12 @@ import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { fixUtopiaElementGeneric } from '../../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { foldEither, right } from '../../../core/shared/either'
+import { editorStateToElementChildOptic } from '../../../core/model/common-optics'
+import { fromField, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
+import { setJSXValueAtPath } from '../../../core/shared/jsx-attributes'
+import { addToastToState } from './toast-helpers'
+import { notice } from '../../../components/common/notice'
 
 export function unwrapConditionalClause(
   editor: EditorState,
@@ -213,6 +227,106 @@ export function isTextContainingConditional(
     }
   }
   return false
+}
+
+function elementHasPositionOf(targetElement: JSXElement, positionValue: string): boolean {
+  return propertyHasSimpleValue(
+    right(targetElement.props),
+    PP.create('style', 'position'),
+    positionValue,
+  )
+}
+
+function elementHasContainLayout(targetElement: JSXElement): boolean {
+  return propertyHasSimpleValue(right(targetElement.props), PP.create('style', 'contain'), 'layout')
+}
+
+export function fixParentContainingBlockSettings(
+  editorState: EditorState,
+  targetPath: ElementPath,
+): EditorState {
+  // Determine if the current status of this element means that we potentially need to look
+  // into its ancestors.
+  const possibleTargetElement = toFirst(
+    editorStateToElementChildOptic(targetPath).compose(fromTypeGuard(isJSXElement)),
+    editorState,
+  )
+  const targetNecessitatesAncestorChecks: boolean = foldEither(
+    () => {
+      return false
+    },
+    (targetElement) => {
+      // Currently any element with `position: 'absolute'` is a likely candidate.
+      const targetHasPositionAbsolute = elementHasPositionOf(targetElement, 'absolute')
+      return targetHasPositionAbsolute
+    },
+    possibleTargetElement,
+  )
+
+  let shouldUpdateParent: boolean = false
+  const parentPath = EP.parentPath(targetPath)
+  const parentOptic = editorStateToElementChildOptic(parentPath).compose(
+    fromTypeGuard(isJSXElement),
+  )
+  // Check the status of the parent to see if that needs to be updated.
+  // Do not go outside of the current component, at least for now.
+  if (targetNecessitatesAncestorChecks && EP.isFromSameInstanceAs(targetPath, parentPath)) {
+    // Determine if the parent needs to be fixed up.
+    const possibleParentElement = toFirst(parentOptic, editorState)
+    shouldUpdateParent = foldEither(
+      () => {
+        return false
+      },
+      (parentElement) => {
+        // If the parent does not specify `position: 'absolute'`, `position: 'relative'`
+        // or it doesn't already have `contain: 'layout'`, then it needs updating.
+        const parentDefinesContainingBlock =
+          elementHasPositionOf(parentElement, 'absolute') ||
+          elementHasPositionOf(parentElement, 'relative') ||
+          elementHasContainLayout(parentElement)
+        return !parentDefinesContainingBlock
+      },
+      possibleParentElement,
+    )
+  }
+
+  // Update the parent if necessary.
+  if (shouldUpdateParent) {
+    let attributesUpdated: boolean = false
+    const updatedEditorState = modify(
+      parentOptic.compose(fromField('props')),
+      (attributes) => {
+        // Try to update the attributes, which may not be possible if they're
+        // defined by an expression.
+        const maybeUpdatedAttributes = setJSXValueAtPath(
+          attributes,
+          PP.create('style', 'contain'),
+          jsExpressionValue('layout', emptyComments),
+        )
+        return foldEither(
+          () => {
+            return attributes
+          },
+          (updatedAttributes) => {
+            attributesUpdated = true
+            return updatedAttributes
+          },
+          maybeUpdatedAttributes,
+        )
+      },
+      editorState,
+    )
+    if (attributesUpdated) {
+      // Add a toast indicating that `contain: 'layout'` has been added.
+      const toast = notice(
+        "Added `contain: 'layout'` to the parent of the newly added element.",
+        'INFO',
+      )
+      return addToastToState(updatedEditorState, toast)
+    }
+  }
+
+  return editorState
 }
 
 export function wrapElementInsertions(

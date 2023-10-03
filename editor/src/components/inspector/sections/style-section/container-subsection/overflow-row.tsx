@@ -2,7 +2,7 @@ import React from 'react'
 import * as PP from '../../../../../core/shared/property-path'
 import { PropertyLabel } from '../../../widgets/property-label'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { useInspectorStyleInfo } from '../../../common/property-path-hooks'
+import { useInspectorStyleInfo, useIsSubSectionVisible } from '../../../common/property-path-hooks'
 import type { OptionChainOption } from '../../../controls/option-chain-control'
 import { OptionChainControl } from '../../../controls/option-chain-control'
 import { InspectorContextMenuItems, InspectorContextMenuWrapper } from '../../../../../uuiui-deps'
@@ -23,6 +23,8 @@ const OverflowControlOptions: Array<OptionChainOption<boolean>> = [
 ]
 
 export const OverflowRow = React.memo(() => {
+  const isVisible = useIsSubSectionVisible('overflow')
+
   const { value, controlStatus, controlStyles, onSubmitValue, onUnsetValues } =
     useInspectorStyleInfo('overflow')
 
@@ -31,6 +33,10 @@ export const OverflowRow = React.memo(() => {
     ['overflow'],
     onUnsetValues,
   )
+
+  if (!isVisible) {
+    return null
+  }
 
   return (
     <InspectorContextMenuWrapper
