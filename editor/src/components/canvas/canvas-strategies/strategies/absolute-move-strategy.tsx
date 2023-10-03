@@ -74,7 +74,7 @@ export function absoluteMoveStrategy(
       fitness:
         interactionSession?.interactionData.type === 'DRAG' &&
         interactionSession?.activeControl.type === 'BOUNDING_AREA'
-          ? 1
+          ? 2 // NOTE: this is potentially a good candidate to look at in case some other strategies fail to trigger unexpectedly
           : 0,
       apply: () => {
         if (

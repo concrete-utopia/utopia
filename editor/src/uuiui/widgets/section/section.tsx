@@ -66,7 +66,6 @@ export const SectionTitleRow: React.FunctionComponent<
 export const SectionBodyArea = styled(FlexColumn)<{ minimised: boolean }>(
   (props: { minimised: boolean }) => ({
     transition: 'all .2s ease-in-out',
-    paddingBottom: props.minimised ? 0 : 16,
     overflow: 'hidden',
     opacity: props.minimised ? 0 : 1,
     height: props.minimised ? 0 : undefined,

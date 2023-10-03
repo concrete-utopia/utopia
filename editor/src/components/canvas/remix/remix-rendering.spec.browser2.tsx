@@ -819,13 +819,13 @@ describe('Remix content with feature switch off', () => {
 describe('Remix navigation', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
 
-  const projectWithMultipleRoutes = (storyboardId: string) =>
+  const projectWithMultipleRoutes = () =>
     createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='${storyboardId}'>
+        <Storyboard data-uid='storyboard'>
           <RemixScene
             style={{
               width: 700,
@@ -870,13 +870,13 @@ describe('Remix navigation', () => {
   const Remix1TestId = 'remix-1'
   const Remix2TestId = 'remix-2'
 
-  const projectWithMultipleRemixScenes = (storyboardId: string) =>
+  const projectWithMultipleRemixScenes = () =>
     createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='${storyboardId}'>
+        <Storyboard data-uid='storyboard'>
           <RemixScene
             style={{
               width: 700,
@@ -1129,7 +1129,7 @@ describe('Remix navigation', () => {
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='storyboard-dynamic-links'>
+        <Storyboard data-uid='storyboard'>
           <RemixScene
             style={{
               width: 700,
@@ -1200,9 +1200,9 @@ describe('Remix navigation', () => {
 
   describe('remix scene label', () => {
     it('can navigate with the scene label nav buttons, in live mode', async () => {
-      const renderResult = await renderRemixProject(projectWithMultipleRoutes('sb1'))
+      const renderResult = await renderRemixProject(projectWithMultipleRoutes())
 
-      const pathToRemixScene = EP.fromString('sb1/remix')
+      const pathToRemixScene = EP.fromString('storyboard/remix')
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
@@ -1227,9 +1227,9 @@ describe('Remix navigation', () => {
     })
 
     it('can navigate with the scene label nav buttons, in edit mode', async () => {
-      const renderResult = await renderRemixProject(projectWithMultipleRoutes('sb2'))
+      const renderResult = await renderRemixProject(projectWithMultipleRoutes())
 
-      const pathToRemixScene = EP.fromString('sb2/remix')
+      const pathToRemixScene = EP.fromString('storyboard/remix')
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene)).toEqual(RemixSceneHomeLabel)
@@ -1260,10 +1260,10 @@ describe('Remix navigation', () => {
     })
 
     it('navigating in one Remix scene does not affect the navigation state in the other', async () => {
-      const renderResult = await renderRemixProject(projectWithMultipleRemixScenes('sb3'))
+      const renderResult = await renderRemixProject(projectWithMultipleRemixScenes())
 
-      const pathToRemixScene1 = EP.fromString('sb3/remix-1')
-      const pathToRemixScene2 = EP.fromString('sb3/remix-2')
+      const pathToRemixScene1 = EP.fromString('storyboard/remix-1')
+      const pathToRemixScene2 = EP.fromString('storyboard/remix-2')
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixSceneLabel(renderResult, pathToRemixScene1)).toEqual(RemixSceneHomeLabel)
@@ -1283,7 +1283,7 @@ describe('Remix navigation', () => {
 
   describe('Nav bar in the canvas toolbar', () => {
     it('can navigate using the nav bar in the canvas toolbar', async () => {
-      const renderResult = await renderRemixProject(projectWithMultipleRoutes('sb4'))
+      const renderResult = await renderRemixProject(projectWithMultipleRoutes())
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
@@ -1308,7 +1308,7 @@ describe('Remix navigation', () => {
     })
 
     it('can navigate inside multiple Remix scenes, using the nav bar in the canvas toolbar', async () => {
-      const renderResult = await renderRemixProject(projectWithMultipleRemixScenes('sb5'))
+      const renderResult = await renderRemixProject(projectWithMultipleRemixScenes())
 
       await switchToLiveMode(renderResult)
       expect(getPathInRemixNavigationBar(renderResult)).toEqual(RemixNavigationBarHomeLabel)
@@ -1994,7 +1994,7 @@ describe('Canvas controls with Remix', () => {
       import { RemixScene, Storyboard } from 'utopia-api'
       
       export var storyboard = (
-        <Storyboard data-uid='storyboard-multiselect-uids'>
+        <Storyboard data-uid='storyboard'>
           <RemixScene
             style={{
               width: 700,
@@ -2054,10 +2054,8 @@ describe('Canvas controls with Remix', () => {
     const renderResult = await renderRemixProject(project)
 
     // Both are the same elements (with same uid) from different Remix scenes
-    const path1 = EP.fromString('storyboard-multiselect-uids/remix-scene:rootdiv/outlet:remix-div')
-    const path2 = EP.fromString(
-      'storyboard-multiselect-uids/remix-scene-2:rootdiv/outlet:remix-div',
-    )
+    const path1 = EP.fromString('storyboard/remix-scene:rootdiv/outlet:remix-div')
+    const path2 = EP.fromString('storyboard/remix-scene-2:rootdiv/outlet:remix-div')
 
     await renderResult.dispatch([selectComponents([path1, path2], false)], true)
     await renderResult.getDispatchFollowUpActionsFinished()

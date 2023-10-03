@@ -9,6 +9,7 @@ interface HighlightControlProps {
   canvasOffset: CanvasPoint
   scale: number
   color?: string
+  displayZeroSized: 'display-zero-sized' | 'do-not-display-zero-sized'
 }
 
 export const HighlightControl = React.memo((props: HighlightControlProps) => {
@@ -18,14 +19,19 @@ export const HighlightControl = React.memo((props: HighlightControlProps) => {
     props.color === null ? colorTheme.canvasSelectionPrimaryOutline.value : props.color
 
   if (isZeroSizedElement(props.frame)) {
-    return (
-      <ZeroSizeHighlightControl
-        frame={props.frame}
-        canvasOffset={props.canvasOffset}
-        scale={props.scale}
-        color={outlineColor}
-      />
-    )
+    // Only display the zero size higlight if it should be displayed.
+    if (props.displayZeroSized === 'display-zero-sized') {
+      return (
+        <ZeroSizeHighlightControl
+          frame={props.frame}
+          canvasOffset={props.canvasOffset}
+          scale={props.scale}
+          color={outlineColor}
+        />
+      )
+    } else {
+      return null
+    }
   } else {
     return (
       <div

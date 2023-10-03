@@ -226,11 +226,7 @@ export function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false
           }) as CSSObject),
           paddingLeft: 4,
           backgroundColor: colorTheme.seperator.value,
-          // color: 'black',
-          // fontSize: 11,
           flexGrow: 1,
-          // letterSpacing: 0.3,
-          // background: 'transparent',
           display: 'flex',
           alignItems: 'center',
         }
@@ -250,7 +246,7 @@ export function useComponentSelectorStyles(): StylesConfig<InsertMenuItem, false
           paddingRight: 4,
           cursor: isDisabled ? 'not-allowed' : 'default',
           color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
-          backgroundColor: isFocused ? colorTheme.dynamicBlue.value : 'transparent',
+          backgroundColor: 'transparent',
           borderRadius: UtopiaTheme.inputBorderRadius,
         }
       },
@@ -286,15 +282,15 @@ export const CustomComponentOption = (props: OptionProps<InsertMenuItem, false>)
         paddingLeft: 4,
         paddingRight: 4,
         cursor: isDisabled ? 'not-allowed' : 'default',
-        color: isFocused ? colorTheme.bg0.value : colorTheme.fg0.value,
-        backgroundColor: isFocused ? colorTheme.dynamicBlue.value : 'transparent',
+        color: isFocused ? colorTheme.dynamicBlue.value : colorTheme.fg0.value,
+        backgroundColor: 'transparent',
         borderRadius: UtopiaTheme.inputBorderRadius,
       }}
     >
       <div style={{ paddingRight: 2 }}>{label}</div>
       <div
         style={{
-          color: colorTheme.fg7.value,
+          color: isFocused ? colorTheme.dynamicBlue30.value : colorTheme.fg7.value,
           height: UtopiaTheme.layout.rowHeight.smaller,
           right: 12,
           display: 'flex',

@@ -46,7 +46,6 @@ import { getFramePointsFromMetadata, MaxContent } from '../inspector-common'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import {
   maybeInvalidGroupState,
-  maybeGroupChildWithoutFixedSizeForFill,
   groupErrorToastAction,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
@@ -416,11 +415,7 @@ export function usePinToggling(): UsePinTogglingResult {
               : null
           },
           onGroupChild: (path) => {
-            const group = MetadataUtils.getJSXElementFromMetadata(
-              jsxMetadataRef.current,
-              EP.parentPath(path),
-            )
-            return maybeGroupChildWithoutFixedSizeForFill(group) ?? null
+            return 'child-has-percentage-pins'
           },
         },
       )

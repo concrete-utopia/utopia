@@ -284,17 +284,20 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
 
   const numberToPxValue = (n: number) => n + 'px'
 
-  const controlRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    if (isZeroSizedElement(boundingBox)) {
-      ref.current.style.display = 'none'
-    } else {
-      ref.current.style.display = 'block'
-      ref.current.style.left = boundingBox.x + 'px'
-      ref.current.style.top = boundingBox.y + 'px'
-      ref.current.style.width = boundingBox.width + 'px'
-      ref.current.style.height = boundingBox.height + 'px'
-    }
-  })
+  const controlRef = useBoundingBox(
+    selectedElements,
+    (ref, safeGappedBoundingBox, realBoundingBox) => {
+      if (isZeroSizedElement(realBoundingBox)) {
+        ref.current.style.display = 'none'
+      } else {
+        ref.current.style.display = 'block'
+        ref.current.style.left = safeGappedBoundingBox.x + 'px'
+        ref.current.style.top = safeGappedBoundingBox.y + 'px'
+        ref.current.style.width = safeGappedBoundingBox.width + 'px'
+        ref.current.style.height = safeGappedBoundingBox.height + 'px'
+      }
+    },
+  )
 
   const timeoutRef = React.useRef<NodeJS.Timeout | null>(null)
 

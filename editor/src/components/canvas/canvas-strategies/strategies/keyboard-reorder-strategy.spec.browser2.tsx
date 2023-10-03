@@ -2,9 +2,6 @@ import * as EP from '../../../../core/shared/element-path'
 import { pressKey } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import { makeTestProjectCodeWithSnippet, renderTestEditorWithCode } from '../../ui-jsx.test-utils'
-import { KeyboardInteractionTimeout } from '../interaction-state'
-import type { SinonFakeTimers } from 'sinon'
-import sinon from 'sinon'
 import { selectComponents } from '../../../editor/actions/action-creators'
 import { navigatorEntryToKey } from '../../../../components/editor/store/editor-state'
 import {
@@ -165,33 +162,14 @@ const TestProjectWithFragment = (type: FragmentLikeType) => `
     </div>
 `
 
-function configureClock() {
-  let clock: { current: SinonFakeTimers } = { current: null as any } // it will be non-null thanks to beforeEach
-  beforeEach(function () {
-    // TODO there is something wrong with sinon fake timers here that remotely break other tests that come after these. If your new browser tests are broken, this may be the reason.
-    clock.current = sinon.useFakeTimers({
-      // the timers will tick so the editor is not totally broken, but we can fast-forward time at will
-      // WARNING: the Sinon fake timers will advance in 20ms increments
-      shouldAdvanceTime: true,
-    })
-  })
-  afterEach(function () {
-    clock.current?.restore()
-  })
-  return { clock: clock }
-}
-
 async function pressKeysRepeat(
-  clock: { current: SinonFakeTimers },
   renderResult: EditorRenderResult,
   direction: 'ArrowLeft' | 'ArrowRight' | 'ArrowUp' | 'ArrowDown',
   repeat: number,
 ) {
-  clock.current.tick(1)
   for (var i = 1; i <= repeat; i++) {
     await pressKey(direction)
   }
-  clock.current.tick(KeyboardInteractionTimeout)
   await renderResult.getDispatchFollowUpActionsFinished()
 }
 
@@ -199,8 +177,6 @@ async function pressKeysRepeat(
 // In flex reverse layouts this is fully reversed: keyboard up and left moves forward and keyboard down and right moves backward.
 // If you have rtl text direction on top of any layouts, that should switch the effect of the left and right keys (but leave up and down as it is)
 describe('Keyboard Reorder Strategy', () => {
-  const { clock } = configureClock()
-
   it('pressing the arrow keys reorders in a flow layout', async () => {
     const TestProjectFlow = TestProject('block', 'block')
     const renderResult = await renderTestEditorWithCode(
@@ -219,7 +195,7 @@ describe('Keyboard Reorder Strategy', () => {
     )
 
     // pressing keyboard up and down reorders elements
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+    await pressKeysRepeat(renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -234,7 +210,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+    await pressKeysRepeat(renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -250,7 +226,7 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements
-    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
+    await pressKeysRepeat(renderResult, 'ArrowRight', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -265,7 +241,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+    await pressKeysRepeat(renderResult, 'ArrowLeft', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -299,7 +275,7 @@ describe('Keyboard Reorder Strategy', () => {
     )
 
     // pressing keyboard up and down reorders elements as in ltr case
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+    await pressKeysRepeat(renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -314,7 +290,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+    await pressKeysRepeat(renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -330,7 +306,7 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in the opposite direction than in the ltr case
-    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+    await pressKeysRepeat(renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -345,7 +321,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+    await pressKeysRepeat(renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -379,7 +355,7 @@ describe('Keyboard Reorder Strategy', () => {
     )
 
     // pressing keyboard up and down reorders elements
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+    await pressKeysRepeat(renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -394,7 +370,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+    await pressKeysRepeat(renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -410,7 +386,7 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements
-    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 2)
+    await pressKeysRepeat(renderResult, 'ArrowRight', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -425,7 +401,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+    await pressKeysRepeat(renderResult, 'ArrowLeft', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -459,7 +435,7 @@ describe('Keyboard Reorder Strategy', () => {
     )
 
     // pressing keyboard up and down reorders elements
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+    await pressKeysRepeat(renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -474,7 +450,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+    await pressKeysRepeat(renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -490,7 +466,7 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in the opposite direction than in the ltr case
-    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+    await pressKeysRepeat(renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -505,7 +481,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+    await pressKeysRepeat(renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -538,7 +514,7 @@ describe('Keyboard Reorder Strategy', () => {
     )
 
     // pressing keyboard up and down reorders elements in reverse order
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
+    await pressKeysRepeat(renderResult, 'ArrowUp', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -553,7 +529,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+    await pressKeysRepeat(renderResult, 'ArrowDown', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -569,7 +545,7 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in reverse order
-    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+    await pressKeysRepeat(renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -584,7 +560,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+    await pressKeysRepeat(renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -617,7 +593,7 @@ describe('Keyboard Reorder Strategy', () => {
     )
 
     // pressing keyboard up and down reorders elements in reverse order, same is in ltr text direction
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 2)
+    await pressKeysRepeat(renderResult, 'ArrowUp', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -632,7 +608,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+    await pressKeysRepeat(renderResult, 'ArrowDown', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -648,7 +624,7 @@ describe('Keyboard Reorder Strategy', () => {
     ).toEqual(expectedNavigatorTargetsAfterArrowUp)
 
     // pressing keyboard left and right reorders elements in "normal order", because flex reverse and rtl together reverses the directions twice
-    await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 2)
+    await pressKeysRepeat(renderResult, 'ArrowLeft', 2)
 
     const expectedNavigatorTargetsAfterArrowRight = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -663,7 +639,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowRight)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+    await pressKeysRepeat(renderResult, 'ArrowRight', 1)
 
     const expectedNavigatorTargetsAfterArrowLeft = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -696,7 +672,7 @@ describe('Keyboard Reorder Strategy', () => {
     )
 
     // pressing keyboard up and down reorders elements
-    await pressKeysRepeat(clock, renderResult, 'ArrowDown', 2)
+    await pressKeysRepeat(renderResult, 'ArrowDown', 2)
 
     const expectedNavigatorTargetsAfterArrowDown = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -711,7 +687,7 @@ describe('Keyboard Reorder Strategy', () => {
       renderResult.getEditorState().derived.visibleNavigatorTargets.map(navigatorEntryToKey),
     ).toEqual(expectedNavigatorTargetsAfterArrowDown)
 
-    await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+    await pressKeysRepeat(renderResult, 'ArrowUp', 1)
 
     const expectedNavigatorTargetsAfterArrowUp = [
       'regular-utopia-storyboard-uid/scene-aaa',
@@ -746,7 +722,7 @@ describe('Keyboard Reorder Strategy', () => {
         )
 
         // pressing keyboard up and down reorders elements
-        await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+        await pressKeysRepeat(renderResult, 'ArrowDown', 1)
 
         const expectedNavigatorTargetsAfterArrowDown: string[] = [
           'utopia-storyboard-uid/scene-aaa',
@@ -763,7 +739,7 @@ describe('Keyboard Reorder Strategy', () => {
           expectedNavigatorTargetsAfterArrowDown,
         )
 
-        await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+        await pressKeysRepeat(renderResult, 'ArrowUp', 1)
 
         const expectedNavigatorTargetsAfterArrowUp = [
           'utopia-storyboard-uid/scene-aaa',
@@ -781,7 +757,7 @@ describe('Keyboard Reorder Strategy', () => {
         )
 
         // pressing keyboard left and right reorders elements
-        await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+        await pressKeysRepeat(renderResult, 'ArrowRight', 1)
 
         const expectedNavigatorTargetsAfterArrowRight = [
           'utopia-storyboard-uid/scene-aaa',
@@ -798,7 +774,7 @@ describe('Keyboard Reorder Strategy', () => {
           expectedNavigatorTargetsAfterArrowRight,
         )
 
-        await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+        await pressKeysRepeat(renderResult, 'ArrowLeft', 1)
 
         const expectedNavigatorTargetsAfterArrowLeft = [
           'utopia-storyboard-uid/scene-aaa',
@@ -832,7 +808,7 @@ describe('Keyboard Reorder Strategy', () => {
           true,
         )
 
-        await pressKeysRepeat(clock, renderResult, 'ArrowLeft', 1)
+        await pressKeysRepeat(renderResult, 'ArrowLeft', 1)
 
         const expectedNavigatorTargetsAfterArrowLeft = [
           'utopia-storyboard-uid/scene-aaa',
@@ -849,7 +825,7 @@ describe('Keyboard Reorder Strategy', () => {
           expectedNavigatorTargetsAfterArrowLeft,
         )
 
-        await pressKeysRepeat(clock, renderResult, 'ArrowRight', 1)
+        await pressKeysRepeat(renderResult, 'ArrowRight', 1)
 
         const expectedNavigatorTargetsAfterArrowRight = [
           'utopia-storyboard-uid/scene-aaa',
@@ -866,7 +842,7 @@ describe('Keyboard Reorder Strategy', () => {
           expectedNavigatorTargetsAfterArrowRight,
         )
 
-        await pressKeysRepeat(clock, renderResult, 'ArrowUp', 1)
+        await pressKeysRepeat(renderResult, 'ArrowUp', 1)
         const expectedNavigatorTargetsAfterArrowUp = [
           'utopia-storyboard-uid/scene-aaa',
           'utopia-storyboard-uid/scene-aaa/app-entity',
@@ -883,7 +859,7 @@ describe('Keyboard Reorder Strategy', () => {
         )
 
         // pressing keyboard up and down reorders elements
-        await pressKeysRepeat(clock, renderResult, 'ArrowDown', 1)
+        await pressKeysRepeat(renderResult, 'ArrowDown', 1)
 
         const expectedNavigatorTargetsAfterArrowDown = [
           'utopia-storyboard-uid/scene-aaa',

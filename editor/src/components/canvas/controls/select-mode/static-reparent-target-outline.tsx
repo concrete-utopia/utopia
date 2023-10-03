@@ -38,6 +38,7 @@ export const StaticReparentTargetOutlineIndicator = controlForStrategyMemoized((
         scale={scale}
         color={colorTheme.canvasSelectionPrimaryOutline.value}
         frame={parentFrame}
+        displayZeroSized={'do-not-display-zero-sized'}
       />
     )
   } else {
