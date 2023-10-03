@@ -66,6 +66,7 @@ export function absoluteResizeBoundingBoxStrategy(
   const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
+
   const retargetedTargets = flattenSelection(
     retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
   )

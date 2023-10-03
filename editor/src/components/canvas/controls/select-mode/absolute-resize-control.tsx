@@ -63,15 +63,15 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
       'AbsoluteResizeControl scale',
     )
 
-    const controlRef = useBoundingBox(targets, (ref, boundingBox) => {
-      if (isZeroSizedElement(boundingBox)) {
+    const controlRef = useBoundingBox(targets, (ref, safeGappedBoundingBox, realBoundingBox) => {
+      if (isZeroSizedElement(realBoundingBox)) {
         ref.current.style.display = 'none'
       } else {
         ref.current.style.display = 'block'
-        ref.current.style.left = boundingBox.x + 'px'
-        ref.current.style.top = boundingBox.y + 'px'
-        ref.current.style.width = boundingBox.width + 'px'
-        ref.current.style.height = boundingBox.height + 'px'
+        ref.current.style.left = safeGappedBoundingBox.x + 'px'
+        ref.current.style.top = safeGappedBoundingBox.y + 'px'
+        ref.current.style.width = safeGappedBoundingBox.width + 'px'
+        ref.current.style.height = safeGappedBoundingBox.height + 'px'
       }
     })
 
