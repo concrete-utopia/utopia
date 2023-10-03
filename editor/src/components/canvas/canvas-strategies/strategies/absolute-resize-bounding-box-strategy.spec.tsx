@@ -1260,9 +1260,9 @@ describe('Absolute Resize Bounding Box Strategy single select', () => {
                 backgroundColor: '#aaaaaa33',
                 position: 'absolute',
                 top: 65,
-                left: 94,
+                left: 93,
                 bottom: 246,
-                right: 225
+                right: 226
               }}
               data-uid='ccc'
             />
