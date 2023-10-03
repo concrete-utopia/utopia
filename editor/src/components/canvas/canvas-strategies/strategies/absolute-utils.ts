@@ -45,6 +45,7 @@ export function shouldKeepMovingDraggedGroupChildren(
   if (commonParent == null || EP.isStoryboardPath(commonParent)) {
     return false
   }
+
   // all elements must be group children
   if (!paths.every((path) => treatElementAsGroupLike(jsxMetadata, EP.parentPath(path)))) {
     return false
