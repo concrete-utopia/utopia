@@ -1810,6 +1810,62 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         `),
       )
     })
+    it("does reparent outside of a group (if it's inside a scene app)", async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(
+          makeTestProjectCodeWithSnippet(`
+            <Group data-uid='group' style={{ position: 'absolute', left: 25, top: 25, width: 175, height: 120, backgroundColor: 'white' }}>
+              <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+              <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 125, top: 77, width: 50, height: 43 }} />
+            </Group>
+        `),
+        ),
+        'await-first-dom-report',
+      )
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await renderResult.dispatch(
+        selectComponents(
+          [EP.fromString('utopia-storyboard-uid/scene-aaa/app-entity:group/child1')],
+          true,
+        ),
+        true,
+      )
+
+      const dragme = (await renderResult.renderedDOM.findByTestId('child1')).getBoundingClientRect()
+
+      await mouseDragFromPointWithDelta(
+        canvasControlsLayer,
+        { x: dragme.x + 10, y: dragme.y + 10 },
+        { x: -100, y: 0 },
+      )
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+          import * as React from 'react'
+          import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+          export var App = (props) => {
+            return (
+              <Group data-uid='group' style={{ position: 'absolute', left: 150, top: 102, width: 50, height: 43, backgroundColor: 'white' }}>
+                <div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 50, height: 43 }} />
+              </Group>
+            )
+          }
+
+          export var storyboard = (props) => {
+            return (
+              <Storyboard data-uid='utopia-storyboard-uid'>
+                <Scene style={{ left: 0, top: 0, width: 400, height: 400 }} data-uid='scene-aaa'>
+                  <App data-uid='app-entity' style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }} />
+                </Scene>
+                <div data-uid='child1' data-testid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: -75, top: 25, width: 50, height: 43 }} />
+              </Storyboard>
+            )
+          }
+        `),
+      )
+    })
   })
 })
 
