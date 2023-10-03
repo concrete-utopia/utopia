@@ -63,6 +63,7 @@ import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import {
   isKeyboardAbsoluteStrategy,
+  isKeyboardReorderStrategy,
   isStrategyActive,
 } from '../canvas/canvas-strategies/canvas-strategies'
 import type { StrategyState } from '../canvas/canvas-strategies/interaction-state'
@@ -228,13 +229,14 @@ function buildNonDefaultPositionPaths(propertyTarget: Array<string>): Array<Prop
   ]
 }
 
-export function shouldInspectorUpdate(
+export function shouldUpdateLowPriorityUI(
   strategyState: StrategyState,
   elementsToRerender: ElementsToRerender,
 ): boolean {
   return (
     (!isStrategyActive(strategyState) && elementsToRerender === 'rerender-all-elements') ||
-    isKeyboardAbsoluteStrategy(strategyState.currentStrategy)
+    isKeyboardAbsoluteStrategy(strategyState.currentStrategy) ||
+    isKeyboardReorderStrategy(strategyState.currentStrategy)
   )
 }
 
