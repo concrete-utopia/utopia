@@ -67,7 +67,7 @@ import {
   walkContentsTree,
 } from '../../components/assets'
 import type { FileResult } from '../shared/file-utils'
-import { extractAsset, extractImage, extractText } from '../shared/file-utils'
+import { extractAsset, extractImage, extractText, getFileExtension } from '../shared/file-utils'
 import { emptySet } from '../shared/set-utils'
 import { fastForEach } from '../shared/utils'
 import { foldEither, isRight, maybeEitherToMaybe } from '../shared/either'
@@ -914,4 +914,18 @@ export function fileExportsFunctionWithName(
       (v) => isExportFunction(v) && v.functionName === componentName,
     ) != null
   )
+}
+
+export function getTextFilesWithExtensions(
+  projectContents: ProjectContentTreeRoot,
+  extensions: Array<string>,
+): Array<{ path: string; file: TextFile }> {
+  let result: Array<{ path: string; file: TextFile }> = []
+  walkContentsTree(projectContents, (path, file) => {
+    if (file.type === 'TEXT_FILE' && extensions.includes(getFileExtension(path))) {
+      result.push({ path, file })
+    }
+  })
+
+  return result
 }

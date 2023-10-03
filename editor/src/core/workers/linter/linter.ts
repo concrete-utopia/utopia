@@ -35,7 +35,7 @@ class CustomUtopiaLinter extends Linter {
 
 const linter = new CustomUtopiaLinter()
 
-const FileExtensionsToLint = ['.js', '.jsx', '.ts', '.tsx']
+export const FileExtensionsToLint = ['.js', '.jsx', '.ts', '.tsx']
 
 export function lintCode(
   filename: string,

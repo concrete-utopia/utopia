@@ -18,6 +18,7 @@ import {
   applyToAllUIJSFiles,
   applyUtopiaJSXComponentsChanges,
   fileTypeFromFileName,
+  getTextFilesWithExtensions,
   getUtopiaJSXComponentsFromSuccess,
   saveFile,
   saveTextFileContents,
@@ -491,15 +492,16 @@ import {
   wrapElementInsertions,
 } from './wrap-unwrap-helpers'
 import { encodeUtopiaDataToHtml } from '../../../utils/clipboard-utils'
-import type {
-  DeleteFileFromVSCode,
-  HideVSCodeLoadingScreen,
-  MarkVSCodeBridgeReady,
-  SelectFromFileAndPosition,
-  SendCodeEditorInitialisation,
-  SetIndexedDBFailed,
-  UpdateConfigFromVSCode,
-  UpdateFromCodeEditor,
+import {
+  sendLinterRequestMessage,
+  type DeleteFileFromVSCode,
+  type HideVSCodeLoadingScreen,
+  type MarkVSCodeBridgeReady,
+  type SelectFromFileAndPosition,
+  type SendCodeEditorInitialisation,
+  type SetIndexedDBFailed,
+  type UpdateConfigFromVSCode,
+  type UpdateFromCodeEditor,
 } from './actions-from-vscode'
 import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import { addToTrueUpGroups, trueUpTargetToTargets } from '../../../core/model/groups'
@@ -520,6 +522,7 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
+import { FileExtensionsToLint } from '../../../core/workers/linter/linter'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1413,6 +1416,14 @@ export const UPDATE_FNS = {
       ...migratedModel,
       projectContents: parsedProjectFiles,
     }
+
+    const lintRequests = getTextFilesWithExtensions(parsedProjectFiles, FileExtensionsToLint).map(
+      ({ path, file }) => sendLinterRequestMessage(path, file.fileContents.code),
+    )
+    if (lintRequests.length > 0) {
+      dispatch(lintRequests)
+    }
+
     const newModel: EditorModel = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
