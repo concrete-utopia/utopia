@@ -32,10 +32,10 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
     const label = defaultIfNull<React.ReactElement | string>('', props.label)
 
     const baseStyle = {
-      padding: '4px 6px',
+      padding: '4px 8px',
       transition: 'all .05s ease-in-out',
       cursor: 'pointer',
-      flexGrow: 1,
+
       justifyContent: 'center',
       fontWeight: 500,
       '&:hover': {
@@ -57,10 +57,11 @@ export const MenuTab: React.FunctionComponent<React.PropsWithChildren<MenuTabPro
         css={{
           ...baseStyle,
           ...selectionHandlingStyle,
+          width: 'fit-content',
         }}
         className={props.className}
       >
-        <div css={{ flexGrow: 1, textAlign: 'center' }}>{label}</div>
+        <div>{label}</div>
       </SimpleFlexRow>
     )
   },

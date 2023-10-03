@@ -320,7 +320,7 @@ describe('draw-to-insert text', () => {
                     position: 'absolute',
                     wordBreak: 'break-word',
                     left: 112,
-                    top: 392,
+                    top: 391,
                     width: 50,
                     height: 50,
                   }}
