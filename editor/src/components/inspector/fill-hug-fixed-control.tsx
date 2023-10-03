@@ -120,7 +120,11 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const elementOrParentGroupRef = useRefEditorState(anySelectedElementGroupOrChildOfGroup)
-  const groupChildrenSelectedRef = useRefEditorState(allElementsAreGroupChildren)
+  const groupChildrenSelected = useEditorState(
+    Substores.metadata,
+    allElementsAreGroupChildren,
+    'groupChildrenSelected',
+  )
 
   const widthCurrentValue = useEditorState(
     Substores.metadata,
@@ -457,7 +461,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     'DimensionRow options',
   )
 
-  const isGroupChild = groupChildrenSelectedRef.current
+  const isGroupChild = groupChildrenSelected
 
   const gridTemplate = React.useMemo((): GridRowVariant => {
     return isGroupChild ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
