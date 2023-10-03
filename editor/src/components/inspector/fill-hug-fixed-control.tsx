@@ -412,7 +412,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
               focusOnMount={false}
             />
             {isGroupChild ? (
-              <GroupConstraintSelect dimension={'width'} type={groupChildConstraints.width} />
+              <GroupConstraintSelect dimension={'width'} />
             ) : (
               <FixedHugDropdown dimension='width' />
             )}
@@ -436,7 +436,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
               focusOnMount={false}
             />
             {isGroupChild ? (
-              <GroupConstraintSelect dimension={'height'} type={groupChildConstraints.height} />
+              <GroupConstraintSelect dimension={'height'} />
             ) : (
               <FixedHugDropdown dimension='height' />
             )}
@@ -548,84 +548,87 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 })
 FixedHugDropdown.displayName = 'FixedHugDropdown'
 
-const GroupConstraintSelect = React.memo(
-  ({
-    dimension,
-    type,
-  }: {
-    dimension: LayoutPinnedProp
-    type: GroupChildConstraintOptionType | 'mixed'
-  }) => {
-    const dispatch = useDispatch()
-    const colorTheme = useColorTheme()
+const GroupConstraintSelect = React.memo(({ dimension }: { dimension: LayoutPinnedProp }) => {
+  const dispatch = useDispatch()
+  const colorTheme = useColorTheme()
 
-    const editorRef = useRefEditorState((store) => ({
-      selectedViews: store.editor.selectedViews,
-      allElementProps: store.editor.allElementProps,
-    }))
+  const type = useEditorState(
+    Substores.metadata,
+    (store) =>
+      checkGroupChildConstraint(
+        dimension,
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+    'GroupConstraintSelect checkGroupChildConstraint',
+  )
 
-    function optionFromType(value: GroupChildConstraintOptionType | 'mixed') {
-      switch (value) {
-        case 'constrained':
-          return groupChildConstraintOptionValues.constrained
-        case 'not-constrained':
-          return groupChildConstraintOptionValues.notConstrained
-        case 'mixed':
-          return groupChildConstraintOptionValues.mixed
-        default:
-          assertNever(value)
-      }
+  const editorRef = useRefEditorState((store) => ({
+    selectedViews: store.editor.selectedViews,
+    allElementProps: store.editor.allElementProps,
+  }))
+
+  function optionFromType(value: GroupChildConstraintOptionType | 'mixed') {
+    switch (value) {
+      case 'constrained':
+        return groupChildConstraintOptionValues.constrained
+      case 'not-constrained':
+        return groupChildConstraintOptionValues.notConstrained
+      case 'mixed':
+        return groupChildConstraintOptionValues.mixed
+      default:
+        assertNever(value)
     }
+  }
 
-    const listValue = React.useMemo(() => {
-      return optionFromType(type)
-    }, [type])
+  const listValue = React.useMemo(() => {
+    return optionFromType(type)
+  }, [type])
 
-    const mainColor = React.useMemo(() => {
-      switch (type) {
-        case 'constrained':
-          return colorTheme.fg0.value
-        case 'mixed':
-          return colorTheme.fg6Opacity50.value
-        case 'not-constrained':
-          return colorTheme.subduedForeground.value
-        default:
-          assertNever(type)
-      }
-    }, [type, colorTheme])
+  const mainColor = React.useMemo(() => {
+    switch (type) {
+      case 'constrained':
+        return colorTheme.fg0.value
+      case 'mixed':
+        return colorTheme.fg6Opacity50.value
+      case 'not-constrained':
+        return colorTheme.subduedForeground.value
+      default:
+        assertNever(type)
+    }
+  }, [type, colorTheme])
 
-    const onSubmitValue = React.useCallback(
-      (option: SelectOption) => {
-        return setGroupChildConstraint(
-          dispatch,
-          option.value,
-          editorRef.current.selectedViews,
-          editorRef.current.allElementProps,
-          dimension,
-        )
-      },
-      [dispatch, editorRef, dimension],
-    )
+  const onSubmitValue = React.useCallback(
+    (option: SelectOption) => {
+      return setGroupChildConstraint(
+        dispatch,
+        option.value,
+        editorRef.current.selectedViews,
+        editorRef.current.allElementProps,
+        dimension,
+      )
+    },
+    [dispatch, editorRef, dimension],
+  )
 
-    return (
-      <PopupList
-        id={`group-child-resize-${dimension}`}
-        onSubmitValue={onSubmitValue}
-        value={listValue}
-        options={groupChildConstraintOptions}
-        style={{
-          position: 'relative',
-          fontSize: listValue.value === 'not-constrained' ? 9 : 'inherit',
-        }}
-        containerMode={type === 'constrained' ? 'default' : 'showBorderOnHover'}
-        controlStyles={{
-          ...getControlStyles('simple'),
-          mainColor: mainColor,
-        }}
-      />
-    )
-  },
-)
+  return (
+    <PopupList
+      id={`group-child-resize-${dimension}`}
+      onSubmitValue={onSubmitValue}
+      value={listValue}
+      options={groupChildConstraintOptions}
+      style={{
+        position: 'relative',
+        fontSize: listValue.value === 'not-constrained' ? 9 : 'inherit',
+      }}
+      containerMode={type === 'constrained' ? 'default' : 'showBorderOnHover'}
+      controlStyles={{
+        ...getControlStyles('simple'),
+        mainColor: mainColor,
+      }}
+    />
+  )
+})
 
 GroupConstraintSelect.displayName = 'GroupConstraintSelect'
 
