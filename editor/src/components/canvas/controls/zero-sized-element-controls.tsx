@@ -41,6 +41,7 @@ import { useWindowToCanvasCoordinates } from '../dom-lookup-hooks'
 import { boundingArea, createInteractionViaMouse } from '../canvas-strategies/interaction-state'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
+export const ZeroSizedEventsControlTestID = `${ZeroSizedControlTestID}-events`
 interface ZeroSizedElementControlProps {
   showAllPossibleElements: boolean
 }
@@ -422,7 +423,7 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         onMouseDown={onControlMouseDown}
         onMouseUp={onControlMouseUp}
         onDoubleClick={onControlDoubleClick}
-        data-testid={`${ZeroSizedControlTestID}-events`}
+        data-testid={ZeroSizedEventsControlTestID}
         style={{
           position: 'absolute',
           ...zeroSizedEventControlDimensions(props.frame, props.scale),
@@ -488,8 +489,8 @@ function zeroSizedControlDimensions(
 } {
   const ratio = getScaleRatio(scale)
   return {
-    left: rect.x - ZeroControlSize / 2,
-    top: rect.y - ZeroControlSize / 2,
+    left: rect.x - (ZeroControlSize / 2) * ratio,
+    top: rect.y - (ZeroControlSize / 2) * ratio,
     width: rect.width + ZeroControlSize * ratio,
     height: rect.height + ZeroControlSize * ratio,
     borderRadius: borderRadius ? (ZeroControlSize / 2) * ratio : undefined,
@@ -510,12 +511,13 @@ function zeroSizedEventControlDimensions(
 } {
   const ratio = getScaleRatio(scale)
   const borderAdjustment = ZeroControlSize / 2
-  return {
-    left: rect.x - ZeroControlSize / 2 - borderAdjustment,
-    top: rect.y - ZeroControlSize / 2 - borderAdjustment,
-    width: rect.width + ZeroControlSize * ratio + borderAdjustment * 2,
-    height: rect.height + ZeroControlSize * ratio + borderAdjustment * 2,
+  const result = {
+    left: rect.x - (ZeroControlSize / 2) * ratio - borderAdjustment * ratio,
+    top: rect.y - (ZeroControlSize / 2) * ratio - borderAdjustment * ratio,
+    width: rect.width + (ZeroControlSize + borderAdjustment * 2) * ratio,
+    height: rect.height + (ZeroControlSize + borderAdjustment * 2) * ratio,
   }
+  return result
 }
 
 function zeroSizedControlBoxShadow(
