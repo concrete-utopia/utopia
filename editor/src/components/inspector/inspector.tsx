@@ -87,7 +87,7 @@ import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { isFeatureEnabled } from '../../utils/feature-switches'
-import { ConstraintsSection } from './fill-hug-fixed-control'
+import { ConstraintsSection } from './constraints-section'
 
 export interface ElementPathElement {
   name?: string

@@ -10,7 +10,7 @@ import { UtopiaTheme, SquareButton, colorTheme, color } from '../../../uuiui'
 import { unless } from '../../../utils/react-conditionals'
 
 interface PinControlProps {
-  handlePinMouseDown: (frameProp: LayoutPinnedProp) => void
+  handlePinMouseDown: (frameProp: LayoutPinnedProp, event: React.MouseEvent<Element>) => void
   name: string
   controlStatus: ControlStatus
   framePoints: FramePinsInfo
@@ -82,8 +82,8 @@ function getTestId(prefix: string, id: string): string {
 export const PinControl = (props: PinControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
 
-  const handlePinMouseDown = (frameProp: LayoutPinnedProp) => () => {
-    props.handlePinMouseDown(frameProp)
+  const handlePinMouseDown = (frameProp: LayoutPinnedProp) => (e: React.MouseEvent<Element>) => {
+    props.handlePinMouseDown(frameProp, e)
   }
 
   const exclude: ExcludePinControls = React.useMemo(
