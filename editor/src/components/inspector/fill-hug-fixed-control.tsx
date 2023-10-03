@@ -288,84 +288,6 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
 
   const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
   const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
-  const groupChildConstraints = useEditorState(
-    Substores.metadata,
-    (store) => ({
-      width: checkGroupChildConstraint(
-        'width',
-        store.editor.selectedViews,
-        store.editor.allElementProps,
-      ),
-      height: checkGroupChildConstraint(
-        'height',
-        store.editor.selectedViews,
-        store.editor.allElementProps,
-      ),
-      top: checkGroupChildConstraint(
-        'top',
-        store.editor.selectedViews,
-        store.editor.allElementProps,
-      ),
-      left: checkGroupChildConstraint(
-        'left',
-        store.editor.selectedViews,
-        store.editor.allElementProps,
-      ),
-      bottom: checkGroupChildConstraint(
-        'bottom',
-        store.editor.selectedViews,
-        store.editor.allElementProps,
-      ),
-      right: checkGroupChildConstraint(
-        'right',
-        store.editor.selectedViews,
-        store.editor.allElementProps,
-      ),
-    }),
-    'FillHugFixedControl constraints',
-  )
-
-  const handleGroupConstraintPinMouseDown = React.useCallback(
-    (dimension: LayoutPinnedProp) => {
-      return setGroupChildConstraint(
-        dispatch,
-        'toggle',
-        selectedViewsRef.current,
-        allElementPropsRef.current,
-        dimension,
-      )
-    },
-    [dispatch, selectedViewsRef, allElementPropsRef],
-  )
-
-  const framePoints: FramePinsInfo = React.useMemo(() => {
-    const ignore = { isPrimaryPosition: false, isRelativePosition: false }
-    return {
-      left: {
-        isPrimaryPosition: groupChildConstraints.left !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      top: {
-        isPrimaryPosition: groupChildConstraints.top !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      bottom: {
-        isPrimaryPosition: groupChildConstraints.bottom !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      right: {
-        isPrimaryPosition: groupChildConstraints.right !== 'not-constrained',
-        isRelativePosition: false,
-      },
-      width: ignore,
-      height: ignore,
-      centerX: ignore,
-      centerY: ignore,
-    }
-  }, [groupChildConstraints])
-
-  const widthValue = optionalMap(pickFixedValue, widthCurrentValue.fixedHugFill) ?? null
-  const heightValue = optionalMap(pickFixedValue, heightCurrentValue.fixedHugFill) ?? null
 
   const isGroupChild = groupChildrenSelected
 
@@ -376,16 +298,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   return (
     <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        {when(
-          isGroupChild,
-          <PinControl
-            handlePinMouseDown={handleGroupConstraintPinMouseDown}
-            framePoints={framePoints}
-            controlStatus='simple'
-            exclude={{ center: true }}
-            name='group-child-controls'
-          />,
-        )}
+        <GroupChildPinControl />
         <FlexCol css={{ gap: 0 }}>
           <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
             <NumberInput
@@ -440,6 +353,109 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
     </FlexCol>
   )
 })
+
+const GroupChildPinControl = React.memo(() => {
+  const dispatch = useDispatch()
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+
+  const onlyGroupChildrenSelected = useEditorState(
+    Substores.metadata,
+    allElementsAreGroupChildren,
+    'groupChildrenSelected',
+  )
+
+  const handleGroupConstraintPinMouseDown = React.useCallback(
+    (dimension: LayoutPinnedProp) => {
+      return setGroupChildConstraint(
+        dispatch,
+        'toggle',
+        selectedViewsRef.current,
+        allElementPropsRef.current,
+        dimension,
+      )
+    },
+    [dispatch, selectedViewsRef, allElementPropsRef],
+  )
+
+  const groupChildConstraints = useEditorState(
+    Substores.metadata,
+    (store) => ({
+      width: checkGroupChildConstraint(
+        'width',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      height: checkGroupChildConstraint(
+        'height',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      top: checkGroupChildConstraint(
+        'top',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      left: checkGroupChildConstraint(
+        'left',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      bottom: checkGroupChildConstraint(
+        'bottom',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+      right: checkGroupChildConstraint(
+        'right',
+        store.editor.selectedViews,
+        store.editor.allElementProps,
+      ),
+    }),
+    'FillHugFixedControl constraints',
+  )
+
+  const framePoints: FramePinsInfo = React.useMemo(() => {
+    const ignore = { isPrimaryPosition: false, isRelativePosition: false }
+    return {
+      left: {
+        isPrimaryPosition: groupChildConstraints.left !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      top: {
+        isPrimaryPosition: groupChildConstraints.top !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      bottom: {
+        isPrimaryPosition: groupChildConstraints.bottom !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      right: {
+        isPrimaryPosition: groupChildConstraints.right !== 'not-constrained',
+        isRelativePosition: false,
+      },
+      width: ignore,
+      height: ignore,
+      centerX: ignore,
+      centerY: ignore,
+    }
+  }, [groupChildConstraints])
+
+  if (!onlyGroupChildrenSelected) {
+    return null
+  }
+
+  return (
+    <PinControl
+      handlePinMouseDown={handleGroupConstraintPinMouseDown}
+      framePoints={framePoints}
+      controlStatus='simple'
+      exclude={{ center: true }}
+      name='group-child-controls'
+    />
+  )
+})
+GroupChildPinControl.displayName = 'GroupChildPinControl'
 
 function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   const axis = dimension === 'width' ? 'horizontal' : 'vertical'
