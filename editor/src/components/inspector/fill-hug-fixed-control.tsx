@@ -208,7 +208,7 @@ const GroupChildPinControl = React.memo(() => {
         store.editor.allElementProps,
       ),
     }),
-    'FillHugFixedControl constraints',
+    'GroupChildPinControl groupChildConstraints',
   )
 
   const framePoints: FramePinsInfo = React.useMemo(() => {
