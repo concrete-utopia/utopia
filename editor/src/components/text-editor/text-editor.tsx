@@ -318,7 +318,7 @@ const TextEditor = React.memo((props: TextEditorProps) => {
   )
 
   const colorTheme = useColorTheme()
-  const outlineWidth = 1.5 / scale
+  const outlineWidth = 1 / scale
   const outlineColor = colorTheme.textEditableOutline.value
 
   const [firstTextProp] = React.useState(text)

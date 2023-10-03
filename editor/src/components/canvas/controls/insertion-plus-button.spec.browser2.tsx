@@ -279,9 +279,9 @@ describe('Insertion Plus Button', () => {
       expect(bounds.top).toEqual(expectedTop)
     }
 
-    await checkInsertButtonPosition('blue-dot-control-0', 385.5, 595.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 519.5, 595.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 712.5, 595.5)
+    await checkInsertButtonPosition('blue-dot-control-0', 385.5, 596.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 519.5, 596.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 712.5, 596.5)
   })
 
   it(`shows the buttons in the correct places for a flex container with a direction of 'row-reverse' that already has children`, async () => {
@@ -305,9 +305,9 @@ describe('Insertion Plus Button', () => {
       expect(bounds.top).toEqual(expectedTop)
     }
 
-    await checkInsertButtonPosition('blue-dot-control-0', 785.5, 595.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 651.5, 595.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 458.5, 595.5)
+    await checkInsertButtonPosition('blue-dot-control-0', 785.5, 596.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 651.5, 596.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 458.5, 596.5)
   })
 
   it(`shows the buttons in the correct places for a flex container with a direction of 'column' that already has children`, async () => {
@@ -331,9 +331,9 @@ describe('Insertion Plus Button', () => {
       expect(bounds.top).toEqual(expectedTop)
     }
 
-    await checkInsertButtonPosition('blue-dot-control-0', 375.5, 605.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 705.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 805.5)
+    await checkInsertButtonPosition('blue-dot-control-0', 375.5, 606.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 806.5)
   })
 
   it(`shows the buttons in the correct places for a flex container with a direction of 'column-reverse' that already has children`, async () => {
@@ -357,9 +357,9 @@ describe('Insertion Plus Button', () => {
       expect(bounds.top).toEqual(expectedTop)
     }
 
-    await checkInsertButtonPosition('blue-dot-control-0', 375.5, 805.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 705.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 605.5)
+    await checkInsertButtonPosition('blue-dot-control-0', 375.5, 806.5)
+    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
+    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 606.5)
   })
 
   it('shows the buttons in the correct places for a flex container that has no children', async () => {
@@ -383,6 +383,6 @@ describe('Insertion Plus Button', () => {
       expect(bounds.top).toEqual(expectedTop)
     }
 
-    await checkInsertButtonPosition('blue-dot-control-0', 385.5, 595.5)
+    await checkInsertButtonPosition('blue-dot-control-0', 385.5, 596.5)
   })
 })

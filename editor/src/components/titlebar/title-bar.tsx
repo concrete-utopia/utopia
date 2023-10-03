@@ -31,6 +31,7 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { RoundButton } from './buttons'
 import { TestMenu } from './test-menu'
 import { useGridPanelDraggable } from '../canvas/grid-panels-dnd'
+import { FlexRow } from 'utopia-api'
 import {
   useUpdateGridPanelLayout,
   type StoredPanel,
@@ -39,21 +40,26 @@ import {
 
 interface ProjectTitleProps {}
 
+export const TitleHeight = 40
+
 const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ children }) => {
   return (
-    <div
+    <FlexRow
       style={{
         fontWeight: 400,
         fontSize: 12,
         padding: '0 10px',
         color: colorTheme.fg0.value,
+        height: TitleHeight,
+        alignItems: 'center',
       }}
+      css={undefined}
     >
       {children}
-    </div>
+    </FlexRow>
   )
 }
-export const TitleHeight = 40
+
 export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel }) => {
   const { drag } = useGridPanelDraggable(props.panelData)
 
@@ -140,20 +146,28 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        gap: 10,
+        flexShrink: 0,
       }}
     >
-      <div
-        style={{ width: 8, height: 8, borderRadius: 8, backgroundColor: theme.brandNeonPink.value }}
-      />
-      <div
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.brandNeonGreen.value,
-        }}
-      />
+      <FlexRow css={{ gap: 6 }}>
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.unavailableGrey.value,
+          }}
+        />
+        <div
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: 8,
+            backgroundColor: theme.unavailableGrey.value,
+          }}
+        />
+      </FlexRow>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {currentBranch != null ? (
           <SimpleFlexRow
@@ -179,7 +193,6 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
               gap: 6,
               scale: '75%',
               transformOrigin: 'left',
-              paddingLeft: 10,
             }}
           >
             {when(
@@ -549,11 +562,10 @@ const TitleBar = React.memo(() => {
           paddingRight: 16,
           borderRadius: 16,
           background: colorTheme.bg1.value,
-          height: 27,
         }}
       >
         {currentBranch != null ? (
-          <SimpleFlexRow style={{ gap: 5 }}>
+          <SimpleFlexRow style={{ gap: 5, flexShrink: 0 }}>
             {repoName}
             {<Icons.Branch style={{ width: 19, height: 19 }} />}
             {currentBranch}
