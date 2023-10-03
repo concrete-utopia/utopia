@@ -634,6 +634,20 @@ export function isDescendantOfOrEqualTo(
   return pathsEqual(target, maybeAncestorOrEqual) || isDescendantOf(target, maybeAncestorOrEqual)
 }
 
+export function findAmongAncestorsOfPath<T>(
+  path: ElementPath,
+  fn: (ancestor: ElementPath) => T | null,
+): T | null {
+  const ancestors = getAncestors(path)
+  for (const ancestor of ancestors) {
+    const maybeFound = fn(ancestor)
+    if (maybeFound != null) {
+      return maybeFound
+    }
+  }
+  return null
+}
+
 export function isDescendantOf(target: ElementPath, maybeAncestor: ElementPath): boolean {
   const targetElementPath = target.parts
   const maybeAncestorElementPath = maybeAncestor.parts

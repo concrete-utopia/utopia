@@ -57,6 +57,7 @@ import { NavigatorItemActionSheet } from './navigator-item-components'
 import { assertNever } from '../../../core/shared/utils'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { MapCounter } from './map-counter'
+import { Outlet } from 'react-router'
 
 export function getItemHeight(navigatorEntry: NavigatorEntry): number {
   if (isConditionalClauseNavigatorEntry(navigatorEntry)) {
@@ -392,6 +393,7 @@ const elementWarningsSelector = createCachedSelector(
 )((_, navigatorEntry) => navigatorEntryToKey(navigatorEntry))
 
 type CodeItemType = 'conditional' | 'map' | 'code' | 'none' | 'remix'
+export type RemixItemType = 'scene' | 'outlet' | 'link' | 'none'
 
 export interface NavigatorItemInnerProps {
   navigatorEntry: NavigatorEntry
@@ -406,6 +408,7 @@ export interface NavigatorItemInnerProps {
   renamingTarget: ElementPath | null
   selected: boolean
   parentOutline: ParentOutline
+  isOutletOrDescendantOfOutlet: boolean
   visibleNavigatorTargets: Array<NavigatorEntry>
 }
 
@@ -419,6 +422,7 @@ export const NavigatorItem: React.FunctionComponent<
     selected,
     collapsed,
     navigatorEntry,
+    isOutletOrDescendantOfOutlet,
     getSelectedViewsInRange,
     index,
   } = props
@@ -551,13 +555,35 @@ export const NavigatorItem: React.FunctionComponent<
       }
       if (
         MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata) ||
-        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)
+        MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata) ||
+        MetadataUtils.isProbablyRemixLinkFromMetadata(elementMetadata)
       ) {
         return 'remix'
       }
       return 'none'
     },
     'NavigatorItem codeItemType',
+  )
+
+  const remixItemType: RemixItemType = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        store.editor.jsxMetadata,
+        props.navigatorEntry.elementPath,
+      )
+      if (MetadataUtils.isProbablyRemixSceneFromMetadata(elementMetadata)) {
+        return 'scene'
+      }
+      if (MetadataUtils.isProbablyRemixOutletFromMetadata(elementMetadata)) {
+        return 'outlet'
+      }
+      if (MetadataUtils.isProbablyRemixLinkFromMetadata(elementMetadata)) {
+        return 'link'
+      }
+      return 'none'
+    },
+    'NavigatorItem remixItemType',
   )
 
   const isConditional = codeItemType === 'conditional'
@@ -740,7 +766,9 @@ export const NavigatorItem: React.FunctionComponent<
     <div
       style={{
         outline: `1px solid ${
-          props.parentOutline === 'solid'
+          props.parentOutline === 'solid' && isOutletOrDescendantOfOutlet
+            ? colorTheme.aqua.value
+            : props.parentOutline === 'solid'
             ? colorTheme.navigatorResizeHintBorder.value
             : 'transparent'
         }`,
@@ -801,6 +829,7 @@ export const NavigatorItem: React.FunctionComponent<
                 renamingTarget={props.renamingTarget}
                 selected={props.selected}
                 codeItemType={codeItemType}
+                remixItemType={remixItemType}
                 dispatch={props.dispatch}
                 isDynamic={isDynamic}
                 iconColor={iconColor}
@@ -839,6 +868,7 @@ interface NavigatorRowLabelProps {
   renamingTarget: ElementPath | null
   selected: boolean
   codeItemType: CodeItemType
+  remixItemType: RemixItemType
   shouldShowParentOutline: boolean
   childComponentCount: number
   dispatch: EditorDispatch
@@ -852,6 +882,25 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
   const isComponentScene =
     useIsProbablyScene(props.navigatorEntry) && props.childComponentCount === 1
 
+  const isRemixScene = props.remixItemType === 'scene'
+  const isOutlet = props.remixItemType === 'outlet'
+  const isLink = props.remixItemType === 'link'
+
+  const backgroundLozengeColor =
+    isCodeItem && !props.selected
+      ? colorTheme.dynamicBlue10.value
+      : isOutlet && !props.selected
+      ? colorTheme.aqua10.value
+      : 'transparent'
+
+  const textColor = isCodeItem
+    ? colorTheme.dynamicBlue.value
+    : isRemixItem
+    ? colorTheme.aqua.value
+    : isComponentScene
+    ? colorTheme.componentPurple.value
+    : undefined
+
   return (
     <div
       style={{
@@ -864,15 +913,8 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         height: 22,
         paddingLeft: 10,
         paddingRight: props.codeItemType === 'map' ? 0 : 10,
-        backgroundColor:
-          isCodeItem && !props.selected ? colorTheme.dynamicBlue10.value : 'transparent',
-        color: isCodeItem
-          ? colorTheme.dynamicBlue.value
-          : isRemixItem
-          ? colorTheme.aqua.value
-          : isComponentScene
-          ? colorTheme.componentPurple.value
-          : undefined,
+        backgroundColor: backgroundLozengeColor,
+        color: textColor,
         textTransform: isCodeItem ? 'uppercase' : undefined,
       }}
     >
@@ -895,6 +937,7 @@ export const NavigatorRowLabel = React.memo((props: NavigatorRowLabelProps) => {
         selected={props.selected}
         dispatch={props.dispatch}
         inputVisible={EP.pathsEqual(props.renamingTarget, props.navigatorEntry.elementPath)}
+        remixItemType={props.remixItemType}
       />
       <MapCounter navigatorEntry={props.navigatorEntry} dispatch={props.dispatch} />
       <ComponentPreview
