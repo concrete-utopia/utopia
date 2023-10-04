@@ -1285,7 +1285,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             dragDelta,
             cmdModifier,
             {
-              cursor: CSSCursor.Move,
+              cursor: CSSCursor.Reparent,
             },
             null,
           )

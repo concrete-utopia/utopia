@@ -48,6 +48,7 @@ export enum CSSCursor {
   DuplicateMagic = "-webkit-image-set( url( '/editor/cursors/cursor-duplicate-magic.png ') 1x, url( '/editor/cursors/cursor-duplicate-magic@2x.png ') 2x ) 4 4, default",
   ResizeEWMagic = "-webkit-image-set( url( '/editor/cursors/cursor-ew-resize-magic.png ') 1x, url( '/editor/cursors/cursor-ew-resize-magic@2x.png ') 2x ) 4 4, default",
   MovingMagic = "-webkit-image-set( url( '/editor/cursors/cursor-moving-magic.png ') 1x, url( '/editor/cursors/cursor-moving-magic@2x.png ') 2x ) 4 4, default",
+  Reparent = "-webkit-image-set( url( '/editor/cursors/cursor-moving-reparent.png ') 1x, url( '/editor/cursors/cursor-moving-reparent@2x.png ') 2x ) 4 4, default",
   NESWResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-nesw-resize-magic.png ') 1x, url( '/editor/cursors/cursor-nesw-resize-magic@2x.png ') 2x ) 4 4, default",
   NSResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-ns-resize-magic.png ') 1x, url( '/editor/cursors/cursor-ns-resize-magic@2x.png ') 2x ) 4 4, default",
   NWSEResizeMagic = "-webkit-image-set( url( '/editor/cursors/cursor-nwse-resize-magic.png ') 1x, url( '/editor/cursors/cursor-nwse-resize-magic@2x.png ') 2x ) 4 4, default",
