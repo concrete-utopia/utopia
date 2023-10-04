@@ -4,22 +4,10 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import { createSelector } from 'reselect'
 import { assertNever } from '../../core/shared/utils'
-import {
-  useColorTheme,
-  FlexColumn,
-  InspectorSectionHeader,
-  PopupList,
-  FlexRow,
-  colorTheme,
-  InspectorSubsectionHeader,
-  paddingLeft,
-} from '../../uuiui'
+import { FlexColumn, InspectorSectionHeader, PopupList, FlexRow, colorTheme } from '../../uuiui'
 import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles } from '../../uuiui-deps'
-import {
-  FragmentLikeType,
-  getElementFragmentLikeType,
-} from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import { addToast, applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'
@@ -31,12 +19,14 @@ import {
   convertFragmentToGroup,
   convertFrameToFragmentCommands,
   convertFrameToGroup,
-  convertGroupToFragment,
   convertGroupToFrameCommands,
-  isAbsolutePositionedFrame,
+  getInstanceForFragmentToFrameConversion,
+  getInstanceForFragmentToGroupConversion,
+  getInstanceForFrameToFragmentConversion,
+  getInstanceForFrameToGroupConversion,
+  getInstanceForGroupToFrameConversion,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import type { CanvasCommand } from '../canvas/commands/commands'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { allElemsEqual } from '../../core/shared/array-utils'
@@ -111,24 +101,27 @@ export function groupSectionOption(wrapperType: 'frame' | 'fragment' | 'group'):
 }
 
 const FragmentOption = groupSectionOption('fragment')
-const DivOption = groupSectionOption('frame')
+const FrameOption = groupSectionOption('frame')
 const GroupOption = groupSectionOption('group')
-
-const Options: Array<SelectOption> = [FragmentOption, DivOption, GroupOption]
 
 export const EditorContractDropdown = React.memo(() => {
   const dispatch = useDispatch()
 
   const metadataRef = useRefEditorState(metadataSelector)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const selectedElementContract = useEditorState(
     Substores.metadata,
     selectedElementContractSelector,
-    'GroupSection selectedElementContract',
+    'EditorContractDropdown selectedElementContract',
+  )
+
+  const selectedViews = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews,
+    'EditorContractDropdown selectedViews',
   )
 
   const onChange = React.useCallback(
@@ -142,9 +135,7 @@ export const EditorContractDropdown = React.memo(() => {
 
       // If any of the selected views are root elements of components,
       // bounce the entire operation as changing those currently is a problem.
-      if (
-        selectedViewsRef.current.some((selectedView) => EP.isRootElementOfInstance(selectedView))
-      ) {
+      if (selectedViews.some((selectedView) => EP.isRootElementOfInstance(selectedView))) {
         dispatch(
           [
             addToast(
@@ -169,7 +160,7 @@ export const EditorContractDropdown = React.memo(() => {
         )
       }
 
-      const commands = selectedViewsRef.current.flatMap((elementPath): CanvasCommand[] => {
+      const commands = selectedViews.flatMap((elementPath): CanvasCommand[] => {
         if (currentType === 'fragment') {
           if (desiredType === 'fragment') {
             // NOOP
@@ -262,7 +253,7 @@ export const EditorContractDropdown = React.memo(() => {
       metadataRef,
       elementPathTreeRef,
       selectedElementContract,
-      selectedViewsRef,
+      selectedViews,
     ],
   )
 
@@ -272,14 +263,81 @@ export const EditorContractDropdown = React.memo(() => {
     } else if (selectedElementContract === 'group') {
       return GroupOption
     }
-    return DivOption
+    return FrameOption
   }, [selectedElementContract])
+
+  const options = React.useMemo((): Array<SelectOption> => {
+    function maybeDisable(option: SelectOption, disabled: boolean) {
+      return { ...option, disabled: disabled }
+    }
+    let disabledGroup = false
+    let disabledFrame = false
+    let disabledFragment = false
+
+    if (selectedViews.length > 1) {
+      disabledGroup = true
+      disabledFrame = true
+      disabledFragment = true
+    } else if (selectedViews.length === 1) {
+      const view = selectedViews[0]
+      switch (currentValue.value) {
+        case 'frame':
+          disabledGroup =
+            getInstanceForFrameToGroupConversion(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              view,
+            ) == null
+          disabledFragment =
+            getInstanceForFrameToFragmentConversion(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              view,
+            ) == null
+          break
+        case 'fragment':
+          disabledFrame =
+            getInstanceForFragmentToFrameConversion(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              view,
+              'do-not-convert-if-it-has-static-children',
+            ) == null
+          disabledGroup =
+            getInstanceForFragmentToGroupConversion(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              view,
+            ) == null
+          break
+        case 'group':
+          disabledFrame =
+            getInstanceForGroupToFrameConversion(
+              metadataRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              view,
+            ) == null
+          break
+      }
+    }
+
+    return [
+      maybeDisable(FrameOption, disabledFrame),
+      maybeDisable(GroupOption, disabledGroup),
+      maybeDisable(FragmentOption, disabledFragment),
+    ]
+  }, [selectedViews, metadataRef, elementPathTreeRef, allElementPropsRef, currentValue])
 
   return (
     <PopupList
       id={'editor-contract-popup-list'}
       value={currentValue}
-      options={Options}
+      options={options}
       onSubmitValue={onChange}
       controlStyles={
         selectedElementContract === 'not-quite-frame' ? disabledControlStyles : simpleControlStyles

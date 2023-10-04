@@ -1,12 +1,12 @@
 import React from 'react'
 import type { InputProps } from 'react-select'
-import Select, { components, createFilter, FormatOptionLabelMeta } from 'react-select'
+import Select, { components, createFilter } from 'react-select'
 import type { Props as SelectProps } from 'react-select/creatable'
 import CreatableSelect from 'react-select/creatable'
 import type { IndicatorProps } from 'react-select/src/components/indicators'
 import Utils from '../../../utils/utils'
 import type { DEPRECATEDControlProps, DEPRECATEDGenericControlOptions } from './control'
-import { ControlStatus, isControlledStatus } from '../common/control-status'
+import { isControlledStatus } from '../common/control-status'
 import { getControlStyles } from '../common/control-styles'
 import type { ValueType } from 'react-select/src/types'
 import { PortalTargetID } from '../../../core/shared/utils'
@@ -32,6 +32,7 @@ export interface SelectOption {
   label?: string
   style?: React.CSSProperties
   options?: SelectOption[]
+  disabled?: boolean
 }
 
 const DropdownIndicator: React.FunctionComponent<

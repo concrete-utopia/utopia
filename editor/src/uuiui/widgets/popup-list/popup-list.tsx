@@ -18,13 +18,13 @@ import type { IndicatorProps } from 'react-select/src/components/indicators'
 import type { MenuPortalProps } from 'react-select/src/components/Menu'
 import type { styleFn } from 'react-select/src/styles'
 import type { IcnProps } from '../../icn'
-import { Icn, IcnSpacer } from '../../icn'
+import { Icn } from '../../icn'
 import { colorTheme, UtopiaStyles, UtopiaTheme } from '../../styles/theme'
 import { FlexRow } from '../layout/flex-row'
 import { isOptionType } from '../../../utils/utils'
 import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
-import { Icons, SmallerIcons } from '../../../uuiui/icons'
+import { SmallerIcons } from '../../../uuiui/icons'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -548,6 +548,10 @@ export const PopupList = React.memo<PopupListProps>(
 
       const container: styleFn = getContainer(containerMode, controlStyles, style)
 
+      function isOptionDisabled(option: SelectOption) {
+        return option.disabled === true
+      }
+
       return (
         <Select
           id={id}
@@ -566,6 +570,7 @@ export const PopupList = React.memo<PopupListProps>(
           menuPortalTarget={document.getElementById(CommonUtils.PortalTargetID)}
           filterOption={createFilter({ ignoreAccents: true })}
           isDisabled={disabled}
+          isOptionDisabled={isOptionDisabled}
           styles={{
             container,
             indicatorsContainer: (base) => ({
@@ -635,6 +640,7 @@ export const PopupList = React.memo<PopupListProps>(
               userSelect: 'none',
               borderRadius: 2,
               fontSize: 11,
+              opacity: optionProps.isDisabled === true ? 0.5 : 1,
               backgroundColor:
                 optionProps.isFocused === true
                   ? colorTheme.contextMenuHighlightBackground.value
