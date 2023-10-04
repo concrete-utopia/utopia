@@ -101,6 +101,50 @@ export var storyboard = (
 )
 `)
 
+const codeElementWithNoSiblingsAndMatchingOnlyWidth =
+  formatTestProjectCode(`import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+import { View, Rectangle } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <Scene
+      style={{
+        width: 700,
+        height: 759,
+        position: 'absolute',
+        left: 207,
+        top: 126,
+      }}
+      data-label='Playground'
+      data-uid='3fc'
+    >
+      <View
+        style={{
+          backgroundColor: '#B37DB7AB',
+          width: 100,
+          height: 100,
+        }}
+        data-uid='a50'
+      >
+        <div
+          data-testid='${DraggedDivId}'
+          data-uid='a75'
+          style={{
+            height: 50,
+            width: '100%',
+            backgroundColor: '#EB0A0A',
+            left: 245,
+            top: 196,
+          }}
+        />
+      </View>
+    </Scene>
+  </Storyboard>
+)
+`)
+
 const codeElementWithSibling = formatTestProjectCode(`import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 import { App } from '/src/app.js'
@@ -231,7 +275,7 @@ export var storyboard = (
           style={{
             backgroundColor: '#B98731E8',
             width: '100%',
-            height: 114,
+            height: 104,
           }}
           data-uid='bb3'
         >
@@ -502,6 +546,22 @@ describe('finds an applicable strategy for the nearest ancestor', () => {
       }
       expect(strategies[0].strategy.id.endsWith('_ANCESTOR_1')).toBeTruthy()
     }))
+
+  it('element with no siblings but only one matching dimension does not find ancestor strategy', () =>
+    runTest(
+      codeElementWithNoSiblingsAndMatchingOnlyWidth,
+      pathForShallowNestedElement,
+      (editor) => {
+        const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
+
+        expect(strategies?.length).toBeGreaterThan(0)
+        if (strategies == null) {
+          // here for type assertion
+          throw new Error('`strategies` should not be null')
+        }
+        expect(strategies[0].strategy.id.includes('_ANCESTOR_')).toBeFalsy()
+      },
+    ))
 
   it('deeply nested element with no siblings', () =>
     runTest(codeDeeplyNestedElement, pathForDeeplyNestedElement, (editor) => {
