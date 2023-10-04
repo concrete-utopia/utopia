@@ -3,7 +3,9 @@
 import { jsx } from '@emotion/react'
 
 import React from 'react'
+import { createSelector } from 'reselect'
 import { useContextSelector } from 'use-context-selector'
+import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import {
   HorizontalLayoutPinnedProps,
   VerticalLayoutPinnedProps,
@@ -15,7 +17,7 @@ import { emptyComments, jsExpressionValue } from '../../core/shared/element-temp
 import { nullIfInfinity } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
-import { NO_OP, assertNever } from '../../core/shared/utils'
+import { assertNever } from '../../core/shared/utils'
 import invariant from '../../third-party/remix/invariant'
 import { when } from '../../utils/react-conditionals'
 import { FlexColumn, FlexRow, InspectorSubsectionHeader, PopupList, UtopiaTheme } from '../../uuiui'
@@ -28,6 +30,7 @@ import { setProp_UNSAFE, unsetProperty } from '../editor/actions/action-creators
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import { getFullFrame } from '../frame'
+import { isCssNumberAndFixedSize, isCssNumberAndPercentage } from './common/css-utils'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { InspectorPropsContext } from './common/property-path-hooks'
 import { PinControl } from './controls/pin-control'
@@ -38,12 +41,9 @@ import {
   anySelectedElementGroupOrChildOfGroup,
 } from './fill-hug-fixed-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import { getFramePointsFromMetadataTypeFixed } from './inspector-common'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { getFramePointsFromMetadata, getFramePointsFromMetadataTypeFixed } from './inspector-common'
-import * as EP from '../../core/shared/element-path'
-import { isCSSNumber, isCssNumberAndFixedSize, isCssNumberAndPercentage } from './common/css-utils'
-import { createSelector } from 'reselect'
 
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
@@ -123,18 +123,89 @@ export const FrameChildPinControl = React.memo(() => {
   })
 
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const pins = useDetectedPinning()
 
   const onPinControlMouseDown = React.useCallback(
-    (frameProp: LayoutPinnedProp, event: React.MouseEvent<Element, MouseEvent>) => {},
-    [],
+    (frameProp: LayoutPinnedPropIncludingCenter, event: React.MouseEvent<Element, MouseEvent>) => {
+      const cmdPressed = event.metaKey
+      const requestedPinChange: RequestedPins | 'no-op' = (() => {
+        switch (frameProp) {
+          case 'left': {
+            if (cmdPressed && pins.horizontal === 'right-and-width') {
+              return 'left-and-right'
+            } else {
+              return 'left-and-width'
+            }
+          }
+          case 'right': {
+            if (cmdPressed && pins.horizontal === 'left-and-width') {
+              return 'left-and-right'
+            } else {
+              return 'right-and-width'
+            }
+          }
+          case 'width': {
+            return 'left-and-width'
+          }
+          case 'top': {
+            if (cmdPressed && pins.vertical === 'bottom-and-height') {
+              return 'top-and-bottom'
+            } else {
+              return 'top-and-height'
+            }
+          }
+          case 'bottom': {
+            if (cmdPressed && pins.vertical === 'top-and-height') {
+              return 'top-and-bottom'
+            } else {
+              return 'bottom-and-height'
+            }
+          }
+          case 'height': {
+            return 'top-and-height'
+          }
+          case 'centerX': {
+            if (cmdPressed) {
+              return 'scale-horizontal'
+            } else {
+              return 'no-op'
+            }
+          }
+          case 'centerY': {
+            if (cmdPressed) {
+              return 'scale-vertical'
+            } else {
+              return 'no-op'
+            }
+          }
+          default:
+            const _exhaustiveCheck: never = frameProp
+            throw new Error(`Unhandled frameProp: ${_exhaustiveCheck}`)
+        }
+      })()
+
+      if (requestedPinChange === 'no-op') {
+        // no-op, early return :)
+        return
+      }
+      dispatch(
+        getFrameChangeActions(
+          metadataRef.current,
+          propertyTarget,
+          selectedViewsRef.current,
+          requestedPinChange,
+        ),
+      )
+    },
+    [dispatch, metadataRef, selectedViewsRef, propertyTarget, pins],
   )
-  const pins = useDetectedPinning()
   const framePoints: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
 
   return (
     <PinControl
-      handlePinMouseDown={NO_OP}
+      handlePinMouseDown={onPinControlMouseDown}
       framePoints={framePoints}
       controlStatus='simple'
       name='group-child-controls'

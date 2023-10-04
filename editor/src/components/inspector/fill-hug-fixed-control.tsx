@@ -54,6 +54,7 @@ import { UIGridRow } from './widgets/ui-grid-row'
 import { mapDropNulls, safeIndex, uniqBy } from '../../core/shared/array-utils'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { when } from '../../utils/react-conditionals'
+import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
@@ -168,7 +169,11 @@ export const GroupChildPinControl = React.memo(() => {
   )
 
   const handleGroupConstraintPinMouseDown = React.useCallback(
-    (dimension: LayoutPinnedProp) => {
+    (dimension: LayoutPinnedPropIncludingCenter) => {
+      if (dimension === 'centerX' || dimension === 'centerY') {
+        // early return, we ignore centerX centerY
+        return
+      }
       return setGroupChildConstraint(
         dispatch,
         'toggle',

@@ -33,6 +33,7 @@ export type LayoutTargetableProp =
   | 'flexShrink'
 
 export type LayoutPinnedProp = LayoutDimension | 'left' | 'top' | 'right' | 'bottom'
+export type LayoutPinnedPropIncludingCenter = LayoutPinnedProp | 'centerX' | 'centerY'
 
 export const VerticalLayoutPinnedProps: Array<LayoutPinnedProp> = ['top', 'bottom', 'height']
 

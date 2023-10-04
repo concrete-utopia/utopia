@@ -2,6 +2,7 @@ import React from 'react'
 import type {
   LayoutFlexElementNumericProp,
   LayoutPinnedProp,
+  LayoutPinnedPropIncludingCenter,
 } from '../../../../../core/layout/layout-helpers-new'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
@@ -304,7 +305,7 @@ export const FlexLayoutNumberControl = React.memo((props: FlexLayoutNumberContro
 interface PinControlsProps {
   resetPins: () => void
   framePins: FramePinsInfo
-  togglePin: (prop: LayoutPinnedProp) => void
+  togglePin: (prop: LayoutPinnedPropIncludingCenter) => void
 }
 
 const PinControls = React.memo((props: PinControlsProps) => {

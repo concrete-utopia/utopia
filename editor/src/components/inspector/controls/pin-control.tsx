@@ -4,13 +4,19 @@ import type { ControlStyles } from '../common/control-styles'
 import type { ControlStatus } from '../common/control-status'
 import { getControlStyles } from '../common/control-styles'
 import { FramePoint } from 'utopia-api/core'
-import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import type {
+  LayoutPinnedProp,
+  LayoutPinnedPropIncludingCenter,
+} from '../../../core/layout/layout-helpers-new'
 import type { FramePinsInfo } from '../common/layout-property-path-hooks'
 import { UtopiaTheme, SquareButton, colorTheme, color } from '../../../uuiui'
 import { unless } from '../../../utils/react-conditionals'
 
 interface PinControlProps {
-  handlePinMouseDown: (frameProp: LayoutPinnedProp, event: React.MouseEvent<Element>) => void
+  handlePinMouseDown: (
+    frameProp: LayoutPinnedPropIncludingCenter,
+    event: React.MouseEvent<Element>,
+  ) => void
   name: string
   controlStatus: ControlStatus
   framePoints: FramePinsInfo
@@ -82,9 +88,10 @@ function getTestId(prefix: string, id: string): string {
 export const PinControl = (props: PinControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
 
-  const handlePinMouseDown = (frameProp: LayoutPinnedProp) => (e: React.MouseEvent<Element>) => {
-    props.handlePinMouseDown(frameProp, e)
-  }
+  const handlePinMouseDown =
+    (frameProp: LayoutPinnedPropIncludingCenter) => (e: React.MouseEvent<Element>) => {
+      props.handlePinMouseDown(frameProp, e)
+    }
 
   const exclude: ExcludePinControls = React.useMemo(
     () =>
@@ -290,7 +297,7 @@ export const PinControl = (props: PinControlProps) => {
                   data-testid={getTestId(props.name, 'pin-centerx-transparent')}
                   stroke='transparent'
                   fill='transparent'
-                  onMouseDown={Utils.NO_OP}
+                  onMouseDown={handlePinMouseDown('centerX')}
                 />
                 <path
                   d={`M 0,0 ${HorizontalDividerWidth},0 0,${VerticalDividerHeight} ${HorizontalDividerWidth},${VerticalDividerHeight} z`}
@@ -299,7 +306,7 @@ export const PinControl = (props: PinControlProps) => {
                   data-testid={getTestId(props.name, 'pin-centery-transparent')}
                   stroke='transparent'
                   fill='transparent'
-                  onMouseDown={Utils.NO_OP}
+                  onMouseDown={handlePinMouseDown('centerY')}
                 />
               </g>
             </>,
