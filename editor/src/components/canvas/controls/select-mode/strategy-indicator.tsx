@@ -43,12 +43,12 @@ export const StrategyIndicator = React.memo(() => {
   return (
     <FlexRow
       style={{
-        marginLeft: 15,
+        marginLeft: 8,
         padding: '0 8px',
         height: 32,
         gap: 10,
         overflow: 'hidden',
-        backgroundColor: colorTheme.bg2.value,
+        backgroundColor: colorTheme.bg1.value,
         borderRadius: '0px 10px 10px 10px',
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         pointerEvents: 'initial',
@@ -78,12 +78,11 @@ const MoveReorderReparentIndicator = React.memo(() => {
     <FlexRow
       style={{
         height: 32,
-        color: colorTheme.primary.value,
-        minWidth: 110,
+        color: colorTheme.dynamicBlue.value,
+        padding: '0 8px',
       }}
       data-testid={MoveReorderReparentIndicatorID}
     >
-      <Icons.Checkmark color='primary' />
       {indicatorText}
     </FlexRow>
   )
