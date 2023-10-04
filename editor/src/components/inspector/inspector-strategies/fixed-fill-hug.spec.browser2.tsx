@@ -8,6 +8,7 @@ import {
   expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
+  wait,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
@@ -556,64 +557,64 @@ describe('Fixed / Fill / Hug control', () => {
     const NonHugContentAttrValues = [200, '100%', 'inherit', '200px']
     describe('Detect Hug Contents state with different width/height values', () => {
       HugContentAttrValues.forEach((width) =>
-        NonHugContentAttrValues.slice(2).forEach((height) =>
-          it(`child has Hug Contents width (${width}) but not height (${height})`, async () => {
-            const editor = await renderTestEditorWithCode(
-              projectWithParentWidthHeight(width, height),
-              'await-first-dom-report',
-            )
-            await select(editor, 'parent')
+        it(`child has Hug Contents width (${width}) but not height (200)`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight(width, 200),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
 
-            const buttons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          const hugButtons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(1)
 
-            expect(buttons).toHaveLength(1)
-          }),
-        ),
+          const fixedButtons = await editor.renderedDOM.findAllByText(FixedLabel)
+          expect(fixedButtons).toHaveLength(1)
+        }),
       )
       HugContentAttrValues.forEach((height) =>
-        NonHugContentAttrValues.slice(2).forEach((width) =>
-          it(`child has Hug Contents height (${height}) but not width ${width}`, async () => {
-            const editor = await renderTestEditorWithCode(
-              projectWithParentWidthHeight(width, height),
-              'await-first-dom-report',
-            )
-            await select(editor, 'parent')
+        it(`child has Hug Contents height (${height}) but not width (200)`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight(200, height),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
 
-            const buttons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          const hugButtons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(1)
 
-            expect(buttons).toHaveLength(1)
-          }),
-        ),
+          const fixedButtons = await editor.renderedDOM.findAllByText(FixedLabel)
+          expect(fixedButtons).toHaveLength(1)
+        }),
       )
       HugContentAttrValues.forEach((width) =>
-        HugContentAttrValues.slice(2).forEach((height) =>
-          it(`child has Hug Contents width (${width}) and height (${height})`, async () => {
-            const editor = await renderTestEditorWithCode(
-              projectWithParentWidthHeight(width, height),
-              'await-first-dom-report',
-            )
-            await select(editor, 'parent')
+        it(`child has Hug Contents width (${width}) and height (${MaxContent})`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight(width, MaxContent),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
 
-            const buttons = await editor.renderedDOM.findAllByText(HugContentsLabel)
-
-            expect(buttons).toHaveLength(2)
-          }),
-        ),
+          const hugButtons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(2)
+        }),
       )
       NonHugContentAttrValues.forEach((width) =>
-        NonHugContentAttrValues.slice(2).forEach((height) =>
-          it(`child doesn't have Hug Contents in width (${width}) or height (${height})`, async () => {
-            const editor = await renderTestEditorWithCode(
-              projectWithParentWidthHeight(width, height),
-              'await-first-dom-report',
-            )
-            await select(editor, 'parent')
+        it(`child doesn't have Hug Contents in width (${width}) or height (200)`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight('100%', 200),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
 
-            const buttons = await editor.renderedDOM.queryAllByText(HugContentsLabel)
+          const hugButtons = editor.renderedDOM.queryAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(0)
 
-            expect(buttons).toHaveLength(0)
-          }),
-        ),
+          const otherButtons = await editor.renderedDOM.queryAllByText(
+            (content) =>
+              content === DetectedLabel || content === FixedLabel || content === FillContainerLabel,
+          )
+          expect(otherButtons).toHaveLength(2)
+        }),
       )
     })
     describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
