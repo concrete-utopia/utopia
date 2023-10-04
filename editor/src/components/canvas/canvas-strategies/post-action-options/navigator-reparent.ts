@@ -202,7 +202,7 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
   }
 }
 
-function adjustIntendedCoordinatesForGroups(
+export function adjustIntendedCoordinatesForGroups(
   jsxMetadata: ElementInstanceMetadataMap,
   reparentTargetPath: ElementPath,
   intendedCoordinates: CanvasPoint,
