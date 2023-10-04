@@ -1,3 +1,4 @@
+import { notice } from '../../../components/common/notice'
 import { isLeft, isRight, left } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import {
@@ -12,7 +13,7 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { DerivedState, EditorState } from '../../editor/store/editor-state'
+import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import { deriveState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
 import type { CSSKeyword, CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
@@ -26,6 +27,7 @@ import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { deleteConflictingPropsForWidthHeight } from './adjust-css-length-command'
 import { applyValuesAtPath } from './adjust-number-command'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
+import { addToastPatch } from './show-toast-command'
 
 type CssNumberOrKeepOriginalUnit =
   | { type: 'EXPLICIT_CSS_NUMBER'; value: CSSNumber | CSSKeyword }
@@ -49,6 +51,7 @@ export interface SetCssLengthProperty extends BaseCommand {
   value: CssNumberOrKeepOriginalUnit
   parentFlexDirection: FlexDirection | null
   createIfNonExistant: CreateIfNotExistant
+  whenReplacingPercentageValues: 'do-not-warn' | 'warn-about-replacement'
 }
 
 export function setCssLengthProperty(
@@ -58,6 +61,7 @@ export function setCssLengthProperty(
   value: CssNumberOrKeepOriginalUnit,
   parentFlexDirection: FlexDirection | null,
   createIfNonExistant: CreateIfNotExistant = 'create-if-not-existing', // TODO remove the default value and set it explicitly everywhere
+  whenReplacingPercentageValues: SetCssLengthProperty['whenReplacingPercentageValues'] = 'do-not-warn',
 ): SetCssLengthProperty {
   return {
     type: 'SET_CSS_LENGTH_PROPERTY',
@@ -67,6 +71,7 @@ export function setCssLengthProperty(
     value: value,
     parentFlexDirection: parentFlexDirection,
     createIfNonExistant: createIfNonExistant,
+    whenReplacingPercentageValues: whenReplacingPercentageValues,
   }
 }
 
@@ -122,6 +127,8 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
 
   let propsToUpdate: Array<ValueAtPath> = []
 
+  let percentageValueWasReplaced: boolean = false
+
   const parsePercentResult = parseCSSPercent(simpleValueResult.value)
   if (
     isRight(parsePercentResult) &&
@@ -146,6 +153,13 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
         ? command.value.value
         : cssPixelLength(command.value.valuePx)
 
+    if (
+      command.whenReplacingPercentageValues === 'warn-about-replacement' &&
+      isRight(parsePercentResult)
+    ) {
+      percentageValueWasReplaced = true
+    }
+
     const printedValue = printCSSNumberOrKeyword(newCssValue, 'px')
 
     propsToUpdate.push({
@@ -161,8 +175,25 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     propsToUpdate,
   )
 
+  // Always include the property update patch, but potentially also include a warning
+  // that a percentage based property was replaced with a pixel based one.
+  let editorStatePatches: Array<EditorStatePatch> = [propertyUpdatePatch]
+  if (percentageValueWasReplaced) {
+    editorStatePatches.push(
+      addToastPatch(
+        editorStateWithPropsDeleted.toasts,
+        notice(
+          'One or more percentage based style properties were replaced with a pixel based one.',
+          'INFO',
+          false,
+          'percentage-pin-replaced',
+        ),
+      ),
+    )
+  }
+
   return {
-    editorStatePatches: [propertyUpdatePatch],
+    editorStatePatches: editorStatePatches,
     commandDescription: `Set Css Length Prop: ${EP.toUid(command.target)}/${PP.toString(
       command.property,
     )} by ${
