@@ -24,6 +24,8 @@ import type {
   JSXElement,
   JSXElementChild,
   JSXElementLike,
+  JSXFragment,
+  SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import {
   emptyComments,
@@ -208,7 +210,21 @@ export function convertFragmentToSizelessDiv(
   ]
 }
 
-export function convertFragmentToFrame(
+type JSXElementConversion = JSXElement
+
+type JSXElementLikeConversion = {
+  element: JSXElementLike
+  childInstances: ElementInstanceMetadata[]
+}
+
+type JSXFragmentConversion = {
+  element: JSXFragment
+  childInstances: ElementInstanceMetadata[]
+  childrenBoundingFrame: CanvasRectangle
+  specialSizeMeasurements: SpecialSizeMeasurements
+}
+
+export function getInstanceForFragmentToFrameConversion(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -216,16 +232,15 @@ export function convertFragmentToFrame(
   convertIfStaticChildren:
     | 'do-not-convert-if-it-has-static-children'
     | 'convert-even-if-it-has-static-children',
-): CanvasCommand[] {
-  const parentPath = EP.parentPath(elementPath)
+): JSXFragmentConversion | ConversionForbidden {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
-    return []
+    return conversionForbidden('Fragment is not a valid element')
   }
 
   if (!isJSXFragment(element.element.value)) {
     // not a fragment, nothing to convert!
-    return []
+    return conversionForbidden('Element is not a Fragment')
   }
 
   const childInstances = mapDropNulls(
@@ -243,15 +258,43 @@ export function convertFragmentToFrame(
     childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))
   ) {
     // if any children is not position: absolute, bail out from the conversion
-    return []
+    return conversionForbidden('Fragment children must be positioned absolutely')
   }
-
-  const { children, uid } = element.element.value
 
   const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
+    return conversionForbidden('Fragment has invalid children bounds')
+  }
+
+  return {
+    element: element.element.value,
+    specialSizeMeasurements: element.specialSizeMeasurements,
+    childInstances: childInstances,
+    childrenBoundingFrame: childrenBoundingFrame,
+  }
+}
+
+export function convertFragmentToFrame(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
+): CanvasCommand[] {
+  const instance = getInstanceForFragmentToFrameConversion(
+    metadata,
+    pathTrees,
+    allElementProps,
+    elementPath,
+    convertIfStaticChildren,
+  )
+  if (isConversionForbidden(instance)) {
     return []
   }
+
+  const { children, uid } = instance.element
 
   const parentBounds =
     optionalMap(
@@ -259,10 +302,10 @@ export function convertFragmentToFrame(
       MetadataUtils.findElementByElementPath(metadata, EP.parentPath(elementPath)),
     ) ?? zeroCanvasRect
 
-  const left = childrenBoundingFrame.x - parentBounds.x
-  const top = childrenBoundingFrame.y - parentBounds.y
+  const left = instance.childrenBoundingFrame.x - parentBounds.x
+  const top = instance.childrenBoundingFrame.y - parentBounds.y
 
-  const fragmentIsCurrentlyAbsolute = element.specialSizeMeasurements.position === 'absolute'
+  const fragmentIsCurrentlyAbsolute = instance.specialSizeMeasurements.position === 'absolute'
 
   const absoluteTopLeftProps = fragmentIsCurrentlyAbsolute
     ? ({ position: 'absolute', top: top, left: left } as const)
@@ -272,7 +315,7 @@ export function convertFragmentToFrame(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      childInsertionPath(parentPath),
+      childInsertionPath(EP.parentPath(elementPath)),
       jsxElement(
         jsxElementName('div', []),
         uid,
@@ -281,8 +324,8 @@ export function convertFragmentToFrame(
           style: jsExpressionValue(
             {
               ...absoluteTopLeftProps,
-              width: childrenBoundingFrame.width,
-              height: childrenBoundingFrame.height,
+              width: instance.childrenBoundingFrame.width,
+              height: instance.childrenBoundingFrame.height,
             },
             emptyComments,
           ),
@@ -293,25 +336,24 @@ export function convertFragmentToFrame(
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       },
     ),
-    ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
+    ...offsetChildrenByDelta(instance.childInstances, instance.childrenBoundingFrame),
   ]
 }
 
-export function convertFragmentToGroup(
+export function getInstanceForFragmentToGroupConversion(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-): CanvasCommand[] {
-  const parentPath = EP.parentPath(elementPath)
+): JSXFragmentConversion | ConversionForbidden {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
-    return []
+    return conversionForbidden('Fragment is not a valid element')
   }
 
   if (!isJSXFragment(element.element.value)) {
     // not a fragment, nothing to convert!
-    return []
+    return conversionForbidden('Element is not a Fragment')
   }
 
   const childInstances = mapDropNulls(
@@ -326,31 +368,55 @@ export function convertFragmentToGroup(
 
   if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
     // if any children is not position: absolute, bail out from the conversion
-    return []
+    return conversionForbidden('Fragment children must be positioned absolutely')
   }
-
-  const { children, uid } = element.element.value
-  // Remove the margins from the children.
-  const toPropsOptic = traverseArray<JSXElementChild>()
-    .compose(fromTypeGuard(isJSXElement))
-    .compose(fromField('props'))
-  const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
 
   const childrenBoundingFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
   if (childrenBoundingFrame == null || isInfinityRectangle(childrenBoundingFrame)) {
-    return []
+    return conversionForbidden('Fragment has invalid children bounds')
   }
 
+  return {
+    element: element.element.value,
+    childrenBoundingFrame: childrenBoundingFrame,
+    specialSizeMeasurements: element.specialSizeMeasurements,
+    childInstances: childInstances,
+  }
+}
+
+export function convertFragmentToGroup(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): CanvasCommand[] {
+  const instance = getInstanceForFragmentToGroupConversion(
+    metadata,
+    pathTrees,
+    allElementProps,
+    elementPath,
+  )
+  if (isConversionForbidden(instance)) {
+    return []
+  }
   const parentBounds =
     optionalMap(
       MetadataUtils.getGlobalContentBoxForChildren,
       MetadataUtils.findElementByElementPath(metadata, EP.parentPath(elementPath)),
     ) ?? zeroCanvasRect
 
-  const left = childrenBoundingFrame.x - parentBounds.x
-  const top = childrenBoundingFrame.y - parentBounds.y
+  const { children, uid } = instance.element
 
-  const fragmentIsCurrentlyAbsolute = element.specialSizeMeasurements.position === 'absolute'
+  // Remove the margins from the children.
+  const toPropsOptic = traverseArray<JSXElementChild>()
+    .compose(fromTypeGuard(isJSXElement))
+    .compose(fromField('props'))
+  const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
+
+  const left = instance.childrenBoundingFrame.x - parentBounds.x
+  const top = instance.childrenBoundingFrame.y - parentBounds.y
+
+  const fragmentIsCurrentlyAbsolute = instance.specialSizeMeasurements.position === 'absolute'
 
   const absoluteTopLeftProps = fragmentIsCurrentlyAbsolute
     ? ({ position: 'absolute', top: top, left: left } as const)
@@ -360,7 +426,7 @@ export function convertFragmentToGroup(
     deleteElement('always', elementPath),
     addElement(
       'always',
-      childInsertionPath(parentPath),
+      childInsertionPath(EP.parentPath(elementPath)),
       jsxElement(
         'Group',
         uid,
@@ -369,8 +435,8 @@ export function convertFragmentToGroup(
           style: jsExpressionValue(
             {
               ...absoluteTopLeftProps,
-              width: childrenBoundingFrame.width,
-              height: childrenBoundingFrame.height,
+              width: instance.childrenBoundingFrame.width,
+              height: instance.childrenBoundingFrame.height,
             },
             emptyComments,
           ),
@@ -382,7 +448,7 @@ export function convertFragmentToGroup(
         importsToAdd: GroupImport,
       },
     ),
-    ...offsetChildrenByDelta(childInstances, childrenBoundingFrame),
+    ...offsetChildrenByDelta(instance.childInstances, instance.childrenBoundingFrame),
   ]
 }
 
@@ -510,16 +576,15 @@ export function convertFrameToSizelessDivCommands(
   ]
 }
 
-export function convertFrameToFragmentCommands(
+export function getInstanceForFrameToFragmentConversion(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const parentPath = EP.parentPath(elementPath)
+): JSXElementLikeConversion | ConversionForbidden {
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
-    return []
+    return conversionForbidden('Frame is not a valid element')
   }
 
   const childInstances = mapDropNulls(
@@ -534,10 +599,29 @@ export function convertFrameToFragmentCommands(
 
   // if any children is not position: absolute, bail out from the conversion
   if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
+    return conversionForbidden('Frame children must be positioned absolutely')
+  }
+
+  return { element: instance.element.value, childInstances: childInstances }
+}
+
+export function convertFrameToFragmentCommands(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const instance = getInstanceForFrameToFragmentConversion(
+    metadata,
+    pathTrees,
+    allElementProps,
+    elementPath,
+  )
+  if (isConversionForbidden(instance)) {
     return []
   }
 
-  const { children, uid } = instance.element.value
+  const { children, uid } = instance.element
 
   const parentOffset =
     MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
@@ -545,30 +629,50 @@ export function convertFrameToFragmentCommands(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
-      importsToAdd: {
-        react: {
-          importedAs: 'React',
-          importedFromWithin: [],
-          importedWithName: null,
+    addElement(
+      'always',
+      childInsertionPath(EP.parentPath(elementPath)),
+      jsxFragment(uid, children, true),
+      {
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
+        importsToAdd: {
+          react: {
+            importedAs: 'React',
+            importedFromWithin: [],
+            importedWithName: null,
+          },
         },
       },
-    }),
-    ...offsetChildrenByVectorCommands(childInstances, parentOffset),
+    ),
+    ...offsetChildrenByVectorCommands(instance.childInstances, parentOffset),
   ]
 }
 
-export function convertFrameToGroup(
+type ConversionForbidden = {
+  type: 'CONVERSION_FORBIDDEN'
+  reason: string
+}
+
+function conversionForbidden(reason: string): ConversionForbidden {
+  return {
+    type: 'CONVERSION_FORBIDDEN',
+    reason: reason,
+  }
+}
+
+export function isConversionForbidden(c: unknown): c is ConversionForbidden {
+  return (c as ConversionForbidden).type === 'CONVERSION_FORBIDDEN'
+}
+
+export function getInstanceForFrameToGroupConversion(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const parentPath = EP.parentPath(elementPath)
+): JSXElementConversion | ConversionForbidden {
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
-    return []
+    return conversionForbidden('Frame is not a valid element')
   }
 
   const childInstances = mapDropNulls(
@@ -583,15 +687,34 @@ export function convertFrameToGroup(
 
   if (childInstances.length === 0) {
     // if the Frame has no children, it cannot become a Group
-    return []
+    return conversionForbidden('Frame has no children')
   }
 
   // if any children is not position: absolute, bail out from the conversion
   if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
+    return conversionForbidden('Frame children must be positioned absolutely')
+  }
+
+  return instance.element.value
+}
+
+export function convertFrameToGroup(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const instance = getInstanceForFrameToGroupConversion(
+    metadata,
+    pathTrees,
+    allElementProps,
+    elementPath,
+  )
+  if (isConversionForbidden(instance)) {
     return []
   }
 
-  const { children, uid, props } = instance.element.value
+  const { children, uid, props } = instance
   // Remove the padding and background properties from the parent.
   const propsWithoutPadding = removeBackgroundProperties(removePaddingProperties(props))
   // Remove the margin properties for the children of the newly created group.
@@ -638,7 +761,7 @@ export function convertFrameToGroup(
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', childInsertionPath(parentPath), elementToAdd, {
+    addElement('always', childInsertionPath(EP.parentPath(elementPath)), elementToAdd, {
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: GroupImport,
     }),
@@ -652,16 +775,15 @@ export function convertFrameToGroup(
   ]
 }
 
-export function convertGroupToFrameCommands(
+export function getInstanceForGroupToFrameConversion(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const parentPath = EP.parentPath(elementPath)
+): JSXElementConversion | ConversionForbidden {
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
-    return []
+    return conversionForbidden('Group is not a valid element')
   }
 
   const childInstances = mapDropNulls(
@@ -676,16 +798,39 @@ export function convertGroupToFrameCommands(
 
   // if any children is not position: absolute, bail out from the conversion
   if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
-    return []
+    return conversionForbidden('Group children must be positioned absolutely')
   }
 
-  const { children, uid, props } = instance.element.value
+  return instance.element.value
+}
+
+export function convertGroupToFrameCommands(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+): Array<CanvasCommand> {
+  const instance = getInstanceForGroupToFrameConversion(
+    metadata,
+    pathTrees,
+    allElementProps,
+    elementPath,
+  )
+  if (isConversionForbidden(instance)) {
+    return []
+  }
+  const { children, uid, props } = instance
 
   return [
     deleteElement('always', elementPath),
-    addElement('always', childInsertionPath(parentPath), jsxElement('div', uid, props, children), {
-      indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
-    }),
+    addElement(
+      'always',
+      childInsertionPath(EP.parentPath(elementPath)),
+      jsxElement('div', uid, props, children),
+      {
+        indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
+      },
+    ),
   ]
 }
 
