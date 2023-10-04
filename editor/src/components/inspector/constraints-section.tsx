@@ -183,7 +183,7 @@ export const FrameChildConstraintSelect = React.memo((props: { dimension: 'width
 
   const pins = useEditorState(
     Substores.metadata,
-    (store) => detectPinsSet(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+    (store) => multiselectDetectPinsSet(store.editor.jsxMetadata, store.editor.selectedViews),
     'FrameChildConstraintSelect pins',
   )
 
@@ -221,6 +221,23 @@ export const FrameChildConstraintSelect = React.memo((props: { dimension: 'width
     />
   )
 })
+
+function multiselectDetectPinsSet(
+  metadata: ElementInstanceMetadataMap,
+  targets: Array<ElementPath>,
+): { horizontal: HorizontalPinRequests | 'mixed'; vertical: VerticalPinRequests | 'mixed' } {
+  if (targets.length == 0) {
+    return { horizontal: 'left-and-width', vertical: 'top-and-height' }
+  }
+  const results = targets.map((t) => detectPinsSet(metadata, t))
+  const isMixedHorizontal = results.some((r) => r.horizontal !== results[0].horizontal)
+  const isMixedVertical = results.some((r) => r.vertical !== results[0].vertical)
+
+  return {
+    horizontal: isMixedHorizontal ? 'mixed' : results[0].horizontal,
+    vertical: isMixedVertical ? 'mixed' : results[0].vertical,
+  }
+}
 
 function detectPinsSet(
   metadata: ElementInstanceMetadataMap,
