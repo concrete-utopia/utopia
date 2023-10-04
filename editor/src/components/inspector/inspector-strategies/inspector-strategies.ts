@@ -23,7 +23,7 @@ import { convertLayoutToFlexCommands } from '../../common/shared-strategies/conv
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
 import { fixedEdgeBasicStrategy } from './fixed-edge-basic-strategy'
-import type { LayoutEdgeProp } from 'src/core/layout/layout-helpers-new'
+import type { LayoutEdgeProp } from '../../../core/layout/layout-helpers-new'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {

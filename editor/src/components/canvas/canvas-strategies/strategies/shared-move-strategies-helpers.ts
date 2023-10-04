@@ -57,6 +57,8 @@ import type { AbsolutePin } from './resize-helpers'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
+import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -79,7 +81,7 @@ export const getAdjustMoveCommands =
     let commands: Array<AdjustCssLengthProperties> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
-      const elementResult = getMoveCommandsForSelectedElement(
+      const elementResult = getInteractionMoveCommandsForSelectedElement(
         selectedElement,
         snappedDragVector,
         canvasState,
@@ -164,22 +166,20 @@ export function applyMoveCommon(
 }
 
 export function getMoveCommandsForSelectedElement(
+  projectContents: ProjectContentTreeRoot,
+  startingMetadata: ElementInstanceMetadataMap,
   selectedElement: ElementPath,
+  mappedPath: ElementPath,
   drag: CanvasVector,
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession,
   options?: MoveCommandsOptions,
 ): {
   commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const element: JSXElement | null = getElementFromProjectContents(
-    selectedElement,
-    canvasState.projectContents,
-  )
+  const element: JSXElement | null = getElementFromProjectContents(selectedElement, projectContents)
 
   const elementMetadata = MetadataUtils.findElementByElementPath(
-    canvasState.startingMetadata, // TODO should this be using the current metadata?
+    startingMetadata, // TODO should this be using the current metadata?
     selectedElement,
   )
 
@@ -188,21 +188,15 @@ export function getMoveCommandsForSelectedElement(
 
   const localFrame = options?.ignoreLocalFrame
     ? null
-    : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
-        selectedElement,
-        canvasState.startingMetadata,
-      )
+    : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(selectedElement, startingMetadata)
 
   const globalFrame = nullIfInfinity(
-    MetadataUtils.getFrameInCanvasCoords(selectedElement, canvasState.startingMetadata),
+    MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
   )
 
   if (element == null) {
     return { commands: [], intendedBounds: [] }
   }
-
-  const mappedPath =
-    interactionSession.updatedTargetPaths[EP.toString(selectedElement)] ?? selectedElement
 
   return createMoveCommandsForElement(
     element,
@@ -214,6 +208,56 @@ export function getMoveCommandsForSelectedElement(
     elementParentBounds,
     elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
   )
+}
+
+export function getInteractionMoveCommandsForSelectedElement(
+  selectedElement: ElementPath,
+  drag: CanvasVector,
+  canvasState: InteractionCanvasState,
+  interactionSession: InteractionSession,
+  options?: MoveCommandsOptions,
+): {
+  commands: Array<AdjustCssLengthProperties>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
+  const mappedPath =
+    interactionSession.updatedTargetPaths[EP.toString(selectedElement)] ?? selectedElement
+
+  return getMoveCommandsForSelectedElement(
+    canvasState.projectContents,
+    canvasState.startingMetadata,
+    selectedElement,
+    mappedPath,
+    drag,
+    options,
+  )
+}
+
+export function moveInspectorStrategy(
+  projectContents: ProjectContentTreeRoot,
+  movement: CanvasVector,
+): InspectorStrategy {
+  return {
+    name: 'Move by pixels',
+    strategy: (metadata, selectedElementPaths, _elementPathTree, _allElementProps) => {
+      let commands: Array<CanvasCommand> = []
+      let intendedBounds: Array<CanvasFrameAndTarget> = []
+      for (const selectedPath of selectedElementPaths) {
+        const moveCommandsResult = getMoveCommandsForSelectedElement(
+          projectContents,
+          metadata,
+          selectedPath,
+          selectedPath,
+          movement,
+        )
+        commands.push(...moveCommandsResult.commands)
+        intendedBounds.push(...moveCommandsResult.intendedBounds)
+      }
+      commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
+      commands.push(setElementsToRerenderCommand(selectedElementPaths))
+      return commands
+    },
+  }
 }
 
 export function createMoveCommandsForElement(

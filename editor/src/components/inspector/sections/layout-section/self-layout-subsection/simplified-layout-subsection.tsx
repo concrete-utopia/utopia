@@ -3,71 +3,74 @@ import { FlexColumn, FlexRow, InspectorSubsectionHeader, NumberInput } from '../
 import { EditorContractDropdown } from '../../../editor-contract-section'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { FixedHugDropdown } from '../../../fill-hug-fixed-control'
-import type { MultiselectAtProps } from '../../../common/property-path-hooks'
 import {
-  stylePropPathMappingFn,
-  useGetMultiselectedProps,
   useInspectorLayoutInfo,
   useInspectorStyleInfo,
   useIsSubSectionVisible,
 } from '../../../common/property-path-hooks'
 import { BooleanControl } from '../../../controls/boolean-control'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
-import type { StyleLayoutProp } from '../../../../../core/layout/layout-helpers-new'
-import {
-  layoutPinnedPropIsEdgeProp,
-  type LayoutPinnedProp,
-  LayoutPinnedProps,
-} from '../../../../../core/layout/layout-helpers-new'
 import {
   isUnknownInputValue,
   type CSSNumber,
   type UnknownOrEmptyInput,
   isEmptyInputValue,
+  cssNumber,
 } from '../../../common/css-utils'
 import { unsetPropertyMenuItem } from '../../../common/context-menu-items'
 import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
-import { useRefEditorState } from '../../../../editor/store/store-hook'
+import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
 import { metadataSelector, selectedViewsSelector } from '../../../../inspector/inpector-selectors'
-import {
-  setPropFixedEdgeStrategies,
-  setPropFixedSizeStrategies,
-} from '../../../../inspector/inspector-strategies/inspector-strategies'
-import type { Axis } from '../../../../inspector/inspector-common'
 import { assertNever } from '../../../../../core/shared/utils'
+import { resizeInspectorStrategy } from '../../../../canvas/canvas-strategies/strategies/keyboard-absolute-resize-strategy'
+import {
+  EdgePositionBottom,
+  type EdgePosition,
+  EdgePositionLeft,
+  EdgePositionRight,
+  EdgePositionTop,
+} from '../../../../canvas/canvas-types'
+import type {
+  CanvasRectangle,
+  CanvasVector,
+  LocalRectangle,
+} from '../../../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  canvasVector,
+  isInfinityRectangle,
+  localRectangle,
+  zeroRectangle,
+} from '../../../../../core/shared/math-utils'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import { moveInspectorStrategy } from '../../../../../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 
-function getLayoutPinnedPropAxis(property: LayoutPinnedProp): Axis {
+type TLWH = 'top' | 'left' | 'width' | 'height'
+
+function getTLWHEdgePosition(property: TLWH): EdgePosition {
   switch (property) {
     case 'top':
-    case 'bottom':
+      return EdgePositionTop
     case 'height':
-      return 'vertical'
+      return EdgePositionBottom
     case 'left':
-    case 'right':
+      return EdgePositionLeft
     case 'width':
-      return 'horizontal'
+      return EdgePositionRight
     default:
       assertNever(property)
   }
 }
 
-function getLayoutPinnedPropAlternativeProps(
-  property: LayoutPinnedProp,
-): [LayoutPinnedProp, LayoutPinnedProp] {
+function getMovementFromValues(property: TLWH, oldValue: number, newValue: number): CanvasVector {
   switch (property) {
-    case 'top':
-      return ['height', 'bottom']
-    case 'bottom':
-      return ['top', 'height']
-    case 'height':
-      return ['top', 'bottom']
     case 'left':
-      return ['width', 'right']
-    case 'right':
-      return ['left', 'width']
     case 'width':
-      return ['left', 'right']
+      return canvasVector({ x: newValue - oldValue, y: 0 })
+    case 'top':
+    case 'height':
+      return canvasVector({ x: 0, y: newValue - oldValue })
     default:
       assertNever(property)
   }
@@ -75,59 +78,32 @@ function getLayoutPinnedPropAlternativeProps(
 
 export interface LayoutPinPropertyControlProps {
   label: string
-  property: LayoutPinnedProp
+  property: TLWH
+  currentValue: number
+  updateFrame: (edgePosition: EdgePosition, movement: CanvasVector) => void
 }
 
 export const LayoutPinPropertyControl = React.memo((props: LayoutPinPropertyControlProps) => {
   const pointInfo = useInspectorLayoutInfo(props.property)
 
-  const dispatch = useDispatch()
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-  const axis = getLayoutPinnedPropAxis(props.property)
-
   const onSubmitValue = React.useCallback(
-    (value: UnknownOrEmptyInput<CSSNumber>) => {
-      if (isUnknownInputValue(value)) {
+    (newValue: UnknownOrEmptyInput<CSSNumber>) => {
+      if (isUnknownInputValue(newValue)) {
         // Ignore right now.
-      } else if (isEmptyInputValue(value)) {
+      } else if (isEmptyInputValue(newValue)) {
         // Should unset the value?
         pointInfo.onUnsetValues()
       } else {
-        if (layoutPinnedPropIsEdgeProp(props.property)) {
-          executeFirstApplicableStrategy(
-            dispatch,
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            setPropFixedEdgeStrategies('always', props.property, value),
-          )
+        if (newValue.unit == null || newValue.unit === 'px') {
+          const edgePosition = getTLWHEdgePosition(props.property)
+          const movement = getMovementFromValues(props.property, props.currentValue, newValue.value)
+          props.updateFrame(edgePosition, movement)
         } else {
-          executeFirstApplicableStrategy(
-            dispatch,
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            setPropFixedSizeStrategies('always', axis, value),
-          )
+          console.error('Attempting to use a value with a unit, which is invalid.')
         }
       }
     },
-    [
-      allElementPropsRef,
-      axis,
-      dispatch,
-      elementPathTreeRef,
-      metadataRef,
-      pointInfo,
-      props.property,
-      selectedViewsRef,
-    ],
+    [pointInfo, props],
   )
 
   return (
@@ -138,13 +114,13 @@ export const LayoutPinPropertyControl = React.memo((props: LayoutPinPropertyCont
     >
       <NumberInput
         data-controlstatus={pointInfo.controlStatus}
-        value={pointInfo.value}
+        value={cssNumber(props.currentValue)}
         id={`pin-${props.property}-number-input`}
         testId={`pin-${props.property}-number-input`}
         labelInner={props.label}
         onSubmitValue={onSubmitValue}
         onTransientSubmitValue={onSubmitValue}
-        controlStatus={pointInfo.controlStatus}
+        controlStatus={'simple'}
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
       />
@@ -153,6 +129,88 @@ export const LayoutPinPropertyControl = React.memo((props: LayoutPinPropertyCont
 })
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
+  const dispatch = useDispatch()
+  const metadataRef = useRefEditorState(metadataSelector)
+  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const originalGlobalFrame: CanvasRectangle = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        const metadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        const maybeInfinityGlobalFrame = metadata?.globalFrame ?? canvasRectangle(zeroRectangle)
+        return isInfinityRectangle(maybeInfinityGlobalFrame)
+          ? canvasRectangle(zeroRectangle)
+          : maybeInfinityGlobalFrame
+      } else {
+        return canvasRectangle(zeroRectangle)
+      }
+    },
+    'SimplifiedLayoutSubsection originalGlobalFrame',
+  )
+  const originalLocalFrame: LocalRectangle = useEditorState(
+    Substores.metadata,
+    (store) => {
+      if (store.editor.selectedViews.length === 1) {
+        const metadata = MetadataUtils.findElementByElementPath(
+          store.editor.jsxMetadata,
+          store.editor.selectedViews[0],
+        )
+        const maybeInfinityLocalFrame = metadata?.localFrame ?? localRectangle(zeroRectangle)
+        return isInfinityRectangle(maybeInfinityLocalFrame)
+          ? localRectangle(zeroRectangle)
+          : maybeInfinityLocalFrame
+      } else {
+        return localRectangle(zeroRectangle)
+      }
+    },
+    'SimplifiedLayoutSubsection originalGlobalFrame',
+  )
+  const updateFrame = React.useCallback(
+    (edgePosition: EdgePosition, movement: CanvasVector) => {
+      if (edgePosition === EdgePositionTop || edgePosition === EdgePositionLeft) {
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          [moveInspectorStrategy(projectContentsRef.current, movement)],
+        )
+      } else {
+        executeFirstApplicableStrategy(
+          dispatch,
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          [
+            resizeInspectorStrategy(
+              projectContentsRef.current,
+              originalGlobalFrame,
+              edgePosition,
+              movement,
+            ),
+          ],
+        )
+      }
+    },
+    [
+      allElementPropsRef,
+      dispatch,
+      elementPathTreeRef,
+      metadataRef,
+      originalGlobalFrame,
+      projectContentsRef,
+      selectedViewsRef,
+    ],
+  )
+
   return (
     <FlexColumn style={{ paddingBottom: 8 }}>
       <InspectorSubsectionHeader>
@@ -172,16 +230,36 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
           variant='<--1fr--><--1fr-->'
           style={{ minHeight: undefined, gap: 4 }}
         >
-          <LayoutPinPropertyControl property='left' label='L' />
-          <LayoutPinPropertyControl property='top' label='T' />
+          <LayoutPinPropertyControl
+            property='left'
+            label='L'
+            updateFrame={updateFrame}
+            currentValue={originalLocalFrame.x}
+          />
+          <LayoutPinPropertyControl
+            property='top'
+            label='T'
+            updateFrame={updateFrame}
+            currentValue={originalLocalFrame.y}
+          />
         </UIGridRow>
         <UIGridRow
           padded={false}
           variant='<--1fr--><--1fr-->'
           style={{ minHeight: undefined, gap: 4 }}
         >
-          <LayoutPinPropertyControl property='width' label='W' />
-          <LayoutPinPropertyControl property='height' label='H' />
+          <LayoutPinPropertyControl
+            property='width'
+            label='W'
+            updateFrame={updateFrame}
+            currentValue={originalLocalFrame.width}
+          />
+          <LayoutPinPropertyControl
+            property='height'
+            label='H'
+            updateFrame={updateFrame}
+            currentValue={originalLocalFrame.height}
+          />
         </UIGridRow>
         <UIGridRow
           padded={false}
