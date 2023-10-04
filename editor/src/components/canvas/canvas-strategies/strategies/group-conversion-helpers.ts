@@ -210,6 +210,20 @@ export function convertFragmentToSizelessDiv(
   ]
 }
 
+type JSXElementConversion = JSXElement
+
+type JSXElementLikeConversion = {
+  element: JSXElementLike
+  childInstances: ElementInstanceMetadata[]
+}
+
+type JSXFragmentConversion = {
+  element: JSXFragment
+  childInstances: ElementInstanceMetadata[]
+  childrenBoundingFrame: CanvasRectangle
+  specialSizeMeasurements: SpecialSizeMeasurements
+}
+
 export function getInstanceForFragmentToFrameConversion(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -218,14 +232,7 @@ export function getInstanceForFragmentToFrameConversion(
   convertIfStaticChildren:
     | 'do-not-convert-if-it-has-static-children'
     | 'convert-even-if-it-has-static-children',
-):
-  | {
-      element: JSXFragment
-      childInstances: ElementInstanceMetadata[]
-      childrenBoundingFrame: CanvasRectangle
-      specialSizeMeasurements: SpecialSizeMeasurements
-    }
-  | ConversionForbidden {
+): JSXFragmentConversion | ConversionForbidden {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
     return conversionForbidden('Fragment is not a valid element')
@@ -338,14 +345,7 @@ export function getInstanceForFragmentToGroupConversion(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-):
-  | {
-      element: JSXFragment
-      childrenBoundingFrame: CanvasRectangle
-      childInstances: ElementInstanceMetadata[]
-      specialSizeMeasurements: SpecialSizeMeasurements
-    }
-  | ConversionForbidden {
+): JSXFragmentConversion | ConversionForbidden {
   const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (element == null || isLeft(element.element) || !isJSXElementLike(element.element.value)) {
     return conversionForbidden('Fragment is not a valid element')
@@ -581,7 +581,7 @@ export function getInstanceForFrameToFragmentConversion(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-): { element: JSXElementLike; childInstances: ElementInstanceMetadata[] } | ConversionForbidden {
+): JSXElementLikeConversion | ConversionForbidden {
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
     return conversionForbidden('Frame is not a valid element')
@@ -669,7 +669,7 @@ export function getInstanceForFrameToGroupConversion(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-): JSXElement | ConversionForbidden {
+): JSXElementConversion | ConversionForbidden {
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
     return conversionForbidden('Frame is not a valid element')
@@ -780,7 +780,7 @@ export function getInstanceForGroupToFrameConversion(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   elementPath: ElementPath,
-): JSXElement | ConversionForbidden {
+): JSXElementConversion | ConversionForbidden {
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null || isLeft(instance.element) || !isJSXElement(instance.element.value)) {
     return conversionForbidden('Group is not a valid element')
