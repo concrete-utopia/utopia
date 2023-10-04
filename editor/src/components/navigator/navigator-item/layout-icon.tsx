@@ -111,7 +111,7 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         return (
           <Icn
             category='element'
-            type='sizeless-div'
+            type='zerosized-div'
             testId={iconTestId}
             color={'main'}
             width={18}
