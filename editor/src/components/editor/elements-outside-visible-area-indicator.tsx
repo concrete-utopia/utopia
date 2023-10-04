@@ -41,7 +41,7 @@ export const ElementsOutsideVisibleAreaIndicator = React.memo(() => {
           height: 32,
           padding: '0 8px',
           position: 'relative',
-          color: colorTheme.primary.value,
+          color: colorTheme.dynamicBlue.value,
         }}
         onClick={scrollTo}
       >
