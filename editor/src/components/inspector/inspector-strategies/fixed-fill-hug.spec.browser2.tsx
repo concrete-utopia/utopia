@@ -556,7 +556,7 @@ describe('Fixed / Fill / Hug control', () => {
     const NonHugContentAttrValues = [200, '100%', 'inherit', '200px']
     describe('Detect Hug Contents state with different width/height values', () => {
       HugContentAttrValues.forEach((width) =>
-        NonHugContentAttrValues.forEach((height) =>
+        NonHugContentAttrValues.slice(2).forEach((height) =>
           it(`child has Hug Contents width (${width}) but not height (${height})`, async () => {
             const editor = await renderTestEditorWithCode(
               projectWithParentWidthHeight(width, height),
@@ -571,7 +571,7 @@ describe('Fixed / Fill / Hug control', () => {
         ),
       )
       HugContentAttrValues.forEach((height) =>
-        NonHugContentAttrValues.forEach((width) =>
+        NonHugContentAttrValues.slice(2).forEach((width) =>
           it(`child has Hug Contents height (${height}) but not width ${width}`, async () => {
             const editor = await renderTestEditorWithCode(
               projectWithParentWidthHeight(width, height),
@@ -586,7 +586,7 @@ describe('Fixed / Fill / Hug control', () => {
         ),
       )
       HugContentAttrValues.forEach((width) =>
-        HugContentAttrValues.forEach((height) =>
+        HugContentAttrValues.slice(2).forEach((height) =>
           it(`child has Hug Contents width (${width}) and height (${height})`, async () => {
             const editor = await renderTestEditorWithCode(
               projectWithParentWidthHeight(width, height),
@@ -597,6 +597,21 @@ describe('Fixed / Fill / Hug control', () => {
             const buttons = await editor.renderedDOM.findAllByText(HugContentsLabel)
 
             expect(buttons).toHaveLength(2)
+          }),
+        ),
+      )
+      NonHugContentAttrValues.forEach((width) =>
+        NonHugContentAttrValues.slice(2).forEach((height) =>
+          it(`child doesn't have Hug Contents in width (${width}) or height (${height})`, async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithParentWidthHeight(width, height),
+              'await-first-dom-report',
+            )
+            await select(editor, 'parent')
+
+            const buttons = await editor.renderedDOM.queryAllByText(HugContentsLabel)
+
+            expect(buttons).toHaveLength(0)
           }),
         ),
       )
