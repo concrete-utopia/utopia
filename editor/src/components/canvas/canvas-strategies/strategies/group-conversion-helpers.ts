@@ -649,19 +649,19 @@ export function convertFrameToFragmentCommands(
 }
 
 type ConversionForbidden = {
-  forbidden: true
+  type: 'CONVERSION_FORBIDDEN'
   reason: string
 }
 
 function conversionForbidden(reason: string): ConversionForbidden {
   return {
-    forbidden: true,
+    type: 'CONVERSION_FORBIDDEN',
     reason: reason,
   }
 }
 
 export function isConversionForbidden(c: unknown): c is ConversionForbidden {
-  return (c as ConversionForbidden).forbidden === true
+  return (c as ConversionForbidden).type === 'CONVERSION_FORBIDDEN'
 }
 
 export function getInstanceForFrameToGroupConversion(
