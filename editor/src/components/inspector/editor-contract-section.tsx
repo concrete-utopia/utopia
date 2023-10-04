@@ -120,7 +120,7 @@ export const EditorContractDropdown = React.memo(() => {
 
   const selectedViews = useEditorState(
     Substores.selectedViews,
-    (store) => store.editor.selectedViews,
+    selectedViewsSelector,
     'EditorContractDropdown selectedViews',
   )
 
