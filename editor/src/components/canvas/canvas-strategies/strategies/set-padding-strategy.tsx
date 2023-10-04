@@ -151,7 +151,7 @@ export const setPaddingStrategy: CanvasStrategyFactory = (canvasState, interacti
     name: SetPaddingStrategyName,
     controlsToRender: controlsToRender,
     descriptiveLabel: 'Changing Padding',
-    icon: { category: 'semantic', type: 'canvas-larger' },
+    icon: { category: 'tools', type: 'pointer' },
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'PADDING_RESIZE_HANDLE', 1),
     apply: () => {
       if (

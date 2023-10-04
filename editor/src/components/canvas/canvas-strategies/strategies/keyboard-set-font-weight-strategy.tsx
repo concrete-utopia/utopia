@@ -37,8 +37,8 @@ export function keyboardSetFontWeightStrategy(
     name: 'Set font weight',
     descriptiveLabel: 'Changing Font Weight',
     icon: {
-      category: 'element',
-      type: 'pure-text',
+      category: 'tools',
+      type: 'pointer',
     },
     controlsToRender: [],
     fitness: fitness(interactionSession),

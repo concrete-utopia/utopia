@@ -57,7 +57,7 @@ export const drawToInsertTextStrategy: MetaCanvasStrategy = (
       id: DRAW_TO_INSERT_TEXT_STRATEGY_ID,
       name: name,
       descriptiveLabel: 'Drawing To Insert Text',
-      icon: { category: 'semantic', type: 'editpencil' },
+      icon: { category: 'tools', type: 'pointer' },
       controlsToRender: [],
       fitness: insertionSubject.textEdit && drawToInsertFitness(interactionSession) ? 1 : 0,
       apply: (s) => {

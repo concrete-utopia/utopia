@@ -72,7 +72,7 @@ export function absoluteDuplicateStrategy(
     descriptiveLabel: 'Duplicating Elements',
     icon: {
       category: 'modalities',
-      type: 'replant-large',
+      type: 'duplicate',
     },
     controlsToRender: [
       controlWithProps({
