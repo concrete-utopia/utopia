@@ -13,7 +13,7 @@ import {
   isInfinityRectangle,
   negate,
   offsetPoint,
-  roundPointToNearestWhole,
+  roundPointToNearestHalf,
   scaleVector,
   windowPoint,
 } from '../../core/shared/math-utils'
@@ -541,7 +541,7 @@ export function windowToCanvasCoordinates(
     return {
       windowPosition: windowPoint({ x: screenPoint.x, y: screenPoint.y }),
       canvasPositionRaw: canvasPositionRaw,
-      canvasPositionRounded: roundPointToNearestWhole(canvasPositionRaw),
+      canvasPositionRounded: roundPointToNearestHalf(canvasPositionRaw),
     }
   } else {
     throw new Error('calling screenToElementCoordinates() before being mounted')

@@ -10,7 +10,7 @@ import type {
   LocalRectangle,
   CanvasRectangle,
 } from '../../core/shared/math-utils'
-import { canvasPoint } from '../../core/shared/math-utils'
+import { canvasPoint, roundToNearestWhole } from '../../core/shared/math-utils'
 
 export interface XAxisGuideline {
   type: 'XAxisGuideline'
@@ -168,6 +168,36 @@ function cornerGuidelinePoint(point: CanvasPoint): CornerGuidelinePoint {
 
 type GuidelinePoints = EdgeGuidelinePoints | CornerGuidelinePoint
 
+function pointsForGuidelinesForFrame(
+  frame: LocalRectangle | CanvasRectangle,
+  includeCentre: boolean,
+): {
+  xs: Array<number>
+  ys: Array<number>
+  xLeft: number
+  xRight: number
+  yTop: number
+  yBottom: number
+} {
+  const xLeft = roundToNearestWhole(frame.x)
+  const xCentre = roundToNearestWhole(frame.x + frame.width / 2)
+  const xRight = roundToNearestWhole(frame.x + frame.width)
+  const yTop = roundToNearestWhole(frame.y)
+  const yCentre = roundToNearestWhole(frame.y + frame.height / 2)
+  const yBottom = roundToNearestWhole(frame.y + frame.height)
+  const xs = includeCentre ? [xLeft, xCentre, xRight] : [xLeft, xRight]
+  const ys = includeCentre ? [yTop, yCentre, yBottom] : [yTop, yBottom]
+
+  return {
+    xs: xs,
+    ys: ys,
+    xLeft: xLeft,
+    xRight: xRight,
+    yTop: yTop,
+    yBottom: yBottom,
+  }
+}
+
 export const Guidelines = {
   applyDirectionConstraint: applyDirectionConstraint,
   convertGuidelineToPoints: function (guideline: Guideline): GuidelinePoints {
@@ -221,16 +251,10 @@ export const Guidelines = {
     frame: LocalRectangle | CanvasRectangle,
     includeCentre: boolean,
   ): Array<Guideline> {
-    const xLeft = frame.x
-    const xRight = frame.x + frame.width
-    const yTop = frame.y
-    const yBottom = frame.y + frame.height
-    const xs = includeCentre
-      ? [frame.x, frame.x + frame.width / 2, frame.x + frame.width]
-      : [frame.x, frame.x + frame.width]
-    const ys = includeCentre
-      ? [frame.y, frame.y + frame.height / 2, frame.y + frame.height]
-      : [frame.y, frame.y + frame.height]
+    const { xs, ys, xLeft, xRight, yTop, yBottom } = pointsForGuidelinesForFrame(
+      frame,
+      includeCentre,
+    )
     const xGuidelines = xs.map((x) => {
       return Guidelines.xAxisGuideline(x, yTop, yBottom)
     })
@@ -244,20 +268,10 @@ export const Guidelines = {
     frame: LocalRectangle | CanvasRectangle,
     includeCentre: 'include' | 'exclude',
   ): Array<GuidelineWithRelevantPoints> {
-    const xLeft = frame.x
-    const xRight = frame.x + frame.width
-    const yTop = frame.y
-    const yBottom = frame.y + frame.height
-
-    const xs =
-      includeCentre === 'include'
-        ? [frame.x, frame.x + frame.width / 2, frame.x + frame.width]
-        : [frame.x, frame.x + frame.width]
-
-    const ys =
-      includeCentre === 'include'
-        ? [frame.y, frame.y + frame.height / 2, frame.y + frame.height]
-        : [frame.y, frame.y + frame.height]
+    const { xs, ys, xLeft, xRight, yTop, yBottom } = pointsForGuidelinesForFrame(
+      frame,
+      includeCentre === 'include',
+    )
 
     const xGuidelines: Array<GuidelineWithRelevantPoints> = xs.map((x) => {
       return {

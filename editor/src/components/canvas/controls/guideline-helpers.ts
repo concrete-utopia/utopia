@@ -1,6 +1,7 @@
 import Utils from '../../../utils/utils'
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
+  getRoundedRectPointsAlongAxes,
   isFiniteRectangle,
   offsetPoint,
   offsetRect,
@@ -117,7 +118,7 @@ export function getSnappedGuidelines(
   draggedFrame: CanvasRectangle,
   scale: number,
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
-  const { horizontalPoints, verticalPoints } = Utils.getRectPointsAlongAxes(draggedFrame)
+  const { horizontalPoints, verticalPoints } = getRoundedRectPointsAlongAxes(draggedFrame)
 
   // TODO constrained drag axis
   return Guidelines.getClosestGuidelinesAndOffsets(

@@ -975,6 +975,30 @@ export function rectanglesEqual<C extends CoordinateMarker>(
   return isInfinityRectangle(first) && isInfinityRectangle(second)
 }
 
+export function roundedRectanglesEqual<C extends CoordinateMarker>(
+  first: Rectangle<C>,
+  second: Rectangle<C>,
+): boolean {
+  return rectanglesEqual(roundRectangleToNearestWhole(first), roundRectangleToNearestWhole(second))
+}
+
+export function getRoundedRectPointsAlongAxes<C extends CoordinateMarker>(
+  rectangle: Rectangle<C>,
+): { horizontalPoints: Array<number>; verticalPoints: Array<number> } {
+  return {
+    horizontalPoints: [
+      roundToNearestWhole(rectangle.x),
+      roundToNearestWhole(rectangle.x + rectangle.width / 2),
+      roundToNearestWhole(rectangle.x + rectangle.width),
+    ],
+    verticalPoints: [
+      roundToNearestWhole(rectangle.y),
+      roundToNearestWhole(rectangle.y + rectangle.height / 2),
+      roundToNearestWhole(rectangle.y + rectangle.height),
+    ],
+  }
+}
+
 export function proportion(from: number, to: number): number {
   if (from < 0 || to < 0) {
     throw new Error(`Invalid parameters passed: ${from}, ${to}`)
@@ -1097,7 +1121,7 @@ export function canvasRectangleToLocalRectangle(
   canvasRect: CanvasRectangle,
   parentRect: CanvasRectangle,
 ): LocalRectangle {
-  const diff = roundPointToNearestWhole(pointDifference(parentRect, canvasRect))
+  const diff = roundPointToNearestHalf(pointDifference(parentRect, canvasRect))
   return localRectangle({
     x: diff.x,
     y: diff.y,

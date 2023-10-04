@@ -7,11 +7,11 @@ import {
   canvasRectangle,
   canvasSegment,
   isInfinityRectangle,
-  rectanglesEqual,
+  roundPointToNearestWhole,
+  roundedRectanglesEqual,
   segmentIntersection,
 } from '../../../core/shared/math-utils'
-import { bold, useColorTheme } from '../../../uuiui'
-import { EditorStorePatched } from '../../editor/store/editor-state'
+import { useColorTheme } from '../../../uuiui'
 import {
   Substores,
   useEditorState,
@@ -43,7 +43,7 @@ export const GuidelineControls = React.memo(() => {
             return false
           } else {
             return (
-              rectanglesEqual(measuredFrame, frame) ||
+              roundedRectanglesEqual(measuredFrame, frame) ||
               treatElementAsGroupLike(store.editor.jsxMetadata, target)
             )
           }
