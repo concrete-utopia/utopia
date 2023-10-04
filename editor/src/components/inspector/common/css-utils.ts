@@ -608,6 +608,20 @@ export function isFixedSize(value: CSSNumber): boolean {
   }
 }
 
+export function isCssNumberAndFixedSize(value: unknown): boolean {
+  if (!isCSSNumber(value)) {
+    return false
+  }
+  return isFixedSize(value)
+}
+
+export function isCssNumberAndPercentage(value: unknown): boolean {
+  if (!isCSSNumber(value)) {
+    return false
+  }
+  return value.unit === '%'
+}
+
 function parseCSSNumberUnit(
   input: string,
   units: Array<CSSNumberUnit>,

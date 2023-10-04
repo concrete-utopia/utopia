@@ -1001,6 +1001,38 @@ export function getFramePointsFromMetadata(elementMetadata: ElementInstanceMetad
   }
 }
 
+type GetFramePointsFromMetadataResult = {
+  left?: CSSNumber | 'max-content' | undefined
+  right?: CSSNumber | 'max-content' | undefined
+  centerX?: CSSNumber | 'max-content' | undefined
+  width?: CSSNumber | 'max-content' | undefined
+  top?: CSSNumber | 'max-content' | undefined
+  bottom?: CSSNumber | 'max-content' | undefined
+  centerY?: CSSNumber | 'max-content' | undefined
+  height?: CSSNumber | 'max-content' | undefined
+}
+
+export function getFramePointsFromMetadataTypeFixed(
+  elementMetadata: ElementInstanceMetadata,
+): GetFramePointsFromMetadataResult {
+  if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
+    const jsxElement = elementMetadata.element.value
+    return LayoutPinnedProps.reduce<GetFramePointsFromMetadataResult>((working, point) => {
+      const value = getLayoutLengthValueOrKeyword(point, right(jsxElement.props), ['style'])
+      if (isLeft(value)) {
+        return working
+      } else {
+        return {
+          ...working,
+          [point]: value.value,
+        }
+      }
+    }, {})
+  } else {
+    return {}
+  }
+}
+
 export function removeExtraPinsWhenSettingSize(
   axis: Axis,
   elementMetadata: ElementInstanceMetadata | null,

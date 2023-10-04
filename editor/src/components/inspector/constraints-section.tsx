@@ -4,8 +4,11 @@ import { jsx } from '@emotion/react'
 
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
-import { HorizontalFramePoints, VerticalFramePoints } from 'utopia-api/core'
-import type { LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
+import {
+  HorizontalLayoutPinnedProps,
+  VerticalLayoutPinnedProps,
+  type LayoutPinnedProp,
+} from '../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
@@ -37,6 +40,9 @@ import {
 import { selectedViewsSelector } from './inpector-selectors'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
+import { getFramePointsFromMetadata, getFramePointsFromMetadataTypeFixed } from './inspector-common'
+import * as EP from '../../core/shared/element-path'
+import { isCSSNumber, isCssNumberAndFixedSize, isCssNumberAndPercentage } from './common/css-utils'
 
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
@@ -175,10 +181,21 @@ export const FrameChildConstraintSelect = React.memo((props: { dimension: 'width
     metadata: store.editor.jsxMetadata,
   }))
 
+  const pins = useEditorState(
+    Substores.metadata,
+    (store) => detectPinsSet(store.editor.jsxMetadata, store.editor.selectedViews[0]),
+    'FrameChildConstraintSelect pins',
+  )
+
   const optionsToUse =
     dimension === 'width'
       ? Object.values(HorizontalPinChangeOptions)
       : Object.values(VerticalPinChangeOptions)
+
+  const activeOption =
+    dimension === 'width'
+      ? HorizontalPinChangeOptionsIncludingMixed[pins.horizontal]
+      : VerticalPinChangeOptionsIncludingMixed[pins.vertical]
 
   return (
     <PopupList
@@ -195,7 +212,7 @@ export const FrameChildConstraintSelect = React.memo((props: { dimension: 'width
           ),
         )
       }}
-      value={optionsToUse[0]}
+      value={activeOption}
       options={optionsToUse}
       style={{
         position: 'relative',
@@ -204,6 +221,84 @@ export const FrameChildConstraintSelect = React.memo((props: { dimension: 'width
     />
   )
 })
+
+function detectPinsSet(
+  metadata: ElementInstanceMetadataMap,
+  target: ElementPath,
+): { horizontal: HorizontalPinRequests | 'mixed'; vertical: VerticalPinRequests | 'mixed' } {
+  const element = MetadataUtils.findElementByElementPath(metadata, target)
+  if (element == null) {
+    return { horizontal: 'mixed', vertical: 'mixed' }
+  }
+
+  const framePoints = getFramePointsFromMetadataTypeFixed(element)
+
+  const horizontalPins: HorizontalPinRequests | 'mixed' = (() => {
+    if (
+      isCssNumberAndFixedSize(framePoints.left) &&
+      framePoints.right == null &&
+      isCssNumberAndFixedSize(framePoints.width)
+    ) {
+      return 'left-and-width'
+    }
+    if (
+      framePoints.left == null &&
+      isCssNumberAndFixedSize(framePoints.right) &&
+      isCssNumberAndFixedSize(framePoints.width)
+    ) {
+      return 'right-and-width'
+    }
+    if (
+      isCssNumberAndFixedSize(framePoints.left) &&
+      isCssNumberAndFixedSize(framePoints.right) &&
+      framePoints.width == null
+    ) {
+      return 'left-and-right'
+    }
+    if (
+      isCssNumberAndPercentage(framePoints.left) &&
+      framePoints.right == null &&
+      isCssNumberAndPercentage(framePoints.width)
+    ) {
+      return 'scale-horizontal'
+    }
+    return 'mixed'
+  })()
+
+  const verticalPins: VerticalPinRequests | 'mixed' = (() => {
+    if (
+      isCssNumberAndFixedSize(framePoints.top) &&
+      framePoints.bottom == null &&
+      isCssNumberAndFixedSize(framePoints.height)
+    ) {
+      return 'top-and-height'
+    }
+    if (
+      framePoints.top == null &&
+      isCssNumberAndFixedSize(framePoints.bottom) &&
+      isCssNumberAndFixedSize(framePoints.height)
+    ) {
+      return 'bottom-and-height'
+    }
+    if (
+      isCssNumberAndFixedSize(framePoints.top) &&
+      isCssNumberAndFixedSize(framePoints.bottom) &&
+      framePoints.height == null
+    ) {
+      return 'top-and-bottom'
+    }
+    if (
+      isCssNumberAndPercentage(framePoints.top) &&
+      framePoints.bottom == null &&
+      isCssNumberAndPercentage(framePoints.height)
+    ) {
+      return 'scale-vertical'
+    }
+    return 'mixed'
+  })()
+
+  return { horizontal: horizontalPins, vertical: verticalPins }
+}
 
 type HorizontalPinRequests =
   | 'left-and-width'
@@ -240,6 +335,14 @@ const HorizontalPinChangeOptions: {
   },
 } as const
 
+const HorizontalPinChangeOptionsIncludingMixed = {
+  ...HorizontalPinChangeOptions,
+  mixed: {
+    value: 'mixed',
+    label: 'Mixed',
+  },
+} as const
+
 const VerticalPinChangeOptions: {
   [key in VerticalPinRequests]: SelectOption & { value: VerticalPinRequests }
 } = {
@@ -258,6 +361,14 @@ const VerticalPinChangeOptions: {
   'scale-vertical': {
     value: 'scale-vertical',
     label: 'Scale',
+  },
+} as const
+
+const VerticalPinChangeOptionsIncludingMixed = {
+  ...VerticalPinChangeOptions,
+  mixed: {
+    value: 'mixed',
+    label: 'Mixed',
   },
 } as const
 
@@ -303,7 +414,9 @@ const getPinChanges =
     horizontal: 'horizontal' | 'vertical',
     setAsPercentage: 'px' | '%',
   ): Array<SetProp | UnsetProperty> => {
-    const pinsToUnset = horizontal === 'horizontal' ? HorizontalFramePoints : VerticalFramePoints
+    const pinsToUnset =
+      horizontal === 'horizontal' ? HorizontalLayoutPinnedProps : VerticalLayoutPinnedProps
+
     const unsetActions: Array<UnsetProperty> = targets.flatMap((target) =>
       pinsToUnset.map((pin) => unsetProperty(target, PP.create(...propertyTarget, pin))),
     )
