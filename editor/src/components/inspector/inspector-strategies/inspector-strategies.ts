@@ -22,6 +22,8 @@ import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode
 import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
+import { fixedEdgeBasicStrategy } from './fixed-edge-basic-strategy'
+import type { LayoutEdgeProp } from 'src/core/layout/layout-helpers-new'
 
 export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
   {
@@ -157,11 +159,19 @@ export const setPropFillStrategies = (
   fillContainerStrategyFlow(axis, value, otherAxisSetToFill),
 ]
 
-export const setPropFixedStrategies = (
+export const setPropFixedSizeStrategies = (
   whenToRun: WhenToRun,
   axis: Axis,
   value: CSSNumber,
 ): Array<InspectorStrategy> => [fixedSizeBasicStrategy(whenToRun, axis, value)]
+
+export function setPropFixedEdgeStrategies(
+  whenToRun: WhenToRun,
+  edge: LayoutEdgeProp,
+  value: CSSNumber,
+): Array<InspectorStrategy> {
+  return [fixedEdgeBasicStrategy(whenToRun, edge, value)]
+}
 
 export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
   hugContentsBasicStrategy(axis),

@@ -39,7 +39,7 @@ import {
 } from './inspector-common'
 import {
   setPropFillStrategies,
-  setPropFixedStrategies,
+  setPropFixedSizeStrategies,
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import type { InspectorStrategy } from './inspector-strategies/inspector-strategy'
@@ -313,7 +313,7 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
-          setPropFixedStrategies('always', axis, value),
+          setPropFixedSizeStrategies('always', axis, value),
         )
         return
       }
@@ -341,7 +341,7 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
-          setPropFixedStrategies('always', axis, value),
+          setPropFixedSizeStrategies('always', axis, value),
         )
       }
     },
@@ -584,7 +584,7 @@ function strategyForChangingFillFixedHugType(
     case 'detected':
     case 'computed':
     case 'hug-group':
-      return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
+      return setPropFixedSizeStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
   }

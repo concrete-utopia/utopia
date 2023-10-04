@@ -18,7 +18,7 @@ import {
 import type { FixedHugFill } from '../../../inspector-common'
 import { detectFillHugFixedStateMultiselect, isFixedHugFillEqual } from '../../../inspector-common'
 import {
-  setPropFixedStrategies,
+  setPropFixedSizeStrategies,
   setPropHugStrategies,
 } from '../../../inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
@@ -120,7 +120,7 @@ export const TextAutoSizingControl = React.memo(() => {
             selectedViewsRef.current,
             elementPathTreeRef.current,
             allElementPropsRef.current,
-            setPropFixedStrategies(
+            setPropFixedSizeStrategies(
               'always',
               'horizontal',
               cssNumber(widthComputedValue.current ?? 0, null),
@@ -132,7 +132,7 @@ export const TextAutoSizingControl = React.memo(() => {
             selectedViewsRef.current,
             elementPathTreeRef.current,
             allElementPropsRef.current,
-            setPropFixedStrategies(
+            setPropFixedSizeStrategies(
               'always',
               'vertical',
               cssNumber(heightComputedValue.current ?? 0, null),
