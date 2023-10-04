@@ -37,12 +37,13 @@ import {
   allElementsAreGroupChildren,
   anySelectedElementGroupOrChildOfGroup,
 } from './fill-hug-fixed-control'
-import { selectedViewsSelector } from './inpector-selectors'
+import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
 import { getFramePointsFromMetadata, getFramePointsFromMetadataTypeFixed } from './inspector-common'
 import * as EP from '../../core/shared/element-path'
 import { isCSSNumber, isCssNumberAndFixedSize, isCssNumberAndPercentage } from './common/css-utils'
+import { createSelector } from 'reselect'
 
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
@@ -128,32 +129,8 @@ export const FrameChildPinControl = React.memo(() => {
     (frameProp: LayoutPinnedProp, event: React.MouseEvent<Element, MouseEvent>) => {},
     [],
   )
-
-  const framePoints: FramePinsInfo = React.useMemo(() => {
-    const ignore = { isPrimaryPosition: false, isRelativePosition: false }
-    return {
-      left: {
-        isPrimaryPosition: false,
-        isRelativePosition: false,
-      },
-      top: {
-        isPrimaryPosition: false,
-        isRelativePosition: false,
-      },
-      bottom: {
-        isPrimaryPosition: false,
-        isRelativePosition: false,
-      },
-      right: {
-        isPrimaryPosition: false,
-        isRelativePosition: false,
-      },
-      width: ignore,
-      height: ignore,
-      centerX: ignore,
-      centerY: ignore,
-    }
-  }, [])
+  const pins = useDetectedPinning()
+  const framePoints: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
 
   return (
     <PinControl
@@ -181,11 +158,7 @@ export const FrameChildConstraintSelect = React.memo((props: { dimension: 'width
     metadata: store.editor.jsxMetadata,
   }))
 
-  const pins = useEditorState(
-    Substores.metadata,
-    (store) => multiselectDetectPinsSet(store.editor.jsxMetadata, store.editor.selectedViews),
-    'FrameChildConstraintSelect pins',
-  )
+  const pins = useDetectedPinning()
 
   const optionsToUse =
     dimension === 'width'
@@ -222,10 +195,24 @@ export const FrameChildConstraintSelect = React.memo((props: { dimension: 'width
   )
 })
 
+function useDetectedPinning() {
+  return useEditorState(
+    Substores.metadata,
+    multiselectDetectPinsSetSelector,
+    'FrameChildConstraintSelect pins',
+  )
+}
+
+const multiselectDetectPinsSetSelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  (metadata, selectedViews) => multiselectDetectPinsSet(metadata, selectedViews),
+)
+
 function multiselectDetectPinsSet(
   metadata: ElementInstanceMetadataMap,
   targets: Array<ElementPath>,
-): { horizontal: HorizontalPinRequests | 'mixed'; vertical: VerticalPinRequests | 'mixed' } {
+): DetectedPins {
   if (targets.length == 0) {
     return { horizontal: 'left-and-width', vertical: 'top-and-height' }
   }
@@ -331,6 +318,11 @@ type VerticalPinRequests =
 
 type RequestedPins = HorizontalPinRequests | VerticalPinRequests
 
+type DetectedPins = {
+  horizontal: HorizontalPinRequests | 'mixed'
+  vertical: VerticalPinRequests | 'mixed'
+}
+
 const HorizontalPinChangeOptions: {
   [key in HorizontalPinRequests]: SelectOption & { value: HorizontalPinRequests }
 } = {
@@ -388,6 +380,42 @@ const VerticalPinChangeOptionsIncludingMixed = {
     label: 'Mixed',
   },
 } as const
+
+function getFixedPointsForPinning(pins: DetectedPins): FramePinsInfo {
+  const ignore = { isPrimaryPosition: false, isRelativePosition: false }
+
+  return {
+    left: {
+      isPrimaryPosition:
+        pins.horizontal === 'left-and-right' || pins.horizontal === 'left-and-width',
+      isRelativePosition: false,
+    },
+    top: {
+      isPrimaryPosition: pins.vertical === 'top-and-bottom' || pins.vertical === 'top-and-height',
+      isRelativePosition: false,
+    },
+    bottom: {
+      isPrimaryPosition:
+        pins.vertical === 'top-and-bottom' || pins.vertical === 'bottom-and-height',
+      isRelativePosition: false,
+    },
+    right: {
+      isPrimaryPosition:
+        pins.horizontal === 'left-and-right' || pins.horizontal === 'right-and-width',
+      isRelativePosition: false,
+    },
+    width: ignore,
+    height: ignore,
+    centerX:
+      pins.horizontal === 'scale-horizontal'
+        ? { isPrimaryPosition: true, isRelativePosition: true }
+        : ignore,
+    centerY:
+      pins.vertical === 'scale-vertical'
+        ? { isPrimaryPosition: true, isRelativePosition: true }
+        : ignore,
+  }
+}
 
 function getFrameChangeActions(
   metadata: ElementInstanceMetadataMap,
