@@ -137,7 +137,6 @@ export const FrameChildPinControl = React.memo(() => {
       handlePinMouseDown={NO_OP}
       framePoints={framePoints}
       controlStatus='simple'
-      exclude={{ center: true }}
       name='group-child-controls'
     />
   )
