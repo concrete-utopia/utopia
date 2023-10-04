@@ -702,7 +702,15 @@ export function isHugFromStyleAttribute(
     getSimpleAttributeAtPath(right(props), PP.create('style', property)),
   )
 
-  return simpleAttribute === MaxContent
+  if (simpleAttribute == null || typeof simpleAttribute !== 'string') {
+    return true
+  }
+
+  if (HugContentAttrValues.includes(simpleAttribute)) {
+    return true
+  }
+
+  return HugContentAttrFunctions.some((f) => simpleAttribute.startsWith(`${f}(`))
 }
 
 export function isHugFromStyleAttributeOrNull(
@@ -755,6 +763,8 @@ export function detectFillHugFixedStateMultiselect(
 }
 
 export const MaxContent = 'max-content' as const
+const HugContentAttrValues = [MaxContent, 'min-content', 'fit-content', 'auto']
+const HugContentAttrFunctions = ['fit-content']
 
 export type PackedSpaced = 'packed' | 'spaced'
 
