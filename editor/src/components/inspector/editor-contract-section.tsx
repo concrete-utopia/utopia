@@ -343,9 +343,9 @@ export const EditorContractDropdown = React.memo(() => {
     }
 
     return [
-      maybeDisable(GroupOption, disabledOptions.group != null, disabledOptions.group),
-      maybeDisable(FrameOption, disabledOptions.frame != null, disabledOptions.frame),
       maybeDisable(FragmentOption, disabledOptions.fragment != null, disabledOptions.fragment),
+      maybeDisable(FrameOption, disabledOptions.frame != null, disabledOptions.frame),
+      maybeDisable(GroupOption, disabledOptions.group != null, disabledOptions.group),
     ]
   }, [selectedViews, metadataRef, elementPathTreeRef, allElementPropsRef, currentValue])
 
