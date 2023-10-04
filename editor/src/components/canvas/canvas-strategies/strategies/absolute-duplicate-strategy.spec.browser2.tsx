@@ -81,7 +81,7 @@ describe('Absolute Duplicate Strategy', () => {
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
-        <div style={{ width: '100%', height: '100%', position: 'relative' }} data-uid='aaa'>
+        <div style={{ width: '100%', height: '100%', position: 'relative', contain: 'layout' }} data-uid='aaa'>
           <div
             style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
             data-uid='hello'
