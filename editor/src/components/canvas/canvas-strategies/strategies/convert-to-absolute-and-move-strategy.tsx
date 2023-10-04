@@ -2,15 +2,21 @@ import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { LayoutPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
-import { isRight, right } from '../../../../core/shared/either'
+import {
+  MetadataUtils,
+  getSimpleAttributeAtPath,
+} from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls, stripNulls, uniqBy } from '../../../../core/shared/array-utils'
+import { defaultEither, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   SpecialSizeMeasurements,
+  JSXElement,
 } from '../../../../core/shared/element-template'
+import { isJSXElement } from '../../../../core/shared/element-template'
 import type {
   CanvasPoint,
   CanvasRectangle,
@@ -42,6 +48,7 @@ import { convertToAbsolute } from '../../commands/convert-to-absolute-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,
+  setExplicitCssValue,
   setValueKeepingOriginalUnit,
 } from '../../commands/set-css-length-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -69,6 +76,7 @@ import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-ou
 import { memoize } from '../../../../core/shared/memoize'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { cssPixelLength } from '../../../inspector/common/css-utils'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -304,6 +312,11 @@ export function getEscapeHatchCommands(
     sortedElements,
   )
 
+  const setParentsToFixedSizeCommands = createSetParentsToFixedSizeCommands(
+    elementsToConvertToAbsolute,
+    metadata,
+  )
+
   /**
    * It's possible to have descendants where the layout is defined by an ancestor
    * these are offset here as the new layout parents will be the selected elements
@@ -313,7 +326,7 @@ export function getEscapeHatchCommands(
     elementsToConvertToAbsolute,
     canvasState,
   )
-  commands.push(...descendantsInNewContainingBlock)
+  commands.push(...descendantsInNewContainingBlock, ...setParentsToFixedSizeCommands)
 
   elementsToConvertToAbsolute.forEach((path) => {
     const elementResult = collectSetLayoutPropCommands(
@@ -327,6 +340,7 @@ export function getEscapeHatchCommands(
     intendedBounds.push(...elementResult.intendedBounds)
     commands.push(...elementResult.commands)
   })
+
   sortedElements.forEach((path) => {
     const reparentResult = collectReparentCommands(path, canvasState, commonAncestor)
     commands.push(...reparentResult)
@@ -612,4 +626,78 @@ function getFrameWithoutMargin(
     y: -(margin?.top ?? 0),
   } as LocalPoint
   return offsetRect(frame, marginPoint)
+}
+
+function createSetParentsToFixedSizeCommands(
+  elementsToConvertToAbsolute: Array<ElementPath>,
+  metadata: ElementInstanceMetadataMap,
+): Array<CanvasCommand> {
+  if (elementsToConvertToAbsolute.length > 0) {
+    const firstJSXElementAncestors = stripNulls(
+      uniqBy(
+        elementsToConvertToAbsolute.map((path) => {
+          return EP.findAmongAncestorsOfPath(path, (p) => {
+            const element = MetadataUtils.getJSXElementFromMetadata(metadata, p)
+            if (element != null && isJSXElement(element)) {
+              return p
+            }
+            return null
+          })
+        }),
+        EP.pathsEqual,
+      ),
+    )
+
+    if (firstJSXElementAncestors.length == null) {
+      return []
+    }
+    return firstJSXElementAncestors.flatMap((ancestor) => {
+      const parentMetadata = MetadataUtils.findElementByElementPath(metadata, ancestor)
+      const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, ancestor)
+      const parentLocalFrame = parentMetadata?.localFrame
+      if (
+        parentElement != null &&
+        parentLocalFrame != null &&
+        isFiniteRectangle(parentLocalFrame)
+      ) {
+        const setWidthCommands = isCollapsingParent(parentElement, 'width')
+          ? [
+              setCssLengthProperty(
+                'always',
+                ancestor,
+                PP.create('style', 'width'),
+                setExplicitCssValue(cssPixelLength(parentLocalFrame.width)),
+                null,
+              ),
+            ]
+          : []
+        const setHeightCommands = isCollapsingParent(parentElement, 'width')
+          ? [
+              setCssLengthProperty(
+                'always',
+                ancestor,
+                PP.create('style', 'height'),
+                setExplicitCssValue(cssPixelLength(parentLocalFrame.height)),
+                null,
+              ),
+            ]
+          : []
+        return [...setWidthCommands, ...setHeightCommands]
+      }
+      return []
+    })
+  }
+
+  return []
+}
+
+const CollapsingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
+
+function isCollapsingParent(element: JSXElement, property: 'width' | 'height') {
+  const simpleAttribute = defaultEither(
+    null,
+    getSimpleAttributeAtPath(right(element.props), PP.create('style', property)),
+  )
+
+  return simpleAttribute == null || CollapsingWidthHeightValues.includes(simpleAttribute)
 }
