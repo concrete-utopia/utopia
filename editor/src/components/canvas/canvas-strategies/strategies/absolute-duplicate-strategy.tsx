@@ -1,8 +1,8 @@
-import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../../../core/model/element-template-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type {
+  AllElementProps,
   DerivedState,
   EditorState,
   EditorStatePatch,
@@ -26,12 +26,17 @@ import type {
 } from '../canvas-strategy-types'
 import {
   controlWithProps,
+  defaultCustomStrategyState,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { flattenSelection } from './shared-move-strategies-helpers'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import { getElementFragmentLikeType } from './fragment-like-helpers'
+import { setProperty } from '../../commands/set-property-command'
+import * as PP from '../../../../core/shared/property-path'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -52,7 +57,7 @@ export function absoluteDuplicateStrategy(
   const isDragging = interactionSession.interactionData.drag != null
   const flattenedSelectionForMultiSelect = flattenSelection(selectedElements)
 
-  if (!isApplicable(canvasState, flattenedSelectionForMultiSelect)) {
+  if (!isApplicable(flattenedSelectionForMultiSelect)) {
     return null
   }
 
@@ -98,6 +103,19 @@ export function absoluteDuplicateStrategy(
 
           newPaths.push(newPath)
           duplicateCommands.push(duplicateElement('always', selectedElement, newUid, 'before'))
+
+          if (
+            !isElementSizelessDiv(
+              canvasState.startingMetadata,
+              canvasState.startingAllElementProps,
+              canvasState.startingElementPathTree,
+              selectedElement,
+            )
+          ) {
+            duplicateCommands.push(
+              setProperty('always', selectedElement, PP.create('style', 'position'), 'absolute'),
+            )
+          }
         })
 
         return strategyApplicationResult(
@@ -138,17 +156,18 @@ function runMoveStrategy(
   strategyLifecycle: InteractionLifecycle,
 ): Array<EditorStatePatch> {
   const moveCommands =
-    absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(strategyLifecycle)
-      .commands ?? []
+    absoluteMoveStrategy(
+      canvasState,
+      interactionSession,
+      defaultCustomStrategyState(),
+      'do-not-run-applicability-check',
+    )?.strategy.apply(strategyLifecycle).commands ?? []
 
   return foldAndApplyCommandsInner(editorState, derivedState, [], moveCommands, commandLifecycle)
     .statePatches
 }
 
-function isApplicable(
-  canvasState: InteractionCanvasState,
-  filteredSelectedElements: ElementPath[],
-) {
+function isApplicable(filteredSelectedElements: ElementPath[]) {
   return filteredSelectedElements.every((element) => {
     // for a multiselected elements, we only apply drag-to-duplicate if they are siblings
     // otherwise this would lead to an unpredictable behavior
@@ -158,23 +177,18 @@ function isApplicable(
       EP.parentPath(element),
     )
 
-    const unrolledChildren = replaceFragmentLikePathsWithTheirChildrenRecursive(
-      canvasState.startingMetadata,
-      canvasState.startingAllElementProps,
-      canvasState.startingElementPathTree,
-      [element],
-    )
-
-    const isElementAbsolute = unrolledChildren.every((path) =>
-      MetadataUtils.isPositionAbsolute(
-        MetadataUtils.findElementByElementPath(canvasState.startingMetadata, path),
-      ),
-    )
-
-    return (
-      !EP.isRootElementOfInstance(element) &&
-      allDraggedElementsHaveTheSameParent &&
-      isElementAbsolute
-    )
+    return !EP.isRootElementOfInstance(element) && allDraggedElementsHaveTheSameParent
   })
+}
+
+function isElementSizelessDiv(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+): boolean {
+  return (
+    getElementFragmentLikeType(metadata, allElementProps, elementPathTrees, elementPath) ===
+    'sizeless-div'
+  )
 }

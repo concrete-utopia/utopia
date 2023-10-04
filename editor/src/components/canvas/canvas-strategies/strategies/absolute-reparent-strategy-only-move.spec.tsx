@@ -110,6 +110,7 @@ function dragByPixels(
       startingAllElementProps,
     ),
     interactionSession,
+    defaultCustomStrategyState(),
   )!.strategy.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
