@@ -549,7 +549,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
 
 describe('Convert to Absolute', () => {
   it('Correctly uses the captured closestOffsetParentPath to determine which elements to update', async () => {
-    function getCodeForTestProject(childTag: string): string {
+    function getCodeForTestProject(appWithChildTag: string): string {
       return formatTestProjectCode(`
         import * as React from 'react'
         import { Scene, Storyboard } from 'utopia-api'
@@ -579,41 +579,43 @@ describe('Convert to Absolute', () => {
                 height: 812,
               }}
             >
-              <App data-uid='app'>
-                ${childTag}
-              </App>
+            ${appWithChildTag}
             </Scene>
           </Storyboard>
         )
       `)
     }
 
-    const childTagBefore = `
-    <div
-      data-uid='child'
-      style={{
-        width: 200,
-        height: 200,
-        backgroundColor: '#d3d3d3',
-      }}
-    />
+    const appWithChildTagBefore = `
+    <App data-uid='app'>
+      <div
+        data-uid='child'
+        style={{
+          width: 200,
+          height: 200,
+          backgroundColor: '#d3d3d3',
+        }}
+      />
+    </App>
     `
-    const childTagAfter = `
-    <div
-      data-uid='child'
-      style={{
-        width: 200,
-        height: 200,
-        backgroundColor: '#d3d3d3',
-        position: 'absolute',
-        left: 0,
-        top: 100,
-      }}
-    />
+    const appWithChildTagAfter = `
+    <App data-uid='app' style={{ width: 375, height: 0 }}>
+      <div
+        data-uid='child'
+        style={{
+          width: 200,
+          height: 200,
+          backgroundColor: '#d3d3d3',
+          position: 'absolute',
+          left: 0,
+          top: 100,
+        }}
+      />
+    </App>
     `
 
     const renderResult = await renderTestEditorWithCode(
-      getCodeForTestProject(childTagBefore),
+      getCodeForTestProject(appWithChildTagBefore),
       'await-first-dom-report',
     )
 
@@ -621,7 +623,7 @@ describe('Convert to Absolute', () => {
     await renderResult.dispatch([runEscapeHatch([targetToConvert])], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      getCodeForTestProject(childTagAfter),
+      getCodeForTestProject(appWithChildTagAfter),
     )
   })
 })
@@ -1098,7 +1100,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
             data-uid='bbb'
@@ -1154,7 +1163,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
             data-uid='bbb'
@@ -1203,7 +1219,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
             data-uid='bbb'
@@ -1260,7 +1283,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
             data-uid='bbb'
