@@ -63,6 +63,7 @@ export const RemixNavigationBar = React.memo(() => {
         justifyContent: 'center',
         pointerEvents: 'initial',
         userSelect: 'none',
+        padding: '0 8px',
       }}
       onMouseDown={stopPropagation}
       onClick={stopPropagation}
