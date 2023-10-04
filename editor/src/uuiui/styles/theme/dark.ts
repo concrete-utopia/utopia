@@ -39,7 +39,7 @@ const darkBase = {
   bg510solid: createUtopiColor('oklch(0.41 0.02 269.74)'),
   bg0: createUtopiColor('#000000'),
   bg1: createUtopiColor('#181C20'),
-  bg2: createUtopiColor('#20232C'),
+  bg2: createUtopiColor('#232630'),
   bg3: createUtopiColor('#393d49'),
   bg4: createUtopiColor('#55575f'),
   bg5: createUtopiColor('#848998'),
