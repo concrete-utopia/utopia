@@ -17,6 +17,7 @@ import type {
 } from '../canvas-strategy-types'
 import {
   controlWithProps,
+  defaultCustomStrategyState,
   emptyStrategyApplicationResult,
   getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
@@ -177,10 +178,14 @@ export function baseAbsoluteReparentStrategy(
               })
 
               const moveCommands =
-                absoluteMoveStrategy(canvasState, {
-                  ...interactionSession,
-                  updatedTargetPaths: updatedTargetPaths,
-                })?.strategy.apply(strategyLifecycle).commands ?? []
+                absoluteMoveStrategy(
+                  canvasState,
+                  {
+                    ...interactionSession,
+                    updatedTargetPaths: updatedTargetPaths,
+                  },
+                  defaultCustomStrategyState(),
+                )?.strategy.apply(strategyLifecycle).commands ?? []
 
               const elementsToRerender = EP.uniqueElementPaths([
                 ...customStrategyState.elementsToRerender,
@@ -202,9 +207,11 @@ export function baseAbsoluteReparentStrategy(
               )
             } else {
               const moveCommands =
-                absoluteMoveStrategy(canvasState, interactionSession)?.strategy.apply(
-                  strategyLifecycle,
-                ).commands ?? []
+                absoluteMoveStrategy(
+                  canvasState,
+                  interactionSession,
+                  defaultCustomStrategyState(),
+                )?.strategy.apply(strategyLifecycle).commands ?? []
               return strategyApplicationResult(moveCommands)
             }
           },
