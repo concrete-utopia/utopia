@@ -25,6 +25,7 @@ import { isOptionType } from '../../../utils/utils'
 import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
+import { Tooltip } from '../../tooltip'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -88,13 +89,19 @@ const Option = (props: OptionProps<SelectOption>) => {
   }, [data, selectOption])
 
   return (
-    <FlexRow {...props.innerProps} onMouseUp={onMouseUp} style={props.getStyles('option', props)}>
-      <FlexRow style={{ width: CheckboxWidth, padding: CheckboxPadding, flexShrink: 0 }}>
-        {props.isSelected ? '✓' : ''}
+    <Tooltip
+      title={data.tooltip ?? ''}
+      placement='left'
+      disabled={props.isDisabled !== true || data.tooltip == null}
+    >
+      <FlexRow {...props.innerProps} onMouseUp={onMouseUp} style={props.getStyles('option', props)}>
+        <FlexRow style={{ width: CheckboxWidth, padding: CheckboxPadding, flexShrink: 0 }}>
+          {props.isSelected ? '✓' : ''}
+        </FlexRow>
+        {props.data.icon == null ? null : <Icn {...props.data.icon} />}
+        <span style={{ paddingLeft: 8 }}>{props.children}</span>
       </FlexRow>
-      {props.data.icon == null ? null : <Icn {...props.data.icon} />}
-      <span style={{ paddingLeft: 8 }}>{props.children}</span>
-    </FlexRow>
+    </Tooltip>
   )
 }
 

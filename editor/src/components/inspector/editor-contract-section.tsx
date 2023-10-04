@@ -25,6 +25,7 @@ import {
   getInstanceForFrameToFragmentConversion,
   getInstanceForFrameToGroupConversion,
   getInstanceForGroupToFrameConversion,
+  isConversionForbidden,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
@@ -267,69 +268,84 @@ export const EditorContractDropdown = React.memo(() => {
   }, [selectedElementContract])
 
   const options = React.useMemo((): Array<SelectOption> => {
-    function maybeDisable(option: SelectOption, disabled: boolean) {
-      return { ...option, disabled: disabled }
+    function maybeDisable(option: SelectOption, disabled: boolean, tooltip?: string) {
+      return {
+        ...option,
+        disabled: disabled,
+        tooltip: tooltip,
+      }
     }
-    let disabledGroup = false
-    let disabledFrame = false
-    let disabledFragment = false
+    function maybeReasonForConversionForbidden(result: unknown): string | undefined {
+      return isConversionForbidden(result) ? result.reason : undefined
+    }
+
+    let disabledOptions: {
+      group?: string
+      frame?: string
+      fragment?: string
+    } = {}
 
     if (selectedViews.length > 1) {
-      disabledGroup = true
-      disabledFrame = true
-      disabledFragment = true
+      disabledOptions.group = 'Cannot change for multiselect'
+      disabledOptions.frame = 'Cannot change for multiselect'
+      disabledOptions.fragment = 'Cannot change for multiselect'
     } else if (selectedViews.length === 1) {
       const view = selectedViews[0]
       switch (currentValue.value) {
         case 'frame':
-          disabledGroup =
+          disabledOptions.group = maybeReasonForConversionForbidden(
             getInstanceForFrameToGroupConversion(
               metadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
-            ) == null
-          disabledFragment =
+            ),
+          )
+          disabledOptions.fragment = maybeReasonForConversionForbidden(
             getInstanceForFrameToFragmentConversion(
               metadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
-            ) == null
+            ),
+          )
           break
         case 'fragment':
-          disabledFrame =
+          disabledOptions.frame = maybeReasonForConversionForbidden(
             getInstanceForFragmentToFrameConversion(
               metadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
               'do-not-convert-if-it-has-static-children',
-            ) == null
-          disabledGroup =
+            ),
+          )
+          disabledOptions.group = maybeReasonForConversionForbidden(
             getInstanceForFragmentToGroupConversion(
               metadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
-            ) == null
+            ),
+          )
           break
         case 'group':
-          disabledFrame =
+          disabledOptions.frame = maybeReasonForConversionForbidden(
             getInstanceForGroupToFrameConversion(
               metadataRef.current,
               elementPathTreeRef.current,
               allElementPropsRef.current,
               view,
-            ) == null
+            ),
+          )
           break
       }
     }
 
     return [
-      maybeDisable(FrameOption, disabledFrame),
-      maybeDisable(GroupOption, disabledGroup),
-      maybeDisable(FragmentOption, disabledFragment),
+      maybeDisable(GroupOption, disabledOptions.group != null, disabledOptions.group),
+      maybeDisable(FrameOption, disabledOptions.frame != null, disabledOptions.frame),
+      maybeDisable(FragmentOption, disabledOptions.fragment != null, disabledOptions.fragment),
     ]
   }, [selectedViews, metadataRef, elementPathTreeRef, allElementPropsRef, currentValue])
 

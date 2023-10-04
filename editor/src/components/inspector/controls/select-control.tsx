@@ -33,6 +33,7 @@ export interface SelectOption {
   style?: React.CSSProperties
   options?: SelectOption[]
   disabled?: boolean
+  tooltip?: string
 }
 
 const DropdownIndicator: React.FunctionComponent<
