@@ -763,7 +763,7 @@ export function detectFillHugFixedStateMultiselect(
 }
 
 export const MaxContent = 'max-content' as const
-const HugContentAttrValues = [MaxContent, 'min-content', 'fit-content', 'auto']
+export const HugContentAttrValues = [MaxContent, 'min-content', 'fit-content', 'auto']
 const HugContentAttrFunctions = ['fit-content']
 
 export type PackedSpaced = 'packed' | 'spaced'

@@ -34,7 +34,7 @@ import {
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
 import type { Axis, FixedHugFillMode } from '../inspector-common'
-import { MaxContent } from '../inspector-common'
+import { HugContentAttrValues, MaxContent } from '../inspector-common'
 import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 
@@ -553,6 +553,54 @@ describe('Fixed / Fill / Hug control', () => {
       expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
     })
 
+    const NonHugContentAttrValues = [200, '100%', 'inherit', '200px']
+    describe('Detect Hug Contents state with different width/height values', () => {
+      HugContentAttrValues.forEach((width) =>
+        NonHugContentAttrValues.forEach((height) =>
+          it(`child has Hug Contents width (${width}) but not height (${height})`, async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithParentWidthHeight(width, height),
+              'await-first-dom-report',
+            )
+            await select(editor, 'parent')
+
+            const buttons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+
+            expect(buttons).toHaveLength(1)
+          }),
+        ),
+      )
+      HugContentAttrValues.forEach((height) =>
+        NonHugContentAttrValues.forEach((width) =>
+          it(`child has Hug Contents height (${height}) but not width ${width}`, async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithParentWidthHeight(width, height),
+              'await-first-dom-report',
+            )
+            await select(editor, 'parent')
+
+            const buttons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+
+            expect(buttons).toHaveLength(1)
+          }),
+        ),
+      )
+      HugContentAttrValues.forEach((width) =>
+        HugContentAttrValues.forEach((height) =>
+          it(`child has Hug Contents width (${width}) and height (${height})`, async () => {
+            const editor = await renderTestEditorWithCode(
+              projectWithParentWidthHeight(width, height),
+              'await-first-dom-report',
+            )
+            await select(editor, 'parent')
+
+            const buttons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+
+            expect(buttons).toHaveLength(2)
+          }),
+        ),
+      )
+    })
     describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
       it('child is set to fill container on the horizontal axis', async () => {
         const editor = await renderTestEditorWithCode(
@@ -1827,6 +1875,39 @@ export var storyboard = (
           width: 229,
           height: 149,
           contain: 'layout',
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithParentWidthHeight = (
+  width: number | string | null,
+  height: number | string | null,
+) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      data-testid='parent'
+      style={{
+        ${width != null ? `width: '${width}'` : ''},
+        ${height != null ? `height: '${height}'` : ''},
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 149,
+          height: 149,
         }}
       />
     </div>
