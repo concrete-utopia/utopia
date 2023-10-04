@@ -307,7 +307,7 @@ describe('Navigator item row icons', () => {
     )
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'element', type: 'sizeless-div' },
+      { category: 'element', type: 'group-open' },
       visibleNavigatorTargets[17],
     )
     await checkNavigatorIcon(
