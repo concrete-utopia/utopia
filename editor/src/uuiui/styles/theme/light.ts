@@ -39,6 +39,7 @@ const lightBase = {
   bg510solid: createUtopiColor('oklch(0.95 0 0)'),
   bg0: createUtopiColor('hsl(0,0%,100%)'),
   bg1: createUtopiColor('lch(99.5 0.01 0)'),
+  bg1subdued: createUtopiColor('lch(98 0.01 0)'),
   bg2: createUtopiColor('lch(96.0 0.01 0)'),
   bg3: createUtopiColor('hsl(0,0%,94%)'),
   bg4: createUtopiColor('hsl(0,0%,92%)'),
@@ -125,7 +126,7 @@ const lightTheme = {
   leftMenuBackground: lightPrimitives.neutralBackground,
   leftPaneBackground: lightPrimitives.neutralBackground,
   inspectorBackground: lightPrimitives.neutralBackground,
-  canvasBackground: lightPrimitives.secondaryBackground,
+  canvasBackground: lightBase.bg4,
   canvasLiveBackground: createUtopiColor('rgba(252,252,252,1)'),
   canvasLiveBorder: lightBase.primary,
 

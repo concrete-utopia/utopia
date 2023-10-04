@@ -48,7 +48,7 @@ export const StrategyIndicator = React.memo(() => {
         height: 32,
         gap: 10,
         overflow: 'hidden',
-        backgroundColor: colorTheme.bg1.value,
+        backgroundColor: colorTheme.bg1subdued.value,
         borderRadius: '0px 10px 10px 10px',
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
         pointerEvents: 'initial',
