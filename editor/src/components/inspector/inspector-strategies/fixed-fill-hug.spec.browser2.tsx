@@ -8,7 +8,6 @@ import {
   expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
-  wait,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
