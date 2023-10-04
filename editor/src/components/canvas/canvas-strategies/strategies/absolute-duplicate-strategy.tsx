@@ -37,6 +37,7 @@ import { setProperty } from '../../commands/set-property-command'
 import * as PP from '../../../../core/shared/property-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { strictEvery } from '../../../../core/shared/array-utils'
 
 export function absoluteDuplicateStrategy(
   canvasState: InteractionCanvasState,
@@ -57,9 +58,13 @@ export function absoluteDuplicateStrategy(
   const isDragging = interactionSession.interactionData.drag != null
   const flattenedSelectionForMultiSelect = flattenSelection(selectedElements)
 
-  if (!isApplicable(flattenedSelectionForMultiSelect)) {
+  const result = isApplicable(flattenedSelectionForMultiSelect)
+
+  if (result.type === 'not-applicable') {
     return null
   }
+
+  const { commonParentPath } = result
 
   return {
     id: 'ABSOLUTE_DUPLICATE',
@@ -121,6 +126,7 @@ export function absoluteDuplicateStrategy(
         return strategyApplicationResult(
           [
             ...duplicateCommands,
+            ...maybeAddContainLayoutCommand(commonParentPath),
             setElementsToRerenderCommand([...selectedElements, ...newPaths]),
             updateSelectedViews('always', selectedElements),
             updateFunctionCommand('always', (editorState, derivedState, commandLifecycle) =>
@@ -167,8 +173,14 @@ function runMoveStrategy(
     .statePatches
 }
 
-function isApplicable(filteredSelectedElements: ElementPath[]) {
-  return filteredSelectedElements.every((element) => {
+type IsAbsoluteMoveApplicableResult =
+  | {
+      type: 'not-applicable'
+    }
+  | { type: 'applicable'; commonParentPath: ElementPath }
+
+function isApplicable(filteredSelectedElements: ElementPath[]): IsAbsoluteMoveApplicableResult {
+  const applicable = strictEvery(filteredSelectedElements, (element) => {
     // for a multiselected elements, we only apply drag-to-duplicate if they are siblings
     // otherwise this would lead to an unpredictable behavior
     // we can revisit this once we have a more predictable reparenting
@@ -179,6 +191,12 @@ function isApplicable(filteredSelectedElements: ElementPath[]) {
 
     return !EP.isRootElementOfInstance(element) && allDraggedElementsHaveTheSameParent
   })
+
+  if (!applicable) {
+    return { type: 'not-applicable' }
+  }
+
+  return { type: 'applicable', commonParentPath: EP.parentPath(filteredSelectedElements[0]) }
 }
 
 function isElementSizelessDiv(
@@ -191,4 +209,10 @@ function isElementSizelessDiv(
     getElementFragmentLikeType(metadata, allElementProps, elementPathTrees, elementPath) ===
     'sizeless-div'
   )
+}
+
+function maybeAddContainLayoutCommand(elementPath: ElementPath): CanvasCommand[] {
+  return EP.isStoryboardPath(elementPath)
+    ? []
+    : [setProperty('always', elementPath, PP.create('style', 'contain'), 'layout')]
 }
