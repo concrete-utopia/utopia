@@ -703,7 +703,7 @@ export function isHugFromStyleAttribute(
   )
 
   if (simpleAttribute == null || typeof simpleAttribute !== 'string') {
-    return true
+    return false
   }
 
   if (HugContentAttrValues.includes(simpleAttribute)) {
