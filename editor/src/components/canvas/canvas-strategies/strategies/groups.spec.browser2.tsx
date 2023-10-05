@@ -32,6 +32,7 @@ import { resizeElement } from './absolute-resize.test-utils'
 import { changeInspectorNumberControl } from '../../../inspector/common/inspector.test-utils'
 import { ParentOutlinesTestIdSuffix } from '../../controls/parent-outlines'
 import { ParentBoundsTestIdSuffix } from '../../controls/parent-bounds'
+import { safeIndex } from '../../../../core/shared/array-utils'
 
 const GroupPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`
 
@@ -2156,6 +2157,11 @@ describe('Groups behaviors', () => {
           await selectComponentsForTest(editor, [fromString(GroupPath)])
           await resizeElement(editor, { x: 100, y: 50 }, EdgePositionBottomRight, emptyModifiers)
 
+          const toasts = editor.getEditorState().editor.toasts
+          expect(toasts).toHaveLength(1)
+          const firstToast = safeIndex(toasts, 0)
+          expect(firstToast?.id).toEqual('percentage-pin-replaced')
+
           expect(groupDiv.style.width).toBe('300px')
           expect(groupDiv.style.height).toBe('300px')
 
@@ -2178,8 +2184,8 @@ describe('Groups behaviors', () => {
           assertStylePropsSet(editor, `${GroupPath}/child-2`, {
             left: 150,
             top: 120,
-            width: '50%',
-            height: '60%',
+            width: 150,
+            height: 180,
             right: undefined,
             bottom: undefined,
           })
@@ -2212,8 +2218,8 @@ describe('Groups behaviors', () => {
           assertStylePropsSet(editor, `${GroupPath}/child-2`, {
             left: 175,
             top: 140,
-            width: '50%',
-            height: '60%',
+            width: 175,
+            height: 210,
             right: undefined,
             bottom: undefined,
           })

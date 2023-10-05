@@ -66,7 +66,7 @@ import { reparentStrategyForPaste } from '../strategies/reparent-helpers/reparen
 import type { ReparentStrategy } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import type { ElementToReparent, PathToReparent } from '../strategies/reparent-utils'
 import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
-import { collectGroupTrueUp } from './navigator-reparent'
+import { adjustIntendedCoordinatesForGroups, collectGroupTrueUp } from './navigator-reparent'
 import type { PostActionChoice } from './post-action-options'
 
 interface EditorStateContext {
@@ -197,7 +197,15 @@ function pasteChoiceCommon(
       return {
         elementPath: elementPaste.originalElementPath,
         pathToReparent: elementToReparent(elementWithUID.value, elementPaste.importsToAdd),
-        intendedCoordinates: intendedCoordinates,
+        intendedCoordinates: adjustIntendedCoordinatesForGroups(
+          editorStateContext.startingMetadata,
+          target.parentPath.intendedParentPath,
+          intendedCoordinates,
+          MetadataUtils.findElementByElementPath(
+            pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+            elementPaste.originalElementPath,
+          ),
+        ),
         newUID: elementWithUID.value.uid,
       }
     })

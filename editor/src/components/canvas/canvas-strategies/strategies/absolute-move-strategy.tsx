@@ -2,7 +2,11 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
-import type { InteractionCanvasState, MoveStrategy } from '../canvas-strategy-types'
+import type {
+  CustomStrategyState,
+  InteractionCanvasState,
+  MoveStrategy,
+} from '../canvas-strategy-types'
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
@@ -17,9 +21,15 @@ import {
   flattenSelection,
 } from './shared-move-strategies-helpers'
 
+export type ShouldRunApplicabilityCheck =
+  | 'run-applicability-check'
+  | 'do-not-run-applicability-check'
+
 export function absoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
+  _: CustomStrategyState,
+  runApplicabilityCheck: ShouldRunApplicabilityCheck = 'run-applicability-check',
 ): MoveStrategy | null {
   const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
@@ -39,7 +49,7 @@ export function absoluteMoveStrategy(
       )
     })
 
-  if (!isApplicable) {
+  if (runApplicabilityCheck === 'run-applicability-check' && !isApplicable) {
     return null
   }
   return {

@@ -85,7 +85,7 @@ export function absoluteResizeBoundingBoxStrategy(
     descriptiveLabel: 'Resizing Elements',
     icon: {
       category: 'modalities',
-      type: 'moveabs-large',
+      type: 'resize',
     },
     controlsToRender: [
       controlWithProps({

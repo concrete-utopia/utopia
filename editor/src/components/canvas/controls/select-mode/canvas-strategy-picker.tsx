@@ -93,7 +93,7 @@ export const CanvasStrategyPicker = React.memo(() => {
               alignItems: 'stretch',
               padding: 4,
               gap: 4,
-              background: colorTheme.bg0.value,
+              background: colorTheme.bg1.value,
               borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
               boxShadow: UtopiaTheme.panelStyles.shadows.medium,
             }}
@@ -108,7 +108,7 @@ export const CanvasStrategyPicker = React.memo(() => {
                     paddingRight: 4,
                     borderRadius: 6,
                     backgroundColor:
-                      strategy.id === activeStrategy ? colorTheme.bg5.value : undefined,
+                      strategy.id === activeStrategy ? colorTheme.bg3.value : undefined,
                     color: colorTheme.textColor.value,
                     opacity: isStrategyFailure && strategy.id === activeStrategy ? 0.5 : 1,
                   }}

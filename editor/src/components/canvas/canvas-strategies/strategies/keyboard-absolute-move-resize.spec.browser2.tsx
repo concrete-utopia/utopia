@@ -265,7 +265,7 @@ describe('Keyboard Absolute Resize E2E', () => {
     })
   })
 
-  it('keeps trueuing up groups as directions change', async () => {
+  it('keeps trueing up groups as directions change', async () => {
     const renderResult = await renderTestEditorWithCode(
       formatTestProjectCode(
         makeTestProjectCodeWithSnippet(`
@@ -349,7 +349,7 @@ describe('Keyboard Absolute Resize E2E', () => {
             >
               <div
                 style={{
-                  height: '100%',
+                  height: 255, 
                   position: 'absolute',
                   left: 0,
                   top: 0,

@@ -1,3 +1,4 @@
+import { safeIndex } from '../../core/shared/array-utils'
 import { BakedInStoryboardUID, BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import * as EP from '../../core/shared/element-path'
 import type { CanvasRectangle } from '../../core/shared/math-utils'
@@ -1255,6 +1256,81 @@ describe('group selection', () => {
                 top: 26,
                 width: 48,
                 height: 48,
+              }}
+            />
+          </Group>
+        </div>`,
+        ),
+      )
+    })
+
+    it('wraps selected elements with percentage dimensions in a Group', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          `<div style={{ ...props.style }} data-uid='container'>
+          <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: '5%',
+            top: '10%',
+            width: '50%',
+            height: '20%',
+          }}
+          data-uid='aaa'
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: '10%',
+            top: '15%',
+            width: '70%',
+            height: '80%',
+          }}
+          data-uid='bbb'
+        />
+          </div>`,
+        ),
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/aaa`),
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/bbb`),
+      ])
+
+      await expectSingleUndo2Saves(renderResult, async () =>
+        pressKey('g', { modifiers: cmdModifier }),
+      )
+
+      const toasts = renderResult.getEditorState().editor.toasts
+      expect(toasts).toHaveLength(1)
+      const firstToast = safeIndex(toasts, 0)
+      expect(firstToast?.id).toEqual('percentage-pin-replaced')
+
+      expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippetWithoutUIDs(
+          `<div style={{ ...props.style }}>
+          <Group style={{ position: 'absolute', left: 20, top: 40, width: 300, height: 340 }}>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 200,
+                height: 80,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 20,
+                top: 20,
+                width: 280,
+                height: 320,
               }}
             />
           </Group>

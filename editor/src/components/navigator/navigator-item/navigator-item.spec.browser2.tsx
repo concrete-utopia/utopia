@@ -1,7 +1,5 @@
-import { wait } from '../../../utils/utils.test-utils'
 import { renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
 import type { NavigatorEntry } from '../../editor/store/editor-state'
-import { createElementIconPropsFromMetadata } from '../layout-element-icons'
 import { itemLabelTestIdForEntry } from './item-label'
 import { layoutIconTestIdForEntry } from './layout-icon'
 
@@ -175,7 +173,6 @@ describe('Navigator item row icons', () => {
 
   it('Should show the correct icons for each type of row', async () => {
     const editor = await renderTestEditorWithCode(testProjectCode, 'await-first-dom-report')
-    const { jsxMetadata, elementPathTree, allElementProps } = editor.getEditorState().editor
     const visibleNavigatorTargets = editor.getEditorState().derived.visibleNavigatorTargets
 
     async function checkNavigatorIcon(
@@ -189,39 +186,17 @@ describe('Navigator item row icons', () => {
       if (expectedIcnProps === 'no-icon') {
         await expect(async () => editor.renderedDOM.getByTestId(testId)).rejects.toThrow()
       } else {
-        const icnProps = createElementIconPropsFromMetadata(
-          navigatorEntry.elementPath,
-          jsxMetadata,
-          elementPathTree,
-          navigatorEntry,
-          allElementProps,
-        ).iconProps
-
-        expect({
-          description: description,
-          category: icnProps.category,
-          type: icnProps.type,
-        }).toEqual({
-          description: description,
-          category: expectedIcnProps.category,
-          type: expectedIcnProps.type,
-        })
-
         const imgElement = editor.renderedDOM.getByTestId(testId)
         const imgData = imgElement.dataset
-
-        const renderedIconDescription = `${description} renderedIcon`
 
         const expectedCategory =
           expectWarningIcon === 'expect-warning-icon' ? undefined : expectedIcnProps.category
         const expectedType =
           expectWarningIcon === 'expect-warning-icon' ? 'warningtriangle' : expectedIcnProps.type
         expect({
-          description: renderedIconDescription,
           category: imgData['category'],
           type: imgData['type'],
         }).toEqual({
-          description: renderedIconDescription,
           category: expectedCategory,
           type: expectedType,
         })
@@ -305,12 +280,10 @@ describe('Navigator item row icons', () => {
       { category: 'element', type: 'fragment' },
       visibleNavigatorTargets[16],
     )
-    // Sizeless divs now display a warning icon rather than their expected icon
     await checkNavigatorIcon(
       'Sizeless div',
-      { category: 'element', type: 'group-open' },
+      { category: 'element', type: 'zerosized-div' },
       visibleNavigatorTargets[17],
-      'expect-warning-icon',
     )
     await checkNavigatorIcon(
       'Generated text',

@@ -1,6 +1,6 @@
 import type { Notice, NoticeLevel } from '../../common/notice'
 import { notice } from '../../common/notice'
-import type { EditorState } from '../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import type { CommandFunctionResult, WhenToRun } from './commands'
 
@@ -22,6 +22,14 @@ export function showToastCommand(
   }
 }
 
+export function addToastPatch(
+  currentToasts: ReadonlyArray<Notice>,
+  noticeToAdd: Notice,
+): EditorStatePatch {
+  const updatedToasts = [...currentToasts.filter((t) => t.id !== noticeToAdd.id), noticeToAdd]
+  return { toasts: { $set: updatedToasts } }
+}
+
 export function runShowToastCommand(
   editorState: EditorState,
   command: ShowToastCommand,
@@ -34,9 +42,8 @@ export function runShowToastCommand(
     }
   }
 
-  const toasts = [...editorState.toasts.filter((t) => t.id !== command.notice.id), command.notice]
   return {
     commandDescription: 'Show a toast',
-    editorStatePatches: [{ toasts: { $set: toasts } }],
+    editorStatePatches: [addToastPatch(editorState.toasts, command.notice)],
   }
 }

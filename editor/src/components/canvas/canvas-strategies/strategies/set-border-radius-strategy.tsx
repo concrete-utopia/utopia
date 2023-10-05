@@ -134,8 +134,8 @@ export const setBorderRadiusStrategy: CanvasStrategyFactory = (
     name: 'Set border radius',
     descriptiveLabel: 'Changing Border Radius',
     icon: {
-      category: 'inspector',
-      type: 'border',
+      category: 'modalities',
+      type: 'border-radius-large',
     },
     fitness: onlyFitWhenDraggingThisControl(interactionSession, 'BORDER_RADIUS_RESIZE_HANDLE', 1),
     controlsToRender: [
