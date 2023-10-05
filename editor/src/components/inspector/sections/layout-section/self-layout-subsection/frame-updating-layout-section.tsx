@@ -194,6 +194,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
     </>
   )
 })
+FrameUpdatingLayoutSection.displayName = 'FrameUpdatingLayoutSection'
 
 interface LayoutPinPropertyControlProps {
   label: string
@@ -250,3 +251,4 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
     </InspectorContextMenuWrapper>
   )
 })
+FrameUpdatingLayoutControl.displayName = 'FrameUpdatingLayoutControl'
