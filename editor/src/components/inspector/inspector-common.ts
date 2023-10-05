@@ -905,23 +905,18 @@ export function toggleResizeToFitSetToFixed(
     : resizeToFitCommands(metadata, elementPaths, elementPathTree, allElementProps)
 }
 
-function fixedOrHugForGroup(
-  metadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): 'fixed' | 'hug-group' {
-  return treatElementAsGroupLike(metadata, path) ? 'hug-group' : 'fixed'
-}
-
 export function getFixedFillHugOptionsForElement(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   selectedView: ElementPath,
 ): Set<FixedHugFillMode> {
+  const isGroup = treatElementAsGroupLike(metadata, selectedView)
   return new Set(
     stripNulls([
-      fixedOrHugForGroup(metadata, selectedView),
+      isGroup ? 'hug-group' : null,
+      'fixed',
       hugContentsApplicableForText(metadata, selectedView) ||
-      hugContentsApplicableForContainer(metadata, pathTrees, selectedView)
+      (!isGroup && hugContentsApplicableForContainer(metadata, pathTrees, selectedView))
         ? 'hug'
         : null,
       fillContainerApplicable(metadata, selectedView) ? 'fill' : null,
