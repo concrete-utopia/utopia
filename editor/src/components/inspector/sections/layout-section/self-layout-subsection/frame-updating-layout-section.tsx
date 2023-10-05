@@ -213,6 +213,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
     (newValue: UnknownOrEmptyInput<CSSNumber>) => {
       if (isUnknownInputValue(newValue)) {
         // Ignore right now.
+        forceUpdate()
       } else if (isEmptyInputValue(newValue)) {
         // Reset the NumberInput
         forceUpdate()
