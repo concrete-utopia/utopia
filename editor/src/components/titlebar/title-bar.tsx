@@ -8,6 +8,7 @@ import {
   Avatar,
   Button,
   colorTheme,
+  FlexColumn,
   Icons,
   LargerIcons,
   SimpleFlexRow,
@@ -135,103 +136,101 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
   }, [])
 
   return (
-    <div
-      ref={drag}
-      className='handle'
-      style={{
-        height: TitleHeight,
-        width: '100%',
-        backgroundColor: theme.inspectorBackground.value,
-        paddingLeft: 10,
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 10,
-        flexShrink: 0,
-      }}
-    >
-      <FlexRow css={{ gap: 6 }}>
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 8,
-            backgroundColor: theme.unavailableGrey.value,
-          }}
-        />
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 8,
-            backgroundColor: theme.unavailableGrey.value,
-          }}
-        />
-      </FlexRow>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
-        {currentBranch != null ? (
-          <>
-            <SimpleFlexRow style={{ fontWeight: 600 }}>{currentBranch}</SimpleFlexRow>
-            <SimpleFlexRow style={{ fontWeight: 500, fontSize: 10, color: colorTheme.fg4.value }}>
-              {repoName}
-            </SimpleFlexRow>
-          </>
-        ) : (
-          <ProjectTitle>{projectName}</ProjectTitle>
-        )}
-        {when(
-          loggedIn,
+    <FlexColumn>
+      <div
+        ref={drag}
+        className='handle'
+        style={{
+          height: TitleHeight,
+          width: '100%',
+          backgroundColor: theme.inspectorBackground.value,
+          paddingLeft: 10,
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 10,
+          flexShrink: 0,
+        }}
+      >
+        <FlexRow css={{ gap: 6 }}>
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: 6,
-              scale: '75%',
-              transformOrigin: 'left',
+              width: 8,
+              height: 8,
+              borderRadius: 8,
+              backgroundColor: theme.unavailableGrey.value,
             }}
-          >
-            {when(
-              hasUpstreamChanges,
-              <RoundButton
-                color={colorTheme.secondaryOrange.value}
-                onClick={openLeftPaneltoGithubTab}
-                onMouseDown={onMouseDown}
-              >
-                {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Remote</>
-              </RoundButton>,
-            )}
-            {when(
-              hasMergeConflicts,
-              <RoundButton
-                color={colorTheme.error.value}
-                onClick={showMergeConflict}
-                onMouseDown={onMouseDown}
-              >
-                {
-                  <Icons.WarningTriangle
-                    style={{ width: 19, height: 19 }}
-                    color={'on-light-main'}
-                  />
-                }
-                <>Merge Conflicts</>
-              </RoundButton>,
-            )}
-            {when(
-              hasDownstreamChanges,
-              <RoundButton
-                color={colorTheme.secondaryBlue.value}
-                onClick={openLeftPaneltoGithubTab}
-                onMouseDown={onMouseDown}
-              >
-                {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Local</>
-              </RoundButton>,
-            )}
-          </div>,
-        )}
+          />
+          <div
+            style={{
+              width: 8,
+              height: 8,
+              borderRadius: 8,
+              backgroundColor: theme.unavailableGrey.value,
+            }}
+          />
+        </FlexRow>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {currentBranch != null ? (
+            <>
+              <SimpleFlexRow style={{ fontWeight: 600 }}>{currentBranch}</SimpleFlexRow>
+              <SimpleFlexRow style={{ fontWeight: 500, fontSize: 10, color: colorTheme.fg4.value }}>
+                {repoName}
+              </SimpleFlexRow>
+            </>
+          ) : (
+            <ProjectTitle>{projectName}</ProjectTitle>
+          )}
+        </div>
       </div>
-    </div>
+      {when(
+        loggedIn,
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            gap: 6,
+            scale: '75%',
+            transformOrigin: 'left',
+            paddingLeft: 10,
+          }}
+        >
+          {when(
+            hasUpstreamChanges,
+            <RoundButton
+              color={colorTheme.secondaryOrange.value}
+              onClick={openLeftPaneltoGithubTab}
+              onMouseDown={onMouseDown}
+            >
+              {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+              <>Remote</>
+            </RoundButton>,
+          )}
+          {when(
+            hasMergeConflicts,
+            <RoundButton
+              color={colorTheme.error.value}
+              onClick={showMergeConflict}
+              onMouseDown={onMouseDown}
+            >
+              {<Icons.WarningTriangle style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+              <>Merge Conflicts</>
+            </RoundButton>,
+          )}
+          {when(
+            hasDownstreamChanges,
+            <RoundButton
+              color={colorTheme.secondaryBlue.value}
+              onClick={openLeftPaneltoGithubTab}
+              onMouseDown={onMouseDown}
+            >
+              {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
+              <>Local</>
+            </RoundButton>,
+          )}
+        </div>,
+      )}
+    </FlexColumn>
   )
 })
 
