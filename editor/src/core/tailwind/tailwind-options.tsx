@@ -1,5 +1,5 @@
 import React from 'react'
-import { filterDuplicates, flatMapArray, last, stripNulls } from '../shared/array-utils'
+import { filterDuplicates, flatMapArray, stripNulls } from '../shared/array-utils'
 import { mapToArray, mapValues } from '../shared/object-utils'
 import { NO_OP } from '../shared/utils'
 import {
@@ -9,27 +9,18 @@ import {
 } from '../third-party/tailwind-defaults'
 import Highlighter from 'react-highlight-words'
 import type { ElementPath } from '../shared/project-file-types'
-import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import {
   Substores,
   useEditorState,
   useRefEditorState,
 } from '../../components/editor/store/store-hook'
-import {
-  getElementFromProjectContents,
-  getOpenUIJSFileKey,
-} from '../../components/editor/store/editor-state'
-import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
-import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getProjectFileByFilePath } from '../../components/assets'
+import { getElementFromProjectContents } from '../../components/editor/store/editor-state'
 import type { JSXElementChild } from '../shared/element-template'
 import {
   modifiableAttributeIsAttributeNotFound,
   isJSXElement,
   modifiableAttributeIsAttributeValue,
 } from '../shared/element-template'
-import { findElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { eitherToMaybe, flatMapEither, foldEither } from '../shared/either'
 import {
   getModifiableJSXAttributeAtPath,

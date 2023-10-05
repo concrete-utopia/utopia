@@ -15,7 +15,6 @@ import {
 import {
   findElementAtPath,
   findJSXElementAtPath,
-  findJSXElementLikeAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'

@@ -14,7 +14,7 @@ import {
 } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
-import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
+import { MetadataUtils } from '../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import {
   isJSXConditionalExpression,

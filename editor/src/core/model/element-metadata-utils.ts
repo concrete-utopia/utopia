@@ -2635,20 +2635,6 @@ export function findJSXElementAtPath(
   }, elem)
 }
 
-export function findJSXElementLikeAtPath(
-  target: ElementPath | null,
-  components: Array<UtopiaJSXComponent>,
-): JSXElementLike | null {
-  const elem = findElementAtPath(target, components)
-  return Utils.optionalMap((e) => {
-    if (isJSXElementLike(e)) {
-      return e
-    } else {
-      return null
-    }
-  }, elem)
-}
-
 export function getScenePropsOrElementAttributes(
   target: ElementPath,
   metadata: ElementInstanceMetadataMap,
