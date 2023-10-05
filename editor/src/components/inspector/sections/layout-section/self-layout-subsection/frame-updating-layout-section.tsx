@@ -76,10 +76,15 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const singleItemSelected = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.length === 1,
+    'SimplifiedLayoutSubsection singleItemSelected',
+  )
   const originalGlobalFrame: CanvasRectangle = useEditorState(
     Substores.metadata,
     (store) => {
-      if (store.editor.selectedViews.length === 1) {
+      if (singleItemSelected) {
         const metadata = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           store.editor.selectedViews[0],
@@ -97,7 +102,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   const originalLocalFrame: LocalRectangle = useEditorState(
     Substores.metadata,
     (store) => {
-      if (store.editor.selectedViews.length === 1) {
+      if (singleItemSelected) {
         const metadata = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
           store.editor.selectedViews[0],
@@ -165,12 +170,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='L'
           updateFrame={updateFrame}
           currentValue={originalLocalFrame.x}
+          enabled={singleItemSelected}
         />
         <FrameUpdatingLayoutControl
           property='top'
           label='T'
           updateFrame={updateFrame}
           currentValue={originalLocalFrame.y}
+          enabled={singleItemSelected}
         />
       </UIGridRow>
       <UIGridRow
@@ -183,12 +190,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='W'
           updateFrame={updateFrame}
           currentValue={originalLocalFrame.width}
+          enabled={singleItemSelected}
         />
         <FrameUpdatingLayoutControl
           property='height'
           label='H'
           updateFrame={updateFrame}
           currentValue={originalLocalFrame.height}
+          enabled={singleItemSelected}
         />
       </UIGridRow>
     </>
@@ -201,6 +210,7 @@ interface LayoutPinPropertyControlProps {
   property: TLWH
   currentValue: number
   updateFrame: (edgePosition: EdgePosition, movement: CanvasVector) => void
+  enabled: boolean
 }
 
 const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlProps) => {
@@ -211,24 +221,28 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
 
   const onSubmitValue = React.useCallback(
     (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-      if (isUnknownInputValue(newValue)) {
-        // Ignore right now.
-        forceUpdate()
-      } else if (isEmptyInputValue(newValue)) {
-        // Reset the NumberInput
-        forceUpdate()
-      } else {
-        if (newValue.unit == null || newValue.unit === 'px') {
-          const edgePosition = getTLWHEdgePosition(property)
-          const movement = getMovementFromValues(property, currentValue, newValue.value)
-          updateFrame(edgePosition, movement)
-        } else {
-          console.error('Attempting to use a value with a unit, which is invalid.')
+      if (props.enabled) {
+        if (isUnknownInputValue(newValue)) {
+          // Ignore right now.
           forceUpdate()
+        } else if (isEmptyInputValue(newValue)) {
+          // Reset the NumberInput
+          forceUpdate()
+        } else {
+          if (newValue.unit == null || newValue.unit === 'px') {
+            const edgePosition = getTLWHEdgePosition(property)
+            const movement = getMovementFromValues(property, currentValue, newValue.value)
+            updateFrame(edgePosition, movement)
+          } else {
+            console.error('Attempting to use a value with a unit, which is invalid.')
+            forceUpdate()
+          }
         }
+      } else {
+        forceUpdate()
       }
     },
-    [updateFrame, forceUpdate, property, currentValue],
+    [props.enabled, property, currentValue, updateFrame],
   )
 
   return (
@@ -246,7 +260,8 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         labelInner={props.label}
         onSubmitValue={onSubmitValue}
         onTransientSubmitValue={onSubmitValue}
-        controlStatus={'simple'}
+        incrementControls={props.enabled}
+        controlStatus={props.enabled ? 'simple' : 'multiselect-mixed-simple-or-unset'}
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
       />
