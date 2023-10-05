@@ -998,11 +998,7 @@ function severityFromErrors(errors: ErrorMessage[]): 'no-error' | 'warning' | 'e
     return 'warning'
   }
 
-  if (errors.some((e) => e.severity === 'fatal' || e.severity === 'error')) {
-    return 'error'
-  }
-
-  return 'no-error'
+  return 'error'
 }
 
 function getLabelColor(theme: ReturnType<typeof useColorTheme>, errors: ErrorMessage[]): string {
