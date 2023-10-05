@@ -170,17 +170,12 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
       </FlexRow>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {currentBranch != null ? (
-          <SimpleFlexRow
-            style={{
-              gap: 5,
-              scale: hasUpstreamChanges || hasMergeConflicts || hasDownstreamChanges ? '75%' : 1,
-              transformOrigin: 'left',
-            }}
-          >
-            {repoName}
-            {<Icons.Branch style={{ width: 19, height: 19 }} />}
-            {currentBranch}
-          </SimpleFlexRow>
+          <>
+            <SimpleFlexRow style={{ fontWeight: 600 }}>{currentBranch}</SimpleFlexRow>
+            <SimpleFlexRow style={{ fontWeight: 500, fontSize: 10, color: colorTheme.fg4.value }}>
+              {repoName}
+            </SimpleFlexRow>
+          </>
         ) : (
           <ProjectTitle>{projectName}</ProjectTitle>
         )}
