@@ -38,7 +38,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { fastForEach } from '../../../../core/shared/utils'
-import { getJsxElementFromProjectContents } from '../../../editor/store/editor-state'
+import { getJSXElementFromProjectContents } from '../../../editor/store/editor-state'
 import type { FullFrame } from '../../../frame'
 import { getFullFrame } from '../../../frame'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
@@ -438,7 +438,7 @@ function filterPinsToSet(
   path: ElementPath,
   canvasState: InteractionCanvasState,
 ): Array<LayoutPinnedProp> {
-  const element = getJsxElementFromProjectContents(path, canvasState.projectContents)
+  const element = getJSXElementFromProjectContents(path, canvasState.projectContents)
   if (element == null) {
     return ['top', 'left', 'width', 'height']
   } else {

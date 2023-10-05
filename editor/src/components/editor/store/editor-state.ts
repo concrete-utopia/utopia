@@ -3462,7 +3462,7 @@ export function forUnderlyingTargetFromEditorState(
   withUnderlyingTargetFromEditorState<any>(target, editor, {}, withTarget)
 }
 
-export function getJsxElementFromProjectContents(
+export function getJSXElementFromProjectContents(
   target: ElementPath | null,
   projectContents: ProjectContentTreeRoot,
 ): JSXElement | null {

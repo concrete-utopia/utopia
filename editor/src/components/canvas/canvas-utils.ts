@@ -104,6 +104,8 @@ import {
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
   isSyntheticNavigatorEntry,
+  getElementFromProjectContents,
+  getJSXElementFromProjectContents,
 } from '../editor/store/editor-state'
 import * as Frame from '../frame'
 import { getImageSizeFromMetadata, MultipliersForImages, scaleImageDimensions } from '../images'
@@ -1851,9 +1853,9 @@ export function reorderComponent(
 ): Array<UtopiaJSXComponent> {
   let workingComponents = [...components]
 
-  const jsxElement = findElementAtPath(target, workingComponents)
+  const jsxElement = getElementFromProjectContents(target, projectContents)
   const parentPath = EP.parentPath(target)
-  const parentElement = findJSXElementLikeAtPath(parentPath, workingComponents)
+  const parentElement = getJSXElementFromProjectContents(parentPath, projectContents)
 
   if (jsxElement != null && parentElement != null) {
     const indexOfRemovedElement = parentElement.children.indexOf(jsxElement)
