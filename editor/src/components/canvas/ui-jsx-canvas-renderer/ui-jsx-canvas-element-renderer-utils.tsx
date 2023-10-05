@@ -740,7 +740,7 @@ function renderJSXElement(
     if (elementIsScene) {
       return SceneComponent
     }
-    if (isFeatureEnabled('Remix support') && elementIsRemixScene) {
+    if (elementIsRemixScene) {
       return RemixSceneComponent
     }
     return elementFromScopeOrImport
