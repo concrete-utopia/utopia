@@ -56,7 +56,6 @@ export default function Index() {
 `
 
 describe('Route manifest', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Parses the route manifest from a simple project', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
@@ -243,7 +242,6 @@ describe('Route manifest', () => {
 })
 
 describe('Routes', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Parses the routes from a simple project', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,

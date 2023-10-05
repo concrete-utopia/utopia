@@ -90,7 +90,6 @@ async function renderRemixProject(project: PersistentModel) {
 }
 
 describe('Remix content', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Renders the remix container with actual content', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
@@ -803,22 +802,7 @@ describe('Remix content', () => {
   })
 })
 
-describe('Remix content with feature switch off', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', false)
-  it('Doesnt render the remix container with feature switch off', async () => {
-    const project = createModifiedProject({
-      [StoryboardFilePath]: storyboardFileContent,
-    })
-    const renderResult = await renderRemixProject(project)
-    await expect(async () =>
-      renderResult.renderedDOM.findAllByTestId(REMIX_SCENE_TESTID),
-    ).rejects.toThrow()
-  })
-})
-
 describe('Remix navigation', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
-
   const projectWithMultipleRoutes = () =>
     createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
@@ -1327,8 +1311,6 @@ describe('Remix navigation', () => {
 })
 
 describe('Editing Remix content', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
-
   it('set opacity on remix element', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
@@ -1987,7 +1969,6 @@ export default function Index() {
 })
 
 describe('Canvas controls with Remix', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Multiselect from the same element in different scenes does not render multiselect outline', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
