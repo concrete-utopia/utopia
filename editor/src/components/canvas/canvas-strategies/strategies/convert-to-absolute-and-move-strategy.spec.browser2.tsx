@@ -549,7 +549,7 @@ describe('Convert to Absolute/runEscapeHatch action', () => {
 
 describe('Convert to Absolute', () => {
   it('Correctly uses the captured closestOffsetParentPath to determine which elements to update', async () => {
-    function getCodeForTestProject(appWithChildTag: string): string {
+    function getCodeForTestProject(childTag: string): string {
       return formatTestProjectCode(`
         import * as React from 'react'
         import { Scene, Storyboard } from 'utopia-api'
@@ -579,43 +579,41 @@ describe('Convert to Absolute', () => {
                 height: 812,
               }}
             >
-            ${appWithChildTag}
+              <App data-uid='app'>
+                ${childTag}
+              </App>
             </Scene>
           </Storyboard>
         )
       `)
     }
 
-    const appWithChildTagBefore = `
-    <App data-uid='app'>
-      <div
-        data-uid='child'
-        style={{
-          width: 200,
-          height: 200,
-          backgroundColor: '#d3d3d3',
-        }}
-      />
-    </App>
+    const childTagBefore = `
+    <div
+      data-uid='child'
+      style={{
+        width: 200,
+        height: 200,
+        backgroundColor: '#d3d3d3',
+      }}
+    />
     `
-    const appWithChildTagAfter = `
-    <App data-uid='app' style={{ width: 375, height: 0 }}>
-      <div
-        data-uid='child'
-        style={{
-          width: 200,
-          height: 200,
-          backgroundColor: '#d3d3d3',
-          position: 'absolute',
-          left: 0,
-          top: 100,
-        }}
-      />
-    </App>
+    const childTagAfter = `
+    <div
+      data-uid='child'
+      style={{
+        width: 200,
+        height: 200,
+        backgroundColor: '#d3d3d3',
+        position: 'absolute',
+        left: 0,
+        top: 100,
+      }}
+    />
     `
 
     const renderResult = await renderTestEditorWithCode(
-      getCodeForTestProject(appWithChildTagBefore),
+      getCodeForTestProject(childTagBefore),
       'await-first-dom-report',
     )
 
@@ -623,7 +621,7 @@ describe('Convert to Absolute', () => {
     await renderResult.dispatch([runEscapeHatch([targetToConvert])], true)
 
     expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-      getCodeForTestProject(appWithChildTagAfter),
+      getCodeForTestProject(childTagAfter),
     )
   })
 })

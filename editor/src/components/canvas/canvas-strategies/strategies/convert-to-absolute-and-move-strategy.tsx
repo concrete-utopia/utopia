@@ -77,6 +77,7 @@ import { memoize } from '../../../../core/shared/memoize'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { cssPixelLength } from '../../../inspector/common/css-utils'
+import type { ProjectContentTreeRoot } from '../../../assets'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -315,6 +316,7 @@ export function getEscapeHatchCommands(
   const setParentsToFixedSizeCommands = createSetParentsToFixedSizeCommands(
     elementsToConvertToAbsolute,
     metadata,
+    canvasState.projectContents,
   )
 
   /**
@@ -631,27 +633,31 @@ function getFrameWithoutMargin(
 function createSetParentsToFixedSizeCommands(
   elementsToConvertToAbsolute: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
 ): Array<CanvasCommand> {
   if (elementsToConvertToAbsolute.length > 0) {
-    const firstJSXElementAncestors = stripNulls(
+    const firstAncestorsHonoringPropsSize = stripNulls(
       uniqBy(
         elementsToConvertToAbsolute.map((path) => {
           return EP.findAmongAncestorsOfPath(path, (p) => {
-            const element = MetadataUtils.getJSXElementFromMetadata(metadata, p)
-            if (element != null && isJSXElement(element)) {
-              return p
+            const element = MetadataUtils.findElementByElementPath(metadata, p)
+            if (
+              element == null ||
+              !MetadataUtils.targetHonoursPropsSize(projectContents, element)
+            ) {
+              return null
             }
-            return null
+            return p
           })
         }),
         EP.pathsEqual,
       ),
     )
 
-    if (firstJSXElementAncestors.length == null) {
+    if (firstAncestorsHonoringPropsSize.length == null) {
       return []
     }
-    return firstJSXElementAncestors.flatMap((ancestor) => {
+    return firstAncestorsHonoringPropsSize.flatMap((ancestor) => {
       const parentMetadata = MetadataUtils.findElementByElementPath(metadata, ancestor)
       const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, ancestor)
       const parentLocalFrame = parentMetadata?.localFrame
