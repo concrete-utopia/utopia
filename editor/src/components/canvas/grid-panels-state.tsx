@@ -17,7 +17,7 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export const GridMenuWidth = 268
 export const GridMenuMinWidth = 200
-export const GridMenuMaxWidth = 300
+export const GridMenuMaxWidth = 500
 
 export const GridPaneWidth = 500
 
