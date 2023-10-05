@@ -1634,30 +1634,6 @@ export const MetadataUtils = {
       return null
     }
   },
-  getJSXElementBaseName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
-    const jsxElement = findElementAtPath(path, components)
-    if (jsxElement != null) {
-      if (isJSXElement(jsxElement)) {
-        return jsxElement.name.baseVariable
-      } else {
-        return null
-      }
-    } else {
-      return null
-    }
-  },
-  getJSXElementTagName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
-    const jsxElement = findElementAtPath(path, components)
-    if (jsxElement != null) {
-      if (isJSXElement(jsxElement)) {
-        return getJSXElementNameAsString(jsxElement.name)
-      } else {
-        return null
-      }
-    } else {
-      return null
-    }
-  },
   getDuplicationParentTargets(targets: ElementPath[]): ElementPath | null {
     return EP.getCommonParent(targets)
   },
