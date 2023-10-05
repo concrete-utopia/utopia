@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  findElementAtPath,
-  getSimpleAttributeAtPath,
-  MetadataUtils,
-} from '../../core/model/element-metadata-utils'
+import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isRight, right } from '../../core/shared/either'
 import type {
   JSExpression,
@@ -28,10 +24,10 @@ import {
   unsetProperty,
 } from '../editor/actions/action-creators'
 
-import type { EditorStorePatched, ElementsToRerender } from '../editor/store/editor-state'
+import type { ElementsToRerender } from '../editor/store/editor-state'
 import {
+  getElementFromProjectContents,
   getJSXComponentsAndImportsForPathFromState,
-  getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
@@ -59,7 +55,6 @@ import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
-import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import {
   isKeyboardAbsoluteStrategy,
@@ -511,14 +506,12 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
 > = React.memo((props) => {
   const { selectedViews } = props
   const dispatch = useDispatch()
-  const { jsxMetadata, isUIJSFile, pathTrees, allElementProps } = useEditorState(
+  const { jsxMetadata, isUIJSFile } = useEditorState(
     Substores.fullStore,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
         isUIJSFile: isOpenFileUiJs(store.editor),
-        pathTrees: store.editor.elementPathTree,
-        allElementProps: store.editor.allElementProps,
       }
     },
     'SingleInspectorEntryPoint',
@@ -615,16 +608,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
   return inspector
 })
 
-const rootComponentsSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.projectContents,
-  (store: EditorStorePatched) => store.editor.codeResultCache.curriedResolveFn,
-  (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
-  (projectContents, curriedResolveFn, openFilePath) => {
-    const resolveFn = curriedResolveFn(projectContents)
-    return getOpenUtopiaJSXComponentsFromStateMultifile(projectContents, resolveFn, openFilePath)
-  },
-)
-
 export const InspectorContextProvider = React.memo<{
   selectedViews: Array<ElementPath>
   targetPath: Array<string>
@@ -634,23 +617,16 @@ export const InspectorContextProvider = React.memo<{
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-  const { jsxMetadata, allElementProps } = useEditorState(
-    Substores.metadata,
+  const { jsxMetadata, allElementProps, projectContents } = useEditorState(
+    Substores.projectContentsAndMetadata,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
         allElementProps: store.editor.allElementProps,
+        projectContents: store.editor.projectContents,
       }
     },
     'InspectorContextProvider',
-  )
-
-  const rootComponents = useKeepReferenceEqualityIfPossible(
-    useEditorState(
-      Substores.fullStore,
-      rootComponentsSelector,
-      'InspectorContextProvider rootComponents',
-    ),
   )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
@@ -669,7 +645,7 @@ export const InspectorContextProvider = React.memo<{
          */
         return
       }
-      const jsxElement = findElementAtPath(path, rootComponents)
+      const jsxElement = getElementFromProjectContents(path, projectContents)
       if (jsxElement == null) {
         /**
          * This early return will cause the inspector to render with empty fields.
