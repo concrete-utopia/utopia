@@ -78,6 +78,7 @@ import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
+import { showToastCommand } from '../../commands/show-toast-command'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -692,7 +693,14 @@ function createSetParentsToFixedSizeCommands(
           ]
         : []
 
-      return [...setWidthCommands, ...setHeightCommands]
+      const commands = [...setWidthCommands, ...setHeightCommands]
+      if (commands.length === 0) {
+        return []
+      }
+      return [
+        ...commands,
+        showToastCommand('Parent is set to fixed size', 'NOTICE', 'set-parent-to-fixed-size'),
+      ]
     })
   }
 
