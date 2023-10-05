@@ -22,7 +22,7 @@ import { last } from '../../core/shared/array-utils'
 import type { FileResult } from '../../core/shared/file-utils'
 import { WarningIcon } from '../../uuiui/warning-icon'
 import { fileResultUploadAction } from '../editor/image-insert'
-import type { IcnColor } from '../../uuiui'
+import type { IcnColor, useColorTheme } from '../../uuiui'
 import {
   Icn,
   Icons,
@@ -53,6 +53,7 @@ import { getFilenameParts } from '../images'
 import { getConflictMenuItems } from '../../core/shared/github-ui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import type { ErrorMessage } from '../../core/shared/error-messages'
+import { assertNever } from '../../core/shared/utils'
 
 export interface FileBrowserItemProps extends FileBrowserItemInfo {
   isSelected: boolean
@@ -338,7 +339,7 @@ class FileBrowserItemInner extends React.PureComponent<
           this.props.collapsed,
           this.props.exportedFunction,
         )}
-        color={this.props.errorMessages.length > 0 ? 'error' : undefined}
+        color={severityFromErrors(this.props.errorMessages) === 'error' ? 'error' : undefined}
         width={18}
         height={18}
         onDoubleClick={this.toggleCollapse}
@@ -412,12 +413,11 @@ class FileBrowserItemInner extends React.PureComponent<
         </div>
       )
     } else {
-      let labelColor: string = colorTheme.neutralForeground.value
-      if (this.props.errorMessages.length > 0) {
-        labelColor = colorTheme.errorForeground.value
-      } else if (this.props.fileType === 'ASSET_FILE') {
-        labelColor = colorTheme.dynamicBlue.value
-      }
+      const labelColor =
+        this.props.fileType === 'ASSET_FILE'
+          ? colorTheme.dynamicBlue.value
+          : getLabelColor(colorTheme, this.props.errorMessages)
+
       return (
         <>
           <span
@@ -828,7 +828,7 @@ class FileBrowserItemInner extends React.PureComponent<
               {this.props.errorMessages.length > 0 ? (
                 <span style={{ margin: '0px 4px' }}>
                   <WarningIcon
-                    color={warningIconColor(this.props.errorMessages)}
+                    color={errorAwareIconColor(this.props.errorMessages)}
                     tooltipText={this.props.errorMessages
                       .map(
                         (errorMessage) =>
@@ -989,9 +989,35 @@ function draggedImagePropertiesFromImageFile(
   }
 }
 
-function warningIconColor(errors: ErrorMessage[]): IcnColor {
+function severityFromErrors(errors: ErrorMessage[]): 'no-error' | 'warning' | 'error' {
+  if (errors.length === 0) {
+    return 'no-error'
+  }
+
   if (errors.every((e) => e.severity === 'warning')) {
     return 'warning'
   }
-  return 'error'
+
+  if (errors.some((e) => e.severity === 'fatal' || e.severity === 'error')) {
+    return 'error'
+  }
+
+  return 'no-error'
+}
+
+function getLabelColor(theme: ReturnType<typeof useColorTheme>, errors: ErrorMessage[]): string {
+  const severity = severityFromErrors(errors)
+  switch (severity) {
+    case 'error':
+      return theme.errorForeground.value
+    case 'no-error':
+    case 'warning':
+      return theme.neutralForeground.value
+    default:
+      assertNever(severity)
+  }
+}
+
+function errorAwareIconColor(errors: ErrorMessage[]): IcnColor {
+  return severityFromErrors(errors) === 'warning' ? 'warning' : 'error'
 }
