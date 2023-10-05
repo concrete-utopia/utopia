@@ -24,13 +24,11 @@ import {
   unsetProperty,
 } from '../editor/actions/action-creators'
 
-import type { EditorStorePatched, ElementsToRerender } from '../editor/store/editor-state'
+import type { ElementsToRerender } from '../editor/store/editor-state'
 import {
   getElementFromProjectContents,
   getJSXComponentsAndImportsForPathFromState,
-  getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
-  withUnderlyingTarget,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
@@ -57,7 +55,6 @@ import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
-import { createSelector } from 'reselect'
 import { isTwindEnabled } from '../../core/tailwind/tailwind'
 import {
   isKeyboardAbsoluteStrategy,
@@ -83,7 +80,6 @@ import {
 import { FlexCol } from 'utopia-api'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { strictEvery } from '../../core/shared/array-utils'
-import { normalisePathToUnderlyingTarget } from '../custom-code/code-file'
 
 export interface ElementPathElement {
   name?: string
@@ -510,14 +506,12 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
 > = React.memo((props) => {
   const { selectedViews } = props
   const dispatch = useDispatch()
-  const { jsxMetadata, isUIJSFile, pathTrees, allElementProps } = useEditorState(
+  const { jsxMetadata, isUIJSFile } = useEditorState(
     Substores.fullStore,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
         isUIJSFile: isOpenFileUiJs(store.editor),
-        pathTrees: store.editor.elementPathTree,
-        allElementProps: store.editor.allElementProps,
       }
     },
     'SingleInspectorEntryPoint',
@@ -613,16 +607,6 @@ export const SingleInspectorEntryPoint: React.FunctionComponent<
 
   return inspector
 })
-
-const rootComponentsSelector = createSelector(
-  (store: EditorStorePatched) => store.editor.projectContents,
-  (store: EditorStorePatched) => store.editor.codeResultCache.curriedResolveFn,
-  (store: EditorStorePatched) => store.editor.canvas.openFile?.filename ?? null,
-  (projectContents, curriedResolveFn, openFilePath) => {
-    const resolveFn = curriedResolveFn(projectContents)
-    return getOpenUtopiaJSXComponentsFromStateMultifile(projectContents, resolveFn, openFilePath)
-  },
-)
 
 export const InspectorContextProvider = React.memo<{
   selectedViews: Array<ElementPath>
