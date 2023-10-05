@@ -369,14 +369,15 @@ export function useColumnWidths(): [
   (columnIndex: number, newWidth: number) => void,
 ] {
   const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
+  const visiblePanels = useVisibleGridPanels()
 
   // start with the default value
   const columnWidths: Array<number> = React.useMemo(
     () =>
-      panelState.map((_, index) => {
-        return getColumnWidth(panelState, index)
+      visiblePanels.map((_, index) => {
+        return getColumnWidth(visiblePanels, index)
       }),
-    [panelState],
+    [visiblePanels],
   )
 
   const setColumnWidths = React.useCallback(
