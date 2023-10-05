@@ -84,7 +84,7 @@ export interface LayoutPinPropertyControlProps {
   updateFrame: (edgePosition: EdgePosition, movement: CanvasVector) => void
 }
 
-export const LayoutPinPropertyControl = React.memo((props: LayoutPinPropertyControlProps) => {
+export const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlProps) => {
   const { property, currentValue, updateFrame } = props
   const pointInfo = useInspectorLayoutInfo(props.property)
 
@@ -134,6 +134,39 @@ export const LayoutPinPropertyControl = React.memo((props: LayoutPinPropertyCont
 })
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
+  return (
+    <FlexColumn style={{ paddingBottom: 8 }}>
+      <InspectorSubsectionHeader>
+        <FlexRow
+          style={{
+            flexGrow: 1,
+            gap: 8,
+            height: 42,
+          }}
+        >
+          <EditorContractDropdown />
+        </FlexRow>
+      </InspectorSubsectionHeader>
+      <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
+        <FrameUpdatingLayoutSection />
+        <UIGridRow
+          padded={false}
+          variant='<--1fr--><--1fr-->'
+          style={{ minHeight: undefined, gap: 4 }}
+        >
+          <FixedHugDropdown dimension='width' />
+          <FixedHugDropdown dimension='height' />
+        </UIGridRow>
+        <FlexRow style={{ minHeight: undefined, gap: 4 }}>
+          <ClipContentControl />
+        </FlexRow>
+      </FlexColumn>
+    </FlexColumn>
+  )
+})
+SimplifiedLayoutSubsection.displayName = 'SimplifiedLayoutSubsection'
+
+export const FrameUpdatingLayoutSection = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
@@ -176,6 +209,7 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
     },
     'SimplifiedLayoutSubsection originalGlobalFrame',
   )
+
   const updateFrame = React.useCallback(
     (edgePosition: EdgePosition, movement: CanvasVector) => {
       if (edgePosition === EdgePositionTop || edgePosition === EdgePositionLeft) {
@@ -217,71 +251,46 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
   )
 
   return (
-    <FlexColumn style={{ paddingBottom: 8 }}>
-      <InspectorSubsectionHeader>
-        <FlexRow
-          style={{
-            flexGrow: 1,
-            gap: 8,
-            height: 42,
-          }}
-        >
-          <EditorContractDropdown />
-        </FlexRow>
-      </InspectorSubsectionHeader>
-      <FlexColumn style={{ gap: 8, paddingLeft: 8, paddingRight: 8 }}>
-        <UIGridRow
-          padded={false}
-          variant='<--1fr--><--1fr-->'
-          style={{ minHeight: undefined, gap: 4 }}
-        >
-          <LayoutPinPropertyControl
-            property='left'
-            label='L'
-            updateFrame={updateFrame}
-            currentValue={originalLocalFrame.x}
-          />
-          <LayoutPinPropertyControl
-            property='top'
-            label='T'
-            updateFrame={updateFrame}
-            currentValue={originalLocalFrame.y}
-          />
-        </UIGridRow>
-        <UIGridRow
-          padded={false}
-          variant='<--1fr--><--1fr-->'
-          style={{ minHeight: undefined, gap: 4 }}
-        >
-          <LayoutPinPropertyControl
-            property='width'
-            label='W'
-            updateFrame={updateFrame}
-            currentValue={originalLocalFrame.width}
-          />
-          <LayoutPinPropertyControl
-            property='height'
-            label='H'
-            updateFrame={updateFrame}
-            currentValue={originalLocalFrame.height}
-          />
-        </UIGridRow>
-        <UIGridRow
-          padded={false}
-          variant='<--1fr--><--1fr-->'
-          style={{ minHeight: undefined, gap: 4 }}
-        >
-          <FixedHugDropdown dimension='width' />
-          <FixedHugDropdown dimension='height' />
-        </UIGridRow>
-        <FlexRow style={{ minHeight: undefined, gap: 4 }}>
-          <ClipContentControl />
-        </FlexRow>
-      </FlexColumn>
-    </FlexColumn>
+    <>
+      <UIGridRow
+        padded={false}
+        variant='<--1fr--><--1fr-->'
+        style={{ minHeight: undefined, gap: 4 }}
+      >
+        <FrameUpdatingLayoutControl
+          property='left'
+          label='L'
+          updateFrame={updateFrame}
+          currentValue={originalLocalFrame.x}
+        />
+        <FrameUpdatingLayoutControl
+          property='top'
+          label='T'
+          updateFrame={updateFrame}
+          currentValue={originalLocalFrame.y}
+        />
+      </UIGridRow>
+      <UIGridRow
+        padded={false}
+        variant='<--1fr--><--1fr-->'
+        style={{ minHeight: undefined, gap: 4 }}
+      >
+        <FrameUpdatingLayoutControl
+          property='width'
+          label='W'
+          updateFrame={updateFrame}
+          currentValue={originalLocalFrame.width}
+        />
+        <FrameUpdatingLayoutControl
+          property='height'
+          label='H'
+          updateFrame={updateFrame}
+          currentValue={originalLocalFrame.height}
+        />
+      </UIGridRow>
+    </>
   )
 })
-SimplifiedLayoutSubsection.displayName = 'SimplifiedLayoutSubsection'
 
 const ClipContentControl = React.memo(() => {
   const isVisible = useIsSubSectionVisible('overflow')
