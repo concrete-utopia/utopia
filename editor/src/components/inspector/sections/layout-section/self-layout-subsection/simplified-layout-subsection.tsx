@@ -45,6 +45,7 @@ import {
 } from '../../../../../core/shared/math-utils'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import { moveInspectorStrategy } from '../../../../../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { useForceUpdate } from '../../../../editor/hook-utils'
 
 type TLWH = 'top' | 'left' | 'width' | 'height'
 
@@ -84,26 +85,29 @@ export interface LayoutPinPropertyControlProps {
 }
 
 export const LayoutPinPropertyControl = React.memo((props: LayoutPinPropertyControlProps) => {
+  const { property, currentValue, updateFrame } = props
   const pointInfo = useInspectorLayoutInfo(props.property)
+
+  const [mountCount, forceUpdate] = React.useReducer((c) => c + 1, 0)
 
   const onSubmitValue = React.useCallback(
     (newValue: UnknownOrEmptyInput<CSSNumber>) => {
       if (isUnknownInputValue(newValue)) {
         // Ignore right now.
       } else if (isEmptyInputValue(newValue)) {
-        // Should unset the value?
-        pointInfo.onUnsetValues()
+        // Reset the NumberInput
+        forceUpdate()
       } else {
         if (newValue.unit == null || newValue.unit === 'px') {
-          const edgePosition = getTLWHEdgePosition(props.property)
-          const movement = getMovementFromValues(props.property, props.currentValue, newValue.value)
-          props.updateFrame(edgePosition, movement)
+          const edgePosition = getTLWHEdgePosition(property)
+          const movement = getMovementFromValues(property, currentValue, newValue.value)
+          updateFrame(edgePosition, movement)
         } else {
           console.error('Attempting to use a value with a unit, which is invalid.')
         }
       }
     },
-    [pointInfo, props],
+    [updateFrame, forceUpdate, property, currentValue],
   )
 
   return (
@@ -113,6 +117,7 @@ export const LayoutPinPropertyControl = React.memo((props: LayoutPinPropertyCont
       data={{}}
     >
       <NumberInput
+        key={`pin-${props.property}-number-input-mount-${mountCount}`}
         data-controlstatus={pointInfo.controlStatus}
         value={cssNumber(props.currentValue)}
         id={`pin-${props.property}-number-input`}
