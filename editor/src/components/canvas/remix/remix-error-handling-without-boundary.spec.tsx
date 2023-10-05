@@ -5,8 +5,6 @@ import { runTestReturningErrorBoundaries } from './remix-error-handling.test-uti
 // as otherwise it causes issues with Jest for some reason
 
 describe('Remix error handling', () => {
-  setFeatureForUnitTestsUseInDescribeBlockOnly('Remix support', true)
-
   it('Bubbles errors to the canvas if no error boundary exists', async () => {
     const { customBoundary, canvasOverlay } = await runTestReturningErrorBoundaries(
       'without-custom-boundary',
