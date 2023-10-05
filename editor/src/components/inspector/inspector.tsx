@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  findElementAtPath,
-  getSimpleAttributeAtPath,
-  MetadataUtils,
-} from '../../core/model/element-metadata-utils'
+import { getSimpleAttributeAtPath, MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isRight, right } from '../../core/shared/either'
 import type {
   JSExpression,
@@ -30,9 +26,11 @@ import {
 
 import type { EditorStorePatched, ElementsToRerender } from '../editor/store/editor-state'
 import {
+  getElementFromProjectContents,
   getJSXComponentsAndImportsForPathFromState,
   getOpenUtopiaJSXComponentsFromStateMultifile,
   isOpenFileUiJs,
+  withUnderlyingTarget,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
@@ -85,6 +83,7 @@ import {
 import { FlexCol } from 'utopia-api'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { strictEvery } from '../../core/shared/array-utils'
+import { normalisePathToUnderlyingTarget } from '../custom-code/code-file'
 
 export interface ElementPathElement {
   name?: string
@@ -634,23 +633,16 @@ export const InspectorContextProvider = React.memo<{
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
 
-  const { jsxMetadata, allElementProps } = useEditorState(
-    Substores.metadata,
+  const { jsxMetadata, allElementProps, projectContents } = useEditorState(
+    Substores.projectContentsAndMetadata,
     (store) => {
       return {
         jsxMetadata: store.editor.jsxMetadata,
         allElementProps: store.editor.allElementProps,
+        projectContents: store.editor.projectContents,
       }
     },
     'InspectorContextProvider',
-  )
-
-  const rootComponents = useKeepReferenceEqualityIfPossible(
-    useEditorState(
-      Substores.fullStore,
-      rootComponentsSelector,
-      'InspectorContextProvider rootComponents',
-    ),
   )
 
   let newEditedMultiSelectedProps: JSXAttributes[] = []
@@ -669,7 +661,7 @@ export const InspectorContextProvider = React.memo<{
          */
         return
       }
-      const jsxElement = findElementAtPath(path, rootComponents)
+      const jsxElement = getElementFromProjectContents(path, projectContents)
       if (jsxElement == null) {
         /**
          * This early return will cause the inspector to render with empty fields.
