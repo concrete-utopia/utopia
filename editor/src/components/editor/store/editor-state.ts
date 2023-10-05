@@ -3462,7 +3462,7 @@ export function forUnderlyingTargetFromEditorState(
   withUnderlyingTargetFromEditorState<any>(target, editor, {}, withTarget)
 }
 
-export function getElementFromProjectContents(
+export function getJsxElementFromProjectContents(
   target: ElementPath | null,
   projectContents: ProjectContentTreeRoot,
 ): JSXElement | null {
@@ -3473,6 +3473,13 @@ export function getElementFromProjectContents(
       return null
     }
   })
+}
+
+export function getElementFromProjectContents(
+  target: ElementPath | null,
+  projectContents: ProjectContentTreeRoot,
+): JSXElementChild | null {
+  return withUnderlyingTarget(target, projectContents, null, (_, element) => element)
 }
 
 export function getCurrentTheme(userConfiguration: ThemeSubstate['userState']): Theme {

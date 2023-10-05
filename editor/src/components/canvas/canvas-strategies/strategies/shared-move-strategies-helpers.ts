@@ -25,7 +25,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 
-import { getElementFromProjectContents } from '../../../editor/store/editor-state'
+import { getJsxElementFromProjectContents } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { determineConstrainedDragAxis } from '../../canvas-controls-frame'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
@@ -173,7 +173,7 @@ export function getMoveCommandsForSelectedElement(
   commands: Array<AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
-  const element: JSXElement | null = getElementFromProjectContents(
+  const element: JSXElement | null = getJsxElementFromProjectContents(
     selectedElement,
     canvasState.projectContents,
   )

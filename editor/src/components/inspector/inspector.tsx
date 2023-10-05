@@ -26,9 +26,9 @@ import {
 
 import type { ElementsToRerender } from '../editor/store/editor-state'
 import {
-  getElementFromProjectContents,
   getJSXComponentsAndImportsForPathFromState,
   isOpenFileUiJs,
+  getElementFromProjectContents,
 } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import {
