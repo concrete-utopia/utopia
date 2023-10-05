@@ -42,8 +42,8 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
-  'Draggable Floating Panels': false,
-  'Remix support': false,
+  'Draggable Floating Panels': true,
+  'Remix support': true,
   'Debug - Print UIDs': false,
 }
 
