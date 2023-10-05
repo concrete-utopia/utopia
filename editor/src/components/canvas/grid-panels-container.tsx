@@ -18,9 +18,10 @@ import {
   GridVerticalExtraPadding,
   NumberOfColumns,
   normalizeColIndex,
-  storedLayoutToResolvedPanels,
   updateLayout,
   useColumnWidths,
+  useGridPanelState,
+  useResolvedGridPanels,
   wrapAroundColIndex,
 } from './grid-panels-state'
 import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
@@ -28,11 +29,9 @@ import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
 import { useAtom } from 'jotai'
 
 export const GridPanelsContainer = React.memo(() => {
-  const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
+  const [panelState, setPanelState] = useGridPanelState()
 
-  const orderedPanels = React.useMemo(() => {
-    return storedLayoutToResolvedPanels(panelState)
-  }, [panelState])
+  const orderedPanels = useResolvedGridPanels()
 
   const nonEmptyColumns = React.useMemo(() => {
     return Array.from(
