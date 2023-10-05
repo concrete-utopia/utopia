@@ -223,6 +223,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
           updateFrame(edgePosition, movement)
         } else {
           console.error('Attempting to use a value with a unit, which is invalid.')
+          forceUpdate()
         }
       }
     },
