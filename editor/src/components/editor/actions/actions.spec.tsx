@@ -1174,7 +1174,7 @@ describe('INSERT_INSERTABLE', () => {
                     height: 100,
                     position: 'absolute',
                   }}
-                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+                  src='/editor/utopia-logo-white-fill.png?hash=nocommit'
                 />
               </div>
             )
@@ -1255,7 +1255,7 @@ describe('INSERT_INSERTABLE', () => {
                     height: 100,
                     position: 'absolute',
                   }}
-                  src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+                  src='/editor/utopia-logo-white-fill.png?hash=nocommit'
                 />
                 <div
                   data-testid='card-inner-div'
