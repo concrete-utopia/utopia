@@ -2,9 +2,11 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
 import { CSSCursor } from '../../canvas-types'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { setProperty } from '../../commands/set-property-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
 import { ParentBounds } from '../../controls/parent-bounds'
 import { ParentOutlines } from '../../controls/parent-outlines'
@@ -199,6 +201,12 @@ export function baseAbsoluteReparentStrategy(
                   ...commands.flatMap((c) => c.commands),
                   updateSelectedViews('always', newPaths),
                   setElementsToRerenderCommand(elementsToRerender),
+                  setProperty(
+                    'always',
+                    newParent.intendedParentPath,
+                    PP.create('style', 'contain'),
+                    'layout',
+                  ),
                   setCursorCommand(CSSCursor.Reparent),
                 ],
                 {
