@@ -659,38 +659,40 @@ function createSetParentsToFixedSizeCommands(
     }
     return firstAncestorsHonoringPropsSize.flatMap((ancestor) => {
       const parentMetadata = MetadataUtils.findElementByElementPath(metadata, ancestor)
-      const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, ancestor)
       const parentLocalFrame = parentMetadata?.localFrame
-      if (
-        parentElement != null &&
-        parentLocalFrame != null &&
-        isFiniteRectangle(parentLocalFrame)
-      ) {
-        const setWidthCommands = isCollapsingParent(parentElement, 'width')
-          ? [
-              setCssLengthProperty(
-                'always',
-                ancestor,
-                PP.create('style', 'width'),
-                setExplicitCssValue(cssPixelLength(parentLocalFrame.width)),
-                null,
-              ),
-            ]
-          : []
-        const setHeightCommands = isCollapsingParent(parentElement, 'width')
-          ? [
-              setCssLengthProperty(
-                'always',
-                ancestor,
-                PP.create('style', 'height'),
-                setExplicitCssValue(cssPixelLength(parentLocalFrame.height)),
-                null,
-              ),
-            ]
-          : []
-        return [...setWidthCommands, ...setHeightCommands]
+      if (parentLocalFrame == null || !isFiniteRectangle(parentLocalFrame)) {
+        return []
       }
-      return []
+
+      const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, ancestor)
+      if (parentElement == null) {
+        return []
+      }
+
+      const setWidthCommands = isCollapsingParent(parentElement, 'width')
+        ? [
+            setCssLengthProperty(
+              'always',
+              ancestor,
+              PP.create('style', 'width'),
+              setExplicitCssValue(cssPixelLength(parentLocalFrame.width)),
+              null,
+            ),
+          ]
+        : []
+      const setHeightCommands = isCollapsingParent(parentElement, 'width')
+        ? [
+            setCssLengthProperty(
+              'always',
+              ancestor,
+              PP.create('style', 'height'),
+              setExplicitCssValue(cssPixelLength(parentLocalFrame.height)),
+              null,
+            ),
+          ]
+        : []
+
+      return [...setWidthCommands, ...setHeightCommands]
     })
   }
 
