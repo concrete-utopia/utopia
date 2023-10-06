@@ -1,8 +1,4 @@
-/* @jsxFrag */
-/** @jsx jsx */
-import { jsx } from '@emotion/react'
-/** @jsxRuntime classic */
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { createSelector } from 'reselect'
 import { auth0Url } from '../../common/env-vars'
 import { getUserPicture } from '../../common/user'
@@ -69,15 +65,13 @@ export const PanelButton = (props: any) => {
   return (
     <div
       onClick={props.onClick ? props.onClick : NO_OP}
-      css={{
+      style={{
         width: 8,
         height: 8,
         borderRadius: 8,
         pointerEvents: 'initial',
-        backgroundColor: colorTheme.unavailableGrey.value,
-        '&:hover': {
-          backgroundColor: props.color ? props.color : colorTheme.unavailableGrey.value,
-        },
+        backgroundColor:
+          props.isHovered && props.color ? props.color : colorTheme.unavailableGrey.value,
       }}
     >
       {props.children}
@@ -163,6 +157,14 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
     dispatch([togglePanel('leftmenu')])
   }, [dispatch])
 
+  const [isHovered, setIsHovered] = useState(false)
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
   return (
     <div
       ref={drag}
@@ -178,10 +180,12 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
         gap: 10,
         flexShrink: 0,
       }}
+      onMouseEnter={setIsHoveredTrue}
+      onMouseLeave={setIsHoveredFalse}
     >
       <FlexRow css={{ gap: 6 }}>
-        <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' />
-        <PanelButton />
+        <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' isHovered={isHovered} />
+        <PanelButton isHovered={isHovered} />
       </FlexRow>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {currentBranch != null ? (
@@ -283,6 +287,14 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
     dispatch([togglePanel('rightmenu')])
   }, [dispatch])
 
+  const [isHovered, setIsHovered] = useState(false)
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
   return (
     <div
       ref={drag}
@@ -298,10 +310,12 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         justifyContent: 'space-between',
         gap: 6,
       }}
+      onMouseEnter={setIsHoveredTrue}
+      onMouseLeave={setIsHoveredFalse}
     >
       <FlexRow css={{ gap: 6 }}>
-        <PanelButton onClick={toggleInspectorVisible} color='#FF5F57' />
-        <PanelButton />
+        <PanelButton onClick={toggleInspectorVisible} color='#FF5F57' isHovered={isHovered} />
+        <PanelButton isHovered={isHovered} />
       </FlexRow>
       <div style={{ flex: '0 0 0px' }}>
         {unless(
@@ -373,6 +387,14 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
     [dispatch],
   )
 
+  const [isHovered, setIsHovered] = useState(false)
+  const setIsHoveredTrue = React.useCallback(() => {
+    setIsHovered(true)
+  }, [])
+  const setIsHoveredFalse = React.useCallback(() => {
+    setIsHovered(false)
+  }, [])
+
   return (
     <div
       ref={drag}
@@ -388,10 +410,12 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
         gap: 6,
         fontWeight: 600,
       }}
+      onMouseEnter={setIsHoveredTrue}
+      onMouseLeave={setIsHoveredFalse}
     >
-      <PanelButton onClick={toggleCodeEditorVisible} color='#FF5F57' />
-      <PanelButton onClick={onMinimize} color='#FDBC40' />
-      <PanelButton onClick={onMaximize} color='#33C748' />
+      <PanelButton onClick={toggleCodeEditorVisible} color='#FF5F57' isHovered={isHovered} />
+      <PanelButton onClick={onMinimize} color='#FDBC40' isHovered={isHovered} />
+      <PanelButton onClick={onMaximize} color='#33C748' isHovered={isHovered} />
       <span style={{ marginLeft: 8 }}>Code </span>
     </div>
   )
