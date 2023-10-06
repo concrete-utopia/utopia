@@ -13,9 +13,8 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
-import { deriveState, withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
-import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type { CSSKeyword, CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import {
   cssPixelLength,
@@ -77,7 +76,6 @@ export function setCssLengthProperty(
 
 export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   editorState: EditorState,
-  _derivedState: DerivedState,
   command: SetCssLengthProperty,
 ) => {
   // in case of width or height change, delete min, max and flex props

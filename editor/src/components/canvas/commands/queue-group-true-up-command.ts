@@ -4,12 +4,7 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type {
-  AllElementProps,
-  DerivedState,
-  EditorState,
-  TrueUpTarget,
-} from '../../editor/store/editor-state'
+import type { AllElementProps, EditorState, TrueUpTarget } from '../../editor/store/editor-state'
 import { trueUpElementChanged } from '../../editor/store/editor-state'
 import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { BaseCommand, CommandFunction } from './commands'
@@ -30,7 +25,6 @@ export function queueGroupTrueUp(targets: Array<TrueUpTarget>): QueueGroupTrueUp
 
 export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
   editorState: EditorState,
-  __: DerivedState,
   command: QueueGroupTrueUp,
 ) => {
   return {

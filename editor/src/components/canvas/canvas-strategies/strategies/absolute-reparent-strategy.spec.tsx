@@ -15,7 +15,7 @@ import {
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
 import type { EditorState } from '../../../editor/store/editor-state'
-import { deriveState, emptyDerivedState } from '../../../editor/store/editor-state'
+import { deriveState } from '../../../editor/store/editor-state'
 import { patchedCreateRemixDerivedDataMemo } from '../../../editor/store/remix-derived-data'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
@@ -202,7 +202,6 @@ function reparentElement(
 
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
-    deriveState(editorState, null, 'patched', patchedCreateRemixDerivedDataMemo),
     createBuiltInDependenciesList(null),
     startingMetadata,
   )
@@ -234,7 +233,6 @@ function reparentElement(
 
     return foldAndApplyCommands(
       editorState,
-      emptyDerivedState(editorState),
       editorState,
       [],
       strategyResult.commands,
