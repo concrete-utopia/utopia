@@ -1,3 +1,7 @@
+/* @jsxFrag */
+/** @jsx jsx */
+import { jsx } from '@emotion/react'
+/** @jsxRuntime classic */
 import React, { useCallback } from 'react'
 import { createSelector } from 'reselect'
 import { auth0Url } from '../../common/env-vars'
@@ -37,6 +41,7 @@ import {
   type StoredPanel,
   useUpdateGridPanelLayoutPutCodeEditorBelowNavigator,
 } from '../canvas/grid-panels-state'
+import { NO_OP } from '../../core/shared/utils'
 
 interface ProjectTitleProps {}
 
@@ -57,6 +62,26 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
     >
       {children}
     </FlexRow>
+  )
+}
+
+export const PanelButton = (props: any) => {
+  return (
+    <div
+      onClick={props.onClick ? props.onClick : NO_OP}
+      css={{
+        width: 8,
+        height: 8,
+        borderRadius: 8,
+        pointerEvents: 'initial',
+        backgroundColor: colorTheme.unavailableGrey.value,
+        '&:hover': {
+          backgroundColor: props.color ? props.color : colorTheme.unavailableGrey.value,
+        },
+      }}
+    >
+      {props.children}
+    </div>
   )
 }
 
@@ -134,6 +159,10 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
     e.stopPropagation()
   }, [])
 
+  const toggleNavigatorVisible = React.useCallback(() => {
+    dispatch([togglePanel('leftmenu')])
+  }, [dispatch])
+
   return (
     <div
       ref={drag}
@@ -151,22 +180,8 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
       }}
     >
       <FlexRow css={{ gap: 6 }}>
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 8,
-            backgroundColor: theme.unavailableGrey.value,
-          }}
-        />
-        <div
-          style={{
-            width: 8,
-            height: 8,
-            borderRadius: 8,
-            backgroundColor: theme.unavailableGrey.value,
-          }}
-        />
+        <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' />
+        <PanelButton />
       </FlexRow>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {currentBranch != null ? (
@@ -242,6 +257,7 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
 
 export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }) => {
   const { drag } = useGridPanelDraggable(props.panelData)
+  const dispatch = useDispatch()
 
   const theme = useColorTheme()
   const { loginState } = useEditorState(
@@ -263,6 +279,10 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
     window.open(auth0Url('auto-close'), '_blank')
   }, [])
 
+  const toggleInspectorVisible = React.useCallback(() => {
+    dispatch([togglePanel('rightmenu')])
+  }, [dispatch])
+
   return (
     <div
       ref={drag}
@@ -271,7 +291,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         height: TitleHeight,
         width: '100%',
         backgroundColor: theme.inspectorBackground.value,
-        paddingLeft: 10,
+        padding: '0 8px',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
@@ -279,15 +299,11 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         gap: 6,
       }}
     >
-      <div
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.unavailableGrey.value,
-        }}
-      />
-      <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
+      <FlexRow css={{ gap: 6 }}>
+        <PanelButton onClick={toggleInspectorVisible} color='#FF5F57' />
+        <PanelButton />
+      </FlexRow>
+      <div style={{ flex: '0 0 0px' }}>
         {unless(
           loggedIn,
           <Button
@@ -334,28 +350,15 @@ export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
         gap: 6,
       }}
     >
-      <div
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.unavailableGrey.value,
-        }}
-      />
-      <div
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: theme.unavailableGrey.value,
-        }}
-      />
+      <PanelButton />
+      <PanelButton />
     </div>
   )
 })
 
 export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
   const { drag } = useGridPanelDraggable(props.panelData)
+  const dispatch = useDispatch()
   const theme = useColorTheme()
 
   const updatePanelLayout = useUpdateGridPanelLayout()
@@ -365,12 +368,17 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
 
   const onMinimize = useUpdateGridPanelLayoutPutCodeEditorBelowNavigator()
 
+  const toggleCodeEditorVisible = React.useCallback(
+    () => dispatch([togglePanel('codeEditor')]),
+    [dispatch],
+  )
+
   return (
     <div
       ref={drag}
       className='handle'
       style={{
-        height: 28,
+        height: 40,
         width: '100%',
         backgroundColor: theme.inspectorBackground.value,
         paddingLeft: 10,
@@ -381,24 +389,9 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
         fontWeight: 600,
       }}
     >
-      <div
-        onClick={onMinimize}
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: '#F5BF4F',
-        }}
-      />
-      <div
-        onClick={onMaximize}
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: 8,
-          backgroundColor: '#61C454',
-        }}
-      />
+      <PanelButton onClick={toggleCodeEditorVisible} color='#FF5F57' />
+      <PanelButton onClick={onMinimize} color='#FDBC40' />
+      <PanelButton onClick={onMaximize} color='#33C748' />
       <span style={{ marginLeft: 8 }}>Code </span>
     </div>
   )
