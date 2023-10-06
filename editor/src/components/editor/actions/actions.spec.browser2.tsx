@@ -5772,7 +5772,7 @@ export var storyboard = (
       const testCode = `
       <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
         <img
-          src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+          src='/editor/utopia-logo-white-fill.png?hash=nocommit'
           alt='Utopia logo'
           data-uid='bbb'
         />
@@ -5788,7 +5788,7 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
           <img
-            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            src='/editor/utopia-logo-white-fill.png?hash=nocommit'
             alt='Utopia logo'
             data-uid='bbb'
           />

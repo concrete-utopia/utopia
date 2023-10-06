@@ -571,7 +571,7 @@ export var storyboard = (
                 height: '64px',
                 position: 'absolute',
               }}
-              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+              src='/editor/utopia-logo-white-fill.png?hash=nocommit'
               data-uid='newly-added-img'
             />
           ) : (
@@ -619,7 +619,7 @@ export var storyboard = (
               height: '64px',
               position: 'absolute',
             }}
-            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            src='/editor/utopia-logo-white-fill.png?hash=nocommit'
             data-uid='newly-added-img'
           />
         )
@@ -675,7 +675,7 @@ export var storyboard = (
                   height: '64px',
                   position: 'absolute',
                 }}
-                src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+                src='/editor/utopia-logo-white-fill.png?hash=nocommit'
                 data-uid='newly-added-img'
               />
               <img
@@ -753,7 +753,7 @@ export var storyboard = (
                 height: '64px',
                 position: 'absolute',
               }}
-              src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+              src='/editor/utopia-logo-white-fill.png?hash=nocommit'
               data-uid='newly-added-img'
             />
           </div>
