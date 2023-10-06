@@ -2491,9 +2491,6 @@ export const UPDATE_FNS = {
   TOGGLE_PANE: (action: TogglePane, editor: EditorModel): EditorModel => {
     switch (action.target) {
       case 'leftmenu':
-        if (isFeatureEnabled('Draggable Floating Panels')) {
-          return editor
-        }
         return {
           ...editor,
           leftMenu: {
@@ -2502,9 +2499,6 @@ export const UPDATE_FNS = {
           },
         }
       case 'rightmenu':
-        if (isFeatureEnabled('Draggable Floating Panels')) {
-          return editor
-        }
         return {
           ...editor,
           rightMenu: {
@@ -2578,9 +2572,6 @@ export const UPDATE_FNS = {
         }
 
       case 'codeEditor':
-        if (isFeatureEnabled('Draggable Floating Panels')) {
-          return editor
-        }
         return updateCodeEditorVisibility(editor, !editor.interfaceDesigner.codePaneVisible)
       case 'canvas':
       case 'misccodeeditor':

@@ -1098,7 +1098,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
             data-uid='bbb'
@@ -1154,7 +1161,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
             data-uid='bbb'
@@ -1203,7 +1217,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
             data-uid='bbb'
@@ -1260,7 +1281,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 400,
+              height: 400,
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
             data-uid='bbb'

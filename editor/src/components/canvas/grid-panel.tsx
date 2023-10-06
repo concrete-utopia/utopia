@@ -19,8 +19,16 @@ interface GridPanelProps {
 }
 
 export const GridPanel = React.memo<GridPanelProps>((props) => {
+  if (props.pane == null) {
+    return null
+  }
+  return <GridPanelInner {...props} />
+})
+GridPanel.displayName = 'GridPanel'
+
+const GridPanelInner = React.memo<GridPanelProps>((props) => {
   const { onDrop, canDrop } = props
-  const { panel, index, span, order } = props.pane
+  const { panel, index, span, order, visible } = props.pane
 
   const { isDragActive, draggedPanel } = useGridPanelDragInfo()
 
@@ -85,7 +93,7 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
         gridColumn: `col ${index > -1 ? index + 1 : index}`,
         gridRow: `span ${span}`,
         order: order,
-        display: 'flex',
+        display: visible ? 'flex' : 'none',
         flexDirection: 'column',
         contain: 'layout',
         paddingLeft: GridPanelHorizontalGapHalf,
@@ -143,3 +151,4 @@ export const GridPanel = React.memo<GridPanelProps>((props) => {
     </div>
   )
 })
+GridPanelInner.displayName = 'GridPanelInner'

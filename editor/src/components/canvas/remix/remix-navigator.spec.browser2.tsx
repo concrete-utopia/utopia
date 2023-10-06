@@ -26,7 +26,6 @@ async function renderRemixProject(project: PersistentModel) {
 }
 
 describe('Remix navigator', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Shows navigator for remix content', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
@@ -281,7 +280,6 @@ describe('Remix navigator', () => {
   })
 })
 describe('Reparenting in Remix projects in the navigator', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Remix support', true)
   it('Can reparent into element in Remix', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'

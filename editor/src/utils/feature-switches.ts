@@ -13,7 +13,6 @@ export type FeatureName =
   | 'Canvas Strategies Debug Panel'
   | 'Project Thumbnail Generation'
   | 'Draggable Floating Panels'
-  | 'Remix support'
   | 'Simplified Layout Section'
   | 'Debug - Print UIDs'
 
@@ -29,7 +28,6 @@ export const AllFeatureNames: FeatureName[] = [
   'Canvas Strategies Debug Panel',
   'Project Thumbnail Generation',
   'Draggable Floating Panels',
-  'Remix support',
   'Simplified Layout Section',
   'Debug - Print UIDs',
 ]
@@ -45,7 +43,6 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Draggable Floating Panels': false,
-  'Remix support': false,
   'Simplified Layout Section': false,
   'Debug - Print UIDs': false,
 }

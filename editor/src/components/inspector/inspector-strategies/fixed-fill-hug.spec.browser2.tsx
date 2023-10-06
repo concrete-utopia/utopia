@@ -760,6 +760,106 @@ describe('Fixed / Fill / Hug control', () => {
     })
   })
 
+  describe('groups', () => {
+    it('setting fixed on a group element converts it to a frame', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+			import { Scene, Storyboard, Group } from 'utopia-api'
+
+			export var storyboard = (
+			  <Storyboard data-uid='sb'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 100, top: 100, width: 187, height: 116, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 68, height: 46 }} />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 119, top: 70, width: 68, height: 46 }} />
+				</Group>
+			  </Storyboard>
+			)
+		`),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.fromString(`sb/group`)
+      await renderResult.dispatch(selectComponents([targetPath], false), true)
+
+      const fixedControls = await renderResult.renderedDOM.findAllByText(HugContentsLabel)
+      const horizontalControl = fixedControls[0]
+      await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
+
+      const horizontalLabel = (await renderResult.renderedDOM.findAllByText(FixedLabel))[0]
+      await expectSingleUndo2Saves(renderResult, async () => {
+        await mouseClickAtPoint(horizontalLabel, { x: 5, y: 5 })
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+			import { Scene, Storyboard, Group } from 'utopia-api'
+
+			export var storyboard = (
+			  <Storyboard data-uid='sb'>
+				<div data-uid='group' style={{ position: 'absolute', left: 100, top: 100, width: 187, height: 116, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 68, height: 46 }} />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 119, top: 70, width: 68, height: 46 }} />
+				</div>
+			  </Storyboard>
+			)
+		`),
+      )
+
+      expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(`Converted to frame`)
+    })
+    it('setting fixed on a group element that cannot be converted shows a toast and does nothing', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+			import { Scene, Storyboard, Group } from 'utopia-api'
+
+			export var storyboard = (
+			  <Storyboard data-uid='sb'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 100, top: 100, width: 187, height: 116, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'relative', left: 0, top: 0, width: 68, height: 46 }} />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 119, top: 70, width: 68, height: 46 }} />
+				</Group>
+			  </Storyboard>
+			)
+		`),
+        'await-first-dom-report',
+      )
+
+      const targetPath = EP.fromString(`sb/group`)
+      await renderResult.dispatch(selectComponents([targetPath], false), true)
+
+      const fixedControls = await renderResult.renderedDOM.findAllByText(HugContentsLabel)
+      const horizontalControl = fixedControls[0]
+      await mouseClickAtPoint(horizontalControl, { x: 5, y: 5 })
+
+      const horizontalLabel = (await renderResult.renderedDOM.findAllByText(FixedLabel))[0]
+      await expectNoAction(renderResult, async () => {
+        await mouseClickAtPoint(horizontalLabel, { x: 5, y: 5 })
+      })
+
+      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+        formatTestProjectCode(`
+			import { Scene, Storyboard, Group } from 'utopia-api'
+
+			export var storyboard = (
+			  <Storyboard data-uid='sb'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 100, top: 100, width: 187, height: 116, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'relative', left: 0, top: 0, width: 68, height: 46 }} />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 119, top: 70, width: 68, height: 46 }} />
+				</Group>
+			  </Storyboard>
+			)
+		`),
+      )
+
+      expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+      expect(renderResult.getEditorState().editor.toasts[0].message).toEqual(
+        `Group children must be positioned absolutely`,
+      )
+      expect(renderResult.getEditorState().editor.toasts[0].level).toEqual('ERROR')
+    })
+  })
+
   /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectOptionsToBePresent"] }] */
   it('when toggling between element, options in the dropdown are updated', async () => {
     const editor = await renderTestEditorWithCode(

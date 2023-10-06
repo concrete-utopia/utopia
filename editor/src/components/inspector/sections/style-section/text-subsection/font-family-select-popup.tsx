@@ -434,7 +434,7 @@ export const FontFamilySelectPopup = React.memo(
       )
 
       const getItemSize = React.useCallback(
-        (index: number) => filteredData[index].height,
+        (index: number) => filteredData.at(index)?.height ?? 0,
         [filteredData],
       )
 

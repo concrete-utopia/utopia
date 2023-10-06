@@ -59,12 +59,23 @@ import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/lay
 import type { AllElementProps } from '../editor/store/editor-state'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import type { EditorDispatch, EditorAction } from '../editor/action-types'
-import { unsetProperty, setProp_UNSAFE } from '../editor/actions/action-creators'
+import {
+  unsetProperty,
+  setProp_UNSAFE,
+  applyCommandsAction,
+  showToast,
+} from '../editor/actions/action-creators'
 import { FlexCol } from 'utopia-api'
 import { PinControl } from './controls/pin-control'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { MixedPlaceholder } from '../../uuiui/inputs/base-input'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
+import {
+  convertGroupToFrameCommands,
+  getInstanceForGroupToFrameConversion,
+  isConversionForbidden,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { notice } from '../common/notice'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -409,6 +420,32 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
 
       const firstSelectedView = safeIndex(selectedViewsRef.current, 0)
       if (firstSelectedView != null) {
+        // changing value for a group means converting its contract
+        if (treatElementAsGroupLike(metadataRef.current, firstSelectedView) && value === 'fixed') {
+          const conversion = getInstanceForGroupToFrameConversion(
+            metadataRef.current,
+            elementPathTreeRef.current,
+            allElementPropsRef.current,
+            firstSelectedView,
+          )
+          if (isConversionForbidden(conversion)) {
+            dispatch([showToast(notice(conversion.reason, 'ERROR'))])
+          } else {
+            dispatch([
+              applyCommandsAction(
+                convertGroupToFrameCommands(
+                  metadataRef.current,
+                  elementPathTreeRef.current,
+                  allElementPropsRef.current,
+                  firstSelectedView,
+                ),
+              ),
+              showToast(notice('Converted to frame')),
+            ])
+          }
+          return
+        }
+
         const valueToUse =
           dimension === 'width'
             ? fixedSizeDimensionHandlingText(
