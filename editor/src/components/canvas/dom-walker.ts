@@ -1010,8 +1010,6 @@ function getSpecialMeasurements(
       })
     : null
 
-  const contain = elementStyle.contain
-
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1055,7 +1053,6 @@ function getSpecialMeasurements(
     fontStyle,
     textDecorationLine,
     textBounds,
-    contain,
   )
 }
 
