@@ -32,7 +32,15 @@ export const runAddContainLayoutIfNeeded: CommandFunction<AddContainLayoutIfNeed
     editorState.jsxMetadata,
     command.element,
   )
-  const isNotNeeded = elementMetadata == null || MetadataUtils.isPositionStatic(elementMetadata)
+  const isNotNeeded =
+    elementMetadata == null ||
+    MetadataUtils.isPositionStatic(elementMetadata) ||
+    MetadataUtils.targetElementSupportsChildrenAlsoText(
+      editorState.projectContents,
+      command.element,
+      editorState.jsxMetadata,
+      editorState.elementPathTree,
+    ) !== 'supportsChildren'
 
   if (isNotNeeded) {
     return {
