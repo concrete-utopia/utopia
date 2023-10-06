@@ -9,7 +9,7 @@ import {
   jsxFragment,
 } from '../../../core/shared/element-template'
 import type { ElementPath, Imports } from '../../../core/shared/project-file-types'
-import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
   removeElementAtPath,
@@ -65,7 +65,6 @@ export function wrapInContainerCommand(
 
 export const runWrapInContainerCommand: CommandFunction<WrapInContainerCommand> = (
   editor: EditorState,
-  _derivedState: DerivedState,
   command: WrapInContainerCommand,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []

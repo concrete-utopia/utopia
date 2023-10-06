@@ -28,11 +28,7 @@ describe('wildcardPatch', () => {
 
     const wildcardCommand = wildcardPatch('always', { selectedViews: { $set: [] } })
 
-    const result = runWildcardPatch(
-      renderResult.getEditorState().editor,
-      renderResult.getEditorState().derived,
-      wildcardCommand,
-    )
+    const result = runWildcardPatch(renderResult.getEditorState().editor, wildcardCommand)
 
     const patchedEditor = updateEditorStateWithPatches(
       renderResult.getEditorState().editor,

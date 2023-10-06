@@ -31,11 +31,7 @@ describe('runReparentElement', () => {
 
     const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
-    const result = runReparentElement(
-      originalEditorState,
-      renderResult.getEditorState().derived,
-      reparentCommand,
-    )
+    const result = runReparentElement(originalEditorState, reparentCommand)
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,
@@ -86,11 +82,7 @@ describe('runReparentElement', () => {
 
     const reparentCommand = reparentElement('always', targetPath, childInsertionPath(newParentPath))
 
-    const result = runReparentElement(
-      originalEditorState,
-      renderResult.getEditorState().derived,
-      reparentCommand,
-    )
+    const result = runReparentElement(originalEditorState, reparentCommand)
 
     const oldFile = withUnderlyingTargetFromEditorState(
       targetPath,

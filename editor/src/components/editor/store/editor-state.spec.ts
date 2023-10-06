@@ -2,7 +2,6 @@ import type { EditorState } from './editor-state'
 import {
   createEditorState,
   defaultModifyParseSuccess,
-  emptyDerivedState,
   modifyUnderlyingTargetElement,
   StoryboardFilePath,
 } from './editor-state'

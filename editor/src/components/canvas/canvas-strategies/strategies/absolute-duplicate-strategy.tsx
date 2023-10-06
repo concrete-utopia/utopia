@@ -129,11 +129,10 @@ export function absoluteDuplicateStrategy(
             ...maybeAddContainLayoutCommand(commonParentPath),
             setElementsToRerenderCommand([...selectedElements, ...newPaths]),
             updateSelectedViews('always', selectedElements),
-            updateFunctionCommand('always', (editorState, derivedState, commandLifecycle) =>
+            updateFunctionCommand('always', (editorState, commandLifecycle) =>
               runMoveStrategy(
                 canvasState,
                 editorState,
-                derivedState,
                 interactionSession,
                 commandLifecycle,
                 strategyLifecycle,
@@ -156,7 +155,6 @@ export function absoluteDuplicateStrategy(
 function runMoveStrategy(
   canvasState: InteractionCanvasState,
   editorState: EditorState,
-  derivedState: DerivedState,
   interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
   strategyLifecycle: InteractionLifecycle,
@@ -169,8 +167,7 @@ function runMoveStrategy(
       'do-not-run-applicability-check',
     )?.strategy.apply(strategyLifecycle).commands ?? []
 
-  return foldAndApplyCommandsInner(editorState, derivedState, [], moveCommands, commandLifecycle)
-    .statePatches
+  return foldAndApplyCommandsInner(editorState, [], moveCommands, commandLifecycle).statePatches
 }
 
 type IsAbsoluteMoveApplicableResult =
