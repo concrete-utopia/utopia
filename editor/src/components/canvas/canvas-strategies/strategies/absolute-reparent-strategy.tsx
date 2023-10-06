@@ -1,9 +1,13 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { CSSCursor } from '../../canvas-types'
+import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
@@ -27,7 +31,10 @@ import {
 import type { InteractionSession, UpdatedPathMap } from '../interaction-state'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
 import { honoursPropsPosition, shouldKeepMovingDraggedGroupChildren } from './absolute-utils'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from './fragment-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
@@ -201,11 +208,11 @@ export function baseAbsoluteReparentStrategy(
                   ...commands.flatMap((c) => c.commands),
                   updateSelectedViews('always', newPaths),
                   setElementsToRerenderCommand(elementsToRerender),
-                  setProperty(
-                    'always',
+                  ...maybeAddContainLayout(
+                    canvasState.startingMetadata,
+                    canvasState.startingAllElementProps,
+                    canvasState.startingElementPathTree,
                     newParent.intendedParentPath,
-                    PP.create('style', 'contain'),
-                    'layout',
                   ),
                   setCursorCommand(CSSCursor.Reparent),
                 ],
@@ -227,4 +234,46 @@ export function baseAbsoluteReparentStrategy(
       },
     }
   }
+}
+
+function maybeAddContainLayout(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  path: ElementPath,
+): CanvasCommand[] {
+  const closestNonFragmentParent = getClosestNonFragmentParent(
+    metadata,
+    allElementProps,
+    pathTrees,
+    path,
+  )
+
+  if (EP.isStoryboardPath(closestNonFragmentParent)) {
+    return []
+  }
+
+  const parentProvidesBoundsForAbsoluteChildren =
+    MetadataUtils.findElementByElementPath(metadata, closestNonFragmentParent)
+      ?.specialSizeMeasurements.providesBoundsForAbsoluteChildren === true
+
+  return parentProvidesBoundsForAbsoluteChildren
+    ? []
+    : [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
+}
+
+function getClosestNonFragmentParent(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  path: ElementPath,
+): ElementPath {
+  let currentPath = path
+  while (!EP.isStoryboardPath(currentPath)) {
+    if (!treatElementAsFragmentLike(metadata, allElementProps, pathTrees, currentPath)) {
+      return currentPath
+    }
+    currentPath = EP.parentPath(currentPath)
+  }
+  return currentPath
 }

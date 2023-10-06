@@ -1414,6 +1414,7 @@ describe('draw-to-insert', () => {
               width: 380,
               height: 180,
               backgroundColor: '#d3d3d3',
+              contain: 'layout',
             }}
           >
             <div

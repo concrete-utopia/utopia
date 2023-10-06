@@ -719,6 +719,7 @@ describe('drag-to-insert', () => {
               height: 190,
               backgroundColor: '#FF0000',
               display: 'flex',
+              contain: 'layout',
             }}
           >
             <div
