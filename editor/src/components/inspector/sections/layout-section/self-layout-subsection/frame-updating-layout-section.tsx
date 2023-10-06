@@ -217,17 +217,18 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
   const { property, currentValue, updateFrame } = props
   const pointInfo = useInspectorLayoutInfo(props.property)
 
-  const [mountCount, forceUpdate] = React.useReducer((c) => c + 1, 0)
+  // a way to reset the NumberInput to the real measured value it was displaying before the user started typing into it
+  const [mountCount, resetNumberInputToOriginalValue] = React.useReducer((c) => c + 1, 0)
 
   const onSubmitValue = React.useCallback(
     (newValue: UnknownOrEmptyInput<CSSNumber>) => {
       if (props.enabled) {
         if (isUnknownInputValue(newValue)) {
           // Ignore right now.
-          forceUpdate()
+          resetNumberInputToOriginalValue()
         } else if (isEmptyInputValue(newValue)) {
           // Reset the NumberInput
-          forceUpdate()
+          resetNumberInputToOriginalValue()
         } else {
           if (newValue.unit == null || newValue.unit === 'px') {
             const edgePosition = getTLWHEdgePosition(property)
@@ -235,11 +236,11 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
             updateFrame(edgePosition, movement)
           } else {
             console.error('Attempting to use a value with a unit, which is invalid.')
-            forceUpdate()
+            resetNumberInputToOriginalValue()
           }
         }
       } else {
-        forceUpdate()
+        resetNumberInputToOriginalValue()
       }
     },
     [props.enabled, property, currentValue, updateFrame],
