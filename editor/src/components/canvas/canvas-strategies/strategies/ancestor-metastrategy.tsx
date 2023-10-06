@@ -89,8 +89,7 @@ export function ancestorMetaStrategy(
     const targetSmallerThatParent =
       targetFrame != null &&
       parentFrame != null &&
-      parentFrame.width > targetFrame.width &&
-      parentFrame.height > targetFrame.height
+      (parentFrame.width > targetFrame.width || parentFrame.height > targetFrame.height)
 
     if (targetSmallerThatParent) {
       return []

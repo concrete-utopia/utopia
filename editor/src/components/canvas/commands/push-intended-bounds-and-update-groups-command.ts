@@ -17,13 +17,11 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
-import { deriveState, trueUpElementChanged } from '../../editor/store/editor-state'
-import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
-import type { FlexDirection } from '../../inspector/common/css-utils'
+import { trueUpElementChanged } from '../../editor/store/editor-state'
+import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
   isHugFromStyleAttribute,
   isHugFromStyleAttributeOrNull,
@@ -39,7 +37,11 @@ import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
-import { setCssLengthProperty, setValueKeepingOriginalUnit } from './set-css-length-command'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+  setValueKeepingOriginalUnit,
+} from './set-css-length-command'
 import type { FrameWithAllPoints } from './utils/group-resize-utils'
 import { rectangleToSixFramePoints } from './utils/group-resize-utils'
 import { sixFramePointsToCanvasRectangle } from './utils/group-resize-utils'
@@ -69,28 +71,19 @@ export function pushIntendedBoundsAndUpdateGroups(
 
 export const runPushIntendedBoundsAndUpdateGroups = (
   editor: EditorState,
-  derivedState: DerivedState,
   command: PushIntendedBoundsAndUpdateGroups,
   commandLifecycle: InteractionLifecycle,
 ): CommandFunctionResult => {
   const commandRanBecauseOfQueuedTrueUp = command.isStartingMetadata === 'live-metadata'
 
   const { updatedEditor: editorAfterResizingGroupChildren, resizedGroupChildren } =
-    getUpdateResizedGroupChildrenCommands(editor, derivedState, command)
-
-  const derivedStateAfterResizingGroupChildren = deriveState(
-    editorAfterResizingGroupChildren,
-    derivedState,
-    'patched',
-    patchedCreateRemixDerivedDataMemo,
-  )
+    getUpdateResizedGroupChildrenCommands(editor, command)
 
   const {
     updatedEditor: editorAfterResizingAncestors,
     intendedBounds: resizeAncestorsIntendedBounds,
   } = getResizeAncestorGroupsCommands(
     editorAfterResizingGroupChildren,
-    derivedStateAfterResizingGroupChildren,
     command,
     commandRanBecauseOfQueuedTrueUp
       ? 'do-not-create-if-doesnt-exist'
@@ -99,7 +92,10 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   )
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
-  const editorPatch = { projectContents: { $set: editorAfterResizingAncestors.projectContents } }
+  const editorPatch = {
+    projectContents: { $set: editorAfterResizingAncestors.projectContents },
+    toasts: { $set: editorAfterResizingAncestors.toasts },
+  }
 
   const intendedBoundsPatch =
     commandLifecycle === 'mid-interaction'
@@ -160,7 +156,6 @@ function rectangleFromChildrenBounds(
 
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
-  derivedState: DerivedState,
   command: PushIntendedBoundsAndUpdateGroups,
 ): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
   const targets: Array<{
@@ -307,7 +302,7 @@ function getUpdateResizedGroupChildrenCommands(
     )
   })
 
-  const updatedEditor = foldAndApplyCommandsSimple(editor, derivedState, commandsToRun)
+  const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
   return {
     updatedEditor: updatedEditor,
     resizedGroupChildren: updatedElements,
@@ -316,7 +311,6 @@ function getUpdateResizedGroupChildrenCommands(
 
 function getResizeAncestorGroupsCommands(
   editor: EditorState,
-  derivedState: DerivedState,
   command: PushIntendedBoundsAndUpdateGroups,
   addGroupSizeIfNonExistant: CreateIfNotExistant,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
@@ -433,7 +427,7 @@ function getResizeAncestorGroupsCommands(
     }
   })
 
-  const updatedEditor = foldAndApplyCommandsSimple(editor, derivedState, commandsToRun)
+  const updatedEditor = foldAndApplyCommandsSimple(editor, commandsToRun)
   return {
     updatedEditor: updatedEditor,
     intendedBounds: Object.values(updatedGlobalFrames).filter(isNotNull),
@@ -453,33 +447,37 @@ function setElementPins(
       'always',
       target,
       PP.create('style', 'left'),
-      setValueKeepingOriginalUnit(framePoints.left, parentSize.width),
+      setExplicitCssValue(cssPixelLength(framePoints.left)),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
+      'warn-about-replacement',
     ),
     setCssLengthProperty(
       'always',
       target,
       PP.create('style', 'top'),
-      setValueKeepingOriginalUnit(framePoints.top, parentSize.height),
+      setExplicitCssValue(cssPixelLength(framePoints.top)),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
+      'warn-about-replacement',
     ),
     setCssLengthProperty(
       'always',
       target,
       PP.create('style', 'right'),
-      setValueKeepingOriginalUnit(framePoints.right, parentSize.width),
+      setExplicitCssValue(cssPixelLength(framePoints.right)),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
+      'warn-about-replacement',
     ),
     setCssLengthProperty(
       'always',
       target,
       PP.create('style', 'bottom'),
-      setValueKeepingOriginalUnit(framePoints.bottom, parentSize.height),
+      setExplicitCssValue(cssPixelLength(framePoints.bottom)),
       parentFlexDirection,
       'do-not-create-if-doesnt-exist',
+      'warn-about-replacement',
     ),
   ]
 
@@ -489,9 +487,10 @@ function setElementPins(
         'always',
         target,
         PP.create('style', 'width'),
-        setValueKeepingOriginalUnit(framePoints.width, parentSize.width),
+        setExplicitCssValue(cssPixelLength(framePoints.width)),
         parentFlexDirection,
         'do-not-create-if-doesnt-exist',
+        'warn-about-replacement',
       ),
     )
   }
@@ -501,9 +500,10 @@ function setElementPins(
         'always',
         target,
         PP.create('style', 'height'),
-        setValueKeepingOriginalUnit(framePoints.height, parentSize.height),
+        setExplicitCssValue(cssPixelLength(framePoints.height)),
         parentFlexDirection,
         'do-not-create-if-doesnt-exist',
+        'warn-about-replacement',
       ),
     )
   }

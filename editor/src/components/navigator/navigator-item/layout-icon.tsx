@@ -11,6 +11,17 @@ import { WarningIcon } from '../../../uuiui/warning-icon'
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { ChildWithPercentageSize } from '../../common/size-warnings'
 import { useLayoutOrElementIcon } from '../layout-element-icons'
+import { MetadataUtils } from '../../../core/model/element-metadata-utils'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import { isInfinityRectangle } from '../../../core/shared/math-utils'
+import { isZeroSizedElement } from '../../canvas/controls/outline-utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
+import createCachedSelector from 're-reselect'
+import { metadataSelector } from '../../inspector/inpector-selectors'
+import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import * as EP from '../../../core/shared/element-path'
+import { Substores, useEditorState } from '../../editor/store/store-hook'
 
 interface LayoutIconProps {
   navigatorEntry: NavigatorEntry
@@ -23,10 +34,39 @@ export function layoutIconTestIdForEntry(navigatorEntry: NavigatorEntry): string
   return `layout-icn-${navigatorEntryToKey(navigatorEntry)}`
 }
 
+export function isZeroSizedDiv(elementPath: ElementPath, metadata: ElementInstanceMetadataMap) {
+  const bounds = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  if (bounds == null || isInfinityRectangle(bounds)) {
+    return false
+  }
+
+  const isElementDiv =
+    optionalMap(
+      (i) => MetadataUtils.isDiv(i),
+      MetadataUtils.findElementByElementPath(metadata, elementPath),
+    ) ?? false
+
+  return isZeroSizedElement(bounds) && isElementDiv
+}
+
+const isZeroSizedDivSelector = createCachedSelector(
+  metadataSelector,
+  (_: MetadataSubstate, x: ElementPath) => x,
+  (metadata, elementPath) => {
+    return isZeroSizedDiv(elementPath, metadata)
+  },
+)((_, x) => EP.toString(x))
+
 export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutIconProps>> =
   React.memo((props) => {
     const { elementWarnings, color, warningText: propsWarningText, navigatorEntry } = props
     const { iconProps, isPositionAbsolute } = useLayoutOrElementIcon(navigatorEntry)
+
+    const isZeroSized = useEditorState(
+      Substores.metadata,
+      (store) => isZeroSizedDivSelector(store, props.navigatorEntry.elementPath),
+      'LayoutIcon isZeroSized',
+    )
 
     const warningText = React.useMemo(() => {
       if (elementWarnings == null) {
@@ -67,6 +107,18 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         color: color,
         style: { opacity: 'var(--iconOpacity)' },
       }
+      if (isZeroSized) {
+        return (
+          <Icn
+            category='element'
+            type='zerosized-div'
+            testId={iconTestId}
+            color={'main'}
+            width={18}
+            height={18}
+          />
+        )
+      }
       if (isInvalidOverrideNavigatorEntry(navigatorEntry)) {
         return (
           <Icons.WarningTriangle
@@ -87,13 +139,14 @@ export const LayoutIcon: React.FunctionComponent<React.PropsWithChildren<LayoutI
         return <WarningIcon tooltipText={warningText} testId={iconTestId} />
       }
     }, [
-      isErroredGroup,
-      isErroredGroupChild,
-      warningText,
       iconProps,
       color,
-      iconTestId,
+      isZeroSized,
       navigatorEntry,
+      warningText,
+      isErroredGroup,
+      isErroredGroupChild,
+      iconTestId,
     ])
 
     const marker = React.useMemo(() => {

@@ -13,10 +13,11 @@ import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
 import { atom, useAtom, useAtomValue, useSetAtom, useStore } from 'jotai'
 import immutableUpdate from 'immutability-helper'
 import { deepFreeze } from '../../utils/deep-freeze'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export const GridMenuWidth = 268
 export const GridMenuMinWidth = 200
-export const GridMenuMaxWidth = 300
+export const GridMenuMaxWidth = 500
 
 export const GridPaneWidth = 500
 
@@ -49,6 +50,7 @@ export interface GridPanelData {
   span: number
   index: number
   order: number
+  visible: boolean
 }
 
 export type PanelName = Menu | Pane
@@ -114,24 +116,67 @@ export const GridMenuDefaultPanels: StoredLayout = [
 
 export const GridPanelsStateAtom = atom(GridMenuDefaultPanels)
 
-export function storedLayoutToResolvedPanels(stored: StoredLayout): {
-  [index in PanelName]: GridPanelData
-} {
-  const panels = accumulate<{ [index in PanelName]: GridPanelData }>({} as any, (acc) => {
-    stored.forEach((column, colIndex) => {
-      const panelsForColumn = column.panels.length
-      column.panels.forEach((panel, panelIndex) => {
-        acc[panel.name] = {
-          panel: panel,
-          span: GridPanelsNumberOfRows / panelsForColumn, // TODO introduce resize function
-          index: colIndex,
-          order: panelIndex,
-        }
+export function useGridPanelState() {
+  return useAtom(GridPanelsStateAtom)
+}
+
+function useVisibleGridPanels() {
+  const [panelState] = useGridPanelState()
+
+  const { codeEditorVisible, navigatorVisible, inspectorVisible } = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return {
+        codeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
+        navigatorVisible: store.editor.leftMenu.expanded,
+        inspectorVisible: store.editor.rightMenu.expanded,
+      }
+    },
+    'storedLayoutToResolvedPanels panel visibility',
+  )
+
+  const visiblePanels: StoredLayout = panelState.map((column) => ({
+    ...column,
+    panels: column.panels.filter((panel) => {
+      switch (panel.name) {
+        case 'code-editor':
+          return codeEditorVisible
+        case 'navigator':
+          return navigatorVisible
+        case 'inspector':
+          return inspectorVisible
+        default:
+          assertNever(panel.name)
+      }
+      throw new Error('never should run')
+    }),
+  }))
+
+  return visiblePanels
+}
+
+export function useResolvedGridPanels() {
+  const [panelState] = useGridPanelState()
+  const visiblePanels = useVisibleGridPanels()
+
+  return React.useMemo(() => {
+    const panels = accumulate<{ [index in PanelName]: GridPanelData }>({} as any, (acc) => {
+      panelState.forEach((column, colIndex) => {
+        const visiblePanelsForColumn = visiblePanels[colIndex].panels
+        column.panels.forEach((panel, panelIndex) => {
+          acc[panel.name] = {
+            panel: panel,
+            span: GridPanelsNumberOfRows / visiblePanelsForColumn.length, // TODO introduce resize function
+            index: colIndex,
+            order: panelIndex,
+            visible: visiblePanelsForColumn.findIndex((p) => p.name === panel.name) > -1,
+          }
+        })
       })
     })
-  })
 
-  return panels
+    return panels
+  }, [panelState, visiblePanels])
 }
 
 /**
@@ -324,14 +369,15 @@ export function useColumnWidths(): [
   (columnIndex: number, newWidth: number) => void,
 ] {
   const [panelState, setPanelState] = useAtom(GridPanelsStateAtom)
+  const visiblePanels = useVisibleGridPanels()
 
   // start with the default value
   const columnWidths: Array<number> = React.useMemo(
     () =>
-      panelState.map((_, index) => {
-        return getColumnWidth(panelState, index)
+      visiblePanels.map((_, index) => {
+        return getColumnWidth(visiblePanels, index)
       }),
-    [panelState],
+    [visiblePanels],
   )
 
   const setColumnWidths = React.useCallback(

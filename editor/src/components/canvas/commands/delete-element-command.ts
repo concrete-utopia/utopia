@@ -1,7 +1,7 @@
 import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-file-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
-import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
   removeElementAtPath,
@@ -25,7 +25,6 @@ export function deleteElement(whenToRun: WhenToRun, target: ElementPath): Delete
 
 export const runDeleteElement: CommandFunction<DeleteElement> = (
   editorState: EditorState,
-  _derivedState: DerivedState,
   command: DeleteElement,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []

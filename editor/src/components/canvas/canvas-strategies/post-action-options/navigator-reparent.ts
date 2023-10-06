@@ -43,7 +43,6 @@ import { staticReparentAndUpdatePosition } from './post-action-paste'
 function getNavigatorReparentCommands(
   data: NavigatorReparentPostActionMenuData,
   editor: EditorState,
-  derivedState: DerivedState,
   builtInDependencies: BuiltInDependencies,
 ): Array<CanvasCommand> | null {
   const wrapperUID = generateUidWithExistingComponents(editor.projectContents)
@@ -121,7 +120,6 @@ function getNavigatorReparentCommands(
       openFile: editor.canvas.openFile?.filename ?? null,
       pasteTargetsToIgnore: [],
       projectContents: editor.projectContents,
-      remixRoutingTable: derivedState.remixData?.routingTable ?? null,
       startingMetadata: editor.jsxMetadata,
       startingElementPathTrees: editor.elementPathTree,
       startingAllElementProps: editor.allElementProps,
@@ -153,7 +151,7 @@ export const PropsPreservedNavigatorReparentPostActionChoice = (
   name: 'Reparent with variables preserved',
   id: PropsPreservedNavigatorReparentPostActionChoiceId,
   run: (editor, derived, builtInDependencies) =>
-    getNavigatorReparentCommands(data, editor, derived, builtInDependencies),
+    getNavigatorReparentCommands(data, editor, builtInDependencies),
 })
 
 export const PropsReplacedNavigatorReparentPostActionChoiceId =
@@ -188,12 +186,7 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
     name: 'Reparent with variables replaced',
     id: PropsReplacedNavigatorReparentPostActionChoiceId,
     run: (editor, derived, builtInDependencies) => {
-      const reparentCommands = getNavigatorReparentCommands(
-        data,
-        editor,
-        derived,
-        builtInDependencies,
-      )
+      const reparentCommands = getNavigatorReparentCommands(data, editor, builtInDependencies)
       if (reparentCommands == null) {
         return null
       }
@@ -202,7 +195,7 @@ export const PropsReplacedNavigatorReparentPostActionChoice = (
   }
 }
 
-function adjustIntendedCoordinatesForGroups(
+export function adjustIntendedCoordinatesForGroups(
   jsxMetadata: ElementInstanceMetadataMap,
   reparentTargetPath: ElementPath,
   intendedCoordinates: CanvasPoint,

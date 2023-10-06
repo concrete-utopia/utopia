@@ -2182,7 +2182,7 @@ export interface DerivedState {
   remixData: RemixDerivedData | null
 }
 
-export function emptyDerivedState(editor: EditorState): DerivedState {
+function emptyDerivedState(editor: EditorState): DerivedState {
   return {
     navigatorTargets: [],
     visibleNavigatorTargets: [],

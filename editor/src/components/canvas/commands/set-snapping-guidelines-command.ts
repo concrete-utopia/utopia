@@ -1,4 +1,4 @@
-import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../guideline'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 
@@ -20,7 +20,6 @@ export function setSnappingGuidelines(
 
 export const runSetSnappingGuidelines: CommandFunction<SetSnappingGuidelines> = (
   _: EditorState,
-  __: DerivedState,
   command: SetSnappingGuidelines,
 ) => {
   const editorStatePatch: EditorStatePatch = {

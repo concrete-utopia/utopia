@@ -42,8 +42,8 @@ export function keyboardSetFontSizeStrategy(
     name: 'Set font size',
     descriptiveLabel: 'Changing Font Size',
     icon: {
-      category: 'element',
-      type: 'pure-text',
+      category: 'tools',
+      type: 'pointer',
     },
     controlsToRender: [],
     fitness: fitness(interactionSession),

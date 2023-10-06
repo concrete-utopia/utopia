@@ -170,7 +170,6 @@ export const RegisteredCanvasStrategies: Array<MetaCanvasStrategy> = [
 
 export function pickCanvasStateFromEditorState(
   editorState: EditorState,
-  derivedState: DerivedState,
   builtInDependencies: BuiltInDependencies,
 ): InteractionCanvasState {
   return {
@@ -178,7 +177,6 @@ export function pickCanvasStateFromEditorState(
     interactionTarget: getInteractionTargetFromEditorState(editorState),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
-    remixRoutingTable: derivedState.remixData?.routingTable ?? null,
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
@@ -190,7 +188,6 @@ export function pickCanvasStateFromEditorState(
 
 export function pickCanvasStateFromEditorStateWithMetadata(
   editorState: EditorState,
-  derivedState: DerivedState,
   builtInDependencies: BuiltInDependencies,
   metadata: ElementInstanceMetadataMap,
   allElementProps?: AllElementProps,
@@ -200,7 +197,6 @@ export function pickCanvasStateFromEditorStateWithMetadata(
     interactionTarget: getInteractionTargetFromEditorState(editorState),
     projectContents: editorState.projectContents,
     nodeModules: editorState.nodeModules.files,
-    remixRoutingTable: derivedState.remixData?.routingTable ?? null,
     openFile: editorState.canvas.openFile?.filename,
     scale: editorState.canvas.scale,
     canvasOffset: editorState.canvas.roundedCanvasOffset,
@@ -267,7 +263,7 @@ const getApplicableStrategiesSelector = createSelector(
       store.strategyState.sortedApplicableStrategies,
     ),
   (store: EditorStorePatched): InteractionCanvasState => {
-    return pickCanvasStateFromEditorState(store.editor, store.derived, store.builtInDependencies)
+    return pickCanvasStateFromEditorState(store.editor, store.builtInDependencies)
   },
   (store: EditorStorePatched) => store.editor.canvas.interactionSession,
   (store: EditorStorePatched) => store.strategyState.customStrategyState,

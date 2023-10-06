@@ -17,7 +17,6 @@ import {
   shiftModifier,
 } from '../../../../utils/modifiers'
 import type { AllElementProps, EditorState } from '../../../editor/store/editor-state'
-import { emptyDerivedState } from '../../../editor/store/editor-state'
 import type { EdgePosition } from '../../canvas-types'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
@@ -25,14 +24,9 @@ import {
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../../ui-jsx.test-utils'
-import {
-  pickCanvasStateFromEditorState,
-  pickCanvasStateFromEditorStateWithMetadata,
-} from '../canvas-strategies'
-import { StrategyState } from '../interaction-state'
+import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 import { absoluteResizeBoundingBoxStrategy } from './absolute-resize-bounding-box-strategy'
-import { defaultCustomStrategyState } from '../canvas-strategy-types'
 import { createBuiltInDependenciesList } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 
 function multiselectResizeElements(
@@ -59,7 +53,6 @@ function multiselectResizeElements(
   const strategyResult = absoluteResizeBoundingBoxStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       initialEditor,
-      emptyDerivedState(initialEditor),
       createBuiltInDependenciesList(null),
       metadata,
       allElementProps,
@@ -77,7 +70,6 @@ function multiselectResizeElements(
 
   return foldAndApplyCommands(
     initialEditor,
-    emptyDerivedState(initialEditor),
     initialEditor,
     [],
     strategyResult.commands,

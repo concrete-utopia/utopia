@@ -5,12 +5,11 @@ import type {
   SpecialSizeMeasurements,
 } from '../../../../core/shared/element-template'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
-import { CanvasPoint, canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
+import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier } from '../../../../utils/modifiers'
 import type { AllElementProps, EditorState } from '../../../editor/store/editor-state'
-import { emptyDerivedState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
@@ -18,13 +17,10 @@ import {
   testPrintCodeFromEditorState,
 } from '../../ui-jsx.test-utils'
 import { absoluteMoveStrategy } from './absolute-move-strategy'
-import {
-  pickCanvasStateFromEditorState,
-  pickCanvasStateFromEditorStateWithMetadata,
-} from '../canvas-strategies'
+import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import { defaultCustomStrategyState } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
-import { boundingArea, StrategyState } from '../interaction-state'
+import { boundingArea } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 
 jest.mock('../../canvas-utils', () => ({
@@ -104,12 +100,12 @@ function dragByPixels(
   const strategyResult = absoluteMoveStrategy(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
-      emptyDerivedState(editorState),
       createBuiltInDependenciesList(null),
       startingMetadata,
       startingAllElementProps,
     ),
     interactionSession,
+    defaultCustomStrategyState(),
   )!.strategy.apply('end-interaction')
 
   expect(strategyResult.customStatePatch).toEqual({})
@@ -117,7 +113,6 @@ function dragByPixels(
 
   const finalEditor = foldAndApplyCommands(
     editorState,
-    emptyDerivedState(editorState),
     editorState,
     [],
     strategyResult.commands,

@@ -13,15 +13,13 @@ import {
 } from '../../../core/shared/jsx-attributes'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
-  deriveState,
   modifyUnderlyingElementForOpenFile,
   withUnderlyingTargetFromEditorState,
 } from '../../editor/store/editor-state'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
 import { patchParseSuccessAtElementPath } from './patch-utils'
-import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
 
 export interface AdjustNumberProperty extends BaseCommand {
   type: 'ADJUST_NUMBER_PROPERTY'
@@ -67,7 +65,6 @@ export function adjustNumberInequalityCondition(
 
 export const runAdjustNumberProperty: CommandFunction<AdjustNumberProperty> = (
   editorState: EditorState,
-  derivedState: DerivedState,
   command: AdjustNumberProperty,
 ) => {
   // Handle updating the existing value, treating a value that can't be parsed

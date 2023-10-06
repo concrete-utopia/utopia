@@ -18,9 +18,8 @@ import {
 import { roundTo, roundToNearestWhole } from '../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type { DerivedState, EditorState } from '../../editor/store/editor-state'
-import { deriveState, modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
-import { patchedCreateRemixDerivedDataMemo } from '../../editor/store/remix-derived-data'
+import type { EditorState } from '../../editor/store/editor-state'
+import { modifyUnderlyingForOpenFile } from '../../editor/store/editor-state'
 import type { CSSNumber, FlexDirection } from '../../inspector/common/css-utils'
 import { parseCSSPercent, parseCSSPx, printCSSNumber } from '../../inspector/common/css-utils'
 import type { BaseCommand, CommandFunction, WhenToRun } from './commands'
@@ -79,7 +78,6 @@ interface UpdatedPropsAndCommandDescription {
 
 export const runAdjustCssLengthProperties: CommandFunction<AdjustCssLengthProperties> = (
   editorState: EditorState,
-  _derivedState: DerivedState,
   command: AdjustCssLengthProperties,
 ) => {
   let commandDescriptions: Array<string> = []
