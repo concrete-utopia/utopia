@@ -537,7 +537,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image'
       />
@@ -613,7 +613,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image'
       />
@@ -685,7 +685,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image'
       />
@@ -820,7 +820,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image1'
       />
@@ -832,7 +832,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image2'
       />
@@ -844,7 +844,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image3'
       />
@@ -919,7 +919,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image1'
       />
@@ -931,7 +931,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image2'
       />
@@ -943,7 +943,7 @@ export var storyboard = (
           width: 1,
           height: 1,
           top: 380,
-          left: 351,
+          left: 350,
         }}
         data-uid='dragged-image3'
       />
