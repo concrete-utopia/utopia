@@ -43,7 +43,7 @@ export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, updatedGapValue } = props
   const colorTheme = useColorTheme()
-  const indicatorColor = colorTheme.gapControls.value
+  const accentColor = colorTheme.gapControlsBg.value
 
   const hoveredViews = useEditorState(
     Substores.highlightedHoveredViews,
@@ -166,7 +166,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               bounds={bounds}
               contentArea={contentArea}
               flexDirection={flexGap.direction}
-              indicatorColor={indicatorColor}
+              accentColor={accentColor}
               scale={scale}
               backgroundShown={backgroundShown}
               isDragging={isDragging}
@@ -213,7 +213,7 @@ interface GapControlSegmentProps {
   gapValue: CSSNumber
   elementHovered: boolean
   path: string
-  indicatorColor: string
+  accentColor: string
   scale: number
   isDragging: boolean
   backgroundShown: boolean
@@ -229,7 +229,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     isDragging,
     gapValue,
     flexDirection,
-    indicatorColor,
+    accentColor: accentColor,
     elementHovered,
     scale,
     path,
@@ -271,9 +271,9 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         top: bounds.y,
         width: bounds.width,
         height: bounds.height,
-        border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
+        border: isDragging ? `${dragBorderWidth}px solid ${accentColor}` : undefined,
         ...(shouldShowBackground
-          ? UtopiaStyles.backgrounds.stripedBackground(indicatorColor, scale)
+          ? UtopiaStyles.backgrounds.stripedBackground(accentColor, scale)
           : {}),
       }}
     >
