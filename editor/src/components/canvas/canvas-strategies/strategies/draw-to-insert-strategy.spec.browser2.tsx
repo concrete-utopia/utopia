@@ -2982,7 +2982,7 @@ describe('draw-to-insert', () => {
               left: 5,
               top: 5,
             }}
-            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            src='/editor/utopia-logo-white-fill.png?hash=nocommit'
             data-uid='ddd'
           />
         </div>
@@ -3044,7 +3044,7 @@ describe('draw-to-insert', () => {
               height: 300,
               contain: 'layout',
             }}
-            src='/editor/icons/favicons/favicon-128.png?hash=nocommit'
+            src='/editor/utopia-logo-white-fill.png?hash=nocommit'
             data-uid='ddd'
           />
         </div>

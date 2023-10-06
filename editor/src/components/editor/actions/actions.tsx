@@ -611,7 +611,6 @@ export function editorMoveMultiSelectedTemplates(
   indexPosition: IndexPosition,
   newParent: InsertionPath | null,
   editor: EditorModel,
-  derivedState: DerivedState,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -640,7 +639,7 @@ export function editorMoveMultiSelectedTemplates(
       const { commands: reparentCommands, newPath } = outcomeResult
       const reorderCommand = reorderElement('on-complete', newPath, indexPosition)
 
-      const withCommandsApplied = foldAndApplyCommandsSimple(working, derivedState, [
+      const withCommandsApplied = foldAndApplyCommandsSimple(working, [
         ...reparentCommands,
         reorderCommand,
       ])
@@ -665,7 +664,6 @@ export function insertIntoWrapper(
   targets: ElementPath[],
   newParent: InsertionPath,
   editor: EditorModel,
-  derivedState: DerivedState,
 ): {
   editor: EditorModel
   newPaths: Array<ElementPath>
@@ -683,7 +681,7 @@ export function insertIntoWrapper(
     elementPathFromInsertionPath(newParent, EP.toUid(target)),
   )
 
-  const updatedEditor = foldAndApplyCommandsSimple(editor, derivedState, [
+  const updatedEditor = foldAndApplyCommandsSimple(editor, [
     ...targets.map((path) => deleteElement('always', path)),
     addElements('always', newParent, elements),
   ])
@@ -2129,7 +2127,6 @@ export const UPDATE_FNS = {
         const detailsOfUpdate = null
         const { updatedEditor, newPath } = wrapElementInsertions(
           editor,
-          derived,
           action.targets,
           parentPath,
           action.whatToWrapWith.element,
@@ -2172,7 +2169,6 @@ export const UPDATE_FNS = {
           orderedActionTargets,
           actualInsertionPath,
           includeToast(detailsOfUpdate, withWrapperViewAdded),
-          derived,
         )
 
         return {
@@ -2214,7 +2210,6 @@ export const UPDATE_FNS = {
     editorForAction: EditorModel,
     dispatch: EditorDispatch,
     builtInDependencies: BuiltInDependencies,
-    derived: DerivedState,
   ): EditorModel => {
     return toastOnGeneratedElementsSelected(
       `Cannot unwrap a generated element.`,
@@ -2286,7 +2281,6 @@ export const UPDATE_FNS = {
               indexPosition,
               parentPath,
               workingEditor,
-              derived,
             )
 
             return {
@@ -2328,7 +2322,6 @@ export const UPDATE_FNS = {
                   groupTrueUps.push(result.newPath)
                   return foldAndApplyCommandsSimple(
                     result.editor,
-                    derived,
                     createPinChangeCommandsForElementBecomingGroupChild(
                       workingEditor.jsxMetadata,
                       child,
@@ -2849,7 +2842,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  RESET_PINS: (action: ResetPins, editor: EditorModel, derived: DerivedState): EditorModel => {
+  RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
     const frame = MetadataUtils.getFrame(target, editor.jsxMetadata)
 
@@ -2864,7 +2857,7 @@ export const UPDATE_FNS = {
         PP.create('style', 'bottom'),
       ]),
     ]
-    return foldAndApplyCommandsSimple(editor, derived, commands)
+    return foldAndApplyCommandsSimple(editor, commands)
   },
   SET_CURSOR_OVERLAY: (action: SetCursorOverlay, editor: EditorModel): EditorModel => {
     if (editor.canvas.cursor === action.cursor) {
@@ -3806,7 +3799,7 @@ export const UPDATE_FNS = {
       }
     }
   },
-  TRUE_UP_GROUPS: (editor: EditorModel, derivedState: DerivedState): EditorModel => {
+  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
     const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
       (trueUpTarget) => {
         return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
@@ -3825,7 +3818,7 @@ export const UPDATE_FNS = {
         target: element,
       }
     }, targetsToTrueUp)
-    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, derivedState, [
+    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
       pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata'),
     ])
     return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
@@ -4697,11 +4690,7 @@ export const UPDATE_FNS = {
       },
     }
   },
-  INSERT_INSERTABLE: (
-    action: InsertInsertable,
-    editor: EditorModel,
-    derivedState: DerivedState,
-  ): EditorModel => {
+  INSERT_INSERTABLE: (action: InsertInsertable, editor: EditorModel): EditorModel => {
     const openFilename = editor.canvas.openFile?.filename
     if (openFilename == null) {
       return editor
@@ -4888,7 +4877,6 @@ export const UPDATE_FNS = {
             trueUpElementChanged(newPath),
           ],
         },
-        derivedState,
         groupCommands,
       )
 
@@ -5069,10 +5057,9 @@ export const UPDATE_FNS = {
   RUN_ESCAPE_HATCH: (
     action: RunEscapeHatch,
     editor: EditorModel,
-    derivedState: DerivedState,
     builtInDependencies: BuiltInDependencies,
   ): EditorModel => {
-    const canvasState = pickCanvasStateFromEditorState(editor, derivedState, builtInDependencies)
+    const canvasState = pickCanvasStateFromEditorState(editor, builtInDependencies)
     if (areAllSelectedElementsNonAbsolute(action.targets, editor.jsxMetadata)) {
       const commands = getEscapeHatchCommands(
         action.targets,
@@ -5080,19 +5067,13 @@ export const UPDATE_FNS = {
         canvasState,
         null,
       ).commands
-      return foldAndApplyCommandsSimple(editor, derivedState, commands)
+      return foldAndApplyCommandsSimple(editor, commands)
     } else {
       return editor
     }
   },
-  SET_ELEMENTS_TO_RERENDER: (
-    action: SetElementsToRerender,
-    derivedState: DerivedState,
-    editor: EditorModel,
-  ): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, derivedState, [
-      setElementsToRerenderCommand(action.value),
-    ])
+  SET_ELEMENTS_TO_RERENDER: (action: SetElementsToRerender, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, [setElementsToRerenderCommand(action.value)])
   },
   TOGGLE_SELECTION_LOCK: (action: ToggleSelectionLock, editor: EditorModel): EditorModel => {
     const targets = action.targets
@@ -5183,12 +5164,8 @@ export const UPDATE_FNS = {
       imageDragSessionState: action.imageDragSessionState,
     }
   },
-  APPLY_COMMANDS: (
-    action: ApplyCommandsAction,
-    editor: EditorModel,
-    derivedState: DerivedState,
-  ): EditorModel => {
-    return foldAndApplyCommandsSimple(editor, derivedState, action.commands)
+  APPLY_COMMANDS: (action: ApplyCommandsAction, editor: EditorModel): EditorModel => {
+    return foldAndApplyCommandsSimple(editor, action.commands)
   },
   UPDATE_COLOR_SWATCHES: (action: UpdateColorSwatches, editor: EditorModel): EditorModel => {
     return {

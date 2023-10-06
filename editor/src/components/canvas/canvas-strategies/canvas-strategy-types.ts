@@ -90,7 +90,6 @@ export interface InteractionCanvasState {
   interactionTarget: InteractionTarget
   projectContents: ProjectContentTreeRoot
   nodeModules: NodeModules
-  remixRoutingTable: RemixRoutingTable | null
   builtInDependencies: BuiltInDependencies
   openFile: string | null | undefined
   scale: number

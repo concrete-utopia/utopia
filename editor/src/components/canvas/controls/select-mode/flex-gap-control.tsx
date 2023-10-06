@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
 import * as EP from '../../../../core/shared/element-path'
 import type { CanvasRectangle, CanvasVector, Size } from '../../../../core/shared/math-utils'
-import { size, windowPoint } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  isFiniteRectangle,
+  size,
+  windowPoint,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import { Modifier } from '../../../../utils/modifiers'
 import { when } from '../../../../utils/react-conditionals'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
@@ -25,6 +29,8 @@ import {
 import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
@@ -37,7 +43,7 @@ export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, updatedGapValue } = props
   const colorTheme = useColorTheme()
-  const indicatorColor = colorTheme.gapControls.value
+  const accentColor = colorTheme.gapControlsBg.value
 
   const hoveredViews = useEditorState(
     Substores.highlightedHoveredViews,
@@ -110,6 +116,40 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     flexGap.direction,
   )
 
+  const contentArea = React.useMemo((): Size => {
+    function valueForDimension(
+      directions: FlexDirection[],
+      direction: FlexDirection,
+      directionSize: number,
+      gapSize: number,
+    ) {
+      return directions.includes(direction) ? directionSize : gapSize
+    }
+
+    const children = MetadataUtils.getChildrenUnordered(metadata, selectedElement)
+    const bounds = boundingRectangleArray(
+      mapDropNulls(
+        (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
+        children,
+      ),
+    ) ?? { width: 0, height: 0 }
+
+    return {
+      width: valueForDimension(
+        ['column', 'column-reverse'],
+        flexGap.direction,
+        bounds.width,
+        flexGapValue.renderedValuePx,
+      ),
+      height: valueForDimension(
+        ['row', 'row-reverse'],
+        flexGap.direction,
+        bounds.height,
+        flexGapValue.renderedValuePx,
+      ),
+    }
+  }, [selectedElement, metadata, flexGap, flexGapValue])
+
   return (
     <CanvasOffsetWrapper>
       <div data-testid={FlexGapControlTestId} style={{ pointerEvents: 'none' }}>
@@ -124,8 +164,9 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               elementHovered={elementHovered}
               path={path}
               bounds={bounds}
+              contentArea={contentArea}
               flexDirection={flexGap.direction}
-              indicatorColor={indicatorColor}
+              accentColor={accentColor}
               scale={scale}
               backgroundShown={backgroundShown}
               isDragging={isDragging}
@@ -167,11 +208,12 @@ interface GapControlSegmentProps {
   hoverEnd: React.MouseEventHandler
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
+  contentArea: Size
   flexDirection: FlexDirection
   gapValue: CSSNumber
   elementHovered: boolean
   path: string
-  indicatorColor: string
+  accentColor: string
   scale: number
   isDragging: boolean
   backgroundShown: boolean
@@ -183,10 +225,11 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     hoverEnd,
     onMouseDown,
     bounds,
+    contentArea,
     isDragging,
     gapValue,
     flexDirection,
-    indicatorColor,
+    accentColor: accentColor,
     elementHovered,
     scale,
     path,
@@ -228,49 +271,56 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         top: bounds.y,
         width: bounds.width,
         height: bounds.height,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        border: isDragging ? `${dragBorderWidth}px solid ${indicatorColor}` : undefined,
+        border: isDragging ? `${dragBorderWidth}px solid ${accentColor}` : undefined,
         ...(shouldShowBackground
-          ? UtopiaStyles.backgrounds.stripedBackground(indicatorColor, scale)
+          ? UtopiaStyles.backgrounds.stripedBackground(accentColor, scale)
           : {}),
       }}
     >
       <div
-        data-testid={FlexGapControlHandleTestId}
         style={{
-          visibility: shouldShowHandle ? 'visible' : 'hidden',
-          padding: hitAreaPadding,
-          cursor: cursorFromFlexDirection(flexDirection),
+          width: contentArea.width,
+          height: contentArea.height,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
-        onMouseDown={onMouseDown}
-        onMouseEnter={handleHoverStartInner}
       >
         <div
+          data-testid={FlexGapControlHandleTestId}
           style={{
-            position: 'absolute',
-            paddingTop: paddingIndicatorOffset,
-            paddingLeft: paddingIndicatorOffset,
-            pointerEvents: 'none',
+            visibility: shouldShowHandle ? 'visible' : 'hidden',
+            padding: hitAreaPadding,
+            cursor: cursorFromFlexDirection(flexDirection),
           }}
+          onMouseDown={onMouseDown}
+          onMouseEnter={handleHoverStartInner}
         >
-          {when(
-            shouldShowIndicator,
-            <CanvasLabel
-              value={printCSSNumber(gapValue, null)}
-              scale={scale}
-              color={colorTheme.gapControls.value}
-              textColor={colorTheme.white.value}
-            />,
-          )}
+          <div
+            style={{
+              position: 'absolute',
+              paddingTop: paddingIndicatorOffset,
+              paddingLeft: paddingIndicatorOffset,
+              pointerEvents: 'none',
+            }}
+          >
+            {when(
+              shouldShowIndicator,
+              <CanvasLabel
+                value={printCSSNumber(gapValue, null)}
+                scale={scale}
+                color={colorTheme.brandNeonPink.value}
+                textColor={colorTheme.white.value}
+              />,
+            )}
+          </div>
+          <PillHandle
+            width={width}
+            height={height}
+            pillColor={colorTheme.brandNeonPink.value}
+            borderWidth={borderWidth}
+          />
         </div>
-        <PillHandle
-          width={width}
-          height={height}
-          pillColor={colorTheme.gapControls.value}
-          borderWidth={borderWidth}
-        />
       </div>
     </div>
   )

@@ -4,9 +4,8 @@ import type { ProjectContentsTree, ProjectContentTreeRoot } from '../../../compo
 import {
   getProjectFileByFilePath,
   getProjectContentKeyPathElements,
-  ProjectContentFile,
 } from '../../../components/assets'
-import type { DerivedState, EditorState } from '../../editor/store/editor-state'
+import type { EditorState } from '../../editor/store/editor-state'
 import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import type {
   ElementPath,

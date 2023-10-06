@@ -1,5 +1,4 @@
 import type { EditorState } from '../../../editor/store/editor-state'
-import { emptyDerivedState } from '../../../editor/store/editor-state'
 import { elementPath } from '../../../../core/shared/element-path'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { getEditorState, makeTestProjectCodeWithSnippet } from '../../ui-jsx.test-utils'
@@ -13,10 +12,7 @@ import type { CanvasVector } from '../../../../core/shared/math-utils'
 import { canvasPoint, canvasRectangle, localRectangle } from '../../../../core/shared/math-utils'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { altModifier } from '../../../../utils/modifiers'
-import {
-  pickCanvasStateFromEditorState,
-  pickCanvasStateFromEditorStateWithMetadata,
-} from '../canvas-strategies'
+import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import type { InteractionSession } from '../interaction-state'
 import { boundingArea } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
@@ -79,7 +75,6 @@ function dragByPixelsIsApplicable(
     absoluteDuplicateStrategy(
       pickCanvasStateFromEditorStateWithMetadata(
         editorState,
-        emptyDerivedState(editorState),
         createBuiltInDependenciesList(null),
         metadata,
       ),

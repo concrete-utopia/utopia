@@ -125,7 +125,10 @@ export const setFlexGapStrategy: CanvasStrategyFactory = (
       resizeControl,
       controlWithProps({
         control: FloatingIndicator,
-        props: { ...props, color: colorTheme.gapControls.value },
+        props: {
+          ...props,
+          color: colorTheme.brandNeonPink.value,
+        },
         key: 'padding-value-indicator-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),

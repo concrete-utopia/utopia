@@ -1,10 +1,7 @@
 import { absolute } from '../../../utils/utils'
 import * as EP from '../../../core/shared/element-path'
 import type { EditorState } from '../../editor/store/editor-state'
-import {
-  emptyDerivedState,
-  withUnderlyingTargetFromEditorState,
-} from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import { getEditorState, makeTestProjectCodeWithSnippet } from '../ui-jsx.test-utils'
 import { updateEditorStateWithPatches } from './commands'
 import { reorderElement, runReorderElement } from './reorder-element-command'
@@ -81,11 +78,7 @@ describe('runReorderElement', () => {
 
       const reorderCommand = reorderElement('always', target, absolute(newIdx))
 
-      const result = runReorderElement(
-        originalEditorState,
-        emptyDerivedState(originalEditorState),
-        reorderCommand,
-      )
+      const result = runReorderElement(originalEditorState, reorderCommand)
 
       const patchedEditor = updateEditorStateWithPatches(
         originalEditorState,
