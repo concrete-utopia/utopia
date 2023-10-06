@@ -10,6 +10,7 @@ import { FlexRow, UtopiaTheme, H2, CheckboxInput, FlexColumn, Subdued } from '..
 import { useDispatch } from '../../../editor/store/dispatch-context'
 import { User } from '../../../../uuiui-deps'
 import { LoggedOutPane } from '../../../../components/navigator/left-pane/logged-out-pane'
+import { TestMenu } from '../../../titlebar/test-menu'
 
 const StyledFlexRow = styled(FlexRow)({
   height: UtopiaTheme.layout.rowHeight.normal,
@@ -104,6 +105,7 @@ export const SettingsPanel = React.memo(() => {
         />
         <label htmlFor='toggleInterfaceDesignerAdditionalCanvasControls'>Additional controls</label>
       </StyledFlexRow>
+      <TestMenu />
     </FlexColumn>
   )
 })
