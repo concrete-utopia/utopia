@@ -317,7 +317,7 @@ describe('Absolute Reparent Strategy', () => {
 
   export var App = (props) => {
     return (
-      <div style={{width: '100%', height: '100%'}} data-uid='aaa' data-testid='aaa'>
+      <div style={{width: '100%', height: '100%', contain: 'layout'}} data-uid='aaa' data-testid='aaa'>
         <div                                                                                                        
           style={{                                                                                                  
             backgroundColor: '#aaaaaa33',                                                                           

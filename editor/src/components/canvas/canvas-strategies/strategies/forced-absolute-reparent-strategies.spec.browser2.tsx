@@ -273,6 +273,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
           width: 100,
           height: 100,
           backgroundColor: 'red',
+          contain: 'layout',
         }}
         data-uid='flexchild2'
         data-testid='flexchild2'
@@ -504,6 +505,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
           width: 100,
           height: 100,
           backgroundColor: 'red',
+          contain: 'layout',
         }}
         data-uid='flexchild2'
         data-testid='flexchild2'
@@ -571,6 +573,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
             width: 250,
             height: 500,
             backgroundColor: 'orange',
+            contain: 'layout',
           }}
           data-uid='staticparent'
           data-testid='staticparent'
@@ -686,6 +689,7 @@ describe('Fallback Absolute Reparent Strategies', () => {
             width: 250,
             height: 500,
             backgroundColor: 'orange',
+            contain: 'layout',
           }}
           data-uid='staticparent'
           data-testid='staticparent'
