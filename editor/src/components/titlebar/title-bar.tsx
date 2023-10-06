@@ -71,7 +71,7 @@ export const PanelButton = (props: any) => {
         borderRadius: 8,
         pointerEvents: 'initial',
         backgroundColor:
-          props.isHovered && props.color ? props.color : colorTheme.unavailableGrey.value,
+          props.isHovered && props.color !== null ? props.color : colorTheme.unavailableGrey.value,
       }}
     >
       {props.children}
