@@ -1614,6 +1614,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       newSize.textBounds,
     ).areEqual
 
+    const containEqual = NullableStringKeepDeepEquality(oldSize.contain, newSize.contain).areEqual
+
     const areEqual =
       offsetResult.areEqual &&
       coordinateSystemBoundsResult.areEqual &&
@@ -1654,7 +1656,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       fontWeightEquals &&
       fontStyleEquals &&
       textDecorationLineEquals &&
-      textBoundsEqual
+      textBoundsEqual &&
+      containEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1699,6 +1702,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.fontStyle,
         newSize.textDecorationLine,
         newSize.textBounds,
+        newSize.contain,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }
