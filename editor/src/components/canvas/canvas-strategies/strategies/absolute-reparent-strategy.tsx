@@ -1,9 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
 import { CSSCursor } from '../../canvas-types'
+import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setProperty } from '../../commands/set-property-command'
@@ -199,14 +201,12 @@ export function baseAbsoluteReparentStrategy(
                 [
                   ...moveCommands,
                   ...commands.flatMap((c) => c.commands),
+                  ...maybeAddContainLayout(
+                    canvasState.startingMetadata,
+                    newParent.intendedParentPath,
+                  ),
                   updateSelectedViews('always', newPaths),
                   setElementsToRerenderCommand(elementsToRerender),
-                  setProperty(
-                    'always',
-                    newParent.intendedParentPath,
-                    PP.create('style', 'contain'),
-                    'layout',
-                  ),
                   setCursorCommand(CSSCursor.Reparent),
                 ],
                 {
@@ -227,4 +227,13 @@ export function baseAbsoluteReparentStrategy(
       },
     }
   }
+}
+
+function maybeAddContainLayout(
+  metadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): CanvasCommand[] {
+  return MetadataUtils.isContainLayout(metadata, path)
+    ? []
+    : [setProperty('always', path, PP.create('style', 'contain'), 'layout')]
 }

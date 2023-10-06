@@ -2265,6 +2265,12 @@ export const MetadataUtils = {
     }
     return element.element.value
   },
+  isContainLayout(metadata: ElementInstanceMetadataMap, target: ElementPath): boolean {
+    return (
+      MetadataUtils.findElementByElementPath(metadata, target)?.specialSizeMeasurements?.contain ===
+      'layout'
+    )
+  },
 }
 
 function getNonExpressionDescendantsInner(
