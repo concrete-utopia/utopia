@@ -1,10 +1,16 @@
 import React from 'react'
 import type { CanvasSubstate } from '../../../../components/editor/store/store-hook-substore-types'
-import type { CanvasVector, Size } from '../../../../core/shared/math-utils'
-import { size, windowPoint } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector, Size } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  canvasRectangle,
+  isInfinityRectangle,
+  size,
+  windowPoint,
+  zeroRectangle,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
-import { isFeatureEnabled } from '../../../../utils/feature-switches'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { useColorTheme, UtopiaStyles } from '../../../../uuiui'
@@ -35,6 +41,8 @@ import { CanvasOffsetWrapper } from '../canvas-offset-wrapper'
 import { isZeroSizedElement } from '../outline-utils'
 import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { mapDropNulls } from '../../../../core/shared/array-utils'
 
 export const paddingControlTestId = (edge: EdgePiece): string => `padding-control-${edge}`
 export const paddingControlHandleTestId = (edge: EdgePiece): string =>
@@ -46,6 +54,7 @@ type Orientation = 'vertical' | 'horizontal'
 
 interface ResizeContolProps {
   edge: EdgePiece
+  boundingBox: CanvasRectangle
   shownByParent: boolean
   setShownByParent: (_: boolean) => void
   paddingValue: CSSNumberWithRenderedValue
@@ -117,152 +126,182 @@ const isDraggingSelector = (store: EditorStorePatched, edge: EdgePiece): boolean
     store.editor.canvas.interactionSession.activeControl.edgePiece,
   ).includes(edge)
 
-const PaddingResizeControlI = React.memo(
-  React.forwardRef<HTMLDivElement, ResizeContolProps>((props, ref) => {
-    const { setShownByParent } = props
-    const dispatch = useDispatch()
-    const { scale, isDragging } = useEditorState(
-      Substores.fullStore,
-      (store) => ({
-        scale: scaleSelector(store),
-        isDragging: isDraggingSelector(store, props.edge),
-      }),
-      'PaddingResizeControl scale isDragging',
-    )
+const PaddingResizeControlI = React.memo((props: ResizeContolProps) => {
+  const { setShownByParent } = props
+  const dispatch = useDispatch()
+  const { scale, isDragging } = useEditorState(
+    Substores.fullStore,
+    (store) => ({
+      scale: scaleSelector(store),
+      isDragging: isDraggingSelector(store, props.edge),
+    }),
+    'PaddingResizeControl scale isDragging',
+  )
 
-    const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
-    const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
-    const [stripesShown, setStripesShown] = React.useState<boolean>(false)
+  const canvasOffsetRef = useRefEditorState((store) => store.editor.canvas.roundedCanvasOffset)
+  const [indicatorShown, setIndicatorShown] = React.useState<boolean>(false)
+  const [stripesShown, setStripesShown] = React.useState<boolean>(false)
 
-    const colorTheme = useColorTheme()
+  const colorTheme = useColorTheme()
 
-    const [hoverStartDelayed, hoverEndDelayed] = useHoverWithDelay(
-      PaddingResizeControlHoverTimeout,
-      (h) => setShownByParent(h),
-    )
+  const [hoverStartDelayed, hoverEndDelayed] = useHoverWithDelay(
+    PaddingResizeControlHoverTimeout,
+    (h) => setShownByParent(h),
+  )
 
-    const backgroundHoverEnd = React.useCallback(
-      (e: React.MouseEvent) => {
-        setStripesShown(false)
-        hoverEndDelayed(e)
-      },
-      [hoverEndDelayed],
-    )
+  const backgroundHoverEnd = React.useCallback(
+    (e: React.MouseEvent) => {
+      setStripesShown(false)
+      hoverEndDelayed(e)
+    },
+    [hoverEndDelayed],
+  )
 
-    const hoverStart = React.useCallback((e: React.MouseEvent) => {
-      setStripesShown(true)
-      setIndicatorShown(true)
-    }, [])
+  const hoverStart = React.useCallback((e: React.MouseEvent) => {
+    setStripesShown(true)
+    setIndicatorShown(true)
+  }, [])
 
-    const hoverEnd = React.useCallback((e: React.MouseEvent) => {
-      setIndicatorShown(false)
-    }, [])
+  const hoverEnd = React.useCallback((e: React.MouseEvent) => {
+    setIndicatorShown(false)
+  }, [])
 
-    const onEdgeMouseDown = React.useCallback(
-      (event: React.MouseEvent<HTMLDivElement>) => {
-        setShownByParent(true)
-        startResizeInteraction(event, dispatch, props.edge, canvasOffsetRef.current, scale)
-      },
-      [setShownByParent, dispatch, props.edge, canvasOffsetRef, scale],
-    )
+  const onEdgeMouseDown = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      setShownByParent(true)
+      startResizeInteraction(event, dispatch, props.edge, canvasOffsetRef.current, scale)
+    },
+    [setShownByParent, dispatch, props.edge, canvasOffsetRef, scale],
+  )
 
-    const { cursor, orientation } = edgePieceDerivedProps(props.edge)
+  const { cursor, orientation } = edgePieceDerivedProps(props.edge)
 
-    const shown = !isDragging && props.shownByParent
-    const backgroundShown = props.shownByParent && !isDragging && stripesShown
+  const shown = !isDragging && props.shownByParent
+  const backgroundShown = props.shownByParent && !isDragging && stripesShown
 
-    const { width, height } = sizeFromOrientation(
-      orientation,
-      size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
-    )
+  const { width, height } = sizeFromOrientation(
+    orientation,
+    size(PaddingResizeControlWidth / scale, PaddingResizeControlHeight / scale),
+  )
 
-    const [hitAreaPaddingMainSide, hitAreaPaddingUnaffectedSide, borderWidth, dragBorderWidth] = [
-      PaddingResizeControlHitAreaPaddingMainSide,
-      PaddingResizeControlHitAreaPaddingUnaffectedSide,
-      PaddingResizeControlBorder,
-      PaddingResizeDragBorder,
-    ].map((v) => v / scale)
+  const [hitAreaPaddingMainSide, hitAreaPaddingUnaffectedSide, borderWidth, dragBorderWidth] = [
+    PaddingResizeControlHitAreaPaddingMainSide,
+    PaddingResizeControlHitAreaPaddingUnaffectedSide,
+    PaddingResizeControlBorder,
+    PaddingResizeDragBorder,
+  ].map((v) => v / scale)
 
-    // We only want the mouse catchment area to be inside the element, so to prevent it from
-    // overflowing we apply padding on all sides of the pill control that are inside the element,
-    // and then use a margin to top up the difference so that the pill is always in the correct place
-    const controlPaddingForEdge = Math.min(
-      hitAreaPaddingMainSide,
-      props.paddingValue.renderedValuePx / 2 / scale,
-    )
-    const controlMarginForEdge = hitAreaPaddingMainSide - controlPaddingForEdge
-    const horizontalPadding = isHorizontalEdgePiece(props.edge)
-      ? hitAreaPaddingMainSide
-      : hitAreaPaddingUnaffectedSide
-    const verticalPadding = isHorizontalEdgePiece(props.edge)
-      ? hitAreaPaddingUnaffectedSide
-      : hitAreaPaddingMainSide
+  // We only want the mouse catchment area to be inside the element, so to prevent it from
+  // overflowing we apply padding on all sides of the pill control that are inside the element,
+  // and then use a margin to top up the difference so that the pill is always in the correct place
+  const controlPaddingForEdge = React.useMemo(
+    () => Math.min(hitAreaPaddingMainSide, props.paddingValue.renderedValuePx / 2 / scale),
+    [props.paddingValue, hitAreaPaddingMainSide, scale],
+  )
+  const controlMarginForEdge = React.useMemo(
+    () => hitAreaPaddingMainSide - controlPaddingForEdge,
+    [hitAreaPaddingMainSide, controlPaddingForEdge],
+  )
+  const horizontalPadding = React.useMemo(
+    () =>
+      isHorizontalEdgePiece(props.edge) ? hitAreaPaddingMainSide : hitAreaPaddingUnaffectedSide,
+    [props.edge, hitAreaPaddingMainSide, hitAreaPaddingUnaffectedSide],
+  )
+  const verticalPadding = React.useMemo(
+    () =>
+      isHorizontalEdgePiece(props.edge) ? hitAreaPaddingUnaffectedSide : hitAreaPaddingMainSide,
+    [props.edge, hitAreaPaddingMainSide, hitAreaPaddingUnaffectedSide],
+  )
 
-    const stripeColor = colorTheme.brandNeonPink.value
-    const color = colorTheme.brandNeonPink.value
+  const stripeColor = colorTheme.brandNeonPink.value
+  const color = colorTheme.brandNeonPink.value
 
-    return (
+  const points = React.useMemo((): {
+    top: number
+    left: number
+    width: number | string
+    height: number | string
+  } => {
+    return {
+      top:
+        props.edge === 'bottom' ? props.boundingBox.height - props.paddingValue.renderedValuePx : 0,
+      left:
+        props.edge === 'right' ? props.boundingBox.width - props.paddingValue.renderedValuePx : 0,
+      width:
+        props.edge === 'top' || props.edge === 'bottom'
+          ? '100%'
+          : props.paddingValue.renderedValuePx,
+      height:
+        props.edge === 'left' || props.edge === 'right'
+          ? '100%'
+          : props.paddingValue.renderedValuePx,
+    }
+  }, [props.edge, props.boundingBox, props.paddingValue])
+
+  return (
+    <div
+      onMouseLeave={backgroundHoverEnd}
+      onMouseEnter={hoverStartDelayed}
+      data-testid={paddingControlTestId(props.edge)}
+      style={{
+        pointerEvents: 'all',
+        position: 'absolute',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        left: points.left,
+        top: points.top,
+        width: points.width,
+        height: points.height,
+        border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
+        ...(backgroundShown ? UtopiaStyles.backgrounds.stripedBackground(stripeColor, scale) : {}),
+      }}
+    >
       <div
-        onMouseLeave={backgroundHoverEnd}
-        onMouseEnter={hoverStartDelayed}
-        ref={ref}
-        data-testid={paddingControlTestId(props.edge)}
+        data-testid={paddingControlHandleTestId(props.edge)}
+        onMouseDown={onEdgeMouseDown}
+        onMouseEnter={hoverStart}
+        onMouseLeave={hoverEnd}
         style={{
           pointerEvents: 'all',
+          opacity: shown ? 1 : 0,
           position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: isDragging ? `${dragBorderWidth}px solid ${color}` : undefined,
-          ...(backgroundShown
-            ? UtopiaStyles.backgrounds.stripedBackground(stripeColor, scale)
-            : {}),
+          paddingLeft: props.edge === 'left' ? controlPaddingForEdge : horizontalPadding,
+          paddingRight: props.edge === 'right' ? controlPaddingForEdge : horizontalPadding,
+          paddingTop: props.edge === 'top' ? controlPaddingForEdge : verticalPadding,
+          paddingBottom: props.edge === 'bottom' ? controlPaddingForEdge : verticalPadding,
+          marginLeft: props.edge === 'left' ? controlMarginForEdge : 0,
+          marginRight: props.edge === 'right' ? controlMarginForEdge : 0,
+          marginTop: props.edge === 'top' ? controlMarginForEdge : 0,
+          marginBottom: props.edge === 'bottom' ? controlMarginForEdge : 0,
+          cursor: cursor,
+          zIndex: 1,
         }}
       >
-        <div
-          data-testid={paddingControlHandleTestId(props.edge)}
-          onMouseDown={onEdgeMouseDown}
-          onMouseEnter={hoverStart}
-          onMouseLeave={hoverEnd}
-          style={{
-            pointerEvents: 'all',
-            opacity: shown ? 1 : 0,
-            position: 'absolute',
-            paddingLeft: props.edge === 'left' ? controlPaddingForEdge : horizontalPadding,
-            paddingRight: props.edge === 'right' ? controlPaddingForEdge : horizontalPadding,
-            paddingTop: props.edge === 'top' ? controlPaddingForEdge : verticalPadding,
-            paddingBottom: props.edge === 'bottom' ? controlPaddingForEdge : verticalPadding,
-            marginLeft: props.edge === 'left' ? controlMarginForEdge : 0,
-            marginRight: props.edge === 'right' ? controlMarginForEdge : 0,
-            marginTop: props.edge === 'top' ? controlMarginForEdge : 0,
-            marginBottom: props.edge === 'bottom' ? controlMarginForEdge : 0,
-            cursor: cursor,
-            zIndex: 1,
-          }}
-        >
-          {!isDragging && indicatorShown && (
-            <div
-              style={{
-                pointerEvents: 'none',
-                position: 'absolute',
-                paddingTop: PaddingIndictorOffset(scale),
-                paddingLeft: PaddingIndictorOffset(scale),
-              }}
-            >
-              <CanvasLabel
-                value={printCSSNumber(props.paddingValue.value, 'px')}
-                scale={scale}
-                color={color}
-                textColor={colorTheme.white.value}
-              />
-            </div>
-          )}
-          <PillHandle width={width} height={height} pillColor={color} borderWidth={borderWidth} />
-        </div>
+        {!isDragging && indicatorShown && (
+          <div
+            style={{
+              pointerEvents: 'none',
+              position: 'absolute',
+              paddingTop: PaddingIndictorOffset(scale),
+              paddingLeft: PaddingIndictorOffset(scale),
+            }}
+          >
+            <CanvasLabel
+              value={printCSSNumber(props.paddingValue.value, 'px')}
+              scale={scale}
+              color={color}
+              textColor={colorTheme.white.value}
+            />
+          </div>
+        )}
+        <PillHandle width={width} height={height} pillColor={color} borderWidth={borderWidth} />
       </div>
-    )
-  }),
-)
+    </div>
+  )
+})
+
+PaddingResizeControlI.displayName = 'PaddingResizeControlI'
 
 interface PaddingControlProps {
   targets: Array<ElementPath>
@@ -281,8 +320,6 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     (store) => store.editor.hoveredViews,
     'PaddingResizeControl hoveredViews',
   )
-
-  const numberToPxValue = (n: number) => n + 'px'
 
   const controlRef = useBoundingBox(
     selectedElements,
@@ -321,42 +358,27 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
     }
   }, [hoveredViews, selectedElements])
 
-  const currentPadding = combinePaddings(
-    paddingFromSpecialSizeMeasurements(elementMetadata, selectedElements[0]),
-    simplePaddingFromMetadata(elementMetadata, selectedElements[0]),
-  )
-
-  const leftRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
-    ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = numberToPxValue(padding.paddingLeft?.renderedValuePx ?? 0)
-  })
-
-  const topRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
-    ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = numberToPxValue(padding.paddingTop?.renderedValuePx ?? 0)
-  })
-
-  const rightRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
-    ref.current.style.left = numberToPxValue(
-      boundingBox.width - (padding.paddingRight?.renderedValuePx ?? 0),
+  const currentPadding = React.useMemo(() => {
+    return combinePaddings(
+      paddingFromSpecialSizeMeasurements(elementMetadata, selectedElements[0]),
+      simplePaddingFromMetadata(elementMetadata, selectedElements[0]),
     )
-    ref.current.style.height = numberToPxValue(boundingBox.height)
-    ref.current.style.width = numberToPxValue(padding.paddingRight?.renderedValuePx ?? 0)
-  })
-
-  const bottomRef = useBoundingBox(selectedElements, (ref, boundingBox) => {
-    const padding = simplePaddingFromMetadata(elementMetadata, selectedElements[0])
-    ref.current.style.top = numberToPxValue(
-      boundingBox.height - (padding.paddingBottom?.renderedValuePx ?? 0),
-    )
-    ref.current.style.width = numberToPxValue(boundingBox.width)
-    ref.current.style.height = numberToPxValue(padding.paddingBottom?.renderedValuePx ?? 0)
-  })
+  }, [elementMetadata, selectedElements])
 
   const shownByParent = selectedElementHovered || anyControlHovered
+
+  const boundingBox = useEditorState(
+    Substores.metadata,
+    (store) => {
+      const selectedFrames = mapDropNulls((view) => {
+        const frame = MetadataUtils.getFrameInCanvasCoords(view, store.editor.jsxMetadata)
+        return frame == null || isInfinityRectangle(frame) ? null : frame
+      }, selectedElements)
+
+      return boundingRectangleArray(selectedFrames) ?? canvasRectangle(zeroRectangle)
+    },
+    'PaddingResizeControl boundingBox',
+  )
 
   return (
     <CanvasOffsetWrapper>
@@ -369,29 +391,29 @@ export const PaddingResizeControl = controlForStrategyMemoized((props: PaddingCo
         }}
       >
         <PaddingResizeControlI
-          ref={rightRef}
           edge={'right'}
+          boundingBox={boundingBox}
           shownByParent={shownByParent}
           setShownByParent={setAnyControlHovered}
           paddingValue={currentPadding.paddingRight}
         />
         <PaddingResizeControlI
-          ref={bottomRef}
           edge={'bottom'}
+          boundingBox={boundingBox}
           shownByParent={shownByParent}
           setShownByParent={setAnyControlHovered}
           paddingValue={currentPadding.paddingBottom}
         />
         <PaddingResizeControlI
-          ref={leftRef}
           edge={'left'}
+          boundingBox={boundingBox}
           shownByParent={shownByParent}
           setShownByParent={setAnyControlHovered}
           paddingValue={currentPadding.paddingLeft}
         />
         <PaddingResizeControlI
-          ref={topRef}
           edge={'top'}
+          boundingBox={boundingBox}
           shownByParent={shownByParent}
           setShownByParent={setAnyControlHovered}
           paddingValue={currentPadding.paddingTop}
