@@ -7,14 +7,12 @@ import {
   HorizontalLayoutPinnedProps,
 } from '../../core/layout/layout-helpers-new'
 import {
-  maybeSwitchLayoutProps,
   PinningAndFlexPoints,
   PinningAndFlexPointsExceptSize,
   roundJSXElementLayoutValues,
 } from '../../core/layout/layout-utils'
 import {
   findElementAtPath,
-  findJSXElementAtPath,
   getSimpleAttributeAtPath,
   MetadataUtils,
 } from '../../core/model/element-metadata-utils'
@@ -25,7 +23,6 @@ import type {
   ElementInstanceMetadataMap,
   ArbitraryJSBlock,
   TopLevelElement,
-  SettableLayoutSystem,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -99,7 +96,6 @@ import type {
 } from '../editor/store/editor-state'
 import {
   removeElementAtPath,
-  modifyParseSuccessAtPath,
   withUnderlyingTargetFromEditorState,
   modifyUnderlyingElementForOpenFile,
   isSyntheticNavigatorEntry,
@@ -130,7 +126,7 @@ import type {
 import { cornerGuideline, Guidelines, xAxisGuideline, yAxisGuideline } from './guideline'
 import { getLayoutProperty } from '../../core/layout/getLayoutProperty'
 import { getStoryboardUID } from '../../core/model/scene-utils'
-import { forceNotNull, optionalMap } from '../../core/shared/optional-utils'
+import { optionalMap } from '../../core/shared/optional-utils'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
@@ -147,7 +143,6 @@ import { mergeImports } from '../../core/workers/common/project-file-utils'
 import {
   childInsertionPath,
   conditionalClauseInsertionPath,
-  getInsertionPath,
   wrapInFragmentAndAppendElements,
 } from '../editor/store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../core/model/conditionals'
@@ -1306,13 +1301,6 @@ export function isTargetPropertyHorizontal(edgePosition: EdgePosition): boolean 
   return edgePosition.x !== 0.5
 }
 
-export const SkipFrameChange = 'skipFrameChange'
-
-export interface MoveTemplateResult {
-  updatedEditorState: EditorState
-  newPath: ElementPath | null
-}
-
 export function getFrameChange(
   target: ElementPath,
   newFrame: CanvasRectangle,
@@ -1322,241 +1310,6 @@ export function getFrameChange(
     return flexResizeChange(target, 'flexBasis', 0) // KILLME
   } else {
     return pinFrameChange(target, newFrame, null)
-  }
-}
-
-export function moveTemplate(
-  target: ElementPath,
-  originalPath: ElementPath,
-  newFrame: CanvasRectangle | typeof SkipFrameChange | null,
-  indexPosition: IndexPosition,
-  newParentPath: ElementPath | null,
-  parentFrame: CanvasRectangle | null,
-  editorState: EditorState,
-  componentMetadata: ElementInstanceMetadataMap,
-  selectedViews: Array<ElementPath>,
-  highlightedViews: Array<ElementPath>,
-  newParentLayoutSystem: SettableLayoutSystem | null,
-  newParentMainAxis: 'horizontal' | 'vertical' | null,
-): MoveTemplateResult {
-  function noChanges(): MoveTemplateResult {
-    return {
-      updatedEditorState: editorState,
-      newPath: target,
-    }
-  }
-  let newIndex: number = 0
-  let newPath: ElementPath | null = null
-  let flexContextChanged: boolean = false
-
-  const targetID = EP.toUid(target)
-  if (newParentPath == null) {
-    // TODO Scene Implementation
-    return noChanges()
-  } else {
-    return withUnderlyingTargetFromEditorState(
-      target,
-      editorState,
-      noChanges(),
-      (underlyingElementSuccess, underlyingElement, underlyingTarget, underlyingFilePath) => {
-        return withUnderlyingTargetFromEditorState(
-          newParentPath,
-          editorState,
-          noChanges(),
-          (
-            newParentSuccess,
-            underlyingNewParentElement,
-            underlyingNewParentPath,
-            underlyingNewParentFilePath,
-          ) => {
-            const utopiaComponentsIncludingScenes =
-              getUtopiaJSXComponentsFromSuccess(newParentSuccess)
-            const {
-              components: withLayoutUpdatedForNewContext,
-              componentMetadata: withMetadataUpdatedForNewContext,
-              didSwitch,
-              toast,
-            } = maybeSwitchLayoutProps(
-              target,
-              originalPath,
-              newParentPath,
-              componentMetadata,
-              componentMetadata,
-              utopiaComponentsIncludingScenes,
-              parentFrame,
-              newParentLayoutSystem,
-              newParentMainAxis,
-              styleStringInArray,
-              editorState.allElementProps,
-              editorState.elementPathTree,
-            )
-            const updatedUnderlyingElement = findElementAtPath(
-              underlyingTarget,
-              withLayoutUpdatedForNewContext,
-            )
-            if (updatedUnderlyingElement == null) {
-              return noChanges()
-            } else {
-              let workingEditorState: EditorState = editorState
-
-              let updatedUtopiaComponents: Array<UtopiaJSXComponent> =
-                withLayoutUpdatedForNewContext
-
-              flexContextChanged = flexContextChanged || didSwitch
-
-              // Remove and then insert again at the new location.
-              let detailsOfUpdate: string | null = null
-              workingEditorState = modifyParseSuccessAtPath(
-                underlyingNewParentFilePath,
-                workingEditorState,
-                (workingSuccess) => {
-                  updatedUtopiaComponents = removeElementAtPath(
-                    underlyingTarget,
-                    updatedUtopiaComponents,
-                  )
-
-                  const wrapperUID = generateUidWithExistingComponents(
-                    workingEditorState.projectContents,
-                  )
-                  const insertionPath = getInsertionPath(
-                    newParentPath,
-                    workingEditorState.projectContents,
-                    workingEditorState.jsxMetadata,
-                    workingEditorState.elementPathTree,
-                    wrapperUID,
-                    1,
-                  )
-
-                  if (insertionPath == null) {
-                    return workingSuccess
-                  }
-
-                  const insertResult = insertJSXElementChildren(
-                    insertionPath,
-                    [updatedUnderlyingElement],
-                    updatedUtopiaComponents,
-                    indexPosition,
-                  )
-                  updatedUtopiaComponents = insertResult.components
-                  detailsOfUpdate = insertResult.insertionDetails
-
-                  return {
-                    ...workingSuccess,
-                    imports: mergeImports(
-                      underlyingFilePath,
-                      underlyingElementSuccess.imports,
-                      insertResult.importsToAdd,
-                    ),
-                    topLevelElements: applyUtopiaJSXComponentsChanges(
-                      workingSuccess.topLevelElements,
-                      updatedUtopiaComponents,
-                    ),
-                  }
-                },
-              )
-              workingEditorState = includeToast(detailsOfUpdate, workingEditorState)
-
-              // Validate the result of the re-insertion.
-              if (newParentPath == null) {
-                newIndex = updatedUtopiaComponents.findIndex(
-                  (exported) => exported.rootElement === updatedUnderlyingElement,
-                )
-                if (newIndex === -1) {
-                  throw new Error('Invalid root element index.')
-                }
-              } else {
-                // Can't rely on underlyingNewParentElement as that will now be out of date.
-                const updatedUnderlyingNewParentElement = forceNotNull(
-                  'Element should exist',
-                  findJSXElementAtPath(underlyingNewParentPath, updatedUtopiaComponents),
-                )
-                newIndex =
-                  updatedUnderlyingNewParentElement.children.indexOf(updatedUnderlyingElement)
-                if (newIndex === -1) {
-                  throw new Error('Invalid child element index.')
-                }
-              }
-
-              newPath = EP.appendToPath(newParentPath, targetID)
-
-              let updatedComponentMetadata: ElementInstanceMetadataMap =
-                withMetadataUpdatedForNewContext
-              // Need to make these changes ahead of updating the frame.
-              const elementMetadata = MetadataUtils.findElementByElementPath(
-                updatedComponentMetadata,
-                target,
-              )
-
-              if (elementMetadata != null) {
-                const elementMetadataWithNewPath: ElementInstanceMetadata = {
-                  ...elementMetadata,
-                  elementPath: newPath,
-                }
-
-                updatedComponentMetadata = MetadataUtils.removeElementMetadataChild(
-                  target,
-                  updatedComponentMetadata,
-                )
-
-                updatedComponentMetadata = MetadataUtils.insertElementMetadataChild(
-                  newParentPath,
-                  elementMetadataWithNewPath,
-                  updatedComponentMetadata,
-                )
-              }
-              workingEditorState.jsxMetadata = updatedComponentMetadata
-
-              if (
-                newFrame !== SkipFrameChange &&
-                newFrame != null &&
-                newPath != null &&
-                !flexContextChanged
-              ) {
-                const isParentFlex =
-                  MetadataUtils.isParentYogaLayoutedContainerAndElementParticipatesInLayout(
-                    originalPath,
-                    componentMetadata,
-                  )
-                const frameChanges: Array<PinOrFlexFrameChange> = [
-                  getFrameChange(newPath, newFrame, isParentFlex),
-                ]
-
-                workingEditorState = updateFramesOfScenesAndComponents(
-                  workingEditorState,
-                  frameChanges,
-                  parentFrame,
-                )
-              }
-
-              const newSelectedViews = selectedViews.map((v) => {
-                if (EP.pathsEqual(v, target)) {
-                  return newPath
-                } else {
-                  return v
-                }
-              })
-
-              const newHighlightedViews =
-                newParentPath == null
-                  ? highlightedViews.map((t) => (EP.pathsEqual(t, target) ? newPath : t))
-                  : [newParentPath]
-
-              const updatedEditorState: EditorState = {
-                ...workingEditorState,
-                selectedViews: Utils.stripNulls(newSelectedViews),
-                highlightedViews: Utils.stripNulls(newHighlightedViews),
-                toasts: uniqToasts([...workingEditorState.toasts, ...toast]),
-              }
-
-              return {
-                updatedEditorState: updatedEditorState,
-                newPath: newPath,
-              }
-            }
-          },
-        )
-      },
-    )
   }
 }
 

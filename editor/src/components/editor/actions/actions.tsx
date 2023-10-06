@@ -157,8 +157,6 @@ import {
   canvasPanelOffsets,
   duplicate,
   getFrameChange,
-  moveTemplate,
-  SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
 import type { ResizeLeftPane, SetFocus } from '../../common/actions'
@@ -692,40 +690,6 @@ export function insertIntoWrapper(
   }
 }
 
-export function editorMoveTemplate(
-  target: ElementPath,
-  originalPath: ElementPath,
-  newFrame: CanvasRectangle | typeof SkipFrameChange | null,
-  indexPosition: IndexPosition,
-  newParentPath: ElementPath | null,
-  parentFrame: CanvasRectangle | null,
-  editor: EditorModel,
-  newParentLayoutSystem: SettableLayoutSystem | null,
-  newParentMainAxis: 'horizontal' | 'vertical' | null,
-): {
-  editor: EditorModel
-  newPath: ElementPath | null
-} {
-  const moveResult = moveTemplate(
-    target,
-    originalPath,
-    newFrame,
-    indexPosition,
-    newParentPath,
-    parentFrame,
-    editor,
-    editor.jsxMetadata,
-    editor.selectedViews,
-    editor.highlightedViews,
-    newParentLayoutSystem,
-    newParentMainAxis,
-  )
-  return {
-    newPath: moveResult.newPath,
-    editor: moveResult.updatedEditorState,
-  }
-}
-
 export function restoreEditorState(
   currentEditor: EditorModel,
   desiredEditor: EditorModel,
@@ -1017,17 +981,10 @@ function setZIndexOnSelected(
     }
 
     const indexPosition = indexPositionForAdjustment(selectedView, working, index)
-    return editorMoveTemplate(
-      selectedView,
-      selectedView,
-      SkipFrameChange,
-      indexPosition,
-      EP.parentPath(selectedView),
-      null,
-      editor,
-      null,
-      null,
-    ).editor
+
+    const reorderElementCommand = reorderElement('always', selectedView, indexPosition)
+
+    return foldAndApplyCommandsSimple(working, [reorderElementCommand])
   }, editor)
 }
 
@@ -1569,17 +1526,9 @@ export const UPDATE_FNS = {
     return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel): EditorModel => {
-    return editorMoveTemplate(
-      action.target,
-      action.target,
-      SkipFrameChange,
-      action.indexPosition,
-      EP.parentPath(action.target),
-      null,
-      editor,
-      null,
-      null,
-    ).editor
+    return foldAndApplyCommandsSimple(editor, [
+      reorderElement('always', action.target, action.indexPosition),
+    ])
   },
   DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
     // This function returns whether the given path will have the following deletion behavior:
