@@ -1,10 +1,7 @@
 import { createBuiltInDependenciesList } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import * as EP from '../../../core/shared/element-path'
 import { complexDefaultProjectPreParsed } from '../../../sample-projects/sample-project-utils.test-utils'
-import {
-  emptyDerivedState,
-  withUnderlyingTargetFromEditorState,
-} from '../../editor/store/editor-state'
+import { withUnderlyingTargetFromEditorState } from '../../editor/store/editor-state'
 import {
   DefaultStartingFeatureSwitches,
   makeTestProjectCodeWithSnippet,
@@ -36,11 +33,7 @@ describe('runDuplicateElement', () => {
 
     const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
-    const result = runDuplicateElement(
-      originalEditorState,
-      emptyDerivedState(originalEditorState),
-      duplicateCommand,
-    )
+    const result = runDuplicateElement(originalEditorState, duplicateCommand)
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,
@@ -77,11 +70,7 @@ describe('runDuplicateElement', () => {
 
     const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
-    const result = runDuplicateElement(
-      originalEditorState,
-      emptyDerivedState(originalEditorState),
-      duplicateCommand,
-    )
+    const result = runDuplicateElement(originalEditorState, duplicateCommand)
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,
@@ -150,11 +139,7 @@ describe('runDuplicateElement', () => {
 
     const duplicateCommand = duplicateElement('always', targetPath, newUid)
 
-    const result = runDuplicateElement(
-      originalEditorState,
-      emptyDerivedState(originalEditorState),
-      duplicateCommand,
-    )
+    const result = runDuplicateElement(originalEditorState, duplicateCommand)
 
     const patchedEditor = updateEditorStateWithPatches(
       originalEditorState,

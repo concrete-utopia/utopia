@@ -94,7 +94,6 @@ import {
   defaultUserState,
   deriveState,
   editorModelFromPersistentModel,
-  emptyDerivedState,
   getOpenUIJSFile,
   withUnderlyingTargetFromEditorState,
 } from '../store/editor-state'
@@ -907,7 +906,7 @@ describe('INSERT_INSERTABLE', () => {
       null,
     )
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1020,7 +1019,7 @@ describe('INSERT_INSERTABLE', () => {
       null,
     )
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1127,7 +1126,7 @@ describe('INSERT_INSERTABLE', () => {
 
     const action = insertInsertable(childInsertionPath(targetPath), imgInsertable, 'add-size', null)
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed
@@ -1230,7 +1229,7 @@ describe('INSERT_INSERTABLE', () => {
       type: 'back',
     })
 
-    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState, derivedState)
+    const actualResult = UPDATE_FNS.INSERT_INSERTABLE(action, editorState)
     const cardFile = getProjectFileByFilePath(actualResult.projectContents, '/src/card.js')
     if (cardFile != null && isTextFile(cardFile)) {
       const parsed = cardFile.fileContents.parsed

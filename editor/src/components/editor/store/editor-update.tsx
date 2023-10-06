@@ -1,5 +1,4 @@
 import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
-import { deriveState } from './editor-state'
 import type {
   EditorAction,
   EditorDispatch,
@@ -14,7 +13,6 @@ import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { UiJsxCanvasContextData } from '../../canvas/ui-jsx-canvas'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { foldAndApplyCommandsSimple } from '../../canvas/commands/commands'
-import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 
 export function runLocalEditorAction(
   state: EditorState,
@@ -162,7 +160,7 @@ export function runSimpleLocalEditorAction(
     case 'SHOW_MODAL':
       return UPDATE_FNS.SHOW_MODAL(action, state)
     case 'RESET_PINS':
-      return UPDATE_FNS.RESET_PINS(action, state, derivedState)
+      return UPDATE_FNS.RESET_PINS(action, state)
     case 'SET_CURSOR_OVERLAY':
       return UPDATE_FNS.SET_CURSOR_OVERLAY(action, state)
     case 'SET_Z_INDEX':
@@ -239,7 +237,7 @@ export function runSimpleLocalEditorAction(
     case 'SAVE_DOM_REPORT':
       return UPDATE_FNS.SAVE_DOM_REPORT(action, state, spyCollector)
     case 'TRUE_UP_GROUPS':
-      return UPDATE_FNS.TRUE_UP_GROUPS(state, derivedState)
+      return UPDATE_FNS.TRUE_UP_GROUPS(state)
     case 'SET_PROP':
       return UPDATE_FNS.SET_PROP(action, state)
     case 'SET_FILEBROWSER_RENAMING_TARGET':
@@ -259,7 +257,7 @@ export function runSimpleLocalEditorAction(
     case 'OPEN_FLOATING_INSERT_MENU':
       return UPDATE_FNS.OPEN_FLOATING_INSERT_MENU(action, state)
     case 'UNWRAP_ELEMENTS':
-      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies, derivedState)
+      return UPDATE_FNS.UNWRAP_ELEMENTS(action, state, dispatch, builtInDependencies)
     case 'INSERT_IMAGE_INTO_UI':
       return UPDATE_FNS.INSERT_IMAGE_INTO_UI(action, state, derivedState)
     case 'UPDATE_JSX_ELEMENT_NAME':
@@ -336,7 +334,7 @@ export function runSimpleLocalEditorAction(
     case 'CLOSE_FLOATING_INSERT_MENU':
       return UPDATE_FNS.CLOSE_FLOATING_INSERT_MENU(action, state)
     case 'INSERT_INSERTABLE':
-      return UPDATE_FNS.INSERT_INSERTABLE(action, state, derivedState)
+      return UPDATE_FNS.INSERT_INSERTABLE(action, state)
     case 'SET_PROP_TRANSIENT':
       return UPDATE_FNS.SET_PROP_TRANSIENT(action, state)
     case 'CLEAR_TRANSIENT_PROPS':
@@ -358,7 +356,7 @@ export function runSimpleLocalEditorAction(
     case 'FORCE_PARSE_FILE':
       return UPDATE_FNS.FORCE_PARSE_FILE(action, state)
     case 'RUN_ESCAPE_HATCH':
-      return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, derivedState, builtInDependencies)
+      return UPDATE_FNS.RUN_ESCAPE_HATCH(action, state, builtInDependencies)
     case 'TOGGLE_SELECTION_LOCK':
       return UPDATE_FNS.TOGGLE_SELECTION_LOCK(action, state)
     case 'UPDATE_AGAINST_GITHUB':
@@ -366,7 +364,7 @@ export function runSimpleLocalEditorAction(
     case 'SET_IMAGE_DRAG_SESSION_STATE':
       return UPDATE_FNS.SET_FILE_BROWSER_DRAG_STATE(action, state)
     case 'APPLY_COMMANDS':
-      return UPDATE_FNS.APPLY_COMMANDS(action, state, derivedState)
+      return UPDATE_FNS.APPLY_COMMANDS(action, state)
     case 'UPDATE_COLOR_SWATCHES':
       return UPDATE_FNS.UPDATE_COLOR_SWATCHES(action, state)
     case 'SET_CONDITIONAL_OVERRIDDEN_CONDITION':
@@ -395,13 +393,6 @@ export function runExecuteWithPostActionMenuAction(
     working.postActionInteractionSession.editorStateSnapshot,
   )
 
-  const derivedState = deriveState(
-    editorState,
-    null,
-    'unpatched',
-    unpatchedCreateRemixDerivedDataMemo,
-  )
-
   const commands = action.choice.run(
     editorState,
     working.postActionInteractionSession.derivedStateSnapshot,
@@ -412,7 +403,7 @@ export function runExecuteWithPostActionMenuAction(
     return working
   }
 
-  const newEditorState = foldAndApplyCommandsSimple(editorState, derivedState, commands)
+  const newEditorState = foldAndApplyCommandsSimple(editorState, commands)
   return {
     ...working,
     unpatchedEditor: newEditorState,

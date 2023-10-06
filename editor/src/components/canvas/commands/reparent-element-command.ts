@@ -8,7 +8,7 @@ import { getUtopiaJSXComponentsFromSuccess } from '../../../core/model/project-f
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
-import type { DerivedState, EditorState, EditorStatePatch } from '../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
 import {
   forUnderlyingTargetFromEditorState,
   removeElementAtPath,
@@ -42,7 +42,6 @@ export function reparentElement(
 
 export const runReparentElement: CommandFunction<ReparentElement> = (
   editorState: EditorState,
-  _derivedState: DerivedState,
   command: ReparentElement,
 ) => {
   let editorStatePatches: Array<EditorStatePatch> = []

@@ -11,13 +11,8 @@ import { canvasRectangle } from '../../../../core/shared/math-utils'
 import type { KeyCharacter } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
 import type { EditorState } from '../../../editor/store/editor-state'
-import { deriveState, emptyDerivedState } from '../../../editor/store/editor-state'
-import { patchedCreateRemixDerivedDataMemo } from '../../../editor/store/remix-derived-data'
 import { foldAndApplyCommands } from '../../commands/commands'
-import {
-  pickCanvasStateFromEditorState,
-  pickCanvasStateFromEditorStateWithMetadata,
-} from '../canvas-strategies'
+import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import type {
   CanvasStrategy,
   CustomStrategyState,
@@ -66,7 +61,6 @@ export function pressKeys(
   const strategy = strategyFactoryFunction(
     pickCanvasStateFromEditorStateWithMetadata(
       editorState,
-      emptyDerivedState(editorState),
       createBuiltInDependenciesList(null),
       metadata,
     ),
@@ -83,11 +77,8 @@ export function pressKeys(
   expect(strategyResult.customStatePatch).toEqual({})
   expect(strategyResult.status).toEqual('success')
 
-  const derivedState = deriveState(editorState, null, 'patched', patchedCreateRemixDerivedDataMemo)
-
   const finalEditor = foldAndApplyCommands(
     editorState,
-    derivedState,
     editorState,
     [],
     strategyResult.commands,

@@ -331,7 +331,6 @@ export function fixParentContainingBlockSettings(
 
 export function wrapElementInsertions(
   editor: EditorState,
-  derivedState: DerivedState,
   targets: Array<ElementPath>,
   parentPath: InsertionPath,
   rawElementToInsert: JSXElement | JSXFragment | JSXConditionalExpression,
@@ -385,7 +384,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -407,7 +406,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
@@ -429,7 +428,7 @@ export function wrapElementInsertions(
       switch (staticTarget.type) {
         case 'CHILD_INSERTION':
           return {
-            updatedEditor: foldAndApplyCommandsSimple(editor, derivedState, [
+            updatedEditor: foldAndApplyCommandsSimple(editor, [
               addElement('always', staticTarget, elementToInsert, { importsToAdd, indexPosition }),
             ]),
             newPath: newPath,
