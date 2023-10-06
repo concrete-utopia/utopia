@@ -71,14 +71,14 @@ type PanelButtonProps = {
 export const PanelButton = (props: PanelButtonProps) => {
   return (
     <div
-      onClick={props.onClick ? props.onClick : NO_OP}
+      onClick={props.onClick !== null ? props.onClick : NO_OP}
       style={{
         width: 8,
         height: 8,
         borderRadius: 8,
         pointerEvents: 'initial',
         backgroundColor:
-          props.isHovered && props.color ? props.color : colorTheme.unavailableGrey.value,
+          props.isHovered && props.color !== null ? props.color : colorTheme.unavailableGrey.value,
       }}
     >
       {props.children}
