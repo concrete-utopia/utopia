@@ -2301,38 +2301,39 @@ export const UPDATE_FNS = {
                   )
 
             const withChildrenMoved = children.reduce((working, child) => {
-              const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
-                child.elementPath,
-                workingEditor.jsxMetadata,
-              )
-              const result = editorMoveTemplate(
-                child.elementPath,
-                child.elementPath,
-                childFrame,
+              const reparentOutcome = getReparentOutcome(
+                working.jsxMetadata,
+                working.elementPathTree,
+                working.allElementProps,
+                builtInDependencies,
+                working.projectContents,
+                working.nodeModules.files,
+                working.canvas.openFile?.filename,
+                pathToReparent(child.elementPath),
+                parentPath,
+                'always',
                 indexPosition,
-                parentPath?.intendedParentPath ?? null,
-                parentFrame,
-                working,
-                null,
-                null,
               )
-              if (result.newPath != null) {
-                newSelection.push(result.newPath)
+
+              if (reparentOutcome != null) {
+                const reparentResult = foldAndApplyCommandsSimple(working, reparentOutcome.commands)
+                newSelection.push(reparentOutcome.newPath)
                 if (isGroupChild) {
-                  groupTrueUps.push(result.newPath)
+                  groupTrueUps.push(reparentOutcome.newPath)
                   return foldAndApplyCommandsSimple(
-                    result.editor,
+                    reparentResult,
                     createPinChangeCommandsForElementBecomingGroupChild(
                       workingEditor.jsxMetadata,
                       child,
-                      result.newPath,
+                      reparentOutcome.newPath,
                       parentFrame,
                       localRectangle(parentFrame),
                     ),
                   )
                 }
+                return reparentResult
               }
-              return result.editor
+              return working
             }, workingEditor)
 
             return {
