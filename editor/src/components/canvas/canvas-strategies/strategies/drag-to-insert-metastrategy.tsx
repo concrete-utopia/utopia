@@ -14,11 +14,7 @@ import { canvasRectangle, offsetPoint, zeroCanvasPoint } from '../../../../core/
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { CSSCursor, Utils } from '../../../../uuiui-deps'
 import type { InsertionSubject } from '../../../editor/editor-modes'
-import type {
-  DerivedState,
-  EditorState,
-  EditorStatePatch,
-} from '../../../editor/store/editor-state'
+import type { EditorState, EditorStatePatch } from '../../../editor/store/editor-state'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import type { InsertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
 import { insertElementInsertionSubject } from '../../commands/insert-element-insertion-subject'
@@ -229,12 +225,11 @@ function dragToInsertStrategyFactory(
 
           const reparentCommand = updateFunctionCommand(
             'always',
-            (editorState, derivedState, transient): Array<EditorStatePatch> => {
+            (editorState, transient): Array<EditorStatePatch> => {
               return runTargetStrategiesForFreshlyInsertedElement(
                 reparentStrategyToUse,
                 canvasState.builtInDependencies,
                 editorState,
-                derivedState,
                 customStrategyState,
                 interactionSession,
                 transient,
@@ -251,10 +246,9 @@ function dragToInsertStrategyFactory(
               ? [
                   updateFunctionCommand(
                     'always',
-                    (editorState, derivedState, lifecycle): Array<EditorStatePatch> =>
+                    (editorState, lifecycle): Array<EditorStatePatch> =>
                       foldAndApplyCommandsInner(
                         editorState,
-                        derivedState,
                         [],
                         [
                           wrapInContainerCommand(
@@ -343,7 +337,6 @@ function runTargetStrategiesForFreshlyInsertedElement(
   reparentStrategyToUse: CanvasStrategyFactory,
   builtInDependencies: BuiltInDependencies,
   editorState: EditorState,
-  derivedState: DerivedState,
   customStrategyState: CustomStrategyState,
   interactionSession: InteractionSession,
   commandLifecycle: InteractionLifecycle,
@@ -387,7 +380,6 @@ function runTargetStrategiesForFreshlyInsertedElement(
   // so its index amongst its starting siblings isn't relevant.
   const canvasState = pickCanvasStateFromEditorStateWithMetadata(
     editorState,
-    derivedState,
     builtInDependencies,
     patchedMetadata,
   )
@@ -410,12 +402,7 @@ function runTargetStrategiesForFreshlyInsertedElement(
   } else {
     const reparentCommands = strategy.apply(strategyLifeCycle).commands
 
-    return foldAndApplyCommandsInner(
-      editorState,
-      derivedState,
-      [],
-      reparentCommands,
-      commandLifecycle,
-    ).statePatches
+    return foldAndApplyCommandsInner(editorState, [], reparentCommands, commandLifecycle)
+      .statePatches
   }
 }

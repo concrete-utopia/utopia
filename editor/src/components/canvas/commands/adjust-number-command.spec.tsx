@@ -60,7 +60,6 @@ describe('adjustNumberProperty', () => {
 
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
-      renderResult.getEditorState().derived,
       adjustNumberPropertyCommand,
     )
 
@@ -116,7 +115,6 @@ describe('adjustNumberProperty', () => {
 
     const result = runAdjustNumberProperty(
       renderResult.getEditorState().editor,
-      renderResult.getEditorState().derived,
       adjustNumberPropertyCommand,
     )
 

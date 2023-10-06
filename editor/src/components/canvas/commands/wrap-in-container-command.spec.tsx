@@ -42,7 +42,7 @@ describe('wrapInContainerCommand', () => {
     expect(originalElement).not.toBeNull()
 
     const cmd = wrapInContainerCommand('always', targetPath, 'the-wrapper', 'fragment')
-    const result = runWrapInContainerCommand(editor, renderResult.getEditorState().derived, cmd)
+    const result = runWrapInContainerCommand(editor, cmd)
     const patchedEditor = updateEditorStateWithPatches(editor, result.editorStatePatches)
 
     const wrapperPath = EP.appendToPath(EP.parentPath(targetPath), 'the-wrapper')
@@ -83,7 +83,7 @@ describe('wrapInContainerCommand', () => {
     expect(originalElement).not.toBeNull()
 
     const cmd = wrapInContainerCommand('always', targetPath, 'the-wrapper', 'conditional')
-    const result = runWrapInContainerCommand(editor, renderResult.getEditorState().derived, cmd)
+    const result = runWrapInContainerCommand(editor, cmd)
     const patchedEditor = updateEditorStateWithPatches(editor, result.editorStatePatches)
 
     const wrapperPath = EP.appendToPath(EP.parentPath(targetPath), 'the-wrapper')
@@ -128,7 +128,7 @@ describe('wrapInContainerCommand', () => {
     expect(originalElement).toBeNull()
 
     const cmd = wrapInContainerCommand('always', targetPath, 'the-wrapper', 'fragment')
-    const result = runWrapInContainerCommand(editor, renderResult.getEditorState().derived, cmd)
+    const result = runWrapInContainerCommand(editor, cmd)
     const patchedEditor = updateEditorStateWithPatches(editor, result.editorStatePatches)
 
     const wrapperPath = EP.appendToPath(EP.parentPath(targetPath), 'the-wrapper')

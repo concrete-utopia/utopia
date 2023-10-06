@@ -10,21 +10,16 @@ import { canvasPoint, canvasRectangle } from '../../../../core/shared/math-utils
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { emptyModifiers } from '../../../../utils/modifiers'
 import type { EditorState } from '../../../editor/store/editor-state'
-import { emptyDerivedState } from '../../../editor/store/editor-state'
 import { foldAndApplyCommands } from '../../commands/commands'
 import {
   getEditorState,
   makeTestProjectCodeWithSnippet,
   testPrintCodeFromEditorState,
 } from '../../ui-jsx.test-utils'
-import {
-  pickCanvasStateFromEditorState,
-  pickCanvasStateFromEditorStateWithMetadata,
-} from '../canvas-strategies'
-import { defaultCustomStrategyState } from '../canvas-strategy-types'
+import { pickCanvasStateFromEditorStateWithMetadata } from '../canvas-strategies'
 import { convertToAbsoluteAndMoveStrategy } from './convert-to-absolute-and-move-strategy'
 import type { InteractionSession } from '../interaction-state'
-import { boundingArea, StrategyState } from '../interaction-state'
+import { boundingArea } from '../interaction-state'
 import { createMouseInteractionForTests } from '../interaction-state.test-utils'
 
 function prepareEditorState(codeSnippet: string, selectedViews: Array<ElementPath>): EditorState {
@@ -190,7 +185,6 @@ function dragByPixels(
     convertToAbsoluteAndMoveStrategy(
       pickCanvasStateFromEditorStateWithMetadata(
         editorState,
-        emptyDerivedState(editorState),
         createBuiltInDependenciesList(null),
         metadata,
       ),
@@ -199,7 +193,6 @@ function dragByPixels(
 
   const finalEditor = foldAndApplyCommands(
     editorState,
-    emptyDerivedState(editorState),
     editorState,
     [],
     strategyResultCommands,
