@@ -61,7 +61,14 @@ const ProjectTitle: React.FC<React.PropsWithChildren<ProjectTitleProps>> = ({ ch
   )
 }
 
-export const PanelButton = (props: any) => {
+type PanelButtonProps = {
+  onClick?: () => void
+  color?: string
+  isHovered?: boolean
+  children?: React.ReactNode
+}
+
+export const PanelButton = (props: PanelButtonProps) => {
   return (
     <div
       onClick={props.onClick ? props.onClick : NO_OP}
@@ -71,7 +78,7 @@ export const PanelButton = (props: any) => {
         borderRadius: 8,
         pointerEvents: 'initial',
         backgroundColor:
-          props.isHovered && props.color !== null ? props.color : colorTheme.unavailableGrey.value,
+          props.isHovered && props.color ? props.color : colorTheme.unavailableGrey.value,
       }}
     >
       {props.children}
