@@ -7,6 +7,7 @@ import { useContextSelector } from 'use-context-selector'
 import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import { when } from '../../utils/react-conditionals'
 import { FlexColumn, FlexRow, InspectorSubsectionHeader, PopupList, UtopiaTheme } from '../../uuiui'
+import type { SelectOption } from '../../uuiui-deps'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorRowHoverCSS } from '../context-menu-wrapper'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -233,21 +234,25 @@ const FrameChildConstraintSelect = React.memo((props: { dimension: 'width' | 'he
       ? HorizontalPinChangeOptionsIncludingMixed[pins.horizontal]
       : VerticalPinChangeOptionsIncludingMixed[pins.vertical]
 
+  const onSubmit = React.useCallback(
+    (option: SelectOption) => {
+      const requestedPins: RequestedPins = option.value
+      dispatch(
+        getFrameChangeActions(
+          editorRef.current.metadata,
+          propertyTarget,
+          editorRef.current.selectedViews,
+          requestedPins,
+        ),
+      )
+    },
+    [dispatch, propertyTarget, editorRef],
+  )
+
   return (
     <PopupList
       id={`frame-child-constraint-${dimension}`}
-      // eslint-disable-next-line react/jsx-no-bind
-      onSubmitValue={(option) => {
-        const requestedPins: RequestedPins = option.value
-        dispatch(
-          getFrameChangeActions(
-            editorRef.current.metadata,
-            propertyTarget,
-            editorRef.current.selectedViews,
-            requestedPins,
-          ),
-        )
-      }}
+      onSubmitValue={onSubmit}
       value={activeOption}
       options={optionsToUse}
       style={{
