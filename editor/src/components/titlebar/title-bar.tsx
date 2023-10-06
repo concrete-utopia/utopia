@@ -192,7 +192,7 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
     >
       <FlexRow css={{ gap: 6 }}>
         <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' isHovered={isHovered} />
-        <PanelButton isHovered={isHovered} />
+        <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
       </FlexRow>
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         {currentBranch != null ? (
@@ -322,7 +322,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
     >
       <FlexRow css={{ gap: 6 }}>
         <PanelButton onClick={toggleInspectorVisible} color='#FF5F57' isHovered={isHovered} />
-        <PanelButton isHovered={isHovered} />
+        <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
       </FlexRow>
       <div style={{ flex: '0 0 0px' }}>
         {unless(
@@ -371,8 +371,8 @@ export const TitleBarEmpty = React.memo((props: { panelData: StoredPanel }) => {
         gap: 6,
       }}
     >
-      <PanelButton />
-      <PanelButton />
+      <PanelButton color={colorTheme.unavailableGrey.value} />
+      <PanelButton color={colorTheme.unavailableGrey.value} />
     </div>
   )
 })
