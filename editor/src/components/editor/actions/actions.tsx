@@ -521,7 +521,6 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
-import { pasteToReplaceCommands } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getAbsoluteReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
