@@ -248,12 +248,6 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
                       jsxMetadataRef.current,
                       projectContentsRef.current,
                     ),
-                    setProperty(
-                      'always',
-                      result.newPath,
-                      PP.create('style', 'position'),
-                      'absolute',
-                    ),
                   ],
                   commandLifecycle,
                 ).statePatches

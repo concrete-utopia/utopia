@@ -159,11 +159,11 @@ describe('insert menu', () => {
         <div
             style={{
                 backgroundColor: '#aaaaaa33',
+                width: 95,
+                height: 145,
                 position: 'absolute',
                 left: 6,
                 top: 6,
-                width: 95,
-                height: 145,
             }}
             data-uid='the-div'
         />

@@ -77,7 +77,7 @@ export function getAbsoluteReparentPropertyChanges(
   targetStartingMetadata: ElementInstanceMetadataMap,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
-): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
+): Array<CanvasCommand> {
   const element: JSXElement | null = getElementFromProjectContents(target, projectContents)
 
   const originalParentInstance = MetadataUtils.findElementByElementPath(
@@ -183,6 +183,7 @@ export function getAbsoluteReparentPropertyChanges(
 
   return [
     adjustCssLengthProperties('always', target, newParentFlexDirection, edgePropertiesToAdjust),
+    setProperty('always', target, PP.create('style', 'position'), 'absolute'),
     ...widthHeightCommands,
   ]
 }
