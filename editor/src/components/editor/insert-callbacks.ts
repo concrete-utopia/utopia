@@ -49,6 +49,8 @@ import {
 } from '../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import * as EP from '../../core/shared/element-path'
 import { foldAndApplyCommandsInner } from '../canvas/commands/commands'
+import { setProperty } from '../canvas/commands/set-property-command'
+import * as PP from '../../core/shared/property-path'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -238,13 +240,21 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
                 return foldAndApplyCommandsInner(
                   state,
                   [],
-                  getAbsoluteReparentPropertyChanges(
-                    result.newPath,
-                    EP.parentPath(result.newPath),
-                    jsxMetadataRef.current,
-                    jsxMetadataRef.current,
-                    projectContentsRef.current,
-                  ),
+                  [
+                    ...getAbsoluteReparentPropertyChanges(
+                      result.newPath,
+                      EP.parentPath(result.newPath),
+                      jsxMetadataRef.current,
+                      jsxMetadataRef.current,
+                      projectContentsRef.current,
+                    ),
+                    setProperty(
+                      'always',
+                      result.newPath,
+                      PP.create('style', 'position'),
+                      'absolute',
+                    ),
+                  ],
                   commandLifecycle,
                 ).statePatches
               case 'REPARENT_AS_STATIC':
