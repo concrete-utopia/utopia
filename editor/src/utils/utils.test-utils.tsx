@@ -78,6 +78,7 @@ import type { FeatureName } from './feature-switches'
 import { isFeatureEnabled, setFeatureEnabled } from './feature-switches'
 import { getUtopiaID } from '../core/shared/uid-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
+import { UTOPIA_IRRECOVERABLE_ERROR_MESSAGE } from '../components/editor/store/dispatch'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -468,6 +469,20 @@ export async function expectSingleUndo2Saves(
   action: () => Promise<void>,
 ): Promise<void> {
   return expectNUndoStepsNSaves(editor, 1, 2, action)
+}
+
+export async function expectNoIrrecoverableErrors(
+  editor: EditorRenderResult,
+  action: () => Promise<void>,
+): Promise<void> {
+  await action()
+  // a little basic but it will do for now
+  const toasts = editor
+    .getEditorState()
+    .editor.toasts.filter((e) => e.message === UTOPIA_IRRECOVERABLE_ERROR_MESSAGE)
+  if (toasts.length > 0) {
+    throw new Error('Operation caused an irrecoverable error')
+  }
 }
 
 export async function expectSingleUndoNSaves(

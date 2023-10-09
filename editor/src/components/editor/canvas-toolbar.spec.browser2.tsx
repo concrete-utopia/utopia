@@ -6,6 +6,7 @@ import {
   selectComponentsForTest,
   expectSingleUndo2Saves,
   expectNoAction,
+  expectNoIrrecoverableErrors,
 } from '../../utils/utils.test-utils'
 import {
   FOR_TESTS_setNextGeneratedUid,
@@ -506,6 +507,67 @@ export var storyboard = (
   </Storyboard>
 )
 `)
+  })
+
+  it('can insert two elements one after the other', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    await expectNoIrrecoverableErrors(editor, async () => {
+      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
+      await insertViaAddElementPopup(editor, 'div')
+      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div-2'])
+      await insertViaAddElementPopup(editor, 'div')
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+    <div
+        style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute'
+        }}
+        data-uid='new-div'
+        >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+        }}
+        data-uid='new-div-2'
+      />
+    </div>
+  </div>`),
+    )
   })
 
   describe('add element to conditional', () => {
