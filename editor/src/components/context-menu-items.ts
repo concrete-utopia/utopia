@@ -5,10 +5,9 @@ import * as EP from '../core/shared/element-path'
 import type { ElementPathTrees } from '../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import { isIntrinsicElement, isJSXElementLike } from '../core/shared/element-template'
-import type { CanvasPoint } from '../core/shared/math-utils'
+import type { CanvasPoint, WindowPoint } from '../core/shared/math-utils'
 import type { ElementPath } from '../core/shared/project-file-types'
 import * as PP from '../core/shared/property-path'
-import { WindowMousePositionRaw } from '../utils/global-positions'
 import RU from '../utils/react-utils'
 import Utils from '../utils/utils'
 import type { ProjectContentTreeRoot } from './assets'
@@ -51,7 +50,11 @@ export interface ContextMenuItem<T> {
   shortcut?: string
   isSeparator?: boolean
   isHidden?: (data: T) => boolean
-  action: (data: T, dispatch?: EditorDispatch, event?: MouseEvent) => void
+  action: (
+    data: T,
+    dispatch: EditorDispatch | undefined,
+    rightClickCoordinate: WindowPoint | null,
+  ) => void
 }
 
 export interface CanvasData {
@@ -170,14 +173,14 @@ export const pasteHere: ContextMenuItem<CanvasData> = {
   isHidden: (data: CanvasData) => {
     return data.contextMenuInstance === 'context-menu-navigator'
   },
-  action: (data, dispatch?: EditorDispatch) => {
-    if (WindowMousePositionRaw == null) {
+  action: (data, dispatch: EditorDispatch | undefined, mouseWindowPosition: WindowPoint | null) => {
+    if (mouseWindowPosition == null) {
       return
     }
     const pointOnCanvas = windowToCanvasCoordinates(
       data.scale,
       data.canvasOffset,
-      WindowMousePositionRaw,
+      mouseWindowPosition,
     ).canvasPositionRaw
     const pasteHerePostActionData = {
       type: 'PASTE_HERE',
