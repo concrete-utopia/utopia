@@ -556,10 +556,7 @@ export const expectElementWithTestIdNotToBeRendered = (
   testId: string,
 ): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)
 
-export function windowRectangleToCanvasRectangle(
-  canvasScale: number,
-  elementBounds: WindowRectangle,
-) {
+export function elementRectangleToCanvasRectangle(canvasScale: number, elementBounds: DOMRect) {
   const canvasRootContainer = document.getElementById(CanvasContainerID)!
   const canvasRootRectangle = getCanvasRectangleFromElement(
     canvasRootContainer,
