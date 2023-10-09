@@ -72,7 +72,8 @@ Array [
                 "uid": "",
                 "value": Object {
                   "backgroundColor": "#aaaaaa33",
-                  "position": "absolute",
+                  "height": 100,
+                  "width": 100,
                 },
               },
             },
@@ -625,7 +626,8 @@ Array [
                 "uid": "",
                 "value": Object {
                   "backgroundColor": "#aaaaaa33",
-                  "position": "absolute",
+                  "height": 100,
+                  "width": 100,
                 },
               },
             },
