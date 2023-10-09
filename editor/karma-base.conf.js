@@ -62,8 +62,16 @@ module.exports = function (config) {
         included: false,
         nocache: false,
       },
+      {
+        pattern: './resources/editor/**/*.css',
+        watched: false,
+        served: true,
+        included: false,
+        nocache: false,
+      },
     ],
     proxies: {
+      '/editor/css/': '/base/resources/editor/css',
       '/editor/icons': '/base/resources/editor/icons',
       '/editor/cursors': '/base/resources/editor/cursors',
       '/editor/fills': '/base/resources/editor/fills',
