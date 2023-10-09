@@ -365,7 +365,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
             : isSelected
             ? colorTheme.bg1.value
             : colorTheme.fg1.value,
-          background: isComponentCurrentlyInserted ? colorTheme.brandNeonPink.value : undefined,
+          background: isComponentCurrentlyInserted ? colorTheme.dynamicBlue.value : undefined,
           gap: 4,
           border: '1px solid transparent',
         }}
