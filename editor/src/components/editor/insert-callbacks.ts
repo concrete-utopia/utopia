@@ -41,6 +41,14 @@ import { generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
+import { updateFunctionCommand } from '../canvas/commands/update-function-command'
+import { autoLayoutParentAbsoluteOrStatic } from '../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-parent-lookup'
+import {
+  getAbsoluteReparentPropertyChanges,
+  getStaticReparentPropertyChanges,
+} from '../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import * as EP from '../../core/shared/element-path'
+import { foldAndApplyCommandsInner } from '../canvas/commands/commands'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -213,8 +221,47 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         return null
       }
 
+      const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
+        jsxMetadataRef.current,
+        allElementPropsRef.current,
+        elementPathTreeRef.current,
+        targetParent,
+        'prefer-absolute',
+      )
+
       return dispatch([
-        applyCommandsAction(result.commands),
+        applyCommandsAction([
+          ...result.commands,
+          updateFunctionCommand('always', (state, commandLifecycle) => {
+            switch (shouldReparentAsAbsoluteOrStatic) {
+              case 'REPARENT_AS_ABSOLUTE':
+                return foldAndApplyCommandsInner(
+                  state,
+                  [],
+                  getAbsoluteReparentPropertyChanges(
+                    result.newPath,
+                    EP.parentPath(result.newPath),
+                    jsxMetadataRef.current,
+                    jsxMetadataRef.current,
+                    projectContentsRef.current,
+                  ),
+                  commandLifecycle,
+                ).statePatches
+              case 'REPARENT_AS_STATIC':
+                return foldAndApplyCommandsInner(
+                  state,
+                  [],
+                  getStaticReparentPropertyChanges(
+                    result.newPath,
+                    'absolute',
+                    null,
+                    'do-not-convert',
+                  ),
+                  commandLifecycle,
+                ).statePatches
+            }
+          }),
+        ]),
         selectComponents([result.newPath], false),
       ])
     },
