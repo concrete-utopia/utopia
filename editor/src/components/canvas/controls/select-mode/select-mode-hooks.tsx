@@ -182,7 +182,7 @@ function replaceNonSelectablePaths(
   componentMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   selectedViews: Array<ElementPath>,
-  lockedElements: LockedElements,
+  lockedElements: Array<ElementPath>,
 ): Array<ElementPath> {
   let updatedSelectablePaths: Array<ElementPath> = []
   Utils.fastForEach(selectablePaths, (selectablePath) => {
@@ -193,7 +193,7 @@ function replaceNonSelectablePaths(
     if (selectedViews.some((selectedView) => EP.pathsEqual(selectablePath, selectedView))) {
       updatedSelectablePaths.push(selectablePath)
     } else {
-      const isLocked = lockedElements.simpleLock.some((lockedPath) =>
+      const isLocked = lockedElements.some((lockedPath) =>
         EP.pathsEqual(lockedPath, selectablePath),
       )
       const isRootPath = EP.isRootElementOfInstance(selectablePath)
@@ -240,24 +240,21 @@ export function getSelectableViews(
   childrenSelectable: boolean,
   lockedElements: LockedElements,
 ): ElementPath[] {
+  const allLockedElementPaths = getAllLockedElementPaths(
+    componentMetadata,
+    elementPathTree,
+    lockedElements,
+  )
   const candidateSelectableViews = getCandidateSelectableViews(
     componentMetadata,
     elementPathTree,
     selectedViews,
     allElementsDirectlySelectable,
     childrenSelectable,
-    lockedElements,
+    allLockedElementPaths,
   )
 
-  const nonSelectableElements = [
-    ...hiddenInstances,
-    ...getAllLockedElementPaths(componentMetadata, elementPathTree, lockedElements),
-  ]
-
-  const selectableElements = filterNonSelectableElements(
-    nonSelectableElements,
-    candidateSelectableViews,
-  )
+  const selectableElements = filterNonSelectableElements(hiddenInstances, candidateSelectableViews)
 
   return selectableElements
 }
@@ -268,7 +265,7 @@ function getCandidateSelectableViews(
   selectedViews: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
-  lockedElements: LockedElements,
+  lockedElements: Array<ElementPath>,
 ): ElementPath[] {
   if (allElementsDirectlySelectable) {
     return MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
