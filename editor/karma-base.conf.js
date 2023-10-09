@@ -55,6 +55,7 @@ module.exports = function (config) {
     files: [
       './mocha-setup-beforeall.js',
       './karma-setup.js',
+      './src/templates/editor-entry-point-imports.tsx', // we load the real editor entry point first, to make sure the environment matches the real environment, and also to avoid diverging circular dependencies
       {
         pattern: './resources/editor/**/*.png',
         watched: false,
