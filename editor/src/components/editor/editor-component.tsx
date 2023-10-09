@@ -2,7 +2,6 @@
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
 import { css, jsx, keyframes } from '@emotion/react'
-import { chrome as isChrome } from 'platform-detect'
 import React from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -360,7 +359,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           }}
         >
           <LowPriorityStoreProvider>
-            {(isChrome as boolean) ? null : <BrowserInfoBar />}
+            <BrowserInfoBar />
             <LoginStatusBar />
             {unless(isFeatureEnabled('Draggable Floating Panels'), <TitleBar />)}
           </LowPriorityStoreProvider>

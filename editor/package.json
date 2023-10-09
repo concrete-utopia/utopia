@@ -51,7 +51,8 @@
     "dev-fast": "APP_ENV=development REACT_APP_ENVIRONMENT_CONFIG=development REACT_APP_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID REACT_APP_AUTH0_ENDPOINT=$AUTH0_ENDPOINT REACT_APP_AUTH0_REDIRECT_URI=$AUTH0_REDIRECT_URI REACT_APP_COMMIT_HASH=`git rev-parse HEAD` vite --force",
     "vite-build": "node --max_old_space_size=16384 ./node_modules/vite/bin/vite build -- -DEBUG",
     "watch-tsc": "tsc --watch && NODE_OPTIONS=\"--max_old_space_size=4096 $NODE_OPENSSL_OPTION\"",
-    "unused-exports": "ts-unused-exports ./tsconfig.json --ignoreLocallyUsed"
+    "unused-exports": "ts-unused-exports ./tsconfig.json --ignoreLocallyUsed",
+    "rollup": "rollup --config rollup.config.mjs --watch"
   },
   "lint-staged": {
     "*.{js,ts,tsx}": [
@@ -112,6 +113,11 @@
     "@emotion/styled-base": "11.0.0",
     "@popperjs/core": "2.4.4",
     "@remix-run/react": "2.0.1",
+    "@rollup/plugin-commonjs": "^25.0.5",
+    "@rollup/plugin-html": "^1.0.3",
+    "@rollup/plugin-json": "^6.0.1",
+    "@rollup/plugin-replace": "^5.0.3",
+    "@rollup/plugin-typescript": "^11.1.5",
     "@root/encoding": "1.0.1",
     "@seznam/compose-react-refs": "^1.0.4",
     "@stitches/react": "1.2.8",
@@ -212,6 +218,11 @@
     "remix-react": "^0.0.2",
     "reselect": "4.1.7",
     "resize-observer-polyfill": "1.5.0",
+    "rollup": "^4.0.2",
+    "rollup-plugin-esbuild": "^6.1.0",
+    "rollup-plugin-import-css": "^3.3.4",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-terser": "^7.0.2",
     "scheduler": "0.17.0",
     "semver": "7.3.2",
     "settle-promise": "1.0.0",
