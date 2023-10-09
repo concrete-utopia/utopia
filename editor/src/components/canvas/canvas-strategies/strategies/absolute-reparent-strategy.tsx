@@ -1,11 +1,15 @@
+import type { BuiltInDependencies } from '../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
-import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ElementPath, NodeModules } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
+import type { IndexPosition } from '../../../../utils/utils'
+import type { ProjectContentTreeRoot } from '../../../assets'
 import type { AllElementProps } from '../../../editor/store/editor-state'
+import type { InsertionPath } from '../../../editor/store/insertion-path'
 import { CSSCursor } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -136,47 +140,22 @@ export function baseAbsoluteReparentStrategy(
             })
 
             if (reparentTarget.shouldReparent && allowedToReparent) {
-              const commands = mapDropNulls((selectedElement) => {
-                const reparentResult = getReparentOutcome(
-                  canvasState.startingMetadata,
-                  canvasState.startingElementPathTree,
-                  canvasState.startingAllElementProps,
-                  canvasState.builtInDependencies,
-                  projectContents,
-                  nodeModules,
-                  openFile,
-                  pathToReparent(selectedElement),
-                  newParent,
-                  'always',
-                  null,
-                )
-
-                if (reparentResult == null) {
-                  return null
-                } else {
-                  const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
+              const commands = mapDropNulls(
+                (selectedElement) =>
+                  createReparentAndOffsetCommands(
+                    selectedElement,
+                    newParent,
+                    null,
                     canvasState.startingMetadata,
-                    canvasState.startingAllElementProps,
                     canvasState.startingElementPathTree,
-                    [selectedElement],
-                  ).flatMap((target) => {
-                    return getAbsoluteReparentPropertyChanges(
-                      target,
-                      newParent.intendedParentPath,
-                      canvasState.startingMetadata,
-                      canvasState.startingMetadata,
-                      canvasState.projectContents,
-                    )
-                  })
-
-                  const { commands: reparentCommands, newPath } = reparentResult
-                  return {
-                    oldPath: selectedElement,
-                    newPath: newPath,
-                    commands: [...offsetCommands, ...reparentCommands],
-                  }
-                }
-              }, filteredSelectedElements)
+                    canvasState.startingAllElementProps,
+                    canvasState.builtInDependencies,
+                    projectContents,
+                    nodeModules,
+                    openFile,
+                  ),
+                selectedElements,
+              )
 
               let newPaths: Array<ElementPath> = []
               let updatedTargetPaths: UpdatedPathMap = {}
@@ -232,6 +211,59 @@ export function baseAbsoluteReparentStrategy(
           },
         )
       },
+    }
+  }
+}
+
+export function createReparentAndOffsetCommands(
+  target: ElementPath,
+  newParent: InsertionPath,
+  indexPosition: IndexPosition | null,
+  metadata: ElementInstanceMetadataMap,
+  pathTree: ElementPathTrees,
+  elementProps: AllElementProps,
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+  openFile: string | null | undefined,
+) {
+  const reparentResult = getReparentOutcome(
+    metadata,
+    pathTree,
+    elementProps,
+    builtInDependencies,
+    projectContents,
+    nodeModules,
+    openFile,
+    pathToReparent(target),
+    newParent,
+    'always',
+    indexPosition,
+  )
+
+  if (reparentResult == null) {
+    return null
+  } else {
+    const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
+      metadata,
+      elementProps,
+      pathTree,
+      [target],
+    ).flatMap((p) => {
+      return getAbsoluteReparentPropertyChanges(
+        p,
+        newParent.intendedParentPath,
+        metadata,
+        metadata,
+        projectContents,
+      )
+    })
+
+    const { commands: reparentCommands, newPath } = reparentResult
+    return {
+      oldPath: target,
+      newPath: newPath,
+      commands: [...offsetCommands, ...reparentCommands],
     }
   }
 }

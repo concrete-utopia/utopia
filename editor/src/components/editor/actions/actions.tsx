@@ -521,7 +521,7 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
-import { getAbsoluteReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
+import { createReparentAndOffsetCommands } from '../../canvas/canvas-strategies/strategies/absolute-reparent-strategy'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2254,7 +2254,13 @@ export const UPDATE_FNS = {
                   )
 
             const withChildrenMoved = children.reduce((working, child) => {
-              const reparentOutcome = getReparentOutcome(
+              if (parentPath == null) {
+                return working
+              }
+              const reparentOutcome = createReparentAndOffsetCommands(
+                child.elementPath,
+                parentPath,
+                indexPosition,
                 working.jsxMetadata,
                 working.elementPathTree,
                 working.allElementProps,
@@ -2262,35 +2268,10 @@ export const UPDATE_FNS = {
                 working.projectContents,
                 working.nodeModules.files,
                 working.canvas.openFile?.filename,
-                pathToReparent(child.elementPath),
-                parentPath,
-                'always',
-                indexPosition,
               )
 
-              let allCommands: Array<CanvasCommand> = []
               if (reparentOutcome != null) {
-                const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
-                  working.jsxMetadata,
-                  working.allElementProps,
-                  working.elementPathTree,
-                  [child.elementPath],
-                ).flatMap((p) => {
-                  return getAbsoluteReparentPropertyChanges(
-                    p,
-                    parentPath!.intendedParentPath,
-                    working.jsxMetadata,
-                    working.jsxMetadata,
-                    working.projectContents,
-                  )
-                })
-
-                const { commands: reparentCommands, newPath } = reparentOutcome
-                allCommands = [...offsetCommands, ...reparentCommands]
-              }
-
-              if (reparentOutcome != null) {
-                const reparentResult = foldAndApplyCommandsSimple(working, allCommands)
+                const reparentResult = foldAndApplyCommandsSimple(working, reparentOutcome.commands)
                 const newPath = reparentOutcome.newPath
                 newSelection.push(newPath)
                 if (isGroupChild) {
