@@ -40,6 +40,7 @@ import {
   treatElementAsFragmentLike,
 } from './fragment-like-helpers'
 import { ifAllowedToReparent, isAllowedToReparent } from './reparent-helpers/reparent-helpers'
+import type { ForcePins } from './reparent-helpers/reparent-property-changes'
 import { getAbsoluteReparentPropertyChanges } from './reparent-helpers/reparent-property-changes'
 import type { ReparentTarget } from './reparent-helpers/reparent-strategy-helpers'
 import { getReparentOutcome, pathToReparent } from './reparent-utils'
@@ -153,6 +154,7 @@ export function baseAbsoluteReparentStrategy(
                     projectContents,
                     nodeModules,
                     openFile,
+                    'force-pins',
                   ),
                 selectedElements,
               )
@@ -226,6 +228,7 @@ export function createReparentAndOffsetCommands(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   openFile: string | null | undefined,
+  forcePins: ForcePins,
 ) {
   const reparentResult = getReparentOutcome(
     metadata,
@@ -256,6 +259,7 @@ export function createReparentAndOffsetCommands(
         metadata,
         metadata,
         projectContents,
+        forcePins,
       )
     })
 

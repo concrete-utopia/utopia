@@ -2268,6 +2268,7 @@ export const UPDATE_FNS = {
                 working.projectContents,
                 working.nodeModules.files,
                 working.canvas.openFile?.filename,
+                'do-not-force-pins',
               )
 
               if (reparentOutcome != null) {

@@ -5916,16 +5916,11 @@ export var storyboard = (
                 backgroundColor: 'orange',
                 width: 30,
                 height: 30,
-                top: 140,
               }}
               data-uid='qux'
             />
             <div
-              style={{
-                backgroundColor: 'orange',
-                height: 60,
-                top: 170,
-              }}
+              style={{ backgroundColor: 'orange', height: 60 }}
               data-uid='waldo'
             />
             <div data-uid='nested'>
@@ -6494,9 +6489,9 @@ export var storyboard = (
                   backgroundColor: 'orange',
                   width: 50,
                   height: 50,
+                  position: 'absolute',
                   left: 20,
                   top: 50,
-                  position: 'absolute',
                 }}
                 data-uid='foo'
               />
@@ -6505,9 +6500,9 @@ export var storyboard = (
                   backgroundColor: 'orange',
                   width: 30,
                   height: 30,
+                  position: 'absolute',
                   left: 20,
                   top: 102,
-                  position: 'absolute',
                 }}
                 data-uid='bar'
               />
@@ -6515,10 +6510,10 @@ export var storyboard = (
                 style={{
                   backgroundColor: 'orange',
                   height: 60,
+                  position: 'absolute',
                   left: 20,
                   top: 134,
                   width: 100,
-                  position: 'absolute',
                 }}
                 data-uid='baz'
               />
