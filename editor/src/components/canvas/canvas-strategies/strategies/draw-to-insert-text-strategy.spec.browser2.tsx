@@ -11,6 +11,7 @@ import {
   getPrintedUiJsCode,
   renderTestEditorWithCode,
 } from '../../../canvas/ui-jsx.test-utils'
+import { CanvasContainerID } from '../../canvas-types'
 
 describe('draw-to-insert text', () => {
   describe('draw', () => {
@@ -288,9 +289,13 @@ describe('draw-to-insert text', () => {
       await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
+      const storyboardElement = editor.renderedDOM
+        .getByTestId(CanvasContainerID)
+        .getBoundingClientRect()
+
       const insideDiv = {
-        x: 500,
-        y: 500,
+        x: storyboardElement.x + 120,
+        y: storyboardElement.y + 400,
       }
 
       await mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
@@ -314,13 +319,13 @@ describe('draw-to-insert text', () => {
             import { Storyboard } from 'utopia-api'
 
             export var storyboard = (
-              <Storyboard data-uid='sb'>
+              <Storyboard data-uid='sb' data-testid='sb'>
                 <span
                   style={{
                     position: 'absolute',
                     wordBreak: 'break-word',
-                    left: 120,
-                    top: 399,
+                    left: 121,
+                    top: 401,
                     width: 50,
                     height: 50,
                   }}
