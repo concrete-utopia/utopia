@@ -299,7 +299,7 @@ export const defaultImageAttributes: JSXAttributes = [
     height: '64px',
     position: 'absolute',
   }),
-  simpleAttribute('src', `/editor/icons/favicons/favicon-128.png?hash=${URL_HASH}`),
+  simpleAttribute('src', `/editor/utopia-logo-white-fill.png?hash=${URL_HASH}`),
 ]
 
 const basicHTMLElementsDescriptors = {

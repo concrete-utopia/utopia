@@ -17,7 +17,7 @@ import {
   isInfinityRectangle,
   nullIfInfinity,
   pointDifference,
-  roundPointToNearestHalf,
+  roundPointToNearestWhole,
 } from '../../../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
@@ -101,10 +101,10 @@ export function getAbsoluteReparentPropertyChanges(
     return []
   }
 
-  const offsetTL = roundPointToNearestHalf(
+  const offsetTL = roundPointToNearestWhole(
     pointDifference(newParentContentBox, currentParentContentBox),
   )
-  const offsetBR = roundPointToNearestHalf(
+  const offsetBR = roundPointToNearestWhole(
     pointDifference(
       canvasPoint({
         x: currentParentContentBox.x + currentParentContentBox.width,

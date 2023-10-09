@@ -98,6 +98,7 @@ export const TestMenu = React.memo(() => {
         fontSize: 8,
         fontWeight: 600,
         gap: 8,
+        pointerEvents: 'initial',
       }}
     >
       <span style={{ fontWeight: 800 }}>DEVELOPMENT</span>

@@ -228,7 +228,7 @@ const darkTheme: typeof light = {
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
-  gapControls: darkBase.brandNeonGreen,
+  gapControlsBg: darkBase.brandNeonGreen,
 }
 
 export const dark = enforceUtopiColorTheme(darkTheme)

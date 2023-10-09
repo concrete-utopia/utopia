@@ -6,7 +6,7 @@ import {
   magnitude,
   offsetPoint,
   pointDifference,
-  roundPointTo,
+  roundPointToNearestWhole,
   zeroCanvasPoint,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -244,9 +244,8 @@ export function updateInteractionViaDragDelta(
   movement: CanvasVector,
 ): InteractionSessionWithoutMetadata {
   if (currentState.interactionData.type === 'DRAG') {
-    const accumulatedMovement = roundPointTo(
+    const accumulatedMovement = roundPointToNearestWhole(
       offsetPoint(currentState.interactionData._accumulatedMovement, movement),
-      0,
     )
     const dragThresholdPassed = dragExceededThreshold(accumulatedMovement)
     return {

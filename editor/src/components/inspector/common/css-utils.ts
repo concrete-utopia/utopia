@@ -608,6 +608,20 @@ export function isFixedSize(value: CSSNumber): boolean {
   }
 }
 
+export function isCssNumberAndFixedSize(value: unknown): boolean {
+  if (!isCSSNumber(value)) {
+    return false
+  }
+  return isFixedSize(value)
+}
+
+export function isCssNumberAndPercentage(value: unknown): boolean {
+  if (!isCSSNumber(value)) {
+    return false
+  }
+  return value.unit === '%'
+}
+
 function parseCSSNumberUnit(
   input: string,
   units: Array<CSSNumberUnit>,
@@ -5170,22 +5184,10 @@ export const trivialDefaultValues: ParsedPropertiesWithNonTrivial = {
   },
   alignSelf: FlexAlignment.Auto,
   position: 'relative',
-  left: {
-    value: 0,
-    unit: 'px',
-  },
-  top: {
-    value: 0,
-    unit: 'px',
-  },
-  right: {
-    value: 0,
-    unit: 'px',
-  },
-  bottom: {
-    value: 0,
-    unit: 'px',
-  },
+  left: nontrivial, // nontrivial means we will never treat these props as "do not show if it equals default value"
+  top: nontrivial,
+  right: nontrivial,
+  bottom: nontrivial,
   minWidth: {
     value: 0,
     unit: 'px',

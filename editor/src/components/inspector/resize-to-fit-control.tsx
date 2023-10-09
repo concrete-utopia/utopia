@@ -201,3 +201,4 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
     </FlexRow>
   )
 })
+ResizeToFitControl.displayName = 'ResizeToFitControl'

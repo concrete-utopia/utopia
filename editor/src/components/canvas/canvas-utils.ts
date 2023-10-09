@@ -222,7 +222,7 @@ function referenceParentValueForProp(prop: LayoutPinnedProp, parentSize: Size): 
   }
 }
 
-function valueToUseForPin(
+export function valueToUseForPin(
   prop: LayoutPinnedProp,
   absoluteValue: number,
   pinIsPercentPin: boolean,
