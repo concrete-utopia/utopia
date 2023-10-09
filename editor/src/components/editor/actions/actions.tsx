@@ -398,7 +398,11 @@ import { mapDropNulls, uniqBy } from '../../../core/shared/array-utils'
 import type { TreeConflicts } from '../../../core/shared/github/helpers'
 import { mergeProjectContents } from '../../../core/shared/github/helpers'
 import { emptySet } from '../../../core/shared/set-utils'
-import { getUtopiaID } from '../../../core/shared/uid-utils'
+import {
+  fixUtopiaElement,
+  generateConsistentUID,
+  getUtopiaID,
+} from '../../../core/shared/uid-utils'
 import {
   DefaultPostCSSConfig,
   DefaultTailwindConfig,
@@ -520,6 +524,7 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4710,7 +4715,10 @@ export const UPDATE_FNS = {
         newSelectedViews.push(newPath)
       }
 
-      const newUID = generateUidWithExistingComponents(editor.projectContents)
+      const existingUids = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
+
+      const newUID = generateConsistentUID('zzz', existingUids)
+
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
       const withNewElement = modifyUnderlyingTargetElement(
@@ -4753,7 +4761,10 @@ export const UPDATE_FNS = {
             let insertedElementChildren: JSXElementChildren = []
 
             insertedElementChildren.push(...action.toInsert.element.children)
-            const element = jsxElement(insertedElementName, newUID, props, insertedElementChildren)
+            const element = fixUtopiaElement(
+              jsxElement(insertedElementName, newUID, props, insertedElementChildren),
+              existingUids,
+            ).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
@@ -4765,14 +4776,17 @@ export const UPDATE_FNS = {
 
             addNewSelectedView(newUID)
           } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
-            const element = jsxConditionalExpression(
-              newUID,
-              action.toInsert.element.condition,
-              action.toInsert.element.originalConditionString,
-              action.toInsert.element.whenTrue,
-              action.toInsert.element.whenFalse,
-              action.toInsert.element.comments,
-            )
+            const element = fixUtopiaElement(
+              jsxConditionalExpression(
+                newUID,
+                action.toInsert.element.condition,
+                action.toInsert.element.originalConditionString,
+                action.toInsert.element.whenTrue,
+                action.toInsert.element.whenFalse,
+                action.toInsert.element.comments,
+              ),
+              existingUids,
+            ).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
