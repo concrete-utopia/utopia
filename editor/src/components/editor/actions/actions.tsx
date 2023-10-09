@@ -480,7 +480,10 @@ import {
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
   isTextContainingConditional,
@@ -518,6 +521,8 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
+import { pasteToReplaceCommands } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
+import { getAbsoluteReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -2264,17 +2269,39 @@ export const UPDATE_FNS = {
                 indexPosition,
               )
 
+              let allCommands: Array<CanvasCommand> = []
               if (reparentOutcome != null) {
-                const reparentResult = foldAndApplyCommandsSimple(working, reparentOutcome.commands)
-                newSelection.push(reparentOutcome.newPath)
+                const offsetCommands = replaceFragmentLikePathsWithTheirChildrenRecursive(
+                  working.jsxMetadata,
+                  working.allElementProps,
+                  working.elementPathTree,
+                  [child.elementPath],
+                ).flatMap((p) => {
+                  return getAbsoluteReparentPropertyChanges(
+                    p,
+                    parentPath!.intendedParentPath,
+                    working.jsxMetadata,
+                    working.jsxMetadata,
+                    working.projectContents,
+                  )
+                })
+
+                const { commands: reparentCommands, newPath } = reparentOutcome
+                allCommands = [...offsetCommands, ...reparentCommands]
+              }
+
+              if (reparentOutcome != null) {
+                const reparentResult = foldAndApplyCommandsSimple(working, allCommands)
+                const newPath = reparentOutcome.newPath
+                newSelection.push(newPath)
                 if (isGroupChild) {
-                  groupTrueUps.push(reparentOutcome.newPath)
+                  groupTrueUps.push(newPath)
                   return foldAndApplyCommandsSimple(
                     reparentResult,
                     createPinChangeCommandsForElementBecomingGroupChild(
                       workingEditor.jsxMetadata,
                       child,
-                      reparentOutcome.newPath,
+                      newPath,
                       parentFrame,
                       localRectangle(parentFrame),
                     ),
