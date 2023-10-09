@@ -32,7 +32,6 @@ import {
   defaultRectangleElement,
   defaultSpanElement,
   defaultUnstyledDivElement,
-  defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'

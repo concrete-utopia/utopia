@@ -38,7 +38,7 @@ import type {
   ComponentInfo,
 } from '../custom-code/code-file'
 import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
-import { defaultViewElementStyle } from '../editor/defaults'
+import { defaultElementStyle } from '../editor/defaults'
 import { getExportedComponentImports } from '../editor/export-utils'
 import {
   groupJSXElement,
@@ -307,7 +307,7 @@ const basicHTMLElementsDescriptors = {
     'div',
     {},
     jsxAttributesFromMap({
-      style: defaultViewElementStyle(),
+      style: defaultElementStyle(),
     }),
   ),
   span: makeHTMLDescriptor('span', {}),
