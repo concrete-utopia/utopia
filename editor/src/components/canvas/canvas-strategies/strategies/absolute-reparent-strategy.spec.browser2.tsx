@@ -1042,7 +1042,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
-          renderResult.getEditorState().editor.canvas.scale,
+          renderResult,
           draggedElementBounds,
         )
         expect(draggedElementCanvasBounds.x).toEqual(625)
@@ -1163,7 +1163,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
         const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
-          renderResult.getEditorState().editor.canvas.scale,
+          renderResult,
           draggedElementBounds,
         )
         expect(draggedElementCanvasBounds.x).toEqual(625)

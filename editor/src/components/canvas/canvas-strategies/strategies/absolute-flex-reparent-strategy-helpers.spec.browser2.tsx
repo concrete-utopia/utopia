@@ -2227,10 +2227,7 @@ async function checkReparentIndicator(
 ): Promise<void> {
   const element = await renderResult.renderedDOM.findByTestId('flex-reparent-indicator-0')
   const bounds = element.getBoundingClientRect()
-  const canvasBounds = boundingClientRectToCanvasRectangle(
-    renderResult.getEditorState().editor.canvas.scale,
-    bounds,
-  )
+  const canvasBounds = boundingClientRectToCanvasRectangle(renderResult, bounds)
   expect(
     canvasBounds.x + (horizontal === 'horizontal' ? FlexReparentIndicatorSize / 2 : 0),
   ).toEqual(expectedLeft)

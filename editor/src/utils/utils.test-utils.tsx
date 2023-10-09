@@ -556,8 +556,12 @@ export const expectElementWithTestIdNotToBeRendered = (
   testId: string,
 ): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)
 
-export function boundingClientRectToCanvasRectangle(canvasScale: number, elementBounds: DOMRect) {
-  const canvasRootContainer = document.getElementById(CanvasContainerID)!
+export function boundingClientRectToCanvasRectangle(
+  result: EditorRenderResult,
+  elementBounds: DOMRect,
+) {
+  const canvasRootContainer = result.renderedDOM.getByTestId(CanvasContainerID)
+  const canvasScale = result.getEditorState().editor.canvas.scale
   const canvasRootRectangle = getCanvasRectangleFromElement(
     canvasRootContainer,
     canvasScale,

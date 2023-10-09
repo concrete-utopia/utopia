@@ -277,10 +277,9 @@ describe('Insertion Plus Button', () => {
     expectedTop: number,
   ): Promise<void> {
     const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
-    const canvasScale = renderResult.getEditorState().editor.canvas.scale
     const bounds = element.getBoundingClientRect()
 
-    const canvasBounds = boundingClientRectToCanvasRectangle(canvasScale, bounds)
+    const canvasBounds = boundingClientRectToCanvasRectangle(renderResult, bounds)
 
     expect(canvasBounds.x + BlueDotSize / 2).toEqual(expectedLeft)
     expect(canvasBounds.y + BlueDotSize / 2).toEqual(expectedTop)
