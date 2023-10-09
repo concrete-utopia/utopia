@@ -13,7 +13,7 @@ import { CanvasContainerID } from '../canvas-types'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { BlueDotSize, InsertionButtonOffset } from './insertion-plus-button'
-import { elementRectangleToCanvasRectangle } from '../../../utils/utils.test-utils'
+import { boundingClientRectToCanvasRectangle } from '../../../utils/utils.test-utils'
 
 function getProjectCode(flexDirection: string): string {
   return `
@@ -280,7 +280,7 @@ describe('Insertion Plus Button', () => {
     const canvasScale = renderResult.getEditorState().editor.canvas.scale
     const bounds = element.getBoundingClientRect()
 
-    const canvasBounds = elementRectangleToCanvasRectangle(canvasScale, bounds)
+    const canvasBounds = boundingClientRectToCanvasRectangle(canvasScale, bounds)
 
     expect(canvasBounds.x + BlueDotSize / 2).toEqual(expectedLeft)
     expect(canvasBounds.y + BlueDotSize / 2).toEqual(expectedTop)

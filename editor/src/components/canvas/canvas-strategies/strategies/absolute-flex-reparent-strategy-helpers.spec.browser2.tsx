@@ -26,7 +26,7 @@ import {
   TestScenePath,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
-import { elementRectangleToCanvasRectangle } from '../../../../utils/utils.test-utils'
+import { boundingClientRectToCanvasRectangle } from '../../../../utils/utils.test-utils'
 import { FlexReparentIndicatorSize } from '../../controls/select-mode/flex-reparent-target-indicator'
 
 async function dragElement(
@@ -2227,7 +2227,7 @@ async function checkReparentIndicator(
 ): Promise<void> {
   const element = await renderResult.renderedDOM.findByTestId('flex-reparent-indicator-0')
   const bounds = element.getBoundingClientRect()
-  const canvasBounds = elementRectangleToCanvasRectangle(
+  const canvasBounds = boundingClientRectToCanvasRectangle(
     renderResult.getEditorState().editor.canvas.scale,
     bounds,
   )
