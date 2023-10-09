@@ -319,8 +319,8 @@ describe('draw-to-insert text', () => {
                   style={{
                     position: 'absolute',
                     wordBreak: 'break-word',
-                    left: 112,
-                    top: 391,
+                    left: 120,
+                    top: 399,
                     width: 50,
                     height: 50,
                   }}
