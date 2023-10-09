@@ -5,6 +5,7 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { ErrorOverlayComponent } from './canvas-error-overlay'
 import { SafeModeErrorOverlay } from './canvas-wrapper-component'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
+import { TestMenu } from '../titlebar/test-menu'
 
 export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSProperties }) => {
   const safeMode = useEditorState(
@@ -37,6 +38,7 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
       >
         <CanvasToolbar />
         <CanvasStrategyPicker />
+        <TestMenu />
       </FlexRow>
       {/* The error overlays are deliberately the last here so they hide other canvas UI */}
       {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}

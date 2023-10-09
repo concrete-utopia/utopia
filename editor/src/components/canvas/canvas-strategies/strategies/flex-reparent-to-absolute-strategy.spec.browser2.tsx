@@ -230,7 +230,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
             height: 100,
             backgroundColor: 'teal',
             position: 'absolute',
-            left: -0.5,
+            left: 0,
             top: 0,
           }}
           data-uid='flexchild1'
@@ -535,7 +535,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
                       height: 100,
                       backgroundColor: 'teal',
                       position: 'absolute',
-                      left: -0.5,
+                      left: 0,
                       top: 0,
                     }}
                     data-uid='flexchild1'
@@ -720,7 +720,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
                   height: 100,
                   backgroundColor: 'teal',
                   position: 'absolute',
-                  left: -0.5,
+                  left: 0,
                   top: 0,
                 }}
                 data-uid='flexchild1'
@@ -906,7 +906,7 @@ describe('Flex Reparent To Absolute Strategy', () => {
                       height: 100,
                       backgroundColor: 'teal',
                       position: 'absolute',
-                      left: -0.5,
+                      left: 0,
                       top: 0,
                     }}
                     data-uid='flexchild1'

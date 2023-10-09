@@ -73,6 +73,8 @@ import type {
 } from '../core/shared/math-utils'
 import {
   canvasPoint,
+  roundPointToNearestHalf,
+  roundPointToNearestWhole,
   windowRectangle,
   zeroCanvasPoint,
   zeroCanvasRect,
@@ -150,10 +152,6 @@ function getDefaultCursorForMode(mode: Mode): CSSCursor {
       const _exhaustiveCheck: never = mode
       throw `Unable to get default cursor for unsupported mode ${(mode as any).type}`
   }
-}
-
-function roundPointForScale<C extends CoordinateMarker>(point: Point<C>, scale: number): Point<C> {
-  return scale <= 1 ? Utils.roundPointTo(point, 0) : Utils.roundPointToNearestHalf(point)
 }
 
 function handleCanvasEvent(
@@ -353,7 +351,7 @@ export function runLocalCanvasAction(
         canvas: {
           ...model.canvas,
           realCanvasOffset: newCanvasOffset,
-          roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
+          roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
         },
       }
     }
@@ -363,7 +361,7 @@ export function runLocalCanvasAction(
         canvas: {
           ...model.canvas,
           realCanvasOffset: action.position,
-          roundedCanvasOffset: Utils.roundPointTo(action.position, 0),
+          roundedCanvasOffset: roundPointToNearestWhole(action.position),
         },
       }
     case 'SET_SELECTION_CONTROLS_VISIBILITY':
@@ -399,7 +397,7 @@ export function runLocalCanvasAction(
           scale: scale,
           snappingThreshold: BaseSnappingThreshold / scale,
           realCanvasOffset: newCanvasOffset,
-          roundedCanvasOffset: Utils.roundPointTo(newCanvasOffset, 0),
+          roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
         },
       }
     }
@@ -756,7 +754,7 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
     return {
       windowPosition: { x: x, y: y } as WindowPoint,
       canvasPositionRaw: canvasPositionRaw as CanvasPoint,
-      canvasPositionRounded: Utils.roundPointToNearestHalf(canvasPositionRaw) as CanvasPoint,
+      canvasPositionRounded: roundPointToNearestHalf(canvasPositionRaw),
     }
   }
 
@@ -1179,9 +1177,8 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
           this.props.editor.canvas.interactionSession.interactionData.type === 'DRAG'
         ) {
           const dragStart = this.props.editor.canvas.interactionSession.interactionData.dragStart
-          const newDrag = roundPointForScale(
+          const newDrag = roundPointToNearestWhole(
             Utils.offsetPoint(canvasPositions.canvasPositionRounded, Utils.negate(dragStart)),
-            this.props.model.scale,
           )
 
           if (document.pointerLockElement != null) {

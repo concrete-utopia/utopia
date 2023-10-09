@@ -881,25 +881,21 @@ export function lineIntersection<C extends CoordinateMarker>(
   } as Point<C>
 }
 
-export function roundPointTo<C extends CoordinateMarker>(p: Point<C>, precision: number): Point<C> {
-  return {
-    x: roundTo(p.x, precision),
-    y: roundTo(p.y, precision),
-  } as Point<C>
-}
-
 export function roundTo(number: number, digits: number = 0): number {
   const multiplicator = Math.pow(10, digits)
   const n = parseFloat((number * multiplicator).toFixed(11))
   return Math.round(n) / multiplicator
 }
 
-export function roundUpToNearestHalf(numberToRound: number): number {
-  return Math.ceil(numberToRound * 2) / 2
-}
-
 export function roundToNearestHalf(n: number): number {
   return Math.round(n * 2) / 2
+}
+
+export function roundPointToNearestWhole<C extends CoordinateMarker>(p: Point<C>): Point<C> {
+  return {
+    x: roundToNearestWhole(p.x),
+    y: roundToNearestWhole(p.y),
+  } as Point<C>
 }
 
 export function roundPointToNearestHalf<C extends CoordinateMarker>(p: Point<C>): Point<C> {
@@ -977,6 +973,30 @@ export function rectanglesEqual<C extends CoordinateMarker>(
     )
   }
   return isInfinityRectangle(first) && isInfinityRectangle(second)
+}
+
+export function roundedRectanglesEqual<C extends CoordinateMarker>(
+  first: Rectangle<C>,
+  second: Rectangle<C>,
+): boolean {
+  return rectanglesEqual(roundRectangleToNearestWhole(first), roundRectangleToNearestWhole(second))
+}
+
+export function getRoundedRectPointsAlongAxes<C extends CoordinateMarker>(
+  rectangle: Rectangle<C>,
+): { horizontalPoints: Array<number>; verticalPoints: Array<number> } {
+  return {
+    horizontalPoints: [
+      roundToNearestWhole(rectangle.x),
+      roundToNearestWhole(rectangle.x + rectangle.width / 2),
+      roundToNearestWhole(rectangle.x + rectangle.width),
+    ],
+    verticalPoints: [
+      roundToNearestWhole(rectangle.y),
+      roundToNearestWhole(rectangle.y + rectangle.height / 2),
+      roundToNearestWhole(rectangle.y + rectangle.height),
+    ],
+  }
 }
 
 export function proportion(from: number, to: number): number {

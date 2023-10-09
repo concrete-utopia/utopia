@@ -227,7 +227,7 @@ const lightTheme = {
   codeEditorGrid: createUtopiColor('#6d705b'),
 
   // Gap controls
-  gapControls: createUtopiColor('#FFA500'),
+  gapControlsBg: createUtopiColor('#FFA500'),
 }
 
 // all values in light must be of the type UtopiColor! This will break if you made a mistake.

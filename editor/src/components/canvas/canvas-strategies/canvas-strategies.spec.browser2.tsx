@@ -62,8 +62,8 @@ async function getGuidelineRenderResult(scale: number) {
           data-testid='first-div'
           style={{
             position: 'absolute',
-            left: 50.5,
-            top: 146.5,
+            left: 50,
+            top: 146,
             width: 50,
             height: 50,
             backgroundColor: 'red',
@@ -74,8 +74,8 @@ async function getGuidelineRenderResult(scale: number) {
           data-testid='second-div'
           style={{
             position: 'absolute',
-            left: 110.5,
-            top: 206.5,
+            left: 110,
+            top: 206,
             width: 7,
             height: 9,
             backgroundColor: 'blue',
@@ -428,14 +428,14 @@ describe('Snapping guidelines for absolutely moved element', () => {
     const renderResult = await getGuidelineRenderResult(1)
 
     expect(await getGuidelineDimensions(renderResult, 'guideline-0')).toEqual({
-      left: '110px',
-      top: '156px',
+      left: '109.5px',
+      top: '155.5px',
       width: '0px',
       height: '59px',
     })
     expect(await getGuidelineDimensions(renderResult, 'guideline-1')).toEqual({
-      left: '60px',
-      top: '206px',
+      left: '59.5px',
+      top: '205.5px',
       width: '57px',
       height: '0px',
     })
@@ -456,9 +456,9 @@ describe('Snapping guidelines for absolutely moved element', () => {
       {
         guideline: {
           type: 'XAxisGuideline',
-          x: 110.5,
-          yBottom: 215.5,
-          yTop: 156.5,
+          x: 110,
+          yBottom: 215,
+          yTop: 156,
         },
         snappingVector: {
           x: 0,
@@ -466,21 +466,21 @@ describe('Snapping guidelines for absolutely moved element', () => {
         },
         pointsOfRelevance: [
           {
-            x: 110.5,
-            y: 206.5,
+            x: 110,
+            y: 206,
           },
           {
-            x: 110.5,
-            y: 215.5,
+            x: 110,
+            y: 215,
           },
         ],
       },
       {
         guideline: {
           type: 'YAxisGuideline',
-          xLeft: 60.5,
-          xRight: 117.5,
-          y: 206.5,
+          xLeft: 60,
+          xRight: 117,
+          y: 206,
         },
         snappingVector: {
           x: 0,
@@ -488,12 +488,12 @@ describe('Snapping guidelines for absolutely moved element', () => {
         },
         pointsOfRelevance: [
           {
-            x: 110.5,
-            y: 206.5,
+            x: 110,
+            y: 206,
           },
           {
-            x: 117.5,
-            y: 206.5,
+            x: 117,
+            y: 206,
           },
         ],
       },
@@ -504,14 +504,14 @@ describe('Snapping guidelines for absolutely moved element', () => {
     const renderResult = await getGuidelineRenderResult(4)
 
     expect(await getGuidelineDimensions(renderResult, 'guideline-0')).toEqual({
-      left: '110.375px',
-      top: '156.375px',
+      left: '109.875px',
+      top: '155.875px',
       width: '0px',
       height: '59px',
     })
     expect(await getGuidelineDimensions(renderResult, 'guideline-1')).toEqual({
-      left: '60.375px',
-      top: '206.375px',
+      left: '59.875px',
+      top: '205.875px',
       width: '57px',
       height: '0px',
     })
@@ -532,9 +532,9 @@ describe('Snapping guidelines for absolutely moved element', () => {
       {
         guideline: {
           type: 'XAxisGuideline',
-          x: 110.5,
-          yBottom: 215.5,
-          yTop: 156.5,
+          x: 110,
+          yBottom: 215,
+          yTop: 156,
         },
         snappingVector: {
           x: 0,
@@ -542,21 +542,21 @@ describe('Snapping guidelines for absolutely moved element', () => {
         },
         pointsOfRelevance: [
           {
-            x: 110.5,
-            y: 206.5,
+            x: 110,
+            y: 206,
           },
           {
-            x: 110.5,
-            y: 215.5,
+            x: 110,
+            y: 215,
           },
         ],
       },
       {
         guideline: {
           type: 'YAxisGuideline',
-          xLeft: 60.5,
-          xRight: 117.5,
-          y: 206.5,
+          xLeft: 60,
+          xRight: 117,
+          y: 206,
         },
         snappingVector: {
           x: 0,
@@ -564,12 +564,12 @@ describe('Snapping guidelines for absolutely moved element', () => {
         },
         pointsOfRelevance: [
           {
-            x: 110.5,
-            y: 206.5,
+            x: 110,
+            y: 206,
           },
           {
-            x: 117.5,
-            y: 206.5,
+            x: 117,
+            y: 206,
           },
         ],
       },

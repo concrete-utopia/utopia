@@ -1,6 +1,7 @@
+import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import { isJSXElement } from '../../../../core/shared/element-template'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import type { CanvasVector } from '../../../../core/shared/math-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
   canvasVector,
@@ -11,6 +12,7 @@ import {
 } from '../../../../core/shared/math-utils'
 import type { KeyCharacter } from '../../../../utils/keyboard'
 import Keyboard from '../../../../utils/keyboard'
+import type { AllElementProps } from '../../../editor/store/editor-state'
 import { withUnderlyingTarget } from '../../../editor/store/editor-state'
 import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { EdgePositionBottom, EdgePositionRight } from '../../canvas-types'
@@ -38,6 +40,10 @@ import {
 } from './shared-keyboard-strategy-helpers'
 import { getMultiselectBounds } from './shared-move-strategies-helpers'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
+import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
+import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -111,6 +117,97 @@ function getFitness(interactionSession: InteractionSession | null): number {
 
 export const ResizeMinimumValue = 1
 
+export interface ChangeBoundsResult {
+  commands: Array<CanvasCommand>
+  intendedBounds: Array<CanvasFrameAndTarget>
+}
+
+export function changeBounds(
+  projectContents: ProjectContentTreeRoot,
+  startingMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  originalFrame: CanvasRectangle,
+  originalIntendedBounds: Array<CanvasFrameAndTarget>,
+  edgePosition: EdgePosition,
+  movement: CanvasVector,
+): ChangeBoundsResult {
+  let commands: Array<CanvasCommand> = []
+  let intendedBounds: Array<CanvasFrameAndTarget> = originalIntendedBounds
+
+  selectedElements.forEach((selectedElement) => {
+    const element = withUnderlyingTarget(selectedElement, projectContents, null, (_, e) => e)
+
+    const elementMetadata = MetadataUtils.findElementByElementPath(
+      startingMetadata,
+      selectedElement,
+    )
+    const elementParentBounds =
+      elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
+    const elementParentFlexDirection =
+      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
+    const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame ?? null)
+
+    if (element != null && isJSXElement(element)) {
+      const elementResult = createResizeCommands(
+        element,
+        selectedElement,
+        edgePosition,
+        movement,
+        elementGlobalFrame,
+        elementParentBounds,
+        elementParentFlexDirection,
+      )
+      commands.push(...elementResult.commands)
+      if (elementResult.intendedBounds != null) {
+        intendedBounds = addOrMergeIntendedBounds(
+          intendedBounds,
+          originalFrame,
+          elementResult.intendedBounds,
+        )
+      }
+    }
+  })
+
+  return {
+    commands: commands,
+    intendedBounds: intendedBounds,
+  }
+}
+
+export function resizeInspectorStrategy(
+  projectContents: ProjectContentTreeRoot,
+  originalFrame: CanvasRectangle,
+  edgePosition: EdgePosition,
+  movement: CanvasVector,
+): InspectorStrategy {
+  return {
+    name: 'Resize by pixels',
+    strategy: (
+      metadata: ElementInstanceMetadataMap,
+      selectedElements: Array<ElementPath>,
+      _elementPathTree: ElementPathTrees,
+      _allElementProps: AllElementProps,
+    ): Array<CanvasCommand> | null => {
+      let commands: Array<CanvasCommand> = []
+      const changeBoundsResult = changeBounds(
+        projectContents,
+        metadata,
+        selectedElements,
+        originalFrame,
+        [],
+        edgePosition,
+        movement,
+      )
+      commands.push(...changeBoundsResult.commands)
+      commands.push(
+        pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'starting-metadata'),
+      )
+      commands.push(setElementsToRerenderCommand(selectedElements))
+      return commands
+    },
+  }
+}
+
 export function keyboardAbsoluteResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
@@ -168,44 +265,18 @@ export function keyboardAbsoluteResizeStrategy(
             null,
             'non-center-based',
           )
-          selectedElements.forEach((selectedElement) => {
-            const element = withUnderlyingTarget(
-              selectedElement,
-              canvasState.projectContents,
-              null,
-              (_, e) => e,
-            )
 
-            const elementMetadata = MetadataUtils.findElementByElementPath(
-              canvasState.startingMetadata,
-              selectedElement,
-            )
-            const elementParentBounds =
-              elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
-            const elementParentFlexDirection =
-              elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
-            const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame ?? null)
-
-            if (element != null && isJSXElement(element)) {
-              const elementResult = createResizeCommands(
-                element,
-                selectedElement,
-                movementWithEdge.edge,
-                movementWithEdge.movement,
-                elementGlobalFrame,
-                elementParentBounds,
-                elementParentFlexDirection,
-              )
-              commands.push(...elementResult.commands)
-              if (elementResult.intendedBounds != null) {
-                intendedBounds = addOrMergeIntendedBounds(
-                  intendedBounds,
-                  originalFrame,
-                  elementResult.intendedBounds,
-                )
-              }
-            }
-          })
+          const changeBoundsResult = changeBounds(
+            canvasState.projectContents,
+            canvasState.startingMetadata,
+            selectedElements,
+            originalFrame,
+            intendedBounds,
+            movementWithEdge.edge,
+            movementWithEdge.movement,
+          )
+          intendedBounds = changeBoundsResult.intendedBounds
+          commands.push(...changeBoundsResult.commands)
         })
         const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
