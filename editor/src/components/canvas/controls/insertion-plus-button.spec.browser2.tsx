@@ -3,11 +3,17 @@ import { act } from '@testing-library/react'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
 import { getCanvasRectangleFromElement } from '../../../core/shared/dom-utils'
 import * as EP from '../../../core/shared/element-path'
-import { canvasRectangle, negate, offsetRect } from '../../../core/shared/math-utils'
+import {
+  canvasRectangle,
+  negate,
+  offsetRect,
+  windowRectangle,
+} from '../../../core/shared/math-utils'
 import { CanvasContainerID } from '../canvas-types'
 import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { BlueDotSize, InsertionButtonOffset } from './insertion-plus-button'
+import { windowRectangleToCanvasRectangle } from '../../../utils/utils.test-utils'
 
 function getProjectCode(flexDirection: string): string {
   return `
@@ -270,17 +276,12 @@ describe('Insertion Plus Button', () => {
     expectedLeft: number,
     expectedTop: number,
   ): Promise<void> {
-    const canvasScale = renderResult.getEditorState().editor.canvas.scale
-    const canvasRootContainer = document.getElementById(CanvasContainerID)!
-    const canvasRootRectangle = getCanvasRectangleFromElement(
-      canvasRootContainer,
-      canvasScale,
-      'without-content',
-    )
-
     const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
+    const canvasScale = renderResult.getEditorState().editor.canvas.scale
     const bounds = element.getBoundingClientRect()
-    const canvasBounds = offsetRect(canvasRectangle(bounds), negate(canvasRootRectangle))
+
+    const canvasBounds = windowRectangleToCanvasRectangle(canvasScale, windowRectangle(bounds))
+
     expect(canvasBounds.x + BlueDotSize / 2).toEqual(expectedLeft)
     expect(canvasBounds.y + BlueDotSize / 2).toEqual(expectedTop)
   }
