@@ -77,7 +77,6 @@ import type { BuiltInDependencies } from '../../../../../core/es-modules/package
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import type { CanvasCommand } from '../../../commands/commands'
 import type { ToReparent } from '../reparent-utils'
-import { getReparentOutcome } from '../reparent-utils'
 import type { StaticReparentTarget } from './reparent-strategy-helpers'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { treatElementAsFragmentLike } from '../fragment-like-helpers'

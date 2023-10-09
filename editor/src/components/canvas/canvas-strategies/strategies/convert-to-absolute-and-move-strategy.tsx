@@ -422,7 +422,6 @@ function collectReparentCommands(
     canvasState.builtInDependencies,
     canvasState.projectContents,
     canvasState.nodeModules,
-    canvasState.openFile,
     pathToReparent(path),
     childInsertionPath(targetParent),
     'always',
