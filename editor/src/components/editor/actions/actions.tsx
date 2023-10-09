@@ -98,6 +98,7 @@ import {
   getRectCenter,
   localRectangle,
   zeroRectIfNullOrInfinity,
+  roundPointToNearestWhole,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -417,7 +418,6 @@ import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-ins
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
-import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
@@ -4524,7 +4524,7 @@ export const UPDATE_FNS = {
             canvas: {
               ...editor.canvas,
               realCanvasOffset: newCanvasOffset,
-              roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+              roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
             },
           },
           dispatch,

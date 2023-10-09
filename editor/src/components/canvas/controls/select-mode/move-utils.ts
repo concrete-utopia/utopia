@@ -3,7 +3,7 @@ import type { ElementInstanceMetadataMap } from '../../../../core/shared/element
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import Utils from '../../../../utils/utils'
 import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
-import { isInfinityRectangle } from '../../../../core/shared/math-utils'
+import { isInfinityRectangle, roundPointToNearestWhole } from '../../../../core/shared/math-utils'
 import type { EditorAction, EditorDispatch } from '../../../editor/action-types'
 import * as EditorActions from '../../../editor/actions/action-creators'
 import { setCanvasFrames } from '../../../editor/actions/action-creators'
@@ -76,7 +76,7 @@ export function dragComponent(
   constrainDragAxis: boolean,
   scale: number,
 ): Array<PinMoveChange | FlexMoveChange> {
-  const roundedDragDelta = Utils.roundPointTo(dragDelta, 0)
+  const roundedDragDelta = roundPointToNearestWhole(dragDelta)
   // TODO: Probably makes more sense to pull this out.
   const viewsToOperateOn = determineElementsToOperateOnForDragging(
     selectedViews,

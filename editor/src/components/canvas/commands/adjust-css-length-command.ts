@@ -15,7 +15,7 @@ import {
   setJSXValuesAtPaths,
   unsetJSXValuesAtPaths,
 } from '../../../core/shared/jsx-attributes'
-import { roundTo } from '../../../core/shared/math-utils'
+import { roundTo, roundToNearestWhole } from '../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState } from '../../editor/store/editor-state'
@@ -307,7 +307,7 @@ function updatePixelValueByPixel(
   }
   const currentValuePx = currentValue.value
   const newValueCssNumber: CSSNumber = {
-    value: currentValuePx + byValue,
+    value: roundToNearestWhole(currentValuePx + byValue),
     unit: currentValue.unit,
   }
   const newValue = printCSSNumber(newValueCssNumber, null)
