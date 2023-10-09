@@ -182,17 +182,9 @@ function elementBeingInserted(insertableComponent: InsertableComponent): Element
 }
 
 export function elementBeingInsertedEquals(
-  first: ElementBeingInserted | null,
-  second: ElementBeingInserted | null,
+  first: ElementBeingInserted,
+  second: ElementBeingInserted,
 ): boolean {
-  if (first == null) {
-    return second == null
-  }
-
-  if (second == null) {
-    return false
-  }
-
   if (first.type === 'component' && second.type === 'component') {
     return (
       importsEquals(first.importsToAdd, second.importsToAdd) &&
@@ -342,13 +334,15 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
     [dispatch],
   )
 
+  const isComponentCurrentlyInserted =
+    currentlyBeingInserted != null &&
+    elementBeingInsertedEquals(currentlyBeingInserted, elementBeingInserted(component))
+
   const isSelected = React.useMemo(() => {
-    const beingInserted = elementBeingInsertedEquals(
-      currentlyBeingInserted,
-      elementBeingInserted(component),
+    return (
+      isComponentCurrentlyInserted || (isActive && isFocused && currentlyBeingInserted !== null)
     )
-    return beingInserted || (isActive && isFocused && currentlyBeingInserted !== null)
-  }, [component, currentlyBeingInserted, isFocused, isActive])
+  }, [isComponentCurrentlyInserted, isActive, isFocused, currentlyBeingInserted])
 
   const [isHovered, setIsHovered] = useState(false)
   const setIsHoveredTrue = React.useCallback(() => {
@@ -371,7 +365,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
             : isSelected
             ? colorTheme.bg1.value
             : colorTheme.fg1.value,
-          background: currentlyBeingInserted !== null ? colorTheme.dynamicBlue.value : undefined,
+          background: isComponentCurrentlyInserted ? colorTheme.dynamicBlue.value : undefined,
           gap: 4,
           border: '1px solid transparent',
         }}
