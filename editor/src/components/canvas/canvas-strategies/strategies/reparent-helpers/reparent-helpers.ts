@@ -69,8 +69,7 @@ import {
   zeroCanvasRect,
   zeroRectangle,
   zeroRectIfNullOrInfinity,
-  roundPointToNearestHalf,
-  roundPointTo,
+  roundPointToNearestWhole,
 } from '../../../../../core/shared/math-utils'
 import type { MetadataSnapshots } from './reparent-property-strategies'
 import type { BuiltInDependencies } from '../../../../../core/es-modules/package-manager/built-in-dependencies-list'
@@ -428,9 +427,9 @@ export function absolutePositionForReparent(
 
   if (EP.isStoryboardPath(targetParent)) {
     if (canvasViewportCenter === 'keep-visible-position') {
-      return roundPointTo(offsetPoint(boundingBox, multiselectOffset), 0)
+      return roundPointToNearestWhole(offsetPoint(boundingBox, multiselectOffset))
     } else {
-      return roundPointTo(
+      return roundPointToNearestWhole(
         offsetPoint(
           canvasPoint({
             x: canvasViewportCenter.x - boundingBox.width / 2,
@@ -438,7 +437,6 @@ export function absolutePositionForReparent(
           }),
           multiselectOffset,
         ),
-        0,
       )
     }
   }
@@ -449,7 +447,7 @@ export function absolutePositionForReparent(
   )
 
   if (targetParentBounds == null || isInfinityRectangle(targetParentBounds)) {
-    return roundPointTo(multiselectOffset, 0) // fallback
+    return roundPointToNearestWhole(multiselectOffset) // fallback
   }
 
   const deltaX = boundingBox.x - targetParentBounds.x
@@ -480,7 +478,7 @@ export function absolutePositionForReparent(
   )
 
   if (!isElementFragmentLike) {
-    return roundPointTo(elementOffset, 0)
+    return roundPointToNearestWhole(elementOffset)
   }
 
   const localFrame = zeroRectIfNullOrInfinity(
@@ -490,7 +488,7 @@ export function absolutePositionForReparent(
 
   // offset the element with the target parent's offset, since the target parent doesn't
   // provide bounds for absolute positioning
-  return roundPointTo(
+  return roundPointToNearestWhole(
     offsetPoint(
       elementOffset,
 
@@ -499,7 +497,6 @@ export function absolutePositionForReparent(
         y: localFrame.y,
       }),
     ),
-    0,
   )
 }
 

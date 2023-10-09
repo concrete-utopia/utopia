@@ -290,7 +290,7 @@ describe('Flex Resize', () => {
           edgePosition(0.5, 1),
           canvasPoint({ x: 20, y: 15 }),
           { width: 100, height: 200 },
-          { width: 107.5, height: 215 },
+          { width: 108, height: 215 },
           shiftModifier,
         )
       })
@@ -299,7 +299,7 @@ describe('Flex Resize', () => {
           edgePosition(0.5, 0),
           canvasPoint({ x: 20, y: 15 }),
           { width: 100, height: 200 },
-          { width: 92.5, height: 185 },
+          { width: 93, height: 185 },
           shiftModifier,
         )
       })

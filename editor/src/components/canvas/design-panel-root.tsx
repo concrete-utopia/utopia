@@ -1,19 +1,15 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 /** @jsxFrag React.Fragment */
-
 import { jsx } from '@emotion/react'
 import type { ResizeDirection } from 're-resizable'
 import { Resizable } from 're-resizable'
 import React from 'react'
 import * as EditorActions from '../editor/actions/action-creators'
-
 import { RightMenuTab } from '../editor/store/editor-state'
-
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { InspectorEntryPoint } from '../inspector/inspector'
 import { CanvasWrapperComponent } from './canvas-wrapper-component'
-
 import { CodeEditorWrapper } from '../code-editor/code-editor-container'
 import {
   SimpleFlexRow,
@@ -22,7 +18,6 @@ import {
   useColorTheme,
   LargerIcons,
 } from '../../uuiui'
-
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
 import { useAtom } from 'jotai'

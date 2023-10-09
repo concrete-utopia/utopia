@@ -15,9 +15,6 @@ import type {
 } from '../core/shared/math-utils'
 import {
   roundTo,
-  roundToNearestHalf,
-  roundPointToNearestHalf,
-  roundPointTo,
   normalizeDegrees,
   degreesToRadians,
   radiansToDegrees,
@@ -729,23 +726,6 @@ const createSimpleClock = function (): Clock {
   }
 }
 
-function getRectPointsAlongAxes<C extends CoordinateMarker>(
-  rectangle: Rectangle<C>,
-): { horizontalPoints: Array<number>; verticalPoints: Array<number> } {
-  return {
-    horizontalPoints: [
-      rectangle.x,
-      rectangle.x + rectangle.width / 2,
-      rectangle.x + rectangle.width,
-    ],
-    verticalPoints: [
-      rectangle.y,
-      rectangle.y + rectangle.height / 2,
-      rectangle.y + rectangle.height,
-    ],
-  }
-}
-
 function stepInArray<T>(
   eq: (first: T, second: T) => boolean,
   step: number,
@@ -959,9 +939,6 @@ export default {
   generateUUID: generateUUID,
   assert: assert,
   roundTo: roundTo,
-  roundToNearestHalf: roundToNearestHalf,
-  roundPointToNearestHalf: roundPointToNearestHalf,
-  roundPointTo: roundPointTo,
   normalizeDegrees: normalizeDegrees,
   degreesToRadians: degreesToRadians,
   radiansToDegrees: radiansToDegrees,
@@ -1061,7 +1038,6 @@ export default {
   keepReferenceIfShallowEqual: keepReferenceIfShallowEqual,
   maybeToArray: maybeToArray,
   arrayToMaybe: arrayToMaybe,
-  getRectPointsAlongAxes: getRectPointsAlongAxes,
   rectangleToPoints: rectangleToPoints,
   flatMapArray: flatMapArray,
   boundingRectangle: boundingRectangle,
