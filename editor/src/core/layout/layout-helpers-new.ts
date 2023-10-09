@@ -32,7 +32,15 @@ export type LayoutTargetableProp =
   | 'flexGrow'
   | 'flexShrink'
 
-export type LayoutPinnedProp = LayoutDimension | 'left' | 'top' | 'right' | 'bottom'
+export type LayoutEdgeProp = 'left' | 'top' | 'right' | 'bottom'
+
+export type LayoutPinnedProp = LayoutDimension | LayoutEdgeProp
+
+export function layoutPinnedPropIsEdgeProp(prop: LayoutPinnedProp): prop is LayoutEdgeProp {
+  return prop === 'left' || prop === 'right' || prop === 'top' || prop === 'bottom'
+}
+
+export type LayoutPinnedPropIncludingCenter = LayoutPinnedProp | 'centerX' | 'centerY'
 
 export const VerticalLayoutPinnedProps: Array<LayoutPinnedProp> = ['top', 'bottom', 'height']
 

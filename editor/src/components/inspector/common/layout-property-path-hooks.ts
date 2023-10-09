@@ -7,7 +7,10 @@ import {
   valueToUseForPin,
   VerticalFramePoints,
 } from 'utopia-api/core'
-import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
+import type {
+  LayoutPinnedProp,
+  LayoutPinnedPropIncludingCenter,
+} from '../../../core/layout/layout-helpers-new'
 import {
   framePointForPinnedProp,
   HorizontalLayoutPinnedProps,
@@ -314,7 +317,7 @@ export type FramePinsInfo = { [key in FramePoint]: FramePinInfo }
 
 export interface UsePinTogglingResult {
   framePins: FramePinsInfo
-  togglePin: (newFrameProp: LayoutPinnedProp) => void
+  togglePin: (newFrameProp: LayoutPinnedPropIncludingCenter) => void
   resetAllPins: () => void
 }
 
@@ -378,7 +381,12 @@ export function usePinToggling(): UsePinTogglingResult {
   const bottom = useInspectorLayoutInfo<LayoutPinnedProp>('bottom')
 
   const togglePin = React.useCallback(
-    (newFrameProp: LayoutPinnedProp) => {
+    (newFramePropIncludingCenter: LayoutPinnedPropIncludingCenter) => {
+      if (newFramePropIncludingCenter == 'centerX' || newFramePropIncludingCenter == 'centerY') {
+        // early return, we ignore centerX centerY
+        return
+      }
+      const newFrameProp: LayoutPinnedProp = newFramePropIncludingCenter
       const frameInfo: ReadonlyArray<ElementFrameInfo> = elementFrames.map((frame, index) => {
         const path = selectedViewsRef.current[index]
         const parentPath = EP.parentPath(path)
