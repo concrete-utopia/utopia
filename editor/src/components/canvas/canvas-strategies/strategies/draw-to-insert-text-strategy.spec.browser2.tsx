@@ -289,13 +289,13 @@ describe('draw-to-insert text', () => {
       await pressKey('t')
       await editor.getDispatchFollowUpActionsFinished()
 
-      const storyboardElement = editor.renderedDOM
+      const canvasRootElement = editor.renderedDOM
         .getByTestId(CanvasContainerID)
         .getBoundingClientRect()
 
       const insideDiv = {
-        x: storyboardElement.x + 120,
-        y: storyboardElement.y + 400,
+        x: canvasRootElement.x + 120,
+        y: canvasRootElement.y + 400,
       }
 
       await mouseDragFromPointToPoint(canvasControlsLayer, insideDiv, {
@@ -319,7 +319,7 @@ describe('draw-to-insert text', () => {
             import { Storyboard } from 'utopia-api'
 
             export var storyboard = (
-              <Storyboard data-uid='sb' data-testid='sb'>
+              <Storyboard data-uid='sb' >
                 <span
                   style={{
                     position: 'absolute',
