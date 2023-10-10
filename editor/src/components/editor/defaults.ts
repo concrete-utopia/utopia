@@ -41,25 +41,13 @@ export function defaultSceneElementStyle(frame: NormalisedFrame | null): JSExpre
   )
 }
 
-export function defaultViewElementStyle(): JSExpression {
+export function defaultElementStyle(): JSExpression {
   return jsExpressionValue(
     {
       backgroundColor: '#aaaaaa33',
       position: 'absolute',
     },
     emptyComments,
-  )
-}
-
-export function defaultViewElement(uid: string): JSXElement {
-  return jsxElement(
-    jsxElementName('View', []),
-    uid,
-    jsxAttributesFromMap({
-      style: defaultViewElementStyle(),
-      'data-uid': jsExpressionValue(uid, emptyComments),
-    }),
-    [],
   )
 }
 
@@ -144,7 +132,7 @@ export function defaultEllipseElement(uid: string): JSXElement {
     jsxElementName('Ellipse', []),
     uid,
     jsxAttributesFromMap({
-      style: defaultViewElementStyle(),
+      style: defaultElementStyle(),
       'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],
@@ -156,7 +144,7 @@ export function defaultDivElement(uid: string): JSXElement {
     jsxElementName('div', []),
     uid,
     jsxAttributesFromMap({
-      style: defaultViewElementStyle(),
+      style: defaultElementStyle(),
       'data-uid': jsExpressionValue(uid, emptyComments),
     }),
     [],

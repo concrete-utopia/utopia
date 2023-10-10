@@ -615,6 +615,13 @@ export function editorMoveMultiSelectedTemplates(
   editor: EditorModel
   newPaths: Array<ElementPath>
 } {
+  if (newParent == null) {
+    return {
+      editor: editor,
+      newPaths: [],
+    }
+  }
+
   let updatedTargets: Array<ElementPath> = [...targets]
   let newPaths: Array<ElementPath> = []
   const updatedEditor = targets.reduce((working, target, i) => {
@@ -627,7 +634,6 @@ export function editorMoveMultiSelectedTemplates(
       builtInDependencies,
       editor.projectContents,
       editor.nodeModules.files,
-      editor.canvas.openFile?.filename,
       pathToReparent(target),
       newParent,
       'on-complete', // TODO make sure this is the right pick here

@@ -347,7 +347,11 @@ describe('canvas toolbar', () => {
     <div
         style={{
             backgroundColor: '#aaaaaa33',
-            position: 'absolute'
+            position: 'absolute',
+            width: 100,
+            height: 100,
+            top: 0,
+            left: 0,
         }}
         data-uid='new-div'
     />
@@ -395,7 +399,7 @@ describe('canvas toolbar', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    <span data-uid='sample-text'>Sample text</span>
+    <span style={{ width: 100, height: 100, top: 0, left: 0, position: 'absolute' }} data-uid='sample-text'>Sample text</span>
   </div>`),
     )
   })
@@ -500,7 +504,15 @@ export var storyboard = (
           height: 303,
         }}
       >
-        <DefaultExportedComponent />
+        <DefaultExportedComponent
+          style={{
+            width: 100,
+            height: 100,
+            top: 0,
+            left: 0,
+            position: 'absolute',
+          }}
+        />
       </div>
     </Scene>
   </Storyboard>
@@ -530,7 +542,6 @@ export var storyboard = (
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional',
       ])
-      // await wait(1000000)
 
       await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
 
@@ -567,9 +578,11 @@ export var storyboard = (
           [].length === 0 ? (
             <img
               style={{
-                width: '64px',
-                height: '64px',
+                width: 100,
+                height: 100,
                 position: 'absolute',
+                top: 0,
+                left: 0,
               }}
               src='/editor/utopia-logo-white-fill.png?hash=nocommit'
               data-uid='newly-added-img'
@@ -615,9 +628,11 @@ export var storyboard = (
         ) : (
           <img
             style={{
-              width: '64px',
-              height: '64px',
+              width: 100,
+              height: 100,
               position: 'absolute',
+              top: 0,
+              left: 0,
             }}
             src='/editor/utopia-logo-white-fill.png?hash=nocommit'
             data-uid='newly-added-img'
@@ -671,8 +686,8 @@ export var storyboard = (
             <React.Fragment>
               <img
                 style={{
-                  width: '64px',
-                  height: '64px',
+                  width: 100,
+                  height: 100,
                   position: 'absolute',
                 }}
                 src='/editor/utopia-logo-white-fill.png?hash=nocommit'
@@ -749,9 +764,11 @@ export var storyboard = (
           >
             <img
               style={{
-                width: '64px',
-                height: '64px',
+                width: 100,
+                height: 100,
                 position: 'absolute',
+                top: 0,
+                left: 0,
               }}
               src='/editor/utopia-logo-white-fill.png?hash=nocommit'
               data-uid='newly-added-img'

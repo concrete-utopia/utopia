@@ -93,42 +93,25 @@ export function getReparentOutcome(
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  openFile: string | null | undefined,
   toReparent: ToReparent,
-  targetParent: InsertionPath | null,
+  targetParent: InsertionPath,
   whenToRun: 'always' | 'on-complete',
   indexPosition: IndexPosition | null,
 ): GetReparentOutcomeResult | null {
-  // Cater for something being reparented to the canvas.
-  let newParent: InsertionPath
-  if (targetParent == null) {
-    const storyboardElementPath = getStoryboardElementPath(projectContents, openFile)
-    if (storyboardElementPath == null) {
-      console.warn(`Unable to find storyboard path.`)
-      return null
-    } else {
-      newParent = childInsertionPath(storyboardElementPath)
-    }
-  } else {
-    newParent = targetParent
-  }
+  const newParentElementPath = getElementPathFromInsertionPath(targetParent)
 
-  const newParentElementPath = getElementPathFromInsertionPath(newParent)
-
-  // Lookup the filename that will be added to.
-  const newTargetFilePath = forceNotNull(
-    `Unable to determine target path for ${
-      newParent == null ? null : EP.toString(newParentElementPath)
-    }`,
-    withUnderlyingTarget(
-      newParentElementPath,
-      projectContents,
-      null,
-      (success, element, underlyingTarget, underlyingFilePath) => {
-        return underlyingFilePath
-      },
-    ),
+  const newTargetFilePath = withUnderlyingTarget(
+    newParentElementPath,
+    projectContents,
+    null,
+    (success, element, underlyingTarget, underlyingFilePath) => {
+      return underlyingFilePath
+    },
   )
+
+  if (newTargetFilePath == null) {
+    return null
+  }
 
   let commands: Array<CanvasCommand> = []
   let newPath: ElementPath
@@ -143,7 +126,7 @@ export function getReparentOutcome(
         builtInDependencies,
       )
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, importsToAdd))
-      commands.push(reparentElement(whenToRun, toReparent.target, newParent, indexPosition))
+      commands.push(reparentElement(whenToRun, toReparent.target, targetParent, indexPosition))
       commands.push(
         ...getRequiredGroupTrueUps(
           projectContents,
@@ -159,7 +142,7 @@ export function getReparentOutcome(
       newPath = EP.appendToPath(newParentElementPath, getUtopiaID(toReparent.element))
       commands.push(addImportsToFile(whenToRun, newTargetFilePath, toReparent.imports))
       commands.push(
-        addElement(whenToRun, newParent, toReparent.element, {
+        addElement(whenToRun, targetParent, toReparent.element, {
           indexPosition: indexPosition ?? undefined,
         }),
       )
