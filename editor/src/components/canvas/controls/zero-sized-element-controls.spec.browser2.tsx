@@ -80,6 +80,33 @@ describe('Zero sized element controls', () => {
       ),
     )
   })
+  it('double click on a div element with a flex parent removes position: absolute and pins', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'flex' }} data-uid='container'>
+            <div style={{ position: 'absolute', top: 20, left: 20 }} data-uid='bbb' data-testid='bbb' />
+          </div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/container/bbb`,
+    )
+    await selectTargetAndDoubleClickOnZeroSizeControl(renderResult, target, 'bbb')
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'flex' }} data-uid='container'>
+            <div style={{ flexBasis: 100, height: 100 }} data-uid='bbb' data-testid='bbb' />
+          </div>
+        </div>`,
+      ),
+    )
+  })
   it('double click slightly outside a div element (where the zero sized border is visually) adds size', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(

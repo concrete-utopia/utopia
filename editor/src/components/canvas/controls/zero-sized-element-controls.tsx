@@ -39,6 +39,7 @@ import CanvasActions from '../canvas-actions'
 import { Modifier } from '../../../utils/modifiers'
 import { useWindowToCanvasCoordinates } from '../dom-lookup-hooks'
 import { boundingArea, createInteractionViaMouse } from '../canvas-strategies/interaction-state'
+import * as PP from '../../../core/shared/property-path'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
 export const ZeroSizedEventsControlTestID = `${ZeroSizedControlTestID}-events`
@@ -355,7 +356,6 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
       )
     } else {
       let propsToSet: Array<{ path: PropertyPath; value: any }> = []
-
       const isFlexParent = element.specialSizeMeasurements.parentLayoutSystem === 'flex'
       if (props.frame.width === 0 || element.specialSizeMeasurements.display === 'inline') {
         if (
@@ -404,7 +404,21 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
           jsExpressionValue(prop.value, emptyComments),
         )
       })
-      dispatch([...setPropActions, CanvasActions.clearInteractionSession(false)], 'everyone')
+
+      const maybeUnsetPositionAbsolute = isFlexParent
+        ? ['top', 'left', 'bottom', 'right', 'position'].map((p) =>
+            EditorActions.unsetProperty(element.elementPath, PP.create('style', p)),
+          )
+        : []
+
+      dispatch(
+        [
+          ...setPropActions,
+          ...maybeUnsetPositionAbsolute,
+          CanvasActions.clearInteractionSession(false),
+        ],
+        'everyone',
+      )
     }
   }, [dispatch, element, props.frame])
 
