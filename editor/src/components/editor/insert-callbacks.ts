@@ -1,5 +1,6 @@
 import React from 'react'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   jsxConditionalExpression,
   jsxElement,
@@ -18,12 +19,7 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import {
-  applyCommandsAction,
-  enableInsertModeForJSXElement,
-  selectComponents,
-  showToast,
-} from './actions/action-creators'
+import { enableInsertModeForJSXElement, showToast } from './actions/action-creators'
 import {
   defaultButtonElement,
   defaultDivElement,
@@ -35,12 +31,14 @@ import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
 import { safeIndex } from '../../core/shared/array-utils'
-import type { ElementPath } from '../../core/shared/project-file-types'
+import type { ElementPath, NodeModules } from '../../core/shared/project-file-types'
+import type { ElementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import {
   elementToReparent,
   getReparentOutcome,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { front } from '../../utils/utils'
+import type { InsertionPath } from './store/insertion-path'
 import { getInsertionPath } from './store/insertion-path'
 import { generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
@@ -58,6 +56,13 @@ import { notice } from '../common/notice'
 import * as PP from '../../core/shared/property-path'
 import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { defaultEither } from '../../core/shared/either'
+import type { InspectorStrategy } from '../inspector/inspector-strategies/inspector-strategy'
+import { executeFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { AllElementProps } from './store/editor-state'
+import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
+import type { ProjectContentTreeRoot } from '../assets'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -168,6 +173,126 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
   )
 }
 
+const insertAsAbsoluteStrategy = (
+  element: ElementToReparent,
+  parentInsertionPath: InsertionPath,
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+): InspectorStrategy => ({
+  name: 'Insert as absolute',
+  strategy: (
+    metadata: ElementInstanceMetadataMap,
+    _: Array<ElementPath>,
+    elementPathTree: ElementPathTrees,
+    allElementProps: AllElementProps,
+  ) => {
+    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
+      metadata,
+      allElementProps,
+      elementPathTree,
+      parentInsertionPath.intendedParentPath,
+      'prefer-absolute',
+    )
+    if (shouldReparentAsAbsoluteOrStatic !== 'REPARENT_AS_ABSOLUTE') {
+      return null
+    }
+
+    const result = getReparentOutcome(
+      metadata,
+      elementPathTree,
+      allElementProps,
+      builtInDependencies,
+      projectContents,
+      nodeModules,
+      element,
+      parentInsertionPath,
+      'always',
+      front(),
+    )
+
+    if (result == null) {
+      return null
+    }
+
+    return [
+      ...result.commands,
+      updateFunctionCommand('always', (state, commandLifecycle) => {
+        return foldAndApplyCommandsInner(
+          state,
+          [],
+          getAbsoluteReparentPropertyChanges(
+            result.newPath,
+            EP.parentPath(result.newPath),
+            metadata,
+            metadata,
+            state.projectContents,
+          ),
+          commandLifecycle,
+        ).statePatches
+      }),
+      updateSelectedViews('always', [result.newPath]),
+    ]
+  },
+})
+
+const insertAsStaticStrategy = (
+  element: ElementToReparent,
+  parentInsertionPath: InsertionPath,
+  builtInDependencies: BuiltInDependencies,
+  projectContents: ProjectContentTreeRoot,
+  nodeModules: NodeModules,
+): InspectorStrategy => ({
+  name: 'Insert as absolute',
+  strategy: (
+    metadata: ElementInstanceMetadataMap,
+    _: Array<ElementPath>,
+    elementPathTree: ElementPathTrees,
+    allElementProps: AllElementProps,
+  ) => {
+    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
+      metadata,
+      allElementProps,
+      elementPathTree,
+      parentInsertionPath.intendedParentPath,
+      'prefer-absolute',
+    )
+    if (shouldReparentAsAbsoluteOrStatic !== 'REPARENT_AS_STATIC') {
+      return null
+    }
+
+    const result = getReparentOutcome(
+      metadata,
+      elementPathTree,
+      allElementProps,
+      builtInDependencies,
+      projectContents,
+      nodeModules,
+      element,
+      parentInsertionPath,
+      'always',
+      front(),
+    )
+
+    if (result == null) {
+      return null
+    }
+
+    return [
+      ...result.commands,
+      updateFunctionCommand('always', (state, commandLifecycle) => {
+        return foldAndApplyCommandsInner(
+          state,
+          [],
+          getStaticReparentPropertyChanges(result.newPath, 'absolute', null, 'do-not-convert'),
+          commandLifecycle,
+        ).statePatches
+      }),
+      updateSelectedViews('always', [result.newPath]),
+    ]
+  },
+})
+
 export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void {
   const dispatch = useDispatch()
   const builtInDependenciesRef = useRefEditorState((store) => store.builtInDependencies)
@@ -220,71 +345,34 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
 
       const elementUid = generateConsistentUID('element', allElementUids)
 
-      const result = getReparentOutcome(
-        jsxMetadataRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        builtInDependenciesRef.current,
-        projectContentsRef.current,
-        nodeModulesRef.current.files,
-        elementToReparent(
-          elementFromInsertMenuItem(elementToInsert.value.element, elementUid),
-          elementToInsert.value.importsToAdd,
-        ),
-        insertionPath,
-        'always',
-        front(),
+      const element = elementToReparent(
+        elementFromInsertMenuItem(elementToInsert.value.element, elementUid),
+        elementToInsert.value.importsToAdd,
       )
 
-      if (result == null) {
-        return null
-      }
-
-      const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
+      executeFirstApplicableStrategy(
+        dispatch,
         jsxMetadataRef.current,
-        allElementPropsRef.current,
+        selectedViewsRef.current,
         elementPathTreeRef.current,
-        targetParent,
-        'prefer-absolute',
+        allElementPropsRef.current,
+        [
+          insertAsAbsoluteStrategy(
+            element,
+            insertionPath,
+            builtInDependenciesRef.current,
+            projectContentsRef.current,
+            nodeModulesRef.current.files,
+          ),
+          insertAsStaticStrategy(
+            element,
+            insertionPath,
+            builtInDependenciesRef.current,
+            projectContentsRef.current,
+            nodeModulesRef.current.files,
+          ),
+        ],
       )
-
-      return dispatch([
-        applyCommandsAction([
-          ...result.commands,
-          updateFunctionCommand('always', (state, commandLifecycle) => {
-            switch (shouldReparentAsAbsoluteOrStatic) {
-              case 'REPARENT_AS_ABSOLUTE':
-                return foldAndApplyCommandsInner(
-                  state,
-                  [],
-                  getAbsoluteReparentPropertyChanges(
-                    result.newPath,
-                    EP.parentPath(result.newPath),
-                    jsxMetadataRef.current,
-                    jsxMetadataRef.current,
-                    state.projectContents,
-                  ),
-                  commandLifecycle,
-                ).statePatches
-              case 'REPARENT_AS_STATIC':
-                return foldAndApplyCommandsInner(
-                  state,
-                  [],
-                  getStaticReparentPropertyChanges(
-                    result.newPath,
-                    'absolute',
-                    null,
-                    'do-not-convert',
-                  ),
-                  commandLifecycle,
-                ).statePatches
-              default:
-                assertNever(shouldReparentAsAbsoluteOrStatic)
-            }
-          }),
-        ]),
-        selectComponents([result.newPath], false),
-      ])
     },
     [
       allElementPropsRef,
