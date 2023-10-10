@@ -23,7 +23,7 @@ import type { ElementPath, PropertyPath } from '../../../../../core/shared/proje
 import * as PP from '../../../../../core/shared/property-path'
 import type { ProjectContentTreeRoot } from '../../../../assets'
 import type { AllElementProps } from '../../../../editor/store/editor-state'
-import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
+import { getJSXElementFromProjectContents } from '../../../../editor/store/editor-state'
 import type { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { cssNumber } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
@@ -78,7 +78,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
-  const element: JSXElement | null = getElementFromProjectContents(target, projectContents)
+  const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
   const originalParentInstance = MetadataUtils.findElementByElementPath(
     targetStartingMetadata,

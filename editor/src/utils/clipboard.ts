@@ -7,10 +7,14 @@ import type {
   EditorState,
   PastePostActionMenuData,
 } from '../components/editor/store/editor-state'
-import { getOpenUIJSFileKey, withUnderlyingTarget } from '../components/editor/store/editor-state'
+import {
+  getElementFromProjectContents,
+  getOpenUIJSFileKey,
+  withUnderlyingTarget,
+} from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
-import { findElementAtPath, MetadataUtils } from '../core/model/element-metadata-utils'
+import { MetadataUtils } from '../core/model/element-metadata-utils'
 import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
 import {
   isJSXConditionalExpression,
@@ -332,29 +336,29 @@ export function createClipboardDataFromSelection(
     const underlyingTarget = normalisePathToUnderlyingTarget(editor.projectContents, target)
     const targetPathSuccess = normalisePathSuccessOrThrowError(underlyingTarget)
     const projectFile = getProjectFileByFilePath(editor.projectContents, targetPathSuccess.filePath)
-    if (
-      projectFile != null &&
-      isTextFile(projectFile) &&
-      isParseSuccess(projectFile.fileContents.parsed)
-    ) {
-      const components = getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed)
-      const elementToPaste = findElementAtPath(target, components)
-      if (elementToPaste == null || targetPathSuccess.normalisedPath == null) {
-        return null
-      } else {
-        const requiredImports = getRequiredImportsForElement(
-          target,
-          editor.projectContents,
-          editor.nodeModules.files,
-          targetPathSuccess.filePath,
-          builtInDependencies,
-        )
 
-        return EditorActions.elementPaste(elementToPaste, requiredImports, target)
-      }
-    } else {
+    if (
+      projectFile == null ||
+      !isTextFile(projectFile) ||
+      !isParseSuccess(projectFile.fileContents.parsed)
+    ) {
       return null
     }
+
+    const elementToPaste = getElementFromProjectContents(target, editor.projectContents)
+    if (elementToPaste == null || targetPathSuccess.normalisedPath == null) {
+      return null
+    }
+
+    const requiredImports = getRequiredImportsForElement(
+      target,
+      editor.projectContents,
+      editor.nodeModules.files,
+      targetPathSuccess.filePath,
+      builtInDependencies,
+    )
+
+    return EditorActions.elementPaste(elementToPaste, requiredImports, target)
   }, filteredSelectedViews)
 
   const copyDataWithPropsPreserved: ElementPasteWithMetadata = {
