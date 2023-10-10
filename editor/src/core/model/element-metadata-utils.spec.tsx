@@ -1048,9 +1048,7 @@ describe('getting the root paths', () => {
       pathTrees,
     )
     const expectedResult: Array<ElementPath> = [
-      testComponentMetadataChild1.elementPath,
-      testComponentMetadataChild2.elementPath,
-      testComponentMetadataChild3.elementPath,
+      testComponentRoot1.elementPath,
       testComponentSceneChildElement.elementPath,
       testStoryboardChildElement.elementPath,
     ]
