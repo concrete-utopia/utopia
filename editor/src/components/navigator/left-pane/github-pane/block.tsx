@@ -6,7 +6,6 @@ import React from 'react'
 import { when } from '../../../../utils/react-conditionals'
 import { colorTheme, FlexColumn, FlexRow, UtopiaTheme } from '../../../../uuiui'
 import { UIGridRow } from '../../../inspector/widgets/ui-grid-row'
-import { Ellipsis } from './github-file-changes-list'
 
 export const IndicatorLight = React.memo((props: { status: BlockStatus }) => (
   <div
@@ -117,7 +116,7 @@ export const Block = React.memo((props: BlockProps) => {
             }}
           >
             <div style={{ fontWeight: 700, color: colorTheme.fg0.value }}>{props.title}</div>
-            <Ellipsis
+            <div
               style={{
                 maxWidth: 120,
                 textAlign: 'right',
@@ -126,7 +125,7 @@ export const Block = React.memo((props: BlockProps) => {
               }}
             >
               {props.subtitle}
-            </Ellipsis>
+            </div>
           </FlexRow>
         </FlexColumn>
       </UIGridRow>
