@@ -7,12 +7,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
 import type { ElementInstanceMetadata } from '../../../core/shared/element-template'
-import { emptyComments, jsExpressionValue } from '../../../core/shared/element-template'
-import {
-  clearHighlightedViews,
-  setHighlightedView,
-  setProp_UNSAFE,
-} from '../../editor/actions/action-creators'
+import { clearHighlightedViews, setHighlightedView } from '../../editor/actions/action-creators'
 import { selectComponents } from '../../editor/actions/meta-actions'
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
 import {
@@ -24,15 +19,13 @@ import {
 } from '../../../core/shared/math-utils'
 import type { EditorDispatch } from '../../editor/action-types'
 import { isZeroSizedElement, ZeroControlSize } from './outline-utils'
-import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
-import { stylePropPathMappingFn } from '../../inspector/common/property-path-hooks'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 import { Substores, useEditorState, useRefEditorState } from '../../editor/store/store-hook'
 import { mapDropNulls } from '../../../core/shared/array-utils'
 import { useMaybeHighlightElement } from './select-mode/select-mode-hooks'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 import { controlForStrategyMemoized } from '../canvas-strategies/canvas-strategy-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { styleStringInArray } from '../../../utils/common-constants'
 import { EditorModes } from '../../editor/editor-modes'
 import * as EditorActions from '../../editor/actions/action-creators'
 import CanvasActions from '../canvas-actions'
@@ -40,6 +33,12 @@ import { Modifier } from '../../../utils/modifiers'
 import { useWindowToCanvasCoordinates } from '../dom-lookup-hooks'
 import { boundingArea, createInteractionViaMouse } from '../canvas-strategies/interaction-state'
 import * as PP from '../../../core/shared/property-path'
+import type { InspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
+import { executeFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
+import { cssNumber } from '../../inspector/common/css-utils'
+import { deleteProperties } from '../commands/delete-properties-command'
+import { setCssLengthProperty, setExplicitCssValue } from '../commands/set-css-length-command'
+import { allPins } from '../canvas-strategies/strategies/resize-helpers'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
 export const ZeroSizedEventsControlTestID = `${ZeroSizedControlTestID}-events`
@@ -151,6 +150,74 @@ interface ZeroSizeSelectControlProps {
   scale: number
   isHighlighted: boolean
 }
+
+const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
+  name: 'convert flex child to non-zero frame',
+  strategy: (metadata, selectedElementPaths, elementPathTree, allElementProps) => {
+    if (
+      element.specialSizeMeasurements.parentLayoutSystem !== 'flex' ||
+      element.specialSizeMeasurements.parentFlexDirection == null
+    ) {
+      return null
+    }
+    const horizontalProp = element.specialSizeMeasurements.parentFlexDirection.startsWith('row')
+      ? 'flexBasis'
+      : 'width'
+    const verticalProp = element.specialSizeMeasurements.parentFlexDirection.startsWith('column')
+      ? 'flexBasis'
+      : 'height'
+    return [
+      deleteProperties('always', element.elementPath, [
+        PP.create('style', 'position'),
+        ...allPins.map((p) => PP.create('style', p)),
+      ]),
+      setCssLengthProperty(
+        'always',
+        element.elementPath,
+        PP.create('style', horizontalProp),
+        setExplicitCssValue(cssNumber(100)),
+        element.specialSizeMeasurements.parentFlexDirection,
+        'create-if-not-existing',
+        'do-not-warn',
+      ),
+      setCssLengthProperty(
+        'always',
+        element.elementPath,
+        PP.create('style', verticalProp),
+        setExplicitCssValue(cssNumber(100)),
+        element.specialSizeMeasurements.parentFlexDirection,
+        'create-if-not-existing',
+        'do-not-warn',
+      ),
+    ]
+  },
+})
+
+const convertToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
+  name: 'convert flex child to non-zero frame',
+  strategy: (metadata, selectedElementPaths, elementPathTree, allElementProps) => {
+    return [
+      setCssLengthProperty(
+        'always',
+        element.elementPath,
+        PP.create('style', 'width'),
+        setExplicitCssValue(cssNumber(100)),
+        element.specialSizeMeasurements.parentFlexDirection,
+        'create-if-not-existing',
+        'do-not-warn',
+      ),
+      setCssLengthProperty(
+        'always',
+        element.elementPath,
+        PP.create('style', 'height'),
+        setExplicitCssValue(cssNumber(100)),
+        element.specialSizeMeasurements.parentFlexDirection,
+        'create-if-not-existing',
+        'do-not-warn',
+      ),
+    ]
+  },
+})
 
 const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => {
   const colorTheme = useColorTheme()
@@ -323,6 +390,9 @@ interface ZeroSizeResizeControlProps {
 
 export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlProps) => {
   const { dispatch, element, maybeClearHighlightsOnHoverEnd } = props
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const elementPathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
 
@@ -354,73 +424,18 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
         ],
         'everyone',
       )
-    } else {
-      let propsToSet: Array<{ path: PropertyPath; value: any }> = []
-      const isFlexParent = element.specialSizeMeasurements.parentLayoutSystem === 'flex'
-      if (props.frame.width === 0 || element.specialSizeMeasurements.display === 'inline') {
-        if (
-          isFlexParent &&
-          (element.specialSizeMeasurements.parentFlexDirection === 'row' ||
-            element.specialSizeMeasurements.parentFlexDirection === 'row-reverse')
-        ) {
-          propsToSet.push({
-            path: stylePropPathMappingFn('flexBasis', styleStringInArray),
-            value: 100,
-          })
-        } else {
-          propsToSet.push({
-            path: stylePropPathMappingFn('width', styleStringInArray),
-            value: 100,
-          })
-        }
-      }
-      if (props.frame.height === 0 || element.specialSizeMeasurements.display === 'inline') {
-        if (
-          isFlexParent &&
-          (element.specialSizeMeasurements.parentFlexDirection === 'column' ||
-            element.specialSizeMeasurements.parentFlexDirection === 'column-reverse')
-        ) {
-          propsToSet.push({
-            path: stylePropPathMappingFn('flexBasis', styleStringInArray),
-            value: 100,
-          })
-        } else {
-          propsToSet.push({
-            path: stylePropPathMappingFn('height', styleStringInArray),
-            value: 100,
-          })
-        }
-      }
-      if (!isFlexParent && element.specialSizeMeasurements.display === 'inline') {
-        propsToSet.push({
-          path: stylePropPathMappingFn('position', styleStringInArray),
-          value: 'absolute',
-        })
-      }
-      const setPropActions = propsToSet.map((prop) => {
-        return setProp_UNSAFE(
-          element.elementPath,
-          prop.path,
-          jsExpressionValue(prop.value, emptyComments),
-        )
-      })
-
-      const maybeUnsetPositionAbsolute = isFlexParent
-        ? ['top', 'left', 'bottom', 'right', 'position'].map((p) =>
-            EditorActions.unsetProperty(element.elementPath, PP.create('style', p)),
-          )
-        : []
-
-      dispatch(
-        [
-          ...setPropActions,
-          ...maybeUnsetPositionAbsolute,
-          CanvasActions.clearInteractionSession(false),
-        ],
-        'everyone',
-      )
+      return
     }
-  }, [dispatch, element, props.frame])
+
+    executeFirstApplicableStrategy(
+      dispatch,
+      metadataRef.current,
+      [],
+      elementPathTreesRef.current,
+      allElementPropsRef.current,
+      [convertFlexChildToSizedStrategy(element), convertToSizedStrategy(element)],
+    )
+  }, [allElementPropsRef, dispatch, element, elementPathTreesRef, metadataRef])
 
   return (
     <CanvasOffsetWrapper>
