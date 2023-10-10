@@ -109,14 +109,24 @@ export const Block = React.memo((props: BlockProps) => {
         >
           <FlexRow
             style={{
-              height: UtopiaTheme.layout.rowHeight.normal,
+              minHeight: UtopiaTheme.layout.rowHeight.normal,
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'baseline',
               justifyContent: 'space-between',
+              padding: '8px 0',
             }}
           >
             <div style={{ fontWeight: 700, color: colorTheme.fg0.value }}>{props.title}</div>
-            <Ellipsis style={{ maxWidth: 120 }}>{props.subtitle}</Ellipsis>
+            <Ellipsis
+              style={{
+                maxWidth: 120,
+                textAlign: 'right',
+                overflowWrap: 'break-word',
+                whiteSpace: 'pre-wrap',
+              }}
+            >
+              {props.subtitle}
+            </Ellipsis>
           </FlexRow>
         </FlexColumn>
       </UIGridRow>

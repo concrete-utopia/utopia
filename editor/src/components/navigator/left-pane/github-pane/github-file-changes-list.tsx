@@ -37,10 +37,10 @@ export const Ellipsis: React.FC<{
   return (
     <div
       style={{
-        ...style,
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
+        ...style,
       }}
       title={title}
     >
