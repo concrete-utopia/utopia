@@ -63,6 +63,8 @@ import type { AllElementProps } from './store/editor-state'
 import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
 import type { ProjectContentTreeRoot } from '../assets'
 import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
+import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -172,126 +174,6 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
     [dispatch, projectContentsRef, elementFactory],
   )
 }
-
-const insertAsAbsoluteStrategy = (
-  element: ElementToReparent,
-  parentInsertionPath: InsertionPath,
-  builtInDependencies: BuiltInDependencies,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-): InspectorStrategy => ({
-  name: 'Insert as absolute',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
-    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
-      metadata,
-      allElementProps,
-      elementPathTree,
-      parentInsertionPath.intendedParentPath,
-      'prefer-absolute',
-    )
-    if (shouldReparentAsAbsoluteOrStatic !== 'REPARENT_AS_ABSOLUTE') {
-      return null
-    }
-
-    const result = getReparentOutcome(
-      metadata,
-      elementPathTree,
-      allElementProps,
-      builtInDependencies,
-      projectContents,
-      nodeModules,
-      element,
-      parentInsertionPath,
-      'always',
-      front(),
-    )
-
-    if (result == null) {
-      return null
-    }
-
-    return [
-      ...result.commands,
-      updateFunctionCommand('always', (state, commandLifecycle) => {
-        return foldAndApplyCommandsInner(
-          state,
-          [],
-          getAbsoluteReparentPropertyChanges(
-            result.newPath,
-            EP.parentPath(result.newPath),
-            metadata,
-            metadata,
-            state.projectContents,
-          ),
-          commandLifecycle,
-        ).statePatches
-      }),
-      updateSelectedViews('always', [result.newPath]),
-    ]
-  },
-})
-
-const insertAsStaticStrategy = (
-  element: ElementToReparent,
-  parentInsertionPath: InsertionPath,
-  builtInDependencies: BuiltInDependencies,
-  projectContents: ProjectContentTreeRoot,
-  nodeModules: NodeModules,
-): InspectorStrategy => ({
-  name: 'Insert as absolute',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
-    const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
-      metadata,
-      allElementProps,
-      elementPathTree,
-      parentInsertionPath.intendedParentPath,
-      'prefer-absolute',
-    )
-    if (shouldReparentAsAbsoluteOrStatic !== 'REPARENT_AS_STATIC') {
-      return null
-    }
-
-    const result = getReparentOutcome(
-      metadata,
-      elementPathTree,
-      allElementProps,
-      builtInDependencies,
-      projectContents,
-      nodeModules,
-      element,
-      parentInsertionPath,
-      'always',
-      front(),
-    )
-
-    if (result == null) {
-      return null
-    }
-
-    return [
-      ...result.commands,
-      updateFunctionCommand('always', (state, commandLifecycle) => {
-        return foldAndApplyCommandsInner(
-          state,
-          [],
-          getStaticReparentPropertyChanges(result.newPath, 'absolute', null, 'do-not-convert'),
-          commandLifecycle,
-        ).statePatches
-      }),
-      updateSelectedViews('always', [result.newPath]),
-    ]
-  },
-})
 
 export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void {
   const dispatch = useDispatch()
