@@ -6669,7 +6669,7 @@ export var storyboard = (
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div style={{backgroundColor: '#aaaaaa33', width: 100, height: 100}} data-uid='${testUID}'>
+          <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
             <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
             <div data-uid='ddd' style={{width: 60, height: 60}} />
           </div>
@@ -6708,9 +6708,9 @@ export var storyboard = (
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10}}>
+          <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10, contain: 'layout'}}>
             <div data-uid='ccc' style={{width: 100, height: 60}} />
-            <div style={{backgroundColor: '#aaaaaa33', width: 100, height: 100}} data-uid='${testUID}'>
+            <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
               <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
               <div data-uid='eee' style={{width: 100, height: 60}} />
             </div>

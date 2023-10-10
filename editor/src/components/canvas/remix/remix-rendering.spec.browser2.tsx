@@ -1732,11 +1732,11 @@ export default function Index() {
         <div
           style={{
             backgroundColor: '#aaaaaa33',
-            width: 100,
-            height: 100,
+            position: 'absolute',
             left: -35,
             top: -35,
-            position: 'absolute',
+            width: 100,
+            height: 100,
           }}
         />
       </div>

@@ -278,6 +278,8 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
                   ),
                   commandLifecycle,
                 ).statePatches
+              default:
+                assertNever(shouldReparentAsAbsoluteOrStatic)
             }
           }),
         ]),
