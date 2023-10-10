@@ -6,6 +6,9 @@ import {
   jsxFragment,
   type JSXElement,
   type JSXElementChild,
+  setJSXAttributesAttribute,
+  jsExpressionValue,
+  emptyComments,
 } from '../../core/shared/element-template'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
 import { Modifier } from '../../utils/modifiers'
@@ -18,6 +21,7 @@ import {
   applyCommandsAction,
   enableInsertModeForJSXElement,
   selectComponents,
+  showToast,
 } from './actions/action-creators'
 import {
   defaultButtonElement,
@@ -49,8 +53,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
 import * as EP from '../../core/shared/element-path'
 import { foldAndApplyCommandsInner } from '../canvas/commands/commands'
-import { setProperty } from '../canvas/commands/set-property-command'
-import * as PP from '../../core/shared/property-path'
+import { notice } from '../common/notice'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -198,7 +201,17 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       )
 
       if (insertionPath == null) {
-        return null
+        dispatch([
+          showToast(
+            notice(
+              'Selected element does not support children',
+              'INFO',
+              false,
+              'to-insert-does-not-support-children',
+            ),
+          ),
+        ])
+        return
       }
 
       const elementUid = generateConsistentUID('element', allElementUids)
@@ -240,15 +253,13 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
                 return foldAndApplyCommandsInner(
                   state,
                   [],
-                  [
-                    ...getAbsoluteReparentPropertyChanges(
-                      result.newPath,
-                      EP.parentPath(result.newPath),
-                      jsxMetadataRef.current,
-                      jsxMetadataRef.current,
-                      projectContentsRef.current,
-                    ),
-                  ],
+                  getAbsoluteReparentPropertyChanges(
+                    result.newPath,
+                    EP.parentPath(result.newPath),
+                    jsxMetadataRef.current,
+                    jsxMetadataRef.current,
+                    state.projectContents,
+                  ),
                   commandLifecycle,
                 ).statePatches
               case 'REPARENT_AS_STATIC':
@@ -288,7 +299,12 @@ function elementFromInsertMenuItem(
 ): JSXElementChild {
   switch (element.type) {
     case 'JSX_ELEMENT':
-      return jsxElement(element.name, uid, element.props, element.children)
+      return jsxElement(
+        element.name,
+        uid,
+        setJSXAttributesAttribute(element.props, 'data-uid', jsExpressionValue(uid, emptyComments)),
+        element.children,
+      )
     case 'JSX_CONDITIONAL_EXPRESSION':
       return jsxConditionalExpression(
         uid,

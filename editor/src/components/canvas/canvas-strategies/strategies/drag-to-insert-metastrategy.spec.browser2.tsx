@@ -183,11 +183,11 @@ describe('drag-to-insert', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
+                width: 100,
+                height: 100,
                 position: 'absolute',
                 left: 140,
                 top: 40,
-                width: 100,
-                height: 100,
               }}
               data-uid='ddd'
             />
@@ -264,11 +264,11 @@ describe('drag-to-insert', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
+                width: 100,
+                height: 100,
                 position: 'absolute',
                 left: -40,
                 top: -40,
-                width: 100,
-                height: 100,
               }}
               data-uid='ddd'
             />
@@ -325,11 +325,11 @@ describe('drag-to-insert', () => {
               <div
                 style={{
                   backgroundColor: '#aaaaaa33',
-                  position: 'absolute',
-                  left: 140,
-                  top: 40,
                   width: 100,
                   height: 100,
+                  left: 140,
+                  top: 40,
+                  position: 'absolute',
                 }}
                 data-uid='ddd'
               />
@@ -410,11 +410,11 @@ describe('drag-to-insert', () => {
               <div
                 style={{
                   backgroundColor: '#aaaaaa33',
-                  position: 'absolute',
-                  left: 140,
-                  top: 40,
                   width: 100,
                   height: 100,
+                  left: 140,
+                  top: 40,
+                  position: 'absolute',
                 }}
                 data-uid='ddd'
               />
@@ -659,11 +659,11 @@ describe('drag-to-insert', () => {
           <div
             style={{
               backgroundColor: '#aaaaaa33',
+              width: 100,
+              height: 100,
               position: 'absolute',
               left: 125,
               top: 125,
-              width: 100,
-              height: 100,
             }}
             data-uid='ddd'
           />
@@ -725,11 +725,11 @@ describe('drag-to-insert', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
+                width: 100,
+                height: 100,
                 position: 'absolute',
                 left: 190,
                 top: 45,
-                width: 100,
-                height: 100,
               }}
               data-uid='ddd'
             />
@@ -848,11 +848,11 @@ describe('drag-to-insert', () => {
             <div
               style={{
                 backgroundColor: '#aaaaaa33',
+                width: 100,
+                height: 100,
                 position: 'absolute',
                 left: 40,
                 top: 40,
-                width: 100,
-                height: 100,
               }}
               data-uid='ddd'
             />

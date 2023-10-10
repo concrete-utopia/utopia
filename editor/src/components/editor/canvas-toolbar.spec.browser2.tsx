@@ -181,11 +181,11 @@ describe('canvas toolbar', () => {
                 <div
                   style={{
                     backgroundColor: '#aaaaaa33',
-                    position: 'absolute',
-                    left: 5,
-                    top: 5,
                     width: 1000,
                     height: 1000,
+                    left: 5,
+                    top: 5,
+                    position: 'absolute',
                   }}
                   data-uid='new-div'
                 />
@@ -347,7 +347,11 @@ describe('canvas toolbar', () => {
     <div
         style={{
             backgroundColor: '#aaaaaa33',
-            position: 'absolute'
+            width: 100,
+            height: 100,
+            top: 0,
+            left: 0,
+            position: 'absolute',
         }}
         data-uid='new-div'
     />
@@ -395,7 +399,7 @@ describe('canvas toolbar', () => {
     data-uid='container'
   >
     <div data-uid='a3d' />
-    <span data-uid='sample-text'>Sample text</span>
+    <span data-uid='sample-text' style={{ top: 0, left: 0, position: 'absolute' }}>Sample text</span>
   </div>`),
     )
   })
@@ -500,7 +504,9 @@ export var storyboard = (
           height: 303,
         }}
       >
-        <DefaultExportedComponent />
+        <DefaultExportedComponent
+          style={{ top: 0, left: 0, position: 'absolute' }}
+        />
       </div>
     </Scene>
   </Storyboard>
@@ -530,7 +536,6 @@ export var storyboard = (
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional',
       ])
-      // await wait(1000000)
 
       await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
 
@@ -570,6 +575,8 @@ export var storyboard = (
                 width: '64px',
                 height: '64px',
                 position: 'absolute',
+                top: 0,
+                left: 0,
               }}
               src='/editor/utopia-logo-white-fill.png?hash=nocommit'
               data-uid='newly-added-img'
@@ -618,6 +625,8 @@ export var storyboard = (
               width: '64px',
               height: '64px',
               position: 'absolute',
+              top: 0,
+              left: 0,
             }}
             src='/editor/utopia-logo-white-fill.png?hash=nocommit'
             data-uid='newly-added-img'
@@ -752,6 +761,8 @@ export var storyboard = (
                 width: '64px',
                 height: '64px',
                 position: 'absolute',
+                top: 0,
+                left: 0,
               }}
               src='/editor/utopia-logo-white-fill.png?hash=nocommit'
               data-uid='newly-added-img'
