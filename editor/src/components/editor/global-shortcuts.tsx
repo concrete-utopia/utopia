@@ -974,12 +974,7 @@ export function handleKeyDown(
         )
         return [
           EditorActions.wrapInElement(editor.selectedViews, {
-            element: jsxElement(
-              jsxElementName('div', []),
-              uid,
-              jsxAttributesFromMap({ [UTOPIA_UID_KEY]: jsExpressionValue(uid, emptyComments) }),
-              [],
-            ),
+            element: defaultDivElement(uid),
             importsToAdd: {},
           }),
         ]
