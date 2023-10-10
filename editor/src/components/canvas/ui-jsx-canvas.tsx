@@ -826,6 +826,7 @@ const CanvasContainer = React.forwardRef<
   return (
     <div
       id={CanvasContainerID}
+      data-testid={CanvasContainerID}
       key={'canvas-container'}
       ref={ref}
       style={{

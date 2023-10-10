@@ -74,6 +74,7 @@ export var storyboard = (
       "<div style=\\"all: initial\\">
         <div
           id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
           data-utopia-valid-paths=\\"sb sb/scene sb/scene/app sb/scene/app:app-root\\"
           data-utopia-root-element-path=\\"sb\\"
@@ -148,6 +149,7 @@ export default function App(props) {
       "<div style=\\"all: initial\\">
         <div
           id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
           data-utopia-valid-paths=\\"sb sb/scene sb/scene/app\\"
           data-utopia-root-element-path=\\"sb\\"
@@ -255,6 +257,7 @@ export default function App(props) {
       "<div style=\\"all: initial\\">
         <div
           id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
           data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-2-entity storyboard-entity/scene-2-entity/same-file-app-entity storyboard-entity/scene-2-entity/same-file-app-entity:same-file-app-div\\"
           data-utopia-root-element-path=\\"storyboard-entity\\"
@@ -430,6 +433,7 @@ export default function () {
       "<div style=\\"all: initial\\">
         <div
           id=\\"canvas-container\\"
+          data-testid=\\"canvas-container\\"
           style=\\"position: absolute\\"
           data-utopia-valid-paths=\\"storyboard-entity storyboard-entity/scene-1-entity storyboard-entity/scene-1-entity/app-entity storyboard-entity/scene-1-entity/app-entity:app-outer-div storyboard-entity/scene-1-entity/app-entity:app-outer-div/card-instance storyboard-entity/scene-1-entity/app-entity:app-outer-div/2a5 storyboard-entity/scene-1-entity/app-entity:app-outer-div/d7f\\"
           data-utopia-root-element-path=\\"storyboard-entity\\"

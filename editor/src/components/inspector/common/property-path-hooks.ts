@@ -41,32 +41,14 @@ import {
   isLayoutPropDetectedInCSS,
   maybePrintCSSValue,
   parseAnyParseableValue,
-  ParsedCSSPropertiesKeysNoLayout,
   printCSSValue,
-  cssNumber,
   isTrivialDefaultValue,
-  CSSNumber,
 } from '../../../components/inspector/common/css-utils'
 import type { StyleLayoutProp } from '../../../core/layout/layout-helpers-new'
-import { findElementAtPath, MetadataUtils } from '../../../core/model/element-metadata-utils'
-import {
-  getFilePathForImportedComponent,
-  getUtopiaJSXComponentsFromSuccess,
-  isHTMLComponent,
-  isUtopiaAPIComponent,
-} from '../../../core/model/project-file-utils'
-import { addUniquely, mapDropNulls, stripNulls } from '../../../core/shared/array-utils'
+import { isHTMLComponent, isUtopiaAPIComponent } from '../../../core/model/project-file-utils'
+import { stripNulls } from '../../../core/shared/array-utils'
 import type { Either } from '../../../core/shared/either'
-import {
-  defaultEither,
-  eitherToMaybe,
-  flatMapEither,
-  foldEither,
-  isRight,
-  left,
-  mapEither,
-  unwrapEither,
-} from '../../../core/shared/either'
+import { eitherToMaybe, flatMapEither, isRight, left } from '../../../core/shared/either'
 import type {
   JSXAttributes,
   ComputedStyle,
@@ -75,11 +57,8 @@ import type {
 } from '../../../core/shared/element-template'
 import {
   getJSXElementNameLastPart,
-  getJSXElementNameNoPathName,
   isJSXElement,
-  UtopiaJSXComponent,
   getJSXAttribute,
-  JSExpression,
   isRegularJSXAttribute,
   clearExpressionUniqueIDs,
 } from '../../../core/shared/element-template'
@@ -92,31 +71,24 @@ import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
-import { forEachOptional, optionalMap } from '../../../core/shared/optional-utils'
+import { optionalMap } from '../../../core/shared/optional-utils'
 import type {
   PropertyPath,
   ElementPath,
   PropertyPathPart,
 } from '../../../core/shared/project-file-types'
 
-import { fastForEach } from '../../../core/shared/utils'
-import { KeepDeepEqualityCall } from '../../../utils/deep-equality'
 import {
-  keepDeepReferenceEqualityIfPossible,
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../../utils/react-performance'
 import { default as Utils } from '../../../utils/utils'
-import { descriptionParseError, ParseResult } from '../../../utils/value-parser-utils'
 import type { ReadonlyRef } from './inspector-utils'
 import type { MapLike } from 'typescript'
 import { omitWithPredicate } from '../../../core/shared/object-utils'
 import { UtopiaKeys } from '../../../core/model/utopia-constants'
-import fastDeepEquals from 'fast-deep-equal'
-import { getPropertyControlNames } from '../../../core/property-controls/property-control-values'
 import type { EditorAction } from '../../editor/action-types'
 import { useDispatch } from '../../editor/store/dispatch-context'
-import { Optic } from '../../../core/shared/optics/optics'
 import { eitherRight, fromTypeGuard } from '../../../core/shared/optics/optic-creators'
 import { modify } from '../../../core/shared/optics/optic-utilities'
 

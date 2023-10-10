@@ -1630,30 +1630,6 @@ export const MetadataUtils = {
       return null
     }
   },
-  getJSXElementBaseName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
-    const jsxElement = findElementAtPath(path, components)
-    if (jsxElement != null) {
-      if (isJSXElement(jsxElement)) {
-        return jsxElement.name.baseVariable
-      } else {
-        return null
-      }
-    } else {
-      return null
-    }
-  },
-  getJSXElementTagName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
-    const jsxElement = findElementAtPath(path, components)
-    if (jsxElement != null) {
-      if (isJSXElement(jsxElement)) {
-        return getJSXElementNameAsString(jsxElement.name)
-      } else {
-        return null
-      }
-    } else {
-      return null
-    }
-  },
   getDuplicationParentTargets(targets: ElementPath[]): ElementPath | null {
     return EP.getCommonParent(targets)
   },
@@ -2648,20 +2624,6 @@ export function findJSXElementAtPath(
   const elem = findElementAtPath(target, components)
   return Utils.optionalMap((e) => {
     if (isJSXElement(e)) {
-      return e
-    } else {
-      return null
-    }
-  }, elem)
-}
-
-export function findJSXElementLikeAtPath(
-  target: ElementPath | null,
-  components: Array<UtopiaJSXComponent>,
-): JSXElementLike | null {
-  const elem = findElementAtPath(target, components)
-  return Utils.optionalMap((e) => {
-    if (isJSXElementLike(e)) {
       return e
     } else {
       return null

@@ -18,6 +18,7 @@ ReactTestingLibrary.configure({
   },
 })
 
+// this must run before importing the editor-entry-point-imports module
 window.expect = expect
 window.jest = null
 window.KarmaTestEnvironment = true

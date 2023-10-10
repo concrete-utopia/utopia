@@ -1,7 +1,19 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkInsertButtonPosition"] }] */
 import { act } from '@testing-library/react'
 import { selectComponents } from '../../../components/editor/actions/action-creators'
-import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
+import { getCanvasRectangleFromElement } from '../../../core/shared/dom-utils'
 import * as EP from '../../../core/shared/element-path'
+import {
+  canvasRectangle,
+  negate,
+  offsetRect,
+  windowRectangle,
+} from '../../../core/shared/math-utils'
+import { CanvasContainerID } from '../canvas-types'
+import type { EditorRenderResult } from '../ui-jsx.test-utils'
+import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
+import { BlueDotSize, InsertionButtonOffset } from './insertion-plus-button'
+import { boundingClientRectToCanvasRectangle } from '../../../utils/utils.test-utils'
 
 function getProjectCode(flexDirection: string): string {
   return `
@@ -258,6 +270,21 @@ export var storyboard = (
 }
 
 describe('Insertion Plus Button', () => {
+  async function checkInsertButtonPosition(
+    renderResult: EditorRenderResult,
+    buttonTestId: string,
+    expectedLeft: number,
+    expectedTop: number,
+  ): Promise<void> {
+    const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
+    const bounds = element.getBoundingClientRect()
+
+    const canvasBounds = boundingClientRectToCanvasRectangle(renderResult, bounds)
+
+    expect(canvasBounds.x + BlueDotSize / 2).toEqual(expectedLeft)
+    expect(canvasBounds.y + BlueDotSize / 2).toEqual(expectedTop)
+  }
+
   it(`shows the buttons in the correct places for a flex container with a direction of 'row' that already has children`, async () => {
     const renderResult = await renderTestEditorWithCode(
       getProjectCode('row'),
@@ -268,20 +295,24 @@ describe('Insertion Plus Button', () => {
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    async function checkInsertButtonPosition(
-      buttonTestId: string,
-      expectedLeft: number,
-      expectedTop: number,
-    ): Promise<void> {
-      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
-      const bounds = element.getBoundingClientRect()
-      expect(bounds.left).toEqual(expectedLeft)
-      expect(bounds.top).toEqual(expectedTop)
-    }
-
-    await checkInsertButtonPosition('blue-dot-control-0', 385.5, 596.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 519.5, 596.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 712.5, 596.5)
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-0',
+      0,
+      500 - InsertionButtonOffset,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-1',
+      134,
+      500 - InsertionButtonOffset,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-2',
+      327,
+      500 - InsertionButtonOffset,
+    )
   })
 
   it(`shows the buttons in the correct places for a flex container with a direction of 'row-reverse' that already has children`, async () => {
@@ -294,20 +325,24 @@ describe('Insertion Plus Button', () => {
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    async function checkInsertButtonPosition(
-      buttonTestId: string,
-      expectedLeft: number,
-      expectedTop: number,
-    ): Promise<void> {
-      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
-      const bounds = element.getBoundingClientRect()
-      expect(bounds.left).toEqual(expectedLeft)
-      expect(bounds.top).toEqual(expectedTop)
-    }
-
-    await checkInsertButtonPosition('blue-dot-control-0', 785.5, 596.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 651.5, 596.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 458.5, 596.5)
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-0',
+      400,
+      500 - InsertionButtonOffset,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-1',
+      266,
+      500 - InsertionButtonOffset,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-2',
+      73,
+      500 - InsertionButtonOffset,
+    )
   })
 
   it(`shows the buttons in the correct places for a flex container with a direction of 'column' that already has children`, async () => {
@@ -320,20 +355,24 @@ describe('Insertion Plus Button', () => {
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    async function checkInsertButtonPosition(
-      buttonTestId: string,
-      expectedLeft: number,
-      expectedTop: number,
-    ): Promise<void> {
-      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
-      const bounds = element.getBoundingClientRect()
-      expect(bounds.left).toEqual(expectedLeft)
-      expect(bounds.top).toEqual(expectedTop)
-    }
-
-    await checkInsertButtonPosition('blue-dot-control-0', 375.5, 606.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 806.5)
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-0',
+      0 - InsertionButtonOffset,
+      500,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-1',
+      0 - InsertionButtonOffset,
+      600,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-2',
+      0 - InsertionButtonOffset,
+      700,
+    )
   })
 
   it(`shows the buttons in the correct places for a flex container with a direction of 'column-reverse' that already has children`, async () => {
@@ -346,20 +385,24 @@ describe('Insertion Plus Button', () => {
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    async function checkInsertButtonPosition(
-      buttonTestId: string,
-      expectedLeft: number,
-      expectedTop: number,
-    ): Promise<void> {
-      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
-      const bounds = element.getBoundingClientRect()
-      expect(bounds.left).toEqual(expectedLeft)
-      expect(bounds.top).toEqual(expectedTop)
-    }
-
-    await checkInsertButtonPosition('blue-dot-control-0', 375.5, 806.5)
-    await checkInsertButtonPosition('blue-dot-control-1', 375.5, 706.5)
-    await checkInsertButtonPosition('blue-dot-control-2', 375.5, 606.5)
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-0',
+      0 - InsertionButtonOffset,
+      700,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-1',
+      0 - InsertionButtonOffset,
+      600,
+    )
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-2',
+      0 - InsertionButtonOffset,
+      500,
+    )
   })
 
   it('shows the buttons in the correct places for a flex container that has no children', async () => {
@@ -372,17 +415,11 @@ describe('Insertion Plus Button', () => {
     await act(() => renderResult.dispatch([selectComponents([targetPath], false)], false))
     await renderResult.getDispatchFollowUpActionsFinished()
 
-    async function checkInsertButtonPosition(
-      buttonTestId: string,
-      expectedLeft: number,
-      expectedTop: number,
-    ): Promise<void> {
-      const element = await renderResult.renderedDOM.findByTestId(buttonTestId)
-      const bounds = element.getBoundingClientRect()
-      expect(bounds.left).toEqual(expectedLeft)
-      expect(bounds.top).toEqual(expectedTop)
-    }
-
-    await checkInsertButtonPosition('blue-dot-control-0', 385.5, 596.5)
+    await checkInsertButtonPosition(
+      renderResult,
+      'blue-dot-control-0',
+      0,
+      500 - InsertionButtonOffset,
+    )
   })
 })
