@@ -54,7 +54,8 @@ module.exports = function (config) {
     // list of files / patterns to load in the browser
     files: [
       './mocha-setup-beforeall.js',
-      './karma-setup.js',
+      './karma-setup.js', // this must run before importing the editor-entry-point-imports module
+      './src/templates/editor-entry-point-imports.tsx', // we load the real editor entry point first, to make sure the environment matches the real environment, and also to avoid diverging circular dependencies
       {
         pattern: './resources/editor/**/*.png',
         watched: false,
@@ -62,8 +63,16 @@ module.exports = function (config) {
         included: false,
         nocache: false,
       },
+      {
+        pattern: './resources/editor/**/*.css',
+        watched: false,
+        served: true,
+        included: false,
+        nocache: false,
+      },
     ],
     proxies: {
+      '/editor/css/': '/base/resources/editor/css',
       '/editor/icons': '/base/resources/editor/icons',
       '/editor/cursors': '/base/resources/editor/cursors',
       '/editor/fills': '/base/resources/editor/fills',

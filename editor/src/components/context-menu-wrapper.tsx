@@ -14,6 +14,8 @@ import { colorTheme, Icons } from '../uuiui'
 import { getControlStyles } from '../uuiui-deps'
 import type { ContextMenuItem } from './context-menu-items'
 import type { EditorDispatch } from './editor/action-types'
+import type { WindowPoint } from '../core/shared/math-utils'
+import { windowPoint } from '../core/shared/math-utils'
 
 export interface ContextMenuWrapperProps<T> {
   id: string
@@ -107,9 +109,15 @@ export class MomentumContextMenu<T> extends ReactComponent<ContextMenuProps<T>> 
         key={`context-menu-${index}-item`}
         disabled={this.isDisabled(item)}
         // eslint-disable-next-line react/jsx-no-bind
-        onClick={({ event }) => {
+        onClick={({ event, triggerEvent }) => {
           event.stopPropagation()
-          item.action(this.props.getData(), this.props.dispatch, (event as any)?.nativeEvent)
+          const rightClickCoordinate: WindowPoint | null = (() => {
+            if (!(triggerEvent instanceof MouseEvent)) {
+              return null
+            }
+            return windowPoint({ x: triggerEvent.clientX, y: triggerEvent.clientY })
+          })()
+          item.action(this.props.getData(), this.props.dispatch, rightClickCoordinate)
           contextMenu.hideAll()
         }}
         hidden={this.isHidden(item)}
