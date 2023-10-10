@@ -350,20 +350,26 @@ export const EditorContractDropdown = React.memo(() => {
   }, [selectedViews, metadataRef, elementPathTreeRef, allElementPropsRef, currentValue])
 
   return (
-    <PopupList
-      id={'editor-contract-popup-list'}
-      value={currentValue}
-      options={options}
-      onSubmitValue={onChange}
-      controlStyles={
-        selectedElementContract === 'not-quite-frame' ? disabledControlStyles : simpleControlStyles
-      }
-      containerMode={'noBorder'}
-      style={{ position: 'relative', left: -8 }}
-    />
+    <FlexRow data-testid={EditorContractSelectorTestID} style={{ flex: 1 }}>
+      <PopupList
+        id={'editor-contract-popup-list'}
+        value={currentValue}
+        options={options}
+        onSubmitValue={onChange}
+        controlStyles={
+          selectedElementContract === 'not-quite-frame'
+            ? disabledControlStyles
+            : simpleControlStyles
+        }
+        containerMode={'noBorder'}
+        style={{ position: 'relative', left: -8 }}
+      />
+    </FlexRow>
   )
 })
 EditorContractDropdown.displayName = 'EditorContractDropdown'
+
+export const EditorContractSelectorTestID = 'editor-contract-dropdown'
 
 export const GroupSection = React.memo(() => {
   return (
