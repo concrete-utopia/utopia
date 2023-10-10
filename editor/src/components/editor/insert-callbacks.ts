@@ -9,6 +9,7 @@ import {
   setJSXAttributesAttribute,
   jsExpressionValue,
   emptyComments,
+  getJSXAttribute,
 } from '../../core/shared/element-template'
 import { CanvasMousePositionRaw } from '../../utils/global-positions'
 import { Modifier } from '../../utils/modifiers'
@@ -54,6 +55,9 @@ import {
 import * as EP from '../../core/shared/element-path'
 import { foldAndApplyCommandsInner } from '../canvas/commands/commands'
 import { notice } from '../common/notice'
+import * as PP from '../../core/shared/property-path'
+import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
+import { defaultEither } from '../../core/shared/either'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -299,12 +303,34 @@ function elementFromInsertMenuItem(
 ): JSXElementChild {
   switch (element.type) {
     case 'JSX_ELEMENT':
-      return jsxElement(
-        element.name,
-        uid,
-        setJSXAttributesAttribute(element.props, 'data-uid', jsExpressionValue(uid, emptyComments)),
-        element.children,
+      const styleAttributes =
+        getJSXAttribute(element.props, 'style') ?? jsExpressionValue({}, emptyComments)
+
+      const styleWithWidth = defaultEither(
+        styleAttributes,
+        setJSXValueInAttributeAtPath(
+          styleAttributes,
+          PP.fromString('width'),
+          jsExpressionValue(100, emptyComments),
+        ),
       )
+      const styleWithHeight = defaultEither(
+        styleAttributes,
+        setJSXValueInAttributeAtPath(
+          styleWithWidth,
+          PP.fromString('height'),
+          jsExpressionValue(100, emptyComments),
+        ),
+      )
+
+      const attributesWithStyle = setJSXAttributesAttribute(element.props, 'style', styleWithHeight)
+      const attributesWithUid = setJSXAttributesAttribute(
+        attributesWithStyle,
+        'data-uid',
+        jsExpressionValue(uid, emptyComments),
+      )
+
+      return jsxElement(element.name, uid, attributesWithUid, element.children)
     case 'JSX_CONDITIONAL_EXPRESSION':
       return jsxConditionalExpression(
         uid,
