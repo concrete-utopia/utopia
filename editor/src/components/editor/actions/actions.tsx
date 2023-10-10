@@ -524,7 +524,12 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
-import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import {
+  emptyGetAllUniqueUIDsWorkingResult,
+  extractUidFromJSXElementChild,
+  extractUIDFromTopLevelElement,
+  getAllUniqueUids,
+} from '../../../core/model/get-unique-ids'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4766,6 +4771,10 @@ export const UPDATE_FNS = {
               jsxElement(insertedElementName, newUID, props, insertedElementChildren),
               existingUids,
             ).value
+
+            // const r = emptyGetAllUniqueUIDsWorkingResult()
+            // extractUidFromJSXElementChild(r, '', [''], element)
+            // console.log([...r.allIDs])
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,

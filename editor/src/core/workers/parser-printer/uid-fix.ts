@@ -174,12 +174,15 @@ function updateUID<T>(
           // The UID is unchanged, but the UID is already used elsewhere in the new structure:
           // - Generate a new consistent UID.
           // - Add a mapping for this change.
-          // console.trace(`consistent uid generated for: ${oldUID}`)
           uidToUse = generateConsistentUID(
             oldUID,
             fixUIDsState.mutableAllNewUIDs,
             fixUIDsState.uidsExpectedToBeSeen,
           )
+          // console.log(`consistent uid generated for: ${oldUID}, new uid: ${uidToUse}`)
+          // console.log('exists', fixUIDsState.mutableAllNewUIDs.has(uidToUse), fixUIDsState.uidsExpectedToBeSeen.has(uidToUse),)
+          // console.log([...fixUIDsState.mutableAllNewUIDs])
+          // console.log([...fixUIDsState.uidsExpectedToBeSeen])
           addMapping(newUID, uidToUse)
         } else if (oldUID === newUID) {
           // Old one is the same as the new one, so everything is great.
