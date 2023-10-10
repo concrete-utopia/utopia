@@ -193,6 +193,16 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       const targetParent: ElementPath | null = safeIndex(selectedViewsRef.current, 0) ?? null
 
       if (targetParent == null) {
+        dispatch([
+          showToast(
+            notice(
+              'There are no elements selected',
+              'INFO',
+              false,
+              'to-insert-does-not-support-children',
+            ),
+          ),
+        ])
         return
       }
 
