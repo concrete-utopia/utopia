@@ -42,6 +42,10 @@ import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { UIDMappings } from '../../../core/shared/uid-utils'
 import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
+import {
+  emptyGetAllUniqueUIDsWorkingResult,
+  extractUIDFromTopLevelElement,
+} from '../../model/get-unique-ids'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 
@@ -75,6 +79,14 @@ export interface FixUIDsState {
   uidUpdateMethod: 'copy-uids-fix-duplicates' | 'use-mappings' | 'forced-update'
 }
 
+function ble(tles: TopLevelElement[]) {
+  return tles.flatMap((t) => {
+    const workingResult = emptyGetAllUniqueUIDsWorkingResult()
+    extractUIDFromTopLevelElement(workingResult, '', [''], t)
+    return [...workingResult.allIDs]
+  })
+}
+
 export function fixParseSuccessUIDs(
   oldParsed: ParseSuccess | null,
   newParsed: ParsedTextFile,
@@ -94,6 +106,11 @@ export function fixParseSuccessUIDs(
     mappings: [],
     uidUpdateMethod: 'copy-uids-fix-duplicates',
   }
+
+  if (oldParsed?.topLevelElements != null) {
+    // console.log(`uids from original: ${ble(oldParsed?.topLevelElements)}`)
+  }
+  // console.log(`uids from new: ${ble(newParsed.topLevelElements)}`)
 
   // Fix the UIDs in the content.
   const fixedTopLevelElements = fixTopLevelElementsUIDs(
@@ -157,6 +174,7 @@ function updateUID<T>(
           // The UID is unchanged, but the UID is already used elsewhere in the new structure:
           // - Generate a new consistent UID.
           // - Add a mapping for this change.
+          // console.trace(`consistent uid generated for: ${oldUID}`)
           uidToUse = generateConsistentUID(
             oldUID,
             fixUIDsState.mutableAllNewUIDs,

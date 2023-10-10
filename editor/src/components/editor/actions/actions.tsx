@@ -4718,6 +4718,7 @@ export const UPDATE_FNS = {
       const existingUids = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
 
       const newUID = generateConsistentUID('zzz', existingUids)
+      // console.log(newUID)
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
