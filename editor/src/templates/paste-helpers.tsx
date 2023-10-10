@@ -21,7 +21,7 @@ export function getCanvasViewportCenter(
    */
   if (IS_TEST_ENVIRONMENT) {
     // should this be mocked? is a mock easier to debug, or just obfuscating the fact that the tests have special behavior?
-    return canvasPoint({ x: 720, y: 420 })
+    return canvasPoint({ x: 719.5, y: 420 }) // these were the numbers when the original paste tests were written. TODO replace with a cleaner number and change the paste test values
   }
 
   return result
