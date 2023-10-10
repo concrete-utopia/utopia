@@ -456,7 +456,7 @@ describe('shortcuts', () => {
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='wra'>
+          <div data-uid='wra'>
             <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
             <div data-uid='ddd' style={{width: 60, height: 60}} />
           </div>
