@@ -1,7 +1,9 @@
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
+import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import type { NodeModules, ElementPath } from '../../../core/shared/project-file-types'
+import * as PP from '../../../core/shared/property-path'
 import { front } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { getAbsoluteReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
@@ -9,6 +11,7 @@ import { autoLayoutParentAbsoluteOrStatic } from '../../canvas/canvas-strategies
 import type { ElementToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { getReparentOutcome } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { foldAndApplyCommandsInner } from '../../canvas/commands/commands'
+import { setProperty } from '../../canvas/commands/set-property-command'
 import { updateFunctionCommand } from '../../canvas/commands/update-function-command'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import type { InspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
@@ -63,13 +66,16 @@ export const insertAsAbsoluteStrategy = (
         return foldAndApplyCommandsInner(
           state,
           [],
-          getAbsoluteReparentPropertyChanges(
-            result.newPath,
-            EP.parentPath(result.newPath),
-            metadata,
-            metadata,
-            state.projectContents,
-          ),
+          [
+            ...getAbsoluteReparentPropertyChanges(
+              result.newPath,
+              EP.parentPath(result.newPath),
+              metadata,
+              metadata,
+              state.projectContents,
+            ),
+            setProperty('always', result.newPath, PP.create('style', 'position'), 'absolute'),
+          ],
           commandLifecycle,
         ).statePatches
       }),

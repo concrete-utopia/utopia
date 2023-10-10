@@ -167,7 +167,6 @@ import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import { generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
-import { UTOPIA_UID_KEY } from '../../core/model/utopia-constants'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,

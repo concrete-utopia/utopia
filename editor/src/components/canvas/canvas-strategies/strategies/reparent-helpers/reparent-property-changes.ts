@@ -27,7 +27,10 @@ import { getJSXElementFromProjectContents } from '../../../../editor/store/edito
 import type { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { cssNumber } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
-import type { LengthPropertyToAdjust } from '../../../commands/adjust-css-length-command'
+import type {
+  AdjustCssLengthProperties,
+  LengthPropertyToAdjust,
+} from '../../../commands/adjust-css-length-command'
 import {
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
@@ -74,7 +77,7 @@ export function getAbsoluteReparentPropertyChanges(
   targetStartingMetadata: ElementInstanceMetadataMap,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
-): Array<CanvasCommand> {
+): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
   const originalParentInstance = MetadataUtils.findElementByElementPath(
@@ -180,7 +183,6 @@ export function getAbsoluteReparentPropertyChanges(
 
   return [
     adjustCssLengthProperties('always', target, newParentFlexDirection, edgePropertiesToAdjust),
-    setProperty('always', target, PP.create('style', 'position'), 'absolute'),
     ...widthHeightCommands,
   ]
 }
