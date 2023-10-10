@@ -6718,6 +6718,12 @@ export var storyboard = (
         </div>`,
         ),
       )
+      expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
+      const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
+      expect(firstToast?.level).toEqual('INFO')
+      expect(firstToast?.message).toEqual(
+        "Added `contain: 'layout'` to the parent of the newly added element.",
+      )
     })
     it(`Wraps 2 elements with a fragment`, async () => {
       const testUID = 'zzz'

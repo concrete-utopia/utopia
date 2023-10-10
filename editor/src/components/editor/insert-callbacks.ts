@@ -1,6 +1,5 @@
 import React from 'react'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   jsxConditionalExpression,
   jsxElement,
@@ -31,38 +30,18 @@ import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
 import { safeIndex } from '../../core/shared/array-utils'
-import type { ElementPath, NodeModules } from '../../core/shared/project-file-types'
-import type { ElementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
-import {
-  elementToReparent,
-  getReparentOutcome,
-} from '../canvas/canvas-strategies/strategies/reparent-utils'
-import { front } from '../../utils/utils'
-import type { InsertionPath } from './store/insertion-path'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import { elementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { getInsertionPath } from './store/insertion-path'
 import { generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
-import { updateFunctionCommand } from '../canvas/commands/update-function-command'
-import { autoLayoutParentAbsoluteOrStatic } from '../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-parent-lookup'
-import {
-  getAbsoluteReparentPropertyChanges,
-  getStaticReparentPropertyChanges,
-} from '../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
-import * as EP from '../../core/shared/element-path'
-import { foldAndApplyCommandsInner } from '../canvas/commands/commands'
 import { notice } from '../common/notice'
 import * as PP from '../../core/shared/property-path'
 import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { defaultEither } from '../../core/shared/either'
-import type { InspectorStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 import { executeFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
-import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import type { AllElementProps } from './store/editor-state'
-import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
-import type { ProjectContentTreeRoot } from '../assets'
-import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
 import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
 import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
 
