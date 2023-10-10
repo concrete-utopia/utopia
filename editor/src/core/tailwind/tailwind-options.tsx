@@ -1,5 +1,5 @@
 import React from 'react'
-import { filterDuplicates, flatMapArray, last, stripNulls } from '../shared/array-utils'
+import { filterDuplicates, flatMapArray, stripNulls } from '../shared/array-utils'
 import { mapToArray, mapValues } from '../shared/object-utils'
 import { NO_OP } from '../shared/utils'
 import {
@@ -9,24 +9,18 @@ import {
 } from '../third-party/tailwind-defaults'
 import Highlighter from 'react-highlight-words'
 import type { ElementPath } from '../shared/project-file-types'
-import { isParseSuccess, isTextFile } from '../shared/project-file-types'
 import {
   Substores,
   useEditorState,
   useRefEditorState,
 } from '../../components/editor/store/store-hook'
-import { getOpenUIJSFileKey } from '../../components/editor/store/editor-state'
-import { normalisePathToUnderlyingTarget } from '../../components/custom-code/code-file'
-import type { ProjectContentTreeRoot } from '../../components/assets'
-import { getProjectFileByFilePath } from '../../components/assets'
+import { getElementFromProjectContents } from '../../components/editor/store/editor-state'
 import type { JSXElementChild } from '../shared/element-template'
 import {
   modifiableAttributeIsAttributeNotFound,
   isJSXElement,
   modifiableAttributeIsAttributeValue,
 } from '../shared/element-template'
-import { findElementAtPath, MetadataUtils } from '../model/element-metadata-utils'
-import { getUtopiaJSXComponentsFromSuccess } from '../model/project-file-utils'
 import { eitherToMaybe, flatMapEither, foldEither } from '../shared/either'
 import {
   getModifiableJSXAttributeAtPath,
@@ -228,29 +222,6 @@ export function useFilteredOptions(
   }, [filter, maxResults, onEmptyResults])
 }
 
-function getJSXElementForTarget(
-  target: ElementPath,
-  openUIJSFileKey: string,
-  projectContents: ProjectContentTreeRoot,
-): JSXElementChild | null {
-  const underlyingTarget = normalisePathToUnderlyingTarget(projectContents, target)
-  const underlyingPath =
-    underlyingTarget.type === 'NORMALISE_PATH_SUCCESS' ? underlyingTarget.filePath : openUIJSFileKey
-  const projectFile = getProjectFileByFilePath(projectContents, underlyingPath)
-  if (
-    projectFile != null &&
-    isTextFile(projectFile) &&
-    isParseSuccess(projectFile.fileContents.parsed)
-  ) {
-    return findElementAtPath(
-      target,
-      getUtopiaJSXComponentsFromSuccess(projectFile.fileContents.parsed),
-    )
-  } else {
-    return null
-  }
-}
-
 function getClassNameAttribute(element: JSXElementChild | null): {
   value: string | null
   isSettable: boolean
@@ -285,16 +256,10 @@ export function useGetSelectedClasses(): {
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elements = useEditorState(
     Substores.fullStore,
-    (store) => {
-      const openUIJSFileKey = getOpenUIJSFileKey(store.editor)
-      if (openUIJSFileKey == null) {
-        return []
-      } else {
-        return store.editor.selectedViews.map((elementPath) =>
-          getJSXElementForTarget(elementPath, openUIJSFileKey, store.editor.projectContents),
-        )
-      }
-    },
+    (store) =>
+      store.editor.selectedViews.map((elementPath) =>
+        getElementFromProjectContents(elementPath, store.editor.projectContents),
+      ),
     'ClassNameSelect elements',
   )
 
@@ -314,17 +279,13 @@ export function useGetSelectedClasses(): {
           return fromAttributes
         } else {
           const elementPath = elementPaths[index]
-          const elementMetadata = MetadataUtils.findElementByElementPath(
-            metadataRef.current,
-            elementPath,
-          )
           return {
             value: allElementPropsRef.current[EP.toString(elementPath)]?.className,
             isSettable: fromAttributes.isSettable,
           }
         }
       }),
-    [elements, elementPaths, metadataRef, allElementPropsRef],
+    [elements, elementPaths, allElementPropsRef],
   )
 
   const isSettable =

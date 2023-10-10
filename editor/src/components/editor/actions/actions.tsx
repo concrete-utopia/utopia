@@ -98,6 +98,7 @@ import {
   getRectCenter,
   localRectangle,
   zeroRectIfNullOrInfinity,
+  roundPointToNearestWhole,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -153,12 +154,12 @@ import {
 } from '../../assets'
 import type { CanvasFrameAndTarget, PinOrFlexFrameChange } from '../../canvas/canvas-types'
 import { pinSizeChange } from '../../canvas/canvas-types'
+import type { SkipFrameChange } from '../../canvas/canvas-utils'
 import {
   canvasPanelOffsets,
   duplicate,
   getFrameChange,
   moveTemplate,
-  SkipFrameChange,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
 import type { ResizeLeftPane, SetFocus } from '../../common/actions'
@@ -417,7 +418,6 @@ import { NavigatorStateKeepDeepEquality } from '../store/store-deep-equality-ins
 import type { MouseButtonsPressed } from '../../../utils/mouse'
 import { addButtonPressed, removeButtonPressed } from '../../../utils/mouse'
 import { stripLeadingSlash } from '../../../utils/path-utils'
-import utils from '../../../utils/utils'
 import { pickCanvasStateFromEditorState } from '../../canvas/canvas-strategies/canvas-strategies'
 import { getEscapeHatchCommands } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
@@ -1023,17 +1023,10 @@ function setZIndexOnSelected(
     }
 
     const indexPosition = indexPositionForAdjustment(selectedView, working, index)
-    return editorMoveTemplate(
-      selectedView,
-      selectedView,
-      SkipFrameChange,
-      indexPosition,
-      EP.parentPath(selectedView),
-      null,
-      editor,
-      null,
-      null,
-    ).editor
+
+    const reorderElementCommand = reorderElement('always', selectedView, indexPosition)
+
+    return foldAndApplyCommandsSimple(working, [reorderElementCommand])
   }, editor)
 }
 
@@ -1575,17 +1568,9 @@ export const UPDATE_FNS = {
     return setCanvasFramesInnerNew(editor, action.framesAndTargets, null)
   },
   SET_Z_INDEX: (action: SetZIndex, editor: EditorModel): EditorModel => {
-    return editorMoveTemplate(
-      action.target,
-      action.target,
-      SkipFrameChange,
-      action.indexPosition,
-      EP.parentPath(action.target),
-      null,
-      editor,
-      null,
-      null,
-    ).editor
+    return foldAndApplyCommandsSimple(editor, [
+      reorderElement('always', action.target, action.indexPosition),
+    ])
   },
   DELETE_SELECTED: (editorForAction: EditorModel, dispatch: EditorDispatch): EditorModel => {
     // This function returns whether the given path will have the following deletion behavior:
@@ -4530,7 +4515,7 @@ export const UPDATE_FNS = {
             canvas: {
               ...editor.canvas,
               realCanvasOffset: newCanvasOffset,
-              roundedCanvasOffset: utils.roundPointTo(newCanvasOffset, 0),
+              roundedCanvasOffset: roundPointToNearestWhole(newCanvasOffset),
             },
           },
           dispatch,

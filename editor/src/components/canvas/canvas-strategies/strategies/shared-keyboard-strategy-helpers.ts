@@ -1,7 +1,7 @@
 import { last, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
-import { canvasRectangle } from '../../../../core/shared/math-utils'
+import { canvasRectangle, getRoundedRectPointsAlongAxes } from '../../../../core/shared/math-utils'
 import { setsEqual } from '../../../../core/shared/set-utils'
 import type { KeyCharacter } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
@@ -107,7 +107,7 @@ export function getKeyboardStrategyGuidelines(
     selectedElements,
   ).map((g) => g.guideline)
 
-  const { horizontalPoints, verticalPoints } = Utils.getRectPointsAlongAxes(draggedFrame)
+  const { horizontalPoints, verticalPoints } = getRoundedRectPointsAlongAxes(draggedFrame)
   const closestGuideLines: Array<GuidelineWithSnappingVectorAndPointsOfRelevance> = mapDropNulls(
     (guideline) => {
       switch (guideline.type) {

@@ -17,20 +17,17 @@ import {
   isInfinityRectangle,
   nullIfInfinity,
   pointDifference,
-  roundPointToNearestHalf,
+  roundPointToNearestWhole,
 } from '../../../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import * as PP from '../../../../../core/shared/property-path'
 import type { ProjectContentTreeRoot } from '../../../../assets'
 import type { AllElementProps } from '../../../../editor/store/editor-state'
-import { getElementFromProjectContents } from '../../../../editor/store/editor-state'
+import { getJSXElementFromProjectContents } from '../../../../editor/store/editor-state'
 import type { CSSPosition, Direction } from '../../../../inspector/common/css-utils'
 import { cssNumber } from '../../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../../inspector/common/property-path-hooks'
-import type {
-  AdjustCssLengthProperties,
-  LengthPropertyToAdjust,
-} from '../../../commands/adjust-css-length-command'
+import type { LengthPropertyToAdjust } from '../../../commands/adjust-css-length-command'
 import {
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
@@ -78,7 +75,7 @@ export function getAbsoluteReparentPropertyChanges(
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
 ): Array<CanvasCommand> {
-  const element: JSXElement | null = getElementFromProjectContents(target, projectContents)
+  const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
   const originalParentInstance = MetadataUtils.findElementByElementPath(
     targetStartingMetadata,
@@ -101,10 +98,10 @@ export function getAbsoluteReparentPropertyChanges(
     return []
   }
 
-  const offsetTL = roundPointToNearestHalf(
+  const offsetTL = roundPointToNearestWhole(
     pointDifference(newParentContentBox, currentParentContentBox),
   )
-  const offsetBR = roundPointToNearestHalf(
+  const offsetBR = roundPointToNearestWhole(
     pointDifference(
       canvasPoint({
         x: currentParentContentBox.x + currentParentContentBox.width,

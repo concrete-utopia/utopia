@@ -211,7 +211,7 @@ describe('Flow Reparent To Absolute Strategy', () => {
             height: 100,
             backgroundColor: 'teal',
             position: 'absolute',
-            left: -0.5,
+            left: 0,
             top: 0,
           }}
           data-uid='flowchild1'
@@ -390,7 +390,7 @@ describe('Flow Reparent To Absolute Strategy', () => {
                       height: 100,
                       backgroundColor: 'teal',
                       position: 'absolute',
-                      left: -0.5,
+                      left: 0,
                       top: 0,
                     }}
                     data-uid='flowchild1'
@@ -571,7 +571,7 @@ describe('Flow Reparent To Absolute Strategy', () => {
                   height: 100,
                   backgroundColor: 'teal',
                   position: 'absolute',
-                  left: -0.5,
+                  left: 0,
                   top: 0,
                 }}
                 data-uid='flowchild1'
@@ -753,7 +753,7 @@ describe('Flow Reparent To Absolute Strategy', () => {
                       height: 100,
                       backgroundColor: 'teal',
                       position: 'absolute',
-                      left: -0.5,
+                      left: 0,
                       top: 0,
                     }}
                     data-uid='flowchild1'

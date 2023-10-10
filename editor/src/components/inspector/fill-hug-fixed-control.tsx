@@ -6,7 +6,14 @@ import { createSelector } from 'reselect'
 import { optionalMap } from '../../core/shared/optional-utils'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever } from '../../core/shared/utils'
-import { NumberInput, PopupList, useColorTheme, UtopiaTheme } from '../../uuiui'
+import {
+  FlexRow,
+  InspectorSubsectionHeader,
+  NumberInput,
+  PopupList,
+  useColorTheme,
+  UtopiaTheme,
+} from '../../uuiui'
 import type {
   ControlStatus,
   ControlStyles,
@@ -32,7 +39,7 @@ import {
 } from './inspector-common'
 import {
   setPropFillStrategies,
-  setPropFixedStrategies,
+  setPropFixedSizeStrategies,
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import type { InspectorStrategy } from './inspector-strategies/inspector-strategy'
@@ -47,6 +54,7 @@ import { UIGridRow } from './widgets/ui-grid-row'
 import { mapDropNulls, safeIndex, uniqBy } from '../../core/shared/array-utils'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { when } from '../../utils/react-conditionals'
+import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
 import type { AllElementProps } from '../editor/store/editor-state'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
@@ -61,6 +69,7 @@ import { FlexCol } from 'utopia-api'
 import { PinControl } from './controls/pin-control'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { MixedPlaceholder } from '../../uuiui/inputs/base-input'
+import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import {
   convertGroupToFrameCommands,
   getInstanceForGroupToFrameConversion,
@@ -104,8 +113,6 @@ function selectOption(mode: FixedHugFillMode): SelectOption {
   }
 }
 
-interface FillHugFixedControlProps {}
-
 const fixedHugFillOptionsSelector = createSelector(
   metadataSelector,
   pathTreesSelector,
@@ -123,7 +130,7 @@ const fixedHugFillOptionsSelector = createSelector(
   },
 )
 
-export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) => {
+export const FillHugFixedControlOld = React.memo(() => {
   const onlyGroupChildrenSelected = useEditorState(
     Substores.metadata,
     allElementsAreGroupChildren,
@@ -161,7 +168,7 @@ export const FillHugFixedControl = React.memo<FillHugFixedControlProps>((props) 
   )
 })
 
-const GroupChildPinControl = React.memo(() => {
+export const GroupChildPinControl = React.memo(() => {
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
@@ -173,7 +180,11 @@ const GroupChildPinControl = React.memo(() => {
   )
 
   const handleGroupConstraintPinMouseDown = React.useCallback(
-    (dimension: LayoutPinnedProp) => {
+    (dimension: LayoutPinnedPropIncludingCenter) => {
+      if (dimension === 'centerX' || dimension === 'centerY') {
+        // early return, we ignore centerX centerY
+        return
+      }
       return setGroupChildConstraint(
         dispatch,
         'toggle',
@@ -313,7 +324,7 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
-          setPropFixedStrategies('always', axis, value),
+          setPropFixedSizeStrategies('always', axis, value),
         )
         return
       }
@@ -341,7 +352,7 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
           selectedViewsRef.current,
           elementPathTreeRef.current,
           allElementPropsRef.current,
-          setPropFixedStrategies('always', axis, value),
+          setPropFixedSizeStrategies('always', axis, value),
         )
       }
     },
@@ -509,87 +520,89 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 })
 FixedHugDropdown.displayName = 'FixedHugDropdown'
 
-const GroupConstraintSelect = React.memo(({ dimension }: { dimension: LayoutPinnedProp }) => {
-  const dispatch = useDispatch()
-  const colorTheme = useColorTheme()
+export const GroupConstraintSelect = React.memo(
+  ({ dimension }: { dimension: LayoutPinnedProp }) => {
+    const dispatch = useDispatch()
+    const colorTheme = useColorTheme()
 
-  const constraintType = useEditorState(
-    Substores.metadata,
-    (store) =>
-      checkGroupChildConstraint(
-        dimension,
-        store.editor.selectedViews,
-        store.editor.allElementProps,
-      ),
-    'GroupConstraintSelect constraintType',
-  )
+    const constraintType = useEditorState(
+      Substores.metadata,
+      (store) =>
+        checkGroupChildConstraint(
+          dimension,
+          store.editor.selectedViews,
+          store.editor.allElementProps,
+        ),
+      'GroupConstraintSelect constraintType',
+    )
 
-  const editorRef = useRefEditorState((store) => ({
-    selectedViews: store.editor.selectedViews,
-    allElementProps: store.editor.allElementProps,
-  }))
+    const editorRef = useRefEditorState((store) => ({
+      selectedViews: store.editor.selectedViews,
+      allElementProps: store.editor.allElementProps,
+    }))
 
-  function optionFromType(value: GroupChildConstraintOptionType | 'mixed') {
-    switch (value) {
-      case 'constrained':
-        return groupChildConstraintOptionValues.constrained
-      case 'not-constrained':
-        return groupChildConstraintOptionValues.notConstrained
-      case 'mixed':
-        return groupChildConstraintOptionValues.mixed
-      default:
-        assertNever(value)
+    function optionFromType(value: GroupChildConstraintOptionType | 'mixed') {
+      switch (value) {
+        case 'constrained':
+          return groupChildConstraintOptionValues.constrained
+        case 'not-constrained':
+          return groupChildConstraintOptionValues.notConstrained
+        case 'mixed':
+          return groupChildConstraintOptionValues.mixed
+        default:
+          assertNever(value)
+      }
     }
-  }
 
-  const listValue = React.useMemo(() => {
-    return optionFromType(constraintType)
-  }, [constraintType])
+    const listValue = React.useMemo(() => {
+      return optionFromType(constraintType)
+    }, [constraintType])
 
-  const mainColor = React.useMemo(() => {
-    switch (constraintType) {
-      case 'constrained':
-        return colorTheme.fg0.value
-      case 'mixed':
-        return colorTheme.fg6Opacity50.value
-      case 'not-constrained':
-        return colorTheme.subduedForeground.value
-      default:
-        assertNever(constraintType)
-    }
-  }, [constraintType, colorTheme])
+    const mainColor = React.useMemo(() => {
+      switch (constraintType) {
+        case 'constrained':
+          return colorTheme.fg0.value
+        case 'mixed':
+          return colorTheme.fg6Opacity50.value
+        case 'not-constrained':
+          return colorTheme.subduedForeground.value
+        default:
+          assertNever(constraintType)
+      }
+    }, [constraintType, colorTheme])
 
-  const onSubmitValue = React.useCallback(
-    (option: SelectOption) => {
-      return setGroupChildConstraint(
-        dispatch,
-        option.value,
-        editorRef.current.selectedViews,
-        editorRef.current.allElementProps,
-        dimension,
-      )
-    },
-    [dispatch, editorRef, dimension],
-  )
+    const onSubmitValue = React.useCallback(
+      (option: SelectOption) => {
+        return setGroupChildConstraint(
+          dispatch,
+          option.value,
+          editorRef.current.selectedViews,
+          editorRef.current.allElementProps,
+          dimension,
+        )
+      },
+      [dispatch, editorRef, dimension],
+    )
 
-  return (
-    <PopupList
-      id={`group-child-resize-${dimension}`}
-      onSubmitValue={onSubmitValue}
-      value={listValue}
-      options={groupChildConstraintOptions}
-      style={{
-        position: 'relative',
-        fontSize: listValue.value === 'not-constrained' ? 9 : 'inherit',
-      }}
-      containerMode={constraintType === 'constrained' ? 'default' : 'showBorderOnHover'}
-      controlStyles={{
-        ...getControlStyles('simple'),
-        mainColor: mainColor,
-      }}
-    />
-  )
-})
+    return (
+      <PopupList
+        id={`group-child-resize-${dimension}`}
+        onSubmitValue={onSubmitValue}
+        value={listValue}
+        options={groupChildConstraintOptions}
+        style={{
+          position: 'relative',
+          fontSize: listValue.value === 'not-constrained' ? 9 : 'inherit',
+        }}
+        containerMode={constraintType === 'constrained' ? 'default' : 'showBorderOnHover'}
+        controlStyles={{
+          ...getControlStyles('simple'),
+          mainColor: mainColor,
+        }}
+      />
+    )
+  },
+)
 
 GroupConstraintSelect.displayName = 'GroupConstraintSelect'
 
@@ -608,7 +621,7 @@ function strategyForChangingFillFixedHugType(
     case 'detected':
     case 'computed':
     case 'hug-group':
-      return setPropFixedStrategies('always', axis, cssNumber(fixedValue, null))
+      return setPropFixedSizeStrategies('always', axis, cssNumber(fixedValue, null))
     default:
       assertNever(mode)
   }
@@ -643,7 +656,7 @@ function isNumberInputEnabled(value: FixedHugFill | null): boolean {
   return value?.type === 'fixed' || value?.type === 'fill' || value?.type === 'hug-group'
 }
 
-const anySelectedElementGroupOrChildOfGroup = createSelector(
+export const anySelectedElementGroupOrChildOfGroup = createSelector(
   metadataSelector,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
@@ -660,7 +673,7 @@ const anySelectedElementGroupOrChildOfGroup = createSelector(
   },
 )
 
-const allElementsAreGroupChildren = createSelector(
+export const allElementsAreGroupChildren = createSelector(
   metadataSelector,
   (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
