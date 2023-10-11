@@ -3,7 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { FlexRow, ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
+import { FlexColumn, FlexRow, ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
 import type { ResizableProps } from '../../../uuiui-deps'
 import { User } from '../../../uuiui-deps'
 import { MenuTab } from '../../../uuiui/menu-tab'
@@ -57,12 +57,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const dispatch = useDispatch()
 
-  const loggedIn = useEditorState(
-    Substores.restOfStore,
-    (store) => User.isLoggedIn(store.userState.loginState),
-    'LeftPaneComponent loggedIn',
-  )
-
   const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
       let actions: Array<EditorAction> = []
@@ -84,45 +78,16 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
-  const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
-  const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
-    (_event, _direction, _ref, delta) => {
-      setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
-    },
-    [setLeftPanelWidth],
-  )
-
-  const leftMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'LeftPaneComponent leftMenuExpanded',
-  )
-
-  if (!leftMenuExpanded) {
-    return null
-  }
-
   return (
     <LowPriorityStoreProvider>
-      <ResizableFlexColumn // TODO resizable is not needed
-        enable={{ right: false }}
-        onResizeStop={onLeftPanelResizeStop}
-        defaultSize={{
-          width: '100%', // TODO 100% is sus
-          height: '100%',
-        }}
-        size={{
-          width: '100%', // TODO 100% is sus
-          height: '100%',
-        }}
+      <FlexColumn
         style={{
           overscrollBehavior: 'contain',
           backgroundColor: colorTheme.leftPaneBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
           boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-          display: 'flex',
-          flexDirection: 'column',
           overflow: 'hidden',
+          flex: 1,
         }}
       >
         <TitleBarProjectTitle panelData={props.panelData} />
@@ -159,7 +124,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
           {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
         </div>
-      </ResizableFlexColumn>
+      </FlexColumn>
     </LowPriorityStoreProvider>
   )
 })
