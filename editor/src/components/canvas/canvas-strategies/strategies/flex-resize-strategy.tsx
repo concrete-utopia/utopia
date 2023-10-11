@@ -65,7 +65,10 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from './group-helpers'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import {
+  pushIntendedBoundsGroup,
+  pushIntendedBoundsAndUpdateTargets,
+} from '../../commands/push-intended-bounds-and-update-groups-command'
 import { trueUpElementChanged } from '../../../editor/store/editor-state'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
@@ -354,8 +357,8 @@ export function flexResizeStrategy(
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
-            pushIntendedBoundsAndUpdateGroups(
-              [{ target: selectedElement, frame: newFrame }],
+            pushIntendedBoundsAndUpdateTargets(
+              [pushIntendedBoundsGroup(selectedElement, newFrame)],
               'starting-metadata',
             ),
             ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),

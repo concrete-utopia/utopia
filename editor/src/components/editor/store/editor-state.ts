@@ -1347,7 +1347,27 @@ export function trueUpChildrenOfElementChanged(
   }
 }
 
-export type TrueUpTarget = TrueUpElementChanged | TrueUpChildrenOfElementChanged
+export interface TrueUpEmptyElement {
+  type: 'TRUE_UP_EMPTY_ELEMENT'
+  target: ElementPath
+  frame: CanvasRectangle
+}
+
+export function trueUpEmptyElement(
+  target: ElementPath,
+  frame: CanvasRectangle,
+): TrueUpEmptyElement {
+  return {
+    type: 'TRUE_UP_EMPTY_ELEMENT',
+    target: target,
+    frame: frame,
+  }
+}
+
+export type TrueUpTarget =
+  | TrueUpElementChanged
+  | TrueUpChildrenOfElementChanged
+  | TrueUpEmptyElement
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {

@@ -22,7 +22,10 @@ import { detectFillHugFixedState } from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
 import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../canvas-types'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import {
+  pushIntendedBoundsGroup,
+  pushIntendedBoundsAndUpdateTargets,
+} from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -232,8 +235,8 @@ export function absoluteResizeBoundingBoxStrategy(
                   edgePosition,
                   ensureFramePointsExist,
                 ),
-                pushIntendedBoundsAndUpdateGroups(
-                  [{ target: selectedElement, frame: newFrame }],
+                pushIntendedBoundsAndUpdateTargets(
+                  [pushIntendedBoundsGroup(selectedElement, newFrame)],
                   'starting-metadata',
                 ),
                 queueGroupTrueUp(childGroups.map(trueUpElementChanged)),

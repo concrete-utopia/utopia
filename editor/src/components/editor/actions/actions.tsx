@@ -99,6 +99,8 @@ import {
   localRectangle,
   zeroRectIfNullOrInfinity,
   roundPointToNearestWhole,
+  boundingRectangleArray,
+  zeroRectangle,
 } from '../../../core/shared/math-utils'
 import type {
   PackageStatusMap,
@@ -119,11 +121,9 @@ import type {
 import {
   assetFile,
   directory,
-  id,
   imageFile,
   isImageFile,
   isDirectory,
-  ParsedTextFile,
 } from '../../../core/shared/project-file-types'
 import {
   codeFile,
@@ -349,8 +349,9 @@ import type {
   EditorStoreUnpatched,
   NavigatorEntry,
   TrueUpTarget,
+  TrueUpEmptyElement,
 } from '../store/editor-state'
-import { trueUpChildrenOfElementChanged } from '../store/editor-state'
+import { trueUpChildrenOfElementChanged, trueUpEmptyElement } from '../store/editor-state'
 import { trueUpElementChanged } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -505,8 +506,9 @@ import type {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
-import { pushIntendedBoundsAndUpdateGroups } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
-import { addToTrueUpGroups, trueUpTargetToTargets } from '../../../core/model/groups'
+import type { PushIntendedBoundsTarget } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
+import { pushIntendedBoundsAndUpdateTargets } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
+import { addToTrueUpGroups, trueUpTargetToNormalizeBounds } from '../../../core/model/groups'
 import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
@@ -952,7 +954,60 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         return MetadataUtils.getSiblingsOrdered(editor.jsxMetadata, editor.elementPathTree, target)
       })
       .map((entry) => entry.elementPath)
-    return addToTrueUpGroups(withUpdatedSelectedViews, ...siblings.map(trueUpElementChanged))
+
+    function cascadeDelete(path: ElementPath): boolean {
+      return (
+        // it's a group
+        treatElementAsGroupLike(editor.jsxMetadata, path) ||
+        // it's a framgent
+        treatElementAsFragmentLike(
+          editor.jsxMetadata,
+          editor.allElementProps,
+          editor.elementPathTree,
+          path,
+        )
+        // TODO it's hug
+      )
+    }
+
+    const trueUpElementsChanged = siblings.map(trueUpElementChanged)
+
+    const trueUpEmptyElements = mapDropNulls((path): TrueUpEmptyElement | null => {
+      if (EP.isStoryboardPath(path) || cascadeDelete(path)) {
+        return null
+      }
+
+      const canvasFrame = MetadataUtils.getFrameInCanvasCoords(path, editor.jsxMetadata)
+      if (canvasFrame == null || !isFiniteRectangle(canvasFrame)) {
+        return null
+      }
+
+      const childrenFrame =
+        boundingRectangleArray(
+          mapDropNulls((child) => {
+            const childFrame = child.globalFrame
+            if (childFrame == null || !isFiniteRectangle(childFrame)) {
+              return null
+            }
+            return childFrame
+          }, MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path)),
+        ) ?? canvasRectangle(zeroRectangle)
+
+      function combineFrames(main: CanvasRectangle, backup: CanvasRectangle): CanvasRectangle {
+        return canvasRectangle({
+          x: main.x === 0 ? backup.x : main.x, // TODO this should use the tlbr from the props, not the rect!
+          y: main.y === 0 ? backup.y : main.y, // TODO this should use the tlbr from the props, not the rect!
+          width: main.width === 0 ? backup.width : main.width,
+          height: main.height === 0 ? backup.height : main.height,
+        })
+      }
+
+      return trueUpEmptyElement(path, combineFrames(canvasFrame, childrenFrame))
+    }, uniqBy(targets.map(EP.parentPath), EP.pathsEqual))
+
+    const trueUps: Array<TrueUpTarget> = [...trueUpElementsChanged, ...trueUpEmptyElements]
+
+    return addToTrueUpGroups(withUpdatedSelectedViews, ...trueUps)
   }
 }
 
@@ -3798,26 +3853,24 @@ export const UPDATE_FNS = {
   TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
     const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
       (trueUpTarget) => {
-        return trueUpTargetToTargets(editor.jsxMetadata, editor.elementPathTree, trueUpTarget)
+        return trueUpTargetToNormalizeBounds(
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          trueUpTarget,
+        )
       },
     )
-    const canvasFrameAndTargets: Array<CanvasFrameAndTarget> = mapDropNulls((element) => {
-      const globalFrame = MetadataUtils.findElementByElementPath(
-        editor.jsxMetadata,
-        element,
-      )?.globalFrame
-      if (globalFrame == null || isInfinityRectangle(globalFrame)) {
-        return null
-      }
-      return {
-        frame: globalFrame,
-        target: element,
-      }
-    }, targetsToTrueUp)
+    const normalizeBoundsArray: Array<PushIntendedBoundsTarget> = mapDropNulls(
+      (element) => element,
+      targetsToTrueUp,
+    )
     const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
-      pushIntendedBoundsAndUpdateGroups(canvasFrameAndTargets, 'live-metadata'),
+      pushIntendedBoundsAndUpdateTargets(normalizeBoundsArray, 'live-metadata'),
     ])
-    return { ...editorWithGroupsTruedUp, trueUpGroupsForElementAfterDomWalkerRuns: [] }
+    return {
+      ...editorWithGroupsTruedUp,
+      trueUpGroupsForElementAfterDomWalkerRuns: [],
+    }
   },
   // NB: this can only update attribute values and part of attribute value,
   // If you want other types of JSXAttributes, that needs to be added

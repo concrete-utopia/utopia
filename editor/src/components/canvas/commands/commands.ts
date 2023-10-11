@@ -43,8 +43,8 @@ import type { DuplicateElement } from './duplicate-element-command'
 import { runDuplicateElement } from './duplicate-element-command'
 import type { UpdateFunctionCommand } from './update-function-command'
 import { runUpdateFunctionCommand } from './update-function-command'
-import type { PushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
-import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
+import type { PushIntendedBoundsAndUpdateTargets } from './push-intended-bounds-and-update-groups-command'
+import { runPushIntendedBoundsAndUpdateTargets } from './push-intended-bounds-and-update-groups-command'
 import type { DeleteProperties } from './delete-properties-command'
 import { runDeleteProperties } from './delete-properties-command'
 import type { AddImportsToFile } from './add-imports-to-file-command'
@@ -116,7 +116,7 @@ export type CanvasCommand =
   | SetCursorCommand
   | SetElementsToRerenderCommand
   | AppendElementsToRerenderCommand
-  | PushIntendedBoundsAndUpdateGroups
+  | PushIntendedBoundsAndUpdateTargets
   | DeleteProperties
   | SetProperty
   | UpdatePropIfExists
@@ -177,8 +177,8 @@ export function runCanvasCommand(
       return runSetElementsToRerender(editorState, command)
     case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
       return runAppendElementsToRerender(editorState, command)
-    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
-      return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
+    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_TARGETS':
+      return runPushIntendedBoundsAndUpdateTargets(editorState, command, commandLifecycle)
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':

@@ -37,7 +37,10 @@ import {
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import type { CanvasCommand } from '../../commands/commands'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import {
+  pushIntendedBoundsGroup,
+  pushIntendedBoundsAndUpdateTargets,
+} from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -117,8 +120,10 @@ export function applyMoveCommon(
 
       return strategyApplicationResult([
         ...commandsForSelectedElements.commands,
-        pushIntendedBoundsAndUpdateGroups(
-          commandsForSelectedElements.intendedBounds,
+        pushIntendedBoundsAndUpdateTargets(
+          commandsForSelectedElements.intendedBounds.map((b) =>
+            pushIntendedBoundsGroup(b.target, b.frame),
+          ),
           'starting-metadata',
         ),
         updateHighlightedViews('mid-interaction', []),
@@ -152,8 +157,10 @@ export function applyMoveCommon(
         ...commandsForSelectedElements.commands,
         updateHighlightedViews('mid-interaction', []),
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBoundsAndUpdateGroups(
-          commandsForSelectedElements.intendedBounds,
+        pushIntendedBoundsAndUpdateTargets(
+          commandsForSelectedElements.intendedBounds.map((b) =>
+            pushIntendedBoundsGroup(b.target, b.frame),
+          ),
           'starting-metadata',
         ),
         setElementsToRerenderCommand([...targets, ...targetsForSnapping]),
@@ -257,7 +264,12 @@ export function moveInspectorStrategy(
         commands.push(...moveCommandsResult.commands)
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
-      commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
+      commands.push(
+        pushIntendedBoundsAndUpdateTargets(
+          intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
+          'starting-metadata',
+        ),
+      )
       commands.push(setElementsToRerenderCommand(selectedElementPaths))
       return commands
     },

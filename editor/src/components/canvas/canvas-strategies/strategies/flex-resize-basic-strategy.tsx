@@ -4,7 +4,6 @@ import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type { LengthPropertyToAdjust } from '../../commands/adjust-css-length-command'
 import {
-  AdjustCssLengthProperties,
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
@@ -34,9 +33,11 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
 import { getElementDimensions } from './flex-resize-helpers'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import {
+  pushIntendedBoundsGroup,
+  pushIntendedBoundsAndUpdateTargets,
+} from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpElementChanged } from '../../../editor/store/editor-state'
@@ -223,8 +224,8 @@ export function flexResizeBasicStrategy(
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
-            pushIntendedBoundsAndUpdateGroups(
-              [{ target: selectedElement, frame: resizedBounds }],
+            pushIntendedBoundsAndUpdateTargets(
+              [pushIntendedBoundsGroup(selectedElement, resizedBounds)],
               'starting-metadata',
             ),
             ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),

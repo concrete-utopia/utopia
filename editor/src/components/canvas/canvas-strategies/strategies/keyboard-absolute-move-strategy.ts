@@ -1,14 +1,9 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { Keyboard, KeyCharacter } from '../../../../utils/keyboard'
+import { Keyboard } from '../../../../utils/keyboard'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
-import {
-  emptyStrategyApplicationResult,
-  getTargetPathsFromInteractionTarget,
-  strategyApplicationResult,
-} from '../canvas-strategy-types'
+import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
   canvasRectangle,
   offsetPoint,
   offsetRect,
@@ -30,7 +25,10 @@ import {
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
+import {
+  pushIntendedBoundsGroup,
+  pushIntendedBoundsAndUpdateTargets,
+} from '../../commands/push-intended-bounds-and-update-groups-command'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import type { InteractionSession } from '../interaction-state'
@@ -96,7 +94,12 @@ export function keyboardAbsoluteMoveStrategy(
         const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
-        commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
+        commands.push(
+          pushIntendedBoundsAndUpdateTargets(
+            intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
+            'starting-metadata',
+          ),
+        )
         commands.push(setElementsToRerenderCommand(selectedElements))
         return strategyApplicationResult(commands)
       } else {
