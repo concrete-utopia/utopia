@@ -1,3 +1,4 @@
+import { within } from '@testing-library/react'
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
 import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
@@ -6,7 +7,8 @@ import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { notice } from '../common/notice'
-import { groupSectionOption } from './editor-contract-section'
+import { EditorContractSelectorTestID, groupSectionOption } from './editor-contract-section'
+import { MenuListTestID } from '../../uuiui/widgets/popup-list/popup-list'
 
 const projectWithSizedDiv = `import * as React from 'react'
 import { Storyboard, Group } from 'utopia-api'
@@ -809,11 +811,16 @@ async function chooseWrapperType(
   toWrapperType: 'fragment' | 'frame' | 'group',
 ) {
   const divLabel = groupSectionOption(fromWrapperType).label!
-  const groupDropDown = editor.renderedDOM.getAllByText(divLabel).at(-1)!
+
+  const contractSelector = editor.renderedDOM.getByTestId(EditorContractSelectorTestID)
+  // only search within the contract section for the word "Fragment" or "Group"
+  const groupDropDown = within(contractSelector).getAllByText(divLabel).at(-1)!
   await mouseClickAtPoint(groupDropDown, { x: 2, y: 2 })
 
+  const menuPortal = editor.renderedDOM.getByTestId(MenuListTestID)
   const wrapperLabel = groupSectionOption(toWrapperType).label!
-  const optionElement = editor.renderedDOM.getAllByText(wrapperLabel).at(-1)!
+  // only search within the open dropdown for the word "Fragment" or "Group"
+  const optionElement = within(menuPortal).getByText(wrapperLabel)
   await mouseClickAtPoint(optionElement, { x: 2, y: 2 })
 }
 
