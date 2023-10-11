@@ -128,4 +128,25 @@ describe('Zero sized element controls', () => {
       ),
     )
   })
+  it('double click on a inline element adds size and display prop', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <i style={{ position: 'absolute', top: 20, left: 20 }} data-uid='bbb' data-testid='bbb' />
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await selectTargetAndDoubleClickOnZeroSizeControl(renderResult, target, 'bbb')
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <i style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'inline-block' }} data-uid='bbb' data-testid='bbb' />
+        </div>`,
+      ),
+    )
+  })
 })

@@ -36,10 +36,14 @@ import * as PP from '../../../core/shared/property-path'
 import type { InspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { executeFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { cssNumber } from '../../inspector/common/css-utils'
-import { deleteProperties } from '../commands/delete-properties-command'
 import { setCssLengthProperty, setExplicitCssValue } from '../commands/set-css-length-command'
-import { allPins } from '../canvas-strategies/strategies/resize-helpers'
-import { flexChildProps, pruneFlexPropsCommands } from '../../inspector/inspector-common'
+import {
+  flexChildProps,
+  isIntrinsicallyInlineElement,
+  pruneFlexPropsCommands,
+} from '../../inspector/inspector-common'
+import type { CanvasCommand } from '../commands/commands'
+import { setProperty } from '../commands/set-property-command'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
 export const ZeroSizedEventsControlTestID = `${ZeroSizedControlTestID}-events`
@@ -144,17 +148,9 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
   },
 )
 
-interface ZeroSizeSelectControlProps {
-  element: ElementInstanceMetadata
-  dispatch: EditorDispatch
-  canvasOffset: CanvasPoint
-  scale: number
-  isHighlighted: boolean
-}
-
 const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
   name: 'convert flex child to non-zero frame',
-  strategy: (metadata, selectedElementPaths, elementPathTree, allElementProps) => {
+  strategy: () => {
     if (
       element.specialSizeMeasurements.parentLayoutSystem !== 'flex' ||
       element.specialSizeMeasurements.parentFlexDirection == null
@@ -185,9 +181,20 @@ const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): Insp
   },
 })
 
+function maybeAddDisplayInlineBlockCommands(
+  element: ElementInstanceMetadata,
+): Array<CanvasCommand> {
+  if (isIntrinsicallyInlineElement(element)) {
+    return [
+      setProperty('always', element.elementPath, PP.create('style', 'display'), 'inline-block'),
+    ]
+  }
+  return []
+}
+
 const convertToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
-  name: 'convert flex child to non-zero frame',
-  strategy: (metadata, selectedElementPaths, elementPathTree, allElementProps) => {
+  name: 'convert element to non-zero frame',
+  strategy: () => {
     return [
       setCssLengthProperty(
         'always',
@@ -207,6 +214,7 @@ const convertToSizedStrategy = (element: ElementInstanceMetadata): InspectorStra
         'create-if-not-existing',
         'do-not-warn',
       ),
+      ...maybeAddDisplayInlineBlockCommands(element),
     ]
   },
 })
@@ -266,6 +274,14 @@ const ZeroSizeSelectControl = React.memo((props: ZeroSizeSelectControlProps) => 
     )
   }
 })
+
+interface ZeroSizeSelectControlProps {
+  element: ElementInstanceMetadata
+  dispatch: EditorDispatch
+  canvasOffset: CanvasPoint
+  scale: number
+  isHighlighted: boolean
+}
 
 export interface ZeroSizeControlProps {
   frame: CanvasRectangle
