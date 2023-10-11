@@ -520,6 +520,79 @@ export var storyboard = (
 `)
   })
 
+  it('can insert two elements one after the other', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img'])
+    await insertViaAddElementPopup(editor, 'img')
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img-2'])
+    await insertViaAddElementPopup(editor, 'img')
+
+    expect(editor.getActionsCausingDuplicateUIDs()).toHaveLength(0)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+    <img
+      style={{
+        width: 100,
+        height: 100,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+      }}
+      src='/editor/utopia-logo-white-fill.png?hash=nocommit'
+      data-uid='new-img'
+    />
+    <img
+      style={{
+        width: 100,
+        height: 100,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+      }}
+      src='/editor/utopia-logo-white-fill.png?hash=nocommit'
+      data-uid='new-img-2'
+    />
+  </div>`),
+    )
+  })
+
   describe('add element to conditional', () => {
     it(`can't add element to the root of a conditional`, async () => {
       const editor = await renderTestEditorWithCode(

@@ -78,6 +78,7 @@ import type { FeatureName } from './feature-switches'
 import { isFeatureEnabled, setFeatureEnabled } from './feature-switches'
 import { getUtopiaID } from '../core/shared/uid-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
+import { UTOPIA_IRRECOVERABLE_ERROR_MESSAGE } from '../components/editor/store/dispatch'
 import { getCanvasRectangleFromElement } from '../core/shared/dom-utils'
 import { CanvasContainerID } from '../components/canvas/canvas-types'
 

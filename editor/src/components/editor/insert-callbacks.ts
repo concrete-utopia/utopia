@@ -33,7 +33,7 @@ import { safeIndex } from '../../core/shared/array-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { elementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { getInsertionPath } from './store/insertion-path'
-import { generateConsistentUID } from '../../core/shared/uid-utils'
+import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
 import type { ComponentElementToInsert } from '../custom-code/code-file'
@@ -217,7 +217,10 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       const elementUid = generateConsistentUID('element', allElementUids)
 
       const element = elementToReparent(
-        elementFromInsertMenuItem(elementToInsert.value.element, elementUid),
+        fixUtopiaElement(
+          elementFromInsertMenuItem(elementToInsert.value.element, elementUid),
+          allElementUids,
+        ).value,
         elementToInsert.value.importsToAdd,
       )
 
