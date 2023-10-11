@@ -127,16 +127,6 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const draggablePanelsEnabled = true // TODO Remove me!
-  const codeEditorWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth + 10
-        : 0,
-    'DesignPanelRootInner interfaceDesigner',
-  )
-
   return (
     <>
       <SimpleFlexRow
@@ -158,47 +148,8 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
-            {unless(
-              draggablePanelsEnabled,
-              <div
-                id='vscode-editor'
-                style={{ height: 'calc(100% - 20px)', position: 'absolute', margin: 10, zIndex: 1 }}
-              >
-                <CodeEditorPane panelData={null as any} small={false} />
-              </div>,
-            )}
-            {unless(
-              draggablePanelsEnabled,
-              <div
-                id='left-pane'
-                style={{
-                  height: 'calc(100% - 20px)',
-                  position: 'absolute',
-                  top: 0,
-                  left: codeEditorWidth,
-                  zIndex: 1,
-                  margin: 10,
-                }}
-              >
-                <LeftPaneComponent panelData={null as any} />
-              </div>,
-            )}
             <CanvasWrapperComponent />
-            {unless(
-              draggablePanelsEnabled,
-              <div
-                id='inspector-root'
-                style={{
-                  height: 'calc(100% - 20px)',
-                  position: 'absolute',
-                  right: 0,
-                  margin: 10,
-                }}
-              >
-                <ResizableRightPane panelData={null as any} />
-              </div>,
-            )}
-            {when(draggablePanelsEnabled, <GridPanelsContainer />)}
+            <GridPanelsContainer />
           </SimpleFlexColumn>
         }
       </SimpleFlexRow>
