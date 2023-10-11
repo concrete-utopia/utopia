@@ -40,7 +40,6 @@ import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
 import { isFeatureEnabled } from '../../utils/feature-switches'
 import { unless } from '../../utils/react-conditionals'
 import type { StandardLonghandProperties } from 'csstype'
-import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
@@ -163,10 +162,6 @@ export const CanvasWrapperComponent = React.memo(() => {
           dispatch={dispatch}
         />
       ) : null}
-      {unless(
-        isFeatureEnabled('Draggable Floating Panels'),
-        <CanvasFloatingToolbars style={{ left: leftPanelWidth + codeEditorWidth }} />,
-      )}
 
       <FlexRow
         style={{

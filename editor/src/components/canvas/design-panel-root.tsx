@@ -127,7 +127,7 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const draggablePanelsEnabled = isFeatureEnabled('Draggable Floating Panels')
+  const draggablePanelsEnabled = true // TODO Remove me!
   const codeEditorWidth = useEditorState(
     Substores.restOfEditor,
     (store) =>
@@ -230,9 +230,7 @@ interface ResizableRightPaneProps {
 }
 
 export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const defaultInspectorWidth = isFeatureEnabled('Draggable Floating Panels')
-    ? GridMenuWidth
-    : UtopiaTheme.layout.inspectorSmallWidth
+  const defaultInspectorWidth = GridMenuWidth
 
   const colorTheme = useColorTheme()
   const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
@@ -288,14 +286,14 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
   }
 
   return (
-    <Resizable
+    <Resizable // TODO DELETE ME!
       ref={resizableRef}
       defaultSize={{
-        width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : defaultInspectorWidth,
+        width: '100%', // TODO 100% is sus
         height: '100%',
       }}
       size={{
-        width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : width,
+        width: '100%', // TODO 100% is sus
         height: '100%',
       }}
       style={{
@@ -312,13 +310,10 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         x: [defaultInspectorWidth, UtopiaTheme.layout.inspectorLargeWidth],
       }}
       enable={{
-        left: isFeatureEnabled('Draggable Floating Panels') ? false : true,
+        left: false,
       }}
     >
-      {when(
-        isFeatureEnabled('Draggable Floating Panels'),
-        <TitleBarUserProfile panelData={props.panelData} />,
-      )}
+      <TitleBarUserProfile panelData={props.panelData} />,
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
@@ -376,20 +371,16 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   return (
     <Resizable // TODO delete me!
       defaultSize={{
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? '100%'
-          : interfaceDesigner.codePaneWidth,
+        width: '100%', // TODO 100% is sus
         height: '100%',
       }}
       size={{
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? '100%'
-          : interfaceDesigner.codePaneWidth,
+        width: '100%', // TODO 100% is sus
         height: '100%',
       }}
       enable={{
         top: false,
-        right: isFeatureEnabled('Draggable Floating Panels') ? false : true,
+        right: false,
         bottom: false,
         topRight: false,
         bottomRight: false,
@@ -406,10 +397,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         flexDirection: 'column',
       }}
     >
-      {when(
-        isFeatureEnabled('Draggable Floating Panels'),
-        <TitleBarCode panelData={props.panelData} />,
-      )}
+      <TitleBarCode panelData={props.panelData} />,
       <div
         style={{
           transformOrigin: 'top left',
