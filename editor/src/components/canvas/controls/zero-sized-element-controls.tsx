@@ -162,10 +162,6 @@ const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): Insp
       return null
     }
     return [
-      deleteProperties('always', element.elementPath, [
-        PP.create('style', 'position'),
-        ...allPins.map((p) => PP.create('style', p)),
-      ]),
       ...pruneFlexPropsCommands(flexChildProps, element.elementPath),
       setCssLengthProperty(
         'always',

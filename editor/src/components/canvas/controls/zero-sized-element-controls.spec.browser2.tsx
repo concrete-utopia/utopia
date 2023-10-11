@@ -80,12 +80,12 @@ describe('Zero sized element controls', () => {
       ),
     )
   })
-  it('double click on a div element with a flex parent removes position: absolute and pins', async () => {
+  it('double click on a div element with a flex parent keeps position: absolute and pins, adds width and height', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'flex' }} data-uid='container'>
-            <div style={{ position: 'absolute', top: 20, left: 20 }} data-uid='bbb' data-testid='bbb' />
+            <div style={{ position: 'absolute', top: 20, left: 20, flexBasis: 0 }} data-uid='bbb' data-testid='bbb' />
           </div>
         </div>`,
       ),
@@ -101,7 +101,7 @@ describe('Zero sized element controls', () => {
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'flex' }} data-uid='container'>
-            <div style={{ width: 100, height: 100 }} data-uid='bbb' data-testid='bbb' />
+            <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100 }} data-uid='bbb' data-testid='bbb' />
           </div>
         </div>`,
       ),
