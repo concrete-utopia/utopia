@@ -34,7 +34,7 @@ import {
   selectOptionLabel,
 } from '../fill-hug-fixed-control'
 import type { Axis, FixedHugFillMode } from '../inspector-common'
-import { MaxContent } from '../inspector-common'
+import { HugContentAttrValues, MaxContent } from '../inspector-common'
 import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 
@@ -553,6 +553,69 @@ describe('Fixed / Fill / Hug control', () => {
       expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
     })
 
+    const NonHugContentAttrValues = [200, '100%', 'inherit', '200px']
+    describe('Detect Hug Contents state with different width/height values', () => {
+      HugContentAttrValues.forEach((width) =>
+        it(`child has Hug Contents width (${width}) but not height (200)`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight(width, 200),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
+
+          const hugButtons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(1)
+
+          const fixedButtons = await editor.renderedDOM.findAllByText(FixedLabel)
+          expect(fixedButtons).toHaveLength(1)
+        }),
+      )
+      HugContentAttrValues.forEach((height) =>
+        it(`child has Hug Contents height (${height}) but not width (200)`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight(200, height),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
+
+          const hugButtons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(1)
+
+          const fixedButtons = await editor.renderedDOM.findAllByText(FixedLabel)
+          expect(fixedButtons).toHaveLength(1)
+        }),
+      )
+      HugContentAttrValues.forEach((width) =>
+        it(`child has Hug Contents width (${width}) and height (${MaxContent})`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight(width, MaxContent),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
+
+          const hugButtons = await editor.renderedDOM.findAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(2)
+        }),
+      )
+      NonHugContentAttrValues.forEach((width) =>
+        it(`child doesn't have Hug Contents in width (${width}) or height (200)`, async () => {
+          const editor = await renderTestEditorWithCode(
+            projectWithParentWidthHeight('100%', 200),
+            'await-first-dom-report',
+          )
+          await select(editor, 'parent')
+
+          const hugButtons = editor.renderedDOM.queryAllByText(HugContentsLabel)
+          expect(hugButtons).toHaveLength(0)
+
+          const otherButtons = await editor.renderedDOM.queryAllByText(
+            (content) =>
+              content === DetectedLabel || content === FixedLabel || content === FillContainerLabel,
+          )
+          expect(otherButtons).toHaveLength(2)
+        }),
+      )
+    })
     describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
       it('child is set to fill container on the horizontal axis', async () => {
         const editor = await renderTestEditorWithCode(
@@ -1927,6 +1990,39 @@ export var storyboard = (
           width: 229,
           height: 149,
           contain: 'layout',
+        }}
+      />
+    </div>
+  </Storyboard>
+)
+`
+
+const projectWithParentWidthHeight = (
+  width: number | string | null,
+  height: number | string | null,
+) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+import { App } from '/src/app.js'
+
+export var storyboard = (
+  <Storyboard data-uid='0cd'>
+    <div
+      data-testid='parent'
+      style={{
+        ${width != null ? `width: '${width}'` : ''},
+        ${height != null ? `height: '${height}'` : ''},
+        position: 'absolute',
+        left: 212,
+        top: 128,
+      }}
+      data-label='Playground'
+    >
+      <div
+        data-testid='child'
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 149,
+          height: 149,
         }}
       />
     </div>

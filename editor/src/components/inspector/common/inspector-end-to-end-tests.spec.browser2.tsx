@@ -821,13 +821,13 @@ describe('inspector tests with real metadata', () => {
       'position-maxWidth-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"0"`)
+    matchInlineSnapshotBrowser(widthControl.value, `""`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"disabled"`,
     )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"0"`)
+    matchInlineSnapshotBrowser(heightControl.value, `""`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"disabled"`,
