@@ -524,12 +524,7 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
-import {
-  emptyGetAllUniqueUIDsWorkingResult,
-  extractUidFromJSXElementChild,
-  extractUIDFromTopLevelElement,
-  getAllUniqueUids,
-} from '../../../core/model/get-unique-ids'
+import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -4713,8 +4708,7 @@ export const UPDATE_FNS = {
 
       const existingUids = new Set(getAllUniqueUids(editor.projectContents).uniqueIDs)
 
-      const newUID = generateConsistentUID('zzz', existingUids)
-      // console.log(newUID)
+      const newUID = generateConsistentUID('new', existingUids)
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
