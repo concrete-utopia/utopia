@@ -101,7 +101,7 @@ describe('Zero sized element controls', () => {
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'flex' }} data-uid='container'>
-            <div style={{ flexBasis: 100, height: 100 }} data-uid='bbb' data-testid='bbb' />
+            <div style={{ width: 100, height: 100 }} data-uid='bbb' data-testid='bbb' />
           </div>
         </div>`,
       ),

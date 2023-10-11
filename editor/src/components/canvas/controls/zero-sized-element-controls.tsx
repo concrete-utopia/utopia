@@ -39,6 +39,7 @@ import { cssNumber } from '../../inspector/common/css-utils'
 import { deleteProperties } from '../commands/delete-properties-command'
 import { setCssLengthProperty, setExplicitCssValue } from '../commands/set-css-length-command'
 import { allPins } from '../canvas-strategies/strategies/resize-helpers'
+import { flexChildProps, pruneFlexPropsCommands } from '../../inspector/inspector-common'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
 export const ZeroSizedEventsControlTestID = `${ZeroSizedControlTestID}-events`
@@ -160,21 +161,16 @@ const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): Insp
     ) {
       return null
     }
-    const horizontalProp = element.specialSizeMeasurements.parentFlexDirection.startsWith('row')
-      ? 'flexBasis'
-      : 'width'
-    const verticalProp = element.specialSizeMeasurements.parentFlexDirection.startsWith('column')
-      ? 'flexBasis'
-      : 'height'
     return [
       deleteProperties('always', element.elementPath, [
         PP.create('style', 'position'),
         ...allPins.map((p) => PP.create('style', p)),
       ]),
+      ...pruneFlexPropsCommands(flexChildProps, element.elementPath),
       setCssLengthProperty(
         'always',
         element.elementPath,
-        PP.create('style', horizontalProp),
+        PP.create('style', 'width'),
         setExplicitCssValue(cssNumber(100)),
         element.specialSizeMeasurements.parentFlexDirection,
         'create-if-not-existing',
@@ -183,7 +179,7 @@ const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): Insp
       setCssLengthProperty(
         'always',
         element.elementPath,
-        PP.create('style', verticalProp),
+        PP.create('style', 'height'),
         setExplicitCssValue(cssNumber(100)),
         element.specialSizeMeasurements.parentFlexDirection,
         'create-if-not-existing',
