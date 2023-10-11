@@ -1217,7 +1217,7 @@ export function snapPoint(
   snappedPointOnCanvas: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
-  const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
+  const anythingPinnedAndNotAbsolutePositioned = selectedViews.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
 
