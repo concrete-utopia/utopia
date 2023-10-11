@@ -43,7 +43,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
   'Simplified Layout Section': false,
-  'Draggable Floating Panels': !IS_TEST_ENVIRONMENT,
+  'Draggable Floating Panels': true,
   'Debug - Print UIDs': false,
 }
 
