@@ -366,8 +366,6 @@ import {
   getOpenTextFileKey,
   getOpenUIJSFileKey,
   LeftMenuTab,
-  LeftPaneDefaultWidth,
-  LeftPaneMinimumWidth,
   mergeStoredEditorStateIntoEditorState,
   modifyOpenJsxElementAtPath,
   modifyParseSuccessAtPath,

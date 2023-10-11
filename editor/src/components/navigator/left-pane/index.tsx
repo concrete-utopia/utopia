@@ -3,35 +3,20 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { FlexColumn, FlexRow, ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
-import type { ResizableProps } from '../../../uuiui-deps'
-import { User } from '../../../uuiui-deps'
+import { FlexColumn, FlexRow, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { MenuTab } from '../../../uuiui/menu-tab'
+import type { StoredPanel } from '../../canvas/grid-panels-state'
 import type { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
-import { clearSelection, setLeftMenuTab } from '../../editor/actions/action-creators'
+import { setLeftMenuTab } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type { DerivedState, EditorState } from '../../editor/store/editor-state'
-import {
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  LeftPanelMinWidth,
-  LeftPanelWidthAtom,
-} from '../../editor/store/editor-state'
+import { LeftMenuTab } from '../../editor/store/editor-state'
 import { LowPriorityStoreProvider } from '../../editor/store/store-context-providers'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { ContentsPane } from './contents-pane'
-import { ForksGiven } from './forks-given'
-import { GithubPane } from './github-pane'
-import { SettingsPane } from './settings-pane'
-import { NavigatorComponent } from '../navigator'
-import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
-import type { ResizeCallback } from 're-resizable'
-import type { Menu, Pane } from '../../canvas/grid-panels-state'
-import type { Direction } from 're-resizable/lib/resizer'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { when } from '../../../utils/react-conditionals'
 import { TitleBarProjectTitle } from '../../titlebar/title-bar'
-import type { StoredPanel } from '../../canvas/grid-panels-state'
+import { NavigatorComponent } from '../navigator'
+import { ContentsPane } from './contents-pane'
+import { GithubPane } from './github-pane'
 
 export interface LeftPaneProps {
   editorState: EditorState

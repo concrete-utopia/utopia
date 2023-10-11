@@ -1,7 +1,5 @@
 import React from 'react'
-import { NO_OP } from '../../core/shared/utils'
-import { UtopiaTheme, colorTheme } from '../../uuiui'
-import { LeftPanelMinWidth } from '../editor/store/editor-state'
+import { colorTheme } from '../../uuiui'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, RightPane } from './design-panel-root'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'

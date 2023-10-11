@@ -191,15 +191,7 @@ export enum LeftMenuTab {
   Navigator = 'navigator',
 }
 
-export const LeftPaneMinimumWidth = 5
-
-export const LeftPaneDefaultWidth = GridMenuWidth
-export const LeftPanelMinWidth = 240
-export const DefaultNavigatorWidth = 280
-export const LeftPanelWidthAtom = atomWithPubSub({
-  key: 'LeftPanelWidthAtom',
-  defaultValue: LeftPaneDefaultWidth,
-})
+export const DefaultNavigatorWidth = 280 // todo make it GridMenuWidth
 export const CanvasSizeAtom = atomWithPubSub({
   key: 'CanvasSizeAtom',
   defaultValue: size(0, 0),

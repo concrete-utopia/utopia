@@ -13,7 +13,6 @@ import { clearPostActionData, setSafeMode } from '../editor/actions/action-creat
 import { useDispatch } from '../editor/store/dispatch-context'
 import {
   CanvasSizeAtom,
-  LeftPanelWidthAtom,
   createCanvasModelKILLME,
   getAllCodeEditorErrors,
 } from '../editor/store/editor-state'
