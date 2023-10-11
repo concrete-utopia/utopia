@@ -1,45 +1,29 @@
 import React from 'react'
-import { EditorCanvas } from '../../templates/editor-canvas'
-import { ReactErrorOverlay } from '../../third-party/react-error-overlay/react-error-overlay'
-import { setFocus } from '../common/actions'
-import {
-  clearHighlightedViews,
-  clearPostActionData,
-  openCodeEditorFile,
-  setSafeMode,
-  switchEditorMode,
-} from '../editor/actions/action-creators'
-import {
-  createCanvasModelKILLME,
-  getAllCodeEditorErrors,
-  LeftPanelWidthAtom,
-  CanvasSizeAtom,
-} from '../editor/store/editor-state'
-import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
-import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
-import { fastForEach, NO_OP } from '../../core/shared/utils'
-import Footer from '../../third-party/react-error-overlay/components/Footer'
-import Header from '../../third-party/react-error-overlay/components/Header'
-import { FlexColumn, Button, UtopiaTheme, FlexRow } from '../../uuiui'
 import {
   AlwaysTrue,
   usePubSubAtomReadOnly,
   usePubSubAtomWriteOnly,
 } from '../../core/shared/atom-with-pub-sub'
 import type { ErrorMessage } from '../../core/shared/error-messages'
-import CanvasActions from './canvas-actions'
-import { EditorModes } from '../editor/editor-modes'
-import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
-import { StrategyIndicator } from './controls/select-mode/strategy-indicator'
-import { CanvasToolbar } from '../editor/canvas-toolbar'
-import { useDispatch } from '../editor/store/dispatch-context'
-import { shouldShowErrorOverlay } from './canvas-utils'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
+import { NO_OP, fastForEach } from '../../core/shared/utils'
+import { EditorCanvas } from '../../templates/editor-canvas'
+import CloseButton from '../../third-party/react-error-overlay/components/CloseButton'
+import ErrorOverlay from '../../third-party/react-error-overlay/components/ErrorOverlay'
+import Footer from '../../third-party/react-error-overlay/components/Footer'
+import Header from '../../third-party/react-error-overlay/components/Header'
+import { Button, FlexColumn, FlexRow, UtopiaTheme } from '../../uuiui'
+import { clearPostActionData, setSafeMode } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
+import {
+  CanvasSizeAtom,
+  LeftPanelWidthAtom,
+  createCanvasModelKILLME,
+  getAllCodeEditorErrors,
+} from '../editor/store/editor-state'
+import { Substores, useEditorState } from '../editor/store/store-hook'
+import { shouldShowErrorOverlay } from './canvas-utils'
 import { FloatingPostActionMenu } from './controls/select-mode/post-action-menu'
-import { isFeatureEnabled } from '../../utils/feature-switches'
-import { unless } from '../../utils/react-conditionals'
-import type { StandardLonghandProperties } from 'csstype'
 
 export function filterOldPasses(errorMessages: Array<ErrorMessage>): Array<ErrorMessage> {
   let passTimes: { [key: string]: number } = {}
