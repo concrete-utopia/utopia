@@ -122,7 +122,6 @@ import {
   filterGuidelinesStaticAxis,
   oneGuidelinePerDimension,
 } from './controls/guideline-helpers'
-import { determineElementsToOperateOnForDragging } from './controls/select-mode/move-utils'
 import type {
   GuidelineWithRelevantPoints,
   GuidelineWithSnappingVectorAndPointsOfRelevance,
@@ -885,23 +884,21 @@ export function isEdgePositionEqualTo(a: EdgePosition, b: EdgePosition): boolean
 export const SnappingThreshold = 5
 
 export function collectGuidelines(
+  snapTargets: ElementPath[],
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   scale: number,
   draggedPoint: CanvasPoint | null,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
   if (draggedPoint == null) {
     return []
   }
 
   let guidelines: Array<GuidelineWithRelevantPoints> = collectParentAndSiblingGuidelines(
+    snapTargets,
     metadata,
-    allElementProps,
-    pathTrees,
-    selectedViews,
   )
 
   // For any images create guidelines at the current multiplier setting.
@@ -1164,13 +1161,13 @@ export function collectGuidelines(
 }
 
 function innerSnapPoint(
+  snapTargets: ElementPath[],
   selectedViews: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
   point: CanvasPoint,
   resizingFromPosition: EdgePosition | null,
   allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
 ): {
   point: CanvasPoint
   snappedGuideline: GuidelineWithSnappingVectorAndPointsOfRelevance | null
@@ -1178,13 +1175,13 @@ function innerSnapPoint(
 } {
   const guidelines = oneGuidelinePerDimension(
     collectGuidelines(
+      snapTargets,
       jsxMetadata,
       selectedViews,
       canvasScale,
       point,
       resizingFromPosition,
       allElementProps,
-      pathTrees,
     ),
   )
   let snappedPoint = point
@@ -1202,6 +1199,7 @@ function innerSnapPoint(
 }
 
 export function snapPoint(
+  elementsToTarget: ElementPath[],
   selectedViews: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
@@ -1219,13 +1217,6 @@ export function snapPoint(
   snappedPointOnCanvas: CanvasPoint
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
-  const elementsToTarget = determineElementsToOperateOnForDragging(
-    selectedViews,
-    jsxMetadata,
-    true,
-    false,
-  )
-
   const anythingPinnedAndNotAbsolutePositioned = elementsToTarget.some((elementToTarget) => {
     return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
@@ -1247,13 +1238,13 @@ export function snapPoint(
     const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
     if (shouldSnap) {
       const { snappedGuideline: guideline, guidelinesWithSnappingVector } = innerSnapPoint(
+        elementsToTarget,
         selectedViews,
         jsxMetadata,
         canvasScale,
         closestPointOnLine,
         resizingFromPosition,
         allElementProps,
-        pathTrees,
       )
       if (guideline != null) {
         const guidelinePoints = Guidelines.convertGuidelineToPoints(guideline.guideline)
@@ -1285,13 +1276,13 @@ export function snapPoint(
     }
   } else {
     const { point, guidelinesWithSnappingVector } = innerSnapPoint(
+      elementsToTarget,
       selectedViews,
       jsxMetadata,
       canvasScale,
       pointToSnap,
       resizingFromPosition,
       allElementProps,
-      pathTrees,
     )
     return shouldSnap
       ? {

@@ -25,8 +25,7 @@ import {
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
-import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
-import type { AbsolutePin, IsCenterBased } from './resize-helpers'
+import type { AbsolutePin } from './resize-helpers'
 import { resizeBoundingBox } from './resize-helpers'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
@@ -103,21 +102,18 @@ function pinsForEdgePosition(edgePosition: EdgePosition): AbsolutePin[] {
   return [...horizontalPins, ...verticalPins]
 }
 
-export function runLegacyAbsoluteResizeSnapping(
+export function snapBoundingBox(
+  elementsToSnapTo: ElementPath[],
   selectedElements: Array<ElementPath>,
   jsxMetadata: ElementInstanceMetadataMap,
   draggedCorner: EdgePosition,
   resizedBounds: CanvasRectangle,
   canvasScale: number,
   lockedAspectRatio: number | null,
-  centerBased: IsCenterBased,
+  centerBased: 'center-based' | 'non-center-based',
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
-): {
-  snapDelta: CanvasVector
-  snappedBoundingBox: CanvasRectangle
-  guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
-} {
+) {
   const oppositeCorner: EdgePosition = {
     x: 1 - draggedCorner.x,
     y: 1 - draggedCorner.y,
@@ -130,6 +126,7 @@ export function runLegacyAbsoluteResizeSnapping(
       : getPointOnDiagonal(draggedCorner, draggedPointMovedWithoutSnap, lockedAspectRatio)
 
   const { snappedPointOnCanvas, guidelinesWithSnappingVector } = snapPoint(
+    elementsToSnapTo,
     selectedElements,
     jsxMetadata,
     canvasScale,

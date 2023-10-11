@@ -25,6 +25,7 @@ import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
@@ -44,6 +45,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -278,7 +280,13 @@ export function keyboardAbsoluteResizeStrategy(
           intendedBounds = changeBoundsResult.intendedBounds
           commands.push(...changeBoundsResult.commands)
         })
-        const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
+        const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
+          canvasState.startingElementPathTree,
+          getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+        )
+        const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
         commands.push(setElementsToRerenderCommand(selectedElements))
