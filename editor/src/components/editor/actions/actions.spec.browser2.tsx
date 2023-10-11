@@ -4429,7 +4429,7 @@ export var storyboard = (
         position: 'absolute',
         width: 44,
         height: 33,
-        top: 403,
+        top: 404,
         left: 698,
         backgroundColor: '#cee5ff',
       }}
@@ -4695,7 +4695,7 @@ export var storyboard = (
             position: 'absolute',
             width: 44,
             height: 33,
-            top: 403,
+            top: 404,
             left: 698,
             backgroundColor: '#cee5ff',
           }}
@@ -4844,7 +4844,7 @@ export var storyboard = (
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 698,
-            top: 403,
+            top: 404,
             width: 44,
             height: 33,
           }}
@@ -5001,7 +5001,7 @@ export var storyboard = (
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 698,
-            top: 403,
+            top: 404,
             width: 44,
             height: 33,
           }}

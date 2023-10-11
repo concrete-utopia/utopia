@@ -397,12 +397,15 @@ const MenuPortal = (props: MenuPortalProps<SelectOption>) => {
     return null
   }
 }
-
+export const MenuListTestID = 'react-select-inspector-menu-list'
 const MenuList = (props: MenuListComponentProps<SelectOption>) => {
   const ref = React.useRef<HTMLDivElement>(null)
   const refCurrent = ref.current
   const propsValue = props.getValue()
   React.useEffect(() => {
+    if (ref.current != null) {
+      ref.current.setAttribute('data-testid', MenuListTestID)
+    }
     if (refCurrent != null) {
       const index = getIndexOfValue(propsValue, [])
       refCurrent.scrollTo({
