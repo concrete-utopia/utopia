@@ -781,11 +781,7 @@ export const MetadataUtils = {
         return [path]
       } else {
         const componentChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path)
-
-        // 4) Replace any root paths with their children
-        const rootPathChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, rootPath)
-        const rootPathOrRootChildren = rootPathChildren.length > 0 ? rootPathChildren : [rootPath]
-        return [...rootPathOrRootChildren, ...componentChildren]
+        return [rootPath, ...componentChildren]
       }
     }, withScenesSkipped)
 
@@ -1630,30 +1626,6 @@ export const MetadataUtils = {
     const element = MetadataUtils.findElementByElementPath(metadata, path)
     if (element != null) {
       return MetadataUtils.getJSXElementName(eitherToMaybe(element.element))
-    } else {
-      return null
-    }
-  },
-  getJSXElementBaseName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
-    const jsxElement = findElementAtPath(path, components)
-    if (jsxElement != null) {
-      if (isJSXElement(jsxElement)) {
-        return jsxElement.name.baseVariable
-      } else {
-        return null
-      }
-    } else {
-      return null
-    }
-  },
-  getJSXElementTagName(path: ElementPath, components: Array<UtopiaJSXComponent>): string | null {
-    const jsxElement = findElementAtPath(path, components)
-    if (jsxElement != null) {
-      if (isJSXElement(jsxElement)) {
-        return getJSXElementNameAsString(jsxElement.name)
-      } else {
-        return null
-      }
     } else {
       return null
     }
@@ -2652,20 +2624,6 @@ export function findJSXElementAtPath(
   const elem = findElementAtPath(target, components)
   return Utils.optionalMap((e) => {
     if (isJSXElement(e)) {
-      return e
-    } else {
-      return null
-    }
-  }, elem)
-}
-
-export function findJSXElementLikeAtPath(
-  target: ElementPath | null,
-  components: Array<UtopiaJSXComponent>,
-): JSXElementLike | null {
-  const elem = findElementAtPath(target, components)
-  return Utils.optionalMap((e) => {
-    if (isJSXElementLike(e)) {
       return e
     } else {
       return null

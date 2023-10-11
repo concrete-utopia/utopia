@@ -116,7 +116,7 @@ export function baseAbsoluteReparentStrategy(
         ? 1
         : fitness,
       apply: (strategyLifecycle) => {
-        const { projectContents, openFile, nodeModules } = canvasState
+        const { projectContents, nodeModules } = canvasState
         return ifAllowedToReparent(
           canvasState,
           canvasState.startingMetadata,
@@ -144,7 +144,6 @@ export function baseAbsoluteReparentStrategy(
                   canvasState.builtInDependencies,
                   projectContents,
                   nodeModules,
-                  openFile,
                   pathToReparent(selectedElement),
                   newParent,
                   'always',

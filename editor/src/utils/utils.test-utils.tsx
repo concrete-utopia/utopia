@@ -55,8 +55,8 @@ import {
 } from '../core/shared/project-file-types'
 import { foldEither, right } from '../core/shared/either'
 import Utils from './utils'
-import type { SimpleRectangle } from '../core/shared/math-utils'
-import { canvasRectangle, localRectangle } from '../core/shared/math-utils'
+import type { SimpleRectangle, WindowRectangle } from '../core/shared/math-utils'
+import { canvasRectangle, localRectangle, negate, offsetRect } from '../core/shared/math-utils'
 import {
   createSceneUidFromIndex,
   BakedInStoryboardUID,
@@ -79,6 +79,8 @@ import { isFeatureEnabled, setFeatureEnabled } from './feature-switches'
 import { getUtopiaID } from '../core/shared/uid-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
 import { UTOPIA_IRRECOVERABLE_ERROR_MESSAGE } from '../components/editor/store/dispatch'
+import { getCanvasRectangleFromElement } from '../core/shared/dom-utils'
+import { CanvasContainerID } from '../components/canvas/canvas-types'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -568,3 +570,19 @@ export const expectElementWithTestIdNotToBeRendered = (
   editor: EditorRenderResult,
   testId: string,
 ): void => expect(getElementsWithTestId(editor, testId).length).toEqual(0)
+
+export function boundingClientRectToCanvasRectangle(
+  result: EditorRenderResult,
+  elementBounds: DOMRect,
+) {
+  const canvasRootContainer = result.renderedDOM.getByTestId(CanvasContainerID)
+  const canvasScale = result.getEditorState().editor.canvas.scale
+  const canvasRootRectangle = getCanvasRectangleFromElement(
+    canvasRootContainer,
+    canvasScale,
+    'without-content',
+  )
+  const canvasBounds = offsetRect(canvasRectangle(elementBounds), negate(canvasRootRectangle))
+
+  return canvasBounds
+}

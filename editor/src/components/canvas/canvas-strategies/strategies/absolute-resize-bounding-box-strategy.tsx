@@ -14,7 +14,7 @@ import {
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import {
-  getElementFromProjectContents,
+  getJSXElementFromProjectContents,
   trueUpElementChanged,
 } from '../../../editor/store/editor-state'
 import { getSafeGroupChildConstraintsArray } from '../../../inspector/fill-hug-fixed-control'
@@ -166,7 +166,7 @@ export function absoluteResizeBoundingBoxStrategy(
             )
 
             const commandsForSelectedElements = retargetedTargets.flatMap((selectedElement) => {
-              const element = getElementFromProjectContents(
+              const element = getJSXElementFromProjectContents(
                 selectedElement,
                 canvasState.projectContents,
               )

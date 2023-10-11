@@ -15,7 +15,7 @@ import {
 } from '../canvas-strategies/strategies/reparent-helpers/reparent-strategy-sibling-position-helpers'
 import { CanvasOffsetWrapper } from './canvas-offset-wrapper'
 
-const InsertionButtonOffset = 10
+export const InsertionButtonOffset = 10
 
 interface ButtonControlProps {
   identifier: string
@@ -203,9 +203,9 @@ const InsertionButtonContainer = React.memo((props: ButtonControlProps) => {
   )
 })
 
+export const BlueDotSize = 7
 const BlueDot = React.memo((props: ButtonControlProps) => {
   const colorTheme = useColorTheme()
-  const BlueDotSize = 7
   return (
     <div
       style={{
