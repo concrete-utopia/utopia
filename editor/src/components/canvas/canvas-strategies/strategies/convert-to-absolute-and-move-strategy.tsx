@@ -79,6 +79,7 @@ import type { ElementPathTrees } from '../../../../core/shared/element-path-tree
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
+import { sizeToVisualDimensions } from '../../../inspector/inspector-common'
 
 export type SetHuggingParentToFixed =
   | 'set-hugging-parent-to-fixed'
@@ -356,6 +357,7 @@ export function getEscapeHatchCommands(
       ? createSetParentsToFixedSizeCommands(
           elementsToConvertToAbsolute,
           metadata,
+          canvasState.startingElementPathTree,
           canvasState.projectContents,
         )
       : []
@@ -673,6 +675,7 @@ function getFrameWithoutMargin(
 function createSetParentsToFixedSizeCommands(
   elementsToConvertToAbsolute: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  pathTree: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
 ): Array<CanvasCommand> {
   if (elementsToConvertToAbsolute.length > 0) {
@@ -698,46 +701,17 @@ function createSetParentsToFixedSizeCommands(
       return []
     }
     return firstAncestorsHonoringPropsSize.flatMap((ancestor) => {
-      const parentMetadata = MetadataUtils.findElementByElementPath(metadata, ancestor)
-      const parentLocalFrame = parentMetadata?.localFrame
-      if (parentLocalFrame == null || !isFiniteRectangle(parentLocalFrame)) {
-        return []
-      }
-
       const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, ancestor)
       if (parentElement == null) {
         return []
       }
 
-      const setWidthCommands = isHuggingParent(parentElement, 'width')
-        ? [
-            setCssLengthProperty(
-              'always',
-              ancestor,
-              PP.create('style', 'width'),
-              setExplicitCssValue(cssPixelLength(parentLocalFrame.width)),
-              null,
-            ),
-          ]
-        : []
-      const setHeightCommands = isHuggingParent(parentElement, 'width')
-        ? [
-            setCssLengthProperty(
-              'always',
-              ancestor,
-              PP.create('style', 'height'),
-              setExplicitCssValue(cssPixelLength(parentLocalFrame.height)),
-              null,
-            ),
-          ]
-        : []
-
-      const commands = [...setWidthCommands, ...setHeightCommands]
-      if (commands.length === 0) {
+      if (!isHuggingParent(parentElement, 'width') && !isHuggingParent(parentElement, 'height')) {
         return []
       }
+
       return [
-        ...commands,
+        ...sizeToVisualDimensions(metadata, pathTree, ancestor),
         showToastCommand('Parent is set to fixed size', 'NOTICE', 'set-parent-to-fixed-size'),
       ]
     })
