@@ -237,15 +237,16 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
         className='Inspector-entrypoint'
         id='inspector-root'
         style={{
-          alignItems: 'stretch',
+          display: 'flex',
           flexDirection: 'column',
-          flex: 1,
+          flexGrow: 1,
+          position: 'relative',
+          color: colorTheme.fg1.value,
+          overflowY: 'scroll',
           backgroundColor: colorTheme.inspectorBackground.value,
-          flexGrow: 0,
-          flexShrink: 0,
         }}
       >
-        <FlexRow style={{ marginBottom: 10, gap: 10 }} css={undefined}>
+        <FlexRow style={{ marginBottom: 10, gap: 10, alignSelf: 'stretch' }} css={undefined}>
           <MenuTab
             label={'Inspector'}
             selected={selectedTab === RightMenuTab.Inspector}
