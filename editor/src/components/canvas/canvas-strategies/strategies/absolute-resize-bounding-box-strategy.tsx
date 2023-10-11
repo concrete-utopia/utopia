@@ -57,7 +57,7 @@ import {
 } from './resize-helpers'
 import type { EnsureFramePointsExist } from './resize-strategy-helpers'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
-import { snapBoundingBox } from './shared-absolute-resize-strategy-helpers'
+import { childrenBoundsToSnapTo, snapBoundingBox } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
@@ -154,12 +154,20 @@ export function absoluteResizeBoundingBoxStrategy(
               lockedAspectRatio,
               centerBased,
             )
-            const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
+            const parentAndSiblings: ElementPath[] = gatherParentAndSiblingTargets(
               canvasState.startingMetadata,
               canvasState.startingAllElementProps,
               canvasState.startingElementPathTree,
               originalTargets,
             )
+            const childrenToSnapTo = childrenBoundsToSnapTo(
+              edgePosition,
+              originalTargets,
+              canvasState.startingMetadata,
+              canvasState.startingAllElementProps,
+              canvasState.startingElementPathTree,
+            )
+            const snapTargets = [...childrenToSnapTo, ...parentAndSiblings]
             const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
               snapTargets,
               originalTargets,
