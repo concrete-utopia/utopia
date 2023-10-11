@@ -1884,12 +1884,10 @@ export const EditorStateNodeModulesKeepDeepEquality: KeepDeepEqualityCall<Editor
   )
 
 export const EditorStateLeftMenuKeepDeepEquality: KeepDeepEqualityCall<EditorStateLeftMenu> =
-  combine3EqualityCalls(
+  combine2EqualityCalls(
     (esLeftMenu) => esLeftMenu.selectedTab,
     createCallWithTripleEquals(),
     (esLeftMenu) => esLeftMenu.expanded,
-    createCallWithTripleEquals(),
-    (esLeftMenu) => esLeftMenu.paneWidth,
     createCallWithTripleEquals(),
     editorStateLeftMenu,
   )
@@ -1904,9 +1902,7 @@ export const EditorStateRightMenuKeepDeepEquality: KeepDeepEqualityCall<EditorSt
   )
 
 export const EditorStateInterfaceDesignerKeepDeepEquality: KeepDeepEqualityCall<EditorStateInterfaceDesigner> =
-  combine3EqualityCalls(
-    (designer) => designer.codePaneWidth,
-    createCallWithTripleEquals(),
+  combine2EqualityCalls(
     (designer) => designer.codePaneVisible,
     createCallWithTripleEquals(),
     (designer) => designer.additionalControls,

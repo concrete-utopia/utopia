@@ -746,18 +746,15 @@ export function editorStateNodeModules(
 export interface EditorStateLeftMenu {
   selectedTab: LeftMenuTab
   expanded: boolean
-  paneWidth: number
 }
 
 export function editorStateLeftMenu(
   selectedTab: LeftMenuTab,
   expanded: boolean,
-  paneWidth: number,
 ): EditorStateLeftMenu {
   return {
     selectedTab: selectedTab,
     expanded: expanded,
-    paneWidth: paneWidth,
   }
 }
 
@@ -777,18 +774,15 @@ export function editorStateRightMenu(
 }
 
 export interface EditorStateInterfaceDesigner {
-  codePaneWidth: number
   codePaneVisible: boolean
   additionalControls: boolean
 }
 
 export function editorStateInterfaceDesigner(
-  codePaneWidth: number,
   codePaneVisible: boolean,
   additionalControls: boolean,
 ): EditorStateInterfaceDesigner {
   return {
-    codePaneWidth: codePaneWidth,
     codePaneVisible: codePaneVisible,
     additionalControls: additionalControls,
   }
@@ -2328,14 +2322,12 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     leftMenu: {
       selectedTab: LeftMenuTab.Navigator,
       expanded: true,
-      paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
       selectedTab: RightMenuTab.Inspector,
       expanded: true,
     },
     interfaceDesigner: {
-      codePaneWidth: 500,
       codePaneVisible: true,
       additionalControls: true,
     },
@@ -2706,14 +2698,12 @@ export function editorModelFromPersistentModel(
     leftMenu: {
       selectedTab: LeftMenuTab.Navigator,
       expanded: true,
-      paneWidth: LeftPaneDefaultWidth,
     },
     rightMenu: {
       selectedTab: RightMenuTab.Inspector,
       expanded: true,
     },
     interfaceDesigner: {
-      codePaneWidth: 500,
       codePaneVisible: true,
       additionalControls: true,
     },

@@ -774,14 +774,12 @@ export function restoreEditorState(
     leftMenu: {
       selectedTab: currentEditor.leftMenu.selectedTab,
       expanded: currentEditor.leftMenu.expanded,
-      paneWidth: currentEditor.leftMenu.paneWidth,
     },
     rightMenu: {
       selectedTab: currentEditor.rightMenu.selectedTab,
       expanded: currentEditor.rightMenu.expanded,
     },
     interfaceDesigner: {
-      codePaneWidth: currentEditor.interfaceDesigner.codePaneWidth,
       codePaneVisible: currentEditor.interfaceDesigner.codePaneVisible,
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
@@ -1357,9 +1355,6 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
     interfaceDesigner: {
       ...editor.interfaceDesigner,
       codePaneVisible: codePaneVisible,
-      codePaneWidth: editor.interfaceDesigner.codePaneVisible
-        ? editor.interfaceDesigner.codePaneWidth
-        : Math.max(MIN_CODE_PANE_REOPEN_WIDTH, editor.interfaceDesigner.codePaneWidth),
     },
   }
 }
@@ -2444,10 +2439,6 @@ export const UPDATE_FNS = {
           interfaceDesigner: {
             ...editor.interfaceDesigner,
             codePaneVisible: action.visible,
-            codePaneWidth: Math.max(
-              MIN_CODE_PANE_REOPEN_WIDTH,
-              editor.interfaceDesigner.codePaneWidth,
-            ),
           },
         }
       case 'misccodeeditor':
@@ -2712,13 +2703,13 @@ export const UPDATE_FNS = {
   },
   SET_LEFT_MENU_TAB: (action: SetLeftMenuTab, editor: EditorModel): EditorModel => {
     let result: EditorModel = updateSelectedLeftMenuTab(editor, action.tab)
-    // Expand the menu if it's not already visible.
-    if (!result.leftMenu.expanded || result.leftMenu.paneWidth <= LeftPaneMinimumWidth) {
+    // Show the menu if it's not already visible.
+    if (!result.leftMenu.expanded) {
       result = {
         ...result,
         leftMenu: {
           ...result.leftMenu,
-          paneWidth: LeftPaneDefaultWidth,
+          expanded: true,
         },
       }
     }
@@ -3329,7 +3320,6 @@ export const UPDATE_FNS = {
         interfaceDesigner: {
           ...editor.interfaceDesigner,
           codePaneVisible: true,
-          codePaneWidth: 500,
         },
       }
     } else {

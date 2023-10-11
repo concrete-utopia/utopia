@@ -1,9 +1,5 @@
 import React from 'react'
-import {
-  AlwaysTrue,
-  usePubSubAtomReadOnly,
-  usePubSubAtomWriteOnly,
-} from '../../core/shared/atom-with-pub-sub'
+import { usePubSubAtomWriteOnly } from '../../core/shared/atom-with-pub-sub'
 import type { ErrorMessage } from '../../core/shared/error-messages'
 import { useErrorOverlayRecords } from '../../core/shared/runtime-report-logs'
 import { NO_OP, fastForEach } from '../../core/shared/utils'
@@ -82,28 +78,7 @@ export const CanvasWrapperComponent = React.memo(() => {
     'CanvasWrapperComponent safeMode',
   )
 
-  const isNavigatorOverCanvas = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'ErrorOverlayComponent isOverlappingWithNavigator',
-  )
-
   const scale = useEditorState(Substores.canvas, (store) => store.editor.canvas.scale, 'scale')
-
-  const leftPanelWidthAtom = usePubSubAtomReadOnly(LeftPanelWidthAtom, AlwaysTrue)
-  const leftPanelWidth = React.useMemo(
-    () => (isNavigatorOverCanvas ? leftPanelWidthAtom + 10 : 0),
-    [leftPanelWidthAtom, isNavigatorOverCanvas],
-  )
-
-  const codeEditorWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth + 10
-        : 0,
-    'CanvasWrapperComponent codeEditorWidth',
-  )
 
   const updateCanvasSize = usePubSubAtomWriteOnly(CanvasSizeAtom)
 
