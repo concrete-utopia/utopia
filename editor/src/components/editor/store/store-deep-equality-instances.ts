@@ -90,7 +90,6 @@ import type {
   JSExpressionFunctionCall,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
-  JSExpressionOtherJavaScript,
   JSXAttributes,
   JSExpressionValue,
   JSXElement,
@@ -193,7 +192,6 @@ import type {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
   MaybeInfinityRectangle,
-  pointsEqual,
   Rectangle,
   Size,
 } from '../../../core/shared/math-utils'
@@ -215,11 +213,9 @@ import {
   undefinableDeepEquality,
   combine4EqualityCalls,
   combine12EqualityCalls,
-  combine11EqualityCalls,
   combine1EqualityCall,
   createCallWithShallowEquals,
   combine10EqualityCalls,
-  ComplexMapKeepDeepEquality,
   createCallWithDeepEquals,
   readOnlyArrayDeepEquality,
   StringKeepDeepEquality,
@@ -324,15 +320,15 @@ import type {
   TrueUpChildrenOfElementChanged,
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
+  TrueUpEmptyElement,
 } from './editor-state'
 import {
   trueUpElementChanged,
   trueUpChildrenOfElementChanged,
   invalidOverrideNavigatorEntry,
+  trueUpEmptyElement,
 } from './editor-state'
 import {
-  TransientCanvasState,
-  transientCanvasState,
   editorStateNodeModules,
   editorStateLeftMenu,
   editorStateRightMenu,
@@ -380,7 +376,6 @@ import {
   conditionalClauseNavigatorEntry,
   syntheticNavigatorEntry,
   internalClipboard,
-  PostActionMenuSession,
 } from './editor-state'
 import type {
   CornerGuideline,
@@ -4080,6 +4075,15 @@ export const TrueUpChildrenOfElementChangedKeepDeepEquality: KeepDeepEqualityCal
     trueUpChildrenOfElementChanged,
   )
 
+export const TrueUpEmptyElementKeepDeepEquality: KeepDeepEqualityCall<TrueUpEmptyElement> =
+  combine2EqualityCalls(
+    (value) => value.target,
+    ElementPathKeepDeepEquality,
+    (value) => value.frame,
+    CanvasRectangleKeepDeepEquality,
+    (target, frame) => trueUpEmptyElement(target, frame),
+  )
+
 export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = (
   oldValue,
   newValue,
@@ -4093,6 +4097,11 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
     case 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED':
       if (oldValue.type === newValue.type) {
         return TrueUpChildrenOfElementChangedKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'TRUE_UP_EMPTY_ELEMENT':
+      if (oldValue.type === newValue.type) {
+        return TrueUpEmptyElementKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
