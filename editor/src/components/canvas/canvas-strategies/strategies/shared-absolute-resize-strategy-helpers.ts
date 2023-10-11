@@ -1,8 +1,9 @@
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { isHorizontalPoint } from 'utopia-api/core'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
+import type { LayoutEdgeProp, LayoutPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
-import { mapDropNulls } from '../../../../core/shared/array-utils'
+import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
 import { isRight, right } from '../../../../core/shared/either'
 import type {
   ElementInstanceMetadataMap,
@@ -17,7 +18,7 @@ import {
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
+import { type CanvasFrameAndTarget, type EdgePosition } from '../../canvas-types'
 import { pickPointOnRect, snapPoint } from '../../canvas-utils'
 import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
 import {
@@ -29,6 +30,8 @@ import type { AbsolutePin } from './resize-helpers'
 import { resizeBoundingBox } from './resize-helpers'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 
 export function createResizeCommands(
   element: JSXElement,
@@ -215,4 +218,53 @@ function getPointOnDiagonal(
     })
   }
   throw new Error(`Edge position ${edgePosition} is not a corner position`)
+}
+
+const hasPin = (pin: LayoutPinnedProp, element: JSXElement) => {
+  const rawPin = getLayoutProperty(pin, right(element.props), styleStringInArray)
+  return isRight(rawPin) && rawPin.value != null
+}
+
+export function childrenBoundsToSnapTo(
+  resizingFromEdge: EdgePosition,
+  targets: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+): ElementPath[] {
+  const actualChildren = targets.flatMap((target) => {
+    const childPaths = MetadataUtils.getChildrenUnordered(metadata, target).map(
+      (child) => child.elementPath,
+    )
+    return replaceNonDOMElementPathsWithTheirChildrenRecursive(
+      metadata,
+      allElementProps,
+      pathTrees,
+      childPaths,
+    )
+  })
+
+  // exclude the children that pinned to the edge/corner that's being resized
+  const pinsToExclude = pinsFromEdgePosition(resizingFromEdge)
+  return actualChildren.filter((child) => {
+    const element = MetadataUtils.getJsxElementChildFromMetadata(metadata, child)
+    if (element == null || element.type !== 'JSX_ELEMENT') {
+      return false
+    }
+    const hasForbiddenPin = pinsToExclude.some((p) => hasPin(p, element))
+    return !hasForbiddenPin
+  })
+}
+
+function pinsFromEdgePosition(edgePosition: EdgePosition): Array<LayoutEdgeProp> {
+  const leftEdge = edgePosition.x === 0
+  const rightEdge = edgePosition.x === 1
+  const topEdge = edgePosition.y === 0
+  const bottomEdge = edgePosition.y === 1
+  return stripNulls([
+    leftEdge ? 'left' : null,
+    rightEdge ? 'right' : null,
+    topEdge ? 'top' : null,
+    bottomEdge ? 'bottom' : null,
+  ])
 }
