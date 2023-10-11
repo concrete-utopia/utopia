@@ -84,7 +84,7 @@ export type SetHuggingParentToFixed =
   | 'set-hugging-parent-to-fixed'
   | 'dont-set-hugging-parent-to-fixed'
 
-export const ConvertToAbsoluteAndMoveAndSetHuggingParentFixedStrategyID =
+export const ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID =
   'CONVERT_TO_ABSOLUTE_AND_MOVE_AND_SET_PARENT_FIXED_STRATEGY'
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -99,7 +99,7 @@ function getBasicStrategyProperties(setHuggingParentToFixed: SetHuggingParentToF
   switch (setHuggingParentToFixed) {
     case 'set-hugging-parent-to-fixed':
       return {
-        id: ConvertToAbsoluteAndMoveAndSetHuggingParentFixedStrategyID,
+        id: ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
         name: 'Move (Abs + Set Hugging Parent Fixed)',
         descriptiveLabel: 'Converting To Absolute And Moving (setting hugging parent to fixed)',
       }

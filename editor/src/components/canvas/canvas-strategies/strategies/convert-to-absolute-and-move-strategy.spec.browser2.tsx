@@ -53,7 +53,10 @@ import {
   getOpeningFragmentLikeTag,
 } from './fragment-like-helpers.test-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
-import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
+import {
+  ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
+  ConvertToAbsoluteAndMoveStrategyID,
+} from './convert-to-absolute-and-move-strategy'
 import CanvasActions from '../../canvas-actions'
 
 const complexProject = () => {
@@ -675,7 +678,7 @@ describe('Convert to absolute/escape hatch', () => {
     keyDown('Space')
 
     const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
   })
 
   it('becomes the active strategy while space is pressed rather than ancestor metastrategy', async () => {
@@ -739,7 +742,7 @@ describe('Convert to absolute/escape hatch', () => {
     keyDown('Space')
 
     const currentStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    expect(currentStrategy).toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
   })
   ;(['flex', 'flow'] as const).forEach((parentLayoutSystem) =>
     it(`DOES NOT BECOME the active strategy when dragging for multiselection across the hierarchy for ${parentLayoutSystem} parent`, async () => {
@@ -784,7 +787,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
       expect(midDragStrategy).not.toBeNull()
-      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
 
       // Now drag until we have passed the sibling bounds
       await mouseMoveToPoint(canvasControlsLayer, {
@@ -794,12 +797,12 @@ describe('Convert to absolute/escape hatch', () => {
 
       const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
       expect(endDragStrategy).not.toBeNull()
-      expect(endDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(endDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
 
       // HOWEVER!!!! pressing space now makes the strategy active!!!!!!
       keyDown('Space')
       const keydownStrategy = renderResult.getEditorState().strategyState.currentStrategy
-      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
     }),
   )
   ;(['flex', 'flow'] as const).forEach((parentLayoutSystem) =>
@@ -844,7 +847,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
       expect(midDragStrategy).not.toBeNull()
-      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
 
       // Now drag until we have passed the sibling bounds
       await mouseMoveToPoint(canvasControlsLayer, {
@@ -854,12 +857,12 @@ describe('Convert to absolute/escape hatch', () => {
 
       const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
       expect(endDragStrategy).not.toBeNull()
-      expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
 
       // pressing space keeps the strategy active
       keyDown('Space')
       const keydownStrategy = renderResult.getEditorState().strategyState.currentStrategy
-      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(keydownStrategy).toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
     }),
   )
 
@@ -907,7 +910,7 @@ describe('Convert to absolute/escape hatch', () => {
 
         const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(midDragStrategy).not.toBeNull()
-        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
 
         // Now drag until we have passed the sibling bounds
         await mouseMoveToPoint(canvasControlsLayer, {
@@ -917,7 +920,7 @@ describe('Convert to absolute/escape hatch', () => {
 
         const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(endDragStrategy).not.toBeNull()
-        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
       })
     },
   )
@@ -969,7 +972,7 @@ describe('Convert to absolute/escape hatch', () => {
 
         const midDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(midDragStrategy).not.toBeNull()
-        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+        expect(midDragStrategy).not.toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
 
         // Now drag until we have passed the sibling bounds
         await mouseMoveToPoint(canvasControlsLayer, {
@@ -979,7 +982,7 @@ describe('Convert to absolute/escape hatch', () => {
 
         const endDragStrategy = renderResult.getEditorState().strategyState.currentStrategy
         expect(endDragStrategy).not.toBeNull()
-        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveStrategyID)
+        expect(endDragStrategy).toEqual(ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID)
 
         await mouseUpAtPoint(canvasControlsLayer, {
           x: elementBounds.x + 110,
