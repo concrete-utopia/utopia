@@ -17,6 +17,7 @@ import {
   SimpleFlexColumn,
   useColorTheme,
   LargerIcons,
+  FlexColumn,
 } from '../../uuiui'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
@@ -180,23 +181,8 @@ interface ResizableRightPaneProps {
   panelData: StoredPanel
 }
 
-export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const defaultInspectorWidth = GridMenuWidth
-
+export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
   const colorTheme = useColorTheme()
-  const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
-
-  const [width, setWidth] = React.useState<number>(defaultInspectorWidth)
-
-  const resizableRef = React.useRef<Resizable>(null)
-  const onResize = React.useCallback(() => {
-    const newWidth = resizableRef.current?.size.width
-    if (newWidth != null) {
-      // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-      setWidth(newWidth)
-      updateInspectorWidth(newWidth > defaultInspectorWidth ? 'wide' : 'regular')
-    }
-  }, [updateInspectorWidth, defaultInspectorWidth])
 
   const selectedTab = useEditorState(
     Substores.restOfEditor,
@@ -237,42 +223,23 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
   }
 
   return (
-    <Resizable // TODO DELETE ME!
-      ref={resizableRef}
-      defaultSize={{
-        width: '100%', // TODO 100% is sus
-        height: '100%',
-      }}
-      size={{
-        width: '100%', // TODO 100% is sus
-        height: '100%',
-      }}
+    <FlexColumn
       style={{
-        transition: 'width 100ms ease-in-out',
+        flex: 1,
         overflow: 'hidden',
         backgroundColor: colorTheme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
       }}
-      onResizeStart={onResize}
-      onResize={onResize}
-      onResizeStop={onResize}
-      snap={{
-        x: [defaultInspectorWidth, UtopiaTheme.layout.inspectorLargeWidth],
-      }}
-      enable={{
-        left: false,
-      }}
     >
-      <TitleBarUserProfile panelData={props.panelData} />,
+      <TitleBarUserProfile panelData={props.panelData} />
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
         style={{
           alignItems: 'stretch',
           flexDirection: 'column',
-          width: '100%',
-          height: '100%',
+          flex: 1,
           backgroundColor: colorTheme.inspectorBackground.value,
           flexGrow: 0,
           flexShrink: 0,
@@ -300,7 +267,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
-    </Resizable>
+    </FlexColumn>
   )
 })
 
