@@ -544,10 +544,13 @@ export var storyboard = (
     ])
 
     await expectNoIrrecoverableErrors(editor, async () => {
-      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
-      await insertViaAddElementPopup(editor, 'div')
-      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div-2'])
-      await insertViaAddElementPopup(editor, 'div')
+      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img'])
+      await insertViaAddElementPopup(editor, 'img')
+      await selectComponentsForTest(editor, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+      ])
+      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img-2'])
+      await insertViaAddElementPopup(editor, 'img')
     })
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
@@ -563,21 +566,28 @@ export var storyboard = (
     data-uid='container'
   >
     <div data-uid='a3d' />
-    <div
-        style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute'
-        }}
-        data-uid='new-div'
-        >
-      <div
-        style={{
-          backgroundColor: '#aaaaaa33',
-          position: 'absolute',
-        }}
-        data-uid='new-div-2'
-      />
-    </div>
+    <img
+      style={{
+        width: 100,
+        height: 100,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+      }}
+      src='/editor/utopia-logo-white-fill.png?hash=nocommit'
+      data-uid='new-img'
+    />
+    <img
+      style={{
+        width: 100,
+        height: 100,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+      }}
+      src='/editor/utopia-logo-white-fill.png?hash=nocommit'
+      data-uid='new-img-2'
+    />
   </div>`),
     )
   })
