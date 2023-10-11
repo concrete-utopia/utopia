@@ -364,7 +364,6 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
             <LoginStatusBar />
             {/* TODO make sure the title bar and the navigator and the inspector are in the Low Priority Store! */}
           </LowPriorityStoreProvider>
-          -
           <SimpleFlexRow
             className='editor-main-horizontal'
             style={{
