@@ -37,6 +37,7 @@ import {
   keyDown,
   mouseDownAtPoint,
   mouseDragFromPointToPoint,
+  mouseDragFromPointWithDelta,
   mouseMoveToPoint,
   mouseUpAtPoint,
   pressKey,
@@ -1170,7 +1171,7 @@ describe('Convert to absolute/escape hatch', () => {
             data-uid='aaa'
           >
           <View
-            style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            style={{ backgroundColor: '#aaaaaa33', width: 200, height: 80, right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -1290,7 +1291,7 @@ describe('Convert to absolute/escape hatch', () => {
             data-uid='aaa'
           >
           <View
-            style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            style={{ backgroundColor: '#aaaaaa33', width: 200, height: 80, right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -1298,6 +1299,148 @@ describe('Convert to absolute/escape hatch', () => {
         ),
       )
     })
+  })
+})
+
+describe('Escape hatch strategy on awkward project', () => {
+  it('Fixes the size of the dragged element to stop it growing out of control', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+        import * as React from 'react'
+        import { Scene, Storyboard } from 'utopia-api'
+        
+        export var storyboard = (
+          <Storyboard data-uid='sb'>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 400,
+                height: 400,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 60,
+              }}
+              data-uid='root'
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  width: '100%',
+                  justifyContent: 'space-between',
+                }}
+                data-uid='container'
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    backgroundColor: '#FFEE00',
+                  }}
+                  data-testid='drag-me'
+                  data-uid='drag-me'
+                >
+                  <div
+                    style={{
+                      height: 100,
+                      width: 100,
+                      backgroundColor: '#FD1919',
+                    }}
+                    data-uid='child'
+                  />
+                </div>
+              </div>
+            </div>
+          </Storyboard>
+        )
+      `,
+      'await-first-dom-report',
+    )
+
+    const targetElement = EP.elementPath([['sb', 'root', 'container', 'drag-me']])
+
+    await selectComponentsForTest(renderResult, [targetElement])
+
+    const targetBounds = renderResult.renderedDOM.getByTestId('drag-me').getBoundingClientRect()
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await mouseDragFromPointWithDelta(
+      canvasControlsLayer,
+      {
+        x: targetBounds.left + targetBounds.width / 2,
+        y: targetBounds.top + targetBounds.height / 2,
+      },
+      {
+        x: 15,
+        y: 15,
+      },
+    )
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(`
+        import * as React from 'react'
+          import { Scene, Storyboard } from 'utopia-api'
+          
+          export var storyboard = (
+            <Storyboard data-uid='sb'>
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 400,
+                  height: 400,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 60,
+                }}
+                data-uid='root'
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    width: '100%',
+                    justifyContent: 'space-between',
+                  }}
+                  data-uid='container'
+                >
+                  <div
+                    style={{
+                      height: 100,
+                      overflow: 'hidden',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      backgroundColor: '#FFEE00',
+                      width: 100,
+                      position: 'absolute',
+                      left: 15,
+                      top: 15,
+                    }}
+                    data-testid='drag-me'
+                    data-uid='drag-me'
+                  >
+                    <div
+                      style={{
+                        height: 100,
+                        width: 100,
+                        backgroundColor: '#FD1919',
+                      }}
+                      data-uid='child'
+                    />
+                  </div>
+                </div>
+              </div>
+            </Storyboard>
+          )
+      `),
+    )
   })
 })
 

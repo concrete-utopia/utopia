@@ -79,6 +79,7 @@ import type { ElementPathTrees } from '../../../../core/shared/element-path-tree
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
+import { sizeToVisualDimensions } from '../../../inspector/inspector-common'
 
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
@@ -387,7 +388,10 @@ function collectSetLayoutPropCommands(
     })()
 
     if (newLocalFrame != null) {
-      let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
+      let commands: Array<CanvasCommand> = [
+        ...sizeToVisualDimensions(metadata, canvasState.startingElementPathTree, path),
+        convertToAbsolute('always', path),
+      ]
       const updatePinsCommands = createUpdatePinsCommands(
         path,
         metadata,
