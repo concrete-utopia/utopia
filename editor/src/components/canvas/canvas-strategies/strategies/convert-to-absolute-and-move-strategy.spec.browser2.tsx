@@ -42,7 +42,6 @@ import {
   pressKey,
 } from '../../event-helpers.test-utils'
 import { cmdModifier } from '../../../../utils/modifiers'
-import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
 import type { FragmentLikeType } from './fragment-like-helpers'
 import {
   AllFragmentLikeNonDomElementTypes,
@@ -54,6 +53,7 @@ import {
   getOpeningFragmentLikeTag,
 } from './fragment-like-helpers.test-utils'
 import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
 
 const complexProject = () => {
   const code = `
