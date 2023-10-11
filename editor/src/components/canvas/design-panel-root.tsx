@@ -233,6 +233,26 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
       }}
     >
       <TitleBarUserProfile panelData={props.panelData} />
+      <FlexRow
+        style={{ marginBottom: 10, gap: 10, alignSelf: 'stretch', flexShrink: 0 }}
+        css={undefined}
+      >
+        <MenuTab
+          label={'Inspector'}
+          selected={selectedTab === RightMenuTab.Inspector}
+          onClick={onClickInspectorTab}
+        />
+        <MenuTab
+          label={'Insert'}
+          selected={selectedTab === RightMenuTab.Insert}
+          onClick={onClickInsertTab}
+        />
+        <MenuTab
+          label={'Settings'}
+          selected={selectedTab === RightMenuTab.Settings}
+          onClick={onClickSettingsTab}
+        />
+      </FlexRow>
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
@@ -246,23 +266,6 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
           backgroundColor: colorTheme.inspectorBackground.value,
         }}
       >
-        <FlexRow style={{ marginBottom: 10, gap: 10, alignSelf: 'stretch' }} css={undefined}>
-          <MenuTab
-            label={'Inspector'}
-            selected={selectedTab === RightMenuTab.Inspector}
-            onClick={onClickInspectorTab}
-          />
-          <MenuTab
-            label={'Insert'}
-            selected={selectedTab === RightMenuTab.Insert}
-            onClick={onClickInsertTab}
-          />
-          <MenuTab
-            label={'Settings'}
-            selected={selectedTab === RightMenuTab.Settings}
-            onClick={onClickSettingsTab}
-          />
-        </FlexRow>
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
