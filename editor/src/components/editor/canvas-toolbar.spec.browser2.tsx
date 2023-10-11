@@ -6,7 +6,6 @@ import {
   selectComponentsForTest,
   expectSingleUndo2Saves,
   expectNoAction,
-  expectNoIrrecoverableErrors,
 } from '../../utils/utils.test-utils'
 import {
   FOR_TESTS_setNextGeneratedUid,
@@ -543,15 +542,17 @@ export var storyboard = (
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    await expectNoIrrecoverableErrors(editor, async () => {
-      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img'])
-      await insertViaAddElementPopup(editor, 'img')
-      await selectComponentsForTest(editor, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
-      ])
-      FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img-2'])
-      await insertViaAddElementPopup(editor, 'img')
-    })
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img'])
+    await insertViaAddElementPopup(editor, 'img')
+
+    await selectComponentsForTest(editor, [
+      EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
+    ])
+
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img-2'])
+    await insertViaAddElementPopup(editor, 'img')
+
+    expect(editor.getActionsCausingDuplicateUIDs()).toHaveLength(0)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div

@@ -473,20 +473,6 @@ export async function expectSingleUndo2Saves(
   return expectNUndoStepsNSaves(editor, 1, 2, action)
 }
 
-export async function expectNoIrrecoverableErrors(
-  editor: EditorRenderResult,
-  action: () => Promise<void>,
-): Promise<void> {
-  await action()
-  // a little basic but it will do for now
-  const toasts = editor
-    .getEditorState()
-    .editor.toasts.filter((e) => e.message === UTOPIA_IRRECOVERABLE_ERROR_MESSAGE)
-  if (toasts.length > 0) {
-    throw new Error('Operation caused an irrecoverable error')
-  }
-}
-
 export async function expectSingleUndoNSaves(
   editor: EditorRenderResult,
   saves: number,
