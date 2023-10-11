@@ -277,68 +277,47 @@ interface CodeEditorPaneProps {
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const dispatch = useDispatch()
-  const interfaceDesigner = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.interfaceDesigner,
-    'CodeEditorPane interfaceDesigner',
-  )
-
   const codeEditorEnabled = isCodeEditorEnabled()
 
   return (
-    <Resizable // TODO delete me!
-      defaultSize={{
-        width: '100%', // TODO 100% is sus
-        height: '100%',
-      }}
-      size={{
-        width: '100%', // TODO 100% is sus
-        height: '100%',
-      }}
-      enable={{
-        top: false,
-        right: false,
-        bottom: false,
-        topRight: false,
-        bottomRight: false,
-        bottomLeft: false,
-        topLeft: false,
-      }}
+    <FlexColumn
       className='resizableFlexColumnCanvasCode'
       style={{
-        display: props.small ? 'block' : interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-        position: 'relative',
+        flex: 1,
+        contain: 'layout',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-        flexDirection: 'column',
       }}
     >
-      <TitleBarCode panelData={props.panelData} />,
+      <TitleBarCode panelData={props.panelData} />
       <div
         style={{
-          transformOrigin: 'top left',
-          width: props.small ? 'calc(100%/0.7)' : '100%',
-          height: props.small ? 'calc(100%/0.7)' : '100%',
-          transform: props.small ? 'scale(0.7)' : undefined,
-          flexDirection: 'column',
-          whiteSpace: 'nowrap',
-          display: 'flex',
-          alignItems: 'stretch',
-          justifyContent: 'stretch',
+          flex: 1,
+          contain: 'layout',
         }}
       >
-        <div
+        {/* this FlexColumn needs to be alone in the parent div, otherwise the 100% height will mess things up */}
+        <FlexColumn
           style={{
-            display: 'flex',
-            height: '100%',
+            transformOrigin: 'top left',
+            width: props.small ? 'calc(100%/0.7)' : '100%',
+            height: props.small ? 'calc(100%/0.7)' : '100%',
+            transform: props.small ? 'scale(0.7)' : undefined,
+            flex: 1,
           }}
         >
           {when(codeEditorEnabled, <CodeEditorWrapper />)}
-        </div>
-        <ConsoleAndErrorsPane />
+        </FlexColumn>
       </div>
-    </Resizable>
+      <FlexColumn
+        style={{
+          contain: 'layout',
+          zoom: props.small ? 0.7 : undefined,
+        }}
+      >
+        <ConsoleAndErrorsPane />
+      </FlexColumn>
+    </FlexColumn>
   )
 })
