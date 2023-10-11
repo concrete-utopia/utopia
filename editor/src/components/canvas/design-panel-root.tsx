@@ -372,20 +372,9 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
   )
 
   const codeEditorEnabled = isCodeEditorEnabled()
-  const onResizeStop = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
-    },
-    [dispatch],
-  )
 
   return (
-    <Resizable
+    <Resizable // TODO delete me!
       defaultSize={{
         width: isFeatureEnabled('Draggable Floating Panels')
           ? '100%'
@@ -398,7 +387,6 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
           : interfaceDesigner.codePaneWidth,
         height: '100%',
       }}
-      onResizeStop={onResizeStop}
       enable={{
         top: false,
         right: isFeatureEnabled('Draggable Floating Panels') ? false : true,

@@ -162,7 +162,7 @@ import {
   moveTemplate,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
-import type { ResizeLeftPane, SetFocus } from '../../common/actions'
+import type { SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import {
@@ -218,7 +218,6 @@ import type {
   RenameStyleSelector,
   ResetCanvas,
   ResetPins,
-  ResizeInterfaceDesignerCodePane,
   RunEscapeHatch,
   SaveAsset,
   SaveCurrentFile,
@@ -2790,48 +2789,6 @@ export const UPDATE_FNS = {
     return update(editor, {
       modal: { $set: action.modal },
     })
-  },
-  RESIZE_INTERFACEDESIGNER_CODEPANE: (
-    action: ResizeInterfaceDesignerCodePane,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    // resulting pane needs to have a width of 2 so it can be resized-to-open
-    const minWidth = 2
-    const hideWidth = 20
-
-    const priorWidth = editor.interfaceDesigner.codePaneWidth
-    const targetWidth = editor.interfaceDesigner.codePaneWidth + action.deltaCodePaneWidth
-
-    const shouldShowToast = targetWidth < hideWidth && priorWidth > minWidth
-    const updatedEditor = shouldShowToast
-      ? UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor)
-      : editor
-
-    const shouldHideCodePaneOnResize = targetWidth < hideWidth ? false : true
-    const codePaneVisible = isFeatureEnabled('Draggable Floating Panels')
-      ? true
-      : shouldHideCodePaneOnResize
-
-    return {
-      ...updatedEditor,
-      interfaceDesigner: {
-        ...editor.interfaceDesigner,
-        codePaneVisible: codePaneVisible,
-        codePaneWidth: targetWidth < hideWidth ? minWidth : targetWidth,
-      },
-    }
-  },
-  RESIZE_LEFTPANE: (action: ResizeLeftPane, editor: EditorModel): EditorModel => {
-    const priorWidth = editor.leftMenu.paneWidth
-    const targetWidth = priorWidth + action.deltaPaneWidth
-    return {
-      ...editor,
-      leftMenu: {
-        ...editor.leftMenu,
-        paneWidth: Math.max(LeftPaneMinimumWidth, targetWidth),
-      },
-    }
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
