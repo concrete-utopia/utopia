@@ -17,7 +17,6 @@ import {
   getFixedFillHugOptionsForElement,
   resizeToFillCommands,
   resizeToFitCommands,
-  sizeToVisualDimensions,
 } from './inspector-common'
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'

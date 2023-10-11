@@ -4,19 +4,12 @@ import type { ElementInstanceMetadataMap } from '../../../core/shared/element-te
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import {
-  setCssLengthProperty,
-  setExplicitCssValue,
-} from '../../canvas/commands/set-css-length-command'
-import { setProperty } from '../../canvas/commands/set-property-command'
-import { cssPixelLength } from '../common/css-utils'
-import {
   filterKeepFlexContainers,
-  flexChildProps,
   flexContainerProps,
   nullOrNonEmpty,
-  addPositionAbsoluteTopLeft,
   pruneFlexPropsCommands,
   sizeToVisualDimensions,
+  getConvertIndividualElementToAbsoluteCommandsFromMetadata,
 } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
 
@@ -28,9 +21,9 @@ function removeFlexConvertToAbsoluteOne(
   const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
   return [
     ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
-    ...children.flatMap((c) => addPositionAbsoluteTopLeft(metadata, c)), // all children are converted to absolute,
-    ...children.flatMap((c) => sizeToVisualDimensions(metadata, pathTrees, c)), // with width/height based on measured dimensions
-    ...children.flatMap((c) => pruneFlexPropsCommands(flexChildProps, c)),
+    ...children.flatMap((c) =>
+      getConvertIndividualElementToAbsoluteCommandsFromMetadata(c, metadata, pathTrees),
+    ), // all children are converted to absolute,
     ...sizeToVisualDimensions(metadata, pathTrees, elementPath), // container is sized to keep its visual dimensions
   ]
 }
