@@ -1454,7 +1454,7 @@ describe('Convert to absolute/escape hatch', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+          style={{ backgroundColor: '#aaaaaa33', width: 200, height: 80, right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
           data-uid='bbb'
           data-testid='bbb'
         />
@@ -1515,7 +1515,7 @@ describe('Convert to absolute/escape hatch', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', width: '50%', height: '20%', right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            style={{ backgroundColor: '#aaaaaa33', width: 200, height: 80, right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -1630,8 +1630,9 @@ describe('Escape hatch strategy on awkward project', () => {
                   style={{
                     display: 'flex',
                     flexDirection: 'row',
-                    width: '100%',
+                    width: 400,
                     justifyContent: 'space-between',
+                    height: 100,
                   }}
                   data-uid='container'
                 >
