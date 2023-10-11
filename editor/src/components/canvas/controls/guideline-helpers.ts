@@ -67,8 +67,7 @@ export function gatherParentAndSiblingTargets(
   pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
 ) {
-  let snapTargets: ElementPath[] = []
-  Utils.fastForEach(targets, (target) => {
+  return targets.flatMap((target) => {
     const pinnedAndNotAbsolutePositioned = MetadataUtils.isPinnedAndNotAbsolutePositioned(
       componentMetadata,
       target,
@@ -82,16 +81,15 @@ export function gatherParentAndSiblingTargets(
     )
 
     if (isElementFragmentLike || !pinnedAndNotAbsolutePositioned) {
-      const snapTargetsForElement = getSnapTargetsForElementPath(
+      return getSnapTargetsForElementPath(
         componentMetadata,
         allElementProps,
         pathTrees,
         target,
       ).filter((snapTarget) => targets.every((t) => !EP.pathsEqual(snapTarget, t)))
-      snapTargets.concat(snapTargetsForElement)
     }
+    return []
   })
-  return snapTargets
 }
 
 export function collectParentAndSiblingGuidelines(
