@@ -579,7 +579,7 @@ describe('finds an applicable strategy for the nearest ancestor', () => {
     runTest(codeElementWithSibling, pathForShallowNestedElement, (editor) => {
       const strategies = editor.getEditorState().strategyState.sortedApplicableStrategies
 
-      expect(strategies?.length).toEqual(2)
+      expect(strategies?.length).toEqual(3)
       if (strategies == null) {
         // here for type assertion
         throw new Error('`strategies` should not be null')
