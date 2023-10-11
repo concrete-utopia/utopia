@@ -125,7 +125,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           overflow: 'hidden',
         }}
       >
-        <TitleBarProjectTitle panelData={props.panelData} />,
+        <TitleBarProjectTitle panelData={props.panelData} />
         <div
           id={LeftPaneComponentId}
           className='leftPane'
