@@ -1234,47 +1234,11 @@ export function snapPoint(
     !resizedBoundsBelowThreshold &&
     (anyElementFragmentLike || !anythingPinnedAndNotAbsolutePositioned)
 
-  if (keepAspectRatio) {
-    const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
-    if (shouldSnap) {
-      const { snappedGuideline: guideline, guidelinesWithSnappingVector } = innerSnapPoint(
-        elementsToTarget,
-        selectedViews,
-        jsxMetadata,
-        canvasScale,
-        closestPointOnLine,
-        resizingFromPosition,
-        allElementProps,
-      )
-      if (guideline != null) {
-        const guidelinePoints = Guidelines.convertGuidelineToPoints(guideline.guideline)
-        // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
-        let snappedPoint: CanvasPoint | null = null
-        switch (guidelinePoints.type) {
-          case 'cornerguidelinepoint':
-            snappedPoint = guidelinePoints.point
-            break
-          default:
-            snappedPoint = Utils.lineIntersection(
-              diagonalA,
-              diagonalB,
-              guidelinePoints.start,
-              guidelinePoints.end,
-            )
-        }
-        if (snappedPoint != null) {
-          return {
-            snappedPointOnCanvas: snappedPoint,
-            guidelinesWithSnappingVector: guidelinesWithSnappingVector,
-          }
-        }
-      }
-      // fallback to regular diagonal snapping
-      return { snappedPointOnCanvas: closestPointOnLine, guidelinesWithSnappingVector: [] }
-    } else {
-      return { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
-    }
-  } else {
+  if (!shouldSnap) {
+    return { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
+  }
+
+  if (!keepAspectRatio) {
     const { point, guidelinesWithSnappingVector } = innerSnapPoint(
       elementsToTarget,
       selectedViews,
@@ -1284,12 +1248,54 @@ export function snapPoint(
       resizingFromPosition,
       allElementProps,
     )
-    return shouldSnap
-      ? {
-          snappedPointOnCanvas: point,
-          guidelinesWithSnappingVector: guidelinesWithSnappingVector,
-        }
-      : { snappedPointOnCanvas: pointToSnap, guidelinesWithSnappingVector: [] }
+    return {
+      snappedPointOnCanvas: point,
+      guidelinesWithSnappingVector: guidelinesWithSnappingVector,
+    }
+  }
+
+  const closestPointOnLine = Utils.closestPointOnLine(diagonalA, diagonalB, pointToSnap)
+  const { snappedGuideline: guideline, guidelinesWithSnappingVector } = innerSnapPoint(
+    elementsToTarget,
+    selectedViews,
+    jsxMetadata,
+    canvasScale,
+    closestPointOnLine,
+    resizingFromPosition,
+    allElementProps,
+  )
+
+  const snappedPoint = optionalMap(
+    (g) => snappedPointFromGuideline(g, diagonalA, diagonalB),
+    guideline,
+  )
+  if (snappedPoint == null) {
+    return { snappedPointOnCanvas: closestPointOnLine, guidelinesWithSnappingVector: [] }
+  }
+
+  return {
+    snappedPointOnCanvas: snappedPoint,
+    guidelinesWithSnappingVector: guidelinesWithSnappingVector,
+  }
+}
+
+function snappedPointFromGuideline(
+  guideline: GuidelineWithSnappingVectorAndPointsOfRelevance,
+  diagonalA: CanvasPoint,
+  diagonalB: CanvasPoint,
+): CanvasPoint | null {
+  const guidelinePoints = Guidelines.convertGuidelineToPoints(guideline.guideline)
+  // for now, because scale is not a first-class citizen, we know that CanvasVector and LocalVector have the same dimensions
+  switch (guidelinePoints.type) {
+    case 'cornerguidelinepoint':
+      return guidelinePoints.point
+    default:
+      return Utils.lineIntersection(
+        diagonalA,
+        diagonalB,
+        guidelinePoints.start,
+        guidelinePoints.end,
+      )
   }
 }
 
