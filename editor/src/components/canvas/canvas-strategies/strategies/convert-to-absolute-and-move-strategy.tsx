@@ -80,39 +80,41 @@ import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
 
-type SetParentToFixed = 'set-parent-to-fixed' | 'dont-set-parent-to-fixed'
+export type SetHuggingParentToFixed =
+  | 'set-hugging-parent-to-fixed'
+  | 'dont-set-hugging-parent-to-fixed'
 
-export const ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID =
+export const ConvertToAbsoluteAndMoveAndSetHuggingParentFixedStrategyID =
   'CONVERT_TO_ABSOLUTE_AND_MOVE_AND_SET_PARENT_FIXED_STRATEGY'
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
 export const convertToAbsoluteAndMoveStrategy = convertToAbsoluteAndMoveStrategyFactory(
-  'dont-set-parent-to-fixed',
+  'dont-set-hugging-parent-to-fixed',
 )
 
 export const convertToAbsoluteAndMoveAndSetParentFixedStrategy =
-  convertToAbsoluteAndMoveStrategyFactory('set-parent-to-fixed')
+  convertToAbsoluteAndMoveStrategyFactory('set-hugging-parent-to-fixed')
 
-function getBasicStrategyProperties(setParentToFixed: SetParentToFixed) {
-  switch (setParentToFixed) {
-    case 'set-parent-to-fixed':
+function getBasicStrategyProperties(setHuggingParentToFixed: SetHuggingParentToFixed) {
+  switch (setHuggingParentToFixed) {
+    case 'set-hugging-parent-to-fixed':
       return {
-        id: ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
-        name: 'Move (Abs + Set Parent Fixed)',
-        descriptiveLabel: 'Converting To Absolute And Moving (setting parent to fixed)',
+        id: ConvertToAbsoluteAndMoveAndSetHuggingParentFixedStrategyID,
+        name: 'Move (Abs + Set Hugging Parent Fixed)',
+        descriptiveLabel: 'Converting To Absolute And Moving (setting hugging parent to fixed)',
       }
-    case 'dont-set-parent-to-fixed':
+    case 'dont-set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveStrategyID,
         name: 'Move (Abs)',
         descriptiveLabel: 'Converting To Absolute And Moving',
       }
     default:
-      assertNever(setParentToFixed)
+      assertNever(setHuggingParentToFixed)
   }
 }
 
-function convertToAbsoluteAndMoveStrategyFactory(setParentToFixed: SetParentToFixed) {
+function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHuggingParentToFixed) {
   return (
     canvasState: InteractionCanvasState,
     interactionSession: InteractionSession | null,
@@ -166,7 +168,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setParentToFixed: SetParentToFi
     )
 
     return {
-      ...getBasicStrategyProperties(setParentToFixed),
+      ...getBasicStrategyProperties(setHuggingParentToFixed),
       icon: {
         category: 'modalities',
         type: 'moveabs-large',
@@ -186,7 +188,8 @@ function convertToAbsoluteAndMoveStrategyFactory(setParentToFixed: SetParentToFi
         }),
         ...autoLayoutSiblingsControl,
       ], // Uses existing hooks in select-mode-hooks.tsx
-      fitness: setParentToFixed === 'set-parent-to-fixed' ? baseFitness : baseFitness - 0.1,
+      fitness:
+        setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? baseFitness : baseFitness - 0.1, // by default we set the parent to fixed size
       apply: () => {
         if (
           interactionSession != null &&
@@ -204,7 +207,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setParentToFixed: SetParentToFi
               canvasState.startingMetadata,
               canvasState,
               snappedDragVector,
-              setParentToFixed,
+              setHuggingParentToFixed,
             )
           }
           const absoluteMoveApplyResult = applyMoveCommon(
@@ -322,7 +325,7 @@ export function getEscapeHatchCommands(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
-  setParentToFixed: SetParentToFixed,
+  setHuggingParentToFixed: SetHuggingParentToFixed,
 ): {
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
@@ -349,7 +352,7 @@ export function getEscapeHatchCommands(
   )
 
   const setParentsToFixedSizeCommands =
-    setParentToFixed === 'set-parent-to-fixed'
+    setHuggingParentToFixed === 'set-hugging-parent-to-fixed'
       ? createSetParentsToFixedSizeCommands(
           elementsToConvertToAbsolute,
           metadata,
@@ -706,7 +709,7 @@ function createSetParentsToFixedSizeCommands(
         return []
       }
 
-      const setWidthCommands = isCollapsingParent(parentElement, 'width')
+      const setWidthCommands = isHuggingParent(parentElement, 'width')
         ? [
             setCssLengthProperty(
               'always',
@@ -717,7 +720,7 @@ function createSetParentsToFixedSizeCommands(
             ),
           ]
         : []
-      const setHeightCommands = isCollapsingParent(parentElement, 'width')
+      const setHeightCommands = isHuggingParent(parentElement, 'width')
         ? [
             setCssLengthProperty(
               'always',
@@ -743,13 +746,13 @@ function createSetParentsToFixedSizeCommands(
   return []
 }
 
-const CollapsingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
+const HuggingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
 
-function isCollapsingParent(element: JSXElement, property: 'width' | 'height') {
+function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
   const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(element.props), PP.create('style', property)),
   )
 
-  return simpleAttribute == null || CollapsingWidthHeightValues.includes(simpleAttribute)
+  return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
 }

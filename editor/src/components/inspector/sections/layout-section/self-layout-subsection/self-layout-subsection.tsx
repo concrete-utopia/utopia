@@ -27,7 +27,7 @@ import {
   useInitialSizeSectionState,
 } from '../flex-element-subsection/flex-element-subsection'
 import { GiganticSizePinsSubsection } from './gigantic-size-pins-subsection'
-import { runEscapeHatch, selectComponents } from '../../../../editor/actions/action-creators'
+import { selectComponents } from '../../../../editor/actions/action-creators'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { unless, when } from '../../../../../utils/react-conditionals'
 import {

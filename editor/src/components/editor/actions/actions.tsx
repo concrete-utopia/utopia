@@ -5057,7 +5057,7 @@ export const UPDATE_FNS = {
         editor.jsxMetadata,
         canvasState,
         null,
-        'set-parent-to-fixed',
+        action.setHuggingParentToFixed,
       ).commands
       return foldAndApplyCommandsSimple(editor, commands)
     } else {
