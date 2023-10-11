@@ -4763,10 +4763,6 @@ export const UPDATE_FNS = {
               existingUids,
             ).value
 
-            // const r = emptyGetAllUniqueUIDsWorkingResult()
-            // extractUidFromJSXElementChild(r, '', [''], element)
-            // console.log([...r.allIDs])
-
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
               [element],

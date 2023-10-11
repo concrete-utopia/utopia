@@ -88,7 +88,7 @@ function extractUidFromAttributes(
   }
 }
 
-export function extractUidFromJSXElementChild(
+function extractUidFromJSXElementChild(
   workingResult: GetAllUniqueUIDsWorkingResult,
   filePath: string,
   debugPath: Array<string>,

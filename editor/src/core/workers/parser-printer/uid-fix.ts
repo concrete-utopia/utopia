@@ -79,14 +79,6 @@ export interface FixUIDsState {
   uidUpdateMethod: 'copy-uids-fix-duplicates' | 'use-mappings' | 'forced-update'
 }
 
-function ble(tles: TopLevelElement[]) {
-  return tles.flatMap((t) => {
-    const workingResult = emptyGetAllUniqueUIDsWorkingResult()
-    extractUIDFromTopLevelElement(workingResult, '', [''], t)
-    return [...workingResult.allIDs]
-  })
-}
-
 export function fixParseSuccessUIDs(
   oldParsed: ParseSuccess | null,
   newParsed: ParsedTextFile,
@@ -106,11 +98,6 @@ export function fixParseSuccessUIDs(
     mappings: [],
     uidUpdateMethod: 'copy-uids-fix-duplicates',
   }
-
-  if (oldParsed?.topLevelElements != null) {
-    // console.log(`uids from original: ${ble(oldParsed?.topLevelElements)}`)
-  }
-  // console.log(`uids from new: ${ble(newParsed.topLevelElements)}`)
 
   // Fix the UIDs in the content.
   const fixedTopLevelElements = fixTopLevelElementsUIDs(
@@ -179,10 +166,6 @@ function updateUID<T>(
             fixUIDsState.mutableAllNewUIDs,
             fixUIDsState.uidsExpectedToBeSeen,
           )
-          // console.log(`consistent uid generated for: ${oldUID}, new uid: ${uidToUse}`)
-          // console.log('exists', fixUIDsState.mutableAllNewUIDs.has(uidToUse), fixUIDsState.uidsExpectedToBeSeen.has(uidToUse),)
-          // console.log([...fixUIDsState.mutableAllNewUIDs])
-          // console.log([...fixUIDsState.uidsExpectedToBeSeen])
           addMapping(newUID, uidToUse)
         } else if (oldUID === newUID) {
           // Old one is the same as the new one, so everything is great.
