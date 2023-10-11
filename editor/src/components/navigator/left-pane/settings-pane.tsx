@@ -217,7 +217,7 @@ export const SettingsPane = React.memo(() => {
         alignItems: 'stretch',
         paddingBottom: 50,
         overflowY: 'scroll',
-        width: '100%',
+        alignSelf: 'stretch',
       }}
     >
       <Section>
