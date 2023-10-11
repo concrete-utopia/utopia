@@ -104,15 +104,15 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   return (
     <LowPriorityStoreProvider>
-      <ResizableFlexColumn
-        enable={{ right: !isFeatureEnabled('Draggable Floating Panels') }}
+      <ResizableFlexColumn // TODO resizable is not needed
+        enable={{ right: false }}
         onResizeStop={onLeftPanelResizeStop}
         defaultSize={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : leftPanelWidth,
+          width: '100%', // TODO 100% is sus
           height: '100%',
         }}
         size={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : leftPanelWidth,
+          width: '100%', // TODO 100% is sus
           height: '100%',
         }}
         style={{
@@ -125,10 +125,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           overflow: 'hidden',
         }}
       >
-        {when(
-          isFeatureEnabled('Draggable Floating Panels'),
-          <TitleBarProjectTitle panelData={props.panelData} />,
-        )}
+        <TitleBarProjectTitle panelData={props.panelData} />,
         <div
           id={LeftPaneComponentId}
           className='leftPane'
