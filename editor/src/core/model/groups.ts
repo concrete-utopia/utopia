@@ -26,7 +26,7 @@ export function trueUpTargetToDescription(trueUpTarget: TrueUpTarget): string {
   }
 }
 
-export function trueUpTargetToNormalizeBounds(
+export function trueUpTargetToPushIntendedBoundsTarget(
   metadata: ElementInstanceMetadataMap,
   pathTree: ElementPathTrees,
   trueUpTarget: TrueUpTarget,

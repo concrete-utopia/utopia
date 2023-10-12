@@ -508,7 +508,10 @@ import type {
 } from './actions-from-vscode'
 import type { PushIntendedBoundsTarget } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import { pushIntendedBoundsAndUpdateTargets } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
-import { addToTrueUpGroups, trueUpTargetToNormalizeBounds } from '../../../core/model/groups'
+import {
+  addToTrueUpGroups,
+  trueUpTargetToPushIntendedBoundsTarget,
+} from '../../../core/model/groups'
 import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
@@ -3853,7 +3856,7 @@ export const UPDATE_FNS = {
   TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
     const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
       (trueUpTarget) => {
-        return trueUpTargetToNormalizeBounds(
+        return trueUpTargetToPushIntendedBoundsTarget(
           editor.jsxMetadata,
           editor.elementPathTree,
           trueUpTarget,
