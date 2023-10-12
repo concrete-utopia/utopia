@@ -715,7 +715,7 @@ export const NumberInput = React.memo<NumberInputProps>(
                   fontSize: '9px',
                   width: '100%',
                   height: '100%',
-                  color: controlStyles.secondaryColor,
+                  color: colorTheme.fg7.value,
                 }}
               >
                 {typeof labelInner === 'object' && 'type' in labelInner ? (
