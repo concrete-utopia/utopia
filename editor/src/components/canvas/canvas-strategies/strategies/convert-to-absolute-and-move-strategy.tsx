@@ -79,7 +79,10 @@ import type { ElementPathTrees } from '../../../../core/shared/element-path-tree
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
-import { sizeToVisualDimensions } from '../../../inspector/inspector-common'
+import {
+  getConvertIndividualElementToAbsoluteCommands,
+  sizeToVisualDimensions,
+} from '../../../inspector/inspector-common'
 
 export type SetHuggingParentToFixed =
   | 'set-hugging-parent-to-fixed'
@@ -426,35 +429,29 @@ function collectSetLayoutPropCommands(
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
-  if (globalFrame != null && isFiniteRectangle(globalFrame)) {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  if (element != null && globalFrame != null && isFiniteRectangle(globalFrame)) {
+    const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
+    const intendedBounds: Array<CanvasFrameAndTarget> = [
+      { frame: updatedGlobalFrame, target: path },
+    ]
+
     const newLocalFrame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
       targetParent ?? EP.parentPath(path),
       metadata,
-      globalFrame,
+      updatedGlobalFrame,
     )
 
-    const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
-      if (globalFrame == null) {
-        return []
-      } else {
-        const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
-        return [{ frame: updatedGlobalFrame, target: path }]
-      }
-    })()
-
     if (newLocalFrame != null) {
-      let commands: Array<CanvasCommand> = [
-        ...sizeToVisualDimensions(metadata, canvasState.startingElementPathTree, path),
-        convertToAbsolute('always', path),
-      ]
-      const updatePinsCommands = createUpdatePinsCommands(
+      const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
+      let commands: Array<CanvasCommand> = getConvertIndividualElementToAbsoluteCommands(
         path,
         metadata,
-        canvasState,
-        dragDelta,
+        canvasState.startingElementPathTree,
         newLocalFrame,
+        parentFlexDirection,
       )
-      commands.push(...updatePinsCommands)
 
       return { commands: commands, intendedBounds: intendedBounds }
     }
