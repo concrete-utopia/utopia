@@ -7,7 +7,7 @@ import {
   filterKeepFlexContainers,
   flexContainerProps,
   nullOrNonEmpty,
-  pruneFlexPropsCommands,
+  prunePropsCommands,
   sizeToVisualDimensions,
   getConvertIndividualElementToAbsoluteCommandsFromMetadata,
 } from '../inspector-common'
@@ -20,7 +20,7 @@ function removeFlexConvertToAbsoluteOne(
 ): Array<CanvasCommand> {
   const children = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
   return [
-    ...pruneFlexPropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
+    ...prunePropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     ...children.flatMap((c) =>
       getConvertIndividualElementToAbsoluteCommandsFromMetadata(c, metadata, pathTrees),
     ), // all children are converted to absolute,

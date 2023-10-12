@@ -390,7 +390,9 @@ export const flexChildProps = [
   styleP('flexBasis'),
 ]
 
-export function pruneFlexPropsCommands(
+const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
+
+export function prunePropsCommands(
   props: PropertyPath[],
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
@@ -449,7 +451,7 @@ function sizeToDimensionsFromFrame(
   const height = frame.height
 
   return [
-    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    ...prunePropsCommands(flexChildAndBottomRightProps, elementPath),
     setCssLengthProperty(
       'always',
       elementPath,
@@ -480,7 +482,7 @@ export const sizeToVisualDimensionsAlongAxisInstance =
     const value = globalFrame[dimension]
 
     return [
-      ...pruneFlexPropsCommands(flexChildProps, elementPath),
+      ...prunePropsCommands(flexChildProps, elementPath),
       setCssLengthProperty(
         'always',
         elementPath,
