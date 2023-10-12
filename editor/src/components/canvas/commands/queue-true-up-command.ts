@@ -8,7 +8,7 @@ import type { AllElementProps, EditorState, TrueUpTarget } from '../../editor/st
 import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { BaseCommand, CommandFunction } from './commands'
-import { trueUpTargetToDescription } from '../../../core/model/groups'
+import { trueUpTargetToDescription } from '../../../core/model/true-up-targets'
 
 export interface QueueTrueUpElement extends BaseCommand {
   type: 'QUEUE_TRUE_UP_ELEMENT'

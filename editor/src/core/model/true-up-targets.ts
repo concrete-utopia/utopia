@@ -4,7 +4,7 @@ import {
   pushIntendedBoundsGroup,
 } from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import type { EditorState, TrueUpTarget } from '../../components/editor/store/editor-state'
-import * as EP from '../../core/shared/element-path'
+import * as EP from '../shared/element-path'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../shared/element-template'
 import type { CanvasRectangle } from '../shared/math-utils'

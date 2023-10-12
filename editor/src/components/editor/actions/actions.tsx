@@ -510,7 +510,7 @@ import { pushIntendedBoundsAndUpdateTargets } from '../../canvas/commands/push-i
 import {
   addToTrueUpElements,
   trueUpTargetToPushIntendedBoundsTarget,
-} from '../../../core/model/groups'
+} from '../../../core/model/true-up-targets'
 import {
   groupStateFromJSXElement,
   invalidGroupStateToString,
