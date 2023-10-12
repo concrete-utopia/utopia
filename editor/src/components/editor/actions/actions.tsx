@@ -756,7 +756,7 @@ export function restoreEditorState(
     projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
-    trueUpElementsAfterDomWalkerRuns: [], // <- we reset the group true-up value
+    trueUpElementsAfterDomWalkerRuns: [], // <- we reset the elements true-up value
     spyMetadata: desiredEditor.spyMetadata,
     domMetadata: desiredEditor.domMetadata,
     jsxMetadata: desiredEditor.jsxMetadata,
@@ -958,25 +958,10 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
       })
       .map((entry) => entry.elementPath)
 
-    function shouldCascadeDelete(path: ElementPath): boolean {
-      return (
-        // it's a group
-        treatElementAsGroupLike(editor.jsxMetadata, path) ||
-        // it's a framgent
-        treatElementAsFragmentLike(
-          editor.jsxMetadata,
-          editor.allElementProps,
-          editor.elementPathTree,
-          path,
-        )
-        // TODO it's hug?
-      )
-    }
-
     const trueUpGroupElementsChanged = siblings.map(trueUpGroupElementChanged)
 
     const trueUpEmptyElements = mapDropNulls((path): TrueUpEmptyElement | null => {
-      if (EP.isStoryboardPath(path) || shouldCascadeDelete(path)) {
+      if (EP.isStoryboardPath(path) || shouldCascadeDelete(editor, path)) {
         return null
       }
 
@@ -1028,6 +1013,21 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
 
     return addToTrueUpElements(withUpdatedSelectedViews, ...trueUps)
   }
+}
+
+function shouldCascadeDelete(editor: EditorState, path: ElementPath): boolean {
+  return (
+    // it's a group
+    treatElementAsGroupLike(editor.jsxMetadata, path) ||
+    // it's a framgent
+    treatElementAsFragmentLike(
+      editor.jsxMetadata,
+      editor.allElementProps,
+      editor.elementPathTree,
+      path,
+    )
+    // TODO it's hug?
+  )
 }
 
 function duplicateMany(paths: ElementPath[], editor: EditorModel): EditorModel {
