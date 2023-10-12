@@ -851,6 +851,7 @@ function addPositionAbsoluteTopLeft(
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
   return [
+    convertToAbsolute('always', elementPath),
     setCssLengthProperty(
       'always',
       elementPath,
@@ -865,7 +866,6 @@ function addPositionAbsoluteTopLeft(
       setExplicitCssValue(cssPixelLength(localFrame.y)),
       parentFlexDirection,
     ),
-    convertToAbsolute('always', elementPath),
   ]
 }
 

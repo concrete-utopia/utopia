@@ -1125,10 +1125,6 @@ describe('Convert to absolute/escape hatch', () => {
             backgroundColor: '#aaaaaa33',
             width: '50%',
             height: '20%',
-            right: 200,
-            bottom: 320,
-            top: 0,
-            left: 0
           }}
           data-uid='bbb'
           data-testid='bbb'
@@ -1171,7 +1167,14 @@ describe('Convert to absolute/escape hatch', () => {
             data-uid='aaa'
           >
           <View
-            style={{ backgroundColor: '#aaaaaa33', width: 200, height: 80, right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 200,
+              height: 80,
+              position: 'absolute',
+              top: 15,
+              left: 15,
+            }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -1245,10 +1248,6 @@ describe('Convert to absolute/escape hatch', () => {
             backgroundColor: '#aaaaaa33',
             width: '50%',
             height: '20%',
-            right: 200,
-            bottom: 320,
-            top: 0,
-            left: 0
           }}
           data-uid='bbb'
           data-testid='bbb'
@@ -1291,7 +1290,14 @@ describe('Convert to absolute/escape hatch', () => {
             data-uid='aaa'
           >
           <View
-            style={{ backgroundColor: '#aaaaaa33', width: 200, height: 80, right: 185, bottom: 305, top: 15, left: 15, position: 'absolute', }}
+            style={{
+              backgroundColor: '#aaaaaa33',
+              width: 200,
+              height: 80,
+              position: 'absolute',
+              top: 15,
+              left: 15,
+            }}
             data-uid='bbb'
             data-testid='bbb'
           />
