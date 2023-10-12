@@ -23,8 +23,10 @@ import type {
 import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
+  flexChildProps,
   isHugFromStyleAttribute,
   isHugFromStyleAttributeOrNull,
+  pruneFlexPropsCommands,
 } from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { isCollapsingParent } from '../canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
@@ -266,6 +268,7 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
     }
     if (status === 'contains-only-absolute' || status === 'empty') {
       commands.push(
+        ...pruneFlexPropsCommands(flexChildProps, v.target),
         setProperty(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
         setProperty(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
         setProperty(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
