@@ -530,6 +530,7 @@ import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -996,12 +997,29 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
           }, MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path)),
         ) ?? canvasRectangle(zeroRectangle)
 
+      const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+      if (metadata == null || isLeft(metadata.element)) {
+        return null
+      }
+      const jsxProps = isJSXElement(metadata.element.value)
+        ? right(metadata.element.value.props)
+        : null
+
+      const hasHorizontalPosition =
+        jsxProps != null &&
+        (getLayoutProperty('left', jsxProps, styleStringInArray) != null ||
+          getLayoutProperty('right', jsxProps, styleStringInArray) != null)
+      const hasVerticalPosition =
+        jsxProps != null &&
+        (getLayoutProperty('top', jsxProps, styleStringInArray) != null ||
+          getLayoutProperty('bottom', jsxProps, styleStringInArray) != null)
+
       function combineFrames(main: CanvasRectangle, backup: CanvasRectangle): CanvasRectangle {
         return canvasRectangle({
-          x: main.x === 0 ? backup.x : main.x, // TODO this should use the tlbr from the props, not the rect!
-          y: main.y === 0 ? backup.y : main.y, // TODO this should use the tlbr from the props, not the rect!
-          width: main.width === 0 ? backup.width : main.width,
-          height: main.height === 0 ? backup.height : main.height,
+          x: hasHorizontalPosition ? main.x : backup.x,
+          y: hasVerticalPosition ? main.y : backup.y,
+          width: main.width !== 0 ? main.width : backup.width,
+          height: main.height !== 0 ? main.height : backup.height,
         })
       }
 
