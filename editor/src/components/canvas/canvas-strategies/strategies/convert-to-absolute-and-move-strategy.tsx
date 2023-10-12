@@ -101,8 +101,8 @@ function getBasicStrategyProperties(setHuggingParentToFixed: SetHuggingParentToF
     case 'set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
-        name: 'Move (Abs + Set Hugging Parent Fixed)',
-        descriptiveLabel: 'Converting To Absolute And Moving (setting hugging parent to fixed)',
+        name: 'Move (Abs + Set Parent Fixed)',
+        descriptiveLabel: 'Converting To Absolute And Moving (setting parent to fixed)',
       }
     case 'dont-set-hugging-parent-to-fixed':
       return {
@@ -136,6 +136,19 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       })
     ) {
       return null
+    }
+
+    if (setHuggingParentToFixed === 'set-hugging-parent-to-fixed') {
+      const setParentToFixedSizeCommands = createSetParentsToFixedSizeCommands(
+        retargetedTargets,
+        canvasState.startingMetadata,
+        canvasState.startingElementPathTree,
+        canvasState.projectContents,
+      )
+
+      if (setParentToFixedSizeCommands.length === 0) {
+        return null
+      }
     }
 
     const autoLayoutSiblings = getAutoLayoutSiblings(
@@ -190,7 +203,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
         ...autoLayoutSiblingsControl,
       ], // Uses existing hooks in select-mode-hooks.tsx
       fitness:
-        setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? baseFitness : baseFitness - 0.1, // by default we set the parent to fixed size
+        setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? baseFitness + 0.1 : baseFitness, // by default we set the parent to fixed size
       apply: () => {
         if (
           interactionSession != null &&
