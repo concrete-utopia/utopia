@@ -1120,24 +1120,22 @@ export const GithubPane = React.memo(() => {
     <div style={{ height: '100%', overflowY: 'scroll' }}>
       <Section>
         <SectionTitleRow minimised={false} hideButton>
-          <FlexRow flexGrow={1}>
-            <Title style={{ flexGrow: 1 }}>Github</Title>
+          <FlexRow>
+            <MenuIcons.Octocat style={{ width: 19, height: 19 }} />
+            {githubUser != null ? (
+              <Button
+                style={{ gap: 4, padding: '0 6px' }}
+                onClick={openGithubProfile}
+                css={{
+                  '&:hover': {
+                    opacity: 0.6,
+                  },
+                }}
+              >
+                @{githubUser?.login}
+              </Button>
+            ) : null}
           </FlexRow>
-          {when(
-            githubUser != null,
-            <Button
-              style={{ gap: 4, padding: '0 6px' }}
-              onClick={openGithubProfile}
-              css={{
-                '&:hover': {
-                  opacity: 0.6,
-                },
-              }}
-            >
-              @{githubUser?.login}
-              {<MenuIcons.Octocat style={{ width: 19, height: 19 }} />}
-            </Button>,
-          )}
         </SectionTitleRow>
         {unless(
           isLoggedIn,
