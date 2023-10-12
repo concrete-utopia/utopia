@@ -91,21 +91,14 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
 
   const dispatch = useDispatch()
   const theme = useColorTheme()
-  const projectName = useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      return store.editor.projectName
-    },
-    'TitleBar projectName',
-  )
-  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
+
+  const { upstreamChanges, currentBranch, treeConflicts } = useEditorState(
     Substores.github,
     (store) => {
       return {
         upstreamChanges: store.editor.githubData.upstreamChanges,
         currentBranch: store.editor.githubSettings.branchName,
         treeConflicts: store.editor.githubData.treeConflicts,
-        repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
       }
     },
     'TitleBar github',
@@ -180,88 +173,68 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
         height: TitleHeight,
         width: '100%',
         backgroundColor: theme.inspectorBackground.value,
-        paddingLeft: 10,
+        padding: '0 10px',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: 10,
         flexShrink: 0,
       }}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
-      <FlexRow css={{ gap: 6 }}>
-        <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' isHovered={isHovered} />
-        <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
-      </FlexRow>
-      <div style={{ display: 'flex', flexDirection: 'column' }}>
+      <FlexRow css={{ gap: 15, alignItems: 'center' }}>
+        <FlexRow css={{ gap: 6 }}>
+          <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' isHovered={isHovered} />
+          <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
+        </FlexRow>
         {currentBranch != null ? (
           <SimpleFlexRow
+            onClick={showMergeConflict}
             style={{
               gap: 5,
-              scale: hasUpstreamChanges || hasMergeConflicts || hasDownstreamChanges ? '75%' : 1,
-              transformOrigin: 'left',
+              color: hasMergeConflicts ? colorTheme.error.value : colorTheme.fg1.value,
             }}
           >
-            {repoName}
-            {<Icons.Branch style={{ width: 19, height: 19 }} />}
+            {hasMergeConflicts ? (
+              <Icons.WarningTriangle style={{ width: 18, height: 18 }} color={'error'} />
+            ) : (
+              <Icons.Branch style={{ width: 18, height: 18 }} />
+            )}
             {currentBranch}
           </SimpleFlexRow>
-        ) : (
-          <ProjectTitle>{projectName}</ProjectTitle>
-        )}
-        {when(
-          loggedIn,
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: 6,
-              scale: '75%',
-              transformOrigin: 'left',
-            }}
-          >
-            {when(
-              hasUpstreamChanges,
-              <RoundButton
-                color={colorTheme.secondaryOrange.value}
-                onClick={openLeftPaneltoGithubTab}
-                onMouseDown={onMouseDown}
-              >
-                {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Remote</>
-              </RoundButton>,
-            )}
-            {when(
-              hasMergeConflicts,
-              <RoundButton
-                color={colorTheme.error.value}
-                onClick={showMergeConflict}
-                onMouseDown={onMouseDown}
-              >
-                {
-                  <Icons.WarningTriangle
-                    style={{ width: 19, height: 19 }}
-                    color={'on-light-main'}
-                  />
-                }
-                <>Merge Conflicts</>
-              </RoundButton>,
-            )}
-            {when(
-              hasDownstreamChanges,
-              <RoundButton
-                color={colorTheme.secondaryBlue.value}
-                onClick={openLeftPaneltoGithubTab}
-                onMouseDown={onMouseDown}
-              >
-                {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Local</>
-              </RoundButton>,
-            )}
-          </div>,
-        )}
-      </div>
+        ) : null}
+      </FlexRow>
+      {when(
+        loggedIn,
+        <FlexRow
+          css={{
+            gap: 2,
+          }}
+        >
+          {when(
+            hasUpstreamChanges,
+            <RoundButton
+              color={colorTheme.secondaryOrange.value}
+              onClick={openLeftPaneltoGithubTab}
+              onMouseDown={onMouseDown}
+            >
+              {<Icons.Download style={{ width: 18, height: 18 }} color={'component-orange'} />}
+            </RoundButton>,
+          )}
+          {when(
+            hasDownstreamChanges,
+            <RoundButton
+              color={colorTheme.secondaryBlue.value}
+              onClick={openLeftPaneltoGithubTab}
+              onMouseDown={onMouseDown}
+            >
+              {<Icons.Upload style={{ width: 18, height: 18 }} color={'dynamic'} />}
+            </RoundButton>,
+          )}
+        </FlexRow>,
+      )}
     </div>
   )
 })
@@ -462,22 +435,14 @@ const TitleBar = React.memo(() => {
     }),
     'TitleBar loginState',
   )
-  const projectName = useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      return store.editor.projectName
-    },
-    'TitleBar projectName',
-  )
 
-  const { upstreamChanges, currentBranch, treeConflicts, repoName } = useEditorState(
+  const { upstreamChanges, currentBranch, treeConflicts } = useEditorState(
     Substores.github,
     (store) => {
       return {
         upstreamChanges: store.editor.githubData.upstreamChanges,
         currentBranch: store.editor.githubSettings.branchName,
         treeConflicts: store.editor.githubData.treeConflicts,
-        repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
       }
     },
     'TitleBar github',
@@ -577,7 +542,6 @@ const TitleBar = React.memo(() => {
                 onClick={openLeftPaneltoGithubTab}
               >
                 {<Icons.Download style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Pull Remote</>
               </RoundButton>,
             )}
             {when(
@@ -589,7 +553,6 @@ const TitleBar = React.memo(() => {
                     color={'on-light-main'}
                   />
                 }
-                <>Merge Conflicts</>
               </RoundButton>,
             )}
             {when(
@@ -599,7 +562,6 @@ const TitleBar = React.memo(() => {
                 onClick={openLeftPaneltoGithubTab}
               >
                 {<Icons.Upload style={{ width: 19, height: 19 }} color={'on-light-main'} />}
-                <>Push Local</>
               </RoundButton>,
             )}
           </>,
@@ -614,14 +576,11 @@ const TitleBar = React.memo(() => {
         }}
       >
         {currentBranch != null ? (
-          <SimpleFlexRow style={{ gap: 5, flexShrink: 0 }}>
-            {repoName}
+          <SimpleFlexRow style={{ gap: 5 }}>
             {<Icons.Branch style={{ width: 19, height: 19 }} />}
             {currentBranch}
           </SimpleFlexRow>
-        ) : (
-          <ProjectTitle>{projectName}</ProjectTitle>
-        )}
+        ) : null}
       </SimpleFlexRow>
       <div style={{ flexGrow: 1 }} />
       <div style={{ flex: '0 0 0px', paddingRight: 8 }}>
