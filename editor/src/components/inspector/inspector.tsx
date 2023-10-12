@@ -165,6 +165,7 @@ const AlignmentButtons = React.memo((props: { numberOfTargets: number }) => {
         height: UtopiaTheme.layout.rowHeight.normal,
         outline: `1px solid ${colorTheme.seperator.value}`,
         background: colorTheme.inspectorBackground.value,
+        padding: '8px 0',
       }}
     >
       <AlignDistributeButton
@@ -354,12 +355,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
           }}
           data-testid={InspectorSectionsContainerTestID}
         >
-          {rootElementIsSelected ? (
-            <RootElementIndicator />
-          ) : (
-            unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
-          )}
-
           <FlexCol
             css={{
               overflowY: 'scroll',
@@ -369,6 +364,11 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               paddingBottom: 50,
             }}
           >
+            {rootElementIsSelected ? (
+              <RootElementIndicator />
+            ) : (
+              unless(hideAllSections, <AlignmentButtons numberOfTargets={selectedViews.length} />)
+            )}
             {unless(
               hideAllSections,
               <>

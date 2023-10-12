@@ -45,15 +45,13 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   leftMenu: {
     selectedTab: null as any,
-    expanded: false,
-    paneWidth: null as any,
+    visible: false,
   },
   rightMenu: {
     selectedTab: null as any,
-    expanded: true,
+    visible: true,
   },
   interfaceDesigner: {
-    codePaneWidth: 500,
     codePaneVisible: true,
     additionalControls: true,
   },

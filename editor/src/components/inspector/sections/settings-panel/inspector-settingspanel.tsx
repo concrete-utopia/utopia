@@ -26,7 +26,7 @@ export const SettingsPanel = React.memo(() => {
   )
   const navigatorMinimised = useEditorState(
     Substores.restOfEditor,
-    (store) => !store.editor.leftMenu.expanded,
+    (store) => !store.editor.leftMenu.visible,
     'SettingsPanel navigator.minimised',
   )
 

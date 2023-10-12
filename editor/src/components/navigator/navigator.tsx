@@ -271,7 +271,6 @@ export const NavigatorComponent = React.memo(() => {
       data-testid={NavigatorContainerId}
       tabIndex={-1}
       css={{
-        zIndex: 1,
         flexGrow: 1,
         height: '100%',
         display: 'flex',

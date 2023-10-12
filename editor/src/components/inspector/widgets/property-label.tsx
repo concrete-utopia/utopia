@@ -7,6 +7,7 @@ import * as PP from '../../../core/shared/property-path'
 import { optionalAddOnUnsetValues } from '../common/context-menu-items'
 import { useInspectorInfoSimpleUntyped } from '../common/property-path-hooks'
 import type { ControlStyles } from '../common/control-styles'
+import { useColorTheme } from '../../../uuiui'
 
 type PropertyLabelProps = {
   target: ReadonlyArray<PropertyPath>
@@ -25,6 +26,7 @@ function useMetadataInfoForDomain(target: ReadonlyArray<PropertyPath>) {
 }
 
 export const PropertyLabel = React.memo((props: PropertyLabelProps) => {
+  const colorTheme = useColorTheme()
   const metadata = useMetadataInfoForDomain(props.target)
   const propsToUnset = props.propNamesToUnset ?? props.target.map(PP.lastPart)
   const contextMenuItems = optionalAddOnUnsetValues(
@@ -44,7 +46,7 @@ export const PropertyLabel = React.memo((props: PropertyLabelProps) => {
         overflowX: 'scroll',
         whiteSpace: 'nowrap',
         textOverflow: 'ellipsis',
-        color: controlStyles.mainColor,
+        color: colorTheme.fg1.value,
       }}
     >
       {props.children}

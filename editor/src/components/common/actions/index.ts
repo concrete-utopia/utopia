@@ -74,15 +74,3 @@ export function setFocus(panel: EditorPanel | null): SetFocus {
     focusedPanel: panel,
   }
 }
-
-export type ResizeLeftPane = {
-  action: 'RESIZE_LEFTPANE'
-  deltaPaneWidth: number
-}
-
-export function resizeLeftPane(deltaPaneWidth: number): ResizeLeftPane {
-  return {
-    action: 'RESIZE_LEFTPANE',
-    deltaPaneWidth: deltaPaneWidth,
-  }
-}

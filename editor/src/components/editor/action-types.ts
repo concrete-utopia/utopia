@@ -17,7 +17,7 @@ import type {
   PinOrFlexFrameChange,
   SelectionLocked,
 } from '../canvas/canvas-types'
-import type { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
+import type { EditorPane, EditorPanel, SetFocus } from '../common/actions'
 import type {
   ProjectFile,
   PropertyPath,
@@ -76,6 +76,7 @@ import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import type { FromVSCodeAction } from './actions/actions-from-vscode'
 import type { ProjectServerState } from './store/project-server-state'
+import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -299,11 +300,6 @@ export type TogglePane = {
 
 export type ToggleInterfaceDesignerAdditionalControls = {
   action: 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS'
-}
-
-export type ResizeInterfaceDesignerCodePane = {
-  action: 'RESIZE_INTERFACEDESIGNER_CODEPANE'
-  deltaCodePaneWidth: number
 }
 
 export interface OpenPopup {
@@ -997,6 +993,7 @@ export interface ForceParseFile {
 export interface RunEscapeHatch {
   action: 'RUN_ESCAPE_HATCH'
   targets: Array<ElementPath>
+  setHuggingParentToFixed: SetHuggingParentToFixed
 }
 
 export interface SetElementsToRerender {
@@ -1112,7 +1109,6 @@ export type EditorAction =
   | UpdateMouseButtonsPressed
   | HideModal
   | ShowModal
-  | ResizeInterfaceDesignerCodePane
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset
@@ -1167,7 +1163,6 @@ export type EditorAction =
   | DEPRECATEDToggleEnabledProperty
   | InsertImageIntoUI
   | SetFocus
-  | ResizeLeftPane
   | SetAspectRatioLock
   | UpdateJSXElementName
   | AddImports

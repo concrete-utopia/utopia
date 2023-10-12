@@ -162,7 +162,7 @@ import {
   moveTemplate,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
-import type { ResizeLeftPane, SetFocus } from '../../common/actions'
+import type { SetFocus } from '../../common/actions'
 import { openMenu } from '../../context-menu-side-effect'
 import type { CodeResultCache, PropertyControlsInfo } from '../../custom-code/code-file'
 import {
@@ -218,7 +218,6 @@ import type {
   RenameStyleSelector,
   ResetCanvas,
   ResetPins,
-  ResizeInterfaceDesignerCodePane,
   RunEscapeHatch,
   SaveAsset,
   SaveCurrentFile,
@@ -368,8 +367,6 @@ import {
   getOpenTextFileKey,
   getOpenUIJSFileKey,
   LeftMenuTab,
-  LeftPaneDefaultWidth,
-  LeftPaneMinimumWidth,
   mergeStoredEditorStateIntoEditorState,
   modifyOpenJsxElementAtPath,
   modifyParseSuccessAtPath,
@@ -548,7 +545,7 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
     ...editorState,
     leftMenu: {
       ...editorState.leftMenu,
-      expanded: expanded,
+      visible: expanded,
     },
   }
 }
@@ -583,7 +580,7 @@ export function updateRightMenuExpanded(editorState: EditorState, expanded: bool
     ...editorState,
     rightMenu: {
       ...editorState.rightMenu,
-      expanded: expanded,
+      visible: expanded,
     },
   }
 }
@@ -784,15 +781,13 @@ export function restoreEditorState(
     },
     leftMenu: {
       selectedTab: currentEditor.leftMenu.selectedTab,
-      expanded: currentEditor.leftMenu.expanded,
-      paneWidth: currentEditor.leftMenu.paneWidth,
+      visible: currentEditor.leftMenu.visible,
     },
     rightMenu: {
       selectedTab: currentEditor.rightMenu.selectedTab,
-      expanded: currentEditor.rightMenu.expanded,
+      visible: currentEditor.rightMenu.visible,
     },
     interfaceDesigner: {
-      codePaneWidth: currentEditor.interfaceDesigner.codePaneWidth,
       codePaneVisible: currentEditor.interfaceDesigner.codePaneVisible,
       additionalControls: currentEditor.interfaceDesigner.additionalControls,
     },
@@ -1437,9 +1432,6 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
     interfaceDesigner: {
       ...editor.interfaceDesigner,
       codePaneVisible: codePaneVisible,
-      codePaneWidth: editor.interfaceDesigner.codePaneVisible
-        ? editor.interfaceDesigner.codePaneWidth
-        : Math.max(MIN_CODE_PANE_REOPEN_WIDTH, editor.interfaceDesigner.codePaneWidth),
     },
   }
 }
@@ -2451,7 +2443,7 @@ export const UPDATE_FNS = {
           ...editor,
           leftMenu: {
             ...editor.leftMenu,
-            expanded: action.visible,
+            visible: action.visible,
           },
         }
       case 'navigator':
@@ -2507,7 +2499,7 @@ export const UPDATE_FNS = {
           ...editor,
           rightMenu: {
             ...editor.rightMenu,
-            expanded: action.visible,
+            visible: action.visible,
           },
         }
       case 'preview':
@@ -2524,10 +2516,6 @@ export const UPDATE_FNS = {
           interfaceDesigner: {
             ...editor.interfaceDesigner,
             codePaneVisible: action.visible,
-            codePaneWidth: Math.max(
-              MIN_CODE_PANE_REOPEN_WIDTH,
-              editor.interfaceDesigner.codePaneWidth,
-            ),
           },
         }
       case 'misccodeeditor':
@@ -2558,7 +2546,7 @@ export const UPDATE_FNS = {
           ...editor,
           leftMenu: {
             ...editor.leftMenu,
-            expanded: !editor.leftMenu.expanded,
+            visible: !editor.leftMenu.visible,
           },
         }
       case 'rightmenu':
@@ -2566,7 +2554,7 @@ export const UPDATE_FNS = {
           ...editor,
           rightMenu: {
             ...editor.rightMenu,
-            expanded: !editor.rightMenu.expanded,
+            visible: !editor.rightMenu.visible,
           },
         }
       case 'dependencylist':
@@ -2792,13 +2780,13 @@ export const UPDATE_FNS = {
   },
   SET_LEFT_MENU_TAB: (action: SetLeftMenuTab, editor: EditorModel): EditorModel => {
     let result: EditorModel = updateSelectedLeftMenuTab(editor, action.tab)
-    // Expand the menu if it's not already visible.
-    if (!result.leftMenu.expanded || result.leftMenu.paneWidth <= LeftPaneMinimumWidth) {
+    // Show the menu if it's not already visible.
+    if (!result.leftMenu.visible) {
       result = {
         ...result,
         leftMenu: {
           ...result.leftMenu,
-          paneWidth: LeftPaneDefaultWidth,
+          visible: true,
         },
       }
     }
@@ -2869,48 +2857,6 @@ export const UPDATE_FNS = {
     return update(editor, {
       modal: { $set: action.modal },
     })
-  },
-  RESIZE_INTERFACEDESIGNER_CODEPANE: (
-    action: ResizeInterfaceDesignerCodePane,
-    editor: EditorModel,
-    dispatch: EditorDispatch,
-  ): EditorModel => {
-    // resulting pane needs to have a width of 2 so it can be resized-to-open
-    const minWidth = 2
-    const hideWidth = 20
-
-    const priorWidth = editor.interfaceDesigner.codePaneWidth
-    const targetWidth = editor.interfaceDesigner.codePaneWidth + action.deltaCodePaneWidth
-
-    const shouldShowToast = targetWidth < hideWidth && priorWidth > minWidth
-    const updatedEditor = shouldShowToast
-      ? UPDATE_FNS.ADD_TOAST(showToast(notice('Code editor hidden')), editor)
-      : editor
-
-    const shouldHideCodePaneOnResize = targetWidth < hideWidth ? false : true
-    const codePaneVisible = isFeatureEnabled('Draggable Floating Panels')
-      ? true
-      : shouldHideCodePaneOnResize
-
-    return {
-      ...updatedEditor,
-      interfaceDesigner: {
-        ...editor.interfaceDesigner,
-        codePaneVisible: codePaneVisible,
-        codePaneWidth: targetWidth < hideWidth ? minWidth : targetWidth,
-      },
-    }
-  },
-  RESIZE_LEFTPANE: (action: ResizeLeftPane, editor: EditorModel): EditorModel => {
-    const priorWidth = editor.leftMenu.paneWidth
-    const targetWidth = priorWidth + action.deltaPaneWidth
-    return {
-      ...editor,
-      leftMenu: {
-        ...editor.leftMenu,
-        paneWidth: Math.max(LeftPaneMinimumWidth, targetWidth),
-      },
-    }
   },
   RESET_PINS: (action: ResetPins, editor: EditorModel): EditorModel => {
     const target = action.target
@@ -3451,7 +3397,6 @@ export const UPDATE_FNS = {
         interfaceDesigner: {
           ...editor.interfaceDesigner,
           codePaneVisible: true,
-          codePaneWidth: 500,
         },
       }
     } else {
@@ -4502,7 +4447,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const isLeftMenuOpen = editor.leftMenu.expanded
+    const isLeftMenuOpen = editor.leftMenu.visible
     const containerRootDiv = document.getElementById('canvas-root')
     const panelOffsets = canvasPanelOffsets()
     const scale = 1 / editor.canvas.scale
@@ -5140,6 +5085,7 @@ export const UPDATE_FNS = {
         editor.jsxMetadata,
         canvasState,
         null,
+        action.setHuggingParentToFixed,
       ).commands
       return foldAndApplyCommandsSimple(editor, commands)
     } else {

@@ -191,15 +191,7 @@ export enum LeftMenuTab {
   Navigator = 'navigator',
 }
 
-export const LeftPaneMinimumWidth = 5
-
-export const LeftPaneDefaultWidth = GridMenuWidth
-export const LeftPanelMinWidth = 240
-export const DefaultNavigatorWidth = 280
-export const LeftPanelWidthAtom = atomWithPubSub({
-  key: 'LeftPanelWidthAtom',
-  defaultValue: LeftPaneDefaultWidth,
-})
+export const DefaultNavigatorWidth = GridMenuWidth
 export const CanvasSizeAtom = atomWithPubSub({
   key: 'CanvasSizeAtom',
   defaultValue: size(0, 0),
@@ -745,50 +737,44 @@ export function editorStateNodeModules(
 
 export interface EditorStateLeftMenu {
   selectedTab: LeftMenuTab
-  expanded: boolean
-  paneWidth: number
+  visible: boolean
 }
 
 export function editorStateLeftMenu(
   selectedTab: LeftMenuTab,
-  expanded: boolean,
-  paneWidth: number,
+  visible: boolean,
 ): EditorStateLeftMenu {
   return {
     selectedTab: selectedTab,
-    expanded: expanded,
-    paneWidth: paneWidth,
+    visible: visible,
   }
 }
 
 export interface EditorStateRightMenu {
   selectedTab: RightMenuTab
-  expanded: boolean
+  visible: boolean
 }
 
 export function editorStateRightMenu(
   selectedTab: RightMenuTab,
-  expanded: boolean,
+  visible: boolean,
 ): EditorStateRightMenu {
   return {
     selectedTab: selectedTab,
-    expanded: expanded,
+    visible: visible,
   }
 }
 
 export interface EditorStateInterfaceDesigner {
-  codePaneWidth: number
   codePaneVisible: boolean
   additionalControls: boolean
 }
 
 export function editorStateInterfaceDesigner(
-  codePaneWidth: number,
   codePaneVisible: boolean,
   additionalControls: boolean,
 ): EditorStateInterfaceDesigner {
   return {
-    codePaneWidth: codePaneWidth,
     codePaneVisible: codePaneVisible,
     additionalControls: additionalControls,
   }
@@ -2347,15 +2333,13 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     leftMenu: {
       selectedTab: LeftMenuTab.Navigator,
-      expanded: true,
-      paneWidth: LeftPaneDefaultWidth,
+      visible: true,
     },
     rightMenu: {
       selectedTab: RightMenuTab.Inspector,
-      expanded: true,
+      visible: true,
     },
     interfaceDesigner: {
-      codePaneWidth: 500,
       codePaneVisible: true,
       additionalControls: true,
     },
@@ -2725,15 +2709,13 @@ export function editorModelFromPersistentModel(
     },
     leftMenu: {
       selectedTab: LeftMenuTab.Navigator,
-      expanded: true,
-      paneWidth: LeftPaneDefaultWidth,
+      visible: true,
     },
     rightMenu: {
       selectedTab: RightMenuTab.Inspector,
-      expanded: true,
+      visible: true,
     },
     interfaceDesigner: {
-      codePaneWidth: 500,
       codePaneVisible: true,
       additionalControls: true,
     },

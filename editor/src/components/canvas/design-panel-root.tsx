@@ -17,6 +17,7 @@ import {
   SimpleFlexColumn,
   useColorTheme,
   LargerIcons,
+  FlexColumn,
 } from '../../uuiui'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
@@ -127,16 +128,6 @@ const NothingOpenCard = React.memo(() => {
 })
 
 const DesignPanelRootInner = React.memo(() => {
-  const draggablePanelsEnabled = isFeatureEnabled('Draggable Floating Panels')
-  const codeEditorWidth = useEditorState(
-    Substores.restOfEditor,
-    (store) =>
-      store.editor.interfaceDesigner.codePaneVisible
-        ? store.editor.interfaceDesigner.codePaneWidth + 10
-        : 0,
-    'DesignPanelRootInner interfaceDesigner',
-  )
-
   return (
     <>
       <SimpleFlexRow
@@ -158,47 +149,8 @@ const DesignPanelRootInner = React.memo(() => {
               position: 'relative',
             }}
           >
-            {unless(
-              draggablePanelsEnabled,
-              <div
-                id='vscode-editor'
-                style={{ height: 'calc(100% - 20px)', position: 'absolute', margin: 10, zIndex: 1 }}
-              >
-                <CodeEditorPane panelData={null as any} small={false} />
-              </div>,
-            )}
-            {unless(
-              draggablePanelsEnabled,
-              <div
-                id='left-pane'
-                style={{
-                  height: 'calc(100% - 20px)',
-                  position: 'absolute',
-                  top: 0,
-                  left: codeEditorWidth,
-                  zIndex: 1,
-                  margin: 10,
-                }}
-              >
-                <LeftPaneComponent panelData={null as any} />
-              </div>,
-            )}
             <CanvasWrapperComponent />
-            {unless(
-              draggablePanelsEnabled,
-              <div
-                id='inspector-root'
-                style={{
-                  height: 'calc(100% - 20px)',
-                  position: 'absolute',
-                  right: 0,
-                  margin: 10,
-                }}
-              >
-                <ResizableRightPane panelData={null as any} />
-              </div>,
-            )}
-            {when(draggablePanelsEnabled, <GridPanelsContainer />)}
+            <GridPanelsContainer />
           </SimpleFlexColumn>
         }
       </SimpleFlexRow>
@@ -229,25 +181,8 @@ interface ResizableRightPaneProps {
   panelData: StoredPanel
 }
 
-export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const defaultInspectorWidth = isFeatureEnabled('Draggable Floating Panels')
-    ? GridMenuWidth
-    : UtopiaTheme.layout.inspectorSmallWidth
-
+export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
   const colorTheme = useColorTheme()
-  const [, updateInspectorWidth] = useAtom(InspectorWidthAtom)
-
-  const [width, setWidth] = React.useState<number>(defaultInspectorWidth)
-
-  const resizableRef = React.useRef<Resizable>(null)
-  const onResize = React.useCallback(() => {
-    const newWidth = resizableRef.current?.size.width
-    if (newWidth != null) {
-      // we have to use the instance ref to directly access the get size() getter, because re-resize's API only wants to tell us deltas, but we need the snapped width
-      setWidth(newWidth)
-      updateInspectorWidth(newWidth > defaultInspectorWidth ? 'wide' : 'regular')
-    }
-  }, [updateInspectorWidth, defaultInspectorWidth])
 
   const selectedTab = useEditorState(
     Substores.restOfEditor,
@@ -257,7 +192,7 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
 
   const isRightMenuExpanded = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.rightMenu.expanded,
+    (store) => store.editor.rightMenu.visible,
     'DesignPanelRoot isRightMenuExpanded',
   )
   const dispatch = useDispatch()
@@ -288,73 +223,55 @@ export const ResizableRightPane = React.memo<ResizableRightPaneProps>((props) =>
   }
 
   return (
-    <Resizable
-      ref={resizableRef}
-      defaultSize={{
-        width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : defaultInspectorWidth,
-        height: '100%',
-      }}
-      size={{
-        width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : width,
-        height: '100%',
-      }}
+    <FlexColumn
       style={{
-        transition: 'width 100ms ease-in-out',
+        flex: 1,
         overflow: 'hidden',
         backgroundColor: colorTheme.inspectorBackground.value,
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
       }}
-      onResizeStart={onResize}
-      onResize={onResize}
-      onResizeStop={onResize}
-      snap={{
-        x: [defaultInspectorWidth, UtopiaTheme.layout.inspectorLargeWidth],
-      }}
-      enable={{
-        left: isFeatureEnabled('Draggable Floating Panels') ? false : true,
-      }}
     >
-      {when(
-        isFeatureEnabled('Draggable Floating Panels'),
-        <TitleBarUserProfile panelData={props.panelData} />,
-      )}
+      <TitleBarUserProfile panelData={props.panelData} />
+      <FlexRow
+        style={{ marginBottom: 10, gap: 10, alignSelf: 'stretch', flexShrink: 0 }}
+        css={undefined}
+      >
+        <MenuTab
+          label={'Inspector'}
+          selected={selectedTab === RightMenuTab.Inspector}
+          onClick={onClickInspectorTab}
+        />
+        <MenuTab
+          label={'Insert'}
+          selected={selectedTab === RightMenuTab.Insert}
+          onClick={onClickInsertTab}
+        />
+        <MenuTab
+          label={'Settings'}
+          selected={selectedTab === RightMenuTab.Settings}
+          onClick={onClickSettingsTab}
+        />
+      </FlexRow>
       <SimpleFlexRow
         className='Inspector-entrypoint'
         id='inspector-root'
         style={{
-          alignItems: 'stretch',
+          display: 'flex',
           flexDirection: 'column',
-          width: '100%',
-          height: '100%',
+          flexGrow: 1,
+          position: 'relative',
+          color: colorTheme.fg1.value,
+          overflowY: 'scroll',
           backgroundColor: colorTheme.inspectorBackground.value,
-          flexGrow: 0,
-          flexShrink: 0,
         }}
       >
-        <FlexRow style={{ marginBottom: 10, gap: 10 }} css={undefined}>
-          <MenuTab
-            label={'Inspector'}
-            selected={selectedTab === RightMenuTab.Inspector}
-            onClick={onClickInspectorTab}
-          />
-          <MenuTab
-            label={'Insert'}
-            selected={selectedTab === RightMenuTab.Insert}
-            onClick={onClickInsertTab}
-          />
-          <MenuTab
-            label={'Settings'}
-            selected={selectedTab === RightMenuTab.Settings}
-            onClick={onClickSettingsTab}
-          />
-        </FlexRow>
         {when(selectedTab === RightMenuTab.Insert, <InsertMenuPane />)}
         {when(selectedTab === RightMenuTab.Inspector, <InspectorEntryPoint />)}
         {when(selectedTab === RightMenuTab.Settings, <SettingsPane />)}
       </SimpleFlexRow>
       <CanvasStrategyInspector />
-    </Resizable>
+    </FlexColumn>
   )
 })
 
@@ -364,87 +281,47 @@ interface CodeEditorPaneProps {
 }
 
 export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
-  const dispatch = useDispatch()
-  const interfaceDesigner = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.interfaceDesigner,
-    'CodeEditorPane interfaceDesigner',
-  )
-
   const codeEditorEnabled = isCodeEditorEnabled()
-  const onResizeStop = React.useCallback(
-    (
-      event: MouseEvent | TouchEvent,
-      direction: ResizeDirection,
-      elementRef: HTMLElement,
-      delta: NumberSize,
-    ) => {
-      dispatch([EditorActions.resizeInterfaceDesignerCodePane(delta.width)])
-    },
-    [dispatch],
-  )
 
   return (
-    <Resizable
-      defaultSize={{
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? '100%'
-          : interfaceDesigner.codePaneWidth,
-        height: '100%',
-      }}
-      size={{
-        width: isFeatureEnabled('Draggable Floating Panels')
-          ? '100%'
-          : interfaceDesigner.codePaneWidth,
-        height: '100%',
-      }}
-      onResizeStop={onResizeStop}
-      enable={{
-        top: false,
-        right: isFeatureEnabled('Draggable Floating Panels') ? false : true,
-        bottom: false,
-        topRight: false,
-        bottomRight: false,
-        bottomLeft: false,
-        topLeft: false,
-      }}
+    <FlexColumn
       className='resizableFlexColumnCanvasCode'
       style={{
-        display: props.small ? 'block' : interfaceDesigner.codePaneVisible ? 'flex' : 'none',
-        position: 'relative',
+        flex: 1,
+        contain: 'layout',
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-        flexDirection: 'column',
       }}
     >
-      {when(
-        isFeatureEnabled('Draggable Floating Panels'),
-        <TitleBarCode panelData={props.panelData} />,
-      )}
+      <TitleBarCode panelData={props.panelData} />
       <div
         style={{
-          transformOrigin: 'top left',
-          width: props.small ? 'calc(100%/0.7)' : '100%',
-          height: props.small ? 'calc(100%/0.7)' : '100%',
-          transform: props.small ? 'scale(0.7)' : undefined,
-          flexDirection: 'column',
-          whiteSpace: 'nowrap',
-          display: 'flex',
-          alignItems: 'stretch',
-          justifyContent: 'stretch',
+          flex: 1,
+          contain: 'layout',
         }}
       >
-        <div
+        {/* this FlexColumn needs to be alone in the parent div, otherwise the 100% height will mess things up */}
+        <FlexColumn
           style={{
-            display: 'flex',
-            height: '100%',
+            transformOrigin: 'top left',
+            width: props.small ? 'calc(100%/0.7)' : '100%',
+            height: props.small ? 'calc(100%/0.7)' : '100%',
+            transform: props.small ? 'scale(0.7)' : undefined,
+            flex: 1,
           }}
         >
           {when(codeEditorEnabled, <CodeEditorWrapper />)}
-        </div>
-        <ConsoleAndErrorsPane />
+        </FlexColumn>
       </div>
-    </Resizable>
+      <FlexColumn
+        style={{
+          contain: 'layout',
+          zoom: props.small ? 0.7 : undefined,
+        }}
+      >
+        <ConsoleAndErrorsPane />
+      </FlexColumn>
+    </FlexColumn>
   )
 })

@@ -29,7 +29,7 @@ import {
   pruneFlexPropsCommands,
 } from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { isCollapsingParent } from '../canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
+import { isHuggingParent } from '../canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
@@ -242,7 +242,7 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
     if (
       metadata == null ||
       jsxElement == null ||
-      !(isCollapsingParent(jsxElement, 'width') || isCollapsingParent(jsxElement, 'height'))
+      !(isHuggingParent(jsxElement, 'width') || isHuggingParent(jsxElement, 'height'))
     ) {
       continue
     }
