@@ -17,7 +17,7 @@ import type {
   PinOrFlexFrameChange,
   SelectionLocked,
 } from '../canvas/canvas-types'
-import type { EditorPane, EditorPanel, ResizeLeftPane, SetFocus } from '../common/actions'
+import type { EditorPane, EditorPanel, SetFocus } from '../common/actions'
 import type {
   ProjectFile,
   PropertyPath,
@@ -299,11 +299,6 @@ export type TogglePane = {
 
 export type ToggleInterfaceDesignerAdditionalControls = {
   action: 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS'
-}
-
-export type ResizeInterfaceDesignerCodePane = {
-  action: 'RESIZE_INTERFACEDESIGNER_CODEPANE'
-  deltaCodePaneWidth: number
 }
 
 export interface OpenPopup {
@@ -1112,7 +1107,6 @@ export type EditorAction =
   | UpdateMouseButtonsPressed
   | HideModal
   | ShowModal
-  | ResizeInterfaceDesignerCodePane
   | ToggleInterfaceDesignerAdditionalControls
   | SaveCurrentFile
   | SaveAsset
@@ -1167,7 +1161,6 @@ export type EditorAction =
   | DEPRECATEDToggleEnabledProperty
   | InsertImageIntoUI
   | SetFocus
-  | ResizeLeftPane
   | SetAspectRatioLock
   | UpdateJSXElementName
   | AddImports

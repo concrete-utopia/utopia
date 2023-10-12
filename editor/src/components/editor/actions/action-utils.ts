@@ -23,7 +23,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SCROLL_CANVAS':
     case 'POSITION_CANVAS':
     case 'SET_FOCUS':
-    case 'RESIZE_LEFTPANE':
     case 'UNDO':
     case 'REDO':
     case 'CLEAR_SELECTION':
@@ -52,7 +51,6 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'CLEAR_HOVERED_VIEWS':
     case 'HIDE_MODAL':
     case 'SHOW_MODAL':
-    case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
     case 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS':
     case 'SET_CURSOR_OVERLAY':
     case 'SET_NAVIGATOR_RENAMING_TARGET':
