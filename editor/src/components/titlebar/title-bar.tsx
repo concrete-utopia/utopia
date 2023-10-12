@@ -420,7 +420,11 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
         <PanelButton onClick={onMaximize} color='#33C748' isHovered={isHovered} />
       </FlexRow>
 
-      {currentBranch != null ? <SimpleFlexRow>{repoName}</SimpleFlexRow> : <span>Code</span>}
+      {currentBranch != null ? (
+        <SimpleFlexRow>{repoName}</SimpleFlexRow>
+      ) : (
+        <span style={{ fontWeight: 600 }}>Code</span>
+      )}
     </div>
   )
 })
