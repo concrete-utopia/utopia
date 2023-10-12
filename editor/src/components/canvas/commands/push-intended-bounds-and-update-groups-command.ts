@@ -253,9 +253,9 @@ function rectangleFromChildrenBounds(
 
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
-  initial: Array<PushIntendedBoundsTarget>,
+  groupTargets: Array<PushIntendedBoundsTarget>,
 ): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
-  const targets: Array<PushIntendedBoundsTarget> = [...initial]
+  const targets: Array<PushIntendedBoundsTarget> = [...groupTargets]
 
   // we are going to mutate this as we iterate over targets
   let updatedLocalFrames: { [path: string]: LocalFrameAndTarget | undefined } = {}
