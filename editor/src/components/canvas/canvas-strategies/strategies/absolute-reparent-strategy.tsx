@@ -121,7 +121,7 @@ export function baseAbsoluteReparentStrategy(
         ? 1
         : fitness,
       apply: (strategyLifecycle) => {
-        const { projectContents, openFile, nodeModules } = canvasState
+        const { projectContents, nodeModules } = canvasState
         return ifAllowedToReparent(
           canvasState,
           canvasState.startingMetadata,
@@ -153,7 +153,6 @@ export function baseAbsoluteReparentStrategy(
                     canvasState.builtInDependencies,
                     projectContents,
                     nodeModules,
-                    openFile,
                     'force-pins',
                   ),
                 selectedElements,
@@ -227,7 +226,6 @@ export function createReparentAndOffsetCommands(
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-  openFile: string | null | undefined,
   forcePins: ForcePins,
 ) {
   const reparentResult = getReparentOutcome(
@@ -237,7 +235,6 @@ export function createReparentAndOffsetCommands(
     builtInDependencies,
     projectContents,
     nodeModules,
-    openFile,
     pathToReparent(target),
     newParent,
     'always',

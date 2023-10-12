@@ -710,6 +710,7 @@ function applyProjectChangesToEditor(
   }
 }
 
+export const UTOPIA_IRRECOVERABLE_ERROR_MESSAGE = `Utopia has suffered from an irrecoverable error, please reload the editor.`
 function editorDispatchInner(
   boundDispatch: EditorDispatch,
   dispatchedActions: EditorAction[],
@@ -818,12 +819,7 @@ function editorDispatchInner(
       // When running in the browser log the error and tell the user to restart the editor.
       console.error(errorMessage)
       const errorToast = EditorActions.addToast(
-        notice(
-          `Utopia has suffered from an irrecoverable error, please reload the editor.`,
-          'ERROR',
-          true,
-          'reload-editor',
-        ),
+        notice(UTOPIA_IRRECOVERABLE_ERROR_MESSAGE, 'ERROR', true, 'reload-editor'),
       )
       result = {
         ...result,

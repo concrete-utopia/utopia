@@ -182,7 +182,6 @@ function applyStaticReparent(
             canvasState.builtInDependencies,
             canvasState.projectContents,
             canvasState.nodeModules,
-            canvasState.openFile,
             pathToReparent(target),
             newParent,
             'always',

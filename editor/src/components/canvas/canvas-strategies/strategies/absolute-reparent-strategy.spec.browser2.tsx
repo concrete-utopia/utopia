@@ -50,6 +50,7 @@ import {
 import { queryHelpers } from '@testing-library/react'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
+import { boundingClientRectToCanvasRectangle } from '../../../../utils/utils.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -1040,10 +1041,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
-        expect(draggedElementBounds.x).toEqual(1014)
-        expect(draggedElementBounds.y).toEqual(535)
-        expect(draggedElementBounds.width).toEqual(50)
-        expect(draggedElementBounds.height).toEqual(50)
+        const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
+          renderResult,
+          draggedElementBounds,
+        )
+        expect(draggedElementCanvasBounds.x).toEqual(625)
+        expect(draggedElementCanvasBounds.y).toEqual(425)
+        expect(draggedElementCanvasBounds.width).toEqual(50)
+        expect(draggedElementCanvasBounds.height).toEqual(50)
       })
 
       await renderResult.getDispatchFollowUpActionsFinished()
@@ -1157,10 +1162,14 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       await dragElement(renderResult, 'ccc', dragDelta, emptyModifiers, null, async () => {
         const draggedElement = await renderResult.renderedDOM.findByTestId('ccc')
         const draggedElementBounds = draggedElement.getBoundingClientRect()
-        expect(draggedElementBounds.x).toEqual(1014)
-        expect(draggedElementBounds.y).toEqual(535)
-        expect(draggedElementBounds.width).toEqual(50)
-        expect(draggedElementBounds.height).toEqual(50)
+        const draggedElementCanvasBounds = boundingClientRectToCanvasRectangle(
+          renderResult,
+          draggedElementBounds,
+        )
+        expect(draggedElementCanvasBounds.x).toEqual(625)
+        expect(draggedElementCanvasBounds.y).toEqual(425)
+        expect(draggedElementCanvasBounds.width).toEqual(50)
+        expect(draggedElementCanvasBounds.height).toEqual(50)
       })
 
       await renderResult.getDispatchFollowUpActionsFinished()

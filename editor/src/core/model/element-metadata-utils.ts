@@ -781,11 +781,7 @@ export const MetadataUtils = {
         return [path]
       } else {
         const componentChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, path)
-
-        // 4) Replace any root paths with their children
-        const rootPathChildren = MetadataUtils.getChildrenPathsOrdered(metadata, pathTree, rootPath)
-        const rootPathOrRootChildren = rootPathChildren.length > 0 ? rootPathChildren : [rootPath]
-        return [...rootPathOrRootChildren, ...componentChildren]
+        return [rootPath, ...componentChildren]
       }
     }, withScenesSkipped)
 

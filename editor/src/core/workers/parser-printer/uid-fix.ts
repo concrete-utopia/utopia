@@ -42,6 +42,10 @@ import { assertNever } from '../../../core/shared/utils'
 import { emptySet } from '../../../core/shared/set-utils'
 import type { UIDMappings } from '../../../core/shared/uid-utils'
 import { generateConsistentUID, updateHighlightBounds } from '../../../core/shared/uid-utils'
+import {
+  emptyGetAllUniqueUIDsWorkingResult,
+  extractUIDFromTopLevelElement,
+} from '../../model/get-unique-ids'
 
 const jsxElementChildUIDOptic: Optic<JSXElementChild, string> = fromField('uid')
 

@@ -4429,7 +4429,7 @@ export var storyboard = (
         position: 'absolute',
         width: 44,
         height: 33,
-        top: 403,
+        top: 404,
         left: 698,
         backgroundColor: '#cee5ff',
       }}
@@ -4695,7 +4695,7 @@ export var storyboard = (
             position: 'absolute',
             width: 44,
             height: 33,
-            top: 403,
+            top: 404,
             left: 698,
             backgroundColor: '#cee5ff',
           }}
@@ -4844,7 +4844,7 @@ export var storyboard = (
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 698,
-            top: 403,
+            top: 404,
             width: 44,
             height: 33,
           }}
@@ -5001,7 +5001,7 @@ export var storyboard = (
             backgroundColor: '#aaaaaa33',
             position: 'absolute',
             left: 698,
-            top: 403,
+            top: 404,
             width: 44,
             height: 33,
           }}
@@ -5374,7 +5374,7 @@ export var storyboard = (
                     style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
                   />
                 </Scene>
-                <div data-uid='aai' style={{position: 'absolute', left: 1, width: 100, height: 100, top: -23}} />
+                <div data-uid='aai' style={{position: 'absolute', left: 321, width: 100, height: 100, top: 1}} />
               </Storyboard>
             )
           }
@@ -5391,7 +5391,7 @@ export var storyboard = (
         </div>
       `
       const expectedDiv = `
-        <div data-uid='aai' style={{position: 'absolute', left: 31, width: 100, height: 100, top: -672 }} />
+        <div data-uid='aai' style={{position: 'absolute', left: 31, width: 100, height: 100, top: 31 }} />
       `
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(testCode('')),
@@ -5526,7 +5526,7 @@ export var storyboard = (
                       <div data-uid='ddd' data-testid='ddd' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
                     </div>
                   </div>
-                  <div data-uid='aaj' data-testid='ddd' style={{position: 'absolute', left: 21, width: 100, height: 100, top: -634}} />
+                  <div data-uid='aaj' data-testid='ddd' style={{position: 'absolute', left: 21, width: 100, height: 100, top: 69}} />
                 </Scene>
               </Storyboard>
             )
@@ -5666,7 +5666,7 @@ export var storyboard = (
     </Scene>
     <div
       data-uid='roo'
-      style={{ top: 105, left: 213, position: 'absolute' }}
+      style={{ top: 129, left: 433, position: 'absolute' }}
     >
       <div data-uid='par'>
         <div

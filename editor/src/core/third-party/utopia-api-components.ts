@@ -7,7 +7,7 @@ import {
   defaultRectangleElementStyle,
   defaultSceneElementStyle,
   defaultTextElementStyle,
-  defaultViewElementStyle,
+  defaultElementStyle,
 } from '../../components/editor/defaults'
 import type { JSExpression } from '../shared/element-template'
 import { emptyComments, jsxAttributesEntry, jsxElementWithoutUID } from '../shared/element-template'
@@ -48,9 +48,9 @@ const BasicUtopiaComponentDescriptor = (
 }
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
-  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultViewElementStyle()),
+  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultElementStyle()),
   Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultRectangleElementStyle()),
-  View: BasicUtopiaComponentDescriptor('View', defaultViewElementStyle()),
+  View: BasicUtopiaComponentDescriptor('View', defaultElementStyle()),
   FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle()),
   FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle()),
   Scene: BasicUtopiaComponentDescriptor('Scene', defaultSceneElementStyle(null)),

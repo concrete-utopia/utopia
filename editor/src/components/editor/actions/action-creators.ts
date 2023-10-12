@@ -89,7 +89,6 @@ import type {
   RegenerateThumbnail,
   RenameStyleSelector,
   ResetPins,
-  ResizeInterfaceDesignerCodePane,
   SaveAsset,
   SaveCurrentFile,
   SaveDOMReport,
@@ -249,6 +248,7 @@ import type { TextProp } from '../../text-editor/text-editor'
 import { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { PostActionChoice } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 import type { ProjectServerState } from '../store/project-server-state'
+import type { SetHuggingParentToFixed } from '../../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 
 export function clearSelection(): EditorAction {
   return {
@@ -628,15 +628,6 @@ export function showModal(modal: ModalDialog): ShowModal {
   return {
     action: 'SHOW_MODAL',
     modal: modal,
-  }
-}
-
-export function resizeInterfaceDesignerCodePane(
-  deltaCodePaneWidth: number,
-): ResizeInterfaceDesignerCodePane {
-  return {
-    action: 'RESIZE_INTERFACEDESIGNER_CODEPANE',
-    deltaCodePaneWidth: deltaCodePaneWidth,
   }
 }
 
@@ -1550,10 +1541,14 @@ export function forceParseFile(filePath: string): ForceParseFile {
   }
 }
 
-export function runEscapeHatch(targets: Array<ElementPath>): RunEscapeHatch {
+export function runEscapeHatch(
+  targets: Array<ElementPath>,
+  setHuggingParentToFixed: SetHuggingParentToFixed,
+): RunEscapeHatch {
   return {
     action: 'RUN_ESCAPE_HATCH',
     targets: targets,
+    setHuggingParentToFixed: setHuggingParentToFixed,
   }
 }
 
