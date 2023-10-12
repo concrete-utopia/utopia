@@ -1172,8 +1172,8 @@ describe('Convert to absolute/escape hatch', () => {
               width: 200,
               height: 80,
               position: 'absolute',
-              top: 15,
               left: 15,
+              top: 15,
             }}
             data-uid='bbb'
             data-testid='bbb'
@@ -1295,8 +1295,8 @@ describe('Convert to absolute/escape hatch', () => {
               width: 200,
               height: 80,
               position: 'absolute',
-              top: 15,
               left: 15,
+              top: 15,
             }}
             data-uid='bbb'
             data-testid='bbb'
