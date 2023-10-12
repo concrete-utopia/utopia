@@ -165,6 +165,14 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
     setIsHovered(false)
   }, [])
 
+  const projectName = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.projectName
+    },
+    'TitleBar projectName',
+  )
+
   return (
     <div
       ref={drag}
@@ -184,7 +192,7 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
-      <FlexRow css={{ gap: 15, alignItems: 'center' }}>
+      <FlexRow css={{ gap: 10, alignItems: 'center' }}>
         <FlexRow css={{ gap: 6 }}>
           <PanelButton onClick={toggleNavigatorVisible} color='#FF5F57' isHovered={isHovered} />
           <PanelButton isHovered={isHovered} color={colorTheme.unavailableGrey.value} />
@@ -204,7 +212,9 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
             )}
             {currentBranch}
           </SimpleFlexRow>
-        ) : null}
+        ) : (
+          <ProjectTitle>{projectName}</ProjectTitle>
+        )}
       </FlexRow>
       {when(
         loggedIn,
@@ -376,13 +386,6 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
     setIsHovered(false)
   }, [])
 
-  const projectName = useEditorState(
-    Substores.restOfEditor,
-    (store) => {
-      return store.editor.projectName
-    },
-    'TitleBar projectName',
-  )
   const { currentBranch, repoName } = useEditorState(
     Substores.github,
     (store) => {
@@ -417,11 +420,7 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
         <PanelButton onClick={onMaximize} color='#33C748' isHovered={isHovered} />
       </FlexRow>
 
-      {currentBranch != null ? (
-        <SimpleFlexRow>{repoName}</SimpleFlexRow>
-      ) : (
-        <ProjectTitle>{projectName}</ProjectTitle>
-      )}
+      {currentBranch != null ? <SimpleFlexRow>{repoName}</SimpleFlexRow> : <span>Code</span>}
     </div>
   )
 })
