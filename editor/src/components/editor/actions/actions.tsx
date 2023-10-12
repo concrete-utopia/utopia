@@ -2270,7 +2270,6 @@ export const UPDATE_FNS = {
                 builtInDependencies,
                 working.projectContents,
                 working.nodeModules.files,
-                working.canvas.openFile?.filename,
                 'do-not-force-pins',
               )
 
