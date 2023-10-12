@@ -198,64 +198,36 @@ function pushIntendedBoundsEmptyElements(
       continue
     }
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, v.path)
-    if (metadata == null) {
-      continue
-    }
-    if (MetadataUtils.getChildrenUnordered(editor.jsxMetadata, v.path).length > 0) {
-      continue
-    }
-    if (!isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.path, 'hug')) {
+    if (
+      metadata == null ||
+      MetadataUtils.getChildrenUnordered(editor.jsxMetadata, v.path).length > 0 ||
+      !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.path, 'hug')
+    ) {
       continue
     }
 
+    function setProperty(
+      flexDirection: FlexDirection | null,
+      prop: 'left' | 'top' | 'width' | 'height',
+      value: number,
+    ) {
+      return setCssLengthProperty(
+        'always',
+        v.path,
+        PP.create('style', prop),
+        setExplicitCssValue(cssPixelLength(value)),
+        flexDirection,
+        'create-if-not-existing',
+        'warn-about-replacement',
+      )
+    }
     commands.push(
-      setCssLengthProperty(
-        'always',
-        v.path,
-        PP.create('style', 'left'),
-        setExplicitCssValue(cssPixelLength(v.frame.x)),
-        metadata.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'warn-about-replacement',
-      ),
+      setProperty(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
+      setProperty(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
+      setProperty(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
+      setProperty(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
       deleteProperties('always', v.path, [PP.create('style', 'right')]),
-      setCssLengthProperty(
-        'always',
-        v.path,
-        PP.create('style', 'top'),
-        setExplicitCssValue(cssPixelLength(v.frame.y)),
-        metadata.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'warn-about-replacement',
-      ),
       deleteProperties('always', v.path, [PP.create('style', 'bottom')]),
-      setCssLengthProperty(
-        'always',
-        v.path,
-        PP.create('style', 'top'),
-        setExplicitCssValue(cssPixelLength(v.frame.y)),
-        metadata.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'warn-about-replacement',
-      ),
-      setCssLengthProperty(
-        'always',
-        v.path,
-        PP.create('style', 'width'),
-        setExplicitCssValue(cssPixelLength(v.frame.width)),
-        metadata.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'warn-about-replacement',
-      ),
-      setCssLengthProperty(
-        'always',
-        v.path,
-        PP.create('style', 'height'),
-        setExplicitCssValue(cssPixelLength(v.frame.height)),
-        metadata.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'warn-about-replacement',
-      ),
     )
   }
   return foldAndApplyCommandsSimple(editor, commands)
