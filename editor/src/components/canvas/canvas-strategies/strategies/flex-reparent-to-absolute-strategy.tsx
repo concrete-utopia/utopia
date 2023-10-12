@@ -97,6 +97,7 @@ export function baseFlexReparentToAbsoluteStrategy(
               canvasState.startingMetadata,
               canvasState,
               canvasPoint({ x: 0, y: 0 }),
+              'dont-set-hugging-parent-to-fixed',
             ).commands
 
             return strategyApplicationResult(

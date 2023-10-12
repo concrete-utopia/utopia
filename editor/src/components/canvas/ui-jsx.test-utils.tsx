@@ -367,6 +367,8 @@ export async function renderTestEditorWithModel(
       )
     }
 
+    expectNoActionsCausedDuplicateUids(actionsCausingDuplicateUIDs)
+
     editorDispatchPromises.push(result.entireUpdateFinished)
     invalidateDomWalkerIfNecessary(
       domWalkerMutableState,
@@ -693,6 +695,12 @@ function expectUpdatedFilesUpdateTimestamp(
       }
     })
   }
+}
+
+function expectNoActionsCausedDuplicateUids(
+  actionsCausingDuplicateUIDs: ActionsCausingDuplicateUIDs,
+) {
+  expect(actionsCausingDuplicateUIDs).toHaveLength(0)
 }
 
 export function getPrintedUiJsCode(

@@ -1,9 +1,7 @@
 import React from 'react'
-import { NO_OP } from '../../core/shared/utils'
-import { UtopiaTheme, colorTheme } from '../../uuiui'
-import { LeftPanelMinWidth } from '../editor/store/editor-state'
+import { colorTheme } from '../../uuiui'
 import { LeftPaneComponent } from '../navigator/left-pane'
-import { CodeEditorPane, ResizableRightPane } from './design-panel-root'
+import { CodeEditorPane, RightPane } from './design-panel-root'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
 import type { GridPanelData, LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
@@ -78,7 +76,7 @@ const GridPanelInner = React.memo<GridPanelProps>((props) => {
           />
         )
       case 'inspector':
-        return <ResizableRightPane panelData={props.pane.panel} />
+        return <RightPane panelData={props.pane.panel} />
       case 'navigator':
         return <LeftPaneComponent panelData={props.pane.panel} />
       default:

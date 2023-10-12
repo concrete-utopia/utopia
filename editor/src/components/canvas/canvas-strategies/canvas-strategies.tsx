@@ -32,7 +32,10 @@ import { isNotYetStartedDragInteraction } from './interaction-state'
 import { keyboardAbsoluteMoveStrategy } from './strategies/keyboard-absolute-move-strategy'
 import { absoluteResizeBoundingBoxStrategy } from './strategies/absolute-resize-bounding-box-strategy'
 import { keyboardAbsoluteResizeStrategy } from './strategies/keyboard-absolute-resize-strategy'
-import { convertToAbsoluteAndMoveStrategy } from './strategies/convert-to-absolute-and-move-strategy'
+import {
+  convertToAbsoluteAndMoveAndSetParentFixedStrategy,
+  convertToAbsoluteAndMoveStrategy,
+} from './strategies/convert-to-absolute-and-move-strategy'
 import { absoluteDuplicateStrategy } from './strategies/absolute-duplicate-strategy'
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { StateSelector } from 'zustand'
@@ -85,6 +88,7 @@ const moveOrReorderStrategies: MetaCanvasStrategy = (
       keyboardAbsoluteMoveStrategy,
       keyboardReorderStrategy,
       convertToAbsoluteAndMoveStrategy,
+      convertToAbsoluteAndMoveAndSetParentFixedStrategy,
       reorderSliderStategy,
     ],
   )
