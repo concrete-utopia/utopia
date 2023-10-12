@@ -55,39 +55,47 @@ import { wildcardPatch } from './wildcard-patch-command'
 
 export type PushIntendedBoundsTargetGroup = {
   type: 'PUSH_INTENDED_BOUNDS_GROUP'
-  path: ElementPath
-  frame: CanvasRectangle
-}
+} & CanvasFrameAndTarget
 
 export function pushIntendedBoundsGroup(
-  path: ElementPath,
+  target: ElementPath,
   frame: CanvasRectangle,
 ): PushIntendedBoundsTargetGroup {
   return {
     type: 'PUSH_INTENDED_BOUNDS_GROUP',
-    path: path,
+    target: target,
     frame: frame,
   }
 }
 
-export type PushIntendedBoundsTargetEmpty = {
-  type: 'PUSH_BOUNDS_EMPTY'
-  path: ElementPath
-  frame: CanvasRectangle
-}
+export type PushIntendedBoundsTargetEmptyElement = {
+  type: 'PUSH_INTENDED_BOUNDS_EMPTY_ELEMENT'
+} & CanvasFrameAndTarget
 
-export function pushIntendedBoundsEmpty(
-  path: ElementPath,
+export function pushIntendedBoundsEmptyElement(
+  target: ElementPath,
   frame: CanvasRectangle,
-): PushIntendedBoundsTargetEmpty {
+): PushIntendedBoundsTargetEmptyElement {
   return {
-    type: 'PUSH_BOUNDS_EMPTY',
-    path: path,
+    type: 'PUSH_INTENDED_BOUNDS_EMPTY_ELEMENT',
+    target: target,
     frame: frame,
   }
 }
 
-export type PushIntendedBoundsTarget = PushIntendedBoundsTargetGroup | PushIntendedBoundsTargetEmpty
+function isPushIntendedBoundsTargetEmptyElement(
+  u: unknown,
+): u is PushIntendedBoundsTargetEmptyElement {
+  return (u as PushIntendedBoundsTargetEmptyElement).type === 'PUSH_INTENDED_BOUNDS_EMPTY_ELEMENT'
+}
+
+function isPushIntendedBoundsTargetGroup(u: unknown): u is PushIntendedBoundsTargetGroup {
+  return (u as PushIntendedBoundsTargetGroup).type === 'PUSH_INTENDED_BOUNDS_GROUP'
+}
+
+export type PushIntendedBoundsTarget =
+  | PushIntendedBoundsTargetGroup
+  | PushIntendedBoundsTargetEmptyElement
 
 export interface PushIntendedBoundsAndUpdateTargets extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_TARGETS'
@@ -114,94 +122,105 @@ export const runPushIntendedBoundsAndUpdateTargets = (
 ): CommandFunctionResult => {
   const commandRanBecauseOfQueuedTrueUp = command.isStartingMetadata === 'live-metadata'
 
-  const { updatedEditor: editorAfterResizingGroupChildren, resizedGroupChildren } =
-    getUpdateResizedGroupChildrenCommands(
+  let editorStatePatches: Array<EditorStatePatch> = []
+
+  // Groups
+  const groupTargets = command.value.filter(isPushIntendedBoundsTargetGroup)
+  const { updatedEditor: editorAfterGroups, editorStatePatches: groupsEditorStatePatches } =
+    runPushIntendedBoundsAndUpdateTargetsGroup(
       editor,
-      command.value.filter((v) => v.type === 'PUSH_INTENDED_BOUNDS_GROUP'),
+      groupTargets,
+      commandRanBecauseOfQueuedTrueUp,
+      commandLifecycle,
     )
+  editorStatePatches.push(...groupsEditorStatePatches)
+
+  // Empty elements
+  const emptyTargets = command.value.filter(isPushIntendedBoundsTargetEmptyElement)
+  const { updatedEditor: editorAfterEmptyElements } =
+    runPushIntendedBoundsAndUpdateTargetsEmptyElement(editorAfterGroups, emptyTargets)
+
+  // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
+  editorStatePatches.push({
+    projectContents: {
+      $set: editorAfterEmptyElements.projectContents,
+    },
+    toasts: {
+      $set: editorAfterEmptyElements.toasts,
+    },
+  })
+
+  return {
+    editorStatePatches: editorStatePatches,
+    commandDescription: `Set Intended Bounds for ${command.value
+      .map((c) => EP.toString(c.target))
+      .join(', ')}`,
+  }
+}
+
+function runPushIntendedBoundsAndUpdateTargetsGroup(
+  editor: EditorState,
+  targets: Array<PushIntendedBoundsTargetGroup>,
+  commandRanBecauseOfQueuedTrueUp: boolean,
+  commandLifecycle: InteractionLifecycle,
+): {
+  updatedEditor: EditorState
+  editorStatePatches: Array<EditorStatePatch>
+} {
+  const { updatedEditor: editorAfterResizingGroupChildren, resizedGroupChildren } =
+    getUpdateResizedGroupChildrenCommands(editor, targets)
 
   const {
     updatedEditor: editorAfterResizingAncestors,
     intendedBounds: resizeAncestorsIntendedBounds,
   } = getResizeAncestorGroupsCommands(
     editorAfterResizingGroupChildren,
-    command,
+    targets,
     commandRanBecauseOfQueuedTrueUp
       ? 'do-not-create-if-doesnt-exist'
       : // TODO this can be removed in a future PR, but for now matching the previous behavior
         'create-if-not-existing',
   )
 
-  const editorAfterFixingEmptyElements = pushIntendedBoundsEmptyElements(
-    editorAfterResizingAncestors,
-    command.value.filter((v) => v.type === 'PUSH_BOUNDS_EMPTY'),
-  )
-
-  // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
-  const editorPatch = {
-    projectContents: {
-      $set: editorAfterFixingEmptyElements.projectContents,
-    },
-    toasts: {
-      $set: editorAfterFixingEmptyElements.toasts,
-    },
-  }
-
-  const intendedBoundsPatch =
-    commandLifecycle === 'mid-interaction'
-      ? pushIntendedBoundsPatch([
-          ...command.value.map((v) => ({ target: v.path, frame: v.frame })),
-          ...resizeAncestorsIntendedBounds,
-        ])
-      : []
-
-  const queueFollowUpGroupTrueUpPatch: Array<EditorStatePatch> =
-    commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp
-      ? [
-          {
-            trueUpGroupsForElementAfterDomWalkerRuns: {
-              $set: resizedGroupChildren.map(trueUpElementChanged),
-            },
-          },
-        ]
-      : []
-
-  return {
-    editorStatePatches: [editorPatch, ...intendedBoundsPatch, ...queueFollowUpGroupTrueUpPatch],
-    commandDescription: `Set Intended Bounds for ${command.value
-      .map((c) => EP.toString(c.path))
-      .join(', ')}`,
-  }
-}
-
-function pushIntendedBoundsPatch(
-  intendedBounds: Array<CanvasFrameAndTarget>,
-): Array<EditorStatePatch> {
-  return [
-    {
+  let editorStatePatches: Array<EditorStatePatch> = []
+  if (commandLifecycle === 'mid-interaction') {
+    editorStatePatches.push({
       canvas: {
         controls: {
-          strategyIntendedBounds: { $push: intendedBounds },
+          strategyIntendedBounds: {
+            $push: [...targets, ...resizeAncestorsIntendedBounds],
+          },
         },
       },
-    },
-  ]
+    })
+  }
+  if (commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp) {
+    editorStatePatches.push({
+      trueUpElementsAfterDomWalkerRuns: {
+        $set: resizedGroupChildren.map(trueUpElementChanged),
+      },
+    })
+  }
+
+  return {
+    updatedEditor: editorAfterResizingAncestors,
+    editorStatePatches: editorStatePatches,
+  }
 }
 
-function pushIntendedBoundsEmptyElements(
+function runPushIntendedBoundsAndUpdateTargetsEmptyElement(
   editor: EditorState,
-  targets: Array<PushIntendedBoundsTarget>,
-): EditorState {
+  targets: Array<PushIntendedBoundsTargetEmptyElement>,
+): {
+  updatedEditor: EditorState
+} {
   let commands: Array<CanvasCommand> = []
   for (const v of targets) {
-    if (v.type !== 'PUSH_BOUNDS_EMPTY') {
-      continue
-    }
-    const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, v.path)
+    const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, v.target)
     if (
       metadata == null ||
-      MetadataUtils.getChildrenUnordered(editor.jsxMetadata, v.path).length > 0 ||
-      !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.path, 'hug')
+      MetadataUtils.getChildrenUnordered(editor.jsxMetadata, v.target).length > 0 ||
+      !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.target, 'hug')
     ) {
       continue
     }
@@ -213,7 +232,7 @@ function pushIntendedBoundsEmptyElements(
     ) {
       return setCssLengthProperty(
         'always',
-        v.path,
+        v.target,
         PP.create('style', prop),
         setExplicitCssValue(cssPixelLength(value)),
         flexDirection,
@@ -226,11 +245,13 @@ function pushIntendedBoundsEmptyElements(
       setProperty(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
       setProperty(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
       setProperty(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
-      deleteProperties('always', v.path, [PP.create('style', 'right')]),
-      deleteProperties('always', v.path, [PP.create('style', 'bottom')]),
+      deleteProperties('always', v.target, [PP.create('style', 'right')]),
+      deleteProperties('always', v.target, [PP.create('style', 'bottom')]),
     )
   }
-  return foldAndApplyCommandsSimple(editor, commands)
+  return {
+    updatedEditor: foldAndApplyCommandsSimple(editor, commands),
+  }
 }
 
 type LocalFrameAndTarget = {
@@ -253,30 +274,30 @@ function rectangleFromChildrenBounds(
 
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
-  groupTargets: Array<PushIntendedBoundsTarget>,
+  groupTargets: Array<PushIntendedBoundsTargetGroup>,
 ): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
-  const targets: Array<PushIntendedBoundsTarget> = [...groupTargets]
+  const targets: Array<PushIntendedBoundsTargetGroup> = [...groupTargets]
 
   // we are going to mutate this as we iterate over targets
   let updatedLocalFrames: { [path: string]: LocalFrameAndTarget | undefined } = {}
 
-  for (const target of targets) {
+  for (const v of targets) {
     const targetIsGroup = allowGroupTrueUp(
       editor.projectContents,
       editor.jsxMetadata,
       editor.elementPathTree,
       editor.allElementProps,
-      target.path,
+      v.target,
     )
     if (targetIsGroup) {
       const children = MetadataUtils.getChildrenPathsOrdered(
         editor.jsxMetadata,
         editor.elementPathTree,
-        target.path,
+        v.target,
       )
 
       function frameFromMeasuredBounds(): CanvasRectangle | null {
-        return MetadataUtils.getFrameOrZeroRectInCanvasCoords(target.path, editor.jsxMetadata)
+        return MetadataUtils.getFrameOrZeroRectInCanvasCoords(v.target, editor.jsxMetadata)
       }
 
       // The original size of the children before the interaction ran.
@@ -286,7 +307,7 @@ function getUpdateResizedGroupChildrenCommands(
       const groupOriginalBounds = frameFromMeasuredBounds()
 
       if (childrenBounds != null && groupOriginalBounds != null) {
-        const updatedGroupBounds = target.frame
+        const updatedGroupBounds = v.frame
 
         // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
         const childrenWithFragmentsRetargeted = replaceFragmentLikePathsWithTheirChildrenRecursive(
@@ -399,14 +420,9 @@ function getUpdateResizedGroupChildrenCommands(
 
 function getResizeAncestorGroupsCommands(
   editor: EditorState,
-  command: PushIntendedBoundsAndUpdateTargets,
+  targets: Array<PushIntendedBoundsTargetGroup>,
   addGroupSizeIfNonExistant: CreateIfNotExistant,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
-  const targets: Array<CanvasFrameAndTarget> = command.value.map((v) => ({
-    target: v.path,
-    frame: v.frame,
-  }))
-
   // we are going to mutate this as we iterate over targets
   let updatedGlobalFrames: { [path: string]: CanvasFrameAndTarget | undefined } = {}
 
@@ -420,12 +436,12 @@ function getResizeAncestorGroupsCommands(
     )
   }
 
-  for (const frameAndTarget of targets) {
+  for (const v of targets) {
     const parentPath = replaceNonDomElementWithFirstDomAncestorPath(
       editor.jsxMetadata,
       editor.allElementProps,
       editor.elementPathTree,
-      EP.parentPath(frameAndTarget.target),
+      EP.parentPath(v.target),
     )
     const groupTrueUpPermitted = allowGroupTrueUp(
       editor.projectContents,
@@ -444,16 +460,16 @@ function getResizeAncestorGroupsCommands(
       editor.jsxMetadata,
       editor.elementPathTree,
       parentPath,
-    ).filter((c) => !EP.pathsEqual(c, frameAndTarget.target))
+    ).filter((c) => !EP.pathsEqual(c, v.target))
     const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
 
-    const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, frameAndTarget.frame])
+    const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, v.frame])
     if (newGlobalFrame != null) {
       updatedGlobalFrames[EP.toString(parentPath)] = {
         frame: newGlobalFrame,
         target: parentPath,
       }
-      targets.push({ target: parentPath, frame: newGlobalFrame })
+      targets.push(pushIntendedBoundsGroup(parentPath, newGlobalFrame))
     }
   }
 
