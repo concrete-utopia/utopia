@@ -26,7 +26,7 @@ import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
 } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { queueTrueUpElement } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'

@@ -1,4 +1,4 @@
-import type { ProjectContentTreeRoot } from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'

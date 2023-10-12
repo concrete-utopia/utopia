@@ -98,7 +98,7 @@ import { EdgePositionBottomRight } from '../../canvas-types'
 import { addElement } from '../../commands/add-element-command'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
-import { queueTrueUpElement } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,

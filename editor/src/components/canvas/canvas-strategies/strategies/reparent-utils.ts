@@ -50,7 +50,7 @@ import type { IndexPosition } from '../../../../utils/utils'
 import { fastForEach } from '../../../../core/shared/utils'
 import { addElements } from '../../commands/add-elements-command'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { getRequiredGroupTrueUps } from '../../commands/queue-group-true-up-command'
+import { getRequiredGroupTrueUps } from '../../commands/queue-true-up-command'
 import type { RemixRoutingTable } from '../../../editor/store/remix-derived-data'
 
 interface GetReparentOutcomeResult {

@@ -81,8 +81,8 @@ import { runWrapInContainerCommand } from './wrap-in-container-command'
 import { patchProjectContentsWithParsedFile } from './patch-utils'
 import type { AddElements } from './add-elements-command'
 import { runAddElements } from './add-elements-command'
-import type { QueueTrueUpElement } from './queue-group-true-up-command'
-import { runQueueTrueUpElement } from './queue-group-true-up-command'
+import type { QueueTrueUpElement } from './queue-true-up-command'
+import { runQueueTrueUpElement } from './queue-true-up-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>

@@ -49,7 +49,7 @@ import type { RemixRoutingTable } from '../../../editor/store/remix-derived-data
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
-import { queueTrueUpElement } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'

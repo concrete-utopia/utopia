@@ -38,7 +38,7 @@ import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
 } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { queueTrueUpElement } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
