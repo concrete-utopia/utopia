@@ -23,11 +23,11 @@ import type {
 import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
-  isFixedHugFillModeAppliedOnAnySide,
   isHugFromStyleAttribute,
   isHugFromStyleAttributeOrNull,
 } from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
+import { isCollapsingParent } from '../canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
@@ -210,12 +210,21 @@ function runPushIntendedBoundsAndUpdateTargetsGroup(
   }
 }
 
-function isEmptyOrContainingAbsoluteElements(
+function getHuggingElementContentsStatus(
   jsxMetadata: ElementInstanceMetadataMap,
   path: ElementPath,
-) {
+): 'empty' | 'contains-only-absolute' | 'contains-some-absolute' | 'non-empty' {
   const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
-  return children.length === 0 || children.some(MetadataUtils.isPositionAbsolute)
+  const absoluteChildren = children.filter(MetadataUtils.isPositionAbsolute).length
+  if (children.length === 0) {
+    return 'empty'
+  } else if (absoluteChildren === children.length) {
+    return 'contains-only-absolute'
+  } else if (absoluteChildren > 0) {
+    return 'contains-some-absolute'
+  } else {
+    return 'non-empty'
+  }
 }
 
 function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
@@ -227,11 +236,16 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
   let commands: Array<CanvasCommand> = []
   for (const v of targets) {
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, v.target)
+    const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, v.target)
     if (
       metadata == null ||
-      !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.target, 'hug') ||
-      !isEmptyOrContainingAbsoluteElements(editor.jsxMetadata, v.target)
+      jsxElement == null ||
+      !(isCollapsingParent(jsxElement, 'width') || isCollapsingParent(jsxElement, 'height'))
     ) {
+      continue
+    }
+    const status = getHuggingElementContentsStatus(editor.jsxMetadata, v.target)
+    if (status === 'non-empty') {
       continue
     }
 
@@ -250,14 +264,16 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
         'warn-about-replacement',
       )
     }
-    commands.push(
-      setProperty(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
-      setProperty(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
-      setProperty(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
-      setProperty(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
-      deleteProperties('always', v.target, [PP.create('style', 'right')]),
-      deleteProperties('always', v.target, [PP.create('style', 'bottom')]),
-    )
+    if (status === 'contains-only-absolute' || status === 'empty') {
+      commands.push(
+        setProperty(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
+        setProperty(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
+        setProperty(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
+        setProperty(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
+        deleteProperties('always', v.target, [PP.create('style', 'right')]),
+        deleteProperties('always', v.target, [PP.create('style', 'bottom')]),
+      )
+    }
   }
   return {
     updatedEditor: foldAndApplyCommandsSimple(editor, commands),

@@ -712,7 +712,7 @@ function createSetParentsToFixedSizeCommands(
 
 const CollapsingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
 
-function isCollapsingParent(element: JSXElement, property: 'width' | 'height') {
+export function isCollapsingParent(element: JSXElement, property: 'width' | 'height') {
   const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(element.props), PP.create('style', property)),

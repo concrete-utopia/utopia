@@ -19,8 +19,8 @@ export function trueUpTargetToDescription(trueUpTarget: TrueUpTarget): string {
       return `True up element ${EP.toString(trueUpTarget.target)}`
     case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
       return `True up children of ${EP.toString(trueUpTarget.targetParent)}`
-    case 'TRUE_UP_EMPTY_ELEMENT':
-      return `True up empty element ${EP.toString(trueUpTarget.target)}`
+    case 'TRUE_UP_HUGGING_ELEMENT':
+      return `True up hugging element ${EP.toString(trueUpTarget.target)}`
     default:
       assertNever(trueUpTarget)
   }
@@ -53,7 +53,7 @@ export function trueUpTargetToPushIntendedBoundsTarget(
         const childFrame = getFrame(path)
         return childFrame != null ? pushIntendedBoundsGroup(path, childFrame) : null
       })
-    case 'TRUE_UP_EMPTY_ELEMENT':
+    case 'TRUE_UP_HUGGING_ELEMENT':
       return [pushIntendedBoundsHuggingElement(trueUpTarget.target, trueUpTarget.frame)]
     default:
       assertNever(trueUpTarget)
