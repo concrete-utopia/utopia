@@ -217,7 +217,7 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
         )}
       </FlexRow>
       {when(
-        loggedIn,
+        loggedIn && currentBranch != null,
         <FlexRow
           css={{
             gap: 2,
