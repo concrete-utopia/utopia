@@ -4,7 +4,7 @@ import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { LayoutEdgeProp, LayoutPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
-import { isRight, right } from '../../../../core/shared/either'
+import { isLeft, isRight, right } from '../../../../core/shared/either'
 import type {
   ElementInstanceMetadataMap,
   JSXElement,
@@ -247,11 +247,17 @@ export function childrenBoundsToSnapTo(
   // exclude the children that pinned to the edge/corner that's being resized
   const pinsToExclude = pinsFromEdgePosition(resizingFromEdge)
   return actualChildren.filter((child) => {
-    const element = MetadataUtils.getJsxElementChildFromMetadata(metadata, child)
-    if (element == null || element.type !== 'JSX_ELEMENT') {
+    const element = MetadataUtils.findElementByElementPath(metadata, child)
+    if (
+      element == null ||
+      !MetadataUtils.isPositionAbsolute(element) ||
+      isLeft(element.element) ||
+      element.element.value.type !== 'JSX_ELEMENT'
+    ) {
       return false
     }
-    const hasForbiddenPin = pinsToExclude.some((p) => hasPin(p, element))
+    const jsxElement = element.element.value
+    const hasForbiddenPin = pinsToExclude.some((p) => hasPin(p, jsxElement))
     return !hasForbiddenPin
   })
 }

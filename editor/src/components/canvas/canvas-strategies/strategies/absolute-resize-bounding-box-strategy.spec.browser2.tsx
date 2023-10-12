@@ -1470,6 +1470,14 @@ export var storyboard = (
         altModifier,
       )
     })
+    describe('snapping to pinned children', () => {
+      /**
+       * - does not snap to flow child
+       * - does not snap to flex child
+       * - does not snap to child pinned to edge being resized - top/left, bottom/right
+       * - does snap to child not pinned to edge being resized - top/left, bottom/right
+       */
+    })
 
     describe('groups', () => {
       AllFragmentLikeTypes.forEach((type) => {
