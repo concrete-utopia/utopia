@@ -28,7 +28,7 @@ import { defaultIfNull } from '../../../../core/shared/optional-utils'
 import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
-} from '../../commands/push-intended-bounds-and-update-groups-command'
+} from '../../commands/push-intended-bounds-and-update-targets-command'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import type { InteractionSession } from '../interaction-state'

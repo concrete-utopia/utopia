@@ -1,8 +1,8 @@
-import type { PushIntendedBoundsTarget } from '../../components/canvas/commands/push-intended-bounds-and-update-groups-command'
+import type { PushIntendedBoundsTarget } from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import {
   pushIntendedBoundsEmptyElement,
   pushIntendedBoundsGroup,
-} from '../../components/canvas/commands/push-intended-bounds-and-update-groups-command'
+} from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import type { EditorState, TrueUpTarget } from '../../components/editor/store/editor-state'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPathTrees } from '../shared/element-path-tree'

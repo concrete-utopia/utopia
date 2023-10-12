@@ -37,7 +37,7 @@ import { getElementDimensions } from './flex-resize-helpers'
 import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
-} from '../../commands/push-intended-bounds-and-update-groups-command'
+} from '../../commands/push-intended-bounds-and-update-targets-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'

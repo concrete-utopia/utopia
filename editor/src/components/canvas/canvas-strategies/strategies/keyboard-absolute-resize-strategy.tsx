@@ -20,7 +20,7 @@ import type { CanvasCommand } from '../../commands/commands'
 import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
-} from '../../commands/push-intended-bounds-and-update-groups-command'
+} from '../../commands/push-intended-bounds-and-update-targets-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'

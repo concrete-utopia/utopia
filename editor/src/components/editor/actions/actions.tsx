@@ -506,7 +506,7 @@ import type {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
-import { pushIntendedBoundsAndUpdateTargets } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
+import { pushIntendedBoundsAndUpdateTargets } from '../../canvas/commands/push-intended-bounds-and-update-targets-command'
 import {
   addToTrueUpElements,
   trueUpTargetToPushIntendedBoundsTarget,

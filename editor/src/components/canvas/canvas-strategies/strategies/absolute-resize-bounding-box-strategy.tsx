@@ -25,7 +25,7 @@ import { isEdgePositionEqualTo } from '../../canvas-utils'
 import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
-} from '../../commands/push-intended-bounds-and-update-groups-command'
+} from '../../commands/push-intended-bounds-and-update-targets-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'

@@ -68,7 +68,7 @@ import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
-} from '../../commands/push-intended-bounds-and-update-groups-command'
+} from '../../commands/push-intended-bounds-and-update-targets-command'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
