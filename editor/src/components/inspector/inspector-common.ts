@@ -390,7 +390,7 @@ export const flexChildProps = [
   styleP('flexBasis'),
 ]
 
-const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
+export const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
 
 export function prunePropsCommands(
   props: PropertyPath[],

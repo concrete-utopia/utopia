@@ -23,10 +23,10 @@ import type {
 import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
-  flexChildProps,
+  flexChildAndBottomRightProps,
   isHugFromStyleAttribute,
   isHugFromStyleAttributeOrNull,
-  pruneFlexPropsCommands,
+  prunePropsCommands,
 } from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
 import { isHuggingParent } from '../canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
@@ -40,7 +40,6 @@ import type { CreateIfNotExistant } from './adjust-css-length-command'
 import { adjustCssLengthProperties, lengthPropertyToAdjust } from './adjust-css-length-command'
 import type { BaseCommand, CanvasCommand, CommandFunctionResult } from './commands'
 import { foldAndApplyCommandsSimple } from './commands'
-import { deleteProperties } from './delete-properties-command'
 import {
   setCssLengthProperty,
   setExplicitCssValue,
@@ -268,13 +267,11 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
     }
     if (status === 'contains-only-absolute' || status === 'empty') {
       commands.push(
-        ...pruneFlexPropsCommands(flexChildProps, v.target),
+        ...prunePropsCommands(flexChildAndBottomRightProps, v.target),
         setProperty(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
         setProperty(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
         setProperty(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
         setProperty(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
-        deleteProperties('always', v.target, [PP.create('style', 'right')]),
-        deleteProperties('always', v.target, [PP.create('style', 'bottom')]),
       )
     }
   }
