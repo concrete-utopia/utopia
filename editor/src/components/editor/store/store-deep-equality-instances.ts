@@ -1887,7 +1887,7 @@ export const EditorStateLeftMenuKeepDeepEquality: KeepDeepEqualityCall<EditorSta
   combine2EqualityCalls(
     (esLeftMenu) => esLeftMenu.selectedTab,
     createCallWithTripleEquals(),
-    (esLeftMenu) => esLeftMenu.expanded,
+    (esLeftMenu) => esLeftMenu.visible,
     createCallWithTripleEquals(),
     editorStateLeftMenu,
   )

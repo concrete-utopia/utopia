@@ -45,7 +45,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   leftMenu: {
     selectedTab: null as any,
-    expanded: false,
+    visible: false,
   },
   rightMenu: {
     selectedTab: null as any,

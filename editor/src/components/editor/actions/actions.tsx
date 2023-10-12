@@ -535,7 +535,7 @@ export function updateLeftMenuExpanded(editorState: EditorState, expanded: boole
     ...editorState,
     leftMenu: {
       ...editorState.leftMenu,
-      expanded: expanded,
+      visible: expanded,
     },
   }
 }
@@ -771,7 +771,7 @@ export function restoreEditorState(
     },
     leftMenu: {
       selectedTab: currentEditor.leftMenu.selectedTab,
-      expanded: currentEditor.leftMenu.expanded,
+      visible: currentEditor.leftMenu.visible,
     },
     rightMenu: {
       selectedTab: currentEditor.rightMenu.selectedTab,
@@ -2364,7 +2364,7 @@ export const UPDATE_FNS = {
           ...editor,
           leftMenu: {
             ...editor.leftMenu,
-            expanded: action.visible,
+            visible: action.visible,
           },
         }
       case 'navigator':
@@ -2467,7 +2467,7 @@ export const UPDATE_FNS = {
           ...editor,
           leftMenu: {
             ...editor.leftMenu,
-            expanded: !editor.leftMenu.expanded,
+            visible: !editor.leftMenu.visible,
           },
         }
       case 'rightmenu':
@@ -2702,12 +2702,12 @@ export const UPDATE_FNS = {
   SET_LEFT_MENU_TAB: (action: SetLeftMenuTab, editor: EditorModel): EditorModel => {
     let result: EditorModel = updateSelectedLeftMenuTab(editor, action.tab)
     // Show the menu if it's not already visible.
-    if (!result.leftMenu.expanded) {
+    if (!result.leftMenu.visible) {
       result = {
         ...result,
         leftMenu: {
           ...result.leftMenu,
-          expanded: true,
+          visible: true,
         },
       }
     }
@@ -4373,7 +4373,7 @@ export const UPDATE_FNS = {
     editor: EditorModel,
     dispatch: EditorDispatch,
   ): EditorModel => {
-    const isLeftMenuOpen = editor.leftMenu.expanded
+    const isLeftMenuOpen = editor.leftMenu.visible
     const containerRootDiv = document.getElementById('canvas-root')
     const panelOffsets = canvasPanelOffsets()
     const scale = 1 / editor.canvas.scale

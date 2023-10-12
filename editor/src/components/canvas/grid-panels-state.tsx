@@ -128,7 +128,7 @@ function useVisibleGridPanels() {
     (store) => {
       return {
         codeEditorVisible: store.editor.interfaceDesigner.codePaneVisible,
-        navigatorVisible: store.editor.leftMenu.expanded,
+        navigatorVisible: store.editor.leftMenu.visible,
         inspectorVisible: store.editor.rightMenu.expanded,
       }
     },

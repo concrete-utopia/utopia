@@ -737,7 +737,7 @@ export function editorStateNodeModules(
 
 export interface EditorStateLeftMenu {
   selectedTab: LeftMenuTab
-  expanded: boolean
+  visible: boolean
 }
 
 export function editorStateLeftMenu(
@@ -746,7 +746,7 @@ export function editorStateLeftMenu(
 ): EditorStateLeftMenu {
   return {
     selectedTab: selectedTab,
-    expanded: expanded,
+    visible: expanded,
   }
 }
 
@@ -2313,7 +2313,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     },
     leftMenu: {
       selectedTab: LeftMenuTab.Navigator,
-      expanded: true,
+      visible: true,
     },
     rightMenu: {
       selectedTab: RightMenuTab.Inspector,
@@ -2689,7 +2689,7 @@ export function editorModelFromPersistentModel(
     },
     leftMenu: {
       selectedTab: LeftMenuTab.Navigator,
-      expanded: true,
+      visible: true,
     },
     rightMenu: {
       selectedTab: RightMenuTab.Inspector,
