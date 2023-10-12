@@ -56,7 +56,7 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { when } from '../../utils/react-conditionals'
 import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
-import type { AllElementProps } from '../editor/store/editor-state'
+import type { AllElementProps, EditorState } from '../editor/store/editor-state'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import type { EditorDispatch, EditorAction } from '../editor/action-types'
 import {
@@ -76,6 +76,7 @@ import {
   isConversionForbidden,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { notice } from '../common/notice'
+import createCachedSelector from 're-reselect'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -106,18 +107,50 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
   }
 }
 
-function selectOption(mode: FixedHugFillMode): SelectOption {
-  return {
-    value: mode,
-    label: selectOptionLabel(mode),
+export function selectOptionIconType(
+  mode: FixedHugFillMode,
+  dimension: 'width' | 'height',
+): string {
+  switch (mode) {
+    case 'fill':
+      return `fill-${dimension}`
+    case 'fixed':
+      return `fixed-${dimension}`
+    case 'hug':
+      return `hug-${dimension}`
+    case 'hug-group':
+      return `hug-${dimension}`
+    case 'computed':
+      return `fixed-${dimension}`
+    case 'detected':
+      return `fixed-${dimension}`
+    default:
+      assertNever(mode)
   }
 }
 
-const fixedHugFillOptionsSelector = createSelector(
+const selectOption =
+  (dimension: 'width' | 'height') =>
+  (mode: FixedHugFillMode): SelectOption => {
+    return {
+      value: mode,
+      label: selectOptionLabel(mode),
+      icon: {
+        category: 'layout/commands',
+        type: selectOptionIconType(mode, dimension),
+        color: 'secondary',
+        width: 16,
+        height: 16,
+      },
+    }
+  }
+
+const fixedHugFillOptionsSelector = createCachedSelector(
   metadataSelector,
   pathTreesSelector,
   selectedViewsSelector,
-  (metadata, pathTrees, selectedViews) => {
+  (_: MetadataSubstate, dimension: 'width' | 'height') => dimension,
+  (metadata, pathTrees, selectedViews, dimension) => {
     const applicableOptions: Array<FixedHugFillMode> = [
       ...intersection(
         selectedViews.map((selectedView) =>
@@ -126,9 +159,9 @@ const fixedHugFillOptionsSelector = createSelector(
       ),
     ]
 
-    return applicableOptions.map(selectOption)
+    return applicableOptions.map(selectOption(dimension))
   },
-)
+)((_, dimension: 'width' | 'height') => dimension)
 
 export const FillHugFixedControlOld = React.memo(() => {
   const onlyGroupChildrenSelected = useEditorState(
@@ -503,7 +536,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 
   const fixedHugFillOptions = useEditorState(
     Substores.metadata,
-    fixedHugFillOptionsSelector,
+    (store) => fixedHugFillOptionsSelector(store, dimension),
     'FixedHugDropdown fixedHugFillOptions',
   )
 
@@ -511,7 +544,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 
   return (
     <PopupList
-      value={optionalMap(selectOption, currentValue.fixedHugFill?.type) ?? undefined}
+      value={optionalMap(selectOption(dimension), currentValue.fixedHugFill?.type) ?? undefined}
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
       controlStyles={getControlStyles(currentValue.controlStatus)}
