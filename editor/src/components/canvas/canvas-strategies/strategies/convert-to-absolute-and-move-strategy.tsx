@@ -138,6 +138,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       return null
     }
 
+    // When the parent is not hugging, don't offer the strategy which sets it to fixed size
     if (setHuggingParentToFixed === 'set-hugging-parent-to-fixed') {
       const setParentToFixedSizeCommands = createSetParentsToFixedSizeCommands(
         retargetedTargets,
