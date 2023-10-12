@@ -965,15 +965,15 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
         return null
       }
 
-      const canvasFrame = MetadataUtils.getFrameInCanvasCoords(path, editor.jsxMetadata)
-      if (canvasFrame == null || !isFiniteRectangle(canvasFrame)) {
-        return null
-      }
-
       const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
       if (metadata == null || isLeft(metadata.element)) {
         return null
       }
+      const frame = metadata.localFrame
+      if (frame == null || !isFiniteRectangle(frame)) {
+        return null
+      }
+
       const jsxProps = isJSXElement(metadata.element.value)
         ? right(metadata.element.value.props)
         : null
@@ -1006,7 +1006,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
           height: main.height !== 0 ? main.height : backup.height,
         })
       }
-      return trueUpEmptyElement(path, combineFrames(canvasFrame, childrenFrame))
+      return trueUpEmptyElement(path, combineFrames(canvasRectangle(frame), childrenFrame))
     }, uniqBy(targets.map(EP.parentPath), EP.pathsEqual))
 
     const trueUps: Array<TrueUpTarget> = [...trueUpGroupElementsChanged, ...trueUpEmptyElements]

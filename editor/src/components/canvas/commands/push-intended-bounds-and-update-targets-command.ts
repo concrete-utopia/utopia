@@ -219,7 +219,9 @@ function runPushIntendedBoundsAndUpdateTargetsEmptyElement(
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, v.target)
     if (
       metadata == null ||
+      // must be empty
       MetadataUtils.getChildrenUnordered(editor.jsxMetadata, v.target).length > 0 ||
+      // must be hugging
       !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.target, 'hug')
     ) {
       continue
