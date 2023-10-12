@@ -49,7 +49,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   },
   rightMenu: {
     selectedTab: null as any,
-    expanded: true,
+    visible: true,
   },
   interfaceDesigner: {
     codePaneVisible: true,

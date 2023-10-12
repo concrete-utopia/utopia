@@ -345,7 +345,7 @@ export const CanvasToolbar = React.memo(() => {
 
   const inspectorInvisible = useEditorState(
     Substores.restOfEditor,
-    (store) => !store.editor.rightMenu.expanded,
+    (store) => !store.editor.rightMenu.visible,
     'SettingsPanel inspector.minimized',
   )
 

@@ -570,7 +570,7 @@ export function updateRightMenuExpanded(editorState: EditorState, expanded: bool
     ...editorState,
     rightMenu: {
       ...editorState.rightMenu,
-      expanded: expanded,
+      visible: expanded,
     },
   }
 }
@@ -775,7 +775,7 @@ export function restoreEditorState(
     },
     rightMenu: {
       selectedTab: currentEditor.rightMenu.selectedTab,
-      expanded: currentEditor.rightMenu.expanded,
+      visible: currentEditor.rightMenu.visible,
     },
     interfaceDesigner: {
       codePaneVisible: currentEditor.interfaceDesigner.codePaneVisible,
@@ -2420,7 +2420,7 @@ export const UPDATE_FNS = {
           ...editor,
           rightMenu: {
             ...editor.rightMenu,
-            expanded: action.visible,
+            visible: action.visible,
           },
         }
       case 'preview':
@@ -2475,7 +2475,7 @@ export const UPDATE_FNS = {
           ...editor,
           rightMenu: {
             ...editor.rightMenu,
-            expanded: !editor.rightMenu.expanded,
+            visible: !editor.rightMenu.visible,
           },
         }
       case 'dependencylist':

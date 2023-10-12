@@ -192,7 +192,7 @@ export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
 
   const isRightMenuExpanded = useEditorState(
     Substores.restOfEditor,
-    (store) => store.editor.rightMenu.expanded,
+    (store) => store.editor.rightMenu.visible,
     'DesignPanelRoot isRightMenuExpanded',
   )
   const dispatch = useDispatch()
