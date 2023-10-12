@@ -403,6 +403,24 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
     setIsHovered(false)
   }, [])
 
+  const projectName = useEditorState(
+    Substores.restOfEditor,
+    (store) => {
+      return store.editor.projectName
+    },
+    'TitleBar projectName',
+  )
+  const { currentBranch, repoName } = useEditorState(
+    Substores.github,
+    (store) => {
+      return {
+        currentBranch: store.editor.githubSettings.branchName,
+        repoName: githubRepoFullName(store.editor.githubSettings.targetRepository),
+      }
+    },
+    'TitleBar github',
+  )
+
   return (
     <div
       ref={drag}
@@ -411,20 +429,26 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
         height: 40,
         width: '100%',
         backgroundColor: theme.inspectorBackground.value,
-        paddingLeft: 10,
+        padding: '0 10px',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
-        fontWeight: 600,
+        gap: 10,
       }}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
-      <PanelButton onClick={toggleCodeEditorVisible} color='#FF5F57' isHovered={isHovered} />
-      <PanelButton onClick={onMinimize} color='#FDBC40' isHovered={isHovered} />
-      <PanelButton onClick={onMaximize} color='#33C748' isHovered={isHovered} />
-      <span style={{ marginLeft: 8 }}>Code </span>
+      <FlexRow css={{ gap: 6 }}>
+        <PanelButton onClick={toggleCodeEditorVisible} color='#FF5F57' isHovered={isHovered} />
+        <PanelButton onClick={onMinimize} color='#FDBC40' isHovered={isHovered} />
+        <PanelButton onClick={onMaximize} color='#33C748' isHovered={isHovered} />
+      </FlexRow>
+
+      {currentBranch != null ? (
+        <SimpleFlexRow>{repoName}</SimpleFlexRow>
+      ) : (
+        <ProjectTitle>{projectName}</ProjectTitle>
+      )}
     </div>
   )
 })
