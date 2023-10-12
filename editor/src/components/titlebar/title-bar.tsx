@@ -316,6 +316,7 @@ export const TitleBarUserProfile = React.memo((props: { panelData: StoredPanel }
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 6,
+        flexShrink: 0,
       }}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}

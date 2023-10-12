@@ -89,7 +89,6 @@ import type {
   RegenerateThumbnail,
   RenameStyleSelector,
   ResetPins,
-  ResizeInterfaceDesignerCodePane,
   SaveAsset,
   SaveCurrentFile,
   SaveDOMReport,
@@ -628,15 +627,6 @@ export function showModal(modal: ModalDialog): ShowModal {
   return {
     action: 'SHOW_MODAL',
     modal: modal,
-  }
-}
-
-export function resizeInterfaceDesignerCodePane(
-  deltaCodePaneWidth: number,
-): ResizeInterfaceDesignerCodePane {
-  return {
-    action: 'RESIZE_INTERFACEDESIGNER_CODEPANE',
-    deltaCodePaneWidth: deltaCodePaneWidth,
   }
 }
 

@@ -362,9 +362,7 @@ export const EditorComponentInner = React.memo((props: EditorProps) => {
           <LowPriorityStoreProvider>
             {(isChrome as boolean) ? null : <BrowserInfoBar />}
             <LoginStatusBar />
-            {unless(isFeatureEnabled('Draggable Floating Panels'), <TitleBar />)}
           </LowPriorityStoreProvider>
-
           <SimpleFlexRow
             className='editor-main-horizontal'
             style={{
