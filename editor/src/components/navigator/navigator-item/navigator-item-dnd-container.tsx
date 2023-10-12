@@ -68,6 +68,7 @@ import { canvasPoint, zeroCanvasPoint } from '../../../core/shared/math-utils'
 import { createNavigatorReparentPostActionActions } from '../../canvas/canvas-strategies/post-action-options/post-action-options'
 import createCachedSelector from 're-reselect'
 import type { MetadataSubstate } from '../../editor/store/store-hook-substore-types'
+import { getCanvasViewportCenter } from '../../../templates/paste-helpers'
 
 export const WiggleUnit = BasePaddingUnit * 1.5
 
@@ -504,16 +505,7 @@ function isHintDisallowed(elementPath: ElementPath | null, metadata: ElementInst
 export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDropWrapperProps) => {
   const editorStateRef = useRefEditorState((store) => store.editor)
   const canvasSize = usePubSubAtomReadOnly(CanvasSizeAtom, AlwaysFalse)
-  const canvasViewportCenterRef = useRefEditorState((store) =>
-    canvasPoint({
-      x:
-        -store.editor.canvas.roundedCanvasOffset.x +
-        canvasSize.width / store.editor.canvas.scale / 2,
-      y:
-        -store.editor.canvas.roundedCanvasOffset.y +
-        canvasSize.height / store.editor.canvas.scale / 2,
-    }),
-  )
+  const canvasRef = useRefEditorState((store) => store.editor.canvas)
 
   const [isDragSessionInProgress, updateDragSessionInProgress] = useAtom(DragSessionInProgressAtom)
 
@@ -631,7 +623,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasViewportCenterRef.current,
+              getCanvasViewportCenter(
+                canvasRef.current.roundedCanvasOffset,
+                canvasRef.current.scale,
+                canvasSize,
+              ),
               editorStateRef.current.jsxMetadata,
               editorStateRef.current.allElementProps,
             ),
@@ -693,7 +689,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasViewportCenterRef.current,
+              getCanvasViewportCenter(
+                canvasRef.current.roundedCanvasOffset,
+                canvasRef.current.scale,
+                canvasSize,
+              ),
               editorStateRef.current.jsxMetadata,
               editorStateRef.current.allElementProps,
             ),
@@ -734,7 +734,11 @@ export const NavigatorItemContainer = React.memo((props: NavigatorItemDragAndDro
               props,
               dropTargetHint.targetParent.elementPath,
               dropTargetHint.targetIndexPosition,
-              canvasViewportCenterRef.current,
+              getCanvasViewportCenter(
+                canvasRef.current.roundedCanvasOffset,
+                canvasRef.current.scale,
+                canvasSize,
+              ),
               editorStateRef.current.jsxMetadata,
               editorStateRef.current.allElementProps,
             ),
