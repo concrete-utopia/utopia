@@ -193,7 +193,7 @@ export const TitleBarProjectTitle = React.memo((props: { panelData: StoredPanel 
           <SimpleFlexRow
             onClick={showMergeConflict}
             style={{
-              gap: 5,
+              gap: 4,
               color: hasMergeConflicts ? colorTheme.error.value : colorTheme.fg1.value,
             }}
           >
