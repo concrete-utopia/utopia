@@ -526,7 +526,7 @@ import {
 } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
@@ -4924,7 +4924,7 @@ export const UPDATE_FNS = {
                 // FIXME: This is a mid-step, as the conditional being inserted currently
                 // has nulls in both clauses, resulting in a zero-sized element.
                 groupCommands.push(
-                  queueGroupTrueUp([
+                  queueTrueUpElement([
                     trueUpChildrenOfGroupChanged(action.insertionPath.intendedParentPath),
                   ]),
                 )

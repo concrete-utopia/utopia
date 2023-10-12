@@ -10,22 +10,22 @@ import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { BaseCommand, CommandFunction } from './commands'
 import { trueUpTargetToDescription } from '../../../core/model/groups'
 
-export interface QueueGroupTrueUp extends BaseCommand {
-  type: 'QUEUE_GROUP_TRUE_UP'
+export interface QueueTrueUpElement extends BaseCommand {
+  type: 'QUEUE_TRUE_UP_ELEMENT'
   targets: Array<TrueUpTarget>
 }
 
-export function queueGroupTrueUp(targets: Array<TrueUpTarget>): QueueGroupTrueUp {
+export function queueTrueUpElement(targets: Array<TrueUpTarget>): QueueTrueUpElement {
   return {
-    type: 'QUEUE_GROUP_TRUE_UP',
+    type: 'QUEUE_TRUE_UP_ELEMENT',
     whenToRun: 'on-complete',
     targets: targets,
   }
 }
 
-export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
-  editorState: EditorState,
-  command: QueueGroupTrueUp,
+export const runQueueTrueUpElement: CommandFunction<QueueTrueUpElement> = (
+  _: EditorState,
+  command: QueueTrueUpElement,
 ) => {
   return {
     commandDescription: `Once the interaction has finished: ${command.targets
@@ -42,12 +42,12 @@ export function getRequiredGroupTrueUps(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   target: ElementPath,
-): Array<QueueGroupTrueUp> {
+): Array<QueueTrueUpElement> {
   const parentPath = EP.parentPath(target)
   if (allowGroupTrueUp(projectContents, metadata, pathTrees, allElementProps, parentPath)) {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTrees, target)
     return [
-      queueGroupTrueUp(siblings.map((sibling) => trueUpGroupElementChanged(sibling.elementPath))),
+      queueTrueUpElement(siblings.map((sibling) => trueUpGroupElementChanged(sibling.elementPath))),
     ]
   } else {
     return []

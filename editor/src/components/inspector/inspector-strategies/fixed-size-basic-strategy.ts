@@ -10,7 +10,7 @@ import type { CSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import { removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../canvas/commands/queue-group-true-up-command'
 import {
   groupErrorToastCommand,
   maybeInvalidGroupState,
@@ -52,7 +52,7 @@ export const fixedSizeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
-        queueGroupTrueUp([trueUpGroupElementChanged(path)]),
+        queueTrueUpElement([trueUpGroupElementChanged(path)]),
       ]
     })
   },

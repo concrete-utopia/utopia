@@ -98,7 +98,7 @@ import { EdgePositionBottomRight } from '../../canvas-types'
 import { addElement } from '../../commands/add-element-command'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-group-true-up-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,
@@ -766,7 +766,7 @@ export function convertFrameToGroup(
       importsToAdd: GroupImport,
     }),
     ...moveChildrenCommands,
-    queueGroupTrueUp([trueUpChildrenOfGroupChanged(elementPath)]),
+    queueTrueUpElement([trueUpChildrenOfGroupChanged(elementPath)]),
     showToastCommand(
       'Converted to group and removed styling',
       'INFO',
@@ -1125,7 +1125,7 @@ export function createWrapInGroupActions(
     insertGroupCommand,
     ...pinChangeCommands,
     selectNewGroup,
-    queueGroupTrueUp([trueUpGroupElementChanged(groupPath)]),
+    queueTrueUpElement([trueUpGroupElementChanged(groupPath)]),
   ])
 }
 

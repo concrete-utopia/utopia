@@ -7,7 +7,7 @@ import {
 } from '../../canvas/commands/set-css-length-command'
 import type { CSSNumber } from '../common/css-utils'
 import type { InspectorStrategy } from './inspector-strategy'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../canvas/commands/queue-group-true-up-command'
 import {
   groupErrorToastCommand,
   maybeInvalidGroupState,
@@ -49,7 +49,7 @@ export const fixedEdgeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
-        queueGroupTrueUp([trueUpGroupElementChanged(path)]),
+        queueTrueUpElement([trueUpGroupElementChanged(path)]),
       ]
     })
   },

@@ -64,7 +64,7 @@ import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from './group-helpers'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-group-true-up-command'
 import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
@@ -362,7 +362,7 @@ export function flexResizeStrategy(
               'starting-metadata',
             ),
             ...groupChildren.map((c) =>
-              queueGroupTrueUp([trueUpGroupElementChanged(c.elementPath)]),
+              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
             ),
           ])
         } else {
