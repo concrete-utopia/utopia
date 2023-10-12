@@ -349,9 +349,9 @@ import type {
   EditorStoreUnpatched,
   NavigatorEntry,
   TrueUpTarget,
-  TrueUpEmptyElement,
+  TrueUpHuggingElement,
 } from '../store/editor-state'
-import { trueUpChildrenOfGroupChanged, trueUpEmptyElement } from '../store/editor-state'
+import { trueUpChildrenOfGroupChanged, trueUpHuggingElement } from '../store/editor-state'
 import { trueUpGroupElementChanged } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -960,7 +960,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
 
     const trueUpGroupElementsChanged = siblings.map(trueUpGroupElementChanged)
 
-    const trueUpEmptyElements = mapDropNulls((path): TrueUpEmptyElement | null => {
+    const trueUpHuggingElements = mapDropNulls((path): TrueUpHuggingElement | null => {
       if (EP.isStoryboardPath(path) || shouldCascadeDelete(editor, path)) {
         return null
       }
@@ -1006,10 +1006,10 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
           height: main.height !== 0 ? main.height : backup.height,
         })
       }
-      return trueUpEmptyElement(path, combineFrames(canvasRectangle(frame), childrenFrame))
+      return trueUpHuggingElement(path, combineFrames(canvasRectangle(frame), childrenFrame))
     }, uniqBy(targets.map(EP.parentPath), EP.pathsEqual))
 
-    const trueUps: Array<TrueUpTarget> = [...trueUpGroupElementsChanged, ...trueUpEmptyElements]
+    const trueUps: Array<TrueUpTarget> = [...trueUpGroupElementsChanged, ...trueUpHuggingElements]
 
     return addToTrueUpElements(withUpdatedSelectedViews, ...trueUps)
   }

@@ -320,13 +320,13 @@ import type {
   TrueUpChildrenOfGroupChanged,
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
-  TrueUpEmptyElement,
+  TrueUpHuggingElement,
 } from './editor-state'
 import {
   trueUpGroupElementChanged,
   trueUpChildrenOfGroupChanged,
   invalidOverrideNavigatorEntry,
-  trueUpEmptyElement,
+  trueUpHuggingElement,
 } from './editor-state'
 import {
   editorStateNodeModules,
@@ -4079,13 +4079,13 @@ export const TrueUpChildrenOfGroupChangedKeepDeepEquality: KeepDeepEqualityCall<
     trueUpChildrenOfGroupChanged,
   )
 
-export const TrueUpEmptyElementKeepDeepEquality: KeepDeepEqualityCall<TrueUpEmptyElement> =
+export const TrueUpHuggingElementKeepDeepEquality: KeepDeepEqualityCall<TrueUpHuggingElement> =
   combine2EqualityCalls(
     (value) => value.target,
     ElementPathKeepDeepEquality,
     (value) => value.frame,
     CanvasRectangleKeepDeepEquality,
-    (target, frame) => trueUpEmptyElement(target, frame),
+    (target, frame) => trueUpHuggingElement(target, frame),
   )
 
 export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = (
@@ -4103,9 +4103,9 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
         return TrueUpChildrenOfGroupChangedKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'TRUE_UP_EMPTY_ELEMENT':
+    case 'TRUE_UP_HUGGING_ELEMENT':
       if (oldValue.type === newValue.type) {
-        return TrueUpEmptyElementKeepDeepEquality(oldValue, newValue)
+        return TrueUpHuggingElementKeepDeepEquality(oldValue, newValue)
       }
       break
     default:

@@ -68,25 +68,27 @@ export function pushIntendedBoundsGroup(
   }
 }
 
-export type PushIntendedBoundsTargetEmptyElement = {
-  type: 'PUSH_INTENDED_BOUNDS_EMPTY_ELEMENT'
+export type PushIntendedBoundsTargetHuggingElement = {
+  type: 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT'
 } & CanvasFrameAndTarget
 
-export function pushIntendedBoundsEmptyElement(
+export function pushIntendedBoundsHuggingElement(
   target: ElementPath,
   frame: CanvasRectangle,
-): PushIntendedBoundsTargetEmptyElement {
+): PushIntendedBoundsTargetHuggingElement {
   return {
-    type: 'PUSH_INTENDED_BOUNDS_EMPTY_ELEMENT',
+    type: 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT',
     target: target,
     frame: frame,
   }
 }
 
-function isPushIntendedBoundsTargetEmptyElement(
+function isPushIntendedBoundsTargetHuggingElement(
   u: unknown,
-): u is PushIntendedBoundsTargetEmptyElement {
-  return (u as PushIntendedBoundsTargetEmptyElement).type === 'PUSH_INTENDED_BOUNDS_EMPTY_ELEMENT'
+): u is PushIntendedBoundsTargetHuggingElement {
+  return (
+    (u as PushIntendedBoundsTargetHuggingElement).type === 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT'
+  )
 }
 
 function isPushIntendedBoundsTargetGroup(u: unknown): u is PushIntendedBoundsTargetGroup {
@@ -95,7 +97,7 @@ function isPushIntendedBoundsTargetGroup(u: unknown): u is PushIntendedBoundsTar
 
 export type PushIntendedBoundsTarget =
   | PushIntendedBoundsTargetGroup
-  | PushIntendedBoundsTargetEmptyElement
+  | PushIntendedBoundsTargetHuggingElement
 
 export interface PushIntendedBoundsAndUpdateTargets extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_TARGETS'
@@ -135,18 +137,18 @@ export const runPushIntendedBoundsAndUpdateTargets = (
     )
   editorStatePatches.push(...groupsEditorStatePatches)
 
-  // Empty elements
-  const emptyTargets = command.value.filter(isPushIntendedBoundsTargetEmptyElement)
-  const { updatedEditor: editorAfterEmptyElements } =
-    runPushIntendedBoundsAndUpdateTargetsEmptyElement(editorAfterGroups, emptyTargets)
+  // Hugging elements
+  const huggingTargets = command.value.filter(isPushIntendedBoundsTargetHuggingElement)
+  const { updatedEditor: editorAfterHuggingElements } =
+    runPushIntendedBoundsAndUpdateTargetsHuggingElement(editorAfterGroups, huggingTargets)
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
   editorStatePatches.push({
     projectContents: {
-      $set: editorAfterEmptyElements.projectContents,
+      $set: editorAfterHuggingElements.projectContents,
     },
     toasts: {
-      $set: editorAfterEmptyElements.toasts,
+      $set: editorAfterHuggingElements.toasts,
     },
   })
 
@@ -208,9 +210,17 @@ function runPushIntendedBoundsAndUpdateTargetsGroup(
   }
 }
 
-function runPushIntendedBoundsAndUpdateTargetsEmptyElement(
+function isEmptyOrContainingAbsoluteElements(
+  jsxMetadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+) {
+  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+  return children.length === 0 || children.some(MetadataUtils.isPositionAbsolute)
+}
+
+function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
   editor: EditorState,
-  targets: Array<PushIntendedBoundsTargetEmptyElement>,
+  targets: Array<PushIntendedBoundsTargetHuggingElement>,
 ): {
   updatedEditor: EditorState
 } {
@@ -219,10 +229,8 @@ function runPushIntendedBoundsAndUpdateTargetsEmptyElement(
     const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, v.target)
     if (
       metadata == null ||
-      // must be empty
-      MetadataUtils.getChildrenUnordered(editor.jsxMetadata, v.target).length > 0 ||
-      // must be hugging
-      !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.target, 'hug')
+      !isFixedHugFillModeAppliedOnAnySide(editor.jsxMetadata, v.target, 'hug') ||
+      !isEmptyOrContainingAbsoluteElements(editor.jsxMetadata, v.target)
     ) {
       continue
     }

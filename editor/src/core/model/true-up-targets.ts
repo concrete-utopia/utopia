@@ -1,6 +1,6 @@
 import type { PushIntendedBoundsTarget } from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import {
-  pushIntendedBoundsEmptyElement,
+  pushIntendedBoundsHuggingElement,
   pushIntendedBoundsGroup,
 } from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import type { EditorState, TrueUpTarget } from '../../components/editor/store/editor-state'
@@ -54,7 +54,7 @@ export function trueUpTargetToPushIntendedBoundsTarget(
         return childFrame != null ? pushIntendedBoundsGroup(path, childFrame) : null
       })
     case 'TRUE_UP_EMPTY_ELEMENT':
-      return [pushIntendedBoundsEmptyElement(trueUpTarget.target, trueUpTarget.frame)]
+      return [pushIntendedBoundsHuggingElement(trueUpTarget.target, trueUpTarget.frame)]
     default:
       assertNever(trueUpTarget)
   }

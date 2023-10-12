@@ -1347,18 +1347,18 @@ export function trueUpChildrenOfGroupChanged(
   }
 }
 
-export interface TrueUpEmptyElement {
-  type: 'TRUE_UP_EMPTY_ELEMENT'
+export interface TrueUpHuggingElement {
+  type: 'TRUE_UP_HUGGING_ELEMENT'
   target: ElementPath
   frame: CanvasRectangle
 }
 
-export function trueUpEmptyElement(
+export function trueUpHuggingElement(
   target: ElementPath,
   frame: CanvasRectangle,
-): TrueUpEmptyElement {
+): TrueUpHuggingElement {
   return {
-    type: 'TRUE_UP_EMPTY_ELEMENT',
+    type: 'TRUE_UP_HUGGING_ELEMENT',
     target: target,
     frame: frame,
   }
@@ -1367,7 +1367,7 @@ export function trueUpEmptyElement(
 export type TrueUpTarget =
   | TrueUpGroupElementChanged
   | TrueUpChildrenOfGroupChanged
-  | TrueUpEmptyElement
+  | TrueUpHuggingElement
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
