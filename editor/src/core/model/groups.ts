@@ -15,9 +15,9 @@ import { MetadataUtils } from './element-metadata-utils'
 
 export function trueUpTargetToDescription(trueUpTarget: TrueUpTarget): string {
   switch (trueUpTarget.type) {
-    case 'TRUE_UP_ELEMENT_CHANGED':
+    case 'TRUE_UP_GROUP_ELEMENT_CHANGED':
       return `True up element ${EP.toString(trueUpTarget.target)}`
-    case 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED':
+    case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
       return `True up children of ${EP.toString(trueUpTarget.targetParent)}`
     case 'TRUE_UP_EMPTY_ELEMENT':
       return `True up empty element ${EP.toString(trueUpTarget.target)}`
@@ -39,12 +39,12 @@ export function trueUpTargetToPushIntendedBoundsTarget(
     return globalFrame
   }
   switch (trueUpTarget.type) {
-    case 'TRUE_UP_ELEMENT_CHANGED':
+    case 'TRUE_UP_GROUP_ELEMENT_CHANGED':
       const elementFrame = getFrame(trueUpTarget.target)
       return [
         elementFrame != null ? pushIntendedBoundsGroup(trueUpTarget.target, elementFrame) : null,
       ]
-    case 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED':
+    case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
       return MetadataUtils.getChildrenPathsOrdered(
         metadata,
         pathTree,

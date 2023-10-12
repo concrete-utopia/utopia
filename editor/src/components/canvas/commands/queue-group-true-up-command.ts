@@ -5,7 +5,7 @@ import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { AllElementProps, EditorState, TrueUpTarget } from '../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { BaseCommand, CommandFunction } from './commands'
 import { trueUpTargetToDescription } from '../../../core/model/groups'
@@ -46,7 +46,9 @@ export function getRequiredGroupTrueUps(
   const parentPath = EP.parentPath(target)
   if (allowGroupTrueUp(projectContents, metadata, pathTrees, allElementProps, parentPath)) {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTrees, target)
-    return [queueGroupTrueUp(siblings.map((sibling) => trueUpElementChanged(sibling.elementPath)))]
+    return [
+      queueGroupTrueUp(siblings.map((sibling) => trueUpGroupElementChanged(sibling.elementPath))),
+    ]
   } else {
     return []
   }

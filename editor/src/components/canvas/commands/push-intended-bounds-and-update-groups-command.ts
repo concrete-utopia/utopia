@@ -20,7 +20,7 @@ import type {
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
   isFixedHugFillModeAppliedOnAnySide,
@@ -197,7 +197,7 @@ function runPushIntendedBoundsAndUpdateTargetsGroup(
   if (commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp) {
     editorStatePatches.push({
       trueUpElementsAfterDomWalkerRuns: {
-        $set: resizedGroupChildren.map(trueUpElementChanged),
+        $set: resizedGroupChildren.map(trueUpGroupElementChanged),
       },
     })
   }

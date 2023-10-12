@@ -78,8 +78,8 @@ import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types
 import { applyCommandsAction, showToast } from '../../../editor/actions/action-creators'
 import type { AllElementProps, NavigatorEntry } from '../../../editor/store/editor-state'
 import {
-  trueUpChildrenOfElementChanged,
-  trueUpElementChanged,
+  trueUpChildrenOfGroupChanged,
+  trueUpGroupElementChanged,
 } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
@@ -766,7 +766,7 @@ export function convertFrameToGroup(
       importsToAdd: GroupImport,
     }),
     ...moveChildrenCommands,
-    queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
+    queueGroupTrueUp([trueUpChildrenOfGroupChanged(elementPath)]),
     showToastCommand(
       'Converted to group and removed styling',
       'INFO',
@@ -1125,7 +1125,7 @@ export function createWrapInGroupActions(
     insertGroupCommand,
     ...pinChangeCommands,
     selectNewGroup,
-    queueGroupTrueUp([trueUpElementChanged(groupPath)]),
+    queueGroupTrueUp([trueUpGroupElementChanged(groupPath)]),
   ])
 }
 

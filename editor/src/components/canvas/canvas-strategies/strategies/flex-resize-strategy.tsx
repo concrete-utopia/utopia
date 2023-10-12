@@ -69,7 +69,7 @@ import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
 } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { trueUpElementChanged } from '../../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -361,7 +361,9 @@ export function flexResizeStrategy(
               [pushIntendedBoundsGroup(selectedElement, newFrame)],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
+            ...groupChildren.map((c) =>
+              queueGroupTrueUp([trueUpGroupElementChanged(c.elementPath)]),
+            ),
           ])
         } else {
           return strategyApplicationResult([

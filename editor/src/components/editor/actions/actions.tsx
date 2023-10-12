@@ -351,8 +351,8 @@ import type {
   TrueUpTarget,
   TrueUpEmptyElement,
 } from '../store/editor-state'
-import { trueUpChildrenOfElementChanged, trueUpEmptyElement } from '../store/editor-state'
-import { trueUpElementChanged } from '../store/editor-state'
+import { trueUpChildrenOfGroupChanged, trueUpEmptyElement } from '../store/editor-state'
+import { trueUpGroupElementChanged } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
   BaseCanvasOffset,
@@ -958,7 +958,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
       })
       .map((entry) => entry.elementPath)
 
-    function cascadeDelete(path: ElementPath): boolean {
+    function shouldCascadeDelete(path: ElementPath): boolean {
       return (
         // it's a group
         treatElementAsGroupLike(editor.jsxMetadata, path) ||
@@ -969,14 +969,14 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
           editor.elementPathTree,
           path,
         )
-        // TODO it's hug
+        // TODO it's hug?
       )
     }
 
-    const trueUpElementsChanged = siblings.map(trueUpElementChanged)
+    const trueUpGroupElementsChanged = siblings.map(trueUpGroupElementChanged)
 
     const trueUpEmptyElements = mapDropNulls((path): TrueUpEmptyElement | null => {
-      if (EP.isStoryboardPath(path) || cascadeDelete(path)) {
+      if (EP.isStoryboardPath(path) || shouldCascadeDelete(path)) {
         return null
       }
 
@@ -984,6 +984,14 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
       if (canvasFrame == null || !isFiniteRectangle(canvasFrame)) {
         return null
       }
+
+      const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+      if (metadata == null || isLeft(metadata.element)) {
+        return null
+      }
+      const jsxProps = isJSXElement(metadata.element.value)
+        ? right(metadata.element.value.props)
+        : null
 
       const childrenFrame =
         boundingRectangleArray(
@@ -995,14 +1003,6 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
             return childFrame
           }, MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path)),
         ) ?? canvasRectangle(zeroRectangle)
-
-      const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-      if (metadata == null || isLeft(metadata.element)) {
-        return null
-      }
-      const jsxProps = isJSXElement(metadata.element.value)
-        ? right(metadata.element.value.props)
-        : null
 
       const hasHorizontalPosition =
         jsxProps != null &&
@@ -1021,11 +1021,10 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
           height: main.height !== 0 ? main.height : backup.height,
         })
       }
-
       return trueUpEmptyElement(path, combineFrames(canvasFrame, childrenFrame))
     }, uniqBy(targets.map(EP.parentPath), EP.pathsEqual))
 
-    const trueUps: Array<TrueUpTarget> = [...trueUpElementsChanged, ...trueUpEmptyElements]
+    const trueUps: Array<TrueUpTarget> = [...trueUpGroupElementsChanged, ...trueUpEmptyElements]
 
     return addToTrueUpElements(withUpdatedSelectedViews, ...trueUps)
   }
@@ -1635,7 +1634,7 @@ export const UPDATE_FNS = {
       (parseSuccess) => parseSuccess,
     )
 
-    updatedEditor = addToTrueUpElements(updatedEditor, trueUpElementChanged(action.target))
+    updatedEditor = addToTrueUpElements(updatedEditor, trueUpGroupElementChanged(action.target))
 
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
@@ -2248,7 +2247,7 @@ export const UPDATE_FNS = {
           highlightedViews: [],
           trueUpElementsAfterDomWalkerRuns: [
             ...editorWithElementsInserted.trueUpElementsAfterDomWalkerRuns,
-            ...newPaths.map(trueUpElementChanged),
+            ...newPaths.map(trueUpGroupElementChanged),
           ],
         }
       },
@@ -2438,7 +2437,7 @@ export const UPDATE_FNS = {
           selectedViews: newSelection,
           trueUpElementsAfterDomWalkerRuns: [
             ...withViewsDeleted.trueUpElementsAfterDomWalkerRuns,
-            ...adjustedGroupTrueUps.map(trueUpElementChanged),
+            ...adjustedGroupTrueUps.map(trueUpGroupElementChanged),
           ],
         }
       },
@@ -2978,7 +2977,7 @@ export const UPDATE_FNS = {
       ...withFrameUpdated,
       trueUpElementsAfterDomWalkerRuns: [
         ...withFrameUpdated.trueUpElementsAfterDomWalkerRuns,
-        trueUpElementChanged(action.element),
+        trueUpGroupElementChanged(action.element),
       ],
     }
   },
@@ -4401,7 +4400,7 @@ export const UPDATE_FNS = {
     })()
     const withGroupTrueUpQueued: EditorState = addToTrueUpElements(
       withUpdatedText,
-      trueUpElementChanged(action.target),
+      trueUpGroupElementChanged(action.target),
     )
 
     const withCollapsedElements = collapseTextElements(action.target, withGroupTrueUpQueued)
@@ -4926,7 +4925,7 @@ export const UPDATE_FNS = {
                 // has nulls in both clauses, resulting in a zero-sized element.
                 groupCommands.push(
                   queueGroupTrueUp([
-                    trueUpChildrenOfElementChanged(action.insertionPath.intendedParentPath),
+                    trueUpChildrenOfGroupChanged(action.insertionPath.intendedParentPath),
                   ]),
                 )
               }
@@ -4949,7 +4948,7 @@ export const UPDATE_FNS = {
           selectedViews: newSelectedViews,
           trueUpElementsAfterDomWalkerRuns: [
             ...editor.trueUpElementsAfterDomWalkerRuns,
-            trueUpElementChanged(newPath),
+            trueUpGroupElementChanged(newPath),
           ],
         },
         groupCommands,
@@ -5314,7 +5313,7 @@ export function alignOrDistributeSelectedViews(
     ...editor.trueUpElementsAfterDomWalkerRuns,
     ...selectedViews
       .filter((path) => treatElementAsGroupLike(editor.jsxMetadata, EP.parentPath(path)))
-      .map(trueUpElementChanged),
+      .map(trueUpGroupElementChanged),
   ]
 
   if (selectedViews.length > 0) {

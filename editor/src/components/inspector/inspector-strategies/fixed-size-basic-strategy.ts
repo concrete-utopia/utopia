@@ -15,7 +15,7 @@ import {
   groupErrorToastCommand,
   maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { trueUpElementChanged } from '../../../components/editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
 
 export const fixedSizeBasicStrategy = (
   whenToRun: WhenToRun,
@@ -52,7 +52,7 @@ export const fixedSizeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
-        queueGroupTrueUp([trueUpElementChanged(path)]),
+        queueGroupTrueUp([trueUpGroupElementChanged(path)]),
       ]
     })
   },

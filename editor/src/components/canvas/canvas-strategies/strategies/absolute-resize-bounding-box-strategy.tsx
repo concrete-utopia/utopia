@@ -15,7 +15,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import {
   getJSXElementFromProjectContents,
-  trueUpElementChanged,
+  trueUpGroupElementChanged,
 } from '../../../editor/store/editor-state'
 import { getSafeGroupChildConstraintsArray } from '../../../inspector/fill-hug-fixed-control'
 import { detectFillHugFixedState } from '../../../inspector/inspector-common'
@@ -239,7 +239,7 @@ export function absoluteResizeBoundingBoxStrategy(
                   [pushIntendedBoundsGroup(selectedElement, newFrame)],
                   'starting-metadata',
                 ),
-                queueGroupTrueUp(childGroups.map(trueUpElementChanged)),
+                queueGroupTrueUp(childGroups.map(trueUpGroupElementChanged)),
               ]
             })
 

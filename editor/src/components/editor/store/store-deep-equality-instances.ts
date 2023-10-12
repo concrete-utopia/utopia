@@ -316,15 +316,15 @@ import type {
   PasteHerePostActionMenuData,
   PasteToReplacePostActionMenuData,
   NavigatorReparentPostActionMenuData,
-  TrueUpElementChanged,
-  TrueUpChildrenOfElementChanged,
+  TrueUpGroupElementChanged,
+  TrueUpChildrenOfGroupChanged,
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
   TrueUpEmptyElement,
 } from './editor-state'
 import {
-  trueUpElementChanged,
-  trueUpChildrenOfElementChanged,
+  trueUpGroupElementChanged,
+  trueUpChildrenOfGroupChanged,
   invalidOverrideNavigatorEntry,
   trueUpEmptyElement,
 } from './editor-state'
@@ -4065,14 +4065,18 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const TrueUpElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpElementChanged> =
-  combine1EqualityCall((value) => value.target, ElementPathKeepDeepEquality, trueUpElementChanged)
+export const TrueUpGroupElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpGroupElementChanged> =
+  combine1EqualityCall(
+    (value) => value.target,
+    ElementPathKeepDeepEquality,
+    trueUpGroupElementChanged,
+  )
 
-export const TrueUpChildrenOfElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpChildrenOfElementChanged> =
+export const TrueUpChildrenOfGroupChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpChildrenOfGroupChanged> =
   combine1EqualityCall(
     (value) => value.targetParent,
     ElementPathKeepDeepEquality,
-    trueUpChildrenOfElementChanged,
+    trueUpChildrenOfGroupChanged,
   )
 
 export const TrueUpEmptyElementKeepDeepEquality: KeepDeepEqualityCall<TrueUpEmptyElement> =
@@ -4089,14 +4093,14 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   newValue,
 ) => {
   switch (oldValue.type) {
-    case 'TRUE_UP_ELEMENT_CHANGED':
+    case 'TRUE_UP_GROUP_ELEMENT_CHANGED':
       if (oldValue.type === newValue.type) {
-        return TrueUpElementChangedKeepDeepEquality(oldValue, newValue)
+        return TrueUpGroupElementChangedKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED':
+    case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
       if (oldValue.type === newValue.type) {
-        return TrueUpChildrenOfElementChangedKeepDeepEquality(oldValue, newValue)
+        return TrueUpChildrenOfGroupChangedKeepDeepEquality(oldValue, newValue)
       }
       break
     case 'TRUE_UP_EMPTY_ELEMENT':

@@ -12,7 +12,7 @@ import {
   groupErrorToastCommand,
   maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { trueUpElementChanged } from '../../../components/editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
 import type { LayoutEdgeProp } from '../../../core/layout/layout-helpers-new'
 
 export const fixedEdgeBasicStrategy = (
@@ -49,7 +49,7 @@ export const fixedEdgeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
-        queueGroupTrueUp([trueUpElementChanged(path)]),
+        queueGroupTrueUp([trueUpGroupElementChanged(path)]),
       ]
     })
   },

@@ -1321,28 +1321,28 @@ export interface PostActionMenuSession {
   postActionMenuData: PostActionMenuData
 }
 
-export interface TrueUpElementChanged {
-  type: 'TRUE_UP_ELEMENT_CHANGED'
+export interface TrueUpGroupElementChanged {
+  type: 'TRUE_UP_GROUP_ELEMENT_CHANGED'
   target: ElementPath
 }
 
-export function trueUpElementChanged(target: ElementPath): TrueUpElementChanged {
+export function trueUpGroupElementChanged(target: ElementPath): TrueUpGroupElementChanged {
   return {
-    type: 'TRUE_UP_ELEMENT_CHANGED',
+    type: 'TRUE_UP_GROUP_ELEMENT_CHANGED',
     target: target,
   }
 }
 
-export interface TrueUpChildrenOfElementChanged {
-  type: 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED'
+export interface TrueUpChildrenOfGroupChanged {
+  type: 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED'
   targetParent: ElementPath
 }
 
-export function trueUpChildrenOfElementChanged(
+export function trueUpChildrenOfGroupChanged(
   targetParent: ElementPath,
-): TrueUpChildrenOfElementChanged {
+): TrueUpChildrenOfGroupChanged {
   return {
-    type: 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED',
+    type: 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED',
     targetParent: targetParent,
   }
 }
@@ -1365,8 +1365,8 @@ export function trueUpEmptyElement(
 }
 
 export type TrueUpTarget =
-  | TrueUpElementChanged
-  | TrueUpChildrenOfElementChanged
+  | TrueUpGroupElementChanged
+  | TrueUpChildrenOfGroupChanged
   | TrueUpEmptyElement
 
 // FIXME We need to pull out ProjectState from here
