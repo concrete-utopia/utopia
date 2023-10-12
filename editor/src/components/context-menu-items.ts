@@ -472,7 +472,10 @@ export const escapeHatch: ContextMenuItem<CanvasData> = {
   },
   action: (data, dispatch?: EditorDispatch) => {
     if (data.selectedViews.length > 0) {
-      requireDispatch(dispatch)([EditorActions.runEscapeHatch(data.selectedViews)], 'everyone')
+      requireDispatch(dispatch)(
+        [EditorActions.runEscapeHatch(data.selectedViews, 'set-hugging-parent-to-fixed')],
+        'everyone',
+      )
     }
   },
 }

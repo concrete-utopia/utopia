@@ -76,6 +76,7 @@ import { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { PostActionChoice } from '../canvas/canvas-strategies/post-action-options/post-action-options'
 import type { FromVSCodeAction } from './actions/actions-from-vscode'
 import type { ProjectServerState } from './store/project-server-state'
+import type { SetHuggingParentToFixed } from '../canvas/canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 export { isLoggedIn, loggedInUser, notLoggedIn } from '../../common/user'
 export type { LoginState, UserDetails } from '../../common/user'
 
@@ -992,6 +993,7 @@ export interface ForceParseFile {
 export interface RunEscapeHatch {
   action: 'RUN_ESCAPE_HATCH'
   targets: Array<ElementPath>
+  setHuggingParentToFixed: SetHuggingParentToFixed
 }
 
 export interface SetElementsToRerender {
