@@ -48,6 +48,7 @@ import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspe
 import {
   isFiniteRectangle,
   isInfinityRectangle,
+  roundRectangleToNearestWhole,
   type LocalRectangle,
 } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
@@ -1169,8 +1170,10 @@ export function getConvertIndividualElementToAbsoluteCommands(
   frame: LocalRectangle,
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
+  // First round the frame so that we don't end up with half pixel values
+  const roundedFrame = roundRectangleToNearestWhole(frame)
   return [
-    ...sizeToDimensionsFromFrame(jsxMetadata, elementPathTree, target, frame),
-    ...addPositionAbsoluteTopLeft(target, frame, parentFlexDirection),
+    ...sizeToDimensionsFromFrame(jsxMetadata, elementPathTree, target, roundedFrame),
+    ...addPositionAbsoluteTopLeft(target, roundedFrame, parentFlexDirection),
   ]
 }

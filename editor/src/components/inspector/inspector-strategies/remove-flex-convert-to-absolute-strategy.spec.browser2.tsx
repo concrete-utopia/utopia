@@ -27,7 +27,7 @@ describe('remove-flex-convert-to-absolute strategy', () => {
     expect(left.style.position).toEqual('absolute')
     expect(left.style.left).toEqual('0px')
     expect(left.style.top).toEqual('135px')
-    expect(left.style.height).toEqual('172px')
+    expect(left.style.height).toEqual('173px')
     expect(left.style.width).toEqual('259px')
 
     const right = editor.renderedDOM.getByTestId('right')
@@ -87,7 +87,7 @@ function project(): string {
             style={{
               backgroundColor: '#E91C1CC4',
               width: '100%',
-              height: 172,
+              height: 173,
               contain: 'layout',
             }}
             data-uid='7bc'
