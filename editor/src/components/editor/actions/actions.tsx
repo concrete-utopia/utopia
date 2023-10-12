@@ -3854,24 +3854,21 @@ export const UPDATE_FNS = {
     }
   },
   TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
-    const targetsToTrueUp = editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap(
-      (trueUpTarget) => {
+    const targets = mapDropNulls(
+      (target) => target,
+      editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap((trueUpTarget) => {
         return trueUpTargetToPushIntendedBoundsTarget(
           editor.jsxMetadata,
           editor.elementPathTree,
           trueUpTarget,
         )
-      },
+      }),
     )
-    const normalizeBoundsArray: Array<PushIntendedBoundsTarget> = mapDropNulls(
-      (element) => element,
-      targetsToTrueUp,
-    )
-    const editorWithGroupsTruedUp = foldAndApplyCommandsSimple(editor, [
-      pushIntendedBoundsAndUpdateTargets(normalizeBoundsArray, 'live-metadata'),
+    const editorAfterTrueUps = foldAndApplyCommandsSimple(editor, [
+      pushIntendedBoundsAndUpdateTargets(targets, 'live-metadata'),
     ])
     return {
-      ...editorWithGroupsTruedUp,
+      ...editorAfterTrueUps,
       trueUpGroupsForElementAfterDomWalkerRuns: [],
     }
   },
