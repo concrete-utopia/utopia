@@ -195,7 +195,7 @@ export const LeftPaneMinimumWidth = 5
 
 export const LeftPaneDefaultWidth = GridMenuWidth
 export const LeftPanelMinWidth = 240
-export const DefaultNavigatorWidth = 280
+export const DefaultNavigatorWidth = GridMenuWidth
 export const LeftPanelWidthAtom = atomWithPubSub({
   key: 'LeftPanelWidthAtom',
   defaultValue: LeftPaneDefaultWidth,
