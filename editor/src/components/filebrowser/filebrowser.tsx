@@ -226,7 +226,7 @@ export const FileBrowser = React.memo(() => {
       <Section data-name='FileBrowser' onFocus={onFocus} tabIndex={-1}>
         <SectionTitleRow minimised={minimised} toggleMinimised={toggleMinimised}>
           <FlexRow flexGrow={1} style={{ position: 'relative' }}>
-            <Title>{projectName}</Title>
+            <span>(root)</span>
             <FileBrowserActionSheet
               visible={!minimised}
               setAddingFileOrFolder={setAddingFileOrFolder}
@@ -394,7 +394,7 @@ const FileBrowserActionSheet = React.memo((props: FileBrowserActionSheetProps) =
     return (
       <ActionSheet>
         <SquareButton highlight onClick={addFolderClick}>
-          <Icons.NewFolder tooltipText='Add New Folder' />
+          <Icons.GroupClosed tooltipText='Add New Folder' />
         </SquareButton>
         <SquareButton highlight onClick={addTextFileClick}>
           <Icons.NewTextFile tooltipText='Add Code File' />
