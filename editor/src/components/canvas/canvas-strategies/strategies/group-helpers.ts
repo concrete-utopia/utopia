@@ -358,7 +358,7 @@ export function groupJSXElement(children: JSXElementChildren): JSXElementWithout
     'Group',
     jsxAttributesFromMap({
       style: jsExpressionValue(
-        // we need to add position: absolute and top, left so that the TRUE_UP_GROUPS action can correct these values later
+        // we need to add position: absolute and top, left so that the TRUE_UP_ELEMENTS action can correct these values later
         { position: 'absolute', left: 0, top: 0 },
         emptyComments,
       ),

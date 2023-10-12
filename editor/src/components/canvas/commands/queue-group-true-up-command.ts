@@ -31,7 +31,7 @@ export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
     commandDescription: `Once the interaction has finished: ${command.targets
       .map((target) => trueUpTargetToDescription(target))
       .join(', ')}`,
-    editorStatePatches: [{ trueUpGroupsForElementAfterDomWalkerRuns: { $push: command.targets } }],
+    editorStatePatches: [{ trueUpElementsAfterDomWalkerRuns: { $push: command.targets } }],
   }
 }
 

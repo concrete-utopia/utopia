@@ -710,8 +710,8 @@ export interface RunDOMWalker {
   action: 'RUN_DOM_WALKER'
 }
 
-export interface TrueUpGroups {
-  action: 'TRUE_UP_GROUPS'
+export interface TrueUpElements {
+  action: 'TRUE_UP_ELEMENTS'
 }
 
 export interface SetProp {
@@ -1160,7 +1160,7 @@ export type EditorAction =
   | SetCodeEditorLintErrors
   | SaveDOMReport
   | RunDOMWalker
-  | TrueUpGroups
+  | TrueUpElements
   | SetProp
   | SetFilebrowserRenamingTarget
   | ToggleProperty

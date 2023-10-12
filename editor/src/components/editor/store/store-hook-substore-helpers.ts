@@ -9,7 +9,7 @@ export const EmptyEditorStateForKeysOnly: EditorState = {
   projectDescription: 'Made with Utopia',
   projectVersion: null as any,
   isLoaded: false,
-  trueUpGroupsForElementAfterDomWalkerRuns: [],
+  trueUpElementsAfterDomWalkerRuns: [],
   spyMetadata: null as any,
   domMetadata: null as any,
   jsxMetadata: null as any,

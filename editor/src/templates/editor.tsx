@@ -503,14 +503,14 @@ export class Editor {
         }
 
         // true up groups if needed
-        if (this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+        if (this.storedState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
           // updated editor with trued up groups
           Measure.taskTime(`Group true up ${updateId}`, () => {
             const projectContentsBeforeGroupTrueUp =
               this.storedState.unpatchedEditor.projectContents
             const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
-              [{ action: 'TRUE_UP_GROUPS' }],
+              [{ action: 'TRUE_UP_ELEMENTS' }],
               this.storedState,
               this.spyCollector,
             )

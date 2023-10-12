@@ -506,10 +506,9 @@ import type {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
-import type { PushIntendedBoundsTarget } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import { pushIntendedBoundsAndUpdateTargets } from '../../canvas/commands/push-intended-bounds-and-update-groups-command'
 import {
-  addToTrueUpGroups,
+  addToTrueUpElements,
   trueUpTargetToPushIntendedBoundsTarget,
 } from '../../../core/model/groups'
 import {
@@ -757,7 +756,7 @@ export function restoreEditorState(
     projectDescription: currentEditor.projectDescription,
     projectVersion: currentEditor.projectVersion,
     isLoaded: currentEditor.isLoaded,
-    trueUpGroupsForElementAfterDomWalkerRuns: [], // <- we reset the group true-up value
+    trueUpElementsAfterDomWalkerRuns: [], // <- we reset the group true-up value
     spyMetadata: desiredEditor.spyMetadata,
     domMetadata: desiredEditor.domMetadata,
     jsxMetadata: desiredEditor.jsxMetadata,
@@ -1028,7 +1027,7 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
 
     const trueUps: Array<TrueUpTarget> = [...trueUpElementsChanged, ...trueUpEmptyElements]
 
-    return addToTrueUpGroups(withUpdatedSelectedViews, ...trueUps)
+    return addToTrueUpElements(withUpdatedSelectedViews, ...trueUps)
   }
 }
 
@@ -1636,7 +1635,7 @@ export const UPDATE_FNS = {
       (parseSuccess) => parseSuccess,
     )
 
-    updatedEditor = addToTrueUpGroups(updatedEditor, trueUpElementChanged(action.target))
+    updatedEditor = addToTrueUpElements(updatedEditor, trueUpElementChanged(action.target))
 
     if (setPropFailedMessage != null) {
       const toastAction = showToast(notice(setPropFailedMessage, 'ERROR'))
@@ -2247,8 +2246,8 @@ export const UPDATE_FNS = {
           ...editorWithElementsInserted,
           selectedViews: [actualInsertionPath.intendedParentPath],
           highlightedViews: [],
-          trueUpGroupsForElementAfterDomWalkerRuns: [
-            ...editorWithElementsInserted.trueUpGroupsForElementAfterDomWalkerRuns,
+          trueUpElementsAfterDomWalkerRuns: [
+            ...editorWithElementsInserted.trueUpElementsAfterDomWalkerRuns,
             ...newPaths.map(trueUpElementChanged),
           ],
         }
@@ -2437,8 +2436,8 @@ export const UPDATE_FNS = {
         return {
           ...withViewsDeleted,
           selectedViews: newSelection,
-          trueUpGroupsForElementAfterDomWalkerRuns: [
-            ...withViewsDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
+          trueUpElementsAfterDomWalkerRuns: [
+            ...withViewsDeleted.trueUpElementsAfterDomWalkerRuns,
             ...adjustedGroupTrueUps.map(trueUpElementChanged),
           ],
         }
@@ -2977,8 +2976,8 @@ export const UPDATE_FNS = {
     const withFrameUpdated = setCanvasFramesInnerNew(editor, frameChanges, null)
     return {
       ...withFrameUpdated,
-      trueUpGroupsForElementAfterDomWalkerRuns: [
-        ...withFrameUpdated.trueUpGroupsForElementAfterDomWalkerRuns,
+      trueUpElementsAfterDomWalkerRuns: [
+        ...withFrameUpdated.trueUpElementsAfterDomWalkerRuns,
         trueUpElementChanged(action.element),
       ],
     }
@@ -3871,10 +3870,10 @@ export const UPDATE_FNS = {
       }
     }
   },
-  TRUE_UP_GROUPS: (editor: EditorModel): EditorModel => {
+  TRUE_UP_ELEMENTS: (editor: EditorModel): EditorModel => {
     const targets = mapDropNulls(
       (target) => target,
-      editor.trueUpGroupsForElementAfterDomWalkerRuns.flatMap((trueUpTarget) => {
+      editor.trueUpElementsAfterDomWalkerRuns.flatMap((trueUpTarget) => {
         return trueUpTargetToPushIntendedBoundsTarget(
           editor.jsxMetadata,
           editor.elementPathTree,
@@ -3887,7 +3886,7 @@ export const UPDATE_FNS = {
     ])
     return {
       ...editorAfterTrueUps,
-      trueUpGroupsForElementAfterDomWalkerRuns: [],
+      trueUpElementsAfterDomWalkerRuns: [],
     }
   },
   // NB: this can only update attribute values and part of attribute value,
@@ -4400,7 +4399,7 @@ export const UPDATE_FNS = {
         assertNever(textProp)
       }
     })()
-    const withGroupTrueUpQueued: EditorState = addToTrueUpGroups(
+    const withGroupTrueUpQueued: EditorState = addToTrueUpElements(
       withUpdatedText,
       trueUpElementChanged(action.target),
     )
@@ -4948,8 +4947,8 @@ export const UPDATE_FNS = {
         {
           ...withNewElement,
           selectedViews: newSelectedViews,
-          trueUpGroupsForElementAfterDomWalkerRuns: [
-            ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+          trueUpElementsAfterDomWalkerRuns: [
+            ...editor.trueUpElementsAfterDomWalkerRuns,
             trueUpElementChanged(newPath),
           ],
         },
@@ -5312,7 +5311,7 @@ export function alignOrDistributeSelectedViews(
   const selectedViews = editor.selectedViews
 
   let groupTrueUps: Array<TrueUpTarget> = [
-    ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
+    ...editor.trueUpElementsAfterDomWalkerRuns,
     ...selectedViews
       .filter((path) => treatElementAsGroupLike(editor.jsxMetadata, EP.parentPath(path)))
       .map(trueUpElementChanged),
@@ -5365,7 +5364,7 @@ export function alignOrDistributeSelectedViews(
       )
       return {
         ...setCanvasFramesInnerNew(editor, updatedCanvasFrames, null),
-        trueUpGroupsForElementAfterDomWalkerRuns: groupTrueUps,
+        trueUpElementsAfterDomWalkerRuns: groupTrueUps,
       }
     }
   }
