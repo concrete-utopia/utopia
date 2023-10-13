@@ -37,7 +37,7 @@ import {
   zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
-import { fastForEach } from '../../../../core/shared/utils'
+import { assertNever, fastForEach } from '../../../../core/shared/utils'
 import { getJSXElementFromProjectContents } from '../../../editor/store/editor-state'
 import type { FullFrame } from '../../../frame'
 import { getFullFrame } from '../../../frame'
@@ -79,133 +79,187 @@ import type { ElementPathTrees } from '../../../../core/shared/element-path-tree
 import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
+import {
+  getConvertIndividualElementToAbsoluteCommands,
+  sizeToVisualDimensions,
+} from '../../../inspector/inspector-common'
 
+export type SetHuggingParentToFixed =
+  | 'set-hugging-parent-to-fixed'
+  | 'dont-set-hugging-parent-to-fixed'
+
+export const ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID =
+  'CONVERT_TO_ABSOLUTE_AND_MOVE_AND_SET_PARENT_FIXED_STRATEGY'
 export const ConvertToAbsoluteAndMoveStrategyID = 'CONVERT_TO_ABSOLUTE_AND_MOVE_STRATEGY'
 
-export function convertToAbsoluteAndMoveStrategy(
-  canvasState: InteractionCanvasState,
-  interactionSession: InteractionSession | null,
-): CanvasStrategy | null {
-  const originalTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState) // this needs a better variable name
-  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+export const convertToAbsoluteAndMoveStrategy = convertToAbsoluteAndMoveStrategyFactory(
+  'dont-set-hugging-parent-to-fixed',
+)
 
-  if (
-    !retargetedTargets.every((element) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(
-        canvasState.startingMetadata,
-        element,
-      )
-      return (
-        elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
-        honoursPropsPosition(canvasState, element)
-      )
-    })
-  ) {
-    return null
+export const convertToAbsoluteAndMoveAndSetParentFixedStrategy =
+  convertToAbsoluteAndMoveStrategyFactory('set-hugging-parent-to-fixed')
+
+function getBasicStrategyProperties(setHuggingParentToFixed: SetHuggingParentToFixed) {
+  switch (setHuggingParentToFixed) {
+    case 'set-hugging-parent-to-fixed':
+      return {
+        id: ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
+        name: 'Move (Abs + Set Parent Fixed)',
+        descriptiveLabel: 'Converting To Absolute And Moving (setting parent to fixed)',
+      }
+    case 'dont-set-hugging-parent-to-fixed':
+      return {
+        id: ConvertToAbsoluteAndMoveStrategyID,
+        name: 'Move (Abs)',
+        descriptiveLabel: 'Converting To Absolute And Moving',
+      }
+    default:
+      assertNever(setHuggingParentToFixed)
   }
+}
 
-  const autoLayoutSiblings = getAutoLayoutSiblings(
-    canvasState.startingMetadata,
-    canvasState.startingElementPathTree,
-    originalTargets,
-  )
-  const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
-  const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
-    canvasState.startingMetadata,
-    canvasState.startingElementPathTree,
-    originalTargets,
-  )
+function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHuggingParentToFixed) {
+  return (
+    canvasState: InteractionCanvasState,
+    interactionSession: InteractionSession | null,
+  ): CanvasStrategy | null => {
+    const originalTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState) // this needs a better variable name
+    const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
-  const autoLayoutSiblingsControl = hasAutoLayoutSiblings
-    ? [
-        controlWithProps({
-          control: AutoLayoutSiblingsOutline,
-          props: { bounds: autoLayoutSiblingsBounds },
-          key: 'autolayout-siblings-outline',
-          show: 'always-visible',
-        }),
-      ]
-    : []
+    if (
+      !retargetedTargets.every((element) => {
+        const elementMetadata = MetadataUtils.findElementByElementPath(
+          canvasState.startingMetadata,
+          element,
+        )
+        return (
+          elementMetadata?.specialSizeMeasurements.position !== 'absolute' &&
+          honoursPropsPosition(canvasState, element)
+        )
+      })
+    ) {
+      return null
+    }
 
-  return {
-    id: ConvertToAbsoluteAndMoveStrategyID,
-    name: 'Move (Abs)',
-    descriptiveLabel: 'Converting To Absolute And Moving',
-    icon: {
-      category: 'modalities',
-      type: 'moveabs-large',
-    },
-    controlsToRender: [
-      controlWithProps({
-        control: ImmediateParentOutlines,
-        props: { targets: originalTargets },
-        key: 'parent-outlines-control',
-        show: 'visible-only-while-active',
-      }),
-      controlWithProps({
-        control: ImmediateParentBounds,
-        props: { targets: originalTargets },
-        key: 'parent-bounds-control',
-        show: 'visible-only-while-active',
-      }),
-      ...autoLayoutSiblingsControl,
-    ], // Uses existing hooks in select-mode-hooks.tsx
-    fitness: getFitness(
+    // When the parent is not hugging, don't offer the strategy which sets it to fixed size
+    if (setHuggingParentToFixed === 'set-hugging-parent-to-fixed') {
+      const setParentToFixedSizeCommands = createSetParentsToFixedSizeCommands(
+        retargetedTargets,
+        canvasState.startingMetadata,
+        canvasState.startingElementPathTree,
+        canvasState.projectContents,
+      )
+
+      if (setParentToFixedSizeCommands.length === 0) {
+        return null
+      }
+    }
+
+    const autoLayoutSiblings = getAutoLayoutSiblings(
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+      originalTargets,
+    )
+    const hasAutoLayoutSiblings = autoLayoutSiblings.length > 1
+    const autoLayoutSiblingsBounds = getAutoLayoutSiblingsBounds(
+      canvasState.startingMetadata,
+      canvasState.startingElementPathTree,
+      originalTargets,
+    )
+
+    const autoLayoutSiblingsControl = hasAutoLayoutSiblings
+      ? [
+          controlWithProps({
+            control: AutoLayoutSiblingsOutline,
+            props: { bounds: autoLayoutSiblingsBounds },
+            key: 'autolayout-siblings-outline',
+            show: 'always-visible',
+          }),
+        ]
+      : []
+
+    const baseFitness = getFitness(
       interactionSession,
       hasAutoLayoutSiblings,
       autoLayoutSiblingsBounds,
       originalTargets.length > 1,
-    ),
-    apply: () => {
-      if (
-        interactionSession != null &&
-        interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.interactionData.drag != null
-      ) {
-        const getConversionAndMoveCommands = (
-          snappedDragVector: CanvasPoint,
-        ): {
-          commands: Array<CanvasCommand>
-          intendedBounds: Array<CanvasFrameAndTarget>
-        } => {
-          return getEscapeHatchCommands(
-            getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
-            canvasState.startingMetadata,
-            canvasState,
-            snappedDragVector,
-          )
-        }
-        const absoluteMoveApplyResult = applyMoveCommon(
-          retargetedTargets,
-          getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle fragmentLike elements
-          canvasState,
-          interactionSession,
-          getConversionAndMoveCommands,
-        )
+    )
 
-        const strategyIndicatorCommand = wildcardPatch('mid-interaction', {
-          canvas: {
-            controls: {
-              dragToMoveIndicatorFlags: {
-                $set: {
-                  showIndicator: true,
-                  dragType: 'absolute',
-                  reparent: 'none',
-                  ancestor: false,
+    return {
+      ...getBasicStrategyProperties(setHuggingParentToFixed),
+      icon: {
+        category: 'modalities',
+        type: 'moveabs-large',
+      },
+      controlsToRender: [
+        controlWithProps({
+          control: ImmediateParentOutlines,
+          props: { targets: originalTargets },
+          key: 'parent-outlines-control',
+          show: 'visible-only-while-active',
+        }),
+        controlWithProps({
+          control: ImmediateParentBounds,
+          props: { targets: originalTargets },
+          key: 'parent-bounds-control',
+          show: 'visible-only-while-active',
+        }),
+        ...autoLayoutSiblingsControl,
+      ], // Uses existing hooks in select-mode-hooks.tsx
+      fitness:
+        setHuggingParentToFixed === 'set-hugging-parent-to-fixed' ? baseFitness + 0.1 : baseFitness, // by default we set the parent to fixed size
+      apply: () => {
+        if (
+          interactionSession != null &&
+          interactionSession.interactionData.type === 'DRAG' &&
+          interactionSession.interactionData.drag != null
+        ) {
+          const getConversionAndMoveCommands = (
+            snappedDragVector: CanvasPoint,
+          ): {
+            commands: Array<CanvasCommand>
+            intendedBounds: Array<CanvasFrameAndTarget>
+          } => {
+            return getEscapeHatchCommands(
+              getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+              canvasState.startingMetadata,
+              canvasState,
+              snappedDragVector,
+              setHuggingParentToFixed,
+            )
+          }
+          const absoluteMoveApplyResult = applyMoveCommon(
+            retargetedTargets,
+            getTargetPathsFromInteractionTarget(canvasState.interactionTarget), // TODO eventually make this handle fragmentLike elements
+            canvasState,
+            interactionSession,
+            getConversionAndMoveCommands,
+          )
+
+          const strategyIndicatorCommand = wildcardPatch('mid-interaction', {
+            canvas: {
+              controls: {
+                dragToMoveIndicatorFlags: {
+                  $set: {
+                    showIndicator: true,
+                    dragType: 'absolute',
+                    reparent: 'none',
+                    ancestor: false,
+                  },
                 },
               },
             },
-          },
-        })
+          })
 
-        return strategyApplicationResult([
-          ...absoluteMoveApplyResult.commands,
-          strategyIndicatorCommand,
-        ])
-      }
-      // Fallback for when the checks above are not satisfied.
-      return emptyStrategyApplicationResult
-    },
+          return strategyApplicationResult([
+            ...absoluteMoveApplyResult.commands,
+            strategyIndicatorCommand,
+          ])
+        }
+        // Fallback for when the checks above are not satisfied.
+        return emptyStrategyApplicationResult
+      },
+    }
   }
 }
 
@@ -289,6 +343,7 @@ export function getEscapeHatchCommands(
   metadata: ElementInstanceMetadataMap,
   canvasState: InteractionCanvasState,
   dragDelta: CanvasVector | null,
+  setHuggingParentToFixed: SetHuggingParentToFixed,
 ): {
   commands: Array<CanvasCommand>
   intendedBounds: Array<CanvasFrameAndTarget>
@@ -314,11 +369,15 @@ export function getEscapeHatchCommands(
     sortedElements,
   )
 
-  const setParentsToFixedSizeCommands = createSetParentsToFixedSizeCommands(
-    elementsToConvertToAbsolute,
-    metadata,
-    canvasState.projectContents,
-  )
+  const setParentsToFixedSizeCommands =
+    setHuggingParentToFixed === 'set-hugging-parent-to-fixed'
+      ? createSetParentsToFixedSizeCommands(
+          elementsToConvertToAbsolute,
+          metadata,
+          canvasState.startingElementPathTree,
+          canvasState.projectContents,
+        )
+      : []
 
   /**
    * It's possible to have descendants where the layout is defined by an ancestor
@@ -370,32 +429,29 @@ function collectSetLayoutPropCommands(
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(path, metadata)
-  if (globalFrame != null && isFiniteRectangle(globalFrame)) {
+  const element = MetadataUtils.findElementByElementPath(metadata, path)
+  if (element != null && globalFrame != null && isFiniteRectangle(globalFrame)) {
+    const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
+    const intendedBounds: Array<CanvasFrameAndTarget> = [
+      { frame: updatedGlobalFrame, target: path },
+    ]
+
     const newLocalFrame = MetadataUtils.getFrameRelativeToTargetContainingBlock(
       targetParent ?? EP.parentPath(path),
       metadata,
-      globalFrame,
+      updatedGlobalFrame,
     )
 
-    const intendedBounds: Array<CanvasFrameAndTarget> = (() => {
-      if (globalFrame == null) {
-        return []
-      } else {
-        const updatedGlobalFrame = offsetRect(globalFrame, dragDelta ?? zeroCanvasRect)
-        return [{ frame: updatedGlobalFrame, target: path }]
-      }
-    })()
-
     if (newLocalFrame != null) {
-      let commands: Array<CanvasCommand> = [convertToAbsolute('always', path)]
-      const updatePinsCommands = createUpdatePinsCommands(
+      const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
+      let commands: Array<CanvasCommand> = getConvertIndividualElementToAbsoluteCommands(
         path,
         metadata,
-        canvasState,
-        dragDelta,
+        canvasState.startingElementPathTree,
         newLocalFrame,
+        parentFlexDirection,
       )
-      commands.push(...updatePinsCommands)
 
       return { commands: commands, intendedBounds: intendedBounds }
     }
@@ -422,7 +478,6 @@ function collectReparentCommands(
     canvasState.builtInDependencies,
     canvasState.projectContents,
     canvasState.nodeModules,
-    canvasState.openFile,
     pathToReparent(path),
     childInsertionPath(targetParent),
     'always',
@@ -634,6 +689,7 @@ function getFrameWithoutMargin(
 function createSetParentsToFixedSizeCommands(
   elementsToConvertToAbsolute: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
+  pathTree: ElementPathTrees,
   projectContents: ProjectContentTreeRoot,
 ): Array<CanvasCommand> {
   if (elementsToConvertToAbsolute.length > 0) {
@@ -659,46 +715,17 @@ function createSetParentsToFixedSizeCommands(
       return []
     }
     return firstAncestorsHonoringPropsSize.flatMap((ancestor) => {
-      const parentMetadata = MetadataUtils.findElementByElementPath(metadata, ancestor)
-      const parentLocalFrame = parentMetadata?.localFrame
-      if (parentLocalFrame == null || !isFiniteRectangle(parentLocalFrame)) {
-        return []
-      }
-
       const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, ancestor)
       if (parentElement == null) {
         return []
       }
 
-      const setWidthCommands = isCollapsingParent(parentElement, 'width')
-        ? [
-            setCssLengthProperty(
-              'always',
-              ancestor,
-              PP.create('style', 'width'),
-              setExplicitCssValue(cssPixelLength(parentLocalFrame.width)),
-              null,
-            ),
-          ]
-        : []
-      const setHeightCommands = isCollapsingParent(parentElement, 'width')
-        ? [
-            setCssLengthProperty(
-              'always',
-              ancestor,
-              PP.create('style', 'height'),
-              setExplicitCssValue(cssPixelLength(parentLocalFrame.height)),
-              null,
-            ),
-          ]
-        : []
-
-      const commands = [...setWidthCommands, ...setHeightCommands]
-      if (commands.length === 0) {
+      if (!isHuggingParent(parentElement, 'width') && !isHuggingParent(parentElement, 'height')) {
         return []
       }
+
       return [
-        ...commands,
+        ...sizeToVisualDimensions(metadata, pathTree, ancestor),
         showToastCommand('Parent is set to fixed size', 'NOTICE', 'set-parent-to-fixed-size'),
       ]
     })
@@ -707,13 +734,13 @@ function createSetParentsToFixedSizeCommands(
   return []
 }
 
-const CollapsingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
+const HuggingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
 
-function isCollapsingParent(element: JSXElement, property: 'width' | 'height') {
+function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
   const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(element.props), PP.create('style', property)),
   )
 
-  return simpleAttribute == null || CollapsingWidthHeightValues.includes(simpleAttribute)
+  return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
 }

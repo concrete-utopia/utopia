@@ -32,7 +32,6 @@ import {
   defaultRectangleElement,
   defaultSpanElement,
   defaultUnstyledDivElement,
-  defaultViewElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
@@ -119,6 +118,7 @@ import {
   jsxElement,
   jsxFragment,
   isJSXElementLike,
+  jsxElementName,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -134,7 +134,6 @@ import {
 import {
   detectAreElementsFlexContainers,
   nukeAllAbsolutePositioningPropsCommands,
-  addPositionAbsoluteTopLeft,
   sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
   isIntrinsicallyInlineElement,

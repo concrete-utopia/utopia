@@ -474,13 +474,13 @@ describe('Select Mode Clicking', () => {
     checkSelectedPaths(renderResult, [desiredPaths[4]])
   })
 
-  it('Cmd click to select Playground Root', async () => {
+  it('Need to unlock the playground root to select it', async () => {
     // prettier-ignore
-    const desiredPath = EP.fromString(
+    const desiredPaths = createConsecutivePaths(
       'sb' +      // Skipped as it's the storyboard
       '/sc' +     // Skipped because we skip over Scenes
-      '/pg' +     // Skipped because we skip component children of Scenes
-      ':pg-root', // <- Cmd click
+      '/pg',      // <- Cmd click when locked
+      ':pg-root', // <- Cmd click when unlocked
     )
 
     const renderResult = await renderTestEditorWithCode(
@@ -490,6 +490,23 @@ describe('Select Mode Clicking', () => {
 
     const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
     const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    // Click before unlocking
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
+      cmdModifier,
+    )
+
+    // Ensure the playground root isn't selected
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[0]])
+
+    // Clear the selection, then remove the lock and try again
+    await renderResult.dispatch([clearSelection()], true)
 
     await renderResult.dispatch(
       [
@@ -501,20 +518,57 @@ describe('Select Mode Clicking', () => {
       true,
     )
 
-    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
-
     await fireSingleClickEvents(
       canvasControlsLayer,
       playgroundRootBounds.left + 10,
       playgroundRootBounds.top + 10,
       cmdModifier,
+    )
+
+    checkFocusedPath(renderResult, null)
+    checkSelectedPaths(renderResult, [desiredPaths[1]])
+  })
+
+  it('Unlocked playground root can be single-click selected', async () => {
+    // prettier-ignore
+    const desiredPath = EP.fromString(
+      'sb' +      // Skipped as it's the storyboard
+      '/sc' +     // Skipped because we skip over Scenes
+      '/pg' +     // Skipped because we skip component children of Scenes
+      ':pg-root', // <- Single click
+    )
+
+    const renderResult = await renderTestEditorWithCode(
+      TestProjectPlayground,
+      'await-first-dom-report',
+    )
+
+    const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
+    const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          renderResult.getEditorState().editor.lockedElements.simpleLock,
+          'selectable',
+        ),
+      ],
+      true,
+    )
+
+    await fireSingleClickEvents(
+      canvasControlsLayer,
+      playgroundRootBounds.left + 10,
+      playgroundRootBounds.top + 10,
     )
 
     checkFocusedPath(renderResult, null)
     checkSelectedPaths(renderResult, [desiredPath])
   })
 
-  it('Cmd click to select Playground Root, then regular click keeps it selected', async () => {
+  it('Selecting a locked element and then clicking again keeps it selected', async () => {
     // prettier-ignore
     const desiredPath = EP.fromString(
       'sb' +      // Skipped as it's the storyboard
@@ -531,6 +585,7 @@ describe('Select Mode Clicking', () => {
     const playgroundRoot = renderResult.renderedDOM.getByTestId('pg-root')
     const playgroundRootBounds = playgroundRoot.getBoundingClientRect()
 
+    // Unlock the playground root so that we can click to select it
     await renderResult.dispatch(
       [
         toggleSelectionLock(
@@ -551,6 +606,18 @@ describe('Select Mode Clicking', () => {
 
     checkFocusedPath(renderResult, null)
     checkSelectedPaths(renderResult, [desiredPath])
+
+    // Now lock it again to check that we can still click it without losing the selection
+    await renderResult.dispatch(
+      [
+        toggleSelectionLock(
+          renderResult.getEditorState().editor.lockedElements.simpleLock,
+          'locked',
+        ),
+      ],
+      true,
+    )
+
     await fireSingleClickEvents(
       canvasControlsLayer,
       playgroundRootBounds.left + 10,

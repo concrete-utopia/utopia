@@ -98,6 +98,7 @@ import { EditorCommon } from '../components/editor/editor-component-common'
 import { CursorComponent } from '../components/canvas/controls/select-mode/cursor-component'
 import * as ResizeObserverSyntheticDefault from 'resize-observer-polyfill'
 import { isFeatureEnabled } from '../utils/feature-switches'
+import { getCanvasViewportCenter } from './paste-helpers'
 const ResizeObserver = ResizeObserverSyntheticDefault.default ?? ResizeObserverSyntheticDefault
 
 const webFrame = PROBABLY_ELECTRON ? requireElectron().webFrame : null
@@ -1304,14 +1305,11 @@ export class EditorCanvas extends React.Component<EditorCanvasProps> {
         // needs testing if it's any help for other platforms
       } else {
         const canvasWrapperRect = this.canvasWrapperRef?.getBoundingClientRect() ?? zeroCanvasRect
-        const canvasViewportCenter = canvasPoint({
-          x:
-            -editor.canvas.roundedCanvasOffset.x +
-            canvasWrapperRect.width / editor.canvas.scale / 2,
-          y:
-            -editor.canvas.roundedCanvasOffset.y +
-            canvasWrapperRect.height / editor.canvas.scale / 2,
-        })
+        const canvasViewportCenter = getCanvasViewportCenter(
+          editor.canvas.roundedCanvasOffset,
+          editor.canvas.scale,
+          canvasWrapperRect,
+        )
         void Clipboard.parseClipboardData(event.clipboardData).then((result) => {
           const actions = getActionsForClipboardItems(
             editor,

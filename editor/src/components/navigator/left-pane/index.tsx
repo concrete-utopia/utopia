@@ -3,35 +3,20 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { FlexRow, ResizableFlexColumn, UtopiaTheme, colorTheme } from '../../../uuiui'
-import type { ResizableProps } from '../../../uuiui-deps'
-import { User } from '../../../uuiui-deps'
+import { FlexColumn, FlexRow, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { MenuTab } from '../../../uuiui/menu-tab'
+import type { StoredPanel } from '../../canvas/grid-panels-state'
 import type { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
-import { clearSelection, setLeftMenuTab } from '../../editor/actions/action-creators'
+import { setLeftMenuTab } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import type { DerivedState, EditorState } from '../../editor/store/editor-state'
-import {
-  LeftMenuTab,
-  LeftPaneDefaultWidth,
-  LeftPanelMinWidth,
-  LeftPanelWidthAtom,
-} from '../../editor/store/editor-state'
+import { LeftMenuTab } from '../../editor/store/editor-state'
 import { LowPriorityStoreProvider } from '../../editor/store/store-context-providers'
 import { Substores, useEditorState } from '../../editor/store/store-hook'
-import { ContentsPane } from './contents-pane'
-import { ForksGiven } from './forks-given'
-import { GithubPane } from './github-pane'
-import { SettingsPane } from './settings-pane'
-import { NavigatorComponent } from '../navigator'
-import { usePubSubAtom } from '../../../core/shared/atom-with-pub-sub'
-import type { ResizeCallback } from 're-resizable'
-import type { Menu, Pane } from '../../canvas/grid-panels-state'
-import type { Direction } from 're-resizable/lib/resizer'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
-import { when } from '../../../utils/react-conditionals'
 import { TitleBarProjectTitle } from '../../titlebar/title-bar'
-import type { StoredPanel } from '../../canvas/grid-panels-state'
+import { NavigatorComponent } from '../navigator'
+import { ContentsPane } from './contents-pane'
+import { GithubPane } from './github-pane'
 
 export interface LeftPaneProps {
   editorState: EditorState
@@ -57,12 +42,6 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
 
   const dispatch = useDispatch()
 
-  const loggedIn = useEditorState(
-    Substores.restOfStore,
-    (store) => User.isLoggedIn(store.userState.loginState),
-    'LeftPaneComponent loggedIn',
-  )
-
   const onClickTab = React.useCallback(
     (menuTab: LeftMenuTab) => {
       let actions: Array<EditorAction> = []
@@ -84,51 +63,19 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
     onClickTab(LeftMenuTab.Github)
   }, [onClickTab])
 
-  const [leftPanelWidth, setLeftPanelWidth] = usePubSubAtom(LeftPanelWidthAtom)
-  const onLeftPanelResizeStop = React.useCallback<ResizeCallback>(
-    (_event, _direction, _ref, delta) => {
-      setLeftPanelWidth((currentWidth) => currentWidth + delta.width)
-    },
-    [setLeftPanelWidth],
-  )
-
-  const leftMenuExpanded = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.leftMenu.expanded,
-    'LeftPaneComponent leftMenuExpanded',
-  )
-
-  if (!leftMenuExpanded) {
-    return null
-  }
-
   return (
     <LowPriorityStoreProvider>
-      <ResizableFlexColumn
-        enable={{ right: !isFeatureEnabled('Draggable Floating Panels') }}
-        onResizeStop={onLeftPanelResizeStop}
-        defaultSize={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : leftPanelWidth,
-          height: '100%',
-        }}
-        size={{
-          width: isFeatureEnabled('Draggable Floating Panels') ? '100%' : leftPanelWidth,
-          height: '100%',
-        }}
+      <FlexColumn
         style={{
           overscrollBehavior: 'contain',
           backgroundColor: colorTheme.leftPaneBackground.value,
           borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
           boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-          display: 'flex',
-          flexDirection: 'column',
           overflow: 'hidden',
+          flex: 1,
         }}
       >
-        {when(
-          isFeatureEnabled('Draggable Floating Panels'),
-          <TitleBarProjectTitle panelData={props.panelData} />,
-        )}
+        <TitleBarProjectTitle panelData={props.panelData} />
         <div
           id={LeftPaneComponentId}
           className='leftPane'
@@ -162,7 +109,7 @@ export const LeftPaneComponent = React.memo<LeftPaneComponentProps>((props) => {
           {selectedTab === LeftMenuTab.Project ? <ContentsPane /> : null}
           {selectedTab === LeftMenuTab.Github ? <GithubPane /> : null}
         </div>
-      </ResizableFlexColumn>
+      </FlexColumn>
     </LowPriorityStoreProvider>
   )
 })

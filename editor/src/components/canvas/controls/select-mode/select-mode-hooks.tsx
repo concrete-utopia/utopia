@@ -182,7 +182,7 @@ function replaceNonSelectablePaths(
   componentMetadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   selectedViews: Array<ElementPath>,
-  lockedElements: LockedElements,
+  lockedElements: Array<ElementPath>,
 ): Array<ElementPath> {
   let updatedSelectablePaths: Array<ElementPath> = []
   Utils.fastForEach(selectablePaths, (selectablePath) => {
@@ -193,16 +193,14 @@ function replaceNonSelectablePaths(
     if (selectedViews.some((selectedView) => EP.pathsEqual(selectablePath, selectedView))) {
       updatedSelectablePaths.push(selectablePath)
     } else {
-      const isLocked = lockedElements.simpleLock.some((lockedPath) =>
+      const isLocked = lockedElements.some((lockedPath) =>
         EP.pathsEqual(lockedPath, selectablePath),
       )
-      const isRootPath = EP.isRootElementOfInstance(selectablePath)
 
       const mustReplaceWithChildren = isLocked
-      const shouldAttemptToReplaceWithChildren = isRootPath
 
       // If this element is locked we want to recurse the children
-      if (mustReplaceWithChildren || shouldAttemptToReplaceWithChildren) {
+      if (mustReplaceWithChildren) {
         const childrenPaths = MetadataUtils.getImmediateChildrenPathsOrdered(
           componentMetadata,
           pathTrees,
@@ -216,12 +214,7 @@ function replaceNonSelectablePaths(
           lockedElements,
         )
 
-        if (childrenPathsWithLockedPathsReplaced.length > 0) {
-          updatedSelectablePaths.push(...childrenPathsWithLockedPathsReplaced)
-        } else if (!mustReplaceWithChildren) {
-          // In certain cases we want to keep this path selectable if it has no children
-          updatedSelectablePaths.push(selectablePath)
-        }
+        updatedSelectablePaths.push(...childrenPathsWithLockedPathsReplaced)
       } else {
         updatedSelectablePaths.push(selectablePath)
       }
@@ -240,24 +233,21 @@ export function getSelectableViews(
   childrenSelectable: boolean,
   lockedElements: LockedElements,
 ): ElementPath[] {
+  const allLockedElementPaths = getAllLockedElementPaths(
+    componentMetadata,
+    elementPathTree,
+    lockedElements,
+  )
   const candidateSelectableViews = getCandidateSelectableViews(
     componentMetadata,
     elementPathTree,
     selectedViews,
     allElementsDirectlySelectable,
     childrenSelectable,
-    lockedElements,
+    allLockedElementPaths,
   )
 
-  const nonSelectableElements = [
-    ...hiddenInstances,
-    ...getAllLockedElementPaths(componentMetadata, elementPathTree, lockedElements),
-  ]
-
-  const selectableElements = filterNonSelectableElements(
-    nonSelectableElements,
-    candidateSelectableViews,
-  )
+  const selectableElements = filterNonSelectableElements(hiddenInstances, candidateSelectableViews)
 
   return selectableElements
 }
@@ -268,10 +258,11 @@ function getCandidateSelectableViews(
   selectedViews: Array<ElementPath>,
   allElementsDirectlySelectable: boolean,
   childrenSelectable: boolean,
-  lockedElements: LockedElements,
+  lockedElements: Array<ElementPath>,
 ): ElementPath[] {
+  let unfilteredPaths: Array<ElementPath>
   if (allElementsDirectlySelectable) {
-    return MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
+    unfilteredPaths = MetadataUtils.getAllPathsIncludingUnfurledFocusedComponents(
       componentMetadata,
       elementPathTree,
     )
@@ -292,18 +283,19 @@ function getCandidateSelectableViews(
         )
       : []
 
-    const allPotentiallySelectableViews = [...allRoots, ...allAncestorsWithAllSiblings, ...children]
-    const selectableViews = replaceNonSelectablePaths(
-      allPotentiallySelectableViews,
-      componentMetadata,
-      elementPathTree,
-      selectedViews,
-      lockedElements,
-    )
-    const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
-
-    return uniqueSelectableViews
+    unfilteredPaths = [...allRoots, ...allAncestorsWithAllSiblings, ...children]
   }
+
+  const selectableViews = replaceNonSelectablePaths(
+    unfilteredPaths,
+    componentMetadata,
+    elementPathTree,
+    selectedViews,
+    lockedElements,
+  )
+  const uniqueSelectableViews = uniqBy<ElementPath>(selectableViews, EP.pathsEqual)
+
+  return uniqueSelectableViews
 }
 
 export function useFindValidTarget(): (

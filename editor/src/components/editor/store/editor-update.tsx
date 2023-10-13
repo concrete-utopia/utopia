@@ -105,8 +105,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.TOGGLE_FOCUSED_OMNIBOX_TAB(state)
     case 'TOGGLE_PANE':
       return UPDATE_FNS.TOGGLE_PANE(action, state)
-    case 'RESIZE_INTERFACEDESIGNER_CODEPANE':
-      return UPDATE_FNS.RESIZE_INTERFACEDESIGNER_CODEPANE(action, state, dispatch)
     case 'TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS':
       return UPDATE_FNS.TOGGLE_INTERFACEDESIGNER_ADDITIONAL_CONTROLS(action, state)
     case 'OPEN_POPUP':
@@ -199,8 +197,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.UPDATE_FILE_PATH(action, state, userState)
     case 'SET_FOCUS':
       return UPDATE_FNS.SET_FOCUS(action, state)
-    case 'RESIZE_LEFTPANE':
-      return UPDATE_FNS.RESIZE_LEFTPANE(action, state)
     case 'OPEN_CODE_EDITOR_FILE':
       return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(action, state)
     case 'UPDATE_FILE':

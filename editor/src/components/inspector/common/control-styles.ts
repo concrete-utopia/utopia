@@ -84,6 +84,11 @@ const controlStylesByStatus: { [key: string]: ControlStyles } = mapArrayToDictio
       case 'detected':
       case 'multiselect-detected':
       case 'unset':
+        set = false
+        unsettable = false
+        mainColor = 'var(--control-styles-interactive-unset-secondary-color)'
+        secondaryColor = 'var(--control-styles-interactive-unset-secondary-color)'
+        break
       case 'multiselect-identical-unset':
         set = false
         unsettable = false
