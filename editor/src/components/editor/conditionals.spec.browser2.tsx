@@ -325,6 +325,9 @@ describe('conditionals', () => {
         expect(divFFF.height).toBeLessThanOrEqual(20)
         expect(divFFF.width).toBeGreaterThanOrEqual(400)
         expect(divFFF.width).toBeLessThanOrEqual(401)
+        expect(divFFF.left).toEqual(0)
+        expect(divFFF.top).toBeGreaterThanOrEqual(36)
+        expect(divFFF.top).toBeLessThanOrEqual(37)
       }
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -346,7 +349,7 @@ describe('conditionals', () => {
                 null
               )
             }
-              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height}, position: 'absolute', left: 0, top: 37 }} />
+              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height}, position: 'absolute', left: ${divFFF.left}, top: ${divFFF.top} }} />
             </div>
          `),
       )
