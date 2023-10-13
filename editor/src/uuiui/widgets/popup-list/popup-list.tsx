@@ -98,7 +98,13 @@ const Option = (props: OptionProps<SelectOption>) => {
         <FlexRow style={{ width: CheckboxWidth, padding: CheckboxPadding, flexShrink: 0 }}>
           {props.isSelected ? '✓' : ''}
         </FlexRow>
-        {props.data.icon == null ? null : <Icn {...props.data.icon} />}
+        {props.data.icon == null ? null : (
+          <Icn
+            {...props.data.icon}
+            // We override the color prop here so it can switch between dark and light depending on whether its highlighted (to always contrast the background)
+            color={props.isFocused ? 'on-highlight-main' : 'main'}
+          />
+        )}
         <span style={{ paddingLeft: 8 }}>{props.children}</span>
       </FlexRow>
     </Tooltip>
@@ -430,7 +436,12 @@ const DropdownIndicator: React.FunctionComponent<
 const SingleValue = (props: SingleValueProps<SelectOption>) => {
   return (
     <components.SingleValue {...props}>
-      {props.data.icon == null ? null : <Icn {...props.data.icon} />}
+      {props.data.icon == null ? null : (
+        <Icn
+          {...props.data.icon}
+          color='secondary' // SingleValue is the "closed state" of the popupList, for these we want to show the subtle grey colored icon
+        />
+      )}
       <span style={{ paddingLeft: 4 }}>{props.children}</span>
     </components.SingleValue>
   )
