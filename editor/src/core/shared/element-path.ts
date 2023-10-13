@@ -769,17 +769,22 @@ export function replaceOrDefault(
   return replaceIfAncestor(path, replaceSearch, replaceWith) ?? path
 }
 
+// TODO: remove null
 export function closestSharedAncestor(
-  l: ElementPath,
-  r: ElementPath,
+  l: ElementPath | null,
+  r: ElementPath | null,
   includePathsEqual: boolean,
-): ElementPath {
-  const toTargetPath: (p: ElementPath) => ElementPath = includePathsEqual ? identity : parentPath
+): ElementPath | null {
+  const toTargetPath: (p: ElementPath) => ElementPath | null = includePathsEqual
+    ? identity
+    : parentPath
 
-  const lTarget = toTargetPath(l)
-  const rTarget = toTargetPath(r)
+  const lTarget = l == null ? null : toTargetPath(l)
+  const rTarget = r == null ? null : toTargetPath(r)
 
-  if (l === r) {
+  if (l === null || r === null || lTarget == null || rTarget == null) {
+    return null
+  } else if (l === r) {
     return toTargetPath(l)
   } else {
     const fullyMatchedElementPathParts = longestCommonArray(
@@ -789,14 +794,13 @@ export function closestSharedAncestor(
     )
     const nextLPart = lTarget.parts[fullyMatchedElementPathParts.length]
     const nextRPart = rTarget.parts[fullyMatchedElementPathParts.length]
-
     const nextMatchedElementPath = longestCommonArray(nextLPart ?? [], nextRPart ?? [])
     const totalMatchedParts =
       nextMatchedElementPath.length > 0
         ? [...fullyMatchedElementPathParts, nextMatchedElementPath]
         : fullyMatchedElementPathParts
 
-    return totalMatchedParts.length > 0 ? elementPath(totalMatchedParts) : emptyElementPath
+    return totalMatchedParts.length > 0 ? elementPath(totalMatchedParts) : null
   }
 }
 
@@ -808,7 +812,10 @@ export function getCommonParent(
     return null
   } else {
     const parents = includeSelf ? paths : paths.map(parentPath)
-    return parents.reduce<ElementPath>((l, r) => closestSharedAncestor(l, r, true), parents[0])
+    return parents.reduce<ElementPath | null>(
+      (l, r) => closestSharedAncestor(l, r, true),
+      parents[0],
+    )
   }
 }
 
@@ -817,7 +824,10 @@ export function getCommonParentOfNonemptyPathArray(
   includeSelf: boolean = false,
 ): ElementPath {
   const parents = includeSelf ? paths : paths.map(parentPath)
-  return parents.reduce<ElementPath>((l, r) => closestSharedAncestor(l, r, true), parents[0])
+  return parents.reduce<ElementPath>(
+    (l, r) => closestSharedAncestor(l, r, true) ?? emptyElementPath,
+    parents[0],
+  )
 }
 
 export interface ElementsTransformResult<T> {
