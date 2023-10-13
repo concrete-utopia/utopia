@@ -46,6 +46,7 @@ import {
   setValueKeepingOriginalUnit,
 } from './set-css-length-command'
 import { setProperty } from './set-property-command'
+import { showToastCommand } from './show-toast-command'
 import type { FrameWithAllPoints } from './utils/group-resize-utils'
 import {
   rectangleToSixFramePoints,
@@ -288,6 +289,15 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
           setProperty('always', v.target, PP.create('style', 'position'), 'absolute'),
           setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
           setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
+          showToastCommand(
+            'Converted to fixed size and absolute position',
+            'NOTICE',
+            'convert-to-fixed-size',
+          ),
+        )
+      } else {
+        commands.push(
+          showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'),
         )
       }
     }
