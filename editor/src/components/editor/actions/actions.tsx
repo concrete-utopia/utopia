@@ -909,7 +909,13 @@ export function restoreDerivedState(history: StateHistory): DerivedState {
   }
 }
 
-function deleteElements(targets: ElementPath[], editor: EditorModel): EditorModel {
+function deleteElements(
+  targets: ElementPath[],
+  editor: EditorModel,
+  options: {
+    trueUpHuggingElements: boolean
+  },
+): EditorModel {
   const openUIJSFilePath = getOpenUIJSFileKey(editor)
   if (openUIJSFilePath == null) {
     console.error(`Attempted to delete element(s) with no UI file open.`)
@@ -955,56 +961,59 @@ function deleteElements(targets: ElementPath[], editor: EditorModel): EditorMode
 
     const trueUpGroupElementsChanged = siblings.map(trueUpGroupElementChanged)
 
-    const trueUpHuggingElements = mapDropNulls((path): TrueUpHuggingElement | null => {
-      if (EP.isStoryboardPath(path) || shouldCascadeDelete(editor, path)) {
-        return null
-      }
+    const trueUps: Array<TrueUpTarget> = [...trueUpGroupElementsChanged]
 
-      const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
-      if (metadata == null || isLeft(metadata.element)) {
-        return null
-      }
-      const frame = metadata.localFrame
-      if (frame == null || !isFiniteRectangle(frame)) {
-        return null
-      }
+    if (options.trueUpHuggingElements) {
+      const trueUpHuggingElements = mapDropNulls((path): TrueUpHuggingElement | null => {
+        if (EP.isStoryboardPath(path) || shouldCascadeDelete(editor, path)) {
+          return null
+        }
 
-      const jsxProps = isJSXElement(metadata.element.value)
-        ? right(metadata.element.value.props)
-        : null
+        const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, path)
+        if (metadata == null || isLeft(metadata.element)) {
+          return null
+        }
+        const frame = metadata.localFrame
+        if (frame == null || !isFiniteRectangle(frame)) {
+          return null
+        }
 
-      const childrenFrame =
-        boundingRectangleArray(
-          mapDropNulls((child) => {
-            const childFrame = child.globalFrame
-            if (childFrame == null || !isFiniteRectangle(childFrame)) {
-              return null
-            }
-            return childFrame
-          }, MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path)),
-        ) ?? canvasRectangle(zeroRectangle)
+        const jsxProps = isJSXElement(metadata.element.value)
+          ? right(metadata.element.value.props)
+          : null
 
-      const hasHorizontalPosition =
-        jsxProps != null &&
-        (getLayoutProperty('left', jsxProps, styleStringInArray) != null ||
-          getLayoutProperty('right', jsxProps, styleStringInArray) != null)
-      const hasVerticalPosition =
-        jsxProps != null &&
-        (getLayoutProperty('top', jsxProps, styleStringInArray) != null ||
-          getLayoutProperty('bottom', jsxProps, styleStringInArray) != null)
+        const childrenFrame =
+          boundingRectangleArray(
+            mapDropNulls((child) => {
+              const childFrame = child.globalFrame
+              if (childFrame == null || !isFiniteRectangle(childFrame)) {
+                return null
+              }
+              return childFrame
+            }, MetadataUtils.getChildrenUnordered(editor.jsxMetadata, path)),
+          ) ?? canvasRectangle(zeroRectangle)
 
-      function combineFrames(main: CanvasRectangle, backup: CanvasRectangle): CanvasRectangle {
-        return canvasRectangle({
-          x: hasHorizontalPosition ? main.x : backup.x,
-          y: hasVerticalPosition ? main.y : backup.y,
-          width: main.width !== 0 ? main.width : backup.width,
-          height: main.height !== 0 ? main.height : backup.height,
-        })
-      }
-      return trueUpHuggingElement(path, combineFrames(canvasRectangle(frame), childrenFrame))
-    }, uniqBy(targets.map(EP.parentPath), EP.pathsEqual))
+        const hasHorizontalPosition =
+          jsxProps != null &&
+          (getLayoutProperty('left', jsxProps, styleStringInArray).value != null ||
+            getLayoutProperty('right', jsxProps, styleStringInArray).value != null)
+        const hasVerticalPosition =
+          jsxProps != null &&
+          (getLayoutProperty('top', jsxProps, styleStringInArray).value != null ||
+            getLayoutProperty('bottom', jsxProps, styleStringInArray).value != null)
 
-    const trueUps: Array<TrueUpTarget> = [...trueUpGroupElementsChanged, ...trueUpHuggingElements]
+        function combineFrames(main: CanvasRectangle, backup: CanvasRectangle): CanvasRectangle {
+          return canvasRectangle({
+            x: hasHorizontalPosition ? main.x : backup.x,
+            y: hasVerticalPosition ? main.y : backup.y,
+            width: main.width !== 0 ? main.width : backup.width,
+            height: main.height !== 0 ? main.height : backup.height,
+          })
+        }
+        return trueUpHuggingElement(path, combineFrames(canvasRectangle(frame), childrenFrame))
+      }, uniqBy(targets.map(EP.parentPath), EP.pathsEqual))
+      trueUps.push(...trueUpHuggingElements)
+    }
 
     return addToTrueUpElements(withUpdatedSelectedViews, ...trueUps)
   }
@@ -1020,6 +1029,7 @@ function shouldCascadeDelete(editor: EditorState, path: ElementPath): boolean {
       editor.allElementProps,
       editor.elementPathTree,
       path,
+      'sizeless-div-not-considered-fragment-like',
     )
     // TODO it's hug?
   )
@@ -1724,7 +1734,9 @@ export const UPDATE_FNS = {
             return path
           })
 
-        const withElementDeleted = deleteElements(staticSelectedElements, editor)
+        const withElementDeleted = deleteElements(staticSelectedElements, editor, {
+          trueUpHuggingElements: true,
+        })
 
         const newSelectedViews = uniqBy(
           mapDropNulls((view) => {
@@ -1803,7 +1815,7 @@ export const UPDATE_FNS = {
       editor,
       false,
       (e) => {
-        const updatedEditor = deleteElements([action.target], e)
+        const updatedEditor = deleteElements([action.target], e, { trueUpHuggingElements: false })
         const parentPath = EP.parentPath(action.target)
         const newSelection = EP.isStoryboardPath(parentPath) ? [] : [parentPath]
         return {
@@ -2423,7 +2435,9 @@ export const UPDATE_FNS = {
           return adjustPathAfterWrap(groupTrueUps, path)
         })
 
-        const withViewsDeleted = deleteElements(adjustedViewsToDelete, withViewsUnwrapped)
+        const withViewsDeleted = deleteElements(adjustedViewsToDelete, withViewsUnwrapped, {
+          trueUpHuggingElements: false,
+        })
         return {
           ...withViewsDeleted,
           selectedViews: newSelection,

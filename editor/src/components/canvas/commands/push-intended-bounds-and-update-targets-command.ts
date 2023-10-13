@@ -1,10 +1,10 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type {
-  ElementInstanceMetadata,
-  ElementInstanceMetadataMap,
-  JSXAttributes,
+import {
+  type ElementInstanceMetadata,
+  type ElementInstanceMetadataMap,
+  type JSXAttributes,
 } from '../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
@@ -45,6 +45,7 @@ import {
   setExplicitCssValue,
   setValueKeepingOriginalUnit,
 } from './set-css-length-command'
+import { setProperty } from './set-property-command'
 import type { FrameWithAllPoints } from './utils/group-resize-utils'
 import {
   rectangleToSixFramePoints,
@@ -250,7 +251,7 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
       continue
     }
 
-    function setProperty(
+    function setCSSDimension(
       flexDirection: FlexDirection | null,
       prop: 'left' | 'top' | 'width' | 'height',
       value: number,
@@ -268,11 +269,27 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
     if (status === 'contains-only-absolute' || status === 'empty') {
       commands.push(
         ...prunePropsCommands(flexChildAndBottomRightProps, v.target),
-        setProperty(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
-        setProperty(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
-        setProperty(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
-        setProperty(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
+        setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
+        setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
       )
+
+      const parentPath = EP.parentPath(v.target)
+      const parentJSXElement = MetadataUtils.getJSXElementFromMetadata(
+        editor.jsxMetadata,
+        parentPath,
+      )
+      const parentIsHugging =
+        parentJSXElement != null &&
+        (isHuggingParent(parentJSXElement, 'width') || isHuggingParent(parentJSXElement, 'height'))
+      const shouldSetAbsolutePosition =
+        EP.isStoryboardPath(parentPath) || parentJSXElement == null || parentIsHugging
+      if (shouldSetAbsolutePosition) {
+        commands.push(
+          setProperty('always', v.target, PP.create('style', 'position'), 'absolute'),
+          setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
+          setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
+        )
+      }
     }
   }
   return {

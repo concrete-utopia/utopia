@@ -31,7 +31,7 @@ import {
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
-import type { EditorState, EditorStorePatched } from './store/editor-state'
+import type { EditorStorePatched } from './store/editor-state'
 import type { InsertionPath } from './store/insertion-path'
 import {
   childInsertionPath,
@@ -278,22 +278,22 @@ describe('conditionals', () => {
     it('keeps the selection on the null branch (multiple targets)', async () => {
       const startSnippet = `
         <div data-uid='aaa'>
-        {
-          // @utopia/uid=conditional1
-          true ? (
-            <div data-uid='bbb' data-testid='bbb'>foo</div>
-          ) : (
-            <div data-uid='ccc' data-testid='ccc'>bar</div>
-          )
-        }
-        {
-          // @utopia/uid=conditional2
-          true ? (
-            <div data-uid='ddd' data-testid='ddd'>foo</div>
-          ) : (
-            <div data-uid='eee' data-testid='eee'>bar</div>
-          )
-        }
+          {
+            // @utopia/uid=conditional1
+            true ? (
+              <div data-uid='bbb' data-testid='bbb'>foo</div>
+            ) : (
+              <div data-uid='ccc' data-testid='ccc'>bar</div>
+            )
+          }
+          {
+            // @utopia/uid=conditional2
+            true ? (
+              <div data-uid='ddd' data-testid='ddd'>foo</div>
+            ) : (
+              <div data-uid='eee' data-testid='eee'>bar</div>
+            )
+          }
           <div data-uid='fff' data-testid='fff'>
             <div data-uid='ggg' data-testid='ggg'>baz</div>
           </div>
@@ -337,7 +337,7 @@ describe('conditionals', () => {
                 null
               )
             }
-              <div data-uid='fff' data-testid='fff' />
+              <div data-uid='fff' data-testid='fff' style={{ left: 0, top: 37, width: 400, height: 18.5 }} />
             </div>
          `),
       )

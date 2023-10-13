@@ -19,7 +19,7 @@ function makeScenePath(trailingPath: string): ElementPath {
 describe('PushIntendedBoundsAndUpdateTargets', () => {
   describe('hugging elements', () => {
     describe('flex containers', () => {
-      it('keeps the container dimensions when becoming empty (delete, single element)', async () => {
+      it('keeps the container dimensions when becoming empty (flex) (delete, single element)', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
@@ -74,7 +74,7 @@ describe('PushIntendedBoundsAndUpdateTargets', () => {
           ),
         )
       })
-      it('keeps the container dimensions when becoming empty (delete, multiple elements)', async () => {
+      it('keeps the container dimensions when becoming empty (flex) (delete, multiple elements)', async () => {
         const renderResult = await renderTestEditorWithCode(
           formatTestProjectCode(
             makeTestProjectCodeWithSnippet(`
@@ -175,6 +175,80 @@ describe('PushIntendedBoundsAndUpdateTargets', () => {
         		</div>
            `),
           ),
+        )
+      })
+      it('keeps the container dimensions when becoming empty (zero-sized)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+				import * as React from 'react'
+				import { Storyboard, Group } from 'utopia-api'
+
+				export var storyboard = (
+					<Storyboard data-uid='sb'>
+						<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red' }}>
+							<div data-uid='delete-me' style={{ position: 'absolute', top: 100, left: 100, backgroundColor: 'yellow', width: 80, height: 80 }}>delete me pls</div>
+						</div>
+					</Storyboard>
+				)
+			`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(renderResult, [EP.fromString(`sb/container/delete-me`)])
+
+        await renderResult.dispatch([deleteSelected()], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
+			import * as React from 'react'
+			import { Storyboard, Group } from 'utopia-api'
+
+			export var storyboard = (
+				<Storyboard data-uid='sb'>
+					<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red', width: 80, height: 80, position: 'absolute', left: 100, top: 100 }} />
+				</Storyboard>
+			)
+		`),
+        )
+      })
+      it('keeps the container dimensions when becoming empty (inside a flex container)', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          formatTestProjectCode(`
+				import * as React from 'react'
+				import { Storyboard, Group } from 'utopia-api'
+
+				export var storyboard = (
+					<Storyboard data-uid='sb'>
+						<div data-uid='flex' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', width: 100, height: 100, position: 'absolute', left: 21, top: 17 }}>
+							<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red' }}>
+								<div data-uid='delete-me' style={{ backgroundColor: 'yellow', width: 80, height: 80 }}>
+									delete me pls
+								</div>
+							</div>
+						</div>
+					</Storyboard>
+				)
+			`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(renderResult, [EP.fromString(`sb/flex/container/delete-me`)])
+
+        await renderResult.dispatch([deleteSelected()], true)
+
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          formatTestProjectCode(`
+			import * as React from 'react'
+			import { Storyboard, Group } from 'utopia-api'
+
+			export var storyboard = (
+				<Storyboard data-uid='sb'>
+					<div data-uid='flex' style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 10, gap: 10, backgroundColor: 'white', width: 100, height: 100, position: 'absolute', left: 21, top: 17 }}>
+						<div data-uid='container' data-testid='container' style={{ backgroundColor: 'red', width: 80, height: 80 }} />
+					</div>
+				</Storyboard>
+			)
+		`),
         )
       })
     })
