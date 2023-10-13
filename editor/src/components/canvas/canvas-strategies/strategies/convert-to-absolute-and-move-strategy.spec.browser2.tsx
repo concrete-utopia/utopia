@@ -658,6 +658,17 @@ describe('Convert to Absolute', () => {
       data-uid='child'
       data-testid='child'
     />
+    <div
+      style={{
+        backgroundColor: '#0075ff',
+        width: 50,
+        height: 65,
+        contain: 'layout',
+        position: 'absolute',
+        left: 100,
+        top: 86,
+      }}
+    />
   </div>`),
       'await-first-dom-report',
     )
@@ -675,15 +686,35 @@ describe('Convert to Absolute', () => {
       { modifiers: cmdModifier },
     )
 
+    // move so that the bottom right corner snaps to the center of the parent
     await mouseMoveToPoint(canvasControlsLayer, {
-      x: elementBounds.x + elementBounds.width / 2 + 50,
-      y: elementBounds.y + elementBounds.width / 2 + 50,
+      x: elementBounds.x + elementBounds.width / 2 + 25,
+      y: elementBounds.y + elementBounds.width / 2 + 25,
     })
 
-    const activeStrategy = renderResult.getEditorState().strategyState.currentStrategy
-    expect(activeStrategy).not.toBeNull()
-    expect(activeStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
-    expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toHaveLength(2)
+    {
+      const activeStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(activeStrategy).not.toBeNull()
+      expect(activeStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toHaveLength(
+        2,
+      )
+    }
+
+    // move so that the bottom edge snaps to the top edge of the sibling
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + elementBounds.width / 2 + 5,
+      y: elementBounds.y + elementBounds.width / 2 + 35,
+    })
+
+    {
+      const activeStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(activeStrategy).not.toBeNull()
+      expect(activeStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toHaveLength(
+        1,
+      )
+    }
   })
 })
 
