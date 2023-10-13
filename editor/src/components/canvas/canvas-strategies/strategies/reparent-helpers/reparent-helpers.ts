@@ -24,6 +24,7 @@ import {
   isJSXElement,
   jsExpressionValue,
   jsxElementNameEquals,
+  isIntrinsicElement,
 } from '../../../../../core/shared/element-template'
 import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../../../assets'
@@ -343,6 +344,10 @@ export function isElementRenderedBySameComponent(
   element: JSXElement,
 ): boolean {
   if (EP.isEmptyPath(targetPath)) {
+    return false
+  }
+
+  if (isIntrinsicElement(element.name)) {
     return false
   }
 

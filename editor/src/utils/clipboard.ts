@@ -18,6 +18,7 @@ import {
   isJSXConditionalExpression,
   type ElementInstanceMetadataMap,
   type JSXElementChild,
+  isJSXElement,
 } from '../core/shared/element-template'
 import type { ElementPath } from '../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../core/shared/project-file-types'
@@ -463,13 +464,11 @@ function checkComponentNotInsertedIntoOwnDefinition(
 ): boolean {
   const parentTarget = EP.getCommonParentOfNonemptyPathArray(selectedViews, true)
 
-  return elementsToInsert.some((element) => {
-    if (element.type !== 'JSX_ELEMENT') {
-      return false
-    }
+  const jsxElements = elementsToInsert.filter(isJSXElement)
 
-    return isElementRenderedBySameComponent(metadata, parentTarget, element)
-  })
+  return jsxElements.some((element) =>
+    isElementRenderedBySameComponent(metadata, parentTarget, element),
+  )
 }
 
 function insertIntoSlot(
@@ -631,7 +630,7 @@ export function getTargetParentForOneShotInsertion(
   elementsToInsert: JSXElementChild[],
   elementPathTree: ElementPathTrees,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
-  if (!checkComponentNotInsertedIntoOwnDefinition(selectedViews, metadata, elementsToInsert)) {
+  if (checkComponentNotInsertedIntoOwnDefinition(selectedViews, metadata, elementsToInsert)) {
     return left('Cannot insert component instance into component definition')
   }
 

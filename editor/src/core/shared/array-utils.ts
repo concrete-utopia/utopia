@@ -461,7 +461,7 @@ export function zip<A, B, C>(one: A[], other: B[], make: (a: A, b: B) => C): C[]
 export type NonEmptyArray<T> = [T, ...T[]]
 export function isNonEmptyArray<T>(array: T[]): array is NonEmptyArray<T> {
   let [first] = array
-  return first == null
+  return first != null
 }
 
 export function isEmptyArray<T>(array: T[]): array is [] {
