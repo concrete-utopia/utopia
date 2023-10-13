@@ -632,7 +632,7 @@ describe('Convert to Absolute', () => {
       getCodeForTestProject(childTagAfter),
     )
   })
-  it('snaps to parent after being converted', async () => {
+  it('snaps to parent and sibling after being converted', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div
     style={{
