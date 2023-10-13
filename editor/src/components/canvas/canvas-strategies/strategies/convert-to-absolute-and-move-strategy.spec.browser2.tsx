@@ -632,6 +632,59 @@ describe('Convert to Absolute', () => {
       getCodeForTestProject(childTagAfter),
     )
   })
+  it('snaps to parent after being converted', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 20,
+      top: 26,
+      width: 150,
+      height: 150,
+    }}
+    data-uid='container'
+  >
+    <div
+      style={{
+        backgroundColor: '#0075ff',
+        width: 50,
+        height: 50,
+        contain: 'layout',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-uid='child'
+      data-testid='child'
+    />
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('child')
+    const elementBounds = element.getBoundingClientRect()
+
+    await mouseDownAtPoint(
+      canvasControlsLayer,
+      {
+        x: elementBounds.x + elementBounds.width / 2,
+        y: elementBounds.y + elementBounds.width / 2,
+      },
+      { modifiers: cmdModifier },
+    )
+
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + elementBounds.width / 2 + 50,
+      y: elementBounds.y + elementBounds.width / 2 + 50,
+    })
+
+    const activeStrategy = renderResult.getEditorState().strategyState.currentStrategy
+    expect(activeStrategy).not.toBeNull()
+    expect(activeStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+    expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toHaveLength(2)
+  })
 })
 
 describe('Convert to absolute/escape hatch', () => {
