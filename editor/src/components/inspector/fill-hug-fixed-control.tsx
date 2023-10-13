@@ -138,8 +138,6 @@ const selectOption =
       icon: {
         category: 'layout/commands',
         type: selectOptionIconType(mode, dimension),
-        width: 16,
-        height: 16,
       },
     }
   }

@@ -103,6 +103,8 @@ const Option = (props: OptionProps<SelectOption>) => {
             {...props.data.icon}
             // We override the color prop here so it can switch between dark and light depending on whether its highlighted (to always contrast the background)
             color={props.isFocused ? 'on-highlight-main' : 'main'}
+            width={16}
+            height={16}
           />
         )}
         <span style={{ paddingLeft: 8 }}>{props.children}</span>
@@ -434,15 +436,35 @@ const DropdownIndicator: React.FunctionComponent<
 }
 
 const SingleValue = (props: SingleValueProps<SelectOption>) => {
+  const iconShown = props.data.icon != null
   return (
-    <components.SingleValue {...props}>
+    <components.SingleValue
+      {...props}
+      getStyles={(name, p) => {
+        return { ...props.getStyles(name, p), margin: iconShown ? -4 : 0 }
+      }}
+    >
       {props.data.icon == null ? null : (
-        <Icn
-          {...props.data.icon}
-          color='secondary' // SingleValue is the "closed state" of the popupList, for these we want to show the subtle grey colored icon
-        />
+        <div
+          style={{
+            position: 'absolute',
+            width: 20,
+            height: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icn
+            {...props.data.icon}
+            color='secondary' // SingleValue is the "closed state" of the popupList, for these we want to show the subtle grey colored icon
+            width={16}
+            height={16}
+            style={{ scale: '80%' }}
+          />
+        </div>
       )}
-      <span style={{ paddingLeft: 4 }}>{props.children}</span>
+      <span style={{ paddingLeft: iconShown ? 22 : 4 }}>{props.children}</span>
     </components.SingleValue>
   )
 }
