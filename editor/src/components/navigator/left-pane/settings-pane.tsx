@@ -221,16 +221,7 @@ export const SettingsPane = React.memo(() => {
       }}
     >
       <Section>
-        <UIGridRow
-          style={{ color: colorTheme.fg1.value }}
-          padded
-          variant='<---1fr--->|------172px-------|'
-        >
-          <H2> Project </H2>
-        </UIGridRow>
-
         {isMyProject === 'yes' ? null : <ForksGiven />}
-
         <UIGridRow padded variant='<---1fr--->|------172px-------|'>
           <span style={{ color: colorTheme.fg2.value }}>Name</span>
           {userState.loginState.type !== 'LOGGED_IN' ? (
