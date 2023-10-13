@@ -904,7 +904,7 @@ export function collectGuidelines(
   // For any images create guidelines at the current multiplier setting.
   if (resizingFromPosition != null) {
     Utils.fastForEach(selectedViews, (selectedView) => {
-      if (MetadataUtils.isPinnedAndNotAbsolutePositioned(metadata, selectedView)) {
+      if (MetadataUtils.isLayoutedByFlowAndNotAbsolutePositioned(metadata, selectedView)) {
         return
       }
 
@@ -1218,7 +1218,7 @@ export function snapPoint(
   guidelinesWithSnappingVector: Array<GuidelineWithSnappingVectorAndPointsOfRelevance>
 } {
   const anythingPinnedAndNotAbsolutePositioned = selectedViews.some((elementToTarget) => {
-    return MetadataUtils.isPinnedAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
+    return MetadataUtils.isLayoutedByFlowAndNotAbsolutePositioned(jsxMetadata, elementToTarget)
   })
 
   const anyElementFragmentLike = selectedViews.some((elementPath) =>
