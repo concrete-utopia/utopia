@@ -61,14 +61,13 @@ function getSnapTargetsForElementPath(
   return [parent, ...siblings]
 }
 
-export function collectParentAndSiblingGuidelines(
+export function gatherParentAndSiblingTargets(
   componentMetadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   targets: Array<ElementPath>,
-): Array<GuidelineWithRelevantPoints> {
-  const result: Array<GuidelineWithRelevantPoints> = []
-  Utils.fastForEach(targets, (target) => {
+) {
+  return targets.flatMap((target) => {
     const pinnedAndNotAbsolutePositioned = MetadataUtils.isPinnedAndNotAbsolutePositioned(
       componentMetadata,
       target,
@@ -82,18 +81,26 @@ export function collectParentAndSiblingGuidelines(
     )
 
     if (isElementFragmentLike || !pinnedAndNotAbsolutePositioned) {
-      const snapTargets = getSnapTargetsForElementPath(
+      return getSnapTargetsForElementPath(
         componentMetadata,
         allElementProps,
         pathTrees,
         target,
       ).filter((snapTarget) => targets.every((t) => !EP.pathsEqual(snapTarget, t)))
-      fastForEach(snapTargets, (snapTarget) => {
-        const frame = MetadataUtils.getFrameInCanvasCoords(snapTarget, componentMetadata)
-        if (frame != null && isFiniteRectangle(frame)) {
-          result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
-        }
-      })
+    }
+    return []
+  })
+}
+
+export function collectParentAndSiblingGuidelines(
+  snapTargets: Array<ElementPath>,
+  componentMetadata: ElementInstanceMetadataMap,
+): Array<GuidelineWithRelevantPoints> {
+  const result: Array<GuidelineWithRelevantPoints> = []
+  fastForEach(snapTargets, (snapTarget) => {
+    const frame = MetadataUtils.getFrameInCanvasCoords(snapTarget, componentMetadata)
+    if (frame != null && isFiniteRectangle(frame)) {
+      result.push(...Guidelines.guidelinesWithRelevantPointsForFrame(frame, 'include'))
     }
   })
   return result

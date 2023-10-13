@@ -44,6 +44,7 @@ import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-co
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
 import {
   collectParentAndSiblingGuidelines,
+  gatherParentAndSiblingTargets,
   runLegacyAbsoluteMoveSnapping,
 } from '../../controls/guideline-helpers'
 import type {
@@ -132,11 +133,15 @@ export function applyMoveCommon(
       const targetsForSnapping = targets.map(
         (path) => interactionSession.updatedTargetPaths[EP.toString(path)] ?? path,
       )
-      const moveGuidelines = collectParentAndSiblingGuidelines(
+      const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
         canvasState.startingElementPathTree,
         originalTargets,
+      )
+      const moveGuidelines = collectParentAndSiblingGuidelines(
+        snapTargets,
+        canvasState.startingMetadata,
       )
 
       const { snappedDragVector, guidelinesWithSnappingVector } = snapDrag(
