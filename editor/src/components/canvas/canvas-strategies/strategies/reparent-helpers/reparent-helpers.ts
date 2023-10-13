@@ -331,40 +331,29 @@ export function getInsertionPathForReparentTarget(
 }
 
 function areElementsInstancesOfTheSameComponent(
-  firstInstance: ElementInstanceMetadata | null,
-  secondInstance: ElementInstanceMetadata | null,
+  firstElement: JSXElement,
+  secondElement: JSXElement,
 ): boolean {
-  if (
-    firstInstance == null ||
-    secondInstance == null ||
-    isLeft(firstInstance.element) ||
-    isLeft(secondInstance.element) ||
-    !isJSXElement(firstInstance.element.value) ||
-    !isJSXElement(secondInstance.element.value)
-  ) {
-    return false
-  }
-
-  return jsxElementNameEquals(firstInstance.element.value.name, secondInstance.element.value.name)
+  return jsxElementNameEquals(firstElement.name, secondElement.name)
 }
 
 export function isElementRenderedBySameComponent(
   metadata: ElementInstanceMetadataMap,
   targetPath: ElementPath,
-  instance: ElementInstanceMetadata | null,
+  element: JSXElement,
 ): boolean {
   if (EP.isEmptyPath(targetPath)) {
     return false
   }
 
-  const currentInstance = MetadataUtils.findElementByElementPath(
+  const targetElement = MetadataUtils.getJSXElementFromMetadata(
     metadata,
     EP.getContainingComponent(targetPath),
   )
 
   return (
-    areElementsInstancesOfTheSameComponent(currentInstance, instance) ||
-    isElementRenderedBySameComponent(metadata, EP.getContainingComponent(targetPath), instance)
+    (targetElement != null && areElementsInstancesOfTheSameComponent(targetElement, element)) ||
+    isElementRenderedBySameComponent(metadata, EP.getContainingComponent(targetPath), element)
   )
 }
 

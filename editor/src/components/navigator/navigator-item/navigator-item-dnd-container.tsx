@@ -239,14 +239,12 @@ function notDroppingIntoOwnDefinition(
   targetParent: ElementPath,
   metadata: ElementInstanceMetadataMap,
 ) {
-  return selectedViews.every(
-    (selection) =>
-      !isElementRenderedBySameComponent(
-        metadata,
-        targetParent,
-        MetadataUtils.findElementByElementPath(metadata, selection),
-      ),
-  )
+  return selectedViews.every((selection) => {
+    const jsxElement = MetadataUtils.getJSXElementFromMetadata(metadata, selection)
+    return (
+      jsxElement == null || !isElementRenderedBySameComponent(metadata, targetParent, jsxElement)
+    )
+  })
 }
 
 function canDropInto(editorState: EditorState, moveToEntry: ElementPath): boolean {

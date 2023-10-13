@@ -568,7 +568,6 @@ function getTargetParentForPasteHere(
     editor.selectedViews,
     editor.canvas.openFile?.filename ?? null,
     editor.jsxMetadata,
-    editor.pasteTargetsToIgnore,
     {
       elementPaste: elementToPaste,
       originalContextMetadata: originalMetadata,

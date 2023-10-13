@@ -29,10 +29,10 @@ import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
-import { safeIndex } from '../../core/shared/array-utils'
+import { isNonEmptyArray, safeIndex } from '../../core/shared/array-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { elementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
-import { getInsertionPath } from './store/insertion-path'
+import { childInsertionPath, getInsertionPath } from './store/insertion-path'
 import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
@@ -40,10 +40,12 @@ import type { ComponentElementToInsert } from '../custom-code/code-file'
 import { notice } from '../common/notice'
 import * as PP from '../../core/shared/property-path'
 import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
-import { defaultEither } from '../../core/shared/either'
+import { defaultEither, isLeft } from '../../core/shared/either'
 import { executeFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
 import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
+import { getStoryboardElementPath } from '../../core/model/scene-utils'
+import { getTargetParentForOneShotInsertion, reparentIntoParent } from '../../utils/clipboard'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -162,6 +164,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const openFileRef = useRefEditorState((store) => store.editor.canvas.openFile?.filename ?? null)
   const nodeModulesRef = useRefEditorState((store) => store.editor.nodeModules)
 
   return React.useCallback(
@@ -169,19 +172,13 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       if (elementToInsert == null) {
         return
       }
-      const targetParent: ElementPath | null = safeIndex(selectedViewsRef.current, 0) ?? null
 
-      if (targetParent == null) {
-        dispatch([
-          showToast(
-            notice(
-              'There are no elements selected',
-              'INFO',
-              false,
-              'to-insert-does-not-support-children',
-            ),
-          ),
-        ])
+      const storyboardPath = getStoryboardElementPath(
+        projectContentsRef.current,
+        openFileRef.current,
+      )
+      if (storyboardPath == null) {
+        // if there's no storyboard, there's not much you can do
         return
       }
 
@@ -190,29 +187,6 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       const wrappedUid = generateConsistentUID('wrapper', allElementUids)
 
       allElementUids.add(wrappedUid)
-
-      const insertionPath = getInsertionPath(
-        targetParent,
-        projectContentsRef.current,
-        jsxMetadataRef.current,
-        elementPathTreeRef.current,
-        wrappedUid,
-        1,
-      )
-
-      if (insertionPath == null) {
-        dispatch([
-          showToast(
-            notice(
-              'Selected element does not support children',
-              'INFO',
-              false,
-              'to-insert-does-not-support-children',
-            ),
-          ),
-        ])
-        return
-      }
 
       const elementUid = generateConsistentUID('element', allElementUids)
 
@@ -224,6 +198,25 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         elementToInsert.value.importsToAdd,
       )
 
+      const targetParent = !isNonEmptyArray(selectedViewsRef.current)
+        ? reparentIntoParent(childInsertionPath(storyboardPath))
+        : getTargetParentForOneShotInsertion(
+            projectContentsRef.current,
+            selectedViewsRef.current,
+            jsxMetadataRef.current,
+            [element.element],
+            elementPathTreeRef.current,
+          )
+
+      if (isLeft(targetParent)) {
+        dispatch([
+          showToast(
+            notice(targetParent.value, 'INFO', false, 'to-insert-does-not-support-children'),
+          ),
+        ])
+        return
+      }
+
       executeFirstApplicableStrategy(
         dispatch,
         jsxMetadataRef.current,
@@ -233,14 +226,14 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         [
           insertAsAbsoluteStrategy(
             element,
-            insertionPath,
+            targetParent.value.parentPath,
             builtInDependenciesRef.current,
             projectContentsRef.current,
             nodeModulesRef.current.files,
           ),
           insertAsStaticStrategy(
             element,
-            insertionPath,
+            targetParent.value.parentPath,
             builtInDependenciesRef.current,
             projectContentsRef.current,
             nodeModulesRef.current.files,
@@ -255,6 +248,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       elementPathTreeRef,
       jsxMetadataRef,
       nodeModulesRef,
+      openFileRef,
       projectContentsRef,
       selectedViewsRef,
     ],
