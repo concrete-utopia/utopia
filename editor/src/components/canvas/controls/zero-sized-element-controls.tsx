@@ -35,12 +35,9 @@ import { boundingArea, createInteractionViaMouse } from '../canvas-strategies/in
 import * as PP from '../../../core/shared/property-path'
 import type { InspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { executeFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
-import { cssNumber } from '../../inspector/common/css-utils'
-import { setCssLengthProperty, setExplicitCssValue } from '../commands/set-css-length-command'
 import {
-  flexChildProps,
   isIntrinsicallyInlineElement,
-  pruneFlexPropsCommands,
+  sizeToDimensionsFromFrame,
 } from '../../inspector/inspector-common'
 import type { CanvasCommand } from '../commands/commands'
 import { setProperty } from '../commands/set-property-command'
@@ -150,70 +147,36 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
 
 const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
   name: 'convert flex child to non-zero frame',
-  strategy: () => {
+  strategy: (metadata, _, pathTrees) => {
     if (
       element.specialSizeMeasurements.parentLayoutSystem !== 'flex' ||
       element.specialSizeMeasurements.parentFlexDirection == null
     ) {
       return null
     }
-    return [
-      ...pruneFlexPropsCommands(flexChildProps, element.elementPath),
-      setCssLengthProperty(
-        'always',
-        element.elementPath,
-        PP.create('style', 'width'),
-        setExplicitCssValue(cssNumber(100)),
-        element.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'do-not-warn',
-      ),
-      setCssLengthProperty(
-        'always',
-        element.elementPath,
-        PP.create('style', 'height'),
-        setExplicitCssValue(cssNumber(100)),
-        element.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'do-not-warn',
-      ),
-    ]
+    return sizeToDimensionsFromFrame(metadata, pathTrees, element.elementPath, {
+      width: 100,
+      height: 100,
+    })
   },
 })
 
 function maybeAddDisplayInlineBlockCommands(
   element: ElementInstanceMetadata,
 ): Array<CanvasCommand> {
-  if (isIntrinsicallyInlineElement(element)) {
-    return [
-      setProperty('always', element.elementPath, PP.create('style', 'display'), 'inline-block'),
-    ]
-  }
-  return []
+  return isIntrinsicallyInlineElement(element)
+    ? [setProperty('always', element.elementPath, PP.create('style', 'display'), 'inline-block')]
+    : []
 }
 
 const convertToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
   name: 'convert element to non-zero frame',
-  strategy: () => {
+  strategy: (metadata, _, pathTrees) => {
     return [
-      setCssLengthProperty(
-        'always',
-        element.elementPath,
-        PP.create('style', 'width'),
-        setExplicitCssValue(cssNumber(100)),
-        element.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'do-not-warn',
-      ),
-      setCssLengthProperty(
-        'always',
-        element.elementPath,
-        PP.create('style', 'height'),
-        setExplicitCssValue(cssNumber(100)),
-        element.specialSizeMeasurements.parentFlexDirection,
-        'create-if-not-existing',
-        'do-not-warn',
-      ),
+      ...sizeToDimensionsFromFrame(metadata, pathTrees, element.elementPath, {
+        width: 100,
+        height: 100,
+      }),
       ...maybeAddDisplayInlineBlockCommands(element),
     ]
   },
