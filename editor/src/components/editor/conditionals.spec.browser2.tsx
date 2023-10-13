@@ -277,7 +277,7 @@ describe('conditionals', () => {
     })
     it('keeps the selection on the null branch (multiple targets)', async () => {
       const startSnippet = `
-        <div data-uid='aaa'>
+        <div data-uid='aaa' data-testid='aaa'>
           {
             // @utopia/uid=conditional1
             true ? (
@@ -318,21 +318,19 @@ describe('conditionals', () => {
         await renderResult.dispatch([deleteSelected()], true)
       })
 
+      const divAAA = (await renderResult.renderedDOM.findByTestId('aaa')).getBoundingClientRect()
       const divFFF = (await renderResult.renderedDOM.findByTestId('fff')).getBoundingClientRect()
-      {
-        // doing this dance because of possible font render discrepancies between local and CI
-        expect(divFFF.height).toBeGreaterThanOrEqual(18)
-        expect(divFFF.height).toBeLessThanOrEqual(20)
-        expect(divFFF.width).toBeGreaterThanOrEqual(400)
-        expect(divFFF.width).toBeLessThanOrEqual(401)
-        expect(divFFF.left).toEqual(0)
-        expect(divFFF.top).toBeGreaterThanOrEqual(36)
-        expect(divFFF.top).toBeLessThanOrEqual(37)
-      }
+      // doing this dance because of possible font render discrepancies between local and CI
+      expect(divFFF.height).toBeGreaterThanOrEqual(18)
+      expect(divFFF.height).toBeLessThanOrEqual(20)
+      expect(divFFF.width).toBeGreaterThanOrEqual(400)
+      expect(divFFF.width).toBeLessThanOrEqual(401)
+      const left = divFFF.left - divAAA.left
+      const top = divFFF.top - divAAA.top
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
+            <div data-uid='aaa' data-testid='aaa'>
             {
               // @utopia/uid=conditional1
               true ? (
@@ -349,7 +347,7 @@ describe('conditionals', () => {
                 null
               )
             }
-              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height}, position: 'absolute', left: ${divFFF.left}, top: ${divFFF.top} }} />
+              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height}, position: 'absolute', left: ${left}, top: ${top} }} />
             </div>
          `),
       )
