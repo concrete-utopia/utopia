@@ -1,7 +1,11 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { Keyboard } from '../../../../utils/keyboard'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
-import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
+import {
+  emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
+  strategyApplicationResult,
+} from '../canvas-strategy-types'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
   canvasRectangle,
