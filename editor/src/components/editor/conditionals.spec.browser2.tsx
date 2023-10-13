@@ -318,6 +318,15 @@ describe('conditionals', () => {
         await renderResult.dispatch([deleteSelected()], true)
       })
 
+      const divFFF = (await renderResult.renderedDOM.findByTestId('fff')).getBoundingClientRect()
+      {
+        // doing this dance because of possible font render discrepancies between local and CI
+        expect(divFFF.height).toBeGreaterThanOrEqual(18)
+        expect(divFFF.height).toBeLessThanOrEqual(20)
+        expect(divFFF.width).toBeGreaterThanOrEqual(400)
+        expect(divFFF.width).toBeLessThanOrEqual(401)
+      }
+
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
             <div data-uid='aaa'>
@@ -337,7 +346,7 @@ describe('conditionals', () => {
                 null
               )
             }
-              <div data-uid='fff' data-testid='fff' style={{ width: 400, height: 18.5, position: 'absolute', left: 0, top: 37 }} />
+              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height}, position: 'absolute', left: 0, top: 37 }} />
             </div>
          `),
       )
