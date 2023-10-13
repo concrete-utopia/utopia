@@ -436,7 +436,7 @@ export function sizeToVisualDimensions(
   return sizeToDimensionsFromFrame(metadata, pathTrees, elementPath, globalFrame)
 }
 
-function sizeToDimensionsFromFrame(
+export function sizeToDimensionsFromFrame(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
