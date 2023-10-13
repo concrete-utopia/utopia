@@ -88,6 +88,8 @@ const Option = (props: OptionProps<SelectOption>) => {
     selectOption(data)
   }, [data, selectOption])
 
+  const iconShown = props.data.icon != null
+
   return (
     <Tooltip
       title={data.tooltip ?? ''}
@@ -105,9 +107,10 @@ const Option = (props: OptionProps<SelectOption>) => {
             color={props.isFocused ? 'on-highlight-main' : 'main'}
             width={16}
             height={16}
+            style={{ marginLeft: 4 }}
           />
         )}
-        <span style={{ paddingLeft: 8 }}>{props.children}</span>
+        <span style={{ paddingLeft: iconShown ? 4 : 8 }}>{props.children}</span>
       </FlexRow>
     </Tooltip>
   )
