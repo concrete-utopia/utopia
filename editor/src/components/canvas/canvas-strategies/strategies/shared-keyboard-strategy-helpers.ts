@@ -2,6 +2,7 @@ import { last, mapDropNulls } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
 import { canvasRectangle, getRoundedRectPointsAlongAxes } from '../../../../core/shared/math-utils'
+import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { setsEqual } from '../../../../core/shared/set-utils'
 import type { KeyCharacter } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
@@ -14,8 +15,6 @@ import {
 } from '../../controls/guideline-helpers'
 import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../guideline'
 import { Guidelines } from '../../guideline'
-import type { InteractionCanvasState } from '../canvas-strategy-types'
-import { getTargetPathsFromInteractionTarget } from '../canvas-strategy-types'
 import type { InteractionSession, KeyState } from '../interaction-state'
 
 export interface AccumulatedPresses extends KeyState {
@@ -95,16 +94,13 @@ export function getMovementDeltaFromKey(key: KeyCharacter, modifiers: Modifiers)
 }
 
 export function getKeyboardStrategyGuidelines(
-  canvasState: InteractionCanvasState,
+  snapTargets: ElementPath[],
   interactionSession: InteractionSession,
   draggedFrame: CanvasRectangle,
 ): Array<GuidelineWithSnappingVectorAndPointsOfRelevance> {
-  const selectedElements = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
   const moveGuidelines = collectParentAndSiblingGuidelines(
+    snapTargets,
     interactionSession.latestMetadata,
-    canvasState.startingAllElementProps,
-    canvasState.startingElementPathTree,
-    selectedElements,
   ).map((g) => g.guideline)
 
   const { horizontalPoints, verticalPoints } = getRoundedRectPointsAlongAxes(draggedFrame)
