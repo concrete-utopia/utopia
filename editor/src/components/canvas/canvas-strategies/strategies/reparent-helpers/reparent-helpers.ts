@@ -356,8 +356,12 @@ export function isElementRenderedBySameComponent(
     EP.getContainingComponent(targetPath),
   )
 
+  if (targetElement == null) {
+    return false
+  }
+
   return (
-    (targetElement != null && areElementsInstancesOfTheSameComponent(targetElement, element)) ||
+    areElementsInstancesOfTheSameComponent(targetElement, element) ||
     isElementRenderedBySameComponent(metadata, EP.getContainingComponent(targetPath), element)
   )
 }

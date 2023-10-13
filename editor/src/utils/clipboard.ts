@@ -673,7 +673,7 @@ export function getTargetParentForPaste(
       ),
     copyData.elementPaste,
   )
-  if (!checkComponentNotInsertedIntoOwnDefinition(selectedViews, metadata, pastedJSXElements)) {
+  if (checkComponentNotInsertedIntoOwnDefinition(selectedViews, metadata, pastedJSXElements)) {
     return left('Cannot insert component instance into component definition')
   }
 
