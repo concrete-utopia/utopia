@@ -7,7 +7,7 @@ import {
 } from '../../../../core/model/element-template-utils'
 import { getAllUniqueUids } from '../../../../core/model/get-unique-ids'
 import { getStoryboardElementPath } from '../../../../core/model/scene-utils'
-import { stripNulls, zip } from '../../../../core/shared/array-utils'
+import { isNonEmptyArray, stripNulls, zip } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, left, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
@@ -26,7 +26,7 @@ import type {
   NodeModules,
 } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
-import { getTargetParentForPaste } from '../../../../utils/clipboard'
+import { getTargetParentForPaste, reparentIntoParent } from '../../../../utils/clipboard'
 import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
 import type { IndexPosition } from '../../../../utils/utils'
 import { absolute, front } from '../../../../utils/utils'
@@ -563,19 +563,6 @@ function getTargetParentForPasteHere(
   const originalPathTree =
     editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
 
-  const target = getTargetParentForPaste(
-    editor.projectContents,
-    editor.selectedViews,
-    editor.canvas.openFile?.filename ?? null,
-    editor.jsxMetadata,
-    {
-      elementPaste: elementToPaste,
-      originalContextMetadata: originalMetadata,
-      originalContextElementPathTrees: originalPathTree,
-    },
-    editor.elementPathTree,
-  )
-
   const storyboardPath = getStoryboardElementPath(
     editor.projectContents,
     editor.canvas.openFile?.filename ?? null,
@@ -584,6 +571,20 @@ function getTargetParentForPasteHere(
   if (storyboardPath == null) {
     return left('No storyboard found')
   }
+
+  const target = !isNonEmptyArray(editor.selectedViews)
+    ? reparentIntoParent(childInsertionPath(storyboardPath))
+    : getTargetParentForPaste(
+        editor.projectContents,
+        editor.selectedViews,
+        editor.jsxMetadata,
+        {
+          elementPaste: elementToPaste,
+          originalContextMetadata: originalMetadata,
+          originalContextElementPathTrees: originalPathTree,
+        },
+        editor.elementPathTree,
+      )
 
   if (isLeft(target)) {
     return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
