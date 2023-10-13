@@ -437,10 +437,11 @@ const DropdownIndicator: React.FunctionComponent<
 
 const SingleValue = (props: SingleValueProps<SelectOption>) => {
   const iconShown = props.data.icon != null
+
   return (
     <components.SingleValue
       {...props}
-      getStyles={(name, p) => {
+      getStyles={(name: string, p: any) => {
         return { ...props.getStyles(name, p), margin: iconShown ? -4 : 0 }
       }}
     >
@@ -468,6 +469,7 @@ const SingleValue = (props: SingleValueProps<SelectOption>) => {
     </components.SingleValue>
   )
 }
+SingleValue.displayName = 'SingleValue'
 
 const displayNone: styleFn = () => ({
   display: 'none',
