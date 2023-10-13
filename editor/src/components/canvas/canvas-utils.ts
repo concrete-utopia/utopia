@@ -903,9 +903,6 @@ export function collectGuidelines(
 
   // For any images create guidelines at the current multiplier setting.
   if (resizingFromPosition != null) {
-    // TODO: images?
-    // TODO: selected views?
-    // TODO: repeating the `isLayoutedByFlowAndNotAbsolutePositioned` check?
     Utils.fastForEach(selectedViews, (selectedView) => {
       if (MetadataUtils.isLayoutedByFlowAndNotAbsolutePositioned(metadata, selectedView)) {
         return
