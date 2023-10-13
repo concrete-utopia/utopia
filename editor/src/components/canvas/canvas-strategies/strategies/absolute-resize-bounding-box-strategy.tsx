@@ -31,6 +31,7 @@ import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { updateHighlightedViews } from '../../commands/update-highlighted-views-command'
+import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
@@ -59,7 +60,7 @@ import {
 } from './resize-helpers'
 import type { EnsureFramePointsExist } from './resize-strategy-helpers'
 import { createResizeCommandsFromFrame } from './resize-strategy-helpers'
-import { runLegacyAbsoluteResizeSnapping } from './shared-absolute-resize-strategy-helpers'
+import { childrenBoundsToSnapTo, snapBoundingBox } from './shared-absolute-resize-strategy-helpers'
 import { flattenSelection, getMultiselectBounds } from './shared-move-strategies-helpers'
 
 export function absoluteResizeBoundingBoxStrategy(
@@ -156,7 +157,22 @@ export function absoluteResizeBoundingBoxStrategy(
               lockedAspectRatio,
               centerBased,
             )
+            const parentAndSiblings: ElementPath[] = gatherParentAndSiblingTargets(
+              canvasState.startingMetadata,
+              canvasState.startingAllElementProps,
+              canvasState.startingElementPathTree,
+              originalTargets,
+            )
+            const childrenToSnapTo = childrenBoundsToSnapTo(
+              edgePosition,
+              originalTargets,
+              canvasState.startingMetadata,
+              canvasState.startingAllElementProps,
+              canvasState.startingElementPathTree,
+            )
+            const snapTargets = [...childrenToSnapTo, ...parentAndSiblings]
             const { snappedBoundingBox, guidelinesWithSnappingVector } = snapBoundingBox(
+              snapTargets,
               originalTargets,
               canvasState.startingMetadata,
               edgePosition,
@@ -493,34 +509,5 @@ function getBoundDimension(
     return frameDimension
   } else {
     return null
-  }
-}
-
-function snapBoundingBox(
-  selectedElements: Array<ElementPath>,
-  jsxMetadata: ElementInstanceMetadataMap,
-  edgePosition: EdgePosition,
-  resizedBounds: CanvasRectangle,
-  canvasScale: number,
-  lockedAspectRatio: number | null,
-  centerBased: 'center-based' | 'non-center-based',
-  allElementProps: AllElementProps,
-  pathTrees: ElementPathTrees,
-) {
-  const { snappedBoundingBox, guidelinesWithSnappingVector } = runLegacyAbsoluteResizeSnapping(
-    selectedElements,
-    jsxMetadata,
-    edgePosition,
-    resizedBounds,
-    canvasScale,
-    lockedAspectRatio,
-    centerBased,
-    allElementProps,
-    pathTrees,
-  )
-
-  return {
-    snappedBoundingBox,
-    guidelinesWithSnappingVector,
   }
 }
