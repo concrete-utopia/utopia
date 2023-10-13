@@ -9,11 +9,16 @@ import type {
 import {
   getElementFromProjectContents,
   getOpenUIJSFileKey,
+  withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import type { ElementInstanceMetadataMap, JSXElementChild } from '../core/shared/element-template'
+import {
+  isJSXConditionalExpression,
+  type ElementInstanceMetadataMap,
+  type JSXElementChild,
+} from '../core/shared/element-template'
 import type { ElementPath } from '../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../core/shared/project-file-types'
 import type { PasteResult } from './clipboard-utils'
@@ -38,7 +43,7 @@ import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import type { InsertionPath } from '../components/editor/store/insertion-path'
-import { childInsertionPath } from '../components/editor/store/insertion-path'
+import { childInsertionPath, getInsertionPath } from '../components/editor/store/insertion-path'
 import type { ElementPathTrees } from '../core/shared/element-path-tree'
 import {
   isElementRenderedBySameComponent,
@@ -51,6 +56,8 @@ import {
 import type { Either } from '../core/shared/either'
 import { isLeft, left, right } from '../core/shared/either'
 import { notice } from '../components/common/notice'
+import { maybeBranchConditionalCase } from '../core/model/conditionals'
+import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -466,63 +473,48 @@ function checkComponentNotInsertedIntoOwnDefinition(
 }
 
 function insertIntoSlot(
-  copyData: ParsedCopyData,
   selectedViews: ElementPath[],
   metadata: ElementInstanceMetadataMap,
+  projectContents: ProjectContentTreeRoot,
+  elementPathTrees: ElementPathTrees,
+  numberOfElementsToInsert: number,
 ): ReparentTargetForPaste | null {
   if (selectedViews.length !== 1) {
     return null
   }
-  // These should exist because the check above proves there should be a values there.
+  // This should exist because the check above proves there should be a value.
   const targetPath = selectedViews[0]!
-  const elementPasteEntry = copyData.elementPaste[0]!
-  const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(targetPath, metadata)
-  // if the pasted item's BB is the same size as the selected item's BB
-  const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-    elementPasteEntry.originalElementPath,
-    copyData.originalContextMetadata,
-  )
-  // if the selected item's parent is autolayouted
-  const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(targetPath))
-
-  const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
-
-  const pastingAbsoluteToAbsolute =
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(metadata, targetPath),
-    ) &&
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(
-        copyData.originalContextMetadata,
-        elementPasteEntry.originalElementPath,
-      ),
-    )
-
-  const pastedElementNames = mapDropNulls(
-    (element) => MetadataUtils.getJSXElementName(element.element),
-    copyData.elementPaste,
-  )
-
   const parentPath = EP.parentPath(targetPath)
-  const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
-    parentPath,
-    metadata,
-    pastedElementNames,
-  )
+  const parentElement = withUnderlyingTarget(parentPath, projectContents, null, (_, element) => {
+    return element
+  })
 
-  if (
-    rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-    (isSelectedViewParentAutolayouted || pastingAbsoluteToAbsolute) &&
-    targetElementSupportsInsertedElement
-  ) {
-    return {
-      type: 'sibling',
-      siblingPath: targetPath,
-      parentPath: childInsertionPath(EP.parentPath(targetPath)),
-    }
+  if (parentElement == null || !isJSXConditionalExpression(parentElement)) {
+    return null
   }
 
-  return null
+  // Check if the target parent is an attribute,
+  // if so replace the target parent instead of trying to insert into it.
+  const wrapperFragmentUID = generateUidWithExistingComponents(projectContents)
+  const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
+  if (conditionalCase == null) {
+    return null
+  }
+
+  const parentInsertionPath = getInsertionPath(
+    targetPath,
+    projectContents,
+    metadata,
+    elementPathTrees,
+    wrapperFragmentUID,
+    numberOfElementsToInsert,
+  )
+
+  if (parentInsertionPath == null) {
+    return null
+  }
+
+  return { type: 'parent', parentPath: parentInsertionPath }
 }
 
 function pasteNextToSameSizedElement(
@@ -643,6 +635,17 @@ export function getTargetParentForOneShotInsertion(
     return left('Cannot insert component instance into component definition')
   }
 
+  const insertIntoSlotResult = insertIntoSlot(
+    selectedViews,
+    metadata,
+    projectContents,
+    elementPathTree,
+    elementsToInsert.length,
+  )
+  if (insertIntoSlotResult != null) {
+    return right(insertIntoSlotResult)
+  }
+
   const pasteIntoParentOrGrandparentResult = pasteIntoParentOrGrandparent(
     elementsToInsert,
     projectContents,
@@ -675,7 +678,13 @@ export function getTargetParentForPaste(
     return left('Cannot insert component instance into component definition')
   }
 
-  const insertIntoSlotResult = insertIntoSlot(copyData, selectedViews, metadata)
+  const insertIntoSlotResult = insertIntoSlot(
+    selectedViews,
+    metadata,
+    projectContents,
+    elementPathTree,
+    copyData.elementPaste.length,
+  )
   if (insertIntoSlotResult != null) {
     return right(insertIntoSlotResult)
   }
