@@ -2,6 +2,8 @@ import { createSelector } from 'reselect'
 import {
   HorizontalLayoutPinnedProps,
   VerticalLayoutPinnedProps,
+  isHorizontalLayoutPinnedProp,
+  isVerticalLayoutPinnedProp,
   type LayoutPinnedProp,
 } from '../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
@@ -16,10 +18,12 @@ import type { SelectOption } from '../../uuiui-deps'
 import { valueToUseForPin } from '../canvas/canvas-utils'
 import type { SetProp, UnsetProperty } from '../editor/action-types'
 import { setProp_UNSAFE, unsetProperty } from '../editor/actions/action-creators'
+import type { AllElementProps } from '../editor/store/editor-state'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { getFullFrame } from '../frame'
 import { isCssNumberAndFixedSize, isCssNumberAndPercentage } from './common/css-utils'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
+import { getSafeGroupChildConstraintsArray } from './fill-hug-fixed-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import { getFramePointsFromMetadataTypeFixed } from './inspector-common'
 
@@ -245,7 +249,7 @@ export function getFixedPointsForPinning(pins: DetectedPins): FramePinsInfo {
   }
 }
 
-export function getFrameChangeActions(
+export function getFrameChangeActionsForFrameChild(
   metadata: ElementInstanceMetadataMap,
   propertyTarget: ReadonlyArray<string>,
   targets: Array<ElementPath>,
@@ -320,3 +324,78 @@ const getPinChanges =
 
     return [...unsetActions, ...setActions]
   }
+
+export function getConstraintAndFrameChangeActionsForGroupChild(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  propertyTarget: ReadonlyArray<string>,
+  targets: Array<ElementPath>,
+  requestedPins: RequestedPins,
+): Array<SetProp | UnsetProperty> {
+  const pinChange = getPinChanges(metadata, propertyTarget, targets)
+  const setConstraintsForDimension = (
+    constraintsToSet: Array<LayoutPinnedProp>,
+    dimension: 'horizontal' | 'vertical',
+  ): Array<SetProp | UnsetProperty> => {
+    return targets.map((target) => {
+      const currentConstraints = getSafeGroupChildConstraintsArray(allElementProps, target)
+      const constraintsToKeepForOtherDimension = currentConstraints.filter(
+        dimension === 'horizontal' ? isVerticalLayoutPinnedProp : isHorizontalLayoutPinnedProp,
+      )
+      const desiredConstraints = [...constraintsToKeepForOtherDimension, ...constraintsToSet]
+      return desiredConstraints.length === 0
+        ? unsetProperty(target, PP.create('data-constraints'))
+        : setProp_UNSAFE(
+            target,
+            PP.create('data-constraints'),
+            jsExpressionValue(desiredConstraints, emptyComments),
+          )
+    })
+  }
+  switch (requestedPins) {
+    case 'left-and-width':
+      return [
+        ...setConstraintsForDimension(['left', 'width'], 'horizontal'),
+        ...pinChange(['left', 'width'], 'horizontal', 'px'),
+      ]
+    case 'right-and-width':
+      return [
+        ...setConstraintsForDimension(['right', 'width'], 'horizontal'),
+        ...pinChange(['right', 'width'], 'horizontal', 'px'),
+      ]
+    case 'left-and-right':
+      return [
+        ...setConstraintsForDimension(['left', 'right'], 'horizontal'),
+        ...pinChange(['left', 'right'], 'horizontal', 'px'),
+      ]
+    case 'scale-horizontal':
+      return [
+        ...setConstraintsForDimension([], 'horizontal'), // clearing constraints for dimension
+        ...pinChange(['left', 'width'], 'horizontal', 'px'), // for Scale, we set the actual frame points to left,width,px and let the Group Resize True-up change these values during edits
+      ]
+
+    case 'top-and-height':
+      return [
+        ...setConstraintsForDimension(['top', 'height'], 'vertical'),
+        ...pinChange(['top', 'height'], 'vertical', 'px'),
+      ]
+    case 'bottom-and-height':
+      return [
+        ...setConstraintsForDimension(['bottom', 'height'], 'vertical'),
+        ...pinChange(['bottom', 'height'], 'vertical', 'px'),
+      ]
+    case 'top-and-bottom':
+      return [
+        ...setConstraintsForDimension(['top', 'bottom'], 'vertical'),
+        ...pinChange(['top', 'bottom'], 'vertical', 'px'),
+      ]
+    case 'scale-vertical':
+      return [
+        ...setConstraintsForDimension([], 'vertical'), // clearing constraints for dimension
+        ...pinChange(['top', 'height'], 'vertical', 'px'), // for Scale, we set the actual frame points to top,height,px and let the Group Resize True-up change these values during edits
+      ]
+
+    default:
+      assertNever(requestedPins)
+  }
+}
