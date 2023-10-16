@@ -2450,7 +2450,7 @@ function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap
     fillGlobalContentBoxFromAncestors,
     fillConditionalGlobalFrameFromAncestors,
     fillLayoutSystemForChildrenFromAncestors,
-  ].reduce((m, f) => f(m), mergedMetadata)
+  ].reduce((metadata, fill) => fill(metadata), mergedMetadata)
 }
 
 function fillGlobalContentBoxFromAncestors(
