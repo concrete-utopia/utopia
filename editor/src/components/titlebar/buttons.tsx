@@ -49,17 +49,12 @@ export const SquareButton: React.FC<React.PropsWithChildren<TitleButtonProps>> =
 export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = ({
   onMouseDown,
   onClick,
-  color,
   children,
 }) => {
-  const bgColor = color == null ? {} : { backgroundColor: color }
-  const ButtonEl = styled(TitleButton)((props) => ({
-    padding: '3px 12px',
+  const ButtonEl = styled(TitleButton)(() => ({
+    padding: '3px',
     gap: 5,
-    height: 24,
-    borderRadius: 18,
-    color: colorTheme.bg0.value,
-    ...bgColor,
+    borderRadius: 20,
   }))
 
   return (
@@ -67,9 +62,10 @@ export const RoundButton: React.FC<React.PropsWithChildren<TitleButtonProps>> = 
       onClick={onClick}
       onMouseDown={onMouseDown}
       css={{
+        height: 20,
+        width: 20,
         '&:hover': {
-          background: color,
-          opacity: 0.7,
+          background: colorTheme.bg3.value,
         },
       }}
     >

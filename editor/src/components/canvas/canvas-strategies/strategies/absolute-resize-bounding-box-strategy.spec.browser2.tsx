@@ -1470,6 +1470,164 @@ export var storyboard = (
         altModifier,
       )
     })
+    describe('snapping to pinned children', () => {
+      it('container does not snap to flow child', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+            <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+              <div
+                style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+                data-uid='bbb'
+                data-testid='bbb'
+              >
+                <div style={{ width: 20, height: 20, backgroundColor: '#d0e5fc' }} data-uid='42c' />
+              </div>
+            </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+        await doSnapDrag(renderResult, { x: 0, y: 20 }, EdgePositionTop, async () => {
+          // no guidelines are shown
+          expect(
+            renderResult.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+          ).toEqual(0)
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+            <div
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 70, width: 200, height: 100 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            >
+              <div style={{ width: 20, height: 20, backgroundColor: '#d0e5fc' }} data-uid='42c' />
+            </div>
+          </div>
+          `),
+        )
+      })
+      it('container does not snap to flex child', async () => {
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`
+            <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+              <div
+                style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120, display: 'flex' }}
+                data-uid='bbb'
+                data-testid='bbb'
+              >
+                <div style={{ width: 20, height: 20, backgroundColor: '#d0e5fc' }} data-uid='42c' />
+              </div>
+            </div>
+          `),
+          'await-first-dom-report',
+        )
+
+        const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+        await renderResult.dispatch([selectComponents([target], false)], true)
+        await doSnapDrag(renderResult, { x: 0, y: 20 }, EdgePositionTop, async () => {
+          // no guidelines are shown
+          expect(
+            renderResult.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+          ).toEqual(0)
+        })
+
+        await renderResult.getDispatchFollowUpActionsFinished()
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`
+          <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+            <div
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 70, width: 200, height: 100, display: 'flex' }}
+              data-uid='bbb'
+              data-testid='bbb'
+            >
+              <div style={{ width: 20, height: 20, backgroundColor: '#d0e5fc' }} data-uid='42c' />
+            </div>
+          </div>
+          `),
+        )
+      })
+      ;(
+        [
+          [windowPoint({ y: 0, x: 10 }), EdgePositionLeft, 'left', 1],
+          [windowPoint({ y: 10, x: 0 }), EdgePositionTop, 'top', 1],
+          [windowPoint({ y: 10, x: 10 }), EdgePositionTopLeft, 'top left', 2],
+          [windowPoint({ y: 0, x: -20 }), EdgePositionRight, 'right', 0],
+          [windowPoint({ y: -20, x: 0 }), EdgePositionBottom, 'bottom', 0],
+          [windowPoint({ y: -20, x: -20 }), EdgePositionBottomRight, 'bottom right', 0],
+        ] as const
+      ).forEach(([delta, edge, label, numberOfGuidelines]) => {
+        it(`${numberOfGuidelines} snap lines shown when resizing container with absolte child pinned to bottom and right - dragging from ${label}`, async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`
+              <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+                <div
+                  style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 50, height: 50 }}
+                  data-uid='bbb'
+                  data-testid='bbb'
+                >
+                  <div style={{ width: 20, height: 20, backgroundColor: '#d0e5fc', position: 'absolute', right: 20, bottom: 20, }} data-uid='42c' />
+                </div>
+              </div>
+            `),
+            'await-first-dom-report',
+          )
+
+          const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+          await renderResult.dispatch([selectComponents([target], false)], true)
+          await doSnapDrag(renderResult, delta, edge, async () => {
+            // guidelines are shown
+            expect(
+              renderResult.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(numberOfGuidelines)
+          })
+        })
+      })
+      ;(
+        [
+          [windowPoint({ y: 0, x: 20 }), EdgePositionLeft, 'left', 0],
+          [windowPoint({ y: 20, x: 0 }), EdgePositionTop, 'top', 0],
+          [windowPoint({ y: 20, x: 10 }), EdgePositionTopLeft, 'top left', 0],
+          [windowPoint({ y: 0, x: -10 }), EdgePositionRight, 'right', 1],
+          [windowPoint({ y: -10, x: 0 }), EdgePositionBottom, 'bottom', 1],
+          [windowPoint({ y: -10, x: -10 }), EdgePositionBottomRight, 'bottom right', 2],
+        ] as const
+      ).forEach(([delta, edge, label, numberOfGuidelines]) => {
+        it(`${numberOfGuidelines} snap lines shown when resizing container with absolte child pinned to top and left - dragging from ${label}`, async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`
+              <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+                <div
+                  style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 50, height: 50 }}
+                  data-uid='bbb'
+                  data-testid='bbb'
+                >
+                  <div style={{ width: 20, height: 20, backgroundColor: '#d0e5fc', position: 'absolute', top: 20, left: 20, }} data-uid='42c' />
+                </div>
+              </div>
+            `),
+            'await-first-dom-report',
+          )
+
+          const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+          await renderResult.dispatch([selectComponents([target], false)], true)
+          await doSnapDrag(renderResult, delta, edge, async () => {
+            // guidelines are shown
+            expect(
+              renderResult.getEditorState().editor.canvas.controls.snappingGuidelines.length,
+            ).toEqual(numberOfGuidelines)
+          })
+        })
+      })
+    })
 
     describe('groups', () => {
       AllFragmentLikeTypes.forEach((type) => {

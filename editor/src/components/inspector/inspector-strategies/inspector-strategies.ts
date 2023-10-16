@@ -4,7 +4,7 @@ import type { Axis, FlexAlignment, FlexJustifyContent } from '../inspector-commo
 import {
   filterKeepFlexContainers,
   flexChildProps,
-  pruneFlexPropsCommands,
+  prunePropsCommands,
   sizeToVisualDimensions,
 } from '../inspector-common'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
@@ -115,7 +115,7 @@ export const updateFlexDirectionStrategies = (
       return elements.flatMap((path) => [
         setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
         ...MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path).flatMap((child) => [
-          ...pruneFlexPropsCommands(flexChildProps, child),
+          ...prunePropsCommands(flexChildProps, child),
           ...sizeToVisualDimensions(metadata, pathTrees, child),
         ]),
       ])

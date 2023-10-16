@@ -25,11 +25,15 @@ import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-
 import {
   controlWithProps,
   emptyStrategyApplicationResult,
+  getTargetPathsFromInteractionTarget,
   strategyApplicationResult,
 } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
 import { resizeBoundingBox, supportsAbsoluteResize } from './resize-helpers'
-import { createResizeCommands } from './shared-absolute-resize-strategy-helpers'
+import {
+  childrenBoundsToSnapTo,
+  createResizeCommands,
+} from './shared-absolute-resize-strategy-helpers'
 import type { AccumulatedPresses } from './shared-keyboard-strategy-helpers'
 import {
   accumulatePresses,
@@ -44,6 +48,9 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
+import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
+import { uniqBy } from '../../../../core/shared/array-utils'
+import * as EP from '../../../../core/shared/element-path'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -278,7 +285,21 @@ export function keyboardAbsoluteResizeStrategy(
           intendedBounds = changeBoundsResult.intendedBounds
           commands.push(...changeBoundsResult.commands)
         })
-        const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
+        const parentsAndSiblings: ElementPath[] = gatherParentAndSiblingTargets(
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
+          canvasState.startingElementPathTree,
+          getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+        )
+        const children = getChildrenToSnapTo(
+          deduplicateEdges(movementsWithEdges.map((m) => m.edge)),
+          selectedElements,
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
+          canvasState.startingElementPathTree,
+        )
+        const snapTargets = [...children, ...parentsAndSiblings]
+        const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
         commands.push(setElementsToRerenderCommand(selectedElements))
@@ -301,4 +322,23 @@ function getEdgePositionFromKey(key: KeyCharacter): EdgePosition | null {
     default:
       return null
   }
+}
+
+function deduplicateEdges(edges: EdgePosition[]): EdgePosition[] {
+  return uniqBy(edges, (l, r) => l.x === r.x && l.y === r.y)
+}
+
+function getChildrenToSnapTo(
+  edgePositions: EdgePosition[],
+  targets: Array<ElementPath>,
+  componentMetadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+) {
+  return uniqBy(
+    edgePositions.flatMap((edge) =>
+      childrenBoundsToSnapTo(edge, targets, componentMetadata, allElementProps, pathTrees),
+    ),
+    (l, r) => EP.toString(l) === EP.toString(r),
+  )
 }

@@ -55,7 +55,7 @@ import {
   stripPinsConvertToVisualSize,
 } from './reparent-property-strategies'
 import { assertNever } from '../../../../../core/shared/utils'
-import { flexChildProps, pruneFlexPropsCommands } from '../../../../inspector/inspector-common'
+import { flexChildProps, prunePropsCommands } from '../../../../inspector/inspector-common'
 import { setCssLengthProperty } from '../../../commands/set-css-length-command'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import {
@@ -221,7 +221,7 @@ export function positionElementToCoordinatesCommands(
   pathLookup: OldPathToNewPathMapping,
 ): CanvasCommand[] {
   const basicCommands = [
-    ...pruneFlexPropsCommands(flexChildProps, elementToReparent.newPath),
+    ...prunePropsCommands(flexChildProps, elementToReparent.newPath),
     setCssLengthProperty(
       'always',
       elementToReparent.newPath,
@@ -280,7 +280,7 @@ export function positionElementToCoordinatesCommands(
     }
 
     return [
-      ...pruneFlexPropsCommands(flexChildProps, targetPath),
+      ...prunePropsCommands(flexChildProps, targetPath),
       setProperty('always', targetPath, PP.create('style', 'position'), 'absolute'),
       setCssLengthProperty(
         'always',
