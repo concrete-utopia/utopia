@@ -129,15 +129,14 @@ export function applyMoveCommon(
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
-
-      const targetsForSnapping = targets.map(
+      const targetsForSnapping = originalTargets.map(
         (path) => interactionSession.updatedTargetPaths[EP.toString(path)] ?? path,
       )
       const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
         canvasState.startingElementPathTree,
-        originalTargets,
+        targetsForSnapping,
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
         snapTargets,
