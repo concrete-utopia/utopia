@@ -54,9 +54,12 @@ export const setJustifyContentStrategies = (
         return null
       }
 
-      return elements.flatMap((path) => [
-        setProperty('always', path, PP.create('style', 'justifyContent'), justifyContent),
-      ])
+      return {
+        commands: elements.flatMap((path) => [
+          setProperty('always', path, PP.create('style', 'justifyContent'), justifyContent),
+        ]),
+        data: null,
+      }
     },
   },
 ]
@@ -74,10 +77,13 @@ export const setFlexAlignJustifyContentStrategies = (
         return null
       }
 
-      return elements.flatMap((path) => [
-        setProperty('always', path, PP.create('style', 'alignItems'), flexAlignment),
-        setProperty('always', path, PP.create('style', 'justifyContent'), justifyContent),
-      ])
+      return {
+        commands: elements.flatMap((path) => [
+          setProperty('always', path, PP.create('style', 'alignItems'), flexAlignment),
+          setProperty('always', path, PP.create('style', 'justifyContent'), justifyContent),
+        ]),
+        data: null,
+      }
     },
   },
 ]
@@ -92,9 +98,12 @@ export const removeFlexDirectionStrategies = (): Array<InspectorStrategy> => [
         return null
       }
 
-      return elements.map((path) =>
-        deleteProperties('always', path, [PP.create('style', 'flexDirection')]),
-      )
+      return {
+        commands: elements.map((path) =>
+          deleteProperties('always', path, [PP.create('style', 'flexDirection')]),
+        ),
+        data: null,
+      }
     },
   },
 ]
@@ -112,13 +121,16 @@ export const updateFlexDirectionStrategies = (
         return null
       }
 
-      return elements.flatMap((path) => [
-        setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
-        ...MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path).flatMap((child) => [
-          ...prunePropsCommands(flexChildProps, child),
-          ...sizeToVisualDimensions(metadata, pathTrees, child),
+      return {
+        commands: elements.flatMap((path) => [
+          setProperty('always', path, PP.create('style', 'flexDirection'), flexDirection),
+          ...MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, path).flatMap((child) => [
+            ...prunePropsCommands(flexChildProps, child),
+            ...sizeToVisualDimensions(metadata, pathTrees, child),
+          ]),
         ]),
-      ])
+        data: null,
+      }
     },
   },
 ]
@@ -143,9 +155,12 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
         return null
       }
 
-      return elements.map((path) =>
-        deleteProperties('always', path, [PP.create('style', 'display')]),
-      )
+      return {
+        commands: elements.map((path) =>
+          deleteProperties('always', path, [PP.create('style', 'display')]),
+        ),
+        data: null,
+      }
     },
   },
 ]

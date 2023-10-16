@@ -30,11 +30,28 @@ import {
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
+import type { InspectorStrategyResult } from '../../inspector/inspector-strategies/inspector-strategy'
 
 type FlexDirection = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'
 
 export function convertLayoutToFlexCommands(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  elementPaths: Array<ElementPath>,
+  allElementProps: AllElementProps,
+): InspectorStrategyResult<null> {
+  const commands = convertLayoutToFlexCommandsInner(
+    metadata,
+    elementPathTree,
+    elementPaths,
+    allElementProps,
+  )
+
+  return { commands: commands, data: null }
+}
+
+function convertLayoutToFlexCommandsInner(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
   elementPaths: Array<ElementPath>,
