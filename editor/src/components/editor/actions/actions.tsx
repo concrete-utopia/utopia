@@ -2306,14 +2306,16 @@ export const UPDATE_FNS = {
                   )
 
             const withChildrenMoved = children.reduce((working, child) => {
+              if (parentPath == null) {
+                return working
+              }
               const result = editorMoveTemplate(
                 child.elementPath,
-                parentPath!,
+                parentPath,
                 indexPosition,
                 working,
                 builtInDependencies,
               )
-
               if (result.newPath != null) {
                 const newPath = result.newPath
                 newSelection.push(newPath)
