@@ -35,7 +35,7 @@ import {
   InsertConditionalButtonTestId,
   InsertMenuButtonTestId,
 } from './canvas-toolbar'
-import { StoryboardFilePath, PlaygroundFilePath } from './store/editor-state'
+import { StoryboardFilePath, PlaygroundFilePath, navigatorEntryToKey } from './store/editor-state'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -360,6 +360,37 @@ describe('canvas toolbar', () => {
     )
   })
 
+  it('can insert a div with no element selected via the floating insert menu', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
+
+    await insertViaAddElementPopup(editor, 'div')
+
+    expect(editor.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual([
+      'regular-utopia-storyboard-uid/scene-aaa',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container',
+      'regular-utopia-storyboard-uid/scene-aaa/app-entity:container/a3d',
+      'regular-utopia-storyboard-uid/new-div',
+    ])
+  })
+
   it('can insert a span with sample text', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div
@@ -594,7 +625,7 @@ export var storyboard = (
   })
 
   describe('add element to conditional', () => {
-    it(`can't add element to the root of a conditional`, async () => {
+    it(`when the root of a conditional is selected, element is added as a sibling`, async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -607,8 +638,6 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      const initialCode = getPrintedUiJsCode(editor.getEditorState())
-
       const slot = editor.renderedDOM.getByText('Conditional')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
@@ -616,10 +645,31 @@ export var storyboard = (
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional',
       ])
 
-      await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
+      await insertViaAddElementPopup(editor, 'img')
 
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialCode)
-      expectChildrenNotSupportedToastToBePresent(editor)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          {
+            // @utopia/uid=conditional
+            [].length === 0 ? null : (
+              <div data-uid='33d'>"Hello there"</div>
+            )
+          }
+          <img
+            style={{
+              width: 100,
+              height: 100,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+            src='/editor/utopia-logo-white-fill.png?hash=nocommit'
+            data-uid='ele'
+          />
+        </div>
+      `),
+      )
     })
     it('add element to true branch of a conditional', async () => {
       const editor = await renderTestEditorWithCode(

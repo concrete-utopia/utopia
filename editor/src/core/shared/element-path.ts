@@ -13,7 +13,8 @@ import {
   arrayEqualsByValue,
 } from './utils'
 import { replaceAll } from './string-utils'
-import { last, dropLastN, drop, splitAt, flattenArray, dropLast } from './array-utils'
+import type { NonEmptyArray } from './array-utils'
+import { last, dropLastN, drop, dropLast } from './array-utils'
 import { forceNotNull } from './optional-utils'
 
 // KILLME, except in 28 places
@@ -793,7 +794,6 @@ export function closestSharedAncestor(
     )
     const nextLPart = lTarget.parts[fullyMatchedElementPathParts.length]
     const nextRPart = rTarget.parts[fullyMatchedElementPathParts.length]
-
     const nextMatchedElementPath = longestCommonArray(nextLPart ?? [], nextRPart ?? [])
     const totalMatchedParts =
       nextMatchedElementPath.length > 0
@@ -817,6 +817,17 @@ export function getCommonParent(
       parents[0],
     )
   }
+}
+
+export function getCommonParentOfNonemptyPathArray(
+  paths: NonEmptyArray<ElementPath>,
+  includeSelf: boolean = false,
+): ElementPath {
+  const parents = includeSelf ? paths : paths.map(parentPath)
+  return parents.reduce<ElementPath>(
+    (l, r) => closestSharedAncestor(l, r, true) ?? emptyElementPath,
+    parents[0],
+  )
 }
 
 export interface ElementsTransformResult<T> {

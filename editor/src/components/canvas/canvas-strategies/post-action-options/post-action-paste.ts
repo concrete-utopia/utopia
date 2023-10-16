@@ -26,8 +26,7 @@ import type {
   NodeModules,
 } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
-import { getTargetParentForPaste } from '../../../../utils/clipboard'
-import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
+import type { ElementPasteWithMetadata } from '../../../../utils/clipboard'
 import type { IndexPosition } from '../../../../utils/utils'
 import { absolute, front } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
@@ -45,7 +44,6 @@ import {
   childInsertionPath,
   replaceWithElementsWrappedInFragmentBehaviour,
 } from '../../../editor/store/insertion-path'
-import type { RemixRoutingTable } from '../../../editor/store/remix-derived-data'
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
@@ -64,8 +62,16 @@ import {
 } from '../strategies/reparent-helpers/reparent-property-changes'
 import { reparentStrategyForPaste } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import type { ReparentStrategy } from '../strategies/reparent-helpers/reparent-strategy-helpers'
-import type { ElementToReparent, PathToReparent } from '../strategies/reparent-utils'
-import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
+import type {
+  ElementToReparent,
+  PathToReparent,
+  ReparentTargetForPaste,
+} from '../strategies/reparent-utils'
+import {
+  elementToReparent,
+  getReparentOutcomeMultiselect,
+  getTargetParentForPaste,
+} from '../strategies/reparent-utils'
 import { adjustIntendedCoordinatesForGroups, collectGroupTrueUp } from './navigator-reparent'
 import type { PostActionChoice } from './post-action-options'
 
@@ -563,20 +569,6 @@ function getTargetParentForPasteHere(
   const originalPathTree =
     editor.internalClipboard.elements[0].targetOriginalContextElementPathTrees
 
-  const target = getTargetParentForPaste(
-    editor.projectContents,
-    editor.selectedViews,
-    editor.canvas.openFile?.filename ?? null,
-    editor.jsxMetadata,
-    editor.pasteTargetsToIgnore,
-    {
-      elementPaste: elementToPaste,
-      originalContextMetadata: originalMetadata,
-      originalContextElementPathTrees: originalPathTree,
-    },
-    editor.elementPathTree,
-  )
-
   const storyboardPath = getStoryboardElementPath(
     editor.projectContents,
     editor.canvas.openFile?.filename ?? null,
@@ -585,6 +577,19 @@ function getTargetParentForPasteHere(
   if (storyboardPath == null) {
     return left('No storyboard found')
   }
+
+  const target = getTargetParentForPaste(
+    storyboardPath,
+    editor.projectContents,
+    editor.selectedViews,
+    editor.jsxMetadata,
+    {
+      elementPaste: elementToPaste,
+      originalContextMetadata: originalMetadata,
+      originalContextElementPathTrees: originalPathTree,
+    },
+    editor.elementPathTree,
+  )
 
   if (isLeft(target)) {
     return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
