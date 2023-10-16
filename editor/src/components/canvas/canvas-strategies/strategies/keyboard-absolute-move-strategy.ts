@@ -1,5 +1,5 @@
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
-import { Keyboard, KeyCharacter } from '../../../../utils/keyboard'
+import { Keyboard } from '../../../../utils/keyboard'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   emptyStrategyApplicationResult,
@@ -8,7 +8,6 @@ import {
 } from '../canvas-strategy-types'
 import type { CanvasVector } from '../../../../core/shared/math-utils'
 import {
-  CanvasRectangle,
   canvasRectangle,
   offsetPoint,
   offsetRect,
@@ -36,6 +35,7 @@ import { honoursPropsPosition } from './absolute-utils'
 import type { InteractionSession } from '../interaction-state'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
+import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
 
 export function keyboardAbsoluteMoveStrategy(
   canvasState: InteractionCanvasState,
@@ -93,7 +93,13 @@ export function keyboardAbsoluteMoveStrategy(
           keyboardMovement,
         )
 
-        const guidelines = getKeyboardStrategyGuidelines(canvasState, interactionSession, newFrame)
+        const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
+          canvasState.startingMetadata,
+          canvasState.startingAllElementProps,
+          canvasState.startingElementPathTree,
+          getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
+        )
+        const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))

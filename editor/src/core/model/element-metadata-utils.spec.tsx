@@ -801,7 +801,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
       },
     }
     expect(
-      MetadataUtils.isPinnedAndNotAbsolutePositioned(
+      MetadataUtils.isLayoutedByFlowAndNotAbsolutePositioned(
         elementMapForTest,
         EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),
@@ -819,7 +819,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
       },
     }
     expect(
-      MetadataUtils.isPinnedAndNotAbsolutePositioned(
+      MetadataUtils.isLayoutedByFlowAndNotAbsolutePositioned(
         elementMapForTest,
         EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),
@@ -837,7 +837,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
       },
     }
     expect(
-      MetadataUtils.isPinnedAndNotAbsolutePositioned(
+      MetadataUtils.isLayoutedByFlowAndNotAbsolutePositioned(
         elementMapForTest,
         EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),
@@ -855,7 +855,7 @@ describe('isPinnedAndNotAbsolutePositioned', () => {
       },
     }
     expect(
-      MetadataUtils.isPinnedAndNotAbsolutePositioned(
+      MetadataUtils.isLayoutedByFlowAndNotAbsolutePositioned(
         elementMapForTest,
         EP.elementPath([[BakedInStoryboardUID, TestScenePath], ['View']]),
       ),

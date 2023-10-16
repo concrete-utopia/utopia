@@ -1797,11 +1797,10 @@ export const MetadataUtils = {
     const elementName = MetadataUtils.getStaticElementName(path, rootElements)
     return elementName != null && !isIntrinsicHTMLElement(elementName)
   },
-  isPinnedAndNotAbsolutePositioned(
+  isLayoutedByFlowAndNotAbsolutePositioned(
     metadata: ElementInstanceMetadataMap,
     view: ElementPath,
   ): boolean {
-    // Disable snapping and guidelines for pinned elements marked with relative positioning:
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, view)
     return (
       elementMetadata != null &&

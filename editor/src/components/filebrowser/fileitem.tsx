@@ -812,7 +812,7 @@ class FileBrowserItemInner extends React.PureComponent<
               ) : null}
               {displayAddFolder ? (
                 <Button onClick={this.showAddingFolderRow}>
-                  <Icons.NewFolder style={fileIconStyle} tooltipText='Add New Folder' />
+                  <Icons.GroupClosed style={fileIconStyle} tooltipText='Add New Folder' />
                 </Button>
               ) : null}
               {displayAddTextFile ? (

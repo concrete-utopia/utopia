@@ -80,6 +80,33 @@ describe('Zero sized element controls', () => {
       ),
     )
   })
+  it('double click on a div element with a flex parent keeps position: absolute and pins, adds width and height', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'flex' }} data-uid='container'>
+            <div style={{ position: 'absolute', top: 20, left: 20, flexBasis: 0 }} data-uid='bbb' data-testid='bbb' />
+          </div>
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(
+      `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/container/bbb`,
+    )
+    await selectTargetAndDoubleClickOnZeroSizeControl(renderResult, target, 'bbb')
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'flex' }} data-uid='container'>
+            <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100 }} data-uid='bbb' data-testid='bbb' />
+          </div>
+        </div>`,
+      ),
+    )
+  })
   it('double click slightly outside a div element (where the zero sized border is visually) adds size', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(
@@ -97,6 +124,27 @@ describe('Zero sized element controls', () => {
       makeTestProjectCodeWithSnippet(
         `<div style={{ ...props.style }} data-uid='aaa'>
           <div style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100 }} data-uid='bbb' data-testid='bbb' />
+        </div>`,
+      ),
+    )
+  })
+  it('double click on a inline element adds size and display prop', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <i style={{ position: 'absolute', top: 20, left: 20 }} data-uid='bbb' data-testid='bbb' />
+        </div>`,
+      ),
+      'await-first-dom-report',
+    )
+
+    const target = EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`)
+    await selectTargetAndDoubleClickOnZeroSizeControl(renderResult, target, 'bbb')
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(
+        `<div style={{ ...props.style }} data-uid='aaa'>
+          <i style={{ position: 'absolute', top: 20, left: 20, width: 100, height: 100, display: 'inline-block' }} data-uid='bbb' data-testid='bbb' />
         </div>`,
       ),
     )

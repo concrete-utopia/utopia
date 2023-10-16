@@ -45,7 +45,12 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import { isFiniteRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
+import {
+  isFiniteRectangle,
+  isInfinityRectangle,
+  roundRectangleToNearestWhole,
+  type LocalRectangle,
+} from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
@@ -64,6 +69,7 @@ import {
   groupConversionCommands,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
+import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -384,7 +390,9 @@ export const flexChildProps = [
   styleP('flexBasis'),
 ]
 
-export function pruneFlexPropsCommands(
+const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
+
+export function prunePropsCommands(
   props: PropertyPath[],
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
@@ -420,21 +428,30 @@ export function sizeToVisualDimensions(
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): Array<CanvasCommand> {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return []
-  }
-
   const globalFrame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
   if (globalFrame == null || isInfinityRectangle(globalFrame)) {
     return []
   }
 
-  const width = fixedSizeDimensionHandlingText(metadata, pathTrees, elementPath, globalFrame.width)
-  const height = globalFrame.height
+  return sizeToDimensionsFromFrame(metadata, pathTrees, elementPath, globalFrame)
+}
+
+export function sizeToDimensionsFromFrame(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+  frame: { width: number; height: number },
+): Array<CanvasCommand> {
+  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  if (element == null) {
+    return []
+  }
+
+  const width = fixedSizeDimensionHandlingText(metadata, pathTrees, elementPath, frame.width)
+  const height = frame.height
 
   return [
-    ...pruneFlexPropsCommands(flexChildProps, elementPath),
+    ...prunePropsCommands(flexChildAndBottomRightProps, elementPath),
     setCssLengthProperty(
       'always',
       elementPath,
@@ -465,7 +482,7 @@ export const sizeToVisualDimensionsAlongAxisInstance =
     const value = globalFrame[dimension]
 
     return [
-      ...pruneFlexPropsCommands(flexChildProps, elementPath),
+      ...prunePropsCommands(flexChildProps, elementPath),
       setCssLengthProperty(
         'always',
         elementPath,
@@ -831,36 +848,27 @@ export function resizeToFillCommands(
   return commands
 }
 
-export function addPositionAbsoluteTopLeft(
-  metadata: ElementInstanceMetadataMap,
+function addPositionAbsoluteTopLeft(
   elementPath: ElementPath,
+  localFrame: LocalRectangle,
+  parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (element == null) {
-    return []
-  }
-
-  const left = element.specialSizeMeasurements.offset.x
-  const top = element.specialSizeMeasurements.offset.y
-
-  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
-
   return [
+    convertToAbsolute('always', elementPath),
     setCssLengthProperty(
       'always',
       elementPath,
       styleP('left'),
-      setExplicitCssValue(cssPixelLength(left)),
+      setExplicitCssValue(cssPixelLength(localFrame.x)),
       parentFlexDirection,
     ),
     setCssLengthProperty(
       'always',
       elementPath,
       styleP('top'),
-      setExplicitCssValue(cssPixelLength(top)),
+      setExplicitCssValue(cssPixelLength(localFrame.y)),
       parentFlexDirection,
     ),
-    setProperty('always', elementPath, styleP('position'), 'absolute'),
   ]
 }
 
@@ -1120,12 +1128,54 @@ export function toggleAbsolutePositioningCommands(
           : []),
       ]
     } else {
-      return [
-        ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
-        ...addPositionAbsoluteTopLeft(jsxMetadata, elementPath),
-      ]
+      return getConvertIndividualElementToAbsoluteCommandsFromMetadata(
+        elementPath,
+        jsxMetadata,
+        elementPathTree,
+      )
     }
   })
 
   return commands
+}
+
+export function getConvertIndividualElementToAbsoluteCommandsFromMetadata(
+  target: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+): Array<CanvasCommand> {
+  const localFrame = MetadataUtils.getFrame(target, jsxMetadata)
+  if (localFrame == null || isInfinityRectangle(localFrame)) {
+    return []
+  }
+
+  const element = MetadataUtils.findElementByElementPath(jsxMetadata, target)
+  if (element == null) {
+    return []
+  }
+
+  const parentFlexDirection = element.specialSizeMeasurements.parentFlexDirection
+
+  return getConvertIndividualElementToAbsoluteCommands(
+    target,
+    jsxMetadata,
+    elementPathTree,
+    localFrame,
+    parentFlexDirection,
+  )
+}
+
+export function getConvertIndividualElementToAbsoluteCommands(
+  target: ElementPath,
+  jsxMetadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  frame: LocalRectangle,
+  parentFlexDirection: FlexDirection | null,
+): Array<CanvasCommand> {
+  // First round the frame so that we don't end up with half pixel values
+  const roundedFrame = roundRectangleToNearestWhole(frame)
+  return [
+    ...sizeToDimensionsFromFrame(jsxMetadata, elementPathTree, target, roundedFrame),
+    ...addPositionAbsoluteTopLeft(target, roundedFrame, parentFlexDirection),
+  ]
 }
