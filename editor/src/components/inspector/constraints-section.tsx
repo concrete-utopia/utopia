@@ -29,7 +29,7 @@ import {
   getConstraintAndFrameChangeActionsForGroupChild,
   getFixedPointsForPinning,
   getFrameChangeActionsForFrameChild,
-  useDetectedPinning,
+  useDetectedConstraints,
 } from './simplified-pinning-helpers'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
@@ -119,7 +119,7 @@ const ChildPinControl = React.memo(
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-    const pins = useDetectedPinning()
+    const pins = useDetectedConstraints(isGroupChild)
 
     const onPinControlMouseDown = React.useCallback(
       (
@@ -245,7 +245,7 @@ const ChildConstraintSelect = React.memo(
       allElementProps: store.editor.allElementProps,
     }))
 
-    const pins = useDetectedPinning()
+    const pins = useDetectedConstraints(isGroupChild)
 
     const optionsToUse =
       dimension === 'width'

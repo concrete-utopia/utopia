@@ -24,8 +24,13 @@ import { getFullFrame } from '../frame'
 import { isCssNumberAndFixedSize, isCssNumberAndPercentage } from './common/css-utils'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { getSafeGroupChildConstraintsArray } from './fill-hug-fixed-control'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
+import {
+  allElementPropsSelector,
+  metadataSelector,
+  selectedViewsSelector,
+} from './inpector-selectors'
 import { getFramePointsFromMetadataTypeFixed } from './inspector-common'
+import createCachedSelector from 're-reselect'
 
 type HorizontalPinRequests =
   | 'left-and-width'
@@ -104,28 +109,37 @@ export const VerticalPinChangeOptionsIncludingMixed = {
   },
 } as const
 
-const multiselectDetectPinsSetSelector = createSelector(
+const multiselectDetectPinsSetForFrameChildSelector = createCachedSelector(
   metadataSelector,
+  allElementPropsSelector,
   selectedViewsSelector,
-  (metadata, selectedViews) => multiselectDetectPinsSet(metadata, selectedViews),
-)
+  (_: unknown, isGroupChild: 'group-child' | 'frame-child') => isGroupChild,
+  (metadata, allElementProps, selectedViews, isGroupChild) =>
+    multiselectDetectPinsSetForFrameChild(metadata, allElementProps, selectedViews, isGroupChild),
+)((_, isGroupChild: 'group-child' | 'frame-child') => isGroupChild)
 
-export function useDetectedPinning() {
+export function useDetectedConstraints(isGroupChild: 'group-child' | 'frame-child') {
   return useEditorState(
     Substores.metadata,
-    multiselectDetectPinsSetSelector,
+    (store) => multiselectDetectPinsSetForFrameChildSelector(store, isGroupChild),
     'FrameChildConstraintSelect pins',
   )
 }
 
-function multiselectDetectPinsSet(
+function multiselectDetectPinsSetForFrameChild(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   targets: Array<ElementPath>,
+  isGroupChild: 'group-child' | 'frame-child',
 ): DetectedPins {
   if (targets.length == 0) {
     return { horizontal: 'left-and-width', vertical: 'top-and-height' }
   }
-  const results = targets.map((t) => detectPinsSet(metadata, t))
+  const results = targets.map((t) =>
+    isGroupChild === 'group-child'
+      ? detectConstraintsSetForGroupChild(metadata, allElementProps, t)
+      : detectPinsSetForFrameChild(metadata, t),
+  )
   const isMixedHorizontal = results.some((r) => r.horizontal !== results[0].horizontal)
   const isMixedVertical = results.some((r) => r.vertical !== results[0].vertical)
 
@@ -135,7 +149,7 @@ function multiselectDetectPinsSet(
   }
 }
 
-function detectPinsSet(
+function detectPinsSetForFrameChild(
   metadata: ElementInstanceMetadataMap,
   target: ElementPath,
 ): { horizontal: HorizontalPinRequests | 'mixed'; vertical: VerticalPinRequests | 'mixed' } {
@@ -206,6 +220,77 @@ function detectPinsSet(
       isCssNumberAndPercentage(framePoints.height)
     ) {
       return 'scale-vertical'
+    }
+    return 'mixed'
+  })()
+
+  return { horizontal: horizontalPins, vertical: verticalPins }
+}
+
+function detectConstraintsSetForGroupChild(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  target: ElementPath,
+): { horizontal: HorizontalPinRequests | 'mixed'; vertical: VerticalPinRequests | 'mixed' } {
+  const constraints = getSafeGroupChildConstraintsArray(allElementProps, target)
+
+  const element = MetadataUtils.findElementByElementPath(metadata, target)
+  if (element == null) {
+    return { horizontal: 'mixed', vertical: 'mixed' }
+  }
+
+  const framePoints = getFramePointsFromMetadataTypeFixed(element)
+
+  const horizontalPins: HorizontalPinRequests | 'mixed' = (() => {
+    const horizontalConstraints = HorizontalLayoutPinnedProps.filter((pin) =>
+      constraints.includes(pin),
+    )
+
+    const anyPinPercentage = HorizontalLayoutPinnedProps.some((pin) =>
+      isCssNumberAndPercentage(framePoints[pin]),
+    )
+    if (anyPinPercentage) {
+      return 'mixed' // <--- this should be "detected error!!!" with a button to fix
+    }
+
+    if (horizontalConstraints.length === 0) {
+      return 'scale-horizontal'
+    }
+
+    if (constraints.includes('left') && constraints.includes('width')) {
+      return 'left-and-width'
+    }
+    if (constraints.includes('right') && constraints.includes('width')) {
+      return 'right-and-width'
+    }
+    if (constraints.includes('left') && constraints.includes('right')) {
+      return 'left-and-right'
+    }
+    return 'mixed'
+  })()
+
+  const verticalPins: VerticalPinRequests | 'mixed' = (() => {
+    const verticalConstraints = VerticalLayoutPinnedProps.filter((pin) => constraints.includes(pin))
+
+    const anyPinPercentage = VerticalLayoutPinnedProps.some((pin) =>
+      isCssNumberAndPercentage(framePoints[pin]),
+    )
+    if (anyPinPercentage) {
+      return 'mixed' // <--- this should be "detected error!!!" with a button to fix
+    }
+
+    if (verticalConstraints.length === 0) {
+      return 'scale-vertical'
+    }
+
+    if (constraints.includes('top') && constraints.includes('height')) {
+      return 'top-and-height'
+    }
+    if (constraints.includes('bottom') && constraints.includes('height')) {
+      return 'bottom-and-height'
+    }
+    if (constraints.includes('top') && constraints.includes('bottom')) {
+      return 'top-and-bottom'
     }
     return 'mixed'
   })()
