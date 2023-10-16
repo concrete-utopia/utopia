@@ -29,7 +29,10 @@ import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
-import { elementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
+import {
+  elementToReparent,
+  getTargetParentForOneShotInsertion,
+} from '../canvas/canvas-strategies/strategies/reparent-utils'
 import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
@@ -42,7 +45,6 @@ import { executeFirstApplicableStrategy } from '../inspector/inspector-strategie
 import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
 import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
-import { getTargetParentForOneShotInsertion } from '../../utils/clipboard'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,

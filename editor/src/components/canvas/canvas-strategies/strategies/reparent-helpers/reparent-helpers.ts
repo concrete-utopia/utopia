@@ -3,12 +3,9 @@ import {
   getConditionalActiveCase,
   maybeBranchConditionalCase,
 } from '../../../../../core/model/conditionals'
-import {
-  MetadataUtils,
-  getSimpleAttributeAtPath,
-} from '../../../../../core/model/element-metadata-utils'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
 import type { Either } from '../../../../../core/shared/either'
-import { foldEither, isLeft, left, right } from '../../../../../core/shared/either'
+import { foldEither, left, right } from '../../../../../core/shared/either'
 import * as EP from '../../../../../core/shared/element-path'
 import type {
   ElementInstanceMetadata,
@@ -26,7 +23,7 @@ import {
   jsxElementNameEquals,
   isIntrinsicElement,
 } from '../../../../../core/shared/element-template'
-import type { ElementPath, PropertyPath } from '../../../../../core/shared/project-file-types'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import type { ProjectContentTreeRoot } from '../../../../assets'
 import type {
   AllElementProps,
@@ -46,10 +43,7 @@ import { strategyApplicationResult } from '../../canvas-strategy-types'
 import * as PP from '../../../../../core/shared/property-path'
 import type { ValueAtPath } from '../../../../../core/shared/jsx-attributes'
 import { setJSXValuesAtPaths } from '../../../../../core/shared/jsx-attributes'
-import type {
-  ElementPasteWithMetadata,
-  ReparentTargetForPaste,
-} from '../../../../../utils/clipboard'
+import type { ElementPasteWithMetadata } from '../../../../../utils/clipboard'
 import type { ElementPaste } from '../../../../editor/action-types'
 import {
   eitherRight,
@@ -57,7 +51,6 @@ import {
   traverseArray,
 } from '../../../../../core/shared/optics/optic-creators'
 import { modify, set } from '../../../../../core/shared/optics/optic-utilities'
-import type { IndexPosition } from '../../../../../utils/utils'
 import Utils from '../../../../../utils/utils'
 import type { CanvasPoint } from '../../../../../core/shared/math-utils'
 import {
@@ -68,20 +61,16 @@ import {
   canvasPoint,
   roundTo,
   zeroCanvasRect,
-  zeroRectangle,
   zeroRectIfNullOrInfinity,
   roundPointToNearestWhole,
 } from '../../../../../core/shared/math-utils'
 import type { MetadataSnapshots } from './reparent-property-strategies'
-import type { BuiltInDependencies } from '../../../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 import type { CanvasCommand } from '../../../commands/commands'
-import type { ToReparent } from '../reparent-utils'
-import type { StaticReparentTarget } from './reparent-strategy-helpers'
 import { mapDropNulls } from '../../../../../core/shared/array-utils'
 import { treatElementAsFragmentLike } from '../fragment-like-helpers'
-import { optionalMap } from '../../../../../core/shared/optional-utils'
 import { setProperty } from '../../../commands/set-property-command'
+import type { ReparentTargetForPaste } from '../reparent-utils'
 
 export function isAllowedToReparent(
   projectContents: ProjectContentTreeRoot,

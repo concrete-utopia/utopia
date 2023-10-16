@@ -26,8 +26,7 @@ import type {
   NodeModules,
 } from '../../../../core/shared/project-file-types'
 import { fixUtopiaElement } from '../../../../core/shared/uid-utils'
-import { getTargetParentForPaste } from '../../../../utils/clipboard'
-import type { ElementPasteWithMetadata, ReparentTargetForPaste } from '../../../../utils/clipboard'
+import type { ElementPasteWithMetadata } from '../../../../utils/clipboard'
 import type { IndexPosition } from '../../../../utils/utils'
 import { absolute, front } from '../../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
@@ -63,8 +62,16 @@ import {
 } from '../strategies/reparent-helpers/reparent-property-changes'
 import { reparentStrategyForPaste } from '../strategies/reparent-helpers/reparent-strategy-helpers'
 import type { ReparentStrategy } from '../strategies/reparent-helpers/reparent-strategy-helpers'
-import type { ElementToReparent, PathToReparent } from '../strategies/reparent-utils'
-import { elementToReparent, getReparentOutcomeMultiselect } from '../strategies/reparent-utils'
+import type {
+  ElementToReparent,
+  PathToReparent,
+  ReparentTargetForPaste,
+} from '../strategies/reparent-utils'
+import {
+  elementToReparent,
+  getReparentOutcomeMultiselect,
+  getTargetParentForPaste,
+} from '../strategies/reparent-utils'
 import { adjustIntendedCoordinatesForGroups, collectGroupTrueUp } from './navigator-reparent'
 import type { PostActionChoice } from './post-action-options'
 

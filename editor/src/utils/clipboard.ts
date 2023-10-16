@@ -9,24 +9,18 @@ import type {
 import {
   getElementFromProjectContents,
   getOpenUIJSFileKey,
-  withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import {
-  isJSXConditionalExpression,
-  type ElementInstanceMetadataMap,
-  type JSXElementChild,
-  isJSXElement,
-} from '../core/shared/element-template'
+import { type ElementInstanceMetadataMap } from '../core/shared/element-template'
 import type { ElementPath } from '../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../core/shared/project-file-types'
 import type { PasteResult } from './clipboard-utils'
 import { extractFiles, extractUtopiaDataFromClipboardData } from './clipboard-utils'
 import Utils from './utils'
 import type { FileResult, ImageResult } from '../core/shared/file-utils'
-import type { CanvasPoint, MaybeInfinityCanvasRectangle } from '../core/shared/math-utils'
+import type { CanvasPoint } from '../core/shared/math-utils'
 import { isInfinityRectangle } from '../core/shared/math-utils'
 import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
@@ -36,29 +30,22 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../components/custom-code/code-file'
-import type { NonEmptyArray } from '../core/shared/array-utils'
-import { mapDropNulls, isNonEmptyArray } from '../core/shared/array-utils'
+import { mapDropNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
 import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import type { InsertionPath } from '../components/editor/store/insertion-path'
-import { childInsertionPath, getInsertionPath } from '../components/editor/store/insertion-path'
 import type { ElementPathTrees } from '../core/shared/element-path-tree'
-import {
-  isElementRenderedBySameComponent,
-  replaceJSXElementCopyData,
-} from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
+import { replaceJSXElementCopyData } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   PropsPreservedPastePostActionChoice,
   PropsReplacedPastePostActionChoice,
 } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
-import type { Either } from '../core/shared/either'
-import { isLeft, left, right } from '../core/shared/either'
+import { isLeft } from '../core/shared/either'
 import { notice } from '../components/common/notice'
-import { maybeBranchConditionalCase } from '../core/model/conditionals'
-import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
+import { getTargetParentForPaste } from '../components/canvas/canvas-strategies/strategies/reparent-utils'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -72,7 +59,7 @@ export interface CopyData {
   originalAllElementProps: AllElementProps
 }
 
-interface ParsedCopyData {
+export interface ParsedCopyData {
   elementPaste: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
   originalContextElementPathTrees: ElementPathTrees
@@ -421,282 +408,4 @@ export function filterMetadataForCopy(
     filteredMetadata,
   )
   return filteredMetadataWithoutProps
-}
-
-function rectangleSizesEqual(
-  a: MaybeInfinityCanvasRectangle | null,
-  b: MaybeInfinityCanvasRectangle | null,
-): boolean {
-  if (a == null || b == null || isInfinityRectangle(a) || isInfinityRectangle(b)) {
-    return false
-  }
-
-  return a.height === b.height && a.width === b.width
-}
-
-export type ReparentTargetForPaste =
-  | {
-      type: 'sibling'
-      siblingPath: ElementPath
-      parentPath: InsertionPath
-    }
-  | { type: 'parent'; parentPath: InsertionPath }
-
-type PasteParentNotFoundError =
-  | 'Cannot find a suitable parent'
-  | 'Cannot insert component instance into component definition'
-
-function checkComponentNotInsertedIntoOwnDefinition(
-  selectedViews: NonEmptyArray<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  elementsToInsert: JSXElementChild[],
-): boolean {
-  const parentTarget = EP.getCommonParentOfNonemptyPathArray(selectedViews, true)
-
-  const jsxElements = elementsToInsert.filter(isJSXElement)
-
-  return jsxElements.some((element) =>
-    isElementRenderedBySameComponent(metadata, parentTarget, element),
-  )
-}
-
-function insertIntoSlot(
-  selectedViews: NonEmptyArray<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  projectContents: ProjectContentTreeRoot,
-  elementPathTrees: ElementPathTrees,
-  numberOfElementsToInsert: number,
-): ReparentTargetForPaste | null {
-  const targetPath = selectedViews[0]
-  const parentPath = EP.parentPath(targetPath)
-  const parentElement = withUnderlyingTarget(parentPath, projectContents, null, (_, element) => {
-    return element
-  })
-
-  if (parentElement == null || !isJSXConditionalExpression(parentElement)) {
-    return null
-  }
-
-  const wrapperFragmentUID = generateUidWithExistingComponents(projectContents)
-  const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
-  if (conditionalCase == null) {
-    return null
-  }
-
-  const parentInsertionPath = getInsertionPath(
-    targetPath,
-    projectContents,
-    metadata,
-    elementPathTrees,
-    wrapperFragmentUID,
-    numberOfElementsToInsert,
-  )
-
-  if (parentInsertionPath == null) {
-    return null
-  }
-
-  return { type: 'parent', parentPath: parentInsertionPath }
-}
-
-function pasteNextToSameSizedElement(
-  copyData: ParsedCopyData,
-  selectedViews: NonEmptyArray<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-): ReparentTargetForPaste | null {
-  const targetPath = selectedViews[0]
-  const elementPasteEntry = copyData.elementPaste.at(0)
-  if (elementPasteEntry == null) {
-    return null
-  }
-
-  const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(targetPath, metadata)
-  // if the pasted item's BB is the same size as the selected item's BB
-  const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-    elementPasteEntry.originalElementPath,
-    copyData.originalContextMetadata,
-  )
-  // if the selected item's parent is autolayouted
-  const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(targetPath))
-
-  const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
-
-  const pastingAbsoluteToAbsolute =
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(metadata, targetPath),
-    ) &&
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(
-        copyData.originalContextMetadata,
-        elementPasteEntry.originalElementPath,
-      ),
-    )
-
-  const pastedElementNames = mapDropNulls(
-    (element) => MetadataUtils.getJSXElementName(element.element),
-    copyData.elementPaste,
-  )
-
-  const parentPath = EP.parentPath(targetPath)
-  const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
-    parentPath,
-    metadata,
-    pastedElementNames,
-  )
-
-  if (
-    rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-    (isSelectedViewParentAutolayouted || pastingAbsoluteToAbsolute) &&
-    targetElementSupportsInsertedElement
-  ) {
-    return {
-      type: 'sibling',
-      siblingPath: targetPath,
-      parentPath: childInsertionPath(EP.parentPath(targetPath)),
-    }
-  }
-  return null
-}
-
-function pasteIntoParentOrGrandparent(
-  elementsToInsert: JSXElementChild[],
-  projectContents: ProjectContentTreeRoot,
-  selectedViews: NonEmptyArray<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
-): ReparentTargetForPaste | null {
-  const pastedElementNames = mapDropNulls(
-    (element) => (element.type === 'JSX_ELEMENT' ? element.name : null),
-    elementsToInsert,
-  )
-
-  const parentTarget = EP.getCommonParentOfNonemptyPathArray(selectedViews, true)
-
-  // paste into parent
-  const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
-    parentTarget,
-    metadata,
-    pastedElementNames,
-  )
-  if (
-    MetadataUtils.targetSupportsChildren(
-      projectContents,
-      metadata,
-      parentTarget,
-      elementPathTree,
-    ) &&
-    targetElementSupportsInsertedElement
-  ) {
-    return { type: 'parent', parentPath: childInsertionPath(parentTarget) }
-  }
-
-  // paste into parent of parent
-  const parentOfSelected = EP.parentPath(parentTarget)
-  if (
-    MetadataUtils.targetSupportsChildren(
-      projectContents,
-      metadata,
-      parentOfSelected,
-      elementPathTree,
-    )
-  ) {
-    return { type: 'parent', parentPath: childInsertionPath(parentOfSelected) }
-  }
-  return null
-}
-
-export function getTargetParentForOneShotInsertion(
-  storyboardPath: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-  selectedViews: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  elementsToInsert: JSXElementChild[],
-  elementPathTree: ElementPathTrees,
-): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
-  if (!isNonEmptyArray(selectedViews)) {
-    return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
-  }
-
-  if (checkComponentNotInsertedIntoOwnDefinition(selectedViews, metadata, elementsToInsert)) {
-    return left('Cannot insert component instance into component definition')
-  }
-
-  const insertIntoSlotResult = insertIntoSlot(
-    selectedViews,
-    metadata,
-    projectContents,
-    elementPathTree,
-    elementsToInsert.length,
-  )
-  if (insertIntoSlotResult != null) {
-    return right(insertIntoSlotResult)
-  }
-
-  const pasteIntoParentOrGrandparentResult = pasteIntoParentOrGrandparent(
-    elementsToInsert,
-    projectContents,
-    selectedViews,
-    metadata,
-    elementPathTree,
-  )
-  if (pasteIntoParentOrGrandparentResult != null) {
-    return right(pasteIntoParentOrGrandparentResult)
-  }
-  return left('Cannot find a suitable parent')
-}
-
-export function getTargetParentForPaste(
-  storyboardPath: ElementPath,
-  projectContents: ProjectContentTreeRoot,
-  selectedViews: Array<ElementPath>,
-  metadata: ElementInstanceMetadataMap,
-  copyData: ParsedCopyData,
-  elementPathTree: ElementPathTrees,
-): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
-  if (!isNonEmptyArray(selectedViews)) {
-    return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
-  }
-  const pastedJSXElements = mapDropNulls(
-    (p) =>
-      MetadataUtils.getJSXElementFromMetadata(
-        copyData.originalContextMetadata,
-        p.originalElementPath,
-      ),
-    copyData.elementPaste,
-  )
-  if (checkComponentNotInsertedIntoOwnDefinition(selectedViews, metadata, pastedJSXElements)) {
-    return left('Cannot insert component instance into component definition')
-  }
-
-  const insertIntoSlotResult = insertIntoSlot(
-    selectedViews,
-    metadata,
-    projectContents,
-    elementPathTree,
-    copyData.elementPaste.length,
-  )
-  if (insertIntoSlotResult != null) {
-    return right(insertIntoSlotResult)
-  }
-
-  const pasteNextToSameSizedElementResult = pasteNextToSameSizedElement(
-    copyData,
-    selectedViews,
-    metadata,
-  )
-  if (pasteNextToSameSizedElementResult != null) {
-    return right(pasteNextToSameSizedElementResult)
-  }
-
-  const pasteIntoParentOrGrandparentResult = pasteIntoParentOrGrandparent(
-    copyData.elementPaste.map((e) => e.element),
-    projectContents,
-    selectedViews,
-    metadata,
-    elementPathTree,
-  )
-  if (pasteIntoParentOrGrandparentResult != null) {
-    return right(pasteIntoParentOrGrandparentResult)
-  }
-  return left('Cannot find a suitable parent')
 }
