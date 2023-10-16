@@ -1221,62 +1221,6 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
     })
   })
-  // TODO reenable this after conditionals work well with reparent
-  xit('renders correctly with ChildrenHider set to hide children', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      getChildrenHiderProjectCode(true),
-      'await-first-dom-report',
-    )
-
-    const dragDelta = windowPoint({ x: 0, y: -150 })
-    await dragElement(
-      renderResult,
-      'child-to-reparent',
-      dragDelta,
-      cmdModifier,
-      {
-        cursor: CSSCursor.NotPermitted,
-      },
-      null,
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-      'utopia-storyboard-uid',
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/outer-div',
-      'utopia-storyboard-uid/scene-aaa/outer-div/children-hider',
-    ])
-  })
-  xit('renders correctly with ChildrenHider set to show children', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      getChildrenHiderProjectCode(false),
-      'await-first-dom-report',
-    )
-
-    const dragDelta = windowPoint({ x: 0, y: -150 })
-    await dragElement(
-      renderResult,
-      'child-to-reparent',
-      dragDelta,
-      cmdModifier,
-      {
-        cursor: CSSCursor.Move,
-      },
-      null,
-    )
-
-    await renderResult.getDispatchFollowUpActionsFinished()
-
-    expect(Object.keys(renderResult.getEditorState().editor.spyMetadata)).toEqual([
-      'utopia-storyboard-uid',
-      'utopia-storyboard-uid/scene-aaa',
-      'utopia-storyboard-uid/scene-aaa/outer-div',
-      'utopia-storyboard-uid/scene-aaa/outer-div/children-hider',
-      'utopia-storyboard-uid/scene-aaa/outer-div/children-hider/child-to-reparent',
-    ])
-  })
 
   describe('fragment-like reparent tests', () => {
     AllFragmentLikeTypes.forEach((type) => {
