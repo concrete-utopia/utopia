@@ -472,17 +472,13 @@ function checkComponentNotInsertedIntoOwnDefinition(
 }
 
 function insertIntoSlot(
-  selectedViews: ElementPath[],
+  selectedViews: NonEmptyArray<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   elementPathTrees: ElementPathTrees,
   numberOfElementsToInsert: number,
 ): ReparentTargetForPaste | null {
-  if (selectedViews.length !== 1) {
-    return null
-  }
-  // This should exist because the check above proves there should be a value.
-  const targetPath = selectedViews[0]!
+  const targetPath = selectedViews[0]
   const parentPath = EP.parentPath(targetPath)
   const parentElement = withUnderlyingTarget(parentPath, projectContents, null, (_, element) => {
     return element
@@ -492,8 +488,6 @@ function insertIntoSlot(
     return null
   }
 
-  // Check if the target parent is an attribute,
-  // if so replace the target parent instead of trying to insert into it.
   const wrapperFragmentUID = generateUidWithExistingComponents(projectContents)
   const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
   if (conditionalCase == null) {
@@ -518,15 +512,15 @@ function insertIntoSlot(
 
 function pasteNextToSameSizedElement(
   copyData: ParsedCopyData,
-  selectedViews: ElementPath[],
+  selectedViews: NonEmptyArray<ElementPath>,
   metadata: ElementInstanceMetadataMap,
 ): ReparentTargetForPaste | null {
-  if (selectedViews.length !== 1) {
+  const targetPath = selectedViews[0]
+  const elementPasteEntry = copyData.elementPaste.at(0)
+  if (elementPasteEntry == null) {
     return null
   }
-  // These should exist because the check above proves there should be a values there.
-  const targetPath = selectedViews[0]!
-  const elementPasteEntry = copyData.elementPaste[0]!
+
   const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(targetPath, metadata)
   // if the pasted item's BB is the same size as the selected item's BB
   const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
@@ -622,7 +616,6 @@ function pasteIntoParentOrGrandparent(
   return null
 }
 
-// TODO: insert into slot
 export function getTargetParentForOneShotInsertion(
   projectContents: ProjectContentTreeRoot,
   selectedViews: NonEmptyArray<ElementPath>,
