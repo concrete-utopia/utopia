@@ -8,12 +8,13 @@ import {
   isFiniteRectangle,
 } from '../../../core/shared/math-utils'
 import type { NodeModules, ElementPath } from '../../../core/shared/project-file-types'
+import type { IndexPosition } from '../../../utils/utils'
 import { front } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { autoLayoutParentAbsoluteOrStatic } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-parent-lookup'
 import type { PathToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { getReparentOutcome } from '../../canvas/canvas-strategies/strategies/reparent-utils'
-import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
+import { reorderElement } from '../../canvas/commands/reorder-element-command'
 import { getConvertIndividualElementToAbsoluteCommands } from '../../inspector/inspector-common'
 import type { CustomInspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import type { AllElementProps } from '../store/editor-state'
@@ -24,6 +25,7 @@ export type MoveInspectorStrategy = CustomInspectorStrategy<ElementPath>
 export const convertToAbsoluteAndMoveStrategy = (
   element: PathToReparent,
   parentInsertionPath: InsertionPath,
+  indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
@@ -88,7 +90,11 @@ export const convertToAbsoluteAndMoveStrategy = (
         : []
 
     return {
-      commands: [...escapeHatchCommands, ...result.commands],
+      commands: [
+        ...escapeHatchCommands,
+        ...result.commands,
+        reorderElement('on-complete', result.newPath, indexPosition),
+      ],
       data: result.newPath,
     }
   },

@@ -736,6 +736,7 @@ export function editorMoveTemplate(
       convertToAbsoluteAndMoveStrategy(
         pathToReparent(target),
         insertionPath,
+        indexPosition,
         builtInDependencies,
         editor.projectContents,
         editor.nodeModules.files,

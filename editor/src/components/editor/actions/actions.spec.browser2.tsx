@@ -6510,10 +6510,10 @@ export var storyboard = (
                 style={{
                   backgroundColor: 'orange',
                   height: 60,
+                  width: 100,
                   position: 'absolute',
                   left: 20,
                   top: 134,
-                  width: 100,
                 }}
                 data-uid='baz'
               />
