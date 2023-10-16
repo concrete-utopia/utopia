@@ -49,7 +49,7 @@ export const moveAsAbsoluteStrategy = (
       builtInDependencies,
       projectContents,
       nodeModules,
-      'force-pins',
+      'do-not-force-pins',
     )
 
     if (result == null) {
