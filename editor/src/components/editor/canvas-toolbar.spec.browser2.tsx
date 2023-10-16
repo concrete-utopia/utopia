@@ -625,7 +625,7 @@ export var storyboard = (
   })
 
   describe('add element to conditional', () => {
-    it(`can't add element to the root of a conditional`, async () => {
+    it(`when the root of a conditional is selected, element is added as a sibling`, async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='container'>
@@ -638,8 +638,6 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      const initialCode = getPrintedUiJsCode(editor.getEditorState())
-
       const slot = editor.renderedDOM.getByText('Conditional')
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
@@ -647,10 +645,31 @@ export var storyboard = (
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional',
       ])
 
-      await expectNoAction(editor, () => insertViaAddElementPopup(editor, 'img'))
+      await insertViaAddElementPopup(editor, 'img')
 
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialCode)
-      expectChildrenNotSupportedToastToBePresent(editor)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(`
+        <div data-uid='container'>
+          {
+            // @utopia/uid=conditional
+            [].length === 0 ? null : (
+              <div data-uid='33d'>"Hello there"</div>
+            )
+          }
+          <img
+            style={{
+              width: 100,
+              height: 100,
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+            src='/editor/utopia-logo-white-fill.png?hash=nocommit'
+            data-uid='ele'
+          />
+        </div>
+      `),
+      )
     })
     it('add element to true branch of a conditional', async () => {
       const editor = await renderTestEditorWithCode(
