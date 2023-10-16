@@ -34,6 +34,9 @@ export const removeFlexConvertToAbsolute: InspectorStrategy = {
     const commands = filterKeepFlexContainers(metadata, elementPaths).flatMap((path) =>
       removeFlexConvertToAbsoluteOne(metadata, pathTrees, path),
     )
-    return nullOrNonEmpty(commands)
+    if (commands == null) {
+      return null
+    }
+    return { commands: commands, data: null }
   },
 }

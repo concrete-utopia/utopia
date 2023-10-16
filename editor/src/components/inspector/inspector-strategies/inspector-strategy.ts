@@ -6,48 +6,70 @@ import type { EditorDispatch } from '../../editor/action-types'
 import { applyCommandsAction } from '../../editor/actions/action-creators'
 import type { AllElementProps } from '../../editor/store/editor-state'
 
-export interface InspectorStrategy {
+export interface InspectorStrategyResult<T> {
+  commands: Array<CanvasCommand>
+  data: T
+}
+
+export interface InspectorStrategy<T> {
   name: string
   strategy: (
     metadata: ElementInstanceMetadataMap,
     selectedElementPaths: Array<ElementPath>,
     elementPathTree: ElementPathTrees,
     allElementProps: AllElementProps,
-  ) => Array<CanvasCommand> | null
+  ) => InspectorStrategyResult<T> | null
 }
 
-export function commandsForFirstApplicableStrategy(
+export function resultForFirstApplicableStrategy<T>(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
-  strategies: Array<InspectorStrategy>,
-): Array<CanvasCommand> | null {
+  strategies: Array<InspectorStrategy<T>>,
+): InspectorStrategyResult<T> | null {
   for (const strategy of strategies) {
-    const commands = strategy.strategy(metadata, selectedViews, elementPathTree, allElementProps)
-    if (commands != null) {
-      return commands
+    const result = strategy.strategy(metadata, selectedViews, elementPathTree, allElementProps)
+    if (result != null) {
+      return result
     }
   }
   return null
 }
 
-export function executeFirstApplicableStrategy(
-  dispatch: EditorDispatch,
+export function commandsForFirstApplicableStrategy<T>(
   metadata: ElementInstanceMetadataMap,
-  selectedViews: ElementPath[],
+  selectedViews: Array<ElementPath>,
   elementPathTree: ElementPathTrees,
   allElementProps: AllElementProps,
-  strategies: InspectorStrategy[],
-): void {
-  const commands = commandsForFirstApplicableStrategy(
+  strategies: Array<InspectorStrategy<T>>,
+): Array<CanvasCommand> | null {
+  const result = resultForFirstApplicableStrategy(
     metadata,
     selectedViews,
     elementPathTree,
     allElementProps,
     strategies,
   )
-  if (commands != null) {
-    dispatch([applyCommandsAction(commands)])
+  return result?.commands ?? null
+}
+
+export function executeFirstApplicableStrategy<T>(
+  dispatch: EditorDispatch,
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: ElementPath[],
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  strategies: InspectorStrategy<T>[],
+): void {
+  const result = resultForFirstApplicableStrategy(
+    metadata,
+    selectedViews,
+    elementPathTree,
+    allElementProps,
+    strategies,
+  )
+  if (result != null) {
+    dispatch([applyCommandsAction(result.commands)])
   }
 }
