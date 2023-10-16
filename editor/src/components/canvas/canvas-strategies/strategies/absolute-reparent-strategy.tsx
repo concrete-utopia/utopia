@@ -143,7 +143,7 @@ export function baseAbsoluteReparentStrategy(
             if (reparentTarget.shouldReparent && allowedToReparent) {
               const commands = mapDropNulls(
                 (selectedElement) =>
-                  createReparentAndOffsetCommands(
+                  createAbsoluteReparentAndOffsetCommands(
                     selectedElement,
                     newParent,
                     null,
@@ -216,7 +216,7 @@ export function baseAbsoluteReparentStrategy(
   }
 }
 
-export function createReparentAndOffsetCommands(
+export function createAbsoluteReparentAndOffsetCommands(
   target: ElementPath,
   newParent: InsertionPath,
   indexPosition: IndexPosition | null,

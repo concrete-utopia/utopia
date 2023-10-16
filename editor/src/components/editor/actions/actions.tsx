@@ -522,8 +522,18 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
-import { createReparentAndOffsetCommands } from '../../canvas/canvas-strategies/strategies/absolute-reparent-strategy'
+import { createAbsoluteReparentAndOffsetCommands } from '../../canvas/canvas-strategies/strategies/absolute-reparent-strategy'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import {
+  commandsForFirstApplicableStrategy,
+  executeFirstApplicableStrategy,
+  resultForFirstApplicableStrategy,
+} from '../../inspector/inspector-strategies/inspector-strategy'
+import { insertAsAbsoluteStrategy } from '../one-shot-insertion-strategies/insert-as-absolute-strategy'
+import { insertAsStaticStrategy } from '../one-shot-insertion-strategies/insert-as-static-strategy'
+import { moveAsAbsoluteStrategy } from '../one-shot-move-strategies/move-as-absolute-strategy'
+import { convertToAbsoluteAndMoveStrategy } from '../one-shot-move-strategies/convert-to-absolute-and-move'
+import { ReparentElement } from '../../canvas/commands/reparent-element-command'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -699,6 +709,49 @@ export function insertIntoWrapper(
   return {
     editor: updatedEditor,
     newPaths: newPaths,
+  }
+}
+
+export function editorMoveTemplate(
+  target: ElementPath,
+  insertionPath: InsertionPath,
+  indexPosition: IndexPosition,
+  editor: EditorModel,
+  builtInDependencies: BuiltInDependencies,
+): { editor: EditorModel; newPath: ElementPath | null } {
+  const result = resultForFirstApplicableStrategy(
+    editor.jsxMetadata,
+    editor.selectedViews,
+    editor.elementPathTree,
+    editor.allElementProps,
+    [
+      moveAsAbsoluteStrategy(
+        pathToReparent(target),
+        insertionPath,
+        indexPosition,
+        builtInDependencies,
+        editor.projectContents,
+        editor.nodeModules.files,
+      ),
+      convertToAbsoluteAndMoveStrategy(
+        pathToReparent(target),
+        insertionPath,
+        builtInDependencies,
+        editor.projectContents,
+        editor.nodeModules.files,
+      ),
+    ],
+  )
+
+  if (result == null) {
+    return { editor: editor, newPath: null }
+  }
+
+  const updatedEditor = foldAndApplyCommandsSimple(editor, result.commands)
+
+  return {
+    editor: updatedEditor,
+    newPath: result.data,
   }
 }
 
@@ -2253,30 +2306,21 @@ export const UPDATE_FNS = {
                   )
 
             const withChildrenMoved = children.reduce((working, child) => {
-              if (parentPath == null) {
-                return working
-              }
-              const reparentOutcome = createReparentAndOffsetCommands(
+              const result = editorMoveTemplate(
                 child.elementPath,
-                parentPath,
+                parentPath!,
                 indexPosition,
-                working.jsxMetadata,
-                working.elementPathTree,
-                working.allElementProps,
+                working,
                 builtInDependencies,
-                working.projectContents,
-                working.nodeModules.files,
-                'do-not-force-pins',
               )
 
-              if (reparentOutcome != null) {
-                const reparentResult = foldAndApplyCommandsSimple(working, reparentOutcome.commands)
-                const newPath = reparentOutcome.newPath
+              if (result.newPath != null) {
+                const newPath = result.newPath
                 newSelection.push(newPath)
                 if (isGroupChild) {
                   groupTrueUps.push(newPath)
                   return foldAndApplyCommandsSimple(
-                    reparentResult,
+                    result.editor,
                     createPinChangeCommandsForElementBecomingGroupChild(
                       workingEditor.jsxMetadata,
                       child,
@@ -2286,7 +2330,7 @@ export const UPDATE_FNS = {
                     ),
                   )
                 }
-                return reparentResult
+                return result.editor
               }
               return working
             }, workingEditor)

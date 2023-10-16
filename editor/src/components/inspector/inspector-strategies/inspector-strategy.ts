@@ -6,6 +6,22 @@ import type { EditorDispatch } from '../../editor/action-types'
 import { applyCommandsAction } from '../../editor/actions/action-creators'
 import type { AllElementProps } from '../../editor/store/editor-state'
 
+export type CustomInspectorStrategyResult<T> = T extends undefined
+  ? {
+      commands: Array<CanvasCommand>
+    }
+  : { commands: Array<CanvasCommand>; data: T }
+
+export interface CustomInspectorStrategy<T> {
+  name: string
+  strategy: (
+    metadata: ElementInstanceMetadataMap,
+    selectedElementPaths: Array<ElementPath>,
+    elementPathTree: ElementPathTrees,
+    allElementProps: AllElementProps,
+  ) => CustomInspectorStrategyResult<T> | null
+}
+
 export interface InspectorStrategy {
   name: string
   strategy: (
@@ -14,6 +30,22 @@ export interface InspectorStrategy {
     elementPathTree: ElementPathTrees,
     allElementProps: AllElementProps,
   ) => Array<CanvasCommand> | null
+}
+
+export function resultForFirstApplicableStrategy<T>(
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: Array<ElementPath>,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  strategies: Array<CustomInspectorStrategy<T>>,
+): CustomInspectorStrategyResult<T> | null {
+  for (const strategy of strategies) {
+    const result = strategy.strategy(metadata, selectedViews, elementPathTree, allElementProps)
+    if (result != null) {
+      return result
+    }
+  }
+  return null
 }
 
 export function commandsForFirstApplicableStrategy(
