@@ -26,6 +26,7 @@ import { getCursorFromEditor } from '../../controls/select-mode/cursor-component
 import {
   mouseClickAtPoint,
   mouseDownAtPoint,
+  mouseDragFromPointToPoint,
   mouseDragFromPointToPointNoMouseDown,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
@@ -38,6 +39,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
+  TestScenePath,
   TestSceneUID,
 } from '../../ui-jsx.test-utils'
 import type { FragmentLikeType } from './fragment-like-helpers'
@@ -50,7 +52,11 @@ import {
 import { queryHelpers } from '@testing-library/react'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
-import { boundingClientRectToCanvasRectangle } from '../../../../utils/utils.test-utils'
+import {
+  boundingClientRectToCanvasRectangle,
+  selectComponentsForTest,
+  wait,
+} from '../../../../utils/utils.test-utils'
 
 interface CheckCursor {
   cursor: CSSCursor | null
@@ -1820,6 +1826,221 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       )
     })
   })
+  describe('snapping', () => {
+    const NewParentTestId = 'new-parent'
+    const NewSiblingTestId = 'new-sibling'
+    const project = (innards: string) => `<div
+    style={{
+      height: '100%',
+      width: '100%',
+      contain: 'layout',
+    }}
+    data-uid='root'
+  >
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 28,
+        top: 67,
+        width: 244,
+        height: 141,
+        padding: '37px 60px',
+      }}
+      data-testid='${NewParentTestId}'
+      data-uid='new-parent'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 59,
+          height: 67,
+          contain: 'layout',
+          position: 'absolute',
+          left: 22,
+          top: 0,
+        }}
+        data-testid='${NewSiblingTestId}'
+        data-uid='new-sibling'
+      />
+    </div>
+    ${innards}
+  </div>`
+
+    it('when reparented from absolute, it snaps to new parent and children of new parent', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          project(`
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 130,
+            top: 242,
+            width: 70,
+            height: 80,
+          }}
+          data-uid='container'
+        >
+          <img
+            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+            alt='Utopia logo'
+            style={{
+              width: 46,
+              height: 58,
+              position: 'absolute',
+              left: 12,
+              top: 11,
+            }}
+            data-testid='drag-me'
+            data-uid='drag-me'
+          />
+        </div>
+    `),
+        ),
+        'await-first-dom-report',
+      )
+
+      const newParentCenterX = getElementCenterCoords(renderResult, NewParentTestId).x
+      const newSiblingCenterY = getElementCenterCoords(renderResult, NewSiblingTestId).y
+      const elementToDragCenter = getElementCenterCoords(renderResult, 'drag-me')
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(renderResult, [
+        EP.appendNewElementPath(TestScenePath, ['root', 'container', 'drag-me']),
+      ])
+
+      await mouseDragFromPointToPoint(
+        canvasControlsLayer,
+        elementToDragCenter,
+        windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
+        {
+          midDragCallback: async () => {
+            const guidelines =
+              renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
+            expect(guidelines).toHaveLength(2)
+            await wait(5000)
+          },
+        },
+      )
+    })
+    it('when reparented from flex, it snaps to new parent and children of new parent', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          project(`
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 130,
+            top: 242,
+            width: 'max-content',
+            height: 'max-content',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '11px 12px',
+          }}
+          data-uid='container'
+        >
+          <img
+            src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+            alt='Utopia logo'
+            style={{
+              width: 46,
+              height: 58,
+              position: 'absolute',
+              left: 12,
+              top: 11,
+            }}
+            data-testid='drag-me'
+            data-uid='drag-me'
+          />
+        </div>
+    `),
+        ),
+        'await-first-dom-report',
+      )
+
+      const newParentCenterX = getElementCenterCoords(renderResult, NewParentTestId).x
+      const newSiblingCenterY = getElementCenterCoords(renderResult, NewSiblingTestId).y
+      const elementToDragCenter = getElementCenterCoords(renderResult, 'drag-me')
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(renderResult, [
+        EP.appendNewElementPath(TestScenePath, ['root', 'container', 'drag-me']),
+      ])
+
+      await mouseDragFromPointToPoint(
+        canvasControlsLayer,
+        elementToDragCenter,
+        windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
+        {
+          midDragCallback: async () => {
+            const guidelines =
+              renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
+            expect(guidelines).toHaveLength(2)
+            await wait(5000)
+          },
+        },
+      )
+    })
+    it('when reparented from flow, it snaps to new parent and children of new parent', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(
+          project(`
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 130,
+              top: 242,
+              width: 70,
+              height: 80,
+              padding: '11px 12px',
+            }}
+          >
+            <img
+              src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+              alt='Utopia logo'
+              style={{
+                width: 46,
+                height: 58,
+                position: 'absolute',
+                left: 12,
+                top: 11,
+              }}
+              data-testid='drag-me'
+            />
+          </div>
+    `),
+        ),
+        'await-first-dom-report',
+      )
+
+      const newParentCenterX = getElementCenterCoords(renderResult, NewParentTestId).x
+      const newSiblingCenterY = getElementCenterCoords(renderResult, NewSiblingTestId).y
+      const elementToDragCenter = getElementCenterCoords(renderResult, 'drag-me')
+      const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+      await selectComponentsForTest(renderResult, [
+        EP.appendNewElementPath(TestScenePath, ['root', 'container', 'drag-me']),
+      ])
+
+      await mouseDragFromPointToPoint(
+        canvasControlsLayer,
+        elementToDragCenter,
+        windowPoint({ x: newParentCenterX, y: newSiblingCenterY }),
+        {
+          midDragCallback: async () => {
+            const guidelines =
+              renderResult.getEditorState().editor.canvas.controls.snappingGuidelines
+            expect(guidelines).toHaveLength(2)
+            await wait(5000)
+          },
+        },
+      )
+    })
+  })
 })
 
 function testProjectWithUnstyledDivOrFragment(type: FragmentLikeType): string {
@@ -2054,4 +2275,11 @@ function testProjectWithUnstyledDivOrFragmentOnCanvas(type: FragmentLikeType): s
   }
 `
   return formatTestProjectCode(code)
+}
+
+function getElementCenterCoords(editor: EditorRenderResult, testId: string): WindowPoint {
+  const element = editor.renderedDOM.getByTestId(testId)
+  const bounds = element.getBoundingClientRect()
+  const center = windowPoint({ x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 })
+  return center
 }
