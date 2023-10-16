@@ -5735,7 +5735,7 @@ export var storyboard = (
         ),
       )
     })
-    it(`Unwraps an flex element`, async () => {
+    it(`Unwraps a flex element`, async () => {
       const testCode = `
       <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
         <div
@@ -5763,7 +5763,7 @@ export var storyboard = (
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
+          <div data-uid='ccc' style={{width: 50, height: 100, position: 'absolute', left: 80, top: 55 }} />
         </div>`,
         ),
       )
