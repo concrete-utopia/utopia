@@ -29,10 +29,7 @@ import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
-import { isNonEmptyArray, safeIndex } from '../../core/shared/array-utils'
-import type { ElementPath } from '../../core/shared/project-file-types'
 import { elementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
-import { childInsertionPath, getInsertionPath } from './store/insertion-path'
 import { fixUtopiaElement, generateConsistentUID } from '../../core/shared/uid-utils'
 import { getAllUniqueUids } from '../../core/model/get-unique-ids'
 import { assertNever } from '../../core/shared/utils'
@@ -45,7 +42,7 @@ import { executeFirstApplicableStrategy } from '../inspector/inspector-strategie
 import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
 import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
-import { getTargetParentForOneShotInsertion, reparentIntoParent } from '../../utils/clipboard'
+import { getTargetParentForOneShotInsertion } from '../../utils/clipboard'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -198,15 +195,14 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         elementToInsert.value.importsToAdd,
       )
 
-      const targetParent = !isNonEmptyArray(selectedViewsRef.current)
-        ? reparentIntoParent(childInsertionPath(storyboardPath))
-        : getTargetParentForOneShotInsertion(
-            projectContentsRef.current,
-            selectedViewsRef.current,
-            jsxMetadataRef.current,
-            [element.element],
-            elementPathTreeRef.current,
-          )
+      const targetParent = getTargetParentForOneShotInsertion(
+        storyboardPath,
+        projectContentsRef.current,
+        selectedViewsRef.current,
+        jsxMetadataRef.current,
+        [element.element],
+        elementPathTreeRef.current,
+      )
 
       if (isLeft(targetParent)) {
         dispatch([

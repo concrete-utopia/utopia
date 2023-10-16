@@ -144,20 +144,18 @@ function getJSXElementPasteActions(
     return []
   }
 
-  const target = !isNonEmptyArray(selectedViews)
-    ? reparentIntoParent(childInsertionPath(storyboardPath))
-    : getTargetParentForPaste(
-        editor.projectContents,
-        selectedViews,
-        editor.jsxMetadata,
-        {
-          elementPaste: copyDataToUse.elements,
-          originalContextMetadata: copyDataToUse.targetOriginalContextMetadata,
-          originalContextElementPathTrees:
-            clipboardFirstEntry.targetOriginalContextElementPathTrees,
-        },
-        editor.elementPathTree,
-      )
+  const target = getTargetParentForPaste(
+    storyboardPath,
+    editor.projectContents,
+    selectedViews,
+    editor.jsxMetadata,
+    {
+      elementPaste: copyDataToUse.elements,
+      originalContextMetadata: copyDataToUse.targetOriginalContextMetadata,
+      originalContextElementPathTrees: clipboardFirstEntry.targetOriginalContextElementPathTrees,
+    },
+    editor.elementPathTree,
+  )
 
   if (isLeft(target)) {
     return [
@@ -221,15 +219,14 @@ function getFilePasteActions(
     return []
   }
 
-  const target = !isNonEmptyArray(selectedViews)
-    ? reparentIntoParent(childInsertionPath(storyboardPath))
-    : getTargetParentForPaste(
-        projectContents,
-        selectedViews,
-        componentMetadata,
-        { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
-        elementPathTree,
-      )
+  const target = getTargetParentForPaste(
+    storyboardPath,
+    projectContents,
+    selectedViews,
+    componentMetadata,
+    { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
+    elementPathTree,
+  )
 
   if (isLeft(target)) {
     return [
@@ -445,14 +442,6 @@ export type ReparentTargetForPaste =
     }
   | { type: 'parent'; parentPath: InsertionPath }
 
-export const reparentIntoParent = (
-  parentPath: InsertionPath,
-): Either<PasteParentNotFoundError, ReparentTargetForPaste> =>
-  right({
-    type: 'parent',
-    parentPath: parentPath,
-  })
-
 type PasteParentNotFoundError =
   | 'Cannot find a suitable parent'
   | 'Cannot insert component instance into component definition'
@@ -617,12 +606,17 @@ function pasteIntoParentOrGrandparent(
 }
 
 export function getTargetParentForOneShotInsertion(
+  storyboardPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  selectedViews: NonEmptyArray<ElementPath>,
+  selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   elementsToInsert: JSXElementChild[],
   elementPathTree: ElementPathTrees,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
+  if (!isNonEmptyArray(selectedViews)) {
+    return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
+  }
+
   if (checkComponentNotInsertedIntoOwnDefinition(selectedViews, metadata, elementsToInsert)) {
     return left('Cannot insert component instance into component definition')
   }
@@ -652,12 +646,16 @@ export function getTargetParentForOneShotInsertion(
 }
 
 export function getTargetParentForPaste(
+  storyboardPath: ElementPath,
   projectContents: ProjectContentTreeRoot,
-  selectedViews: NonEmptyArray<ElementPath>,
+  selectedViews: Array<ElementPath>,
   metadata: ElementInstanceMetadataMap,
   copyData: ParsedCopyData,
   elementPathTree: ElementPathTrees,
 ): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
+  if (!isNonEmptyArray(selectedViews)) {
+    return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
+  }
   const pastedJSXElements = mapDropNulls(
     (p) =>
       MetadataUtils.getJSXElementFromMetadata(
