@@ -653,9 +653,6 @@ describe('Flex Reparent To Flex Strategy', () => {
                     width: 100,
                     height: 100,
                     backgroundColor: 'teal',
-                    position: 'absolute',
-                    left: 190,
-                    top: 200,
                   }}
                   data-uid='flexchild3'
                   data-testid='flexchild3'
