@@ -6,11 +6,13 @@ import type { EditorDispatch } from '../../editor/action-types'
 import { applyCommandsAction } from '../../editor/actions/action-creators'
 import type { AllElementProps } from '../../editor/store/editor-state'
 
+interface CustomInspectorStrategyResultBase {
+  commands: Array<CanvasCommand>
+}
+
 export type CustomInspectorStrategyResult<T> = T extends undefined
-  ? {
-      commands: Array<CanvasCommand>
-    }
-  : { commands: Array<CanvasCommand>; data: T }
+  ? CustomInspectorStrategyResultBase
+  : CustomInspectorStrategyResultBase & { data: T }
 
 export interface CustomInspectorStrategy<T> {
   name: string
