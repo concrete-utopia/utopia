@@ -468,7 +468,9 @@ const SingleValue = (props: SingleValueProps<SelectOption>) => {
           />
         </div>
       )}
-      <span style={{ paddingLeft: iconShown ? 22 : 4 }}>{props.children}</span>
+      <span data-testid={props.selectProps.id} style={{ paddingLeft: iconShown ? 22 : 4 }}>
+        {props.children}
+      </span>
     </components.SingleValue>
   )
 }
