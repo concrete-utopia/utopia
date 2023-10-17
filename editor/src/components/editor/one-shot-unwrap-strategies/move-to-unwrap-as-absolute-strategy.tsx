@@ -12,7 +12,7 @@ import type { InsertionPath } from '../store/insertion-path'
 import { createAbsoluteReparentAndOffsetCommands } from '../../canvas/canvas-strategies/strategies/absolute-reparent-strategy'
 import type { UnwrapInspectorStrategy } from './unwrap-strategies-common'
 
-export const unwrapAsAbsoluteStrategy = (
+export const moveToUnwrapAsAbsoluteStrategy = (
   element: PathToReparent,
   parentInsertionPath: InsertionPath,
   indexPosition: IndexPosition,
@@ -20,7 +20,7 @@ export const unwrapAsAbsoluteStrategy = (
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
 ): UnwrapInspectorStrategy => ({
-  name: 'Move as absolute',
+  name: 'Move to unwrap as absolute',
   strategy: (
     metadata: ElementInstanceMetadataMap,
     _: Array<ElementPath>,

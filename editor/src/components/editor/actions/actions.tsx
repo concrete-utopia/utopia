@@ -524,8 +524,8 @@ import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-comm
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
-import { unwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/unwrap-as-absolute-strategy'
-import { convertToAbsoluteAndUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-unwrap'
+import { moveToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/move-to-unwrap-as-absolute-strategy'
+import { convertToAbsoluteAndMoveToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-move-to-unwrap'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -704,7 +704,7 @@ export function insertIntoWrapper(
   }
 }
 
-export function editorMoveTemplate(
+export function moveElementToUnwrap(
   target: ElementPath,
   insertionPath: InsertionPath,
   indexPosition: IndexPosition,
@@ -717,7 +717,7 @@ export function editorMoveTemplate(
     editor.elementPathTree,
     editor.allElementProps,
     [
-      unwrapAsAbsoluteStrategy(
+      moveToUnwrapAsAbsoluteStrategy(
         pathToReparent(target),
         insertionPath,
         indexPosition,
@@ -725,7 +725,7 @@ export function editorMoveTemplate(
         editor.projectContents,
         editor.nodeModules.files,
       ),
-      convertToAbsoluteAndUnwrapStrategy(
+      convertToAbsoluteAndMoveToUnwrapStrategy(
         pathToReparent(target),
         insertionPath,
         indexPosition,
@@ -2302,7 +2302,7 @@ export const UPDATE_FNS = {
               if (parentPath == null) {
                 return working
               }
-              const result = editorMoveTemplate(
+              const result = moveElementToUnwrap(
                 child.elementPath,
                 parentPath,
                 indexPosition,
