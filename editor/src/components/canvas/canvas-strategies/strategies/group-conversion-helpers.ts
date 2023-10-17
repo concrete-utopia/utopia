@@ -690,11 +690,6 @@ export function getInstanceForFrameToGroupConversion(
     return conversionForbidden('Frame has no children')
   }
 
-  // if any children is not position: absolute, bail out from the conversion
-  if (childInstances.some((child) => MetadataUtils.elementParticipatesInAutoLayout(child))) {
-    return conversionForbidden('Frame children must be positioned absolutely')
-  }
-
   return instance.element.value
 }
 
