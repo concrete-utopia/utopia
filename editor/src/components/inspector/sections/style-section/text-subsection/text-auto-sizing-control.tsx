@@ -44,7 +44,7 @@ function detectTextSizingState(
   }
 
   if (vertical.fixedHugFill?.type === 'hug' && isConsideredFixed(horizontal.fixedHugFill?.type)) {
-    return 'auto-width'
+    return 'auto-height'
   }
 
   if (
@@ -159,10 +159,10 @@ export const TextAutoSizingControl = React.memo(() => {
               tooltip: 'Auto Width',
               icon: {
                 category: 'typography',
-                type: 'auto',
+                type: 'auto-width',
                 color: 'secondary',
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
               },
             },
             {
@@ -170,10 +170,10 @@ export const TextAutoSizingControl = React.memo(() => {
               tooltip: 'Auto Height',
               icon: {
                 category: 'typography',
-                type: 'auto',
+                type: 'auto-height',
                 color: 'secondary',
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
               },
             },
             {
@@ -181,10 +181,10 @@ export const TextAutoSizingControl = React.memo(() => {
               tooltip: 'Fixed',
               icon: {
                 category: 'typography',
-                type: 'fixed',
+                type: 'fixed-size',
                 color: 'secondary',
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
               },
             },
           ] as Array<OptionChainOption<string | number>>
