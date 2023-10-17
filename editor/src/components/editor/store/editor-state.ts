@@ -162,11 +162,7 @@ import type { GuidelineWithSnappingVectorAndPointsOfRelevance } from '../../canv
 import type { PersistenceMachine } from '../persistence/persistence'
 import type { ThemeSubstate } from './store-hook-substore-types'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import type {
-  CopyData,
-  ElementPasteWithMetadata,
-  ReparentTargetForPaste,
-} from '../../../utils/clipboard'
+import type { CopyData, ElementPasteWithMetadata } from '../../../utils/clipboard'
 import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   getGroupChildStateWithGroupMetadata,
@@ -174,13 +170,10 @@ import {
   isInvalidGroupState,
   treatElementAsGroupLikeFromMetadata,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import type {
-  RemixDerivedData,
-  RemixDerivedDataFactory,
-  RemixRoutingTable,
-} from './remix-derived-data'
+import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
 import type { ProjectServerState } from './project-server-state'
 import { GridMenuWidth } from '../../canvas/grid-panels-state'
+import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 
 const ObjectPathImmutable: any = OPI
 

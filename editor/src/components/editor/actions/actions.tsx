@@ -2173,10 +2173,6 @@ export const UPDATE_FNS = {
     )
   },
   OPEN_FLOATING_INSERT_MENU: (action: OpenFloatingInsertMenu, editor: EditorModel): EditorModel => {
-    if (action.mode.insertMenuMode !== 'closed' && editor.selectedViews.length === 0) {
-      const showToastAction = showToast(notice(`There are no elements selected`, 'WARNING'))
-      return UPDATE_FNS.ADD_TOAST(showToastAction, editor)
-    }
     return {
       ...editor,
       floatingInsertMenu: action.mode,
