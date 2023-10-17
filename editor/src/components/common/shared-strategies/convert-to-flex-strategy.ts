@@ -27,6 +27,7 @@ import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
   nukeAllAbsolutePositioningPropsCommands,
+  onlyChildIsSpan,
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
@@ -88,10 +89,17 @@ export function convertLayoutToFlexCommands(
     )
     const sortedChildrenPaths = sortedChildren.map((c) => EP.dynamicPathToStaticPath(c.target))
 
-    const [childWidth100Percent, childHeight100Percent] = childIs100PercentSizedInEitherDirection(
+    const { childWidth100Percent, childHeight100Percent } = childIs100PercentSizedInEitherDirection(
       metadata,
       childrenPaths[0],
     )
+
+    const optionalCenterAlignCommands = onlyChildIsSpan(metadata, childrenPaths)
+      ? [
+          setProperty('always', path, PP.create('style', 'alignItems'), 'center'),
+          setProperty('always', path, PP.create('style', 'justifyContents'), 'center'),
+        ]
+      : []
 
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
@@ -109,6 +117,7 @@ export function convertLayoutToFlexCommands(
           ...nukeAllAbsolutePositioningPropsCommands(child),
           ...convertWidthToFlexGrowOptionally(metadata, child, direction),
         ]),
+        ...optionalCenterAlignCommands,
       ]
     }
 
@@ -154,6 +163,7 @@ export function convertLayoutToFlexCommands(
         ...sizeToVisualDimensions(metadata, elementPathTree, child),
       ]),
       ...rearrangeCommands,
+      ...optionalCenterAlignCommands,
     ]
   })
 }

@@ -322,11 +322,26 @@ export function widthHeightFromAxis(axis: Axis): 'width' | 'height' {
 export function childIs100PercentSizedInEitherDirection(
   metadataMap: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): [childHorizontal100: boolean, childVertical100: boolean] {
-  return [
-    childIs100PercentSizedInDirection(metadataMap, elementPath, 'row'),
-    childIs100PercentSizedInDirection(metadataMap, elementPath, 'column'),
-  ]
+): { childWidth100Percent: boolean; childHeight100Percent: boolean } {
+  return {
+    childWidth100Percent: childIs100PercentSizedInDirection(metadataMap, elementPath, 'row'),
+    childHeight100Percent: childIs100PercentSizedInDirection(metadataMap, elementPath, 'column'),
+  }
+}
+
+export function onlyChildIsSpan(
+  metadataMap: ElementInstanceMetadataMap,
+  childrenPaths: ElementPath[],
+): boolean {
+  if (childrenPaths.length !== 0) {
+    return false
+  }
+  return (
+    optionalMap(
+      (i) => MetadataUtils.isSpan(i),
+      MetadataUtils.findElementByElementPath(metadataMap, childrenPaths[0]),
+    ) ?? false
+  )
 }
 
 function childIs100PercentSizedInDirection(
