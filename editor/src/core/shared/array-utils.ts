@@ -456,3 +456,14 @@ export function zip<A, B, C>(one: A[], other: B[], make: (a: A, b: B) => C): C[]
 
   return one.length < other.length ? doZip(one, other) : doZip(one.slice(0, other.length), other)
 }
+
+// https://matiashernandez.dev/blog/post/typescript-how-to-create-a-non-empty-array-type
+export type NonEmptyArray<T> = [T, ...T[]]
+export function isNonEmptyArray<T>(array: T[]): array is NonEmptyArray<T> {
+  let [first] = array
+  return first != null
+}
+
+export function isEmptyArray<T>(array: T[]): array is [] {
+  return array.length === 0
+}

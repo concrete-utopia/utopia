@@ -3,37 +3,25 @@ import * as EditorActions from '../components/editor/actions/action-creators'
 import { EditorModes } from '../components/editor/editor-modes'
 import type {
   AllElementProps,
-  DerivedState,
   EditorState,
   PastePostActionMenuData,
 } from '../components/editor/store/editor-state'
 import {
   getElementFromProjectContents,
   getOpenUIJSFileKey,
-  withUnderlyingTarget,
 } from '../components/editor/store/editor-state'
 import { getFrameAndMultiplier } from '../components/images'
 import * as EP from '../core/shared/element-path'
 import { MetadataUtils } from '../core/model/element-metadata-utils'
-import type { ElementInstanceMetadataMap } from '../core/shared/element-template'
-import {
-  isJSXConditionalExpression,
-  isNullJSXAttributeValue,
-} from '../core/shared/element-template'
-import { getUtopiaJSXComponentsFromSuccess } from '../core/model/project-file-utils'
-import type { ElementPath, NodeModules } from '../core/shared/project-file-types'
+import { type ElementInstanceMetadataMap } from '../core/shared/element-template'
+import type { ElementPath } from '../core/shared/project-file-types'
 import { isParseSuccess, isTextFile } from '../core/shared/project-file-types'
 import type { PasteResult } from './clipboard-utils'
-import {
-  encodeUtopiaDataToHtml,
-  extractFiles,
-  extractUtopiaDataFromClipboardData,
-} from './clipboard-utils'
+import { extractFiles, extractUtopiaDataFromClipboardData } from './clipboard-utils'
 import Utils from './utils'
 import type { FileResult, ImageResult } from '../core/shared/file-utils'
-import type { CanvasPoint, MaybeInfinityCanvasRectangle } from '../core/shared/math-utils'
-import { isInfinityRectangle, rectanglesEqual } from '../core/shared/math-utils'
-import * as json5 from 'json5'
+import type { CanvasPoint } from '../core/shared/math-utils'
+import { isInfinityRectangle } from '../core/shared/math-utils'
 import { fastForEach } from '../core/shared/utils'
 import urljoin from 'url-join'
 import type { ProjectContentTreeRoot } from '../components/assets'
@@ -42,32 +30,22 @@ import {
   normalisePathSuccessOrThrowError,
   normalisePathToUnderlyingTarget,
 } from '../components/custom-code/code-file'
-import { mapDropNulls, stripNulls } from '../core/shared/array-utils'
+import { mapDropNulls } from '../core/shared/array-utils'
 import ClipboardPolyfill from 'clipboard-polyfill'
 import { mapValues, pick } from '../core/shared/object-utils'
 import { getStoryboardElementPath } from '../core/model/scene-utils'
 import { getRequiredImportsForElement } from '../components/editor/import-utils'
 import type { BuiltInDependencies } from '../core/es-modules/package-manager/built-in-dependencies-list'
 import type { InsertionPath } from '../components/editor/store/insertion-path'
-import { childInsertionPath, getInsertionPath } from '../components/editor/store/insertion-path'
-import { maybeBranchConditionalCase } from '../core/model/conditionals'
-import { optionalMap } from '../core/shared/optional-utils'
-import { isFeatureEnabled } from './feature-switches'
 import type { ElementPathTrees } from '../core/shared/element-path-tree'
-import {
-  isElementRenderedBySameComponent,
-  replaceJSXElementCopyData,
-} from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
-import CanvasActions from '../components/canvas/canvas-actions'
+import { replaceJSXElementCopyData } from '../components/canvas/canvas-strategies/strategies/reparent-helpers/reparent-helpers'
 import {
   PropsPreservedPastePostActionChoice,
   PropsReplacedPastePostActionChoice,
 } from '../components/canvas/canvas-strategies/post-action-options/post-action-paste'
-import type { Either } from '../core/shared/either'
-import { isLeft, left, right } from '../core/shared/either'
+import { isLeft } from '../core/shared/either'
 import { notice } from '../components/common/notice'
-import { generateUidWithExistingComponents } from '../core/model/element-template-utils'
-import type { RemixRoutingTable } from '../components/editor/store/remix-derived-data'
+import { getTargetParentForPaste } from '../components/canvas/canvas-strategies/strategies/reparent-utils'
 
 export interface ElementPasteWithMetadata {
   elements: ElementPaste[]
@@ -81,7 +59,7 @@ export interface CopyData {
   originalAllElementProps: AllElementProps
 }
 
-interface ParsedCopyData {
+export interface ParsedCopyData {
   elementPaste: ElementPaste[]
   originalContextMetadata: ElementInstanceMetadataMap
   originalContextElementPathTrees: ElementPathTrees
@@ -143,12 +121,21 @@ function getJSXElementPasteActions(
       ? clipboardFirstEntry.copyDataWithPropsReplaced
       : clipboardFirstEntry.copyDataWithPropsPreserved
 
+  const openFile = editor.canvas.openFile?.filename ?? null
+
+  const selectedViews = editor.selectedViews
+
+  const storyboardPath = getStoryboardElementPath(editor.projectContents, openFile)
+  if (storyboardPath == null) {
+    // if there's no storyboard, there's not much you can do
+    return []
+  }
+
   const target = getTargetParentForPaste(
+    storyboardPath,
     editor.projectContents,
-    editor.selectedViews,
-    editor.canvas.openFile?.filename ?? null,
+    selectedViews,
     editor.jsxMetadata,
-    editor.pasteTargetsToIgnore,
     {
       elementPaste: copyDataToUse.elements,
       originalContextMetadata: copyDataToUse.targetOriginalContextMetadata,
@@ -205,7 +192,6 @@ function getFilePasteActions(
   canvasViewportCenter: CanvasPoint,
   pastedFiles: Array<FileResult>,
   selectedViews: Array<ElementPath>,
-  pasteTargetsToIgnore: ElementPath[],
   componentMetadata: ElementInstanceMetadataMap,
   canvasScale: number,
   elementPathTree: ElementPathTrees,
@@ -213,12 +199,18 @@ function getFilePasteActions(
   if (pastedFiles.length == 0) {
     return []
   }
+
+  const storyboardPath = getStoryboardElementPath(projectContents, openFile)
+  if (storyboardPath == null) {
+    // if there's no storyboard, there's not much you can do
+    return []
+  }
+
   const target = getTargetParentForPaste(
+    storyboardPath,
     projectContents,
     selectedViews,
-    openFile,
     componentMetadata,
-    pasteTargetsToIgnore,
     { elementPaste: [], originalContextMetadata: {}, originalContextElementPathTrees: {} }, // TODO: get rid of this when refactoring pasting images
     elementPathTree,
   )
@@ -276,7 +268,6 @@ export function getActionsForClipboardItems(
       canvasViewportCenter,
       pastedFiles,
       editor.selectedViews,
-      editor.pasteTargetsToIgnore,
       editor.jsxMetadata,
       canvasScale,
       editor.elementPathTree,
@@ -417,188 +408,4 @@ export function filterMetadataForCopy(
     filteredMetadata,
   )
   return filteredMetadataWithoutProps
-}
-
-function rectangleSizesEqual(
-  a: MaybeInfinityCanvasRectangle | null,
-  b: MaybeInfinityCanvasRectangle | null,
-): boolean {
-  if (a == null || b == null || isInfinityRectangle(a) || isInfinityRectangle(b)) {
-    return false
-  }
-
-  return a.height === b.height && a.width === b.width
-}
-
-export type ReparentTargetForPaste =
-  | {
-      type: 'sibling'
-      siblingPath: ElementPath
-      parentPath: InsertionPath
-    }
-  | { type: 'parent'; parentPath: InsertionPath }
-
-type PasteParentNotFoundError =
-  | 'Cannot find a suitable parent'
-  | 'Cannot find storyboard path'
-  | 'Cannot insert component instance into component definition'
-
-export function getTargetParentForPaste(
-  projectContents: ProjectContentTreeRoot,
-  selectedViews: Array<ElementPath>,
-  openFile: string | null | undefined,
-  metadata: ElementInstanceMetadataMap,
-  pasteTargetsToIgnore: ElementPath[],
-  copyData: ParsedCopyData,
-  elementPathTree: ElementPathTrees,
-): Either<PasteParentNotFoundError, ReparentTargetForPaste> {
-  const pastedElementNames = mapDropNulls(
-    (element) => MetadataUtils.getJSXElementName(element.element),
-    copyData.elementPaste,
-  )
-
-  if (selectedViews.length === 0) {
-    const storyboardPath = getStoryboardElementPath(projectContents, openFile)
-    if (storyboardPath == null) {
-      return left('Cannot find storyboard path')
-    }
-    return right({ type: 'parent', parentPath: childInsertionPath(storyboardPath) })
-  }
-
-  // Regular handling which attempts to find a common parent.
-  const parentTarget = EP.getCommonParent(selectedViews, true)
-  if (parentTarget == null) {
-    return left('Cannot find a suitable parent')
-  }
-
-  if (
-    copyData.elementPaste.some((pastedElement) =>
-      isElementRenderedBySameComponent(
-        metadata,
-        parentTarget,
-        MetadataUtils.findElementByElementPath(
-          copyData.originalContextMetadata,
-          pastedElement.originalElementPath,
-        ),
-      ),
-    )
-  ) {
-    return left('Cannot insert component instance into component definition')
-  }
-
-  // Handle "slot" like case of conditional clauses by inserting into them directly rather than their parent.
-  if (selectedViews.length === 1) {
-    // This should exist because the check above proves there should be a value.
-    const targetPath = selectedViews[0]!
-    const parentPath = EP.parentPath(targetPath)
-    const parentElement = withUnderlyingTarget(parentPath, projectContents, null, (_, element) => {
-      return element
-    })
-
-    if (parentElement != null && isJSXConditionalExpression(parentElement)) {
-      // Check if the target parent is an attribute,
-      // if so replace the target parent instead of trying to insert into it.
-      const wrapperFragmentUID = generateUidWithExistingComponents(projectContents)
-      const conditionalCase = maybeBranchConditionalCase(parentPath, parentElement, targetPath)
-      if (conditionalCase != null) {
-        const parentInsertionPath = getInsertionPath(
-          targetPath,
-          projectContents,
-          metadata,
-          elementPathTree,
-          wrapperFragmentUID,
-          copyData.elementPaste.length,
-        )
-
-        if (parentInsertionPath == null) {
-          return left('Cannot find a suitable parent')
-        }
-        return right({ type: 'parent', parentPath: parentInsertionPath })
-      }
-    }
-  }
-
-  // if only a single item is selected
-  if (selectedViews.length === 1 && copyData.elementPaste.length === 1) {
-    // These should exist because the check above proves there should be a values there.
-    const targetPath = selectedViews[0]!
-    const elementPasteEntry = copyData.elementPaste[0]!
-    const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(targetPath, metadata)
-    // if the pasted item's BB is the same size as the selected item's BB
-    const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-      elementPasteEntry.originalElementPath,
-      copyData.originalContextMetadata,
-    )
-    // if the selected item's parent is autolayouted
-    const parentInstance = MetadataUtils.findElementByElementPath(
-      metadata,
-      EP.parentPath(targetPath),
-    )
-
-    const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
-
-    const pastingAbsoluteToAbsolute =
-      MetadataUtils.isPositionAbsolute(
-        MetadataUtils.findElementByElementPath(metadata, targetPath),
-      ) &&
-      MetadataUtils.isPositionAbsolute(
-        MetadataUtils.findElementByElementPath(
-          copyData.originalContextMetadata,
-          elementPasteEntry.originalElementPath,
-        ),
-      )
-
-    const parentPath = EP.parentPath(targetPath)
-    const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
-      parentPath,
-      metadata,
-      pastedElementNames,
-    )
-
-    if (
-      rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
-      (isSelectedViewParentAutolayouted || pastingAbsoluteToAbsolute) &&
-      targetElementSupportsInsertedElement
-    ) {
-      return right({
-        type: 'sibling',
-        siblingPath: targetPath,
-        parentPath: childInsertionPath(EP.parentPath(targetPath)),
-      })
-    }
-  }
-
-  // we should not paste the source into itself
-  const insertingSourceIntoItself = EP.containsPath(parentTarget, pasteTargetsToIgnore)
-  const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
-    parentTarget,
-    metadata,
-    pastedElementNames,
-  )
-  if (
-    MetadataUtils.targetSupportsChildren(
-      projectContents,
-      metadata,
-      parentTarget,
-      elementPathTree,
-    ) &&
-    targetElementSupportsInsertedElement &&
-    !insertingSourceIntoItself
-  ) {
-    return right({ type: 'parent', parentPath: childInsertionPath(parentTarget) })
-  }
-
-  const parentOfSelected = EP.parentPath(parentTarget)
-  if (
-    MetadataUtils.targetSupportsChildren(
-      projectContents,
-      metadata,
-      parentOfSelected,
-      elementPathTree,
-    )
-  ) {
-    return right({ type: 'parent', parentPath: childInsertionPath(parentOfSelected) })
-  }
-
-  return left('Cannot find a suitable parent')
 }
