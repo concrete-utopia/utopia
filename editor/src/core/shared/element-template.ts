@@ -2026,7 +2026,7 @@ export interface SpecialSizeMeasurements {
   closestOffsetParentPath: ElementPath
   usesParentBounds: boolean
   parentLayoutSystem: DetectedLayoutSystem // TODO make a specific boolean prop that tells us the parent is flex or not
-  layoutSystemForChildren: DetectedLayoutSystem
+  layoutSystemForChildren: DetectedLayoutSystem | null
   providesBoundsForAbsoluteChildren: boolean
   display: string
   position: CSSPosition | null
@@ -2068,7 +2068,7 @@ export function specialSizeMeasurements(
   closestOffsetParentPath: ElementPath,
   usesParentBounds: boolean,
   parentLayoutSystem: DetectedLayoutSystem,
-  layoutSystemForChildren: DetectedLayoutSystem,
+  layoutSystemForChildren: DetectedLayoutSystem | null,
   providesBoundsForAbsoluteChildren: boolean,
   display: string,
   position: CSSPosition | null,
@@ -2157,7 +2157,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   EP.emptyElementPath,
   false,
   'flow',
-  'flow',
+  null,
   false,
   'initial',
   'static',

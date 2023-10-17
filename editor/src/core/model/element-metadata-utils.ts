@@ -2446,11 +2446,11 @@ function fillSpyOnlyMetadata(
 }
 
 function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
-  const metadataWithGlobalContentBox = fillGlobalContentBoxFromAncestors(mergedMetadata)
-  const metadataWithConditionaGlobalFrames = fillConditionalGlobalFrameFromAncestors(
-    metadataWithGlobalContentBox,
-  )
-  return metadataWithConditionaGlobalFrames
+  return [
+    fillGlobalContentBoxFromAncestors,
+    fillConditionalGlobalFrameFromAncestors,
+    fillLayoutSystemForChildrenFromAncestors,
+  ].reduce((metadata, fill) => fill(metadata), mergedMetadata)
 }
 
 function fillGlobalContentBoxFromAncestors(
@@ -2478,6 +2478,36 @@ function fillGlobalContentBoxFromAncestors(
       specialSizeMeasurements: {
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
+      },
+    }
+  })
+  return workingElements
+}
+
+function fillLayoutSystemForChildrenFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
+
+  const elementsWithoutLayoutSystemForChildren = Object.keys(workingElements).filter((p) => {
+    return workingElements[p]?.specialSizeMeasurements.layoutSystemForChildren == null
+  })
+  // sorted, so that parents are fixed first
+  elementsWithoutLayoutSystemForChildren.sort()
+
+  fastForEach(elementsWithoutLayoutSystemForChildren, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const layoutSystemForChildren =
+      workingElements[parentPathStr]?.specialSizeMeasurements.layoutSystemForChildren ?? null
+
+    workingElements[pathStr] = {
+      ...elem,
+      specialSizeMeasurements: {
+        ...elem.specialSizeMeasurements,
+        layoutSystemForChildren: layoutSystemForChildren,
       },
     }
   })
