@@ -1,9 +1,14 @@
 import React from 'react'
 import {
+  directResizeInspectorStrategy,
+  resizeInspectorStrategy,
+} from '../../../../../components/canvas/canvas-strategies/strategies/shared-absolute-resize-strategy-helpers'
+import {
   directMoveInspectorStrategy,
   moveInspectorStrategy,
 } from '../../../../../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import { oneLevelNestedEquals } from '../../../../../core/shared/equality-utils'
 import type { CanvasRectangle, CanvasVector } from '../../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
@@ -12,6 +17,7 @@ import {
   isInfinityRectangle,
   zeroRectangle,
 } from '../../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../../core/shared/utils'
 import { NumberInput } from '../../../../../uuiui'
 import {
@@ -36,11 +42,6 @@ import {
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { optionalMap } from '../../../../../core/shared/optional-utils'
-import {
-  directResizeInspectorStrategy,
-  resizeInspectorStrategy,
-} from '../../../../../components/canvas/canvas-strategies/strategies/shared-absolute-resize-strategy-helpers'
 
 type TLWH = 'top' | 'left' | 'width' | 'height'
 
@@ -102,6 +103,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
       return boundingRectangleArray(globalFrames) ?? canvasRectangle(zeroRectangle)
     },
     'SimplifiedLayoutSubsection originalGlobalFrame',
+    oneLevelNestedEquals,
   )
   const originalLTWHValues: LTWHPixelValues = useEditorState(
     Substores.metadata,
@@ -140,6 +142,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
       return result
     },
     'SimplifiedLayoutSubsection originalLTWHValues',
+    oneLevelNestedEquals,
   )
 
   const updateFrame = React.useCallback(

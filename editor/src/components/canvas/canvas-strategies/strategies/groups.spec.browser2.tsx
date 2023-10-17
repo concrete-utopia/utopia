@@ -4755,7 +4755,7 @@ describe('Inspector Pins section for group child', () => {
 
     await selectComponentsForTest(editor, [fromString(`${GroupPath}/child-2`)])
 
-    await changeInspectorNumberControl(editor, 'position-top-number-input', '250')
+    await changeInspectorNumberControl(editor, 'frame-top-number-input', '250')
 
     expect(groupDiv.style.width).toBe('200px')
     expect(groupDiv.style.height).toBe('300px')

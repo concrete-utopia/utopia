@@ -1489,6 +1489,7 @@ export const UPDATE_FNS = {
     }
   },
   UNSET_PROPERTY: (action: UnsetProperty, editor: EditorModel): EditorModel => {
+    // TODO also queue group true up, just like for SET_PROP
     let unsetPropFailedMessage: string | null = null
     const updatedEditor = modifyUnderlyingElementForOpenFile(
       action.element,
@@ -1545,7 +1546,14 @@ export const UPDATE_FNS = {
             editor.allElementProps,
             editor.projectContents,
           )
-          if (isInvalidGroupState(maybeInvalidGroupState)) {
+          if (
+            isInvalidGroupState(maybeInvalidGroupState) &&
+            /**
+             * we want to exempt 'child-has-missing-pins' from this list, because SET_PROP maybe what the user is doing to _fix_ the situation highlighted by 'child-has-missing-pins'
+             * if 'child-has-missing-pins' prevents us from SET_PROP, that means we prevent ourselves from re-adding those missing props!
+             */
+            maybeInvalidGroupState !== 'child-has-missing-pins'
+          ) {
             setPropFailedMessage = invalidGroupStateToString(maybeInvalidGroupState)
             return element
           }

@@ -4,6 +4,7 @@ import {
   expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
@@ -22,6 +23,8 @@ import {
 import * as EP from '../../core/shared/element-path'
 
 describe('Resize to fit control', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
+
   it('resizes to fit and back to fixed', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(projectSnippet),

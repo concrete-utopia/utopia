@@ -16,8 +16,6 @@ import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { InspectorPropsContext } from './common/property-path-hooks'
 import { PinControl } from './controls/pin-control'
 import {
-  GroupChildPinControl,
-  GroupConstraintSelect,
   allElementsAreGroupChildren,
   anySelectedElementGroupOrChildOfGroup,
 } from './fill-hug-fixed-control'
@@ -28,9 +26,10 @@ import {
   HorizontalPinChangeOptionsIncludingMixed,
   VerticalPinChangeOptions,
   VerticalPinChangeOptionsIncludingMixed,
+  getConstraintAndFrameChangeActionsForGroupChild,
   getFixedPointsForPinning,
-  getFrameChangeActions,
-  useDetectedPinning,
+  getFrameChangeActionsForFrameChild,
+  useDetectedConstraints,
 } from './simplified-pinning-helpers'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
@@ -70,15 +69,15 @@ const GroupChildConstraintsSection = React.memo(() => {
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <GroupChildPinControl />
+        <ChildPinControl isGroupChild='group-child' />
         <FlexColumn style={{ gap: 8 }}>
           <FlexRow css={InspectorRowHoverCSS}>
             <PinWidthSVG />
-            <GroupConstraintSelect dimension={'width'} />
+            <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
           </FlexRow>
           <FlexRow css={InspectorRowHoverCSS}>
             <PinHeightSVG />
-            <GroupConstraintSelect dimension={'height'} />
+            <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
           </FlexRow>
         </FlexColumn>
       </UIGridRow>
@@ -91,15 +90,15 @@ const FrameChildConstraintsSection = React.memo(() => {
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <FrameChildPinControl />{' '}
+        <ChildPinControl isGroupChild='frame-child' />
         <FlexColumn css={{ gap: 8 }}>
           <FlexRow css={InspectorRowHoverCSS}>
             <PinWidthSVG />
-            <FrameChildConstraintSelect dimension={'width'} />
+            <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />
           </FlexRow>
           <FlexRow css={InspectorRowHoverCSS}>
             <PinHeightSVG />
-            <FrameChildConstraintSelect dimension={'height'} />
+            <ChildConstraintSelect isGroupChild='frame-child' dimension={'height'} />
           </FlexRow>
         </FlexColumn>
       </UIGridRow>
@@ -108,157 +107,190 @@ const FrameChildConstraintsSection = React.memo(() => {
 })
 FrameChildConstraintsSection.displayName = 'FrameChildConstraintsSection'
 
-const FrameChildPinControl = React.memo(() => {
-  const dispatch = useDispatch()
+const ChildPinControl = React.memo(
+  ({ isGroupChild }: { isGroupChild: 'group-child' | 'frame-child' }) => {
+    const dispatch = useDispatch()
 
-  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+    const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
+      return contextData.targetPath
+    })
 
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const selectedViewsRef = useRefEditorState(selectedViewsSelector)
+    const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+    const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const pins = useDetectedPinning()
+    const pins = useDetectedConstraints(isGroupChild)
 
-  const onPinControlMouseDown = React.useCallback(
-    (frameProp: LayoutPinnedPropIncludingCenter, event: React.MouseEvent<Element, MouseEvent>) => {
-      const cmdPressed = event.metaKey
-      const requestedPinChange: RequestedPins | 'no-op' = (() => {
-        switch (frameProp) {
-          case 'left': {
-            if (cmdPressed && pins.horizontal === 'right-and-width') {
-              return 'left-and-right'
-            } else {
+    const onPinControlMouseDown = React.useCallback(
+      (
+        frameProp: LayoutPinnedPropIncludingCenter,
+        event: React.MouseEvent<Element, MouseEvent>,
+      ) => {
+        const cmdPressed = event.metaKey
+        const requestedPinChange: RequestedPins | 'no-op' = (() => {
+          switch (frameProp) {
+            case 'left': {
+              if (cmdPressed && pins.horizontal === 'right-and-width') {
+                return 'left-and-right'
+              } else {
+                return 'left-and-width'
+              }
+            }
+            case 'right': {
+              if (cmdPressed && pins.horizontal === 'left-and-width') {
+                return 'left-and-right'
+              } else {
+                return 'right-and-width'
+              }
+            }
+            case 'width': {
               return 'left-and-width'
             }
-          }
-          case 'right': {
-            if (cmdPressed && pins.horizontal === 'left-and-width') {
-              return 'left-and-right'
-            } else {
-              return 'right-and-width'
+            case 'top': {
+              if (cmdPressed && pins.vertical === 'bottom-and-height') {
+                return 'top-and-bottom'
+              } else {
+                return 'top-and-height'
+              }
             }
-          }
-          case 'width': {
-            return 'left-and-width'
-          }
-          case 'top': {
-            if (cmdPressed && pins.vertical === 'bottom-and-height') {
-              return 'top-and-bottom'
-            } else {
+            case 'bottom': {
+              if (cmdPressed && pins.vertical === 'top-and-height') {
+                return 'top-and-bottom'
+              } else {
+                return 'bottom-and-height'
+              }
+            }
+            case 'height': {
               return 'top-and-height'
             }
-          }
-          case 'bottom': {
-            if (cmdPressed && pins.vertical === 'top-and-height') {
-              return 'top-and-bottom'
-            } else {
-              return 'bottom-and-height'
+            case 'centerX': {
+              if (cmdPressed) {
+                return 'scale-horizontal'
+              } else {
+                return 'no-op'
+              }
             }
-          }
-          case 'height': {
-            return 'top-and-height'
-          }
-          case 'centerX': {
-            if (cmdPressed) {
-              return 'scale-horizontal'
-            } else {
-              return 'no-op'
+            case 'centerY': {
+              if (cmdPressed) {
+                return 'scale-vertical'
+              } else {
+                return 'no-op'
+              }
             }
+            default:
+              const _exhaustiveCheck: never = frameProp
+              throw new Error(`Unhandled frameProp: ${_exhaustiveCheck}`)
           }
-          case 'centerY': {
-            if (cmdPressed) {
-              return 'scale-vertical'
-            } else {
-              return 'no-op'
-            }
-          }
-          default:
-            const _exhaustiveCheck: never = frameProp
-            throw new Error(`Unhandled frameProp: ${_exhaustiveCheck}`)
+        })()
+
+        if (requestedPinChange === 'no-op') {
+          // no-op, early return :)
+          return
         }
-      })()
+        dispatch(
+          isGroupChild === 'group-child'
+            ? getConstraintAndFrameChangeActionsForGroupChild(
+                metadataRef.current,
+                allElementPropsRef.current,
+                propertyTarget,
+                selectedViewsRef.current,
+                requestedPinChange,
+              )
+            : getFrameChangeActionsForFrameChild(
+                metadataRef.current,
+                propertyTarget,
+                selectedViewsRef.current,
+                requestedPinChange,
+              ),
+        )
+      },
+      [
+        dispatch,
+        metadataRef,
+        allElementPropsRef,
+        selectedViewsRef,
+        isGroupChild,
+        propertyTarget,
+        pins,
+      ],
+    )
 
-      if (requestedPinChange === 'no-op') {
-        // no-op, early return :)
-        return
-      }
-      dispatch(
-        getFrameChangeActions(
-          metadataRef.current,
-          propertyTarget,
-          selectedViewsRef.current,
-          requestedPinChange,
-        ),
-      )
-    },
-    [dispatch, metadataRef, selectedViewsRef, propertyTarget, pins],
-  )
+    const framePoints: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
 
-  const framePoints: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
+    return (
+      <PinControl
+        handlePinMouseDown={onPinControlMouseDown}
+        framePoints={framePoints}
+        controlStatus='simple'
+        name='group-child-controls'
+      />
+    )
+  },
+)
+ChildPinControl.displayName = 'ChildPinControl'
 
-  return (
-    <PinControl
-      handlePinMouseDown={onPinControlMouseDown}
-      framePoints={framePoints}
-      controlStatus='simple'
-      name='group-child-controls'
-    />
-  )
-})
-FrameChildPinControl.displayName = 'FrameChildPinControl'
+const ChildConstraintSelect = React.memo(
+  (props: { dimension: 'width' | 'height'; isGroupChild: 'group-child' | 'frame-child' }) => {
+    const { dimension, isGroupChild } = props
 
-const FrameChildConstraintSelect = React.memo((props: { dimension: 'width' | 'height' }) => {
-  const { dimension } = props
+    const dispatch = useDispatch()
 
-  const dispatch = useDispatch()
+    const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
+      return contextData.targetPath
+    })
 
-  const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
-    return contextData.targetPath
-  })
+    const editorRef = useRefEditorState((store) => ({
+      selectedViews: store.editor.selectedViews,
+      metadata: store.editor.jsxMetadata,
+      allElementProps: store.editor.allElementProps,
+    }))
 
-  const editorRef = useRefEditorState((store) => ({
-    selectedViews: store.editor.selectedViews,
-    metadata: store.editor.jsxMetadata,
-  }))
+    const pins = useDetectedConstraints(isGroupChild)
 
-  const pins = useDetectedPinning()
+    const optionsToUse =
+      dimension === 'width'
+        ? Object.values(HorizontalPinChangeOptions)
+        : Object.values(VerticalPinChangeOptions)
 
-  const optionsToUse =
-    dimension === 'width'
-      ? Object.values(HorizontalPinChangeOptions)
-      : Object.values(VerticalPinChangeOptions)
+    const activeOption =
+      dimension === 'width'
+        ? HorizontalPinChangeOptionsIncludingMixed[pins.horizontal]
+        : VerticalPinChangeOptionsIncludingMixed[pins.vertical]
 
-  const activeOption =
-    dimension === 'width'
-      ? HorizontalPinChangeOptionsIncludingMixed[pins.horizontal]
-      : VerticalPinChangeOptionsIncludingMixed[pins.vertical]
+    const onSubmit = React.useCallback(
+      (option: SelectOption) => {
+        const requestedPins: RequestedPins = option.value
+        dispatch(
+          isGroupChild === 'group-child'
+            ? getConstraintAndFrameChangeActionsForGroupChild(
+                editorRef.current.metadata,
+                editorRef.current.allElementProps,
+                propertyTarget,
+                editorRef.current.selectedViews,
+                requestedPins,
+              )
+            : getFrameChangeActionsForFrameChild(
+                editorRef.current.metadata,
+                propertyTarget,
+                editorRef.current.selectedViews,
+                requestedPins,
+              ),
+        )
+      },
+      [dispatch, propertyTarget, editorRef, isGroupChild],
+    )
 
-  const onSubmit = React.useCallback(
-    (option: SelectOption) => {
-      const requestedPins: RequestedPins = option.value
-      dispatch(
-        getFrameChangeActions(
-          editorRef.current.metadata,
-          propertyTarget,
-          editorRef.current.selectedViews,
-          requestedPins,
-        ),
-      )
-    },
-    [dispatch, propertyTarget, editorRef],
-  )
-
-  return (
-    <PopupList
-      id={`frame-child-constraint-${dimension}`}
-      onSubmitValue={onSubmit}
-      value={activeOption}
-      options={optionsToUse}
-      style={{
-        position: 'relative',
-      }}
-      controlStyles={getControlStyles('simple')}
-    />
-  )
-})
+    return (
+      <PopupList
+        id={`frame-child-constraint-${dimension}`}
+        onSubmitValue={onSubmit}
+        value={activeOption}
+        options={optionsToUse}
+        style={{
+          position: 'relative',
+        }}
+        controlStyles={getControlStyles('simple')}
+      />
+    )
+  },
+)
