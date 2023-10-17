@@ -475,7 +475,7 @@ function setElementPins(
     ),
   ]
 
-  if (!isHugFromStyleAttributeOrNull(targetProps, 'width')) {
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'width', 'include-all-hugs')) {
     result.push(
       setCssLengthProperty(
         'always',
@@ -488,7 +488,8 @@ function setElementPins(
       ),
     )
   }
-  if (!isHugFromStyleAttributeOrNull(targetProps, 'height')) {
+
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'height', 'include-all-hugs')) {
     result.push(
       setCssLengthProperty(
         'always',

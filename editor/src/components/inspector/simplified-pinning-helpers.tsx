@@ -113,6 +113,14 @@ export const VerticalPinChangeOptionsIncludingMixed = {
   },
 } as const
 
+export function useDetectedConstraints(isGroupChild: 'group-child' | 'frame-child') {
+  return useEditorState(
+    Substores.metadata,
+    (store) => multiselectDetectConstraintsForChildSelector(store, isGroupChild),
+    'FrameChildConstraintSelect pins',
+  )
+}
+
 const multiselectDetectConstraintsForChildSelector = createCachedSelector(
   metadataSelector,
   allElementPropsSelector,
@@ -121,14 +129,6 @@ const multiselectDetectConstraintsForChildSelector = createCachedSelector(
   (metadata, allElementProps, selectedViews, isGroupChild) =>
     multiselectDetectConstraintsForChild(metadata, allElementProps, selectedViews, isGroupChild),
 )((_, isGroupChild: 'group-child' | 'frame-child') => isGroupChild)
-
-export function useDetectedConstraints(isGroupChild: 'group-child' | 'frame-child') {
-  return useEditorState(
-    Substores.metadata,
-    (store) => multiselectDetectConstraintsForChildSelector(store, isGroupChild),
-    'FrameChildConstraintSelect pins',
-  )
-}
 
 function multiselectDetectConstraintsForChild(
   metadata: ElementInstanceMetadataMap,

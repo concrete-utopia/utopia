@@ -1248,7 +1248,7 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
   }
 
   function setPinPreserveHug(pin: 'width' | 'height', value: number): Array<SetCssLengthProperty> {
-    const pinIsAlreadyHug = isHugFromStyleAttribute(elementCurrentProps, pin)
+    const pinIsAlreadyHug = isHugFromStyleAttribute(elementCurrentProps, pin, 'only-max-content')
 
     if (pinIsAlreadyHug) {
       // we don't need to convert a Hug pin, do nothing here

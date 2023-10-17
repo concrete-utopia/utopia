@@ -647,7 +647,7 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  if (isHugFromStyleAttribute(element.element.value.props, property)) {
+  if (isHugFromStyleAttribute(element.element.value.props, property, 'only-max-content')) {
     const valueWithType = { type: 'hug' as const }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
@@ -726,26 +726,34 @@ export function setToFixedSizeCommands(
   })
 }
 
+const HuggingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
+
 export function isHugFromStyleAttribute(
   props: JSXAttributes,
   property: 'width' | 'height',
+  includeAllHugs: 'include-all-hugs' | 'only-max-content',
 ): boolean {
   const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(props), PP.create('style', property)),
   )
 
-  return simpleAttribute === MaxContent
+  if (includeAllHugs === 'only-max-content') {
+    return simpleAttribute === MaxContent
+  }
+
+  return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
 }
 
 export function isHugFromStyleAttributeOrNull(
   props: JSXAttributes | null,
   property: 'width' | 'height',
+  includeAllHugs: 'include-all-hugs' | 'only-max-content',
 ): boolean {
   if (props == null) {
-    return false
+    return includeAllHugs === 'include-all-hugs' // null size means implicit hug!
   }
-  return isHugFromStyleAttribute(props, property)
+  return isHugFromStyleAttribute(props, property, includeAllHugs)
 }
 
 export function detectFillHugFixedStateMultiselect(
@@ -1224,10 +1232,10 @@ export function getConstraintsIncludingImplicitForElement(
   // collect implicit constraints
   const jsxElement = MetadataUtils.getJSXElementFromMetadata(metadata, element)
   if (jsxElement != null) {
-    if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
+    if (isHugFromStyleAttribute(jsxElement.props, 'width', 'include-all-hugs')) {
       constraints.add('width')
     }
-    if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
+    if (isHugFromStyleAttribute(jsxElement.props, 'height', 'include-all-hugs')) {
       constraints.add('height')
     }
   }
