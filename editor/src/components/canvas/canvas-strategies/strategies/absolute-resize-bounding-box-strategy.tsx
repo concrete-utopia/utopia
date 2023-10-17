@@ -421,7 +421,7 @@ function getConstrainedSizes(
       jsxMetadata,
       allElementProps,
       element.elementPath,
-      'include-implicit-constraints', // this is overlapping with isDimensionConstrained a little, probably isDimensionConstrained can go in the bin
+      'only-explicit-constraints', // if we set this to include-implicit-constraints, we can probably delete isDimensionConstrained
     )
     const constraints = {
       width: isDimensionConstrained(jsxMetadata, element.elementPath, constraintsArray, 'width'),

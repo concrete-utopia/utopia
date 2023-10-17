@@ -739,7 +739,7 @@ function checkGroupChildConstraint(
       metadata,
       allElementProps,
       path,
-      'include-implicit-constraints',
+      'only-explicit-constraints',
     ).includes(dimension),
   ).length
   if (constrained === selectedViews.length) {

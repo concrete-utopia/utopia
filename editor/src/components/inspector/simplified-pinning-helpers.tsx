@@ -292,7 +292,7 @@ function detectConstraintsSetForGroupChild(
     metadata,
     allElementProps,
     target,
-    'include-implicit-constraints',
+    'only-explicit-constraints', // TODO make sure to match this in getUpdateResizedGroupChildrenCommands
   )
 
   const element = MetadataUtils.findElementByElementPath(metadata, target)
