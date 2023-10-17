@@ -27,29 +27,18 @@ import * as EP from '../../../../../core/shared/element-path'
 import { selectComponentsForTest } from '../../../../../utils/utils.test-utils'
 import { RegisteredCanvasStrategies } from '../../../../canvas/canvas-strategies/canvas-strategies'
 import { act, fireEvent } from '@testing-library/react'
+import { mouseClickAtPoint } from '../../../../canvas/event-helpers.test-utils'
+import { getDomRectCenter } from '../../../../../core/shared/dom-utils'
 
-function downClickUp(targetElement: HTMLElement, mouseEventInit: MouseEventInit) {
-  fireEvent(targetElement, new MouseEvent('mousedown', mouseEventInit))
-  fireEvent(targetElement, new MouseEvent('click', mouseEventInit))
-  fireEvent(targetElement, new MouseEvent('mouseup', mouseEventInit))
-}
-
-function updateInputValue(
+async function updateInputValue(
   renderResult: EditorRenderResult,
   controlToUpdateTestID: string,
   newValue: string,
-): void {
+): Promise<void> {
   const controlToUpdate = renderResult.renderedDOM.getByTestId(controlToUpdateTestID)
   const controlToUpdateBounds = controlToUpdate.getBoundingClientRect()
-  act(() => {
-    downClickUp(controlToUpdate, {
-      detail: 1,
-      bubbles: true,
-      cancelable: true,
-      clientX: controlToUpdateBounds.x + controlToUpdateBounds.width / 2,
-      clientY: controlToUpdateBounds.y + controlToUpdateBounds.height / 2,
-      buttons: 1,
-    })
+  await act(async () => {
+    await mouseClickAtPoint(controlToUpdate, getDomRectCenter(controlToUpdateBounds))
     fireEvent.change(controlToUpdate, { target: { value: newValue } })
     fireEvent.blur(controlToUpdate)
   })
@@ -157,7 +146,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the left field.
-      updateInputValue(renderResult, `frame-left-number-input`, '110')
+      await updateInputValue(renderResult, `frame-left-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -219,7 +208,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the left field.
-      updateInputValue(renderResult, `frame-left-number-input`, '110')
+      await updateInputValue(renderResult, `frame-left-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -293,7 +282,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the left field.
-      updateInputValue(renderResult, `frame-left-number-input`, '110')
+      await updateInputValue(renderResult, `frame-left-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -371,7 +360,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the top field.
-      updateInputValue(renderResult, `frame-top-number-input`, '110')
+      await updateInputValue(renderResult, `frame-top-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -433,7 +422,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the top field.
-      updateInputValue(renderResult, `frame-top-number-input`, '110')
+      await updateInputValue(renderResult, `frame-top-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -507,7 +496,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the top field.
-      updateInputValue(renderResult, `frame-top-number-input`, '110')
+      await updateInputValue(renderResult, `frame-top-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -585,7 +574,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the width field.
-      updateInputValue(renderResult, `frame-width-number-input`, '110')
+      await updateInputValue(renderResult, `frame-width-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -647,7 +636,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the width field.
-      updateInputValue(renderResult, `frame-width-number-input`, '110')
+      await updateInputValue(renderResult, `frame-width-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -721,7 +710,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the width field.
-      updateInputValue(renderResult, `frame-width-number-input`, '110')
+      await updateInputValue(renderResult, `frame-width-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -799,7 +788,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the height field.
-      updateInputValue(renderResult, `frame-height-number-input`, '110')
+      await updateInputValue(renderResult, `frame-height-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -861,7 +850,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the height field.
-      updateInputValue(renderResult, `frame-height-number-input`, '110')
+      await updateInputValue(renderResult, `frame-height-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
@@ -935,7 +924,7 @@ const testCases: Array<TestCase> = [
       ])
 
       // Change the height field.
-      updateInputValue(renderResult, `frame-height-number-input`, '110')
+      await updateInputValue(renderResult, `frame-height-number-input`, '110')
     },
     expectedFrames: {
       [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
