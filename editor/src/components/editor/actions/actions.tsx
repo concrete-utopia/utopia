@@ -1534,7 +1534,11 @@ export const UPDATE_FNS = {
           )
           if (
             isInvalidGroupState(maybeInvalidGroupState) &&
-            maybeInvalidGroupState !== 'child-has-missing-pins' // TODO Talk about this
+            /**
+             * we want to exempt 'child-has-missing-pins' from this list, because SET_PROP maybe what the user is doing to _fix_ the situation highlighted by 'child-has-missing-pins'
+             * if 'child-has-missing-pins' prevents us from SET_PROP, that means we prevent ourselves from re-adding those missing props!
+             */
+            maybeInvalidGroupState !== 'child-has-missing-pins'
           ) {
             setPropFailedMessage = invalidGroupStateToString(maybeInvalidGroupState)
             return element
