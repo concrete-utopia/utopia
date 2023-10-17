@@ -70,6 +70,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
+import { setHugContentForAxis } from './inspector-strategies/hug-contents-basic-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -1192,5 +1193,47 @@ export function getConvertIndividualElementToAbsoluteCommands(
   return [
     ...sizeToDimensionsFromFrame(jsxMetadata, elementPathTree, target, roundedFrame),
     ...addPositionAbsoluteTopLeft(target, roundedFrame, parentFlexDirection),
+  ]
+}
+
+export function setAutoWidthCommands(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection | null,
+): CanvasCommand[] {
+  const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  if (frame == null || isInfinityRectangle(frame)) {
+    return []
+  }
+  return [
+    setHugContentForAxis('horizontal', elementPath, parentFlexDirection),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('height'),
+      setExplicitCssValue(cssPixelLength(frame.height)),
+      parentFlexDirection,
+    ),
+  ]
+}
+
+export function setAutoHeightCommands(
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection | null,
+): CanvasCommand[] {
+  const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
+  if (frame == null || isInfinityRectangle(frame)) {
+    return []
+  }
+  return [
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('width'),
+      setExplicitCssValue(cssPixelLength(frame.width)),
+      parentFlexDirection,
+    ),
+    setHugContentForAxis('vertical', elementPath, parentFlexDirection),
   ]
 }
