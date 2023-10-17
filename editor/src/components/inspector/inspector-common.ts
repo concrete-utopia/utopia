@@ -55,7 +55,8 @@ import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
-import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
+import type { LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
+import { isLayoutPinnedProp, LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
 import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
 import type { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
@@ -1193,4 +1194,43 @@ export function getConvertIndividualElementToAbsoluteCommands(
     ...sizeToDimensionsFromFrame(jsxMetadata, elementPathTree, target, roundedFrame),
     ...addPositionAbsoluteTopLeft(target, roundedFrame, parentFlexDirection),
   ]
+}
+
+function getSafeGroupChildConstraintsArray(
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): LayoutPinnedProp[] {
+  const value = allElementProps[EP.toString(path)]?.['data-constraints'] ?? []
+  if (!Array.isArray(value)) {
+    return []
+  }
+  return value.filter((v) => typeof v === 'string' && isLayoutPinnedProp(v))
+}
+
+export function getConstraintsIncludingImplicitForElement(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  element: ElementPath,
+  includeImplicitConstraints: 'include-implicit-constraints' | 'only-explicit-constraints',
+) {
+  let constraints: Set<LayoutPinnedProp> = new Set(
+    getSafeGroupChildConstraintsArray(allElementProps, element),
+  )
+
+  if (includeImplicitConstraints === 'only-explicit-constraints') {
+    return Array.from(constraints)
+  }
+
+  // collect implicit constraints
+  const jsxElement = MetadataUtils.getJSXElementFromMetadata(metadata, element)
+  if (jsxElement != null) {
+    if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
+      constraints.add('width')
+    }
+    if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
+      constraints.add('height')
+    }
+  }
+
+  return Array.from(constraints)
 }

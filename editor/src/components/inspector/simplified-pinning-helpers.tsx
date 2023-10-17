@@ -1,12 +1,14 @@
-import { createSelector } from 'reselect'
+import createCachedSelector from 're-reselect'
 import {
   HorizontalLayoutPinnedProps,
   VerticalLayoutPinnedProps,
   isHorizontalLayoutPinnedProp,
+  isLayoutPinnedProp,
   isVerticalLayoutPinnedProp,
   type LayoutPinnedProp,
 } from '../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import * as EP from '../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { nullIfInfinity } from '../../core/shared/math-utils'
@@ -23,14 +25,16 @@ import { Substores, useEditorState } from '../editor/store/store-hook'
 import { getFullFrame } from '../frame'
 import { isCssNumberAndFixedSize, isCssNumberAndPercentage } from './common/css-utils'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
-import { getSafeGroupChildConstraintsArray } from './fill-hug-fixed-control'
 import {
   allElementPropsSelector,
   metadataSelector,
   selectedViewsSelector,
 } from './inpector-selectors'
-import { getFramePointsFromMetadataTypeFixed } from './inspector-common'
-import createCachedSelector from 're-reselect'
+import {
+  getConstraintsIncludingImplicitForElement,
+  getFramePointsFromMetadataTypeFixed,
+  isHugFromStyleAttribute,
+} from './inspector-common'
 
 type HorizontalPinRequests =
   | 'left-and-width'
@@ -232,7 +236,12 @@ function detectConstraintsSetForGroupChild(
   allElementProps: AllElementProps,
   target: ElementPath,
 ): { horizontal: HorizontalPinRequests | 'mixed'; vertical: VerticalPinRequests | 'mixed' } {
-  const constraints = getSafeGroupChildConstraintsArray(allElementProps, target)
+  const constraints = getConstraintsIncludingImplicitForElement(
+    metadata,
+    allElementProps,
+    target,
+    'include-implicit-constraints',
+  )
 
   const element = MetadataUtils.findElementByElementPath(metadata, target)
   if (element == null) {
@@ -423,7 +432,12 @@ export function getConstraintAndFrameChangeActionsForGroupChild(
     dimension: 'horizontal' | 'vertical',
   ): Array<SetProp | UnsetProperty> => {
     return targets.map((target) => {
-      const currentConstraints = getSafeGroupChildConstraintsArray(allElementProps, target)
+      const currentConstraints = getConstraintsIncludingImplicitForElement(
+        metadata,
+        allElementProps,
+        target,
+        'only-explicit-constraints',
+      )
       const constraintsToKeepForOtherDimension = currentConstraints.filter(
         dimension === 'horizontal' ? isVerticalLayoutPinnedProp : isHorizontalLayoutPinnedProp,
       )
