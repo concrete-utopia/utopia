@@ -141,6 +141,14 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       return null
     }
 
+    const isPositionRelative = retargetedTargets.every((element) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        element,
+      )
+      return elementMetadata?.specialSizeMeasurements.position === 'relative'
+    })
+
     // When the parent is not hugging, don't offer the strategy which sets it to fixed size
     if (setHuggingParentToFixed === 'set-hugging-parent-to-fixed') {
       const setParentToFixedSizeCommands = createSetParentsToFixedSizeCommands(
@@ -183,6 +191,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       hasAutoLayoutSiblings,
       autoLayoutSiblingsBounds,
       originalTargets.length > 1,
+      isPositionRelative,
     )
 
     return {
@@ -271,6 +280,7 @@ function getFitness(
   hasAutoLayoutSiblings: boolean,
   autoLayoutSiblingsBounds: CanvasRectangle | null,
   multipleTargets: boolean,
+  isPositionRelative: boolean,
 ): number {
   if (
     interactionSession != null &&
@@ -287,8 +297,9 @@ function getFitness(
     }
 
     if (!hasAutoLayoutSiblings) {
-      if (multipleTargets) {
+      if (multipleTargets || isPositionRelative) {
         // multi-selection should require a spacebar press to activate
+        // position relative can be just moved with relative move, no need to convert to absolute when relative move is applicable
         return BaseWeight
       }
       return DragConversionWeight
@@ -302,7 +313,7 @@ function getFitness(
     const isInsideBoundingBoxOfSiblings =
       autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
 
-    return isInsideBoundingBoxOfSiblings ? BaseWeight : DragConversionWeight
+    return isInsideBoundingBoxOfSiblings || isPositionRelative ? BaseWeight : DragConversionWeight
   }
 
   return 0

@@ -53,7 +53,7 @@ export function relativeMoveStrategy(
     ) {
       return 0
     }
-    return hasOffsets ? 4 : 1.9
+    return hasOffsets ? 4 : 1.3
   })()
 
   return {
