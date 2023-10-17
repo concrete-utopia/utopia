@@ -162,6 +162,7 @@ async function pressKeyTimes(
 }
 
 describe('inspector tests with real metadata', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
   it('padding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
