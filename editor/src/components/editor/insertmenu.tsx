@@ -454,7 +454,7 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
             controlStyles: getControlStyles('simple'),
           }) as CSSObject),
           paddingLeft: 4,
-          backgroundColor: colorTheme.bg4.value,
+          backgroundColor: colorTheme.bg2.value,
           flexGrow: 1,
           display: 'flex',
           alignItems: 'center',
@@ -639,7 +639,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
         menuIsOpen
-        placeholder='Filter…'
+        placeholder='Select…'
         tabSelectsValue={false}
         options={options}
         onKeyDown={onKeyDown}
