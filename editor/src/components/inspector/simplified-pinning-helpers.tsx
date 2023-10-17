@@ -53,8 +53,20 @@ type VerticalPinRequests =
 export type RequestedPins = HorizontalPinRequests | VerticalPinRequests
 
 type DetectedPins = {
-  horizontal: HorizontalPinRequests | 'width' | 'group-child-error-percentage' | 'mixed'
-  vertical: VerticalPinRequests | 'height' | 'group-child-error-percentage' | 'mixed'
+  horizontal:
+    | HorizontalPinRequests
+    | 'left'
+    | 'right'
+    | 'width'
+    | 'group-child-error-percentage'
+    | 'mixed'
+  vertical:
+    | VerticalPinRequests
+    | 'top'
+    | 'bottom'
+    | 'height'
+    | 'group-child-error-percentage'
+    | 'mixed'
 }
 
 export const FrameChildHorizontalPinChangeOptions = {
@@ -78,6 +90,14 @@ export const FrameChildHorizontalPinChangeOptions = {
 
 export const GroupChildHorizontalPinChangeOptions = {
   ...FrameChildHorizontalPinChangeOptions,
+  left: {
+    value: 'left',
+    label: 'Left',
+  },
+  right: {
+    value: 'right',
+    label: 'Right',
+  },
   width: {
     value: 'width',
     label: 'Width',
@@ -118,6 +138,14 @@ export const FrameChildVerticalPinChangeOptions = {
 
 export const GroupChildVerticalPinChangeOptions = {
   ...FrameChildVerticalPinChangeOptions,
+  top: {
+    value: 'top',
+    label: 'Top',
+  },
+  bottom: {
+    value: 'bottom',
+    label: 'Bottom',
+  },
   height: {
     value: 'height',
     label: 'Height',
@@ -293,6 +321,7 @@ function detectConstraintsSetForGroupChild(
     if (constraints.includes('left') && constraints.includes('width')) {
       return 'left-and-width'
     }
+
     if (constraints.includes('right') && constraints.includes('width')) {
       return 'right-and-width'
     }
@@ -300,7 +329,14 @@ function detectConstraintsSetForGroupChild(
       return 'left-and-right'
     }
 
-    // if it only contains width but not left or right
+    if (constraints.includes('left')) {
+      return 'left'
+    }
+
+    if (constraints.includes('right')) {
+      return 'right'
+    }
+
     if (constraints.includes('width')) {
       return 'width'
     }
@@ -332,7 +368,12 @@ function detectConstraintsSetForGroupChild(
       return 'top-and-bottom'
     }
 
-    // if it only contains height but not top or bottom
+    if (constraints.includes('top')) {
+      return 'top'
+    }
+    if (constraints.includes('bottom')) {
+      return 'bottom'
+    }
     if (constraints.includes('height')) {
       return 'height'
     }
