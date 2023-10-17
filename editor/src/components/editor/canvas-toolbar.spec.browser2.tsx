@@ -31,9 +31,11 @@ import {
   renderTestEditorWithModel,
 } from '../canvas/ui-jsx.test-utils'
 import {
+  CanvasToolbarEditButtonID,
   CanvasToolbarSearchTestID,
   InsertConditionalButtonTestId,
   InsertMenuButtonTestId,
+  PlayModeButtonTestId,
 } from './canvas-toolbar'
 import { StoryboardFilePath, PlaygroundFilePath, navigatorEntryToKey } from './store/editor-state'
 
@@ -44,6 +46,36 @@ function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: n
 }
 
 describe('canvas toolbar', () => {
+  it('can toggle play mode off by pressing edit button', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 57,
+      top: 168,
+      width: 247,
+      height: 402,
+    }}
+    data-uid='container'
+  >
+    <div data-uid='a3d' />
+  </div>`),
+      'await-first-dom-report',
+    )
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+
+    const playButton = editor.renderedDOM.getByTestId(PlayModeButtonTestId)
+    const playButtonCenter = getDomRectCenter(playButton.getBoundingClientRect())
+    await mouseClickAtPoint(playButton, playButtonCenter)
+    expect(editor.getEditorState().editor.mode.type).toEqual('live')
+
+    const editButton = editor.renderedDOM.getByTestId(CanvasToolbarEditButtonID)
+    const editButtonCenter = getDomRectCenter(editButton.getBoundingClientRect())
+    await mouseClickAtPoint(editButton, editButtonCenter)
+    expect(editor.getEditorState().editor.mode.type).toEqual('select')
+  })
+
   it('can insert conditionals via the canvas toolbar', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`

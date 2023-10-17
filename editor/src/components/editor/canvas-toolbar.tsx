@@ -69,6 +69,7 @@ import {
 } from '../canvas/ui/floating-insert-menu'
 
 export const InsertMenuButtonTestId = 'insert-menu-button'
+export const PlayModeButtonTestId = 'canvas-toolbar-play-mode'
 export const InsertConditionalButtonTestId = 'insert-mode-conditional'
 export const CanvasToolbarId = 'canvas-toolbar'
 
@@ -520,6 +521,7 @@ export const CanvasToolbar = React.memo(() => {
               iconCategory={editButtonIcon.category}
               primary={canvasToolbarMode.primary === 'edit'}
               onClick={dispatchSwitchToSelectModeCloseMenus}
+              keepActiveInLiveMode
               testid={CanvasToolbarEditButtonID}
               style={{ width: 36 }}
             />
@@ -530,6 +532,7 @@ export const CanvasToolbar = React.memo(() => {
               iconCategory='tools'
               primary={canvasToolbarMode.primary === 'text'}
               onClick={insertTextCallback}
+              keepActiveInLiveMode
               style={{ width: 36 }}
             />
           </Tooltip>
@@ -540,13 +543,15 @@ export const CanvasToolbar = React.memo(() => {
               iconCategory='tools'
               primary={canvasToolbarMode.primary === 'insert'}
               onClick={toggleInsertButtonClicked}
+              keepActiveInLiveMode
               style={{ width: 36 }}
             />
           </Tooltip>
           <Tooltip title='Live Mode' placement='bottom'>
             <InsertModeButton
-              iconType='play'
-              iconCategory='tools'
+              testid={PlayModeButtonTestId}
+              iconType={isLiveMode ? 'icon-semantic-stop' : 'play'}
+              iconCategory={isLiveMode ? 'semantic' : 'tools'}
               primary={canvasToolbarMode.primary === 'play'}
               onClick={toggleLiveMode}
               keepActiveInLiveMode
