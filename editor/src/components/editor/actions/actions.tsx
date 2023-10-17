@@ -522,18 +522,10 @@ import { addElements } from '../../canvas/commands/add-elements-command'
 import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
-import { createAbsoluteReparentAndOffsetCommands } from '../../canvas/canvas-strategies/strategies/absolute-reparent-strategy'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
-import {
-  commandsForFirstApplicableStrategy,
-  executeFirstApplicableStrategy,
-  resultForFirstApplicableStrategy,
-} from '../../inspector/inspector-strategies/inspector-strategy'
-import { insertAsAbsoluteStrategy } from '../one-shot-insertion-strategies/insert-as-absolute-strategy'
-import { insertAsStaticStrategy } from '../one-shot-insertion-strategies/insert-as-static-strategy'
-import { moveAsAbsoluteStrategy } from '../one-shot-move-strategies/move-as-absolute-strategy'
-import { convertToAbsoluteAndMoveStrategy } from '../one-shot-move-strategies/convert-to-absolute-and-move'
-import { ReparentElement } from '../../canvas/commands/reparent-element-command'
+import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
+import { unwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/unwrap-as-absolute-strategy'
+import { convertToAbsoluteAndUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-unwrap'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -725,7 +717,7 @@ export function editorMoveTemplate(
     editor.elementPathTree,
     editor.allElementProps,
     [
-      moveAsAbsoluteStrategy(
+      unwrapAsAbsoluteStrategy(
         pathToReparent(target),
         insertionPath,
         indexPosition,
@@ -733,7 +725,7 @@ export function editorMoveTemplate(
         editor.projectContents,
         editor.nodeModules.files,
       ),
-      convertToAbsoluteAndMoveStrategy(
+      convertToAbsoluteAndUnwrapStrategy(
         pathToReparent(target),
         insertionPath,
         indexPosition,

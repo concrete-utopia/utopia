@@ -16,20 +16,18 @@ import type { PathToReparent } from '../../canvas/canvas-strategies/strategies/r
 import { getReparentOutcome } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { reorderElement } from '../../canvas/commands/reorder-element-command'
 import { getConvertIndividualElementToAbsoluteCommands } from '../../inspector/inspector-common'
-import type { CustomInspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import type { AllElementProps } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
+import type { UnwrapInspectorStrategy } from './unwrap-strategies-common'
 
-export type MoveInspectorStrategy = CustomInspectorStrategy<ElementPath>
-
-export const convertToAbsoluteAndMoveStrategy = (
+export const convertToAbsoluteAndUnwrapStrategy = (
   element: PathToReparent,
   parentInsertionPath: InsertionPath,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-): MoveInspectorStrategy => ({
+): UnwrapInspectorStrategy => ({
   name: 'Convert to absolute and move',
   strategy: (
     metadata: ElementInstanceMetadataMap,

@@ -9,17 +9,17 @@ import { autoLayoutParentAbsoluteOrStatic } from '../../canvas/canvas-strategies
 import type { PathToReparent } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import type { AllElementProps } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
-import type { MoveInspectorStrategy } from './convert-to-absolute-and-move'
 import { createAbsoluteReparentAndOffsetCommands } from '../../canvas/canvas-strategies/strategies/absolute-reparent-strategy'
+import type { UnwrapInspectorStrategy } from './unwrap-strategies-common'
 
-export const moveAsAbsoluteStrategy = (
+export const unwrapAsAbsoluteStrategy = (
   element: PathToReparent,
   parentInsertionPath: InsertionPath,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
-): MoveInspectorStrategy => ({
+): UnwrapInspectorStrategy => ({
   name: 'Move as absolute',
   strategy: (
     metadata: ElementInstanceMetadataMap,
