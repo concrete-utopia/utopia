@@ -194,8 +194,8 @@ const SceneLabel = React.memo<SceneLabelProps>((props) => {
   }, [onMouseUp])
 
   const selectedBackgroundColor = sceneHasSingleChild
-    ? colorTheme.componentPurple05solid.value
-    : colorTheme.bg510solid.value
+    ? colorTheme.componentPurple10.value
+    : colorTheme.bg510.value
   const backgroundColor = isSelected ? selectedBackgroundColor : 'transparent'
 
   if (frame != null && isFiniteRectangle(frame)) {

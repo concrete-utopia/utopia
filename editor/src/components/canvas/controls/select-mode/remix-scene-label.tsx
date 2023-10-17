@@ -242,7 +242,7 @@ const RemixSceneLabel = React.memo<RemixSceneLabelProps>((props) => {
     }
   }, [onMouseUp])
 
-  const backgroundColor = isSelected ? colorTheme.aqua05solid.value : 'transparent'
+  const backgroundColor = isSelected ? colorTheme.aqua40.value : 'transparent'
 
   if (frame == null || isInfinityRectangle(frame)) {
     return null
