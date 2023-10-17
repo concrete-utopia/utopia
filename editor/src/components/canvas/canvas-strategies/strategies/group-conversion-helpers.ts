@@ -89,6 +89,7 @@ import {
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { cssPixelLength, isCSSNumber } from '../../../inspector/common/css-utils'
 import {
+  getConvertIndividualElementToAbsoluteCommandsFromMetadata,
   isHugFromStyleAttribute,
   nukeAllAbsolutePositioningPropsCommands,
   nukeSizingPropsForAxisCommand,
@@ -719,40 +720,7 @@ export function convertFrameToGroup(
   const childrenWithoutMargins = modify(toPropsOptic, removeMarginProperties, children)
   const elementToAdd = jsxElement('Group', uid, propsWithoutPadding, childrenWithoutMargins)
 
-  // Any margin may result in a shift when that margin is gone, so this shifts
-  // in the opposite direction.
-  const moveChildrenCommands = arrayAccumulate<CanvasCommand>((workingArray) => {
-    for (const child of childrenWithoutMargins) {
-      const targetPath = EP.appendToPath(elementPath, child.uid)
-      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, targetPath)
-      if (elementMetadata != null) {
-        const globalFrame = elementMetadata.globalFrame
-        const localFrame = elementMetadata.localFrame
-        const canvasMargin = elementMetadata.specialSizeMeasurements.margin
-        if (
-          (globalFrame == null || isFiniteRectangle(globalFrame)) &&
-          (localFrame == null || isFiniteRectangle(localFrame))
-        ) {
-          const shiftLeftBy = canvasMargin.left ?? 0
-          const shiftTopBy = canvasMargin.top ?? 0
-          if (isRight(elementMetadata.element) && isJSXElement(elementMetadata.element.value)) {
-            workingArray.push(
-              ...createMoveCommandsForElement(
-                elementMetadata.element.value,
-                targetPath,
-                targetPath,
-                canvasVector({ x: shiftLeftBy, y: shiftTopBy }),
-                localFrame,
-                globalFrame,
-                elementMetadata.specialSizeMeasurements.immediateParentBounds,
-                elementMetadata.specialSizeMeasurements.parentFlexDirection,
-              ).commands,
-            )
-          }
-        }
-      }
-    }
-  })
+  const childrenPaths = MetadataUtils.getChildrenPathsOrdered(metadata, pathTrees, elementPath)
 
   return [
     deleteElement('always', elementPath),
@@ -760,7 +728,9 @@ export function convertFrameToGroup(
       indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       importsToAdd: GroupImport,
     }),
-    ...moveChildrenCommands,
+    ...childrenPaths.flatMap((c) =>
+      getConvertIndividualElementToAbsoluteCommandsFromMetadata(c, metadata, pathTrees),
+    ),
     queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
     showToastCommand(
       'Converted to group and removed styling',
