@@ -1703,39 +1703,6 @@ export const MetadataUtils = {
   createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
     return buildTree(metadata)
   },
-  removeElementMetadataChild(
-    target: ElementPath,
-    metadata: ElementInstanceMetadataMap,
-  ): ElementInstanceMetadataMap {
-    // Note this only removes the child element from the metadata, but keeps grandchildren in there (inaccessible). Is this a memory leak?
-    let remainingElements: ElementInstanceMetadataMap = omit([EP.toString(target)], metadata)
-    if (Object.keys(remainingElements).length === Object.keys(metadata).length) {
-      // Nothing was removed
-      return metadata
-    } else {
-      return remainingElements
-    }
-  },
-  insertElementMetadataChild(
-    targetParent: ElementPath | null,
-    elementToInsert: ElementInstanceMetadata,
-    metadata: ElementInstanceMetadataMap,
-  ): ElementInstanceMetadataMap {
-    // Insert into the map
-    if (!EP.pathsEqual(EP.parentPath(elementToInsert.elementPath), targetParent)) {
-      throw new Error(
-        `insertElementMetadataChild: trying to insert child metadata with incorrect parent path prefix.
-        Target parent: ${EP.toString(targetParent!)},
-        child path: ${EP.toString(elementToInsert.elementPath)}`,
-      )
-    }
-
-    const withNewElement: ElementInstanceMetadataMap = {
-      ...metadata,
-      [EP.toString(elementToInsert.elementPath)]: elementToInsert,
-    }
-    return withNewElement
-  },
   duplicateElementMetadataAtPath(
     oldPath: ElementPath,
     newPath: ElementPath,
@@ -1830,11 +1797,10 @@ export const MetadataUtils = {
     const elementName = MetadataUtils.getStaticElementName(path, rootElements)
     return elementName != null && !isIntrinsicHTMLElement(elementName)
   },
-  isPinnedAndNotAbsolutePositioned(
+  isLayoutedByFlowAndNotAbsolutePositioned(
     metadata: ElementInstanceMetadataMap,
     view: ElementPath,
   ): boolean {
-    // Disable snapping and guidelines for pinned elements marked with relative positioning:
     const elementMetadata = MetadataUtils.findElementByElementPath(metadata, view)
     return (
       elementMetadata != null &&
@@ -2447,11 +2413,11 @@ function fillSpyOnlyMetadata(
 }
 
 function fillMissingDataFromAncestors(mergedMetadata: ElementInstanceMetadataMap) {
-  const metadataWithGlobalContentBox = fillGlobalContentBoxFromAncestors(mergedMetadata)
-  const metadataWithConditionaGlobalFrames = fillConditionalGlobalFrameFromAncestors(
-    metadataWithGlobalContentBox,
-  )
-  return metadataWithConditionaGlobalFrames
+  return [
+    fillGlobalContentBoxFromAncestors,
+    fillConditionalGlobalFrameFromAncestors,
+    fillLayoutSystemForChildrenFromAncestors,
+  ].reduce((metadata, fill) => fill(metadata), mergedMetadata)
 }
 
 function fillGlobalContentBoxFromAncestors(
@@ -2479,6 +2445,36 @@ function fillGlobalContentBoxFromAncestors(
       specialSizeMeasurements: {
         ...elem.specialSizeMeasurements,
         globalContentBoxForChildren: parentGlobalContentBoxForChildren,
+      },
+    }
+  })
+  return workingElements
+}
+
+function fillLayoutSystemForChildrenFromAncestors(
+  metadata: ElementInstanceMetadataMap,
+): ElementInstanceMetadataMap {
+  const workingElements = { ...metadata }
+
+  const elementsWithoutLayoutSystemForChildren = Object.keys(workingElements).filter((p) => {
+    return workingElements[p]?.specialSizeMeasurements.layoutSystemForChildren == null
+  })
+  // sorted, so that parents are fixed first
+  elementsWithoutLayoutSystemForChildren.sort()
+
+  fastForEach(elementsWithoutLayoutSystemForChildren, (pathStr) => {
+    const elem = workingElements[pathStr]
+
+    const parentPathStr = EP.toString(EP.parentPath(EP.fromString(pathStr)))
+
+    const layoutSystemForChildren =
+      workingElements[parentPathStr]?.specialSizeMeasurements.layoutSystemForChildren ?? null
+
+    workingElements[pathStr] = {
+      ...elem,
+      specialSizeMeasurements: {
+        ...elem.specialSizeMeasurements,
+        layoutSystemForChildren: layoutSystemForChildren,
       },
     }
   })

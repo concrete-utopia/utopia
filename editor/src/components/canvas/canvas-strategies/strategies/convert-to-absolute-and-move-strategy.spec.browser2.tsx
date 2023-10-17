@@ -632,6 +632,90 @@ describe('Convert to Absolute', () => {
       getCodeForTestProject(childTagAfter),
     )
   })
+  it('snaps to parent and sibling after being converted', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 20,
+      top: 26,
+      width: 150,
+      height: 150,
+    }}
+    data-uid='container'
+  >
+    <div
+      style={{
+        backgroundColor: '#0075ff',
+        width: 50,
+        height: 50,
+        contain: 'layout',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+      }}
+      data-uid='child'
+      data-testid='child'
+    />
+    <div
+      style={{
+        backgroundColor: '#0075ff',
+        width: 50,
+        height: 65,
+        contain: 'layout',
+        position: 'absolute',
+        left: 100,
+        top: 86,
+      }}
+    />
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const element = renderResult.renderedDOM.getByTestId('child')
+    const elementBounds = element.getBoundingClientRect()
+
+    await mouseDownAtPoint(
+      canvasControlsLayer,
+      {
+        x: elementBounds.x + elementBounds.width / 2,
+        y: elementBounds.y + elementBounds.width / 2,
+      },
+      { modifiers: cmdModifier },
+    )
+
+    // move so that the bottom right corner snaps to the center of the parent
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + elementBounds.width / 2 + 25,
+      y: elementBounds.y + elementBounds.width / 2 + 25,
+    })
+
+    {
+      const activeStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(activeStrategy).not.toBeNull()
+      expect(activeStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toHaveLength(
+        2,
+      )
+    }
+
+    // move so that the bottom edge snaps to the top edge of the sibling
+    await mouseMoveToPoint(canvasControlsLayer, {
+      x: elementBounds.x + elementBounds.width / 2 + 5,
+      y: elementBounds.y + elementBounds.width / 2 + 35,
+    })
+
+    {
+      const activeStrategy = renderResult.getEditorState().strategyState.currentStrategy
+      expect(activeStrategy).not.toBeNull()
+      expect(activeStrategy).not.toEqual(ConvertToAbsoluteAndMoveStrategyID)
+      expect(renderResult.getEditorState().editor.canvas.controls.snappingGuidelines).toHaveLength(
+        1,
+      )
+    }
+  })
 })
 
 describe('Convert to absolute/escape hatch', () => {

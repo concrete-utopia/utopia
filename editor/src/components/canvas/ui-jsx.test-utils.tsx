@@ -239,11 +239,12 @@ export async function renderTestEditorWithCode(
   appUiJsFileCode: string,
   awaitFirstDomReport: 'await-first-dom-report' | 'dont-await-first-dom-report',
   strategiesToUse: Array<MetaCanvasStrategy> = RegisteredCanvasStrategies,
+  startingFeatureSwitches: StartingFeatureSwitches = DefaultStartingFeatureSwitches,
 ): Promise<EditorRenderResult> {
   return renderTestEditorWithModel(
     createTestProjectWithCode(appUiJsFileCode),
     awaitFirstDomReport,
-    DefaultStartingFeatureSwitches,
+    startingFeatureSwitches,
     undefined,
     strategiesToUse,
   )

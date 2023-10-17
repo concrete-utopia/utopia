@@ -73,6 +73,7 @@ export const insertAsAbsoluteStrategy = (
               metadata,
               metadata,
               state.projectContents,
+              'force-pins',
             ),
             setProperty('always', result.newPath, PP.create('style', 'position'), 'absolute'),
           ],

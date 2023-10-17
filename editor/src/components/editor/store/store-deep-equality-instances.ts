@@ -1560,8 +1560,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
     ).areEqual
     const usesParentBoundsResult = oldSize.usesParentBounds === newSize.usesParentBounds
     const parentLayoutSystemResult = oldSize.parentLayoutSystem === newSize.parentLayoutSystem
-    const layoutSystemForChildrenResult =
-      oldSize.layoutSystemForChildren === newSize.layoutSystemForChildren
+    const layoutSystemForChildrenResult = NullableStringKeepDeepEquality(
+      oldSize.layoutSystemForChildren,
+      newSize.layoutSystemForChildren,
+    ).areEqual
     const providesBoundsForAbsoluteChildrenResult =
       oldSize.providesBoundsForAbsoluteChildren === newSize.providesBoundsForAbsoluteChildren
     const positionResult = oldSize.position === newSize.position

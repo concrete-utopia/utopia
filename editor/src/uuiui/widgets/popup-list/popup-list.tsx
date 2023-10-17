@@ -88,6 +88,8 @@ const Option = (props: OptionProps<SelectOption>) => {
     selectOption(data)
   }, [data, selectOption])
 
+  const iconShown = props.data.icon != null
+
   return (
     <Tooltip
       title={data.tooltip ?? ''}
@@ -98,8 +100,17 @@ const Option = (props: OptionProps<SelectOption>) => {
         <FlexRow style={{ width: CheckboxWidth, padding: CheckboxPadding, flexShrink: 0 }}>
           {props.isSelected ? '✓' : ''}
         </FlexRow>
-        {props.data.icon == null ? null : <Icn {...props.data.icon} />}
-        <span style={{ paddingLeft: 8 }}>{props.children}</span>
+        {props.data.icon == null ? null : (
+          <Icn
+            {...props.data.icon}
+            // We override the color prop here so it can switch between dark and light depending on whether its highlighted (to always contrast the background)
+            color={props.isFocused ? 'on-highlight-main' : 'main'}
+            width={16}
+            height={16}
+            style={{ marginLeft: 4 }}
+          />
+        )}
+        <span style={{ paddingLeft: iconShown ? 4 : 8 }}>{props.children}</span>
       </FlexRow>
     </Tooltip>
   )
@@ -428,13 +439,40 @@ const DropdownIndicator: React.FunctionComponent<
 }
 
 const SingleValue = (props: SingleValueProps<SelectOption>) => {
+  const iconShown = props.data.icon != null
+
   return (
-    <components.SingleValue {...props}>
-      {props.data.icon == null ? null : <Icn {...props.data.icon} />}
-      <span style={{ paddingLeft: 4 }}>{props.children}</span>
+    <components.SingleValue
+      {...props}
+      getStyles={(name: string, p: any) => {
+        return { ...props.getStyles(name, p), margin: iconShown ? -4 : 0 }
+      }}
+    >
+      {props.data.icon == null ? null : (
+        <div
+          style={{
+            position: 'absolute',
+            width: 20,
+            height: 20,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Icn
+            {...props.data.icon}
+            color='secondary' // SingleValue is the "closed state" of the popupList, for these we want to show the subtle grey colored icon
+            width={16}
+            height={16}
+            style={{ scale: '80%' }}
+          />
+        </div>
+      )}
+      <span style={{ paddingLeft: iconShown ? 22 : 4 }}>{props.children}</span>
     </components.SingleValue>
   )
 }
+SingleValue.displayName = 'SingleValue'
 
 const displayNone: styleFn = () => ({
   display: 'none',

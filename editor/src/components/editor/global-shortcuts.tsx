@@ -907,13 +907,17 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
+        const elementsConsideredForFlexConversion = editor.selectedViews.filter(
+          (elementPath) =>
+            MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, elementPath) != null,
+        )
         const selectedElementsFlexContainers = detectAreElementsFlexContainers(
           editor.jsxMetadata,
-          editor.selectedViews,
+          elementsConsideredForFlexConversion,
         )
         const commands = commandsForFirstApplicableStrategy(
           editor.jsxMetadata,
-          editor.selectedViews,
+          elementsConsideredForFlexConversion,
           editor.elementPathTree,
           editor.allElementProps,
           selectedElementsFlexContainers ? removeFlexLayoutStrategies : addFlexLayoutStrategies,

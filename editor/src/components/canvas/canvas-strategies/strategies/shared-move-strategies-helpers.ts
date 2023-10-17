@@ -19,6 +19,7 @@ import type {
 } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  canvasVector,
   nullIfInfinity,
   offsetRect,
   roundRectangleToNearestWhole,
@@ -40,6 +41,7 @@ import type { CanvasCommand } from '../../commands/commands'
 import {
   pushIntendedBoundsGroup,
   pushIntendedBoundsAndUpdateTargets,
+  PushIntendedBoundsTarget,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -134,15 +136,14 @@ export function applyMoveCommon(
     } else {
       const constrainedDragAxis =
         shiftKeyPressed && drag != null ? determineConstrainedDragAxis(drag) : null
-
-      const targetsForSnapping = targets.map(
+      const targetsForSnapping = originalTargets.map(
         (path) => interactionSession.updatedTargetPaths[EP.toString(path)] ?? path,
       )
       const snapTargets: ElementPath[] = gatherParentAndSiblingTargets(
         canvasState.startingMetadata,
         canvasState.startingAllElementProps,
         canvasState.startingElementPathTree,
-        originalTargets,
+        targetsForSnapping,
       )
       const moveGuidelines = collectParentAndSiblingGuidelines(
         snapTargets,
@@ -178,6 +179,44 @@ export function applyMoveCommon(
   }
 }
 
+function getAppropriateLocalFrame(
+  options: MoveCommandsOptions | undefined,
+  selectedElement: ElementPath,
+  startingMetadata: ElementInstanceMetadataMap,
+) {
+  return options?.ignoreLocalFrame
+    ? null
+    : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(selectedElement, startingMetadata)
+}
+
+export function getDirectMoveCommandsForSelectedElement(
+  projectContents: ProjectContentTreeRoot,
+  startingMetadata: ElementInstanceMetadataMap,
+  selectedElement: ElementPath,
+  mappedPath: ElementPath,
+  leftOrTop: 'left' | 'top',
+  newPixelValue: number,
+  options?: MoveCommandsOptions,
+): {
+  commands: Array<AdjustCssLengthProperties>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
+  const localFrame = getAppropriateLocalFrame(options, selectedElement, startingMetadata)
+
+  const drag = canvasVector({
+    x: leftOrTop === 'left' ? newPixelValue - (localFrame?.x ?? 0) : 0,
+    y: leftOrTop === 'top' ? newPixelValue - (localFrame?.y ?? 0) : 0,
+  })
+
+  return getMoveCommandsForSelectedElement(
+    projectContents,
+    startingMetadata,
+    selectedElement,
+    mappedPath,
+    drag,
+  )
+}
+
 export function getMoveCommandsForSelectedElement(
   projectContents: ProjectContentTreeRoot,
   startingMetadata: ElementInstanceMetadataMap,
@@ -202,9 +241,7 @@ export function getMoveCommandsForSelectedElement(
   const elementParentBounds =
     elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
 
-  const localFrame = options?.ignoreLocalFrame
-    ? null
-    : MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(selectedElement, startingMetadata)
+  const localFrame = getAppropriateLocalFrame(options, selectedElement, startingMetadata)
 
   const globalFrame = nullIfInfinity(
     MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
@@ -265,6 +302,40 @@ export function moveInspectorStrategy(
           selectedPath,
           selectedPath,
           movement,
+        )
+        commands.push(...moveCommandsResult.commands)
+        intendedBounds.push(...moveCommandsResult.intendedBounds)
+      }
+      commands.push(
+        pushIntendedBoundsAndUpdateTargets(
+          intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
+          'starting-metadata',
+        ),
+      )
+      commands.push(setElementsToRerenderCommand(selectedElementPaths))
+      return commands
+    },
+  }
+}
+
+export function directMoveInspectorStrategy(
+  projectContents: ProjectContentTreeRoot,
+  leftOrTop: 'left' | 'top',
+  newPixelValue: number,
+): InspectorStrategy {
+  return {
+    name: 'Move to a pixel position',
+    strategy: (metadata, selectedElementPaths, _elementPathTree, _allElementProps) => {
+      let commands: Array<CanvasCommand> = []
+      let intendedBounds: Array<CanvasFrameAndTarget> = []
+      for (const selectedPath of selectedElementPaths) {
+        const moveCommandsResult = getDirectMoveCommandsForSelectedElement(
+          projectContents,
+          metadata,
+          selectedPath,
+          selectedPath,
+          leftOrTop,
+          newPixelValue,
         )
         commands.push(...moveCommandsResult.commands)
         intendedBounds.push(...moveCommandsResult.intendedBounds)

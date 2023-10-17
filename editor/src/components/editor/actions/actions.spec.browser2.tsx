@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import * as EP from '../../../core/shared/element-path'
 import {
   BakedInStoryboardUID,
@@ -16,9 +15,12 @@ import {
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
 import {
+  applyCommandsAction,
+  clearSelection,
   deleteSelected,
   deleteView,
   selectComponents,
+  setLeftMenuTab,
   truncateHistory,
   undo,
   unwrapElements,
@@ -54,7 +56,12 @@ import {
 import { cmdModifier, shiftCmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
-import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
+import {
+  LeftMenuTab,
+  navigatorEntryToKey,
+  PlaygroundFilePath,
+  StoryboardFilePath,
+} from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
@@ -73,6 +80,7 @@ import {
   groupJSXElementImportsToAdd,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { safeIndex } from '../../../core/shared/array-utils'
+import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -3015,6 +3023,91 @@ export var storyboard = (props) => {
               `),
           )
         })
+
+        it('applies flex props if the conditional is in a flex container', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`<div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 114.5,
+              width: 'max-content',
+              height: 'max-content',
+            }}
+            data-uid='root'
+          >
+            {
+              // @utopia/uid=conditional
+              true ? null : null
+            }
+            <img
+              style={{
+                width: 100,
+                height: 100,
+                position: 'absolute',
+                top: 120,
+                left: 0,
+              }}
+              data-uid='bbb'
+              data-testid='bbb'
+              src='/editor/utopia-logo-white-fill.png?hash=d7275eef10f8344f4b52a4f5ba1c92e698186d61'
+            />
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+          await pressKey('x', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
+                <div
+                  style={{
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 114.5,
+                    width: 'max-content',
+                    height: 'max-content',
+                  }}
+                  data-uid='root'
+                >
+                  {
+                    // @utopia/uid=conditional
+                    true ? (
+                      <img
+                        style={{
+                          contain: 'layout',
+                          width: 100,
+                          height: 100,
+                        }}
+                        data-uid='bbb'
+                        data-testid='bbb'
+                        src='/editor/utopia-logo-white-fill.png?hash=d7275eef10f8344f4b52a4f5ba1c92e698186d61'
+                      />
+                    ) : null
+                  }
+                </div>
+              `),
+          )
+
+          const img = renderResult.renderedDOM.getByTestId('bbb')
+          const { top, left, position } = img.style
+          expect({ top, left, position }).toEqual({ left: '', top: '', position: '' })
+        })
       })
       describe('pasting an element creates new layout properties for the new parent layout', () => {
         const copyPasteLayoutTestCases: Array<{
@@ -5735,7 +5828,7 @@ export var storyboard = (
         ),
       )
     })
-    it(`Unwraps an flex element`, async () => {
+    it(`Unwraps a flex element`, async () => {
       const testCode = `
       <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
         <div
@@ -5763,7 +5856,7 @@ export var storyboard = (
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
+          <div data-uid='ccc' style={{width: 50, height: 100, position: 'absolute', left: 80, top: 55 }} />
         </div>`,
         ),
       )
@@ -5916,16 +6009,11 @@ export var storyboard = (
                 backgroundColor: 'orange',
                 width: 30,
                 height: 30,
-                top: 140,
               }}
               data-uid='qux'
             />
             <div
-              style={{
-                backgroundColor: 'orange',
-                height: 60,
-                top: 170,
-              }}
+              style={{ backgroundColor: 'orange', height: 60 }}
               data-uid='waldo'
             />
             <div data-uid='nested'>
@@ -6494,9 +6582,9 @@ export var storyboard = (
                   backgroundColor: 'orange',
                   width: 50,
                   height: 50,
+                  position: 'absolute',
                   left: 20,
                   top: 50,
-                  position: 'absolute',
                 }}
                 data-uid='foo'
               />
@@ -6505,9 +6593,9 @@ export var storyboard = (
                   backgroundColor: 'orange',
                   width: 30,
                   height: 30,
+                  position: 'absolute',
                   left: 20,
                   top: 102,
-                  position: 'absolute',
                 }}
                 data-uid='bar'
               />
@@ -6515,10 +6603,10 @@ export var storyboard = (
                 style={{
                   backgroundColor: 'orange',
                   height: 60,
-                  left: 20,
-                  top: 134,
                   width: 100,
                   position: 'absolute',
+                  left: 20,
+                  top: 134,
                 }}
                 data-uid='baz'
               />
@@ -7060,6 +7148,75 @@ export var storyboard = (
       )
       await renderResult.getDispatchFollowUpActionsFinished()
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([makeTargetPath('aaa')])
+    })
+    it('the navigator pane is shown when selection changes', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='root'>
+        <div data-uid='child1' />
+        <div data-uid='child2' />
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      {
+        // selectComponents
+        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Github,
+        )
+
+        await renderResult.dispatch(
+          [selectComponents([EP.appendNewElementPath(TestScenePath, ['root', 'child1'])], false)],
+          true,
+        )
+
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:root/child1',
+        ])
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Navigator,
+        )
+      }
+
+      {
+        // setLeftMenuTab
+        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Github,
+        )
+
+        await renderResult.dispatch([clearSelection()], true)
+
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([])
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Navigator,
+        )
+      }
+
+      {
+        // updateSelectedViews command
+        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Github,
+        )
+
+        await renderResult.dispatch(
+          [
+            applyCommandsAction([
+              updateSelectedViews('always', [EP.appendNewElementPath(TestScenePath, ['root'])]),
+            ]),
+          ],
+          true,
+        )
+
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:root',
+        ])
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Navigator,
+        )
+      }
     })
   })
 

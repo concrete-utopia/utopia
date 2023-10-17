@@ -1,21 +1,25 @@
 import React from 'react'
-import { moveInspectorStrategy } from '../../../../../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
-import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import type {
-  CanvasRectangle,
-  CanvasVector,
-  LocalRectangle,
-} from '../../../../../core/shared/math-utils'
 import {
+  directResizeInspectorStrategy,
+  resizeInspectorStrategy,
+} from '../../../../../components/canvas/canvas-strategies/strategies/shared-absolute-resize-strategy-helpers'
+import {
+  directMoveInspectorStrategy,
+  moveInspectorStrategy,
+} from '../../../../../components/canvas/canvas-strategies/strategies/shared-move-strategies-helpers'
+import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
+import { oneLevelNestedEquals } from '../../../../../core/shared/equality-utils'
+import type { CanvasRectangle, CanvasVector } from '../../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
   canvasRectangle,
   canvasVector,
   isInfinityRectangle,
-  localRectangle,
   zeroRectangle,
 } from '../../../../../core/shared/math-utils'
+import { optionalMap } from '../../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../../core/shared/utils'
 import { NumberInput } from '../../../../../uuiui'
-import { resizeInspectorStrategy } from '../../../../canvas/canvas-strategies/strategies/keyboard-absolute-resize-strategy'
 import {
   EdgePositionBottom,
   EdgePositionLeft,
@@ -69,6 +73,13 @@ function getMovementFromValues(property: TLWH, oldValue: number, newValue: numbe
   }
 }
 
+interface LTWHPixelValues {
+  left: Array<number>
+  top: Array<number>
+  width: Array<number>
+  height: Array<number>
+}
+
 export const FrameUpdatingLayoutSection = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
@@ -76,75 +87,139 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const singleItemSelected = useEditorState(
-    Substores.selectedViews,
-    (store) => store.editor.selectedViews.length === 1,
-    'SimplifiedLayoutSubsection singleItemSelected',
-  )
   const originalGlobalFrame: CanvasRectangle = useEditorState(
     Substores.metadata,
     (store) => {
-      if (singleItemSelected) {
+      const globalFrames = store.editor.selectedViews.map((selectedView) => {
         const metadata = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
-          store.editor.selectedViews[0],
+          selectedView,
         )
         const maybeInfinityGlobalFrame = metadata?.globalFrame ?? canvasRectangle(zeroRectangle)
         return isInfinityRectangle(maybeInfinityGlobalFrame)
           ? canvasRectangle(zeroRectangle)
           : maybeInfinityGlobalFrame
-      } else {
-        return canvasRectangle(zeroRectangle)
-      }
+      })
+      return boundingRectangleArray(globalFrames) ?? canvasRectangle(zeroRectangle)
     },
     'SimplifiedLayoutSubsection originalGlobalFrame',
+    oneLevelNestedEquals,
   )
-  const originalLocalFrame: LocalRectangle = useEditorState(
+  const originalLTWHValues: LTWHPixelValues = useEditorState(
     Substores.metadata,
     (store) => {
-      if (singleItemSelected) {
+      let result: LTWHPixelValues = {
+        left: [],
+        top: [],
+        width: [],
+        height: [],
+      }
+      for (const selectedView of store.editor.selectedViews) {
         const metadata = MetadataUtils.findElementByElementPath(
           store.editor.jsxMetadata,
-          store.editor.selectedViews[0],
+          selectedView,
         )
-        const maybeInfinityLocalFrame = metadata?.localFrame ?? localRectangle(zeroRectangle)
-        return isInfinityRectangle(maybeInfinityLocalFrame)
-          ? localRectangle(zeroRectangle)
-          : maybeInfinityLocalFrame
-      } else {
-        return localRectangle(zeroRectangle)
+        if (metadata == null) {
+          result.left.push(0)
+          result.top.push(0)
+          result.width.push(0)
+          result.height.push(0)
+        } else {
+          const maybeInfinityLocalFrame = metadata.localFrame
+          if (maybeInfinityLocalFrame == null || isInfinityRectangle(maybeInfinityLocalFrame)) {
+            result.left.push(0)
+            result.top.push(0)
+            result.width.push(0)
+            result.height.push(0)
+          } else {
+            result.left.push(maybeInfinityLocalFrame.x)
+            result.top.push(maybeInfinityLocalFrame.y)
+            result.width.push(maybeInfinityLocalFrame.width)
+            result.height.push(maybeInfinityLocalFrame.height)
+          }
+        }
       }
+      return result
     },
-    'SimplifiedLayoutSubsection originalGlobalFrame',
+    'SimplifiedLayoutSubsection originalLTWHValues',
+    oneLevelNestedEquals,
   )
 
   const updateFrame = React.useCallback(
-    (edgePosition: EdgePosition, movement: CanvasVector) => {
-      if (edgePosition === EdgePositionTop || edgePosition === EdgePositionLeft) {
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          [moveInspectorStrategy(projectContentsRef.current, movement)],
-        )
-      } else {
-        executeFirstApplicableStrategy(
-          dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          [
-            resizeInspectorStrategy(
-              projectContentsRef.current,
-              originalGlobalFrame,
-              edgePosition,
-              movement,
-            ),
-          ],
-        )
+    (frameUpdate: FrameUpdate) => {
+      switch (frameUpdate.type) {
+        case 'DELTA_FRAME_UPDATE':
+          if (
+            frameUpdate.edgePosition === EdgePositionTop ||
+            frameUpdate.edgePosition === EdgePositionLeft
+          ) {
+            executeFirstApplicableStrategy(
+              dispatch,
+              metadataRef.current,
+              selectedViewsRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              [moveInspectorStrategy(projectContentsRef.current, frameUpdate.edgeMovement)],
+            )
+          } else {
+            executeFirstApplicableStrategy(
+              dispatch,
+              metadataRef.current,
+              selectedViewsRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              [
+                resizeInspectorStrategy(
+                  projectContentsRef.current,
+                  originalGlobalFrame,
+                  frameUpdate.edgePosition,
+                  frameUpdate.edgeMovement,
+                ),
+              ],
+            )
+          }
+          break
+        case 'DIRECT_FRAME_UPDATE':
+          if (
+            frameUpdate.edgePosition === EdgePositionTop ||
+            frameUpdate.edgePosition === EdgePositionLeft
+          ) {
+            const leftOrTop = frameUpdate.edgePosition === EdgePositionLeft ? 'left' : 'top'
+            executeFirstApplicableStrategy(
+              dispatch,
+              metadataRef.current,
+              selectedViewsRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              [
+                directMoveInspectorStrategy(
+                  projectContentsRef.current,
+                  leftOrTop,
+                  frameUpdate.edgeValue,
+                ),
+              ],
+            )
+          } else {
+            const widthOrHeight =
+              frameUpdate.edgePosition === EdgePositionRight ? 'width' : 'height'
+            executeFirstApplicableStrategy(
+              dispatch,
+              metadataRef.current,
+              selectedViewsRef.current,
+              elementPathTreeRef.current,
+              allElementPropsRef.current,
+              [
+                directResizeInspectorStrategy(
+                  projectContentsRef.current,
+                  widthOrHeight,
+                  frameUpdate.edgeValue,
+                ),
+              ],
+            )
+          }
+          break
+        default:
+          assertNever(frameUpdate)
       }
     },
     [
@@ -169,15 +244,13 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           property='left'
           label='L'
           updateFrame={updateFrame}
-          currentValue={originalLocalFrame.x}
-          enabled={singleItemSelected}
+          currentValues={originalLTWHValues.left}
         />
         <FrameUpdatingLayoutControl
           property='top'
           label='T'
           updateFrame={updateFrame}
-          currentValue={originalLocalFrame.y}
-          enabled={singleItemSelected}
+          currentValues={originalLTWHValues.top}
         />
       </UIGridRow>
       <UIGridRow
@@ -189,15 +262,13 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           property='width'
           label='W'
           updateFrame={updateFrame}
-          currentValue={originalLocalFrame.width}
-          enabled={singleItemSelected}
+          currentValues={originalLTWHValues.width}
         />
         <FrameUpdatingLayoutControl
           property='height'
           label='H'
           updateFrame={updateFrame}
-          currentValue={originalLocalFrame.height}
-          enabled={singleItemSelected}
+          currentValues={originalLTWHValues.height}
         />
       </UIGridRow>
     </>
@@ -205,45 +276,97 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
 })
 FrameUpdatingLayoutSection.displayName = 'FrameUpdatingLayoutSection'
 
+interface DeltaFrameUpdate {
+  type: 'DELTA_FRAME_UPDATE'
+  edgePosition: EdgePosition
+  edgeMovement: CanvasVector
+}
+
+function deltaFrameUpdate(
+  edgePosition: EdgePosition,
+  edgeMovement: CanvasVector,
+): DeltaFrameUpdate {
+  return {
+    type: 'DELTA_FRAME_UPDATE',
+    edgePosition: edgePosition,
+    edgeMovement: edgeMovement,
+  }
+}
+
+interface DirectFrameUpdate {
+  type: 'DIRECT_FRAME_UPDATE'
+  edgePosition: EdgePosition
+  edgeValue: number
+}
+
+function directFrameUpdate(edgePosition: EdgePosition, edgeValue: number): DirectFrameUpdate {
+  return {
+    type: 'DIRECT_FRAME_UPDATE',
+    edgePosition: edgePosition,
+    edgeValue: edgeValue,
+  }
+}
+
+type FrameUpdate = DeltaFrameUpdate | DirectFrameUpdate
+
 interface LayoutPinPropertyControlProps {
   label: string
   property: TLWH
-  currentValue: number
-  updateFrame: (edgePosition: EdgePosition, movement: CanvasVector) => void
-  enabled: boolean
+  currentValues: Array<number>
+  updateFrame: (frameUpdate: FrameUpdate) => void
+}
+
+function getSingleCommonValue(currentValues: Array<number>): number | null {
+  // Capture the first value to check against every other value.
+  const firstValue = currentValues[0]
+  // Must have at least 2 entries for there to be multiple different values.
+  if (currentValues.length > 1) {
+    for (let index: number = 1; index < currentValues.length; index++) {
+      // Compare against every other value, any difference is enough to stop then and there.
+      const value = currentValues[index]
+      if (firstValue !== value) {
+        return null
+      }
+    }
+  }
+
+  // Fallback, in all other cases assume there are not multiple different values.
+  return firstValue
 }
 
 const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlProps) => {
-  const { property, currentValue, updateFrame } = props
+  const { property, currentValues, updateFrame } = props
   const pointInfo = useInspectorLayoutInfo(props.property)
 
   // a way to reset the NumberInput to the real measured value it was displaying before the user started typing into it
   const [mountCount, resetNumberInputToOriginalValue] = React.useReducer((c) => c + 1, 0)
 
+  const singleCommonValue = getSingleCommonValue(currentValues)
+
   const onSubmitValue = React.useCallback(
     (newValue: UnknownOrEmptyInput<CSSNumber>) => {
-      if (props.enabled) {
-        if (isUnknownInputValue(newValue)) {
-          // Ignore right now.
-          resetNumberInputToOriginalValue()
-        } else if (isEmptyInputValue(newValue)) {
-          // Reset the NumberInput
-          resetNumberInputToOriginalValue()
-        } else {
-          if (newValue.unit == null || newValue.unit === 'px') {
-            const edgePosition = getTLWHEdgePosition(property)
-            const movement = getMovementFromValues(property, currentValue, newValue.value)
-            updateFrame(edgePosition, movement)
-          } else {
-            console.error('Attempting to use a value with a unit, which is invalid.')
-            resetNumberInputToOriginalValue()
-          }
-        }
-      } else {
+      if (isUnknownInputValue(newValue)) {
+        // Ignore right now.
         resetNumberInputToOriginalValue()
+      } else if (isEmptyInputValue(newValue)) {
+        // Reset the NumberInput
+        resetNumberInputToOriginalValue()
+      } else {
+        if (newValue.unit == null || newValue.unit === 'px') {
+          const edgePosition = getTLWHEdgePosition(property)
+          if (singleCommonValue == null) {
+            updateFrame(directFrameUpdate(edgePosition, newValue.value))
+          } else {
+            const movement = getMovementFromValues(property, singleCommonValue, newValue.value)
+            updateFrame(deltaFrameUpdate(edgePosition, movement))
+          }
+        } else {
+          console.error('Attempting to use a value with a unit, which is invalid.')
+          resetNumberInputToOriginalValue()
+        }
       }
     },
-    [props.enabled, property, currentValue, updateFrame],
+    [property, singleCommonValue, updateFrame],
   )
 
   return (
@@ -253,16 +376,16 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
       data={{}}
     >
       <NumberInput
-        key={`pin-${props.property}-number-input-mount-${mountCount}`}
+        key={`frame-${props.property}-number-input-mount-${mountCount}`}
         data-controlstatus={pointInfo.controlStatus}
-        value={cssNumber(props.currentValue)}
-        id={`pin-${props.property}-number-input`}
-        testId={`pin-${props.property}-number-input`}
+        value={optionalMap(cssNumber, singleCommonValue)}
+        id={`frame-${props.property}-number-input`}
+        testId={`frame-${props.property}-number-input`}
         labelInner={props.label}
         onSubmitValue={onSubmitValue}
         onTransientSubmitValue={onSubmitValue}
-        incrementControls={props.enabled}
-        controlStatus={props.enabled ? 'simple' : 'multiselect-mixed-simple-or-unset'}
+        incrementControls={singleCommonValue == null}
+        controlStatus={singleCommonValue == null ? 'multiselect-mixed-simple-or-unset' : 'simple'}
         numberType={'LengthPercent'}
         defaultUnitToHide={'px'}
       />

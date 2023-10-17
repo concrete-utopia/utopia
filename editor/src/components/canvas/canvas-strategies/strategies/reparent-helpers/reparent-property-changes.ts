@@ -71,12 +71,15 @@ const propertiesToRemove: Array<PropertyPath> = [
   PP.create('style', 'bottom'),
 ]
 
+export type ForcePins = 'force-pins' | 'do-not-force-pins'
+
 export function getAbsoluteReparentPropertyChanges(
   target: ElementPath,
   newParent: ElementPath,
   targetStartingMetadata: ElementInstanceMetadataMap,
   newParentStartingMetadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
+  forcePins: ForcePins,
 ): Array<AdjustCssLengthProperties | ConvertCssPercentToPx> {
   const element: JSXElement | null = getJSXElementFromProjectContents(target, projectContents)
 
@@ -146,8 +149,8 @@ export function getAbsoluteReparentPropertyChanges(
     return isRight(rawPin) && rawPin.value != null
   }
 
-  const needsLeftPin = !hasPin('left') && !hasPin('right')
-  const needsTopPin = !hasPin('top') && !hasPin('bottom')
+  const needsLeftPin = !hasPin('left') && !hasPin('right') && forcePins === 'force-pins'
+  const needsTopPin = !hasPin('top') && !hasPin('bottom') && forcePins === 'force-pins'
 
   let edgePropertiesToAdjust: Array<LengthPropertyToAdjust> = []
 
@@ -335,6 +338,7 @@ export function getReparentPropertyChanges(
         originalContextMetadata,
         currentMetadata,
         projectContents,
+        'force-pins',
       )
 
       const strategyCommands = runReparentPropertyStrategies([

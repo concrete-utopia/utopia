@@ -5,20 +5,36 @@ import type { LayoutEdgeProp, LayoutPinnedProp } from '../../../../core/layout/l
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
-import type {
-  ElementInstanceMetadataMap,
-  JSXElement,
+import {
+  isJSXElement,
+  type ElementInstanceMetadataMap,
+  type JSXElement,
 } from '../../../../core/shared/element-template'
-import type { CanvasPoint, CanvasRectangle, CanvasVector } from '../../../../core/shared/math-utils'
+import { roundRectangleToNearestWhole } from '../../../../core/shared/math-utils'
+import type {
+  CanvasPoint,
+  CanvasRectangle,
+  CanvasVector,
+  LocalRectangle,
+} from '../../../../core/shared/math-utils'
 import {
   canvasPoint,
+  canvasVector,
+  isInfinityRectangle,
+  nullIfInfinity,
   pointDifference,
-  roundRectangleToNearestWhole,
+  zeroCanvasRect,
+  zeroLocalRect,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
-import { type CanvasFrameAndTarget, type EdgePosition } from '../../canvas-types'
+import {
+  EdgePositionRight,
+  type CanvasFrameAndTarget,
+  type EdgePosition,
+  EdgePositionBottom,
+} from '../../canvas-types'
 import { pickPointOnRect, snapPoint } from '../../canvas-utils'
 import type { AdjustCssLengthProperties } from '../../commands/adjust-css-length-command'
 import {
@@ -31,7 +47,17 @@ import { resizeBoundingBox } from './resize-helpers'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
+import type { CanvasCommand } from '../../commands/commands'
+import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
+import { addOrMergeIntendedBounds } from './shared-keyboard-strategy-helpers'
+import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
+import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
+import { withUnderlyingTarget } from '../../../../components/editor/store/editor-state'
+import {
+  pushIntendedBoundsAndUpdateTargets,
+  pushIntendedBoundsGroup,
+} from '../../commands/push-intended-bounds-and-update-targets-command'
 
 export function createResizeCommands(
   element: JSXElement,
@@ -273,4 +299,150 @@ function pinsFromEdgePosition(edgePosition: EdgePosition): Array<LayoutEdgeProp>
     topEdge ? 'top' : null,
     bottomEdge ? 'bottom' : null,
   ])
+}
+
+export interface ChangeBoundsResult {
+  commands: Array<CanvasCommand>
+  intendedBounds: Array<CanvasFrameAndTarget>
+}
+
+export function changeBounds(
+  projectContents: ProjectContentTreeRoot,
+  startingMetadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
+  originalFrame: CanvasRectangle,
+  originalIntendedBounds: Array<CanvasFrameAndTarget>,
+  edgePosition: EdgePosition,
+  movement: CanvasVector,
+): ChangeBoundsResult {
+  let commands: Array<CanvasCommand> = []
+  let intendedBounds: Array<CanvasFrameAndTarget> = originalIntendedBounds
+
+  selectedElements.forEach((selectedElement) => {
+    const element = withUnderlyingTarget(selectedElement, projectContents, null, (_, e) => e)
+
+    const elementMetadata = MetadataUtils.findElementByElementPath(
+      startingMetadata,
+      selectedElement,
+    )
+    const elementParentBounds =
+      elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
+    const elementParentFlexDirection =
+      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
+    const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame ?? null)
+
+    if (element != null && isJSXElement(element)) {
+      const elementResult = createResizeCommands(
+        element,
+        selectedElement,
+        edgePosition,
+        movement,
+        elementGlobalFrame,
+        elementParentBounds,
+        elementParentFlexDirection,
+      )
+      commands.push(...elementResult.commands)
+      if (elementResult.intendedBounds != null) {
+        intendedBounds = addOrMergeIntendedBounds(
+          intendedBounds,
+          originalFrame,
+          elementResult.intendedBounds,
+        )
+      }
+    }
+  })
+
+  return {
+    commands: commands,
+    intendedBounds: intendedBounds,
+  }
+}
+
+export function resizeInspectorStrategy(
+  projectContents: ProjectContentTreeRoot,
+  originalFrame: CanvasRectangle,
+  edgePosition: EdgePosition,
+  movement: CanvasVector,
+): InspectorStrategy {
+  return {
+    name: 'Resize by pixels',
+    strategy: (
+      metadata: ElementInstanceMetadataMap,
+      selectedElements: Array<ElementPath>,
+      _elementPathTree: ElementPathTrees,
+      _allElementProps: AllElementProps,
+    ): Array<CanvasCommand> | null => {
+      let commands: Array<CanvasCommand> = []
+      const changeBoundsResult = changeBounds(
+        projectContents,
+        metadata,
+        selectedElements,
+        originalFrame,
+        [],
+        edgePosition,
+        movement,
+      )
+      commands.push(...changeBoundsResult.commands)
+      commands.push(
+        pushIntendedBoundsAndUpdateTargets(
+          changeBoundsResult.intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
+          'starting-metadata',
+        ),
+      )
+      commands.push(setElementsToRerenderCommand(selectedElements))
+      return commands
+    },
+  }
+}
+
+export function directResizeInspectorStrategy(
+  projectContents: ProjectContentTreeRoot,
+  widthOrHeight: 'width' | 'height',
+  newPixelValue: number,
+): InspectorStrategy {
+  return {
+    name: 'Resize to pixel size',
+    strategy: (
+      metadata: ElementInstanceMetadataMap,
+      selectedElements: Array<ElementPath>,
+      _elementPathTree: ElementPathTrees,
+      _allElementProps: AllElementProps,
+    ): Array<CanvasCommand> | null => {
+      let commands: Array<CanvasCommand> = []
+      for (const selectedElement of selectedElements) {
+        const edgePosition: EdgePosition =
+          widthOrHeight === 'width' ? EdgePositionRight : EdgePositionBottom
+        const elementMetadata = MetadataUtils.findElementByElementPath(metadata, selectedElement)
+        const originalFrame = elementMetadata?.globalFrame
+        const defaultedOriginalFrame: CanvasRectangle =
+          originalFrame == null || isInfinityRectangle(originalFrame)
+            ? zeroCanvasRect
+            : originalFrame
+        const movement: CanvasVector = canvasVector({
+          x: widthOrHeight === 'width' ? newPixelValue - defaultedOriginalFrame.width : 0,
+          y: widthOrHeight === 'height' ? newPixelValue - defaultedOriginalFrame.height : 0,
+        })
+        const changeBoundsResult = changeBounds(
+          projectContents,
+          metadata,
+          [selectedElement],
+          defaultedOriginalFrame,
+          [],
+          edgePosition,
+          movement,
+        )
+        commands.push(...changeBoundsResult.commands)
+        commands.push(
+          pushIntendedBoundsAndUpdateTargets(
+            changeBoundsResult.intendedBounds.map((b) =>
+              pushIntendedBoundsGroup(b.target, b.frame),
+            ),
+            'starting-metadata',
+          ),
+        )
+      }
+      commands.push(setElementsToRerenderCommand(selectedElements))
+      return commands
+    },
+  }
 }

@@ -14,6 +14,7 @@ import {
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
+  TestScenePath,
   TestSceneUID,
 } from '../../components/canvas/ui-jsx.test-utils'
 import { selectComponentsForTest } from '../../utils/utils.test-utils'
@@ -855,6 +856,78 @@ describe('isAutofocusable/isManuallyFocusableComponent', () => {
       'story/scene/app:app-inner-div/inner-app-1: true',
       'story/scene/app:app-inner-div/inner-app-2: true',
     ])
+  })
+})
+
+describe('fillSpyOnlyMetadata', () => {
+  it('layoutSystemForChildren is filled out correctly for conditionals', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      height: '100%',
+      width: '100%',
+      contain: 'layout',
+    }}
+    data-uid='root'
+  >
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 15,
+        top: 18,
+        width: 164,
+        height: 55,
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 10,
+      }}
+      data-uid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 43,
+          height: 35,
+          contain: 'layout',
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 31,
+          height: 29,
+          contain: 'layout',
+        }}
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 33,
+          height: 37,
+          contain: 'layout',
+        }}
+      />
+      {
+        // @utopia/uid=conditional
+        true ? null : (
+        <div style={{ width: 100, height: 100 }}>
+          False branch
+        </div>
+      )}
+    </div>
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['root', 'container', 'conditional'])
+    const metadata = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      targetPath,
+    )
+    expect(metadata).not.toBeNull()
+
+    expect(metadata!.specialSizeMeasurements.layoutSystemForChildren).toEqual('flex')
   })
 })
 

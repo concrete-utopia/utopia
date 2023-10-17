@@ -3,16 +3,7 @@
 /** @jsxFrag React.Fragment */
 import { jsx } from '@emotion/react'
 import React from 'react'
-import { NO_OP } from '../../core/shared/utils'
-import {
-  Button,
-  FlexRow,
-  Icons,
-  Section,
-  SectionBodyArea,
-  SectionTitleRow,
-  Title,
-} from '../../uuiui'
+import { Section, SectionBodyArea } from '../../uuiui'
 import { setFocus } from '../common/actions'
 import type { EditorDispatch, LoginState } from '../editor/action-types'
 import { InsertMenu } from '../editor/insertmenu'
@@ -61,14 +52,6 @@ export const InsertMenuPane = React.memo(() => {
       tabIndex={-1}
       style={{ width: '100%', height: '100%' }}
     >
-      <SectionTitleRow minimised={false} toggleMinimised={NO_OP} hideButton={true}>
-        <FlexRow flexGrow={1} style={{ position: 'relative' }}>
-          <Title>Insert</Title>
-        </FlexRow>
-        <Button highlight style={{ width: 22, height: 22 }}>
-          <Icons.Cross onMouseDown={onClickClose} onClick={onClickClose} />
-        </Button>
-      </SectionTitleRow>
       <SectionBodyArea minimised={false} style={{ height: '100%' }}>
         <InsertMenu />
       </SectionBodyArea>

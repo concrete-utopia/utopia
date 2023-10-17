@@ -1,5 +1,8 @@
 import * as EP from '../../../../../core/shared/element-path'
-import { expectSingleUndo2Saves } from '../../../../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+} from '../../../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../../../canvas/event-helpers.test-utils'
 import {
   getPrintedUiJsCode,
@@ -10,6 +13,7 @@ import {
 import { selectComponents } from '../../../../editor/actions/meta-actions'
 
 describe('Pins Section', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
   it('Changing pins on an element with max-content width', async () => {
     const testCode = `
         <div style={{ ...props.style }} data-uid='aaa'>

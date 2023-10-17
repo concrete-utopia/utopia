@@ -1,11 +1,16 @@
 import { within } from '@testing-library/react'
 import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
-import { selectComponentsForTest, wait } from '../../utils/utils.test-utils'
-import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
+import { selectComponentsForTest } from '../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
-import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
+import {
+  TestSceneElementPaths,
+  TestScenePath,
+  getPrintedUiJsCode,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
+} from '../canvas/ui-jsx.test-utils'
 import { notice } from '../common/notice'
 import { EditorContractSelectorTestID, groupSectionOption } from './editor-contract-section'
 import { MenuListTestID } from '../../uuiui/widgets/popup-list/popup-list'
@@ -802,6 +807,114 @@ export var storyboard = (
 
     // nothing happened!
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(startingCode)
+  })
+
+  it('toggle from flex parent to group', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<React.Fragment data-uid='root'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 22,
+          top: 27,
+          width: 'max-content',
+          height: 'max-content',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 33,
+          padding: '25px 24px',
+        }}
+        data-uid='frame'
+      >
+        <div
+          style={{
+            backgroundColor: '#0074ff',
+            width: 108,
+            height: 85,
+            contain: 'layout',
+          }}
+          data-uid='5ee'
+        />
+        <div
+          style={{
+            backgroundColor: '#ffffff',
+            width: 107,
+            height: 93,
+            contain: 'layout',
+          }}
+          data-uid='b63'
+        />
+        <div
+          style={{
+            backgroundColor: '#ff0000',
+            width: 61,
+            height: 66,
+            contain: 'layout',
+          }}
+          data-uid='6a9'
+        />
+      </div>
+    </React.Fragment>`),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [
+      EP.appendNewElementPath(TestScenePath, ['root', 'frame']),
+    ])
+
+    await chooseWrapperType(editor, 'frame', 'group')
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<React.Fragment>
+    <Group
+      style={{
+        position: 'absolute',
+        left: 46,
+        top: 52,
+        width: 342,
+        height: 93,
+      }}
+      data-uid='frame'
+    >
+      <div
+        style={{
+          backgroundColor: '#0074ff',
+          width: 108,
+          height: 85,
+          contain: 'layout',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+        }}
+        data-uid='5ee'
+      />
+      <div
+        style={{
+          backgroundColor: '#ffffff',
+          width: 107,
+          height: 93,
+          contain: 'layout',
+          position: 'absolute',
+          left: 141,
+          top: 0,
+        }}
+        data-uid='b63'
+      />
+      <div
+        style={{
+          backgroundColor: '#ff0000',
+          width: 61,
+          height: 66,
+          contain: 'layout',
+          position: 'absolute',
+          left: 281,
+          top: 0,
+        }}
+        data-uid='6a9'
+      />
+    </Group>
+  </React.Fragment>`),
+    )
   })
 })
 
