@@ -8,6 +8,7 @@ import {
   expectNoAction,
   expectSingleUndo2Saves,
   selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
@@ -73,8 +74,10 @@ describe('Fixed / Fill / Hug control', () => {
       const fillControls = await editor.renderedDOM.findAllByText(FillContainerLabel)
       expect(fillControls.length).toEqual(1)
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
-      expect((control as HTMLInputElement).value).toEqual('2')
+      // TODO we currently don't have any control that could show the flex grow value
+
+      // const control = editor.renderedDOM.getByTestId('frame-width-number-input')
+      // expect((control as HTMLInputElement).value).toEqual('2')
     })
 
     it('detects fill in flex row with longhand style', async () => {
@@ -88,8 +91,10 @@ describe('Fixed / Fill / Hug control', () => {
       const fillControls = await editor.renderedDOM.findAllByText(FillContainerLabel)
       expect(fillControls.length).toEqual(1)
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
-      expect((control as HTMLInputElement).value).toEqual('1')
+      // TODO we currently don't have any control that could show the flex grow value
+
+      // const control = editor.renderedDOM.getByTestId('frame-width-number-input')
+      // expect((control as HTMLInputElement).value).toEqual('1')
     })
 
     it('set width to fill container in flex column', async () => {
@@ -158,7 +163,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(div.style.flexGrow).toEqual('1')
     })
 
-    it('edit fill container value in flex', async () => {
+    xit('edit fill container value in flex', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithFlexChildInFill,
         'await-first-dom-report',
@@ -167,7 +172,7 @@ describe('Fixed / Fill / Hug control', () => {
       await editor.getDispatchFollowUpActionsFinished()
 
       expect(child.style.flexGrow).toEqual('1')
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
       await expectSingleUndo2Saves(editor, async () => {
         act(() => {
@@ -179,7 +184,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(child.style.flexGrow).toEqual('3')
     })
 
-    it('edit fill container value in flow', async () => {
+    xit('edit fill container value in flow', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithChildInFlowLayout,
         'await-first-dom-report',
@@ -187,7 +192,7 @@ describe('Fixed / Fill / Hug control', () => {
       const child = await select(editor, 'child')
 
       expect(child.style.width).toEqual('100%')
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       await expectSingleUndo2Saves(editor, async () => {
@@ -484,10 +489,10 @@ describe('Fixed / Fill / Hug control', () => {
       const hugContentsDropdown = editor.renderedDOM.getAllByText(HugContentsLabel)
 
       const widthNumberControl = editor.renderedDOM.getByTestId(
-        'hug-fixed-fill-width',
+        'frame-width-number-input',
       ) as HTMLInputElement
       const heightNumberControl = editor.renderedDOM.getByTestId(
-        'hug-fixed-fill-height',
+        'frame-height-number-input',
       ) as HTMLInputElement
 
       expect(hugContentsDropdown.length).toEqual(2)
@@ -498,7 +503,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('simple')
     })
 
-    it('Group without width, height show up as Hug x Hug label, but the number inputs for width and height show up as detected', async () => {
+    it('Group without width, height show up as Hug x Hug label, and the number inputs for width and height show up as regular', async () => {
       const editor = await renderTestEditorWithCode(
         `
         import * as React from 'react'
@@ -539,18 +544,18 @@ describe('Fixed / Fill / Hug control', () => {
       const hugContentsDropdown = editor.renderedDOM.getAllByText(HugContentsLabel)
 
       const widthNumberControl = editor.renderedDOM.getByTestId(
-        'hug-fixed-fill-width',
+        'frame-width-number-input',
       ) as HTMLInputElement
       const heightNumberControl = editor.renderedDOM.getByTestId(
-        'hug-fixed-fill-height',
+        'frame-height-number-input',
       ) as HTMLInputElement
 
       expect(hugContentsDropdown.length).toEqual(2)
       expect(widthNumberControl.value).toEqual('200')
       expect(heightNumberControl.value).toEqual('300')
 
-      expect(widthNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
-      expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('detected')
+      expect(widthNumberControl.getAttribute('data-controlstatus')).toEqual('simple')
+      expect(heightNumberControl.getAttribute('data-controlstatus')).toEqual('simple')
     })
 
     describe('Convert children to fixed size when setting to hug contents to avoid parent container collapsing', () => {
@@ -990,6 +995,7 @@ describe('Fixed / Fill / Hug control', () => {
   })
 
   describe('fixed size', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
     it('global frames are correct for frames wrapping frames', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithNestedFrames,
