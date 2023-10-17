@@ -43,8 +43,14 @@ export function layoutPinnedPropIsEdgeProp(prop: LayoutPinnedProp): prop is Layo
 export type LayoutPinnedPropIncludingCenter = LayoutPinnedProp | 'centerX' | 'centerY'
 
 export const VerticalLayoutPinnedProps: Array<LayoutPinnedProp> = ['top', 'bottom', 'height']
+export function isVerticalLayoutPinnedProp(prop: LayoutPinnedProp): boolean {
+  return VerticalLayoutPinnedProps.includes(prop)
+}
 
 export const HorizontalLayoutPinnedProps: Array<LayoutPinnedProp> = ['left', 'right', 'width']
+export function isHorizontalLayoutPinnedProp(prop: LayoutPinnedProp): boolean {
+  return HorizontalLayoutPinnedProps.includes(prop)
+}
 
 export const LayoutPinnedProps: Array<LayoutPinnedProp> = [
   ...VerticalLayoutPinnedProps,

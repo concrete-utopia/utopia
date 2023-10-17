@@ -1,8 +1,9 @@
 import { createSelector } from 'reselect'
-import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
+import type { AllElementProps } from '../editor/store/editor-state'
 import { useRefEditorState } from '../editor/store/store-hook'
 import type {
   MetadataSubstate,
@@ -24,6 +25,9 @@ export const pathTreesSelector = (store: MetadataSubstate): ElementPathTrees =>
 
 export const selectedViewsSelector = (store: SelectedViewsSubstate): ElementPath[] =>
   store.editor.selectedViews
+
+export const allElementPropsSelector = (store: MetadataSubstate): AllElementProps =>
+  store.editor.allElementProps
 
 export const flexDirectionSelector = createSelector(
   metadataSelector,

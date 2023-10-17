@@ -550,6 +550,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 })
 FixedHugDropdown.displayName = 'FixedHugDropdown'
 
+// TODO DELETE ME once 'Simplified Layout Section' is deleted
 export const GroupConstraintSelect = React.memo(
   ({ dimension }: { dimension: LayoutPinnedProp }) => {
     const dispatch = useDispatch()

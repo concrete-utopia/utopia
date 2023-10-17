@@ -17,7 +17,12 @@ import {
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
-import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
+} from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
@@ -62,6 +67,7 @@ import type { InvalidGroupState } from '../../canvas/canvas-strategies/strategie
 import { invalidGroupStateToString } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import selectEvent from 'react-select-event'
 import { MixedPlaceholder } from '../../../uuiui/inputs/base-input'
+import { cmdModifier } from '../../../utils/modifiers'
 
 async function getControl(
   controlTestId: string,
@@ -156,6 +162,7 @@ async function pressKeyTimes(
 }
 
 describe('inspector tests with real metadata', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
   it('padding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -3223,6 +3230,7 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('groups', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
     function expectGroupToast(renderResult: EditorRenderResult, state: InvalidGroupState) {
       const editorState = renderResult.getEditorState().editor
       expect(editorState.toasts.length).toBe(1)
@@ -3436,6 +3444,7 @@ describe('inspector tests with real metadata', () => {
       expectGroupToast(renderResult, 'child-has-percentage-pins')
     })
     describe('group children', () => {
+      setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
       const tests: {
         name: string
         input: string
@@ -3444,7 +3453,7 @@ describe('inspector tests with real metadata', () => {
         want: string
       }[] = [
         {
-          name: 'set constraint for TLBR',
+          name: 'set constraint for Top, Height using the visual pin control',
           input: `
             <div
               style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
@@ -3495,13 +3504,13 @@ describe('inspector tests with real metadata', () => {
                   data-uid='foo'
                   style={{
                     position: 'absolute',
-                    top: 0,
                     left: 0,
                     width: 100,
+                    backgroundColor: 'blue',
+                    top: 0,
                     height: 100,
-                    backgroundColor: 'blue'
                   }}
-                  data-constraints={['top']}
+                  data-constraints={['top', 'height']}
                 />
                 <div
                   data-uid='bar'
@@ -3553,9 +3562,9 @@ describe('inspector tests with real metadata', () => {
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
             const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
+              'group-child-controls-pin-centery-transparent',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
+            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
           },
           want: `
             <div
@@ -3569,11 +3578,11 @@ describe('inspector tests with real metadata', () => {
                   data-uid='foo'
                   style={{
                     position: 'absolute',
-                    top: 0,
                     left: 0,
                     width: 100,
+                    backgroundColor: 'blue',
+                    top: 0,
                     height: 100,
-                    backgroundColor: 'blue'
                   }}
                 />
                 <div
@@ -3625,10 +3634,14 @@ describe('inspector tests with real metadata', () => {
           `,
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
+            const control1 = await renderResult.renderedDOM.findByTestId(
               'group-child-controls-catcher-pin-top',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
+            await mouseClickAtPoint(control1, { x: 1, y: 1 })
+            const control2 = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-catcher-pin-left',
+            )
+            await mouseClickAtPoint(control2, { x: 1, y: 1 })
           },
           want: `
             <div
@@ -3642,13 +3655,13 @@ describe('inspector tests with real metadata', () => {
                   data-uid='foo'
                   style={{
                     position: 'absolute',
+                    backgroundColor: 'blue',
                     top: 0,
+                    height: 100,
                     left: 0,
                     width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
                   }}
-                  data-constraints={['left', 'width', 'top']}
+                  data-constraints={['top', 'height', 'left', 'width']}
                 />
                 <div
                   data-uid='bar'
@@ -3700,9 +3713,9 @@ describe('inspector tests with real metadata', () => {
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
             const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
+              'group-child-controls-pin-centery-transparent',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
+            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
           },
           want: `
             <div
@@ -3716,11 +3729,11 @@ describe('inspector tests with real metadata', () => {
                   data-uid='foo'
                   style={{
                     position: 'absolute',
-                    top: 0,
                     left: 0,
                     width: 100,
+                    backgroundColor: 'blue',
+                    top: 0,
                     height: 100,
-                    backgroundColor: 'blue'
                   }}
                   data-constraints={['left', 'width']}
                 />
@@ -3793,23 +3806,24 @@ describe('inspector tests with real metadata', () => {
                   data-uid='foo'
                   style={{
                     position: 'absolute',
-                    top: 0,
                     left: 0,
                     width: 100,
+                    backgroundColor: 'blue',
+                    top: 0,
                     height: 100,
-                    backgroundColor: 'blue'
                   }}
-                  data-constraints={['left', 'width', 'top']}
+                  data-constraints={['left', 'width', 'top', 'height']}
                 />
                 <div
                   data-uid='bar'
                   style={{
                     position: 'absolute',
-                    top: 200,
                     left: 200,
-                    backgroundColor: 'red'
+                    backgroundColor: 'red',
+                    top: 200,
+                    height: 0,
                   }}
-                  data-constraints={['top']}
+                  data-constraints={['top', 'height']}
                 />
               </Group>
             </div>
@@ -3835,7 +3849,7 @@ describe('inspector tests with real metadata', () => {
                     height: 100,
                     backgroundColor: 'blue'
                   }}
-                  data-constraints={['left', 'top', 'width']}
+                  data-constraints={['left', 'width', 'top', 'height']}
                 />
                 <div
                   data-uid='bar'
@@ -3871,30 +3885,31 @@ describe('inspector tests with real metadata', () => {
                   data-uid='foo'
                   style={{
                     position: 'absolute',
-                    top: 0,
                     left: 0,
                     width: 100,
+                    backgroundColor: 'blue',
+                    top: 0,
                     height: 100,
-                    backgroundColor: 'blue'
                   }}
-                  data-constraints={['left', 'top', 'width']}
+                  data-constraints={['left', 'width', 'top', 'height']}
                 />
                 <div
                   data-uid='bar'
                   style={{
                     position: 'absolute',
-                    top: 200,
                     left: 200,
-                    backgroundColor: 'red'
+                    backgroundColor: 'red',
+                    top: 200,
+                    height: 0,
                   }}
-                  data-constraints={['top']}
+                  data-constraints={['top', 'height']}
                 />
               </Group>
             </div>
           `,
         },
         {
-          name: 'unset constraint for TLBR, multiselect',
+          name: 'unset constraint for TH, multiselect',
           input: `
             <div
               style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
@@ -3934,9 +3949,9 @@ describe('inspector tests with real metadata', () => {
           ],
           logic: async (renderResult) => {
             const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
+              'group-child-controls-pin-centery-transparent',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
+            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
           },
           want: `
             <div
@@ -3950,11 +3965,11 @@ describe('inspector tests with real metadata', () => {
                   data-uid='foo'
                   style={{
                     position: 'absolute',
-                    top: 0,
                     left: 0,
                     width: 100,
+                    backgroundColor: 'blue',
+                    top: 0,
                     height: 100,
-                    backgroundColor: 'blue'
                   }}
                   data-constraints={['left']}
                 />
@@ -3962,9 +3977,10 @@ describe('inspector tests with real metadata', () => {
                   data-uid='bar'
                   style={{
                     position: 'absolute',
-                    top: 200,
                     left: 200,
-                    backgroundColor: 'red'
+                    backgroundColor: 'red',
+                    top: 200,
+                    height: 0,
                   }}
                 />
               </Group>
@@ -3972,7 +3988,7 @@ describe('inspector tests with real metadata', () => {
           `,
         },
         {
-          name: 'set constraint for width/height',
+          name: 'set constraint for Left + Width',
           input: `
             <div
               style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
@@ -4006,12 +4022,12 @@ describe('inspector tests with real metadata', () => {
           `,
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
-            const control = document.getElementById('group-child-resize-width')
+            const control = document.getElementById('frame-child-constraint-width')
             if (control == null) {
               throw new Error('cannot find select')
             }
 
-            await selectEvent.select(control, 'Fixed')
+            await selectEvent.select(control, 'Left')
           },
           want: `
             <div
@@ -4026,12 +4042,12 @@ describe('inspector tests with real metadata', () => {
                   style={{
                     position: 'absolute',
                     top: 0,
+                    height: 100,
+                    backgroundColor: 'blue',
                     left: 0,
                     width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
                   }}
-                  data-constraints={['width']}
+                  data-constraints={['left', 'width']}
                 />
                 <div
                   data-uid='bar'
@@ -4069,6 +4085,7 @@ describe('inspector tests with real metadata', () => {
 })
 
 describe('Inspector fields and code remain in sync', () => {
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
   const propsToTest = [
     {
       stylePropKey: 'top',
