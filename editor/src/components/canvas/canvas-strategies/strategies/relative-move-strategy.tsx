@@ -45,6 +45,17 @@ export function relativeMoveStrategy(
     offsets != null &&
     (offsets.left != null || offsets.top != null || offsets.right != null || offsets.bottom != null)
 
+  const fitness = (() => {
+    if (
+      interactionSession == null ||
+      interactionSession.interactionData.type !== 'DRAG' ||
+      interactionSession.activeControl.type !== 'BOUNDING_AREA'
+    ) {
+      return 0
+    }
+    return hasOffsets ? 4 : 1.9
+  })()
+
   return {
     strategy: {
       id: 'RELATIVE_MOVE',
@@ -68,13 +79,7 @@ export function relativeMoveStrategy(
           show: 'visible-only-while-active',
         }),
       ],
-      fitness:
-        interactionSession != null &&
-        interactionSession.interactionData.type === 'DRAG' &&
-        interactionSession.activeControl.type === 'BOUNDING_AREA'
-          ? 4
-          : 0,
-
+      fitness: fitness,
       apply: () => {
         if (
           interactionSession != null &&
