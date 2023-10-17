@@ -154,12 +154,10 @@ import {
 } from '../../assets'
 import type { CanvasFrameAndTarget, PinOrFlexFrameChange } from '../../canvas/canvas-types'
 import { pinSizeChange } from '../../canvas/canvas-types'
-import type { SkipFrameChange } from '../../canvas/canvas-utils'
 import {
   canvasPanelOffsets,
   duplicate,
   getFrameChange,
-  moveTemplate,
   updateFramesOfScenesAndComponents,
 } from '../../canvas/canvas-utils'
 import type { SetFocus } from '../../common/actions'
@@ -483,7 +481,10 @@ import {
 } from '../store/insertion-path'
 import { getConditionalCaseCorrespondingToBranchPath } from '../../../core/model/conditionals'
 import { deleteProperties } from '../../canvas/commands/delete-properties-command'
-import { treatElementAsFragmentLike } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import {
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
+} from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import {
   fixParentContainingBlockSettings,
   isTextContainingConditional,
@@ -522,6 +523,9 @@ import { deleteElement } from '../../canvas/commands/delete-element-command'
 import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
+import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
+import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
+import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -700,37 +704,47 @@ export function insertIntoWrapper(
   }
 }
 
-export function editorMoveTemplate(
+export function reparentElementToUnwrap(
   target: ElementPath,
-  originalPath: ElementPath,
-  newFrame: CanvasRectangle | typeof SkipFrameChange | null,
+  insertionPath: InsertionPath,
   indexPosition: IndexPosition,
-  newParentPath: ElementPath | null,
-  parentFrame: CanvasRectangle | null,
   editor: EditorModel,
-  newParentLayoutSystem: SettableLayoutSystem | null,
-  newParentMainAxis: 'horizontal' | 'vertical' | null,
-): {
-  editor: EditorModel
-  newPath: ElementPath | null
-} {
-  const moveResult = moveTemplate(
-    target,
-    originalPath,
-    newFrame,
-    indexPosition,
-    newParentPath,
-    parentFrame,
-    editor,
+  builtInDependencies: BuiltInDependencies,
+): { editor: EditorModel; newPath: ElementPath | null } {
+  const result = resultForFirstApplicableStrategy(
     editor.jsxMetadata,
     editor.selectedViews,
-    editor.highlightedViews,
-    newParentLayoutSystem,
-    newParentMainAxis,
+    editor.elementPathTree,
+    editor.allElementProps,
+    [
+      reparentToUnwrapAsAbsoluteStrategy(
+        pathToReparent(target),
+        insertionPath,
+        indexPosition,
+        builtInDependencies,
+        editor.projectContents,
+        editor.nodeModules.files,
+      ),
+      convertToAbsoluteAndReparentToUnwrapStrategy(
+        pathToReparent(target),
+        insertionPath,
+        indexPosition,
+        builtInDependencies,
+        editor.projectContents,
+        editor.nodeModules.files,
+      ),
+    ],
   )
+
+  if (result == null) {
+    return { editor: editor, newPath: null }
+  }
+
+  const updatedEditor = foldAndApplyCommandsSimple(editor, result.commands)
+
   return {
-    newPath: moveResult.newPath,
-    editor: moveResult.updatedEditorState,
+    editor: updatedEditor,
+    newPath: result.data.newPath,
   }
 }
 
@@ -2285,38 +2299,35 @@ export const UPDATE_FNS = {
                   )
 
             const withChildrenMoved = children.reduce((working, child) => {
-              const childFrame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+              if (parentPath == null) {
+                return working
+              }
+              const result = reparentElementToUnwrap(
                 child.elementPath,
-                workingEditor.jsxMetadata,
-              )
-              const result = editorMoveTemplate(
-                child.elementPath,
-                child.elementPath,
-                childFrame,
+                parentPath,
                 indexPosition,
-                parentPath?.intendedParentPath ?? null,
-                parentFrame,
                 working,
-                null,
-                null,
+                builtInDependencies,
               )
               if (result.newPath != null) {
-                newSelection.push(result.newPath)
+                const newPath = result.newPath
+                newSelection.push(newPath)
                 if (isGroupChild) {
-                  groupTrueUps.push(result.newPath)
+                  groupTrueUps.push(newPath)
                   return foldAndApplyCommandsSimple(
                     result.editor,
                     createPinChangeCommandsForElementBecomingGroupChild(
                       workingEditor.jsxMetadata,
                       child,
-                      result.newPath,
+                      newPath,
                       parentFrame,
                       localRectangle(parentFrame),
                     ),
                   )
                 }
+                return result.editor
               }
-              return result.editor
+              return working
             }, workingEditor)
 
             return {

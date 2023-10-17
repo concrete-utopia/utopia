@@ -5820,7 +5820,7 @@ export var storyboard = (
         ),
       )
     })
-    it(`Unwraps an flex element`, async () => {
+    it(`Unwraps a flex element`, async () => {
       const testCode = `
       <div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
         <div
@@ -5848,7 +5848,7 @@ export var storyboard = (
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
           `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='ccc' style={{width: 50, height: 100, left: 80, top: 55, position: 'absolute'}} />
+          <div data-uid='ccc' style={{width: 50, height: 100, position: 'absolute', left: 80, top: 55 }} />
         </div>`,
         ),
       )
@@ -6001,16 +6001,11 @@ export var storyboard = (
                 backgroundColor: 'orange',
                 width: 30,
                 height: 30,
-                top: 140,
               }}
               data-uid='qux'
             />
             <div
-              style={{
-                backgroundColor: 'orange',
-                height: 60,
-                top: 170,
-              }}
+              style={{ backgroundColor: 'orange', height: 60 }}
               data-uid='waldo'
             />
             <div data-uid='nested'>
@@ -6579,9 +6574,9 @@ export var storyboard = (
                   backgroundColor: 'orange',
                   width: 50,
                   height: 50,
+                  position: 'absolute',
                   left: 20,
                   top: 50,
-                  position: 'absolute',
                 }}
                 data-uid='foo'
               />
@@ -6590,9 +6585,9 @@ export var storyboard = (
                   backgroundColor: 'orange',
                   width: 30,
                   height: 30,
+                  position: 'absolute',
                   left: 20,
                   top: 102,
-                  position: 'absolute',
                 }}
                 data-uid='bar'
               />
@@ -6600,10 +6595,10 @@ export var storyboard = (
                 style={{
                   backgroundColor: 'orange',
                   height: 60,
-                  left: 20,
-                  top: 134,
                   width: 100,
                   position: 'absolute',
+                  left: 20,
+                  top: 134,
                 }}
                 data-uid='baz'
               />

@@ -1703,39 +1703,6 @@ export const MetadataUtils = {
   createElementPathTreeFromMetadata(metadata: ElementInstanceMetadataMap): ElementPathTrees {
     return buildTree(metadata)
   },
-  removeElementMetadataChild(
-    target: ElementPath,
-    metadata: ElementInstanceMetadataMap,
-  ): ElementInstanceMetadataMap {
-    // Note this only removes the child element from the metadata, but keeps grandchildren in there (inaccessible). Is this a memory leak?
-    let remainingElements: ElementInstanceMetadataMap = omit([EP.toString(target)], metadata)
-    if (Object.keys(remainingElements).length === Object.keys(metadata).length) {
-      // Nothing was removed
-      return metadata
-    } else {
-      return remainingElements
-    }
-  },
-  insertElementMetadataChild(
-    targetParent: ElementPath | null,
-    elementToInsert: ElementInstanceMetadata,
-    metadata: ElementInstanceMetadataMap,
-  ): ElementInstanceMetadataMap {
-    // Insert into the map
-    if (!EP.pathsEqual(EP.parentPath(elementToInsert.elementPath), targetParent)) {
-      throw new Error(
-        `insertElementMetadataChild: trying to insert child metadata with incorrect parent path prefix.
-        Target parent: ${EP.toString(targetParent!)},
-        child path: ${EP.toString(elementToInsert.elementPath)}`,
-      )
-    }
-
-    const withNewElement: ElementInstanceMetadataMap = {
-      ...metadata,
-      [EP.toString(elementToInsert.elementPath)]: elementToInsert,
-    }
-    return withNewElement
-  },
   duplicateElementMetadataAtPath(
     oldPath: ElementPath,
     newPath: ElementPath,
