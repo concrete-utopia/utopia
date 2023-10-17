@@ -403,6 +403,7 @@ export const TitleBarCode = React.memo((props: { panelData: StoredPanel }) => {
       className='handle'
       style={{
         height: 40,
+        flexShrink: 0,
         width: '100%',
         backgroundColor: theme.inspectorBackground.value,
         padding: '0 10px',
