@@ -273,7 +273,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
 }
 
 const BaseWeight = 0.5
-const DragConversionWeight = 1.5
+const DragConversionWeight = 1.5 // needs to be higher then FlexReorderFitness in flex-reorder-strategy
 
 function getFitness(
   interactionSession: InteractionSession | null,

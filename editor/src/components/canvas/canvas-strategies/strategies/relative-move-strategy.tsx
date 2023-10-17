@@ -45,6 +45,9 @@ export function relativeMoveStrategy(
     offsets != null &&
     (offsets.left != null || offsets.top != null || offsets.right != null || offsets.bottom != null)
 
+  const WeightWithExistingOffset = 4
+  const WeightWithoutExistingOffset = 1.3 // this needs to be lower than DragConversionWeight in convert-to-absolute-and-move-strategy.tsx and FlexReorderFitness in flex-reorder-strategy.tsx
+
   const fitness = (() => {
     if (
       interactionSession == null ||
@@ -53,7 +56,7 @@ export function relativeMoveStrategy(
     ) {
       return 0
     }
-    return hasOffsets ? 4 : 1.3
+    return hasOffsets ? WeightWithExistingOffset : WeightWithoutExistingOffset
   })()
 
   return {
