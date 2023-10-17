@@ -97,7 +97,7 @@ export function convertLayoutToFlexCommands(
     const optionalCenterAlignCommands = onlyChildIsSpan(metadata, childrenPaths)
       ? [
           setProperty('always', path, PP.create('style', 'alignItems'), 'center'),
-          setProperty('always', path, PP.create('style', 'justifyContents'), 'center'),
+          setProperty('always', path, PP.create('style', 'justifyContent'), 'center'),
         ]
       : []
 

@@ -1570,6 +1570,80 @@ describe('Smart Convert To Flex if Fragment Children', () => {
   })
 })
 
+describe('Smart convert to flex centered layout', () => {
+  it('adds centered layout to a single span child', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 334,
+          top: -215,
+          width: 165,
+          height: 122,
+        }}
+        data-uid='a'
+      >
+        <span
+          style={{
+            position: 'absolute',
+            wordBreak: 'break-word',
+            left: 51,
+            top: 73,
+            width: 'max-content',
+            height: 'max-content',
+          }}
+          data-testid='text'
+          data-uid='text'
+        >
+          This will be centered
+        </span>
+      </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['a'])
+    await editor.dispatch([selectComponents([targetPath], false)], true)
+
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 334,
+        top: -215,
+        width: 'max-content',
+        height: 'max-content',
+        display: 'flex',
+        flexDirection: 'row',
+        padding: '30.5px 0',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      data-uid='a'
+    >
+      <span
+        style={{
+          wordBreak: 'break-word',
+          width: 135,
+          height: 18.5,
+        }}
+        data-testid='text'
+        data-uid='text'
+      >
+        This will be centered
+      </span>
+    </div>
+    `),
+    )
+  })
+})
+
 function renderProjectWith(input: { parent: LTWH; children: Array<LTWH> }) {
   const [parentL, parentT, parentW, parentH] = input.parent
   return renderTestEditorWithCode(

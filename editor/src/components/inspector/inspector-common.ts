@@ -333,7 +333,7 @@ export function onlyChildIsSpan(
   metadataMap: ElementInstanceMetadataMap,
   childrenPaths: ElementPath[],
 ): boolean {
-  if (childrenPaths.length !== 0) {
+  if (childrenPaths.length !== 1) {
     return false
   }
   return (
