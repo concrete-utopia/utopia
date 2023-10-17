@@ -3042,6 +3042,7 @@ export var storyboard = (props) => {
                 left: 0,
               }}
               data-uid='bbb'
+              data-testid='bbb'
               src='/editor/utopia-logo-white-fill.png?hash=d7275eef10f8344f4b52a4f5ba1c92e698186d61'
             />
           </div>`),
@@ -3063,7 +3064,6 @@ export var storyboard = (props) => {
           await pressKey('Esc')
           await renderResult.getDispatchFollowUpActionsFinished()
 
-          // no position: absolute, top, left in the pasted image
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             makeTestProjectCodeWithSnippet(`
                 <div
@@ -3087,6 +3087,7 @@ export var storyboard = (props) => {
                           height: 100,
                         }}
                         data-uid='bbb'
+                        data-testid='bbb'
                         src='/editor/utopia-logo-white-fill.png?hash=d7275eef10f8344f4b52a4f5ba1c92e698186d61'
                       />
                     ) : null
@@ -3094,6 +3095,10 @@ export var storyboard = (props) => {
                 </div>
               `),
           )
+
+          const img = renderResult.renderedDOM.getByTestId('bbb')
+          const { top, left, position } = img.style
+          expect({ top, left, position }).toEqual({ left: '', top: '', position: '' })
         })
       })
       describe('pasting an element creates new layout properties for the new parent layout', () => {
