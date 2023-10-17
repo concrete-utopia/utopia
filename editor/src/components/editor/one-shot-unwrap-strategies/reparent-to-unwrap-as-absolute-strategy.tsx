@@ -58,7 +58,9 @@ export const reparentToUnwrapAsAbsoluteStrategy = (
 
     return {
       commands: result.commands,
-      data: result.newPath,
+      data: {
+        newPath: result.newPath,
+      },
     }
   },
 })

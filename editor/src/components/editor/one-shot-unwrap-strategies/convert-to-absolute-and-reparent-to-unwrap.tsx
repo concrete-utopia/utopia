@@ -93,7 +93,9 @@ export const convertToAbsoluteAndReparentToUnwrapStrategy = (
         ...result.commands,
         reorderElement('on-complete', result.newPath, indexPosition),
       ],
-      data: result.newPath,
+      data: {
+        newPath: result.newPath,
+      },
     }
   },
 })

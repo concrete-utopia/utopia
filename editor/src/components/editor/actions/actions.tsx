@@ -744,7 +744,7 @@ export function reparentElementToUnwrap(
 
   return {
     editor: updatedEditor,
-    newPath: result.data,
+    newPath: result.data.newPath,
   }
 }
 
