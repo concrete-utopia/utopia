@@ -392,7 +392,6 @@ describe('image drag and drop', () => {
 
       expect(editor.getEditorState().strategyState.currentStrategy).toEqual(null)
       expect(editor.getEditorState().editor.canvas.interactionSession).toEqual(null)
-      expect(editor.getEditorState().editor.fileBrowser.dropTarget).toEqual(fileItemTargetFolder)
 
       await dropElementAtPoint(targetFolder, endPoint, [])
 
@@ -428,12 +427,6 @@ describe('image drag and drop', () => {
         y: Math.floor(canvasSceneBounds.y + canvasSceneBounds.height / 2),
       }
 
-      await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
-
-      await editor.getDispatchFollowUpActionsFinished()
-
-      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
-
       const fileItemTargetFolder = '/public'
       const targetFolder = editor.renderedDOM.getByTestId(`fileitem-${fileItemTargetFolder}`)
       const targetFolderBounds = targetFolder.getBoundingClientRect()
@@ -441,6 +434,12 @@ describe('image drag and drop', () => {
         x: targetFolderBounds.x + targetFolderBounds.width / 2,
         y: targetFolderBounds.y + targetFolderBounds.height / 2,
       }
+
+      await dragElementToPoint(null, canvasControlsLayer, { x: 5, y: 5 }, canvasPoint, [file])
+
+      await editor.getDispatchFollowUpActionsFinished()
+
+      expect(editor.getEditorState().strategyState.currentStrategy).toEqual('Drag to Insert (Abs)')
 
       await switchDragAndDropElementTargets(
         canvasControlsLayer,

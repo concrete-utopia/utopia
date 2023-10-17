@@ -1,4 +1,3 @@
-/* eslint-disable jest/expect-expect */
 import * as EP from '../../../core/shared/element-path'
 import {
   BakedInStoryboardUID,
@@ -16,9 +15,12 @@ import {
   TestSceneUID,
 } from '../../../components/canvas/ui-jsx.test-utils'
 import {
+  applyCommandsAction,
+  clearSelection,
   deleteSelected,
   deleteView,
   selectComponents,
+  setLeftMenuTab,
   truncateHistory,
   undo,
   unwrapElements,
@@ -54,7 +56,12 @@ import {
 import { cmdModifier, shiftCmdModifier } from '../../../utils/modifiers'
 import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
-import { navigatorEntryToKey, PlaygroundFilePath, StoryboardFilePath } from '../store/editor-state'
+import {
+  LeftMenuTab,
+  navigatorEntryToKey,
+  PlaygroundFilePath,
+  StoryboardFilePath,
+} from '../store/editor-state'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { windowPoint } from '../../../core/shared/math-utils'
 import { assertNever } from '../../../core/shared/utils'
@@ -73,6 +80,7 @@ import {
   groupJSXElementImportsToAdd,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { safeIndex } from '../../../core/shared/array-utils'
+import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 
 async function deleteFromScene(
   inputSnippet: string,
@@ -7140,6 +7148,75 @@ export var storyboard = (
       )
       await renderResult.getDispatchFollowUpActionsFinished()
       expect(renderResult.getEditorState().editor.selectedViews).toEqual([makeTargetPath('aaa')])
+    })
+    it('the navigator pane is shown when selection changes', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        makeTestProjectCodeWithSnippet(`
+      <div data-uid='root'>
+        <div data-uid='child1' />
+        <div data-uid='child2' />
+      </div>`),
+        'await-first-dom-report',
+      )
+
+      {
+        // selectComponents
+        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Github,
+        )
+
+        await renderResult.dispatch(
+          [selectComponents([EP.appendNewElementPath(TestScenePath, ['root', 'child1'])], false)],
+          true,
+        )
+
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:root/child1',
+        ])
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Navigator,
+        )
+      }
+
+      {
+        // setLeftMenuTab
+        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Github,
+        )
+
+        await renderResult.dispatch([clearSelection()], true)
+
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([])
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Navigator,
+        )
+      }
+
+      {
+        // updateSelectedViews command
+        await renderResult.dispatch([setLeftMenuTab(LeftMenuTab.Github)], true)
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Github,
+        )
+
+        await renderResult.dispatch(
+          [
+            applyCommandsAction([
+              updateSelectedViews('always', [EP.appendNewElementPath(TestScenePath, ['root'])]),
+            ]),
+          ],
+          true,
+        )
+
+        expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+          'utopia-storyboard-uid/scene-aaa/app-entity:root',
+        ])
+        expect(renderResult.getEditorState().editor.leftMenu.selectedTab).toEqual(
+          LeftMenuTab.Navigator,
+        )
+      }
     })
   })
 
