@@ -98,6 +98,8 @@ export function convertLayoutToFlexCommands(
       ? [
           setProperty('always', path, PP.create('style', 'alignItems'), 'center'),
           setProperty('always', path, PP.create('style', 'justifyContent'), 'center'),
+          setHugContentForAxis('horizontal', childrenPaths[0], parentFlexDirection),
+          setHugContentForAxis('vertical', childrenPaths[0], parentFlexDirection),
         ]
       : []
 

@@ -1632,8 +1632,8 @@ describe('Smart convert to flex centered layout', () => {
         style={{
           wordBreak: 'break-word',
           fontSize: 15,
-          width: 126,
-          height: 17,
+          width: 'max-content',
+          height: 'max-content',
         }}
         data-testid='text'
         data-uid='text'
