@@ -182,9 +182,7 @@ export var storyboard = (
       await editor.getDispatchFollowUpActionsFinished()
 
       // Check that the inspector has been populated appropriately.
-      const topField = editor.renderedDOM.getByTestId(
-        'position-top-number-input',
-      ) as HTMLInputElement
+      const topField = editor.renderedDOM.getByTestId('frame-top-number-input') as HTMLInputElement
       expect(topField.value).toEqual(expectedTop)
     }
 
