@@ -10,11 +10,12 @@ interface CustomInspectorStrategyResultBase {
   commands: Array<CanvasCommand>
 }
 
-export type CustomInspectorStrategyResult<T> = T extends undefined
-  ? CustomInspectorStrategyResultBase
-  : CustomInspectorStrategyResultBase & { data: T }
+export type CustomInspectorStrategyResult<T extends undefined | Record<string, unknown>> =
+  T extends undefined
+    ? CustomInspectorStrategyResultBase
+    : CustomInspectorStrategyResultBase & { data: T }
 
-export interface CustomInspectorStrategy<T> {
+export interface CustomInspectorStrategy<T extends undefined | Record<string, unknown>> {
   name: string
   strategy: (
     metadata: ElementInstanceMetadataMap,
@@ -34,7 +35,7 @@ export interface InspectorStrategy {
   ) => Array<CanvasCommand> | null
 }
 
-export function resultForFirstApplicableStrategy<T>(
+export function resultForFirstApplicableStrategy<T extends undefined | Record<string, unknown>>(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
   elementPathTree: ElementPathTrees,
