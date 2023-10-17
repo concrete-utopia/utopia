@@ -20,7 +20,7 @@ import type { AllElementProps } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
 import type { UnwrapInspectorStrategy } from './unwrap-strategies-common'
 
-export const convertToAbsoluteAndMoveToUnwrapStrategy = (
+export const convertToAbsoluteAndReparentToUnwrapStrategy = (
   element: PathToReparent,
   parentInsertionPath: InsertionPath,
   indexPosition: IndexPosition,
@@ -28,7 +28,7 @@ export const convertToAbsoluteAndMoveToUnwrapStrategy = (
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
 ): UnwrapInspectorStrategy => ({
-  name: 'Convert to absolute and move to unwrap',
+  name: 'Convert to absolute and reparent to unwrap',
   strategy: (
     metadata: ElementInstanceMetadataMap,
     _: Array<ElementPath>,

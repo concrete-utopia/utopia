@@ -524,8 +524,8 @@ import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-comm
 import { processWorkerUpdates } from '../../../core/shared/parser-projectcontents-utils'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
-import { moveToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/move-to-unwrap-as-absolute-strategy'
-import { convertToAbsoluteAndMoveToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-move-to-unwrap'
+import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
+import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -704,7 +704,7 @@ export function insertIntoWrapper(
   }
 }
 
-export function moveElementToUnwrap(
+export function reparentElementToUnwrap(
   target: ElementPath,
   insertionPath: InsertionPath,
   indexPosition: IndexPosition,
@@ -717,7 +717,7 @@ export function moveElementToUnwrap(
     editor.elementPathTree,
     editor.allElementProps,
     [
-      moveToUnwrapAsAbsoluteStrategy(
+      reparentToUnwrapAsAbsoluteStrategy(
         pathToReparent(target),
         insertionPath,
         indexPosition,
@@ -725,7 +725,7 @@ export function moveElementToUnwrap(
         editor.projectContents,
         editor.nodeModules.files,
       ),
-      convertToAbsoluteAndMoveToUnwrapStrategy(
+      convertToAbsoluteAndReparentToUnwrapStrategy(
         pathToReparent(target),
         insertionPath,
         indexPosition,
@@ -2302,7 +2302,7 @@ export const UPDATE_FNS = {
               if (parentPath == null) {
                 return working
               }
-              const result = moveElementToUnwrap(
+              const result = reparentElementToUnwrap(
                 child.elementPath,
                 parentPath,
                 indexPosition,
