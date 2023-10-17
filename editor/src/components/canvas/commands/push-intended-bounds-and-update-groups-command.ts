@@ -209,6 +209,13 @@ function getUpdateResizedGroupChildrenCommands(
           children,
         )
         for (const child of childrenWithFragmentsRetargeted) {
+          const isChildGroup = allowGroupTrueUp(
+            editor.projectContents,
+            editor.jsxMetadata,
+            editor.elementPathTree,
+            editor.allElementProps,
+            child,
+          )
           const currentLocalFrame = MetadataUtils.getLocalFrameFromSpecialSizeMeasurements(
             child,
             editor.jsxMetadata,
@@ -222,7 +229,9 @@ function getUpdateResizedGroupChildrenCommands(
             editor.jsxMetadata,
             editor.allElementProps,
             child,
-            'include-implicit-constraints',
+            isChildGroup
+              ? 'only-explicit-constraints' // we only treat Groups as Constrained if they are explicitly set so using data-constraints
+              : 'include-implicit-constraints',
           )
 
           const elementMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, child)
