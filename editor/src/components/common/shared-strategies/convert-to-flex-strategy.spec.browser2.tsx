@@ -1591,6 +1591,7 @@ describe('Smart convert to flex centered layout', () => {
             wordBreak: 'break-word',
             left: 51,
             top: 73,
+            fontSize: 15,
             width: 'max-content',
             height: 'max-content',
           }}
@@ -1621,7 +1622,7 @@ describe('Smart convert to flex centered layout', () => {
         height: 'max-content',
         display: 'flex',
         flexDirection: 'row',
-        padding: '30.5px 0',
+        padding: '32px 0',
         alignItems: 'center',
         justifyContent: 'center',
       }}
@@ -1630,8 +1631,9 @@ describe('Smart convert to flex centered layout', () => {
       <span
         style={{
           wordBreak: 'break-word',
-          width: 135,
-          height: 18.5,
+          fontSize: 15,
+          width: 126,
+          height: 17,
         }}
         data-testid='text'
         data-uid='text'
