@@ -40,24 +40,24 @@ type HorizontalPinRequests =
   | 'left-and-width'
   | 'right-and-width'
   | 'left-and-right'
+  | 'width'
   | 'scale-horizontal'
 
 type VerticalPinRequests =
   | 'top-and-height'
   | 'bottom-and-height'
   | 'top-and-bottom'
+  | 'height'
   | 'scale-vertical'
 
 export type RequestedPins = HorizontalPinRequests | VerticalPinRequests
 
 type DetectedPins = {
-  horizontal: HorizontalPinRequests | 'mixed'
-  vertical: VerticalPinRequests | 'mixed'
+  horizontal: HorizontalPinRequests | 'width' | 'group-child-error-percentage' | 'mixed'
+  vertical: VerticalPinRequests | 'height' | 'group-child-error-percentage' | 'mixed'
 }
 
-export const HorizontalPinChangeOptions: {
-  [key in HorizontalPinRequests]: SelectOption & { value: HorizontalPinRequests }
-} = {
+export const FrameChildHorizontalPinChangeOptions = {
   'left-and-width': {
     value: 'left-and-width',
     label: 'Left',
@@ -76,17 +76,28 @@ export const HorizontalPinChangeOptions: {
   },
 } as const
 
-export const HorizontalPinChangeOptionsIncludingMixed = {
-  ...HorizontalPinChangeOptions,
+export const GroupChildHorizontalPinChangeOptions = {
+  ...FrameChildHorizontalPinChangeOptions,
+  width: {
+    value: 'width',
+    label: 'Width',
+  },
+} as const
+
+export const DetectedHorizontalPinChangeOptions = {
+  ...GroupChildHorizontalPinChangeOptions,
+
+  'group-child-error-percentage': {
+    value: 'group-child-error-percentage',
+    label: 'Mixed*', // todo write something more clever!
+  },
   mixed: {
     value: 'mixed',
     label: 'Mixed',
   },
 } as const
 
-export const VerticalPinChangeOptions: {
-  [key in VerticalPinRequests]: SelectOption & { value: VerticalPinRequests }
-} = {
+export const FrameChildVerticalPinChangeOptions = {
   'top-and-height': {
     value: 'top-and-height',
     label: 'Top',
@@ -105,8 +116,21 @@ export const VerticalPinChangeOptions: {
   },
 } as const
 
-export const VerticalPinChangeOptionsIncludingMixed = {
-  ...VerticalPinChangeOptions,
+export const GroupChildVerticalPinChangeOptions = {
+  ...FrameChildVerticalPinChangeOptions,
+  height: {
+    value: 'height',
+    label: 'Height',
+  },
+} as const
+
+export const DetectedVerticalPinChangeOptions = {
+  ...GroupChildVerticalPinChangeOptions,
+
+  'group-child-error-percentage': {
+    value: 'group-child-error-percentage',
+    label: 'Mixed*', // todo write something more clever!
+  },
   mixed: {
     value: 'mixed',
     label: 'Mixed',
@@ -168,14 +192,14 @@ function detectPinsSetForFrameChild(
     if (
       isCssNumberAndFixedSize(framePoints.left) &&
       framePoints.right == null &&
-      isCssNumberAndFixedSize(framePoints.width)
+      !isCssNumberAndPercentage(framePoints.width)
     ) {
       return 'left-and-width'
     }
     if (
       framePoints.left == null &&
       isCssNumberAndFixedSize(framePoints.right) &&
-      isCssNumberAndFixedSize(framePoints.width)
+      !isCssNumberAndPercentage(framePoints.width)
     ) {
       return 'right-and-width'
     }
@@ -200,14 +224,14 @@ function detectPinsSetForFrameChild(
     if (
       isCssNumberAndFixedSize(framePoints.top) &&
       framePoints.bottom == null &&
-      isCssNumberAndFixedSize(framePoints.height)
+      !isCssNumberAndPercentage(framePoints.height)
     ) {
       return 'top-and-height'
     }
     if (
       framePoints.top == null &&
       isCssNumberAndFixedSize(framePoints.bottom) &&
-      isCssNumberAndFixedSize(framePoints.height)
+      !isCssNumberAndPercentage(framePoints.height)
     ) {
       return 'bottom-and-height'
     }
@@ -235,7 +259,7 @@ function detectConstraintsSetForGroupChild(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   target: ElementPath,
-): { horizontal: HorizontalPinRequests | 'mixed'; vertical: VerticalPinRequests | 'mixed' } {
+): DetectedPins {
   const constraints = getConstraintsIncludingImplicitForElement(
     metadata,
     allElementProps,
@@ -250,7 +274,7 @@ function detectConstraintsSetForGroupChild(
 
   const framePoints = getFramePointsFromMetadataTypeFixed(element)
 
-  const horizontalPins: HorizontalPinRequests | 'mixed' = (() => {
+  const horizontalPins: DetectedPins['horizontal'] = (() => {
     const horizontalConstraints = HorizontalLayoutPinnedProps.filter((pin) =>
       constraints.includes(pin),
     )
@@ -259,7 +283,7 @@ function detectConstraintsSetForGroupChild(
       isCssNumberAndPercentage(framePoints[pin]),
     )
     if (anyPinPercentage) {
-      return 'mixed' // <--- this should be "detected error!!!" with a button to fix
+      return 'group-child-error-percentage'
     }
 
     if (horizontalConstraints.length === 0) {
@@ -275,17 +299,23 @@ function detectConstraintsSetForGroupChild(
     if (constraints.includes('left') && constraints.includes('right')) {
       return 'left-and-right'
     }
+
+    // if it only contains width but not left or right
+    if (constraints.includes('width')) {
+      return 'width'
+    }
+
     return 'mixed'
   })()
 
-  const verticalPins: VerticalPinRequests | 'mixed' = (() => {
+  const verticalPins: DetectedPins['vertical'] = (() => {
     const verticalConstraints = VerticalLayoutPinnedProps.filter((pin) => constraints.includes(pin))
 
     const anyPinPercentage = VerticalLayoutPinnedProps.some((pin) =>
       isCssNumberAndPercentage(framePoints[pin]),
     )
     if (anyPinPercentage) {
-      return 'mixed' // <--- this should be "detected error!!!" with a button to fix
+      return 'group-child-error-percentage'
     }
 
     if (verticalConstraints.length === 0) {
@@ -301,6 +331,12 @@ function detectConstraintsSetForGroupChild(
     if (constraints.includes('top') && constraints.includes('bottom')) {
       return 'top-and-bottom'
     }
+
+    // if it only contains height but not top or bottom
+    if (constraints.includes('height')) {
+      return 'height'
+    }
+
     return 'mixed'
   })()
 
@@ -352,6 +388,7 @@ export function getFrameChangeActionsForFrameChild(
   const pinChange = getPinChanges(metadata, propertyTarget, targets)
   switch (requestedPins) {
     case 'left-and-width':
+    case 'width':
       return pinChange(['left', 'width'], 'horizontal', 'px')
     case 'right-and-width':
       return pinChange(['right', 'width'], 'horizontal', 'px')
@@ -361,6 +398,7 @@ export function getFrameChangeActionsForFrameChild(
       return pinChange(['left', 'width'], 'horizontal', '%')
 
     case 'top-and-height':
+    case 'height':
       return pinChange(['top', 'height'], 'vertical', 'px')
     case 'bottom-and-height':
       return pinChange(['bottom', 'height'], 'vertical', 'px')
@@ -467,6 +505,11 @@ export function getConstraintAndFrameChangeActionsForGroupChild(
         ...setConstraintsForDimension(['left', 'right'], 'horizontal'),
         ...pinChange(['left', 'right'], 'horizontal', 'px'),
       ]
+    case 'width':
+      return [
+        ...setConstraintsForDimension(['width'], 'horizontal'),
+        ...pinChange(['left', 'width'], 'horizontal', 'px'),
+      ]
     case 'scale-horizontal':
       return [
         ...setConstraintsForDimension([], 'horizontal'), // clearing constraints for dimension
@@ -487,6 +530,11 @@ export function getConstraintAndFrameChangeActionsForGroupChild(
       return [
         ...setConstraintsForDimension(['top', 'bottom'], 'vertical'),
         ...pinChange(['top', 'bottom'], 'vertical', 'px'),
+      ]
+    case 'height':
+      return [
+        ...setConstraintsForDimension(['height'], 'vertical'),
+        ...pinChange(['top', 'height'], 'vertical', 'px'),
       ]
     case 'scale-vertical':
       return [

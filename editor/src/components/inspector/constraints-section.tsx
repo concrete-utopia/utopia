@@ -22,10 +22,12 @@ import {
 import { selectedViewsSelector } from './inpector-selectors'
 import type { RequestedPins } from './simplified-pinning-helpers'
 import {
-  HorizontalPinChangeOptions,
-  HorizontalPinChangeOptionsIncludingMixed,
-  VerticalPinChangeOptions,
-  VerticalPinChangeOptionsIncludingMixed,
+  DetectedHorizontalPinChangeOptions,
+  DetectedVerticalPinChangeOptions,
+  FrameChildHorizontalPinChangeOptions,
+  FrameChildVerticalPinChangeOptions,
+  GroupChildHorizontalPinChangeOptions,
+  GroupChildVerticalPinChangeOptions,
   getConstraintAndFrameChangeActionsForGroupChild,
   getFixedPointsForPinning,
   getFrameChangeActionsForFrameChild,
@@ -247,15 +249,26 @@ const ChildConstraintSelect = React.memo(
 
     const pins = useDetectedConstraints(isGroupChild)
 
-    const optionsToUse =
-      dimension === 'width'
-        ? Object.values(HorizontalPinChangeOptions)
-        : Object.values(VerticalPinChangeOptions)
+    const optionsToUse = (() => {
+      if (dimension === 'width') {
+        if (isGroupChild === 'frame-child') {
+          return Object.values(FrameChildHorizontalPinChangeOptions)
+        } else {
+          return Object.values(GroupChildHorizontalPinChangeOptions)
+        }
+      } else {
+        if (isGroupChild === 'frame-child') {
+          return Object.values(FrameChildVerticalPinChangeOptions)
+        } else {
+          return Object.values(GroupChildVerticalPinChangeOptions)
+        }
+      }
+    })()
 
     const activeOption =
       dimension === 'width'
-        ? HorizontalPinChangeOptionsIncludingMixed[pins.horizontal]
-        : VerticalPinChangeOptionsIncludingMixed[pins.vertical]
+        ? DetectedHorizontalPinChangeOptions[pins.horizontal]
+        : DetectedVerticalPinChangeOptions[pins.vertical]
 
     const onSubmit = React.useCallback(
       (option: SelectOption) => {
