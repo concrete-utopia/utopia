@@ -89,10 +89,12 @@ import {
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import { cssPixelLength, isCSSNumber } from '../../../inspector/common/css-utils'
 import {
+  flexContainerProps,
   getConvertIndividualElementToAbsoluteCommandsFromMetadata,
   isHugFromStyleAttribute,
   nukeAllAbsolutePositioningPropsCommands,
   nukeSizingPropsForAxisCommand,
+  prunePropsCommands,
   setElementTopLeft,
 } from '../../../inspector/inspector-common'
 import { EdgePositionBottomRight } from '../../canvas-types'
@@ -731,6 +733,7 @@ export function convertFrameToGroup(
     ...childrenPaths.flatMap((c) =>
       getConvertIndividualElementToAbsoluteCommandsFromMetadata(c, metadata, pathTrees),
     ),
+    ...prunePropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
     queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
     showToastCommand(
       'Converted to group and removed styling',
