@@ -40,7 +40,7 @@ let FeatureSwitches: { [feature in FeatureName]: boolean } = {
   'Performance Test Triggers': !(PRODUCTION_CONFIG as boolean),
   'Canvas Strategies Debug Panel': false,
   'Project Thumbnail Generation': false,
-  'Simplified Layout Section': false,
+  'Simplified Layout Section': true,
   'Debug - Print UIDs': false,
 }
 
