@@ -17,7 +17,12 @@ import {
   textFileContents,
   unparsed,
 } from '../../../core/shared/project-file-types'
-import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
+import {
+  expectSingleUndo2Saves,
+  selectComponentsForTest,
+  setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
+} from '../../../utils/utils.test-utils'
 import { contentsToTree } from '../../assets'
 import { SubduedBorderRadiusControlTestId } from '../../canvas/controls/select-mode/subdued-border-radius-control'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
@@ -3223,6 +3228,7 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('groups', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
     function expectGroupToast(renderResult: EditorRenderResult, state: InvalidGroupState) {
       const editorState = renderResult.getEditorState().editor
       expect(editorState.toasts.length).toBe(1)
@@ -3436,6 +3442,7 @@ describe('inspector tests with real metadata', () => {
       expectGroupToast(renderResult, 'child-has-percentage-pins')
     })
     describe('group children', () => {
+      setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
       const tests: {
         name: string
         input: string
