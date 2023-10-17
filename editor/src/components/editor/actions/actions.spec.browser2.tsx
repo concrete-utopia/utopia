@@ -3015,6 +3015,91 @@ export var storyboard = (props) => {
               `),
           )
         })
+
+        it('applies flex props if the conditional is in a flex container', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(`<div
+            style={{
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 114.5,
+              width: 'max-content',
+              height: 'max-content',
+            }}
+            data-uid='root'
+          >
+            {
+              // @utopia/uid=conditional
+              true ? null : null
+            }
+            <img
+              style={{
+                width: 100,
+                height: 100,
+                position: 'absolute',
+                top: 120,
+                left: 0,
+              }}
+              data-uid='bbb'
+              data-testid='bbb'
+              src='/editor/utopia-logo-white-fill.png?hash=d7275eef10f8344f4b52a4f5ba1c92e698186d61'
+            />
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/bbb')])
+          await pressKey('x', { modifiers: cmdModifier })
+
+          await selectComponentsForTest(renderResult, [makeTargetPath('root/conditional/a25')])
+
+          const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
+
+          firePasteEvent(canvasRoot)
+
+          // Wait for the next frame
+          await clipboardMock.pasteDone
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          await pressKey('Esc')
+          await renderResult.getDispatchFollowUpActionsFinished()
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`
+                <div
+                  style={{
+                    position: 'relative',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 114.5,
+                    width: 'max-content',
+                    height: 'max-content',
+                  }}
+                  data-uid='root'
+                >
+                  {
+                    // @utopia/uid=conditional
+                    true ? (
+                      <img
+                        style={{
+                          contain: 'layout',
+                          width: 100,
+                          height: 100,
+                        }}
+                        data-uid='bbb'
+                        data-testid='bbb'
+                        src='/editor/utopia-logo-white-fill.png?hash=d7275eef10f8344f4b52a4f5ba1c92e698186d61'
+                      />
+                    ) : null
+                  }
+                </div>
+              `),
+          )
+
+          const img = renderResult.renderedDOM.getByTestId('bbb')
+          const { top, left, position } = img.style
+          expect({ top, left, position }).toEqual({ left: '', top: '', position: '' })
+        })
       })
       describe('pasting an element creates new layout properties for the new parent layout', () => {
         const copyPasteLayoutTestCases: Array<{
