@@ -112,7 +112,7 @@ export const filterUnderSelectionArea = (
       // NOTE: this is a mitigation step for a measuring problem, where overflowing elements'
       // dimensions are not calculated correctly. This should be fixed at the root in the measurements,
       // but until then this should help a bit.
-      if (element.type === 'regular' && !element.zeroSized) {
+      if (element.type === 'regular' && !element.zeroSized && !element.selected) {
         return isElementIntersactionActuallyUnderAreaAndVisible(
           metadata,
           scale,
