@@ -173,6 +173,11 @@ describe('adjust font size with the keyboard', () => {
         await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+
+        const descriptiveLabel =
+          editor.getEditorState().strategyState.currentStrategyDescriptiveLabel
+        expect(descriptiveLabel).toEqual('Changing Font Size (Children)')
+
         await editor.getDispatchFollowUpActionsFinished()
 
         const aaa = editor.renderedDOM.getByTestId('aaa')

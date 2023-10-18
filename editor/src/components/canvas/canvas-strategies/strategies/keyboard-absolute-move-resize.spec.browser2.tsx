@@ -178,6 +178,11 @@ describe('Keyboard Absolute Move E2E', () => {
         await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await pressArrowRightHoldingShift3x()
+
+        const descriptiveLabel =
+          editor.getEditorState().strategyState.currentStrategyDescriptiveLabel
+        expect(descriptiveLabel).toEqual('Moving Elements (Children)')
+
         await editor.getDispatchFollowUpActionsFinished()
 
         const aaa = editor.renderedDOM.getByTestId('aaa')
@@ -418,6 +423,11 @@ describe('Keyboard switching back and forth between absolute move and absolute r
         await selectComponentsForTest(editor, [EP.fromString(`sb/${FragmentLikeElementUid}`)])
 
         await keyDownArrowRightHoldingCmd3x()
+
+        const descriptiveLabel =
+          editor.getEditorState().strategyState.currentStrategyDescriptiveLabel
+        expect(descriptiveLabel).toEqual('Resizing Elements (Children)')
+
         await editor.getDispatchFollowUpActionsFinished()
 
         const aaa = editor.renderedDOM.getByTestId('aaa')
