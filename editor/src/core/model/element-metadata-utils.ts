@@ -2721,6 +2721,7 @@ export function createFakeMetadataForElement(
     right(element),
     frame,
     localFrame,
+    frame,
     false,
     false,
     specialSizeMeasurements,

@@ -71,6 +71,7 @@ export function addFakeSpyEntry(
       elementPath: elementPath,
       globalFrame: null,
       localFrame: null,
+      nonRoundedGlobalFrame: null,
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -128,6 +129,7 @@ export function buildSpyWrappedElement(
       elementPath: elementPath,
       globalFrame: null,
       localFrame: null,
+      nonRoundedGlobalFrame: null,
       componentInstance: false,
       isEmotionOrStyledComponent: isEmotionComponent || isStyledComponent,
       specialSizeMeasurements: emptySpecialSizeMeasurements, // This is not the nicest, but the results from the DOM walker will override this anyways
