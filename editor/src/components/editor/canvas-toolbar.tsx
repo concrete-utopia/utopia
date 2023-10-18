@@ -550,8 +550,8 @@ export const CanvasToolbar = React.memo(() => {
           <Tooltip title='Live Mode' placement='bottom'>
             <InsertModeButton
               testid={PlayModeButtonTestId}
-              iconType={isLiveMode ? 'icon-semantic-stop' : 'play'}
-              iconCategory={isLiveMode ? 'semantic' : 'tools'}
+              iconType={isLiveMode ? 'stop' : 'play'}
+              iconCategory='tools'
               primary={canvasToolbarMode.primary === 'play'}
               onClick={toggleLiveMode}
               keepActiveInLiveMode
@@ -816,7 +816,7 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
       highlight
       onClick={props.onClick}
       disabled={canvasInLiveMode && !keepActiveInLiveMode}
-      overriddenBackground={secondary ? colorTheme.bg5.value : undefined}
+      overriddenBackground={secondary ? 'transparent' : undefined}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
@@ -827,7 +827,11 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
         height={props.size ?? 18}
         testId={props.testid == null ? undefined : `${props.testid}-icon`}
         color={
-          isHovered && !props.primary ? 'dynamic' : props.primary ? 'on-highlight-main' : 'main'
+          (isHovered && !props.primary) || props.secondary
+            ? 'dynamic'
+            : props.primary
+            ? 'on-highlight-main'
+            : 'main'
         }
       />
     </SquareButton>
