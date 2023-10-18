@@ -89,6 +89,8 @@ export function useSelectionArea(
       return filterUnderSelectionArea(
         allTargetsMatchingSelectableViews,
         storeRef.current.jsxMetadata,
+        storeRef.current.scale,
+        storeRef.current.canvasOffset,
         area,
         localSelectedViews,
       )

@@ -1,21 +1,30 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import type { CanvasRectangle, WindowRectangle } from '../../../core/shared/math-utils'
+import type {
+  CanvasRectangle,
+  CanvasVector,
+  WindowRectangle,
+} from '../../../core/shared/math-utils'
 import {
+  canvasRectangle,
+  getRectCenter,
   isFiniteRectangle,
   rectangleContainsRectangle,
+  rectangleIntersection,
   windowRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { KeysPressed } from '../../../utils/keyboard'
 import type { InteractionSession } from '../canvas-strategies/interaction-state'
 import { isDragToPan } from '../canvas-strategies/interaction-state'
+import { canvasPointToWindowPoint, getAllTargetsAtPoint } from '../dom-lookup'
 
 type ElementUnderSelectionAreaType = 'scene' | 'regular'
 
 type ElementUnderSelectionArea = {
   path: ElementPath
+  frame: CanvasRectangle | null
   type: ElementUnderSelectionAreaType
   fullyContained: boolean
   selected: boolean
@@ -46,6 +55,8 @@ function maybeElementFrame(
 export const filterUnderSelectionArea = (
   paths: ElementPath[],
   metadata: ElementInstanceMetadataMap,
+  scale: number,
+  canvasOffset: CanvasVector,
   area: CanvasRectangle | null,
   selectedViews: ElementPath[],
 ): ElementPath[] => {
@@ -57,6 +68,7 @@ export const filterUnderSelectionArea = (
     const frame = maybeElementFrame(path, metadata)
     return {
       path: path,
+      frame: frame,
       type: getElementUnderSelectionAreaType(metadata, path),
       fullyContained: frame != null && rectangleContainsRectangle(area, frame),
       selected: EP.containsPath(path, selectedViews),
@@ -99,6 +111,21 @@ export const filterUnderSelectionArea = (
       if (parentScene != null && parentScene.fullyContained) {
         return false
       }
+
+      // NOTE: this is a mitigation step for a measuring problem, where overflowing elements'
+      // dimensions are not calculated correctly. This should be fixed at the root in the measurements,
+      // but until then this should help a bit.
+      if (element.type === 'regular' && !element.zeroSized) {
+        return isElementIntersactionActuallyUnderAreaAndVisible(
+          metadata,
+          scale,
+          canvasOffset,
+          area,
+          element.path,
+          element.frame,
+          element.selected,
+        )
+      }
       return true
     })
     .map((r) => r.path)
@@ -131,4 +158,43 @@ export function isValidMouseEventForSelectionArea(
     !(e.metaKey || e.ctrlKey || e.altKey) &&
     !isDragToPan(interactionSession, keysPressed['space'])
   )
+}
+
+function isElementIntersactionActuallyUnderAreaAndVisible(
+  jsxMetadata: ElementInstanceMetadataMap,
+  canvasScale: number,
+  canvasOffset: CanvasVector,
+  area: CanvasRectangle | null,
+  path: ElementPath,
+  frame: CanvasRectangle | null,
+  isSelected: boolean,
+): boolean {
+  if (area != null && frame != null && isFiniteRectangle(frame)) {
+    const intersect = rectangleIntersection(area, frame)
+    if (intersect == null) {
+      return false
+    }
+    if (isSelected && rectangleContainsRectangle(frame, area)) {
+      return true
+    }
+
+    const intersectionCenter = canvasPointToWindowPoint(
+      // since this is going to be used in a DOM lookup, we need the center because
+      // the targets might not be squares
+      getRectCenter(canvasRectangle(intersect)),
+      canvasScale,
+      canvasOffset,
+    )
+    const pathActuallyUnderArea = getAllTargetsAtPoint(
+      [path],
+      intersectionCenter,
+      canvasScale,
+      canvasOffset,
+      jsxMetadata,
+    ).some((other) => EP.pathsEqual(path, other))
+    if (!pathActuallyUnderArea) {
+      return false
+    }
+  }
+  return true
 }
