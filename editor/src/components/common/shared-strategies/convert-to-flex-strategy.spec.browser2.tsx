@@ -4,10 +4,12 @@ import * as EP from '../../../core/shared/element-path'
 import { shiftModifier } from '../../../utils/modifiers'
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
+import { edgePosition } from '../../canvas/canvas-types'
 import { pressKey } from '../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
+  getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
@@ -416,6 +418,129 @@ describe('Smart Convert To Flex', () => {
       </div>
     </div>
   `),
+    )
+  })
+  it('can convert zero-sized element with absolute children into a flex layout', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      height: '100%',
+      width: '100%',
+      contain: 'layout',
+    }}
+    data-uid='root'
+  >
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+      }}
+      data-uid='zero-sized'
+    >
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{
+          width: 51,
+          height: 65,
+          position: 'absolute',
+          left: 15,
+          top: 16,
+        }}
+        data-testid='first-child'
+        data-uid='first-child'
+      />
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{
+          width: 51,
+          height: 65,
+          position: 'absolute',
+          left: 79,
+          top: 16,
+        }}
+        data-uid='second-child'
+      />
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{
+          width: 51,
+          height: 65,
+          position: 'absolute',
+          left: 143,
+          top: 16,
+        }}
+        data-uid='third-child'
+      />
+    </div>
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    const { top: firstChildTopBeforeFlexConversion, left: firstChildLeftBeforeFlexConversion } =
+      renderResult.renderedDOM.getByTestId('first-child').style
+
+    const containerPath = EP.appendNewElementPath(TestScenePath, ['root', 'zero-sized'])
+    await selectComponentsForTest(renderResult, [containerPath])
+    await expectSingleUndo2Saves(renderResult, () => pressShiftA(renderResult))
+
+    const { top: containerTop, left: containerLeft } =
+      renderResult.getEditorState().editor.allElementProps[EP.toString(containerPath)]['style']
+
+    expect({
+      top: firstChildTopBeforeFlexConversion,
+      left: firstChildLeftBeforeFlexConversion,
+    }).toEqual({
+      top: `${containerTop}px`,
+      left: `${containerLeft}px`,
+    })
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      height: '100%',
+      width: '100%',
+      contain: 'layout',
+    }}
+    data-uid='root'
+  >
+    <div
+      data-uid='zero-sized'
+      style={{
+        position: 'absolute',
+        top: 16,
+        left: 15,
+        width: 'max-content',
+        height: 'max-content',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 13,
+      }}
+    >
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{ width: 51, height: 65 }}
+        data-testid='first-child'
+        data-uid='first-child'
+      />
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{ width: 51, height: 65 }}
+        data-uid='second-child'
+      />
+      <img
+        src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
+        alt='Utopia logo'
+        style={{ width: 51, height: 65 }}
+        data-uid='third-child'
+      />
+    </div>
+  </div>
+`),
     )
   })
 })
