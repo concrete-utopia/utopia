@@ -110,6 +110,7 @@ function callPropertyControlsHook(
       null as any,
       null,
       null,
+      null,
       true,
       false,
       null as any,
@@ -131,6 +132,7 @@ function callPropertyControlsHook(
       null as any,
       null,
       null,
+      null,
       true,
       false,
       null as any,
@@ -149,6 +151,7 @@ function callPropertyControlsHook(
     metadata[EP.toString(selectedViews[2])] = elementInstanceMetadata(
       selectedViews[2],
       null as any,
+      null,
       null,
       null,
       true,

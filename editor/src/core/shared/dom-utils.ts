@@ -277,6 +277,58 @@ export function getCanvasRectangleFromElement(
   }
 }
 
+export function getNonRoundedCanvasRectangleFromElement(
+  element: HTMLElement,
+  canvasScale: number,
+  withContent: 'without-content' | 'with-content' | 'only-content',
+): CanvasRectangle {
+  const scale = canvasScale < 1 ? 1 / canvasScale : 1
+
+  const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
+    // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
+    return scaleRect(
+      canvasRectangle({
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height,
+      }),
+      scale,
+    )
+  }
+
+  const boundingRect = element.getBoundingClientRect()
+  const elementRect = domRectToScaledCanvasRectangle(boundingRect)
+  if (withContent === 'without-content') {
+    return elementRect
+  }
+
+  const range = document.createRange()
+  switch (withContent) {
+    case 'only-content':
+      range.selectNodeContents(element)
+      break
+    case 'with-content':
+      range.selectNode(element)
+      break
+    default:
+      assertNever(withContent)
+  }
+  const rangeBounding =
+    // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
+    typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
+  const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
+
+  switch (withContent) {
+    case 'only-content':
+      return contentRect
+    case 'with-content':
+      return boundingRectangle(elementRect, contentRect)
+    default:
+      assertNever(withContent)
+  }
+}
+
 export function addStyleSheetToPage(url: string, shouldAppendHash: boolean = true): void {
   const cssElement = document.createElement('link')
   cssElement.rel = 'stylesheet'

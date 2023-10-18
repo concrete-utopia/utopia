@@ -20,7 +20,11 @@ import {
   emptyAttributeMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
+import {
+  getCanvasRectangleFromElement,
+  getDOMAttribute,
+  getNonRoundedCanvasRectangleFromElement,
+} from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -643,12 +647,19 @@ function collectMetadataForElement(
   tagName: string
   globalFrame: CanvasRectangle
   localFrame: LocalRectangle
+  nonRoundedFrame: CanvasRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
   textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy, 'without-content')
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+  const nonRoundedFrame = nonRoundedFrameForElement(
+    element,
+    scale,
+    containerRectLazy,
+    'without-content',
+  )
 
   const textContentsMaybe = element.textContent
 
@@ -663,6 +674,7 @@ function collectMetadataForElement(
     tagName: tagName,
     globalFrame: globalFrame,
     localFrame: localFrame,
+    nonRoundedFrame: nonRoundedFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
     textContentsMaybe: textContentsMaybe,
   }
@@ -747,14 +759,20 @@ function collectAndCreateMetadataForElement(
   pathsForElement: ElementPath[],
   globalProps: DomWalkerInternalGlobalProps,
 ) {
-  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject, textContentsMaybe } =
-    collectMetadataForElement(
-      element,
-      parentPoint,
-      closestOffsetParentPath,
-      globalProps.scale,
-      globalProps.containerRectLazy,
-    )
+  const {
+    tagName,
+    globalFrame,
+    localFrame,
+    nonRoundedFrame,
+    specialSizeMeasurementsObject,
+    textContentsMaybe,
+  } = collectMetadataForElement(
+    element,
+    parentPoint,
+    closestOffsetParentPath,
+    globalProps.scale,
+    globalProps.containerRectLazy,
+  )
 
   const { computedStyle, attributeMetadata } = getComputedStyle(
     element,
@@ -773,6 +791,7 @@ function collectAndCreateMetadataForElement(
       left(tagName),
       globalFrame,
       localFrame,
+      nonRoundedFrame,
       false,
       false,
       specialSizeMeasurementsObject,
@@ -1087,6 +1106,17 @@ function globalFrameForElement(
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
 
+function nonRoundedFrameForElement(
+  element: HTMLElement,
+  scale: number,
+  containerRectLazy: () => CanvasRectangle,
+  withContent: 'without-content' | 'with-content',
+) {
+  const elementRect = getNonRoundedCanvasRectangleFromElement(element, scale, withContent)
+
+  return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
+}
+
 function walkCanvasRootFragment(
   canvasRoot: HTMLElement,
   globalProps: DomWalkerInternalGlobalProps,
@@ -1127,6 +1157,7 @@ function walkCanvasRootFragment(
       left('Storyboard'),
       infinityCanvasRectangle,
       infinityLocalRectangle,
+      infinityCanvasRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,

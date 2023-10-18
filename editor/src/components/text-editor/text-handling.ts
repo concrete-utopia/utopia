@@ -25,6 +25,7 @@ import fastDeepEquals from 'fast-deep-equal'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { nullIfInfinity, zeroCanvasRect } from '../../core/shared/math-utils'
 
 // Validate this by making the type `Set<keyof CSSProperties>`.
 export const stylePropertiesEligibleForMerge: Set<string> = new Set([

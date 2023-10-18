@@ -16,6 +16,7 @@ import {
   detectPackedSpacedSetting,
   numberOfFlexContainers,
 } from './inspector-common'
+import { nullIfInfinity, zeroRectangle } from '../../core/shared/math-utils'
 
 export const metadataSelector = (store: MetadataSubstate): ElementInstanceMetadataMap =>
   store.editor.jsxMetadata
@@ -64,7 +65,10 @@ export function useComputedSizeRef(prop: 'width' | 'height'): { readonly current
       return null
     }
 
-    const localFrame = MetadataUtils.getFrameOrZeroRect(elementPath, metadata)
+    const localFrame =
+      nullIfInfinity(
+        MetadataUtils.findElementByElementPath(metadata, elementPath)?.nonRoundedFrame,
+      ) ?? zeroRectangle
     return localFrame[prop]
   })
 }
