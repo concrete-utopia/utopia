@@ -20,11 +20,7 @@ import {
   emptyAttributeMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import {
-  getCanvasRectangleFromElement,
-  getDOMAttribute,
-  getNonRoundedCanvasRectangleFromElement,
-} from '../../core/shared/dom-utils'
+import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
