@@ -22,8 +22,10 @@ import {
 import { selectedViewsSelector } from './inpector-selectors'
 import type { DetectedPins, RequestedPins } from './simplified-pinning-helpers'
 import {
-  DetectedHorizontalPinChangeOptions,
-  DetectedVerticalPinChangeOptions,
+  DetectedFrameChildHorizontalPinChangeOptions,
+  DetectedFrameChildVerticalPinChangeOptions,
+  DetectedGroupChildHorizontalPinChangeOptions,
+  DetectedGroupChildVerticalPinChangeOptions,
   FrameChildHorizontalPinChangeOptions,
   FrameChildVerticalPinChangeOptions,
   GroupChildHorizontalPinChangeOptions,
@@ -284,10 +286,21 @@ const ChildConstraintSelect = React.memo(
       }
     })()
 
-    const activeOption =
-      dimension === 'width'
-        ? DetectedHorizontalPinChangeOptions[pins.horizontal]
-        : DetectedVerticalPinChangeOptions[pins.vertical]
+    const activeOption = (() => {
+      if (dimension === 'width') {
+        if (isGroupChild === 'frame-child') {
+          return DetectedFrameChildHorizontalPinChangeOptions[pins.horizontal]
+        } else {
+          return DetectedGroupChildHorizontalPinChangeOptions[pins.horizontal]
+        }
+      } else {
+        if (isGroupChild === 'frame-child') {
+          return DetectedFrameChildVerticalPinChangeOptions[pins.vertical]
+        } else {
+          return DetectedGroupChildVerticalPinChangeOptions[pins.vertical]
+        }
+      }
+    })()
 
     const onSubmit = React.useCallback(
       (option: SelectOption) => {

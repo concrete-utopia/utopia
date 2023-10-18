@@ -57,20 +57,8 @@ type VerticalPinRequests =
 export type RequestedPins = HorizontalPinRequests | VerticalPinRequests
 
 export type DetectedPins = {
-  horizontal:
-    | HorizontalPinRequests
-    | 'left'
-    | 'right'
-    | 'width'
-    | 'group-child-error-percentage'
-    | 'mixed'
-  vertical:
-    | VerticalPinRequests
-    | 'top'
-    | 'bottom'
-    | 'height'
-    | 'group-child-error-percentage'
-    | 'mixed'
+  horizontal: HorizontalPinRequests | 'group-child-error-percentage' | 'mixed'
+  vertical: VerticalPinRequests | 'group-child-error-percentage' | 'mixed'
 }
 
 export const FrameChildHorizontalPinChangeOptions: {
@@ -129,8 +117,12 @@ export const GroupChildHorizontalPinChangeOptions: {
   },
 } as const
 
-export const DetectedHorizontalPinChangeOptions = {
-  ...GroupChildHorizontalPinChangeOptions,
+export const DetectedFrameChildHorizontalPinChangeOptions: {
+  [key in DetectedPins['horizontal']]: SelectOption & {
+    value: DetectedPins['horizontal']
+  }
+} = {
+  ...FrameChildHorizontalPinChangeOptions,
   left: {
     value: 'left',
     label: 'Left',
@@ -139,6 +131,26 @@ export const DetectedHorizontalPinChangeOptions = {
     value: 'right',
     label: 'Right',
   },
+  width: {
+    value: 'width',
+    label: 'Width',
+  },
+  'group-child-error-percentage': {
+    value: 'group-child-error-percentage',
+    label: 'Mixed*', // todo write something more clever!
+  },
+  mixed: {
+    value: 'mixed',
+    label: 'Mixed',
+  },
+} as const
+
+export const DetectedGroupChildHorizontalPinChangeOptions: {
+  [key in DetectedPins['horizontal']]: SelectOption & {
+    value: DetectedPins['horizontal']
+  }
+} = {
+  ...GroupChildHorizontalPinChangeOptions,
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
     label: 'Mixed*', // todo write something more clever!
@@ -205,8 +217,12 @@ export const GroupChildVerticalPinChangeOptions: {
   },
 } as const
 
-export const DetectedVerticalPinChangeOptions = {
-  ...GroupChildVerticalPinChangeOptions,
+export const DetectedFrameChildVerticalPinChangeOptions: {
+  [key in DetectedPins['vertical']]: SelectOption & {
+    value: DetectedPins['vertical']
+  }
+} = {
+  ...FrameChildVerticalPinChangeOptions,
   top: {
     value: 'top',
     label: 'Top',
@@ -215,6 +231,26 @@ export const DetectedVerticalPinChangeOptions = {
     value: 'bottom',
     label: 'Bottom',
   },
+  height: {
+    value: 'height',
+    label: 'Height',
+  },
+  'group-child-error-percentage': {
+    value: 'group-child-error-percentage',
+    label: 'Mixed*', // todo write something more clever!
+  },
+  mixed: {
+    value: 'mixed',
+    label: 'Mixed',
+  },
+} as const
+
+export const DetectedGroupChildVerticalPinChangeOptions: {
+  [key in DetectedPins['vertical']]: SelectOption & {
+    value: DetectedPins['vertical']
+  }
+} = {
+  ...GroupChildVerticalPinChangeOptions,
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
     label: 'Mixed*', // todo write something more clever!
