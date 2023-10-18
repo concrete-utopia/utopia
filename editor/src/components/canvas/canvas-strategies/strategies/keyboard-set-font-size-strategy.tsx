@@ -19,7 +19,7 @@ import {
   printCSSNumber,
 } from '../../../inspector/common/css-utils'
 import { setProperty } from '../../commands/set-property-command'
-import { getStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
 import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
@@ -39,8 +39,11 @@ export function keyboardSetFontSizeStrategy(
 
   return {
     id: 'set-font-size',
-    name: getStrategyLabelWithRetargetedPaths('Set font size', pathsWereReplaced),
-    descriptiveLabel: 'Changing Font Size',
+    name: 'Set font size',
+    descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+      'Changing Font Size',
+      pathsWereReplaced,
+    ),
     icon: {
       category: 'tools',
       type: 'pointer',

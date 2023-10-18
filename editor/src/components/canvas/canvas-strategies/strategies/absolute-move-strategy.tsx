@@ -2,7 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
-import { getStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type {
   CustomStrategyState,
   InteractionCanvasState,
@@ -57,8 +57,11 @@ export function absoluteMoveStrategy(
   return {
     strategy: {
       id: 'ABSOLUTE_MOVE',
-      name: getStrategyLabelWithRetargetedPaths('Move', pathsWereReplaced),
-      descriptiveLabel: 'Moving Absolute Elements',
+      name: 'Move',
+      descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+        'Moving Absolute Elements',
+        pathsWereReplaced,
+      ),
       icon: {
         category: 'modalities',
         type: 'moveabs-large',

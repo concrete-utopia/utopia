@@ -36,7 +36,7 @@ import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
 import {
-  getStrategyLabelWithRetargetedPaths,
+  getDescriptiveStrategyLabelWithRetargetedPaths,
   onlyFitWhenDraggingThisControl,
 } from '../canvas-strategies'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
@@ -88,8 +88,11 @@ export function absoluteResizeBoundingBoxStrategy(
 
   return {
     id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
-    name: getStrategyLabelWithRetargetedPaths('Resize', pathsWereReplaced),
-    descriptiveLabel: 'Resizing Elements',
+    name: 'Resize',
+    descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+      'Resizing Elements',
+      pathsWereReplaced,
+    ),
     icon: {
       category: 'modalities',
       type: 'resize',

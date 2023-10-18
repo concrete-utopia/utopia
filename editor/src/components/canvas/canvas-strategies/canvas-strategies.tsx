@@ -621,12 +621,12 @@ export function getWrapperWithGeneratedUid(
   return { wrapper: insertionSubjectWrapper, uid: uid }
 }
 
-export function getStrategyLabelWithRetargetedPaths(
+export function getDescriptiveStrategyLabelWithRetargetedPaths(
   originalLabel: string,
   pathsWereReplaced: boolean,
 ): string {
   if (pathsWereReplaced) {
-    return `${originalLabel} (Sizeless container, transforming children)`
+    return `${originalLabel} (Children)`
   }
   return originalLabel
 }

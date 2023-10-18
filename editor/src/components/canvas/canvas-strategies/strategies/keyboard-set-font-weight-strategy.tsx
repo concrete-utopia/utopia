@@ -12,7 +12,7 @@ import type { KeyCharacter } from '../../../../utils/keyboard'
 import Keyboard from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { setProperty } from '../../commands/set-property-command'
-import { getStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
 import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
@@ -34,8 +34,11 @@ export function keyboardSetFontWeightStrategy(
 
   return {
     id: 'set-font-weight',
-    name: getStrategyLabelWithRetargetedPaths('Set font weight', pathsWereReplaced),
-    descriptiveLabel: 'Changing Font Weight',
+    name: 'Set font weight',
+    descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+      'Changing Font Weight',
+      pathsWereReplaced,
+    ),
     icon: {
       category: 'tools',
       type: 'pointer',

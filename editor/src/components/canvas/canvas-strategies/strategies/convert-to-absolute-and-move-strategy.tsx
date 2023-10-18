@@ -84,7 +84,7 @@ import {
   isHugFromStyleAttribute,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
-import { getStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 
 export type SetHuggingParentToFixed =
   | 'set-hugging-parent-to-fixed'
@@ -109,17 +109,20 @@ function getBasicStrategyProperties(
     case 'set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
-        name: getStrategyLabelWithRetargetedPaths(
-          'Move (Abs + Set Parent Fixed)',
+        name: 'Move (Abs + Set Parent Fixed)',
+        descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+          'Converting To Absolute And Moving (setting parent to fixed)',
           pathsWereReplaced,
         ),
-        descriptiveLabel: 'Converting To Absolute And Moving (setting parent to fixed)',
       }
     case 'dont-set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveStrategyID,
-        name: getStrategyLabelWithRetargetedPaths('Move (Abs)', pathsWereReplaced),
-        descriptiveLabel: 'Converting To Absolute And Moving',
+        name: 'Move (Abs)',
+        descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+          'Converting To Absolute And Moving',
+          pathsWereReplaced,
+        ),
       }
     default:
       assertNever(setHuggingParentToFixed)
