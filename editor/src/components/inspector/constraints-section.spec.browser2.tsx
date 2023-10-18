@@ -175,7 +175,7 @@ describe('Constraints Section', () => {
       'Span with max-content width shows up as Width / Scale',
       testGroupChild({
         snippet: `<span data-uid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
-        expectedWidthConstraintDropdownOption: 'Scale',
+        expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
     )
@@ -184,8 +184,8 @@ describe('Constraints Section', () => {
       'Span with max-content width height shows up as Width / Height',
       testGroupChild({
         snippet: `<span data-uid='target' style={{ width: 'max-content', height: 'max-content' }}>An implicitly constrained span</span>`,
-        expectedWidthConstraintDropdownOption: 'Scale',
-        expectedHeightConstraintDropdownOption: 'Scale',
+        expectedWidthConstraintDropdownOption: 'Width',
+        expectedHeightConstraintDropdownOption: 'Height',
       }),
     )
 
