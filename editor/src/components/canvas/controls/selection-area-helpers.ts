@@ -18,7 +18,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { KeysPressed } from '../../../utils/keyboard'
 import type { InteractionSession } from '../canvas-strategies/interaction-state'
 import { isDragToPan } from '../canvas-strategies/interaction-state'
-import { canvasPointToWindowPoint, getValidTargetAtPoint } from '../dom-lookup'
+import { canvasPointToWindowPoint, getAllTargetsAtPoint } from '../dom-lookup'
 
 type ElementUnderSelectionAreaType = 'scene' | 'regular'
 
@@ -185,14 +185,14 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
       canvasScale,
       canvasOffset,
     )
-    const pathActuallyUnderArea = getValidTargetAtPoint(
+    const pathActuallyUnderArea = getAllTargetsAtPoint(
       [path],
       intersectionCenter,
       canvasScale,
       canvasOffset,
       jsxMetadata,
-    )
-    if (pathActuallyUnderArea == null) {
+    ).some((other) => EP.pathsEqual(path, other))
+    if (!pathActuallyUnderArea) {
       return false
     }
   }
