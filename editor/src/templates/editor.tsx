@@ -506,28 +506,6 @@ export class Editor {
         if (this.storedState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
           // updated editor with trued up groups
           Measure.taskTime(`Group true up ${updateId}`, () => {
-            const projectContentsBeforeGroupTrueUp =
-              this.storedState.unpatchedEditor.projectContents
-            const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
-              this.boundDispatch,
-              [],
-              this.storedState,
-              this.spyCollector,
-            )
-            this.storedState = dispatchResultWithTruedUpGroups
-
-            entireUpdateFinished = Promise.all([
-              entireUpdateFinished,
-              dispatchResultWithTruedUpGroups.entireUpdateFinished,
-            ])
-
-            if (
-              projectContentsBeforeGroupTrueUp === this.storedState.unpatchedEditor.projectContents
-            ) {
-              // no group-related re-render / re-measure is needed, bail out
-              return
-            }
-
             // re-render the canvas
             Measure.taskTime(`Canvas re-render because of groups ${updateId}`, () => {
               ElementsToRerenderGLOBAL.current = fixElementsToRerender(
