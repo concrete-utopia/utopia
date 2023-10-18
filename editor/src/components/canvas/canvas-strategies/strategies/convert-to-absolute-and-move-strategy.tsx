@@ -84,6 +84,7 @@ import {
   isHugFromStyleAttribute,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 
 export type SetHuggingParentToFixed =
   | 'set-hugging-parent-to-fixed'
@@ -100,19 +101,28 @@ export const convertToAbsoluteAndMoveStrategy = convertToAbsoluteAndMoveStrategy
 export const convertToAbsoluteAndMoveAndSetParentFixedStrategy =
   convertToAbsoluteAndMoveStrategyFactory('set-hugging-parent-to-fixed')
 
-function getBasicStrategyProperties(setHuggingParentToFixed: SetHuggingParentToFixed) {
+function getBasicStrategyProperties(
+  setHuggingParentToFixed: SetHuggingParentToFixed,
+  pathsWereReplaced: boolean,
+) {
   switch (setHuggingParentToFixed) {
     case 'set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
         name: 'Move (Abs + Set Parent Fixed)',
-        descriptiveLabel: 'Converting To Absolute And Moving (setting parent to fixed)',
+        descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+          'Converting To Absolute And Moving (setting parent to fixed)',
+          pathsWereReplaced,
+        ),
       }
     case 'dont-set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveStrategyID,
         name: 'Move (Abs)',
-        descriptiveLabel: 'Converting To Absolute And Moving',
+        descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+          'Converting To Absolute And Moving',
+          pathsWereReplaced,
+        ),
       }
     default:
       assertNever(setHuggingParentToFixed)
@@ -125,7 +135,8 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
     interactionSession: InteractionSession | null,
   ): CanvasStrategy | null => {
     const originalTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState) // this needs a better variable name
-    const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+    const { pathsWereReplaced, paths: retargetedTargets } =
+      retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
     if (
       !retargetedTargets.every((element) => {
@@ -196,7 +207,7 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
     )
 
     return {
-      ...getBasicStrategyProperties(setHuggingParentToFixed),
+      ...getBasicStrategyProperties(setHuggingParentToFixed, pathsWereReplaced),
       icon: {
         category: 'modalities',
         type: 'moveabs-large',

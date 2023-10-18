@@ -167,6 +167,11 @@ describe('adjust font weight with the keyboard', () => {
 
         await selectComponentsForTest(editor, [fromString(`sb/${FragmentLikeElementUid}`)])
         await doTestWithDelta(editor, { increaseBy: 1, decreaseBy: 0 })
+
+        const descriptiveLabel =
+          editor.getEditorState().strategyState.currentStrategyDescriptiveLabel
+        expect(descriptiveLabel).toEqual('Changing Font Weight (Children)')
+
         await editor.getDispatchFollowUpActionsFinished()
 
         const aaa = editor.renderedDOM.getByTestId('aaa')
