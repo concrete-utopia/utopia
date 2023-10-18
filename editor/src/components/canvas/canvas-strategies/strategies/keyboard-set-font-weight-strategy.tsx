@@ -12,6 +12,7 @@ import type { KeyCharacter } from '../../../../utils/keyboard'
 import Keyboard from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { setProperty } from '../../commands/set-property-command'
+import { getStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
 import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
@@ -24,9 +25,8 @@ export function keyboardSetFontWeightStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const validTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState).filter(
-    (path) => isValidTarget(canvasState.startingMetadata, path),
-  )
+  const { pathsWereReplaced, paths } = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  const validTargets = paths.filter((path) => isValidTarget(canvasState.startingMetadata, path))
 
   if (validTargets.length === 0) {
     return null
@@ -34,7 +34,7 @@ export function keyboardSetFontWeightStrategy(
 
   return {
     id: 'set-font-weight',
-    name: 'Set font weight',
+    name: getStrategyLabelWithRetargetedPaths('Set font weight', pathsWereReplaced),
     descriptiveLabel: 'Changing Font Weight',
     icon: {
       category: 'tools',

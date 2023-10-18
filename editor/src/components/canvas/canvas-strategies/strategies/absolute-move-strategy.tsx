@@ -2,6 +2,7 @@ import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { ZeroSizedElementControls } from '../../controls/zero-sized-element-controls'
+import { getStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type {
   CustomStrategyState,
   InteractionCanvasState,
@@ -34,7 +35,8 @@ export function absoluteMoveStrategy(
   const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
-  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  const { pathsWereReplaced, paths: retargetedTargets } =
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   const isApplicable =
     retargetedTargets.length > 0 &&
@@ -55,7 +57,7 @@ export function absoluteMoveStrategy(
   return {
     strategy: {
       id: 'ABSOLUTE_MOVE',
-      name: 'Move',
+      name: getStrategyLabelWithRetargetedPaths('Move', pathsWereReplaced),
       descriptiveLabel: 'Moving Absolute Elements',
       icon: {
         category: 'modalities',

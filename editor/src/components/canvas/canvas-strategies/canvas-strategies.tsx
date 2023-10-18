@@ -239,7 +239,7 @@ function codeElementsTargeted(canvasState: InteractionCanvasState): boolean {
   const originalTargets = flattenSelection(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
-  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState).paths
   return [...originalTargets, ...retargetedTargets].some(
     (target) =>
       MetadataUtils.isExpressionOtherJavascript(target, canvasState.startingMetadata) ||
@@ -619,4 +619,14 @@ export function getWrapperWithGeneratedUid(
     generateUidWithExistingComponents(canvasState.projectContents)
 
   return { wrapper: insertionSubjectWrapper, uid: uid }
+}
+
+export function getStrategyLabelWithRetargetedPaths(
+  originalLabel: string,
+  pathsWereReplaced: boolean,
+): string {
+  if (pathsWereReplaced) {
+    return `${originalLabel} (Sizeless container, transforming children)`
+  }
+  return originalLabel
 }

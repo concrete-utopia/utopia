@@ -11,14 +11,16 @@ import { getTargetPathsFromInteractionTarget } from '../canvas-strategy-types'
 import { treatElementAsGroupLike, treatElementAsGroupLikeFromMetadata } from './group-helpers'
 import { flattenSelection } from './shared-move-strategies-helpers'
 
+type ReplacedPaths = { pathsWereReplaced: boolean; paths: Array<ElementPath> }
+
 export function retargetStrategyToChildrenOfFragmentLikeElements(
   canvasState: InteractionCanvasState,
-): Array<ElementPath> {
+): ReplacedPaths {
   const targets = getTargetPathsFromInteractionTarget(canvasState.interactionTarget)
 
   const targetsWithoutDescedants = flattenSelection(targets)
 
-  return replaceFragmentLikePathsWithTheirChildrenRecursive(
+  return replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue(
     canvasState.startingMetadata,
     canvasState.startingAllElementProps,
     canvasState.startingElementPathTree,
@@ -56,7 +58,21 @@ export function retargetStrategyToTopMostFragmentLikeElement(
   )
 }
 
-export const replaceFragmentLikePathsWithTheirChildrenRecursive = memoize(
+export function replaceFragmentLikePathsWithTheirChildrenRecursive(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
+  paths: Array<ElementPath>,
+): Array<ElementPath> {
+  return replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue(
+    metadata,
+    allElementProps,
+    pathTrees,
+    paths,
+  ).paths
+}
+
+const replaceFragmentLikePathsWithTheirChildrenRecursiveFullReturnValue = memoize(
   replaceFragmentLikePathsWithTheirChildrenRecursiveInner,
   { maxSize: 1, matchesArg: is },
 )
@@ -66,7 +82,7 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
   allElementProps: AllElementProps,
   pathTrees: ElementPathTrees,
   paths: Array<ElementPath>,
-): Array<ElementPath> {
+): ReplacedPaths {
   let pathsWereReplaced = false
 
   const updatedPaths = paths.flatMap((path) => {
@@ -97,7 +113,7 @@ function replaceFragmentLikePathsWithTheirChildrenRecursiveInner(
     return path
   })
 
-  return pathsWereReplaced ? updatedPaths : paths
+  return { pathsWereReplaced: pathsWereReplaced, paths: pathsWereReplaced ? updatedPaths : paths }
 }
 
 export const replaceNonDOMElementPathsWithTheirChildrenRecursive = memoize(

@@ -36,12 +36,14 @@ import type { InteractionSession } from '../interaction-state'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { retargetStrategyToChildrenOfFragmentLikeElements } from './fragment-like-helpers'
 import { gatherParentAndSiblingTargets } from '../../controls/guideline-helpers'
+import { getStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 
 export function keyboardAbsoluteMoveStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  const { pathsWereReplaced, paths: selectedElements } =
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
   if (selectedElements.length === 0) {
     return null
   }
@@ -51,7 +53,7 @@ export function keyboardAbsoluteMoveStrategy(
 
   return {
     id: 'KEYBOARD_ABSOLUTE_MOVE',
-    name: 'Move',
+    name: getStrategyLabelWithRetargetedPaths('Move', pathsWereReplaced),
     descriptiveLabel: 'Moving Elements',
     icon: {
       category: 'modalities',
