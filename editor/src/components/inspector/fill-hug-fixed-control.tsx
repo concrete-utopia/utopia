@@ -34,6 +34,7 @@ import {
 import type { Axis, FixedHugFill, FixedHugFillMode } from './inspector-common'
 import {
   detectFillHugFixedStateMultiselect,
+  getConstraintsIncludingImplicitForElement,
   getFixedFillHugOptionsForElement,
   isFixedHugFillEqual,
 } from './inspector-common'
@@ -57,6 +58,7 @@ import { when } from '../../utils/react-conditionals'
 import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
 import type { AllElementProps, EditorState } from '../editor/store/editor-state'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import type { EditorDispatch, EditorAction } from '../editor/action-types'
 import {
@@ -232,31 +234,37 @@ export const GroupChildPinControl = React.memo(() => {
       width: checkGroupChildConstraint(
         'width',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       height: checkGroupChildConstraint(
         'height',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       top: checkGroupChildConstraint(
         'top',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       left: checkGroupChildConstraint(
         'left',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       bottom: checkGroupChildConstraint(
         'bottom',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       right: checkGroupChildConstraint(
         'right',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
     }),
@@ -562,6 +570,7 @@ export const GroupConstraintSelect = React.memo(
         checkGroupChildConstraint(
           dimension,
           store.editor.selectedViews,
+          store.editor.jsxMetadata,
           store.editor.allElementProps,
         ),
       'GroupConstraintSelect constraintType',
@@ -722,10 +731,16 @@ export const allElementsAreGroupChildren = createSelector(
 function checkGroupChildConstraint(
   dimension: LayoutPinnedProp,
   selectedViews: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): GroupChildConstraintOptionType | 'mixed' {
   const constrained = selectedViews.filter((path) =>
-    getSafeGroupChildConstraintsArray(allElementProps, path).includes(dimension),
+    getConstraintsIncludingImplicitForElement(
+      metadata,
+      allElementProps,
+      path,
+      'only-explicit-constraints',
+    ).includes(dimension),
   ).length
   if (constrained === selectedViews.length) {
     return 'constrained'
@@ -760,17 +775,6 @@ function groupChildConstraintOption(type: GroupChildConstraintOptionType): Selec
   }
 }
 
-export function getSafeGroupChildConstraintsArray(
-  allElementProps: AllElementProps,
-  path: ElementPath,
-): LayoutPinnedProp[] {
-  const value = allElementProps[EP.toString(path)]?.['data-constraints'] ?? []
-  if (!Array.isArray(value)) {
-    return []
-  }
-  return value.filter((v) => typeof v === 'string' && isLayoutPinnedProp(v))
-}
-
 export type ConstraintsMode = 'add' | 'remove'
 
 function setGroupChildConstraint(
@@ -785,7 +789,13 @@ function setGroupChildConstraint(
       return option === 'constrained' ? 'add' : 'remove'
     }
     const notAllContainDimension = selectedViews.some(
-      (path) => !getSafeGroupChildConstraintsArray(allElementProps, path).includes(dimension),
+      (path) =>
+        !getConstraintsIncludingImplicitForElement(
+          {},
+          allElementProps,
+          path,
+          'only-explicit-constraints',
+        ).includes(dimension),
     )
     return notAllContainDimension ? 'add' : 'remove'
   }
@@ -794,7 +804,12 @@ function setGroupChildConstraint(
   const prop = PP.create('data-constraints')
 
   const actions: EditorAction[] = mapDropNulls((path) => {
-    const constraints = getSafeGroupChildConstraintsArray(allElementProps, path)
+    const constraints = getConstraintsIncludingImplicitForElement(
+      {},
+      allElementProps,
+      path,
+      'only-explicit-constraints',
+    )
     const newProps = makeUpdatedConstraintsPropArray(constraints, mode, dimension)
     return newProps.length === 0
       ? unsetProperty(path, prop)
