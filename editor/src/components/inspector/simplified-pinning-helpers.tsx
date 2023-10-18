@@ -88,16 +88,10 @@ export const FrameChildHorizontalPinChangeOptions = {
   },
 } as const
 
-export const GroupChildHorizontalPinChangeOptions = {
+export const GroupChildHorizontalPinChangeOptions: {
+  [key in HorizontalPinRequests]: SelectOption & { value: HorizontalPinRequests }
+} = {
   ...FrameChildHorizontalPinChangeOptions,
-  left: {
-    value: 'left',
-    label: 'Left',
-  },
-  right: {
-    value: 'right',
-    label: 'Right',
-  },
   width: {
     value: 'width',
     label: 'Width',
@@ -106,7 +100,14 @@ export const GroupChildHorizontalPinChangeOptions = {
 
 export const DetectedHorizontalPinChangeOptions = {
   ...GroupChildHorizontalPinChangeOptions,
-
+  left: {
+    value: 'left',
+    label: 'Left',
+  },
+  right: {
+    value: 'right',
+    label: 'Right',
+  },
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
     label: 'Mixed*', // todo write something more clever!
@@ -136,16 +137,10 @@ export const FrameChildVerticalPinChangeOptions = {
   },
 } as const
 
-export const GroupChildVerticalPinChangeOptions = {
+export const GroupChildVerticalPinChangeOptions: {
+  [key in VerticalPinRequests]: SelectOption & { value: VerticalPinRequests }
+} = {
   ...FrameChildVerticalPinChangeOptions,
-  top: {
-    value: 'top',
-    label: 'Top',
-  },
-  bottom: {
-    value: 'bottom',
-    label: 'Bottom',
-  },
   height: {
     value: 'height',
     label: 'Height',
@@ -154,7 +149,14 @@ export const GroupChildVerticalPinChangeOptions = {
 
 export const DetectedVerticalPinChangeOptions = {
   ...GroupChildVerticalPinChangeOptions,
-
+  top: {
+    value: 'top',
+    label: 'Top',
+  },
+  bottom: {
+    value: 'bottom',
+    label: 'Bottom',
+  },
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
     label: 'Mixed*', // todo write something more clever!
