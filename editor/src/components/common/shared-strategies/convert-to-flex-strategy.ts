@@ -1,26 +1,29 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { last, sortBy } from '../../../core/shared/array-utils'
-import { foldEither, isLeft } from '../../../core/shared/either'
+import { last, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { isJSXElementLike } from '../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import { isJSXElementLike, jsxFragment } from '../../../core/shared/element-template'
+import {
+  type CanvasRectangle,
+  boundingRectangleArray,
+  nullIfInfinity,
+  zeroCanvasRect,
+} from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
-import {
-  actuallyConvertFramentToFrame,
-  convertFragmentToFrame,
-} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import type { JSXFragmentConversion } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { actuallyConvertFramentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import {
   getElementFragmentLikeType,
   isElementNonDOMElement,
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
-  treatElementAsFragmentLike,
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
@@ -111,7 +114,12 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
-        ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
+        ...ifElementIsFragmentLikeFirstConvertItToFrame(
+          metadata,
+          allElementProps,
+          elementPathTree,
+          path,
+        ),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -157,7 +165,12 @@ export function convertLayoutToFlexCommands(
           ]
 
     return [
-      ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
+      ...ifElementIsFragmentLikeFirstConvertItToFrame(
+        metadata,
+        allElementProps,
+        elementPathTree,
+        path,
+      ),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -175,21 +188,58 @@ export function convertLayoutToFlexCommands(
   })
 }
 
-function ifElementIsFragmentFirstConvertItToFrame(
+function ifElementIsFragmentLikeFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
-  elementPathTree: ElementPathTrees,
+  elementPathTrees: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
   const type = getElementFragmentLikeType(
     metadata,
     allElementProps,
-    elementPathTree,
+    elementPathTrees,
     target,
     'sizeless-div-considered-fragment-like',
   )
+  const elementInstace = MetadataUtils.findElementByElementPath(metadata, target)
+  if (
+    elementInstace == null ||
+    isLeft(elementInstace.element) ||
+    !isJSXElementLike(elementInstace.element.value)
+  ) {
+    return []
+  }
+
   if (type == 'fragment' || type == 'sizeless-div') {
-    return actuallyConvertFramentToFrame(metadata, elementPathTree, __, target)
+    const childInstances = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      replaceFragmentLikePathsWithTheirChildrenRecursive(
+        metadata,
+        allElementProps,
+        elementPathTrees,
+        MetadataUtils.getChildrenPathsOrdered(metadata, elementPathTrees, target),
+      ),
+    )
+
+    const childrenBoundingFrame =
+      boundingRectangleArray(
+        mapDropNulls(
+          (rect) => nullIfInfinity(rect),
+          childInstances.map((c) => c.globalFrame),
+        ),
+      ) ?? zeroCanvasRect
+
+    const instance: JSXFragmentConversion = {
+      element: jsxFragment(
+        elementInstace.element.value.uid,
+        elementInstace.element.value.children,
+        false,
+      ),
+      childInstances: childInstances,
+      childrenBoundingFrame: childrenBoundingFrame,
+      specialSizeMeasurements: elementInstace.specialSizeMeasurements,
+    }
+    return actuallyConvertFramentToFrame(metadata, elementPathTrees, instance, target)
   }
 
   return []

@@ -220,7 +220,7 @@ type JSXElementLikeConversion = {
   childInstances: ElementInstanceMetadata[]
 }
 
-type JSXFragmentConversion = {
+export type JSXFragmentConversion = {
   element: JSXFragment
   childInstances: ElementInstanceMetadata[]
   childrenBoundingFrame: CanvasRectangle
