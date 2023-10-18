@@ -1,6 +1,12 @@
 import type { ReactDOM } from 'react'
 import type { CanvasRectangle } from './math-utils'
-import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
+import {
+  boundingRectangle,
+  canvasRectangle,
+  roundToNearestHalf,
+  roundUpToNearestHalf,
+  scaleRect,
+} from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 import { assertNever } from './utils'
@@ -233,12 +239,15 @@ export function getCanvasRectangleFromElement(
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
 
   const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
+    // Temporary patch measure to cater for text containing spans which can end up wrapping text
+    // content if the width is shrunk ever so slightly.
+    const shouldRoundUp = element.tagName === 'SPAN'
     // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
     return scaleRect(
       canvasRectangle({
         x: roundToNearestHalf(rect.left),
         y: roundToNearestHalf(rect.top),
-        width: roundToNearestHalf(rect.width),
+        width: shouldRoundUp ? roundUpToNearestHalf(rect.width) : roundToNearestHalf(rect.width),
         height: roundToNearestHalf(rect.height),
       }),
       scale,

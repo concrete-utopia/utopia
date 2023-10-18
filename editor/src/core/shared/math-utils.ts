@@ -891,6 +891,10 @@ export function roundToNearestHalf(n: number): number {
   return Math.round(n * 2) / 2
 }
 
+export function roundUpToNearestHalf(n: number): number {
+  return Math.ceil(n * 2) / 2
+}
+
 export function roundPointToNearestWhole<C extends CoordinateMarker>(p: Point<C>): Point<C> {
   return {
     x: roundToNearestWhole(p.x),
