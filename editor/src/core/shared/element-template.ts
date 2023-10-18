@@ -1969,7 +1969,7 @@ export interface ElementInstanceMetadata {
   element: Either<string, JSXElementChild>
   globalFrame: MaybeInfinityCanvasRectangle | null
   localFrame: MaybeInfinityLocalRectangle | null
-  nonRoundedFrame: MaybeInfinityCanvasRectangle | null
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null
   componentInstance: boolean
   isEmotionOrStyledComponent: boolean
   specialSizeMeasurements: SpecialSizeMeasurements
@@ -1986,7 +1986,7 @@ export function elementInstanceMetadata(
   element: Either<string, JSXElementChild>,
   globalFrame: MaybeInfinityCanvasRectangle | null,
   localFrame: MaybeInfinityLocalRectangle | null,
-  nonRoundedFrame: MaybeInfinityCanvasRectangle | null,
+  nonRoundedGlobalFrame: MaybeInfinityCanvasRectangle | null,
   componentInstance: boolean,
   isEmotionOrStyledComponent: boolean,
   sizeMeasurements: SpecialSizeMeasurements,
@@ -2002,7 +2002,7 @@ export function elementInstanceMetadata(
     element: element,
     globalFrame: globalFrame,
     localFrame: localFrame,
-    nonRoundedFrame: nonRoundedFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     componentInstance: componentInstance,
     isEmotionOrStyledComponent: isEmotionOrStyledComponent,
     specialSizeMeasurements: sizeMeasurements,

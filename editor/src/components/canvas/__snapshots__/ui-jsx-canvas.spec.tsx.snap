@@ -196,7 +196,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -332,7 +332,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -638,7 +638,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -830,7 +830,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -965,7 +965,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -1100,7 +1100,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -1235,7 +1235,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -1475,7 +1475,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -1611,7 +1611,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -1820,7 +1820,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -2059,7 +2059,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -2195,7 +2195,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -2311,7 +2311,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -2568,7 +2568,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -2704,7 +2704,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -2971,7 +2971,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -3204,7 +3204,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -3377,7 +3377,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -3516,7 +3516,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -3689,7 +3689,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -3828,7 +3828,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -4001,7 +4001,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -4140,7 +4140,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -4448,7 +4448,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -4584,7 +4584,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -4975,7 +4975,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -5332,7 +5332,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -5614,7 +5614,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -5862,7 +5862,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -6043,7 +6043,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -6190,7 +6190,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -6371,7 +6371,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -6518,7 +6518,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -6699,7 +6699,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -6846,7 +6846,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -7128,7 +7128,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -7376,7 +7376,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -7557,7 +7557,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -7704,7 +7704,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -7885,7 +7885,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -8032,7 +8032,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -8213,7 +8213,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -8360,7 +8360,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -8642,7 +8642,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -8890,7 +8890,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -9071,7 +9071,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -9218,7 +9218,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -9399,7 +9399,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -9546,7 +9546,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -9727,7 +9727,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -9874,7 +9874,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -10125,7 +10125,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -10261,7 +10261,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -10438,7 +10438,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -10555,7 +10555,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -10672,7 +10672,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -10911,7 +10911,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -11047,7 +11047,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -11241,7 +11241,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -11498,7 +11498,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -11634,7 +11634,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -11912,7 +11912,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -12155,7 +12155,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -12338,7 +12338,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -12521,7 +12521,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -12704,7 +12704,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -12961,7 +12961,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -13097,7 +13097,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -13375,7 +13375,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -13618,7 +13618,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -13801,7 +13801,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -13984,7 +13984,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -14167,7 +14167,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -14418,7 +14418,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -14554,7 +14554,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -14731,7 +14731,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -14848,7 +14848,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -14965,7 +14965,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -15216,7 +15216,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -15352,7 +15352,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -15565,7 +15565,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -15744,7 +15744,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -15862,7 +15862,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -15980,7 +15980,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -16247,7 +16247,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -16398,7 +16398,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -16742,7 +16742,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -16948,7 +16948,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -17214,7 +17214,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -17365,7 +17365,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -17709,7 +17709,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -17915,7 +17915,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -18182,7 +18182,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -18333,7 +18333,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -18728,7 +18728,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -18985,7 +18985,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -19252,7 +19252,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -19403,7 +19403,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -19798,7 +19798,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -20055,7 +20055,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -20293,7 +20293,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -20429,7 +20429,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -20545,7 +20545,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -20906,7 +20906,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -21042,7 +21042,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -22274,7 +22274,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -23158,7 +23158,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -24008,7 +24008,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -24384,7 +24384,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -24594,7 +24594,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -24970,7 +24970,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -25180,7 +25180,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -25556,7 +25556,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -25766,7 +25766,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -26180,7 +26180,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -26432,7 +26432,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -26846,7 +26846,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -27098,7 +27098,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -27512,7 +27512,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -27764,7 +27764,7 @@ export var storyboard = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -28025,7 +28025,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -28161,7 +28161,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -28372,7 +28372,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -28506,7 +28506,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -28640,7 +28640,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -28880,7 +28880,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -29016,7 +29016,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -29201,7 +29201,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -29440,7 +29440,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -29576,7 +29576,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -29832,7 +29832,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -30117,7 +30117,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -30253,7 +30253,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -30497,7 +30497,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -30690,7 +30690,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -30832,7 +30832,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -31099,7 +31099,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -31250,7 +31250,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -31529,7 +31529,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -31672,7 +31672,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -32092,7 +32092,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -32243,7 +32243,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -32523,7 +32523,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -32666,7 +32666,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -33017,7 +33017,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -33152,7 +33152,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -33921,7 +33921,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34039,7 +34039,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34157,7 +34157,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34275,7 +34275,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34393,7 +34393,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34511,7 +34511,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34629,7 +34629,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34824,7 +34824,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -34980,7 +34980,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35098,7 +35098,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35216,7 +35216,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35334,7 +35334,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35452,7 +35452,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35570,7 +35570,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35690,7 +35690,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35808,7 +35808,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -35926,7 +35926,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -36044,7 +36044,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -36162,7 +36162,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -36280,7 +36280,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -36400,7 +36400,7 @@ export var App = (props) => {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -36657,7 +36657,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -36793,7 +36793,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -37071,7 +37071,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -37314,7 +37314,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -37497,7 +37497,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -37680,7 +37680,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -37863,7 +37863,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -38120,7 +38120,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -38256,7 +38256,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -38535,7 +38535,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -38779,7 +38779,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -38963,7 +38963,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -39147,7 +39147,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -39331,7 +39331,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -39588,7 +39588,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -39724,7 +39724,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -40009,7 +40009,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -40259,7 +40259,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -40442,7 +40442,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -40625,7 +40625,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -40808,7 +40808,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -41071,7 +41071,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -41222,7 +41222,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -41461,7 +41461,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -41604,7 +41604,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -41845,7 +41845,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -41958,7 +41958,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -42119,7 +42119,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -42242,7 +42242,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -42365,7 +42365,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -42596,7 +42596,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -42709,7 +42709,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -42994,7 +42994,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -43221,7 +43221,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -43437,7 +43437,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -43550,7 +43550,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -43789,7 +43789,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -43927,7 +43927,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -44143,7 +44143,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -44256,7 +44256,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -44372,7 +44372,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -44596,7 +44596,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -44709,7 +44709,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -44903,7 +44903,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -45046,7 +45046,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -45264,7 +45264,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -45377,7 +45377,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -45662,7 +45662,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -45816,7 +45816,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -45970,7 +45970,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -46187,7 +46187,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -46300,7 +46300,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -46433,7 +46433,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -46695,7 +46695,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -46831,7 +46831,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -47264,7 +47264,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -47387,7 +47387,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -47624,7 +47624,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -47859,7 +47859,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -48018,7 +48018,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -48175,7 +48175,7 @@ export var storyboard = (
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -48419,7 +48419,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -48555,7 +48555,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -48720,7 +48720,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -48854,7 +48854,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -49096,7 +49096,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -49232,7 +49232,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -49348,7 +49348,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -49620,7 +49620,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -49756,7 +49756,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -50063,7 +50063,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -50335,7 +50335,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -50542,7 +50542,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -50719,7 +50719,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -50862,7 +50862,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -51069,7 +51069,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -51246,7 +51246,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -51389,7 +51389,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -51596,7 +51596,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -51773,7 +51773,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -51916,7 +51916,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -52157,7 +52157,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -52293,7 +52293,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -52409,7 +52409,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -52660,7 +52660,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -52796,7 +52796,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -52980,7 +52980,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -53134,7 +53134,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,
@@ -53258,7 +53258,7 @@ Object {
     "isEmotionOrStyledComponent": false,
     "label": null,
     "localFrame": null,
-    "nonRoundedFrame": null,
+    "nonRoundedGlobalFrame": null,
     "specialSizeMeasurements": Object {
       "alignItems": null,
       "borderRadius": null,

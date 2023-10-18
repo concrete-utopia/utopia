@@ -347,7 +347,7 @@ function createFakeMetadataForJSXElement(
       element: right(element),
       globalFrame: canvasRectangle(frame),
       localFrame: localRectangle(frame),
-      nonRoundedFrame: canvasRectangle(frame),
+      nonRoundedGlobalFrame: canvasRectangle(frame),
       componentInstance: false,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: emptySpecialSizeMeasurements,
@@ -382,7 +382,7 @@ function createFakeMetadataForStoryboard(elementPath: ElementPath): ElementInsta
   return {
     globalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     localFrame: localRectangle({ x: 0, y: 0, width: 0, height: 0 }),
-    nonRoundedFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
+    nonRoundedGlobalFrame: canvasRectangle({ x: 0, y: 0, width: 0, height: 0 }),
     elementPath: elementPath,
     element: right(jsxTestElement('Storyboard', [], [])),
     componentInstance: true,

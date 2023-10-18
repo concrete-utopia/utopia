@@ -1753,7 +1753,7 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.localFrame,
     nullableDeepEquality(MaybeInfinityLocalRectangleKeepDeepEquality),
-    (metadata) => metadata.nonRoundedFrame,
+    (metadata) => metadata.nonRoundedGlobalFrame,
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),

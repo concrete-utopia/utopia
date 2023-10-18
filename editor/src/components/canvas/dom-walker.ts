@@ -647,14 +647,14 @@ function collectMetadataForElement(
   tagName: string
   globalFrame: CanvasRectangle
   localFrame: LocalRectangle
-  nonRoundedFrame: CanvasRectangle
+  nonRoundedGlobalFrame: CanvasRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
   textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
   const globalFrame = globalFrameForElement(element, scale, containerRectLazy, 'without-content')
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
-  const nonRoundedFrame = nonRoundedFrameForElement(
+  const nonRoundedGlobalFrame = nonRoundedGlobalFrameForElement(
     element,
     scale,
     containerRectLazy,
@@ -674,7 +674,7 @@ function collectMetadataForElement(
     tagName: tagName,
     globalFrame: globalFrame,
     localFrame: localFrame,
-    nonRoundedFrame: nonRoundedFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
     textContentsMaybe: textContentsMaybe,
   }
@@ -763,7 +763,7 @@ function collectAndCreateMetadataForElement(
     tagName,
     globalFrame,
     localFrame,
-    nonRoundedFrame,
+    nonRoundedGlobalFrame,
     specialSizeMeasurementsObject,
     textContentsMaybe,
   } = collectMetadataForElement(
@@ -791,7 +791,7 @@ function collectAndCreateMetadataForElement(
       left(tagName),
       globalFrame,
       localFrame,
-      nonRoundedFrame,
+      nonRoundedGlobalFrame,
       false,
       false,
       specialSizeMeasurementsObject,
@@ -1106,7 +1106,7 @@ function globalFrameForElement(
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
 
-function nonRoundedFrameForElement(
+function nonRoundedGlobalFrameForElement(
   element: HTMLElement,
   scale: number,
   containerRectLazy: () => CanvasRectangle,

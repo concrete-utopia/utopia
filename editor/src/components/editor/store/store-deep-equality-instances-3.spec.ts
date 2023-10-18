@@ -430,7 +430,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       width: 100,
       height: 200,
     }),
-    nonRoundedFrame: canvasRectangle({
+    nonRoundedGlobalFrame: canvasRectangle({
       x: 10,
       y: 20,
       width: 100,
@@ -552,7 +552,7 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       width: 100,
       height: 200,
     }),
-    nonRoundedFrame: canvasRectangle({
+    nonRoundedGlobalFrame: canvasRectangle({
       x: 10,
       y: 20,
       width: 100,
@@ -700,7 +700,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
-      nonRoundedFrame: canvasRectangle({
+      nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
         width: 100,
@@ -824,7 +824,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
-      nonRoundedFrame: canvasRectangle({
+      nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
         width: 100,
@@ -948,7 +948,7 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
-      nonRoundedFrame: canvasRectangle({
+      nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
         width: 100,

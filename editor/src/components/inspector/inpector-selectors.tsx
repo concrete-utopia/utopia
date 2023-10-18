@@ -67,7 +67,7 @@ export function useComputedSizeRef(prop: 'width' | 'height'): { readonly current
 
     const localFrame =
       nullIfInfinity(
-        MetadataUtils.findElementByElementPath(metadata, elementPath)?.nonRoundedFrame,
+        MetadataUtils.findElementByElementPath(metadata, elementPath)?.nonRoundedGlobalFrame,
       ) ?? zeroRectangle
     return localFrame[prop]
   })
