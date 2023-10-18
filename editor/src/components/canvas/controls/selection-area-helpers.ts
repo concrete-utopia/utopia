@@ -12,6 +12,7 @@ import {
   rectangleContainsRectangle,
   rectangleIntersection,
   windowRectangle,
+  zeroRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { KeysPressed } from '../../../utils/keyboard'
@@ -112,7 +113,12 @@ export const filterUnderSelectionArea = (
       // NOTE: this is a mitigation step for a measuring problem, where overflowing elements'
       // dimensions are not calculated correctly. This should be fixed at the root in the measurements,
       // but until then this should help a bit.
-      if (element.type === 'regular' && !element.zeroSized && !element.selected) {
+      if (
+        element.type === 'regular' &&
+        !element.zeroSized &&
+        !element.selected &&
+        parentScene == null
+      ) {
         return isElementIntersactionActuallyUnderAreaAndVisible(
           metadata,
           scale,
@@ -164,7 +170,7 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
 ): boolean {
   const frame = MetadataUtils.getFrameInCanvasCoords(path, jsxMetadata)
   if (area != null && frame != null && isFiniteRectangle(frame)) {
-    const intersect = rectangleIntersection(area, frame)
+    const intersect = rectangleIntersection(area, frame) ?? zeroRectangle
     if (intersect == null) {
       return false
     }
