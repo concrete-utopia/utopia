@@ -769,9 +769,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
       ])
     }
   })
-  // NOTE: this is skipped because the isElementIntersactionActuallyUnderAreaAndVisible function
-  // is disabled during tests due to it relying on DOM attributes. The test would be good otherwise!
-  xit('ignores elements that are not visible because of overflow', async () => {
+  it('ignores elements that are not visible because of overflow', async () => {
     const renderResult = await renderTestEditorWithCode(
       `
 import * as React from 'react'

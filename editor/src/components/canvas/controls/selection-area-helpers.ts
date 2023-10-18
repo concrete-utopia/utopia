@@ -1,4 +1,3 @@
-import { IS_TEST_ENVIRONMENT } from '../../../common/env-vars'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
@@ -8,6 +7,7 @@ import type {
   WindowRectangle,
 } from '../../../core/shared/math-utils'
 import {
+  canvasPoint,
   isFiniteRectangle,
   rectangleContainsRectangle,
   rectangleIntersection,
@@ -162,10 +162,6 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
   area: CanvasRectangle | null,
   path: ElementPath,
 ): boolean {
-  if (IS_TEST_ENVIRONMENT) {
-    // do not run this during tests as it relies on DOM attributes :(
-    return true
-  }
   const frame = MetadataUtils.getFrameInCanvasCoords(path, jsxMetadata)
   if (area != null && frame != null && isFiniteRectangle(frame)) {
     const intersect = rectangleIntersection(area, frame)
@@ -174,7 +170,11 @@ function isElementIntersactionActuallyUnderAreaAndVisible(
     }
     const pathActuallyUnderArea = getAllTargetsAtPoint(
       [path],
-      canvasPointToWindowPoint(intersect, canvasScale, canvasOffset),
+      canvasPointToWindowPoint(
+        canvasPoint({ x: intersect.x + 1, y: intersect.y + 1 }),
+        canvasScale,
+        canvasOffset,
+      ),
       canvasScale,
       canvasOffset,
       jsxMetadata,
