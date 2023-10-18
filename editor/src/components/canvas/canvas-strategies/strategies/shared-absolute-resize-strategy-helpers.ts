@@ -369,7 +369,6 @@ export function resizeInspectorStrategy(
       _elementPathTree: ElementPathTrees,
       _allElementProps: AllElementProps,
     ): Array<CanvasCommand> | null => {
-      console.log('resizeInspectorStrategy', movement, edgePosition)
       let commands: Array<CanvasCommand> = []
       const changeBoundsResult = changeBounds(
         projectContents,
@@ -381,6 +380,12 @@ export function resizeInspectorStrategy(
         movement,
       )
       commands.push(...changeBoundsResult.commands)
+      console.log(
+        'resizeInspectorStrategy',
+        movement,
+        edgePosition,
+        changeBoundsResult.intendedBounds,
+      )
       commands.push(
         pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'starting-metadata'),
       )
