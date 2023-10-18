@@ -510,7 +510,7 @@ export class Editor {
               this.storedState.unpatchedEditor.projectContents
             const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
               this.boundDispatch,
-              [{ action: 'TRUE_UP_GROUPS' }],
+              [],
               this.storedState,
               this.spyCollector,
             )
