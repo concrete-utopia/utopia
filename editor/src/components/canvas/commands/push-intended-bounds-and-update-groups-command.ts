@@ -222,7 +222,7 @@ function getUpdateResizedGroupChildrenCommands(
             editor.jsxMetadata,
             editor.allElementProps,
             child,
-            'only-explicit-constraints', // TODO make sure to match this in detectConstraintsSetForGroupChild
+            'include-max-content', // TODO make sure to keep this in sync with detectConstraintsSetForGroupChild
           )
 
           const elementMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, child)

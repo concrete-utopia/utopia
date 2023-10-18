@@ -1220,7 +1220,7 @@ export function getConstraintsIncludingImplicitForElement(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   element: ElementPath,
-  includeImplicitConstraints: 'include-implicit-constraints' | 'only-explicit-constraints',
+  includeImplicitConstraints: 'include-max-content' | 'only-explicit-constraints',
 ) {
   let constraints: Set<LayoutPinnedProp> = new Set(
     getSafeGroupChildConstraintsArray(allElementProps, element),
@@ -1233,10 +1233,10 @@ export function getConstraintsIncludingImplicitForElement(
   // collect implicit constraints
   const jsxElement = MetadataUtils.getJSXElementFromMetadata(metadata, element)
   if (jsxElement != null) {
-    if (isHugFromStyleAttribute(jsxElement.props, 'width', 'include-all-hugs')) {
+    if (isHugFromStyleAttribute(jsxElement.props, 'width', 'only-max-content')) {
       constraints.add('width')
     }
-    if (isHugFromStyleAttribute(jsxElement.props, 'height', 'include-all-hugs')) {
+    if (isHugFromStyleAttribute(jsxElement.props, 'height', 'only-max-content')) {
       constraints.add('height')
     }
   }
