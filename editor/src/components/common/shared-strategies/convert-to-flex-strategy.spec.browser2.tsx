@@ -436,7 +436,6 @@ describe('Smart Convert To Flex', () => {
         position: 'absolute',
       }}
       data-uid='zero-sized'
-      data-testid='zero-sized'
     >
       <img
         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
@@ -449,6 +448,7 @@ describe('Smart Convert To Flex', () => {
           top: 16,
         }}
         data-testid='first-child'
+        data-uid='first-child'
       />
       <img
         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
@@ -460,7 +460,7 @@ describe('Smart Convert To Flex', () => {
           left: 79,
           top: 16,
         }}
-        data-testid='second-child'
+        data-uid='second-child'
       />
       <img
         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
@@ -472,7 +472,7 @@ describe('Smart Convert To Flex', () => {
           left: 143,
           top: 16,
         }}
-        data-testid='third-child'
+        data-uid='third-child'
       />
     </div>
   </div>`),
@@ -482,27 +482,32 @@ describe('Smart Convert To Flex', () => {
     const { top: firstChildTopBeforeFlexConversion, left: firstChildLeftBeforeFlexConversion } =
       renderResult.renderedDOM.getByTestId('first-child').style
 
-    await selectComponentsForTest(renderResult, [
-      EP.appendNewElementPath(TestScenePath, ['root', 'zero-sized']),
-    ])
+    const containerPath = EP.appendNewElementPath(TestScenePath, ['root', 'zero-sized'])
+    await selectComponentsForTest(renderResult, [containerPath])
     await expectSingleUndo2Saves(renderResult, () => pressShiftA(renderResult))
 
-    const { top, left } = renderResult.renderedDOM.getByTestId('zero-sized').style
-    // the first child didn't move, and the top/left of the flex container is the same as the first child's top/left
-    expect({ top, left }).toEqual({
+    const { top: containerTop, left: containerLeft } =
+      renderResult.getEditorState().editor.allElementProps[EP.toString(containerPath)]['style']
+
+    expect({
       top: firstChildTopBeforeFlexConversion,
       left: firstChildLeftBeforeFlexConversion,
+    }).toEqual({
+      top: `${containerTop}px`,
+      left: `${containerLeft}px`,
     })
 
-    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`<div
     style={{
       height: '100%',
       width: '100%',
       contain: 'layout',
     }}
+    data-uid='root'
   >
     <div
+      data-uid='zero-sized'
       style={{
         position: 'absolute',
         top: 16,
@@ -513,23 +518,25 @@ describe('Smart Convert To Flex', () => {
         flexDirection: 'row',
         gap: 13,
       }}
-      data-testid='zero-sized'
     >
       <img
         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
         data-testid='first-child'
+        data-uid='first-child'
       />
       <img
         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
+        data-uid='second-child'
       />
       <img
         src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
         alt='Utopia logo'
         style={{ width: 51, height: 65 }}
+        data-uid='third-child'
       />
     </div>
   </div>
