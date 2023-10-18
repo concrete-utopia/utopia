@@ -352,7 +352,7 @@ function detectConstraintsSetForGroupChild(
     metadata,
     allElementProps,
     target,
-    'only-explicit-constraints', // TODO make sure to match this in getUpdateResizedGroupChildrenCommands
+    'include-max-content', // TODO make sure to keep this in sync with getUpdateResizedGroupChildrenCommands
   )
 
   const element = MetadataUtils.findElementByElementPath(metadata, target)
