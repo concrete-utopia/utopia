@@ -81,6 +81,7 @@ import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
 import {
   getConvertIndividualElementToAbsoluteCommands,
+  isHugFromStyleAttribute,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
 
@@ -745,13 +746,6 @@ function createSetParentsToFixedSizeCommands(
   return []
 }
 
-const HuggingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
-
 function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
-  const simpleAttribute = defaultEither(
-    null,
-    getSimpleAttributeAtPath(right(element.props), PP.create('style', property)),
-  )
-
-  return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
+  return isHugFromStyleAttribute(element.props, property, 'include-all-hugs')
 }

@@ -17,8 +17,10 @@ import {
   getJSXElementFromProjectContents,
   trueUpElementChanged,
 } from '../../../editor/store/editor-state'
-import { getSafeGroupChildConstraintsArray } from '../../../inspector/fill-hug-fixed-control'
-import { detectFillHugFixedState } from '../../../inspector/inspector-common'
+import {
+  detectFillHugFixedState,
+  getConstraintsIncludingImplicitForElement,
+} from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
 import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../canvas-types'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
@@ -415,7 +417,12 @@ function getConstrainedSizes(
     EP.isDescendantOf(element.elementPath, path),
   )
   for (const element of descendants) {
-    const constraintsArray = getSafeGroupChildConstraintsArray(allElementProps, element.elementPath)
+    const constraintsArray = getConstraintsIncludingImplicitForElement(
+      jsxMetadata,
+      allElementProps,
+      element.elementPath,
+      'only-explicit-constraints', // if we set this to include-implicit-constraints, we can probably delete isDimensionConstrained
+    )
     const constraints = {
       width: isDimensionConstrained(jsxMetadata, element.elementPath, constraintsArray, 'width'),
       height: isDimensionConstrained(jsxMetadata, element.elementPath, constraintsArray, 'height'),
