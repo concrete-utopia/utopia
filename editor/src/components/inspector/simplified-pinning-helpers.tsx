@@ -40,6 +40,8 @@ type HorizontalPinRequests =
   | 'left-and-width'
   | 'right-and-width'
   | 'left-and-right'
+  | 'left'
+  | 'right'
   | 'width'
   | 'scale-horizontal'
 
@@ -47,6 +49,8 @@ type VerticalPinRequests =
   | 'top-and-height'
   | 'bottom-and-height'
   | 'top-and-bottom'
+  | 'top'
+  | 'bottom'
   | 'height'
   | 'scale-vertical'
 
@@ -69,7 +73,11 @@ type DetectedPins = {
     | 'mixed'
 }
 
-export const FrameChildHorizontalPinChangeOptions = {
+export const FrameChildHorizontalPinChangeOptions: {
+  [key in Exclude<HorizontalPinRequests, 'left' | 'right' | 'width'>]: SelectOption & {
+    value: HorizontalPinRequests
+  }
+} = {
   'left-and-width': {
     value: 'left-and-width',
     label: 'Left',
@@ -91,10 +99,33 @@ export const FrameChildHorizontalPinChangeOptions = {
 export const GroupChildHorizontalPinChangeOptions: {
   [key in HorizontalPinRequests]: SelectOption & { value: HorizontalPinRequests }
 } = {
-  ...FrameChildHorizontalPinChangeOptions,
+  left: {
+    value: 'left',
+    label: 'Left',
+  },
+  right: {
+    value: 'right',
+    label: 'Right',
+  },
   width: {
     value: 'width',
     label: 'Width',
+  },
+  'left-and-width': {
+    value: 'left-and-width',
+    label: 'Left and Width',
+  },
+  'right-and-width': {
+    value: 'right-and-width',
+    label: 'Right and Width',
+  },
+  'left-and-right': {
+    value: 'left-and-right',
+    label: 'Left and Right',
+  },
+  'scale-horizontal': {
+    value: 'scale-horizontal',
+    label: 'Scale',
   },
 } as const
 
@@ -118,7 +149,11 @@ export const DetectedHorizontalPinChangeOptions = {
   },
 } as const
 
-export const FrameChildVerticalPinChangeOptions = {
+export const FrameChildVerticalPinChangeOptions: {
+  [key in Exclude<VerticalPinRequests, 'top' | 'bottom' | 'height'>]: SelectOption & {
+    value: VerticalPinRequests
+  }
+} = {
   'top-and-height': {
     value: 'top-and-height',
     label: 'Top',
@@ -140,10 +175,33 @@ export const FrameChildVerticalPinChangeOptions = {
 export const GroupChildVerticalPinChangeOptions: {
   [key in VerticalPinRequests]: SelectOption & { value: VerticalPinRequests }
 } = {
-  ...FrameChildVerticalPinChangeOptions,
+  top: {
+    value: 'top',
+    label: 'Top',
+  },
+  bottom: {
+    value: 'bottom',
+    label: 'Bottom',
+  },
   height: {
     value: 'height',
     label: 'Height',
+  },
+  'top-and-height': {
+    value: 'top-and-height',
+    label: 'Top and Height',
+  },
+  'bottom-and-height': {
+    value: 'bottom-and-height',
+    label: 'Bottom and Height',
+  },
+  'top-and-bottom': {
+    value: 'top-and-bottom',
+    label: 'Top and Bottom',
+  },
+  'scale-vertical': {
+    value: 'scale-vertical',
+    label: 'Scale',
   },
 } as const
 
@@ -431,9 +489,11 @@ export function getFrameChangeActionsForFrameChild(
   const pinChange = getPinChanges(metadata, propertyTarget, targets)
   switch (requestedPins) {
     case 'left-and-width':
+    case 'left':
     case 'width':
       return pinChange(['left', 'width'], 'horizontal', 'px')
     case 'right-and-width':
+    case 'right':
       return pinChange(['right', 'width'], 'horizontal', 'px')
     case 'left-and-right':
       return pinChange(['left', 'right'], 'horizontal', 'px')
@@ -441,9 +501,11 @@ export function getFrameChangeActionsForFrameChild(
       return pinChange(['left', 'width'], 'horizontal', '%')
 
     case 'top-and-height':
+    case 'top':
     case 'height':
       return pinChange(['top', 'height'], 'vertical', 'px')
     case 'bottom-and-height':
+    case 'bottom':
       return pinChange(['bottom', 'height'], 'vertical', 'px')
     case 'top-and-bottom':
       return pinChange(['top', 'bottom'], 'vertical', 'px')
@@ -548,6 +610,16 @@ export function getConstraintAndFrameChangeActionsForGroupChild(
         ...setConstraintsForDimension(['left', 'right'], 'horizontal'),
         ...pinChange(['left', 'right'], 'horizontal', 'px'),
       ]
+    case 'left':
+      return [
+        ...setConstraintsForDimension(['left'], 'horizontal'),
+        ...pinChange(['left', 'width'], 'horizontal', 'px'),
+      ]
+    case 'right':
+      return [
+        ...setConstraintsForDimension(['right'], 'horizontal'),
+        ...pinChange(['right', 'width'], 'horizontal', 'px'),
+      ]
     case 'width':
       return [
         ...setConstraintsForDimension(['width'], 'horizontal'),
@@ -573,6 +645,16 @@ export function getConstraintAndFrameChangeActionsForGroupChild(
       return [
         ...setConstraintsForDimension(['top', 'bottom'], 'vertical'),
         ...pinChange(['top', 'bottom'], 'vertical', 'px'),
+      ]
+    case 'top':
+      return [
+        ...setConstraintsForDimension(['top'], 'vertical'),
+        ...pinChange(['top', 'height'], 'vertical', 'px'),
+      ]
+    case 'bottom':
+      return [
+        ...setConstraintsForDimension(['bottom'], 'vertical'),
+        ...pinChange(['bottom', 'height'], 'vertical', 'px'),
       ]
     case 'height':
       return [
