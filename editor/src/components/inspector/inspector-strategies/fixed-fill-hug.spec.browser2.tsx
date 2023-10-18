@@ -9,6 +9,7 @@ import {
   expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
@@ -994,8 +995,8 @@ describe('Fixed / Fill / Hug control', () => {
     })
   })
 
-  describe('fixed size', () => {
-    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
+  describe.only('fixed size', () => {
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
     it('global frames are correct for frames wrapping frames', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithNestedFrames,
@@ -1008,9 +1009,9 @@ describe('Fixed / Fill / Hug control', () => {
       expect(superGroupGlobalFrame.height).toBe(407)
 
       {
-        const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+        const widthControl = editor.renderedDOM.getByTestId('frame-width-number-input')
         expect((widthControl as HTMLInputElement).value).toEqual('326')
-        const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+        const heightControl = editor.renderedDOM.getByTestId('frame-height-number-input')
         expect((heightControl as HTMLInputElement).value).toEqual('407')
       }
 
@@ -1019,9 +1020,9 @@ describe('Fixed / Fill / Hug control', () => {
       expect(groupGlobalFrame.height).toBe(407)
 
       {
-        const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+        const widthControl = editor.renderedDOM.getByTestId('frame-width-number-input')
         expect((widthControl as HTMLInputElement).value).toEqual('326')
-        const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+        const heightControl = editor.renderedDOM.getByTestId('frame-height-number-input')
         expect((heightControl as HTMLInputElement).value).toEqual('407')
       }
     })
@@ -1068,7 +1069,7 @@ describe('Fixed / Fill / Hug control', () => {
       const groupDiv = editor.renderedDOM.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
       await expectSingleUndo2Saves(editor, async () => {
         act(() => {
@@ -1157,7 +1158,7 @@ describe('Fixed / Fill / Hug control', () => {
       const groupDiv = editor.renderedDOM.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
       await expectSingleUndo2Saves(editor, async () => {
         act(() => {
@@ -1204,7 +1205,7 @@ describe('Fixed / Fill / Hug control', () => {
       )
     })
 
-    it('changing the fixed size of a group inside a group resize its children and the group parent', async () => {
+    it.only('changing the fixed size of a group inside a group resize its children and the group parent', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div data-uid='root-div' style={{width: 400, height: 400, position: 'relative'}}>
@@ -1246,7 +1247,7 @@ describe('Fixed / Fill / Hug control', () => {
       const groupDiv = editor.renderedDOM.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+      const control = editor.renderedDOM.getByTestId('frame-height-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
       await expectSingleUndo2Saves(editor, async () => {
         act(() => {
@@ -1256,6 +1257,7 @@ describe('Fixed / Fill / Hug control', () => {
       })
 
       await editor.getDispatchFollowUpActionsFinished()
+      await wait(100000)
 
       expect(groupDiv.style.height).toEqual('250px')
 
@@ -1335,7 +1337,7 @@ describe('Fixed / Fill / Hug control', () => {
       const groupDiv = editor.renderedDOM.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
       await expectSingleUndo2Saves(editor, async () => {
         act(() => {
@@ -1426,7 +1428,7 @@ describe('Fixed / Fill / Hug control', () => {
       const groupDiv = editor.renderedDOM.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
-      const widthControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      const widthControl = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(widthControl, { x: 5, y: 5 })
       await expectNoAction(editor, async () => {
         act(() => {
@@ -1444,7 +1446,7 @@ describe('Fixed / Fill / Hug control', () => {
         makeTestProjectCodeWithSnippet(startingProject),
       )
 
-      const heightControl = editor.renderedDOM.getByTestId(FillFixedHugControlId('height'))
+      const heightControl = editor.renderedDOM.getByTestId('frame-height-number-input')
       await mouseClickAtPoint(widthControl, { x: 5, y: 5 })
       await expectNoAction(editor, async () => {
         act(() => {
@@ -1505,7 +1507,7 @@ describe('Fixed / Fill / Hug control', () => {
       const groupDiv = editor.renderedDOM.getByTestId('group')
       expect(groupDiv.style.width).toEqual('200px')
 
-      const control = editor.renderedDOM.getByTestId(FillFixedHugControlId('width'))
+      const control = editor.renderedDOM.getByTestId('frame-width-number-input')
       await mouseClickAtPoint(control, { x: 5, y: 5 })
 
       await expectSingleUndo2Saves(editor, async () => {

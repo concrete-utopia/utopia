@@ -369,6 +369,7 @@ export function resizeInspectorStrategy(
       _elementPathTree: ElementPathTrees,
       _allElementProps: AllElementProps,
     ): Array<CanvasCommand> | null => {
+      console.log('resizeInspectorStrategy', movement, edgePosition)
       let commands: Array<CanvasCommand> = []
       const changeBoundsResult = changeBounds(
         projectContents,
