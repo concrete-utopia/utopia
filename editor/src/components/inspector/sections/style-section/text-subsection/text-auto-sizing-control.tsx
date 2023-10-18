@@ -22,6 +22,7 @@ import {
   setPropHugStrategies,
 } from '../../../inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
+import { fixedSizeDimensionHandlingText } from '../../../../text-editor/text-handling'
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
@@ -113,18 +114,23 @@ export const TextAutoSizingControl = React.memo(() => {
 
   const onSubmitValue = React.useCallback(
     (newValue: any) => {
+      if (selectedViewsRef.current.length === 0) {
+        return
+      }
       if (newValue === 'fixed') {
+        const width = fixedSizeDimensionHandlingText(
+          metadataRef.current,
+          elementPathTreeRef.current,
+          selectedViewsRef.current[0],
+          widthComputedValue.current ?? 0,
+        )
         const widthCommands =
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
             elementPathTreeRef.current,
             allElementPropsRef.current,
-            setPropFixedSizeStrategies(
-              'always',
-              'horizontal',
-              cssNumber(widthComputedValue.current ?? 0, null),
-            ),
+            setPropFixedSizeStrategies('always', 'horizontal', cssNumber(width, null)),
           ) ?? []
         const heightCommands =
           commandsForFirstApplicableStrategy(
