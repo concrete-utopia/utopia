@@ -470,7 +470,12 @@ export function runDomWalker({
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
     const containerRect = lazyValue(() => {
-      return getCanvasRectangleFromElement(canvasRootContainer, scale, 'without-content')
+      return getCanvasRectangleFromElement(
+        canvasRootContainer,
+        scale,
+        'without-content',
+        'nearest-half',
+      )
     })
 
     const validPaths: Array<ElementPath> | null = optionalMap(
@@ -652,13 +657,20 @@ function collectMetadataForElement(
   textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy, 'without-content')
-  const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
-  const nonRoundedGlobalFrame = nonRoundedGlobalFrameForElement(
+  const globalFrame = globalFrameForElement(
     element,
     scale,
     containerRectLazy,
     'without-content',
+    'nearest-half',
+  )
+  const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+  const nonRoundedGlobalFrame = globalFrameForElement(
+    element,
+    scale,
+    containerRectLazy,
+    'without-content',
+    'no-rounding',
   )
 
   const textContentsMaybe = element.textContent
@@ -874,12 +886,24 @@ function getSpecialMeasurements(
 
   const coordinateSystemBounds =
     element.offsetParent instanceof HTMLElement
-      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy, 'without-content')
+      ? globalFrameForElement(
+          element.offsetParent,
+          scale,
+          containerRectLazy,
+          'without-content',
+          'nearest-half',
+        )
       : null
 
   const immediateParentBounds =
     element.parentElement instanceof HTMLElement
-      ? globalFrameForElement(element.parentElement, scale, containerRectLazy, 'without-content')
+      ? globalFrameForElement(
+          element.parentElement,
+          scale,
+          containerRectLazy,
+          'without-content',
+          'nearest-half',
+        )
       : null
 
   const parentElementStyle =
@@ -963,6 +987,7 @@ function getSpecialMeasurements(
     scale,
     containerRectLazy,
     'without-content',
+    'nearest-half',
   )
 
   const globalFrameWithTextContent = globalFrameForElement(
@@ -970,6 +995,7 @@ function getSpecialMeasurements(
     scale,
     containerRectLazy,
     'with-content',
+    'nearest-half',
   )
 
   const globalContentBoxForChildren = canvasRectangle({
@@ -1015,7 +1041,7 @@ function getSpecialMeasurements(
   const textDecorationLine = elementStyle.textDecorationLine
 
   const textBounds = elementContainsOnlyText(element)
-    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content'), {
+    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content', 'nearest-half'), {
         w:
           maybeValueFromComputedStyle(elementStyle.paddingLeft) +
           maybeValueFromComputedStyle(elementStyle.paddingRight) +
@@ -1100,19 +1126,9 @@ function globalFrameForElement(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   withContent: 'without-content' | 'with-content',
+  rounding: 'nearest-half' | 'no-rounding',
 ) {
-  const elementRect = getCanvasRectangleFromElement(element, scale, withContent)
-
-  return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
-}
-
-function nonRoundedGlobalFrameForElement(
-  element: HTMLElement,
-  scale: number,
-  containerRectLazy: () => CanvasRectangle,
-  withContent: 'without-content' | 'with-content',
-) {
-  const elementRect = getNonRoundedCanvasRectangleFromElement(element, scale, withContent)
+  const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
 
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
@@ -1243,6 +1259,7 @@ function walkSceneInner(
     globalProps.scale,
     globalProps.containerRectLazy,
     'without-content',
+    'nearest-half',
   )
 
   let childPaths: Array<ElementPath> = []
@@ -1321,6 +1338,7 @@ function walkElements(
       globalProps.scale,
       globalProps.containerRectLazy,
       'without-content',
+      'nearest-half',
     )
 
     // Check this is a path we're interested in, otherwise skip straight to the children

@@ -3,7 +3,7 @@ import type { CanvasRectangle } from './math-utils'
 import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
-import { assertNever } from './utils'
+import { assertNever, identity } from './utils'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -229,69 +229,25 @@ export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
   withContent: 'without-content' | 'with-content' | 'only-content',
+  rounding: 'nearest-half' | 'no-rounding',
 ): CanvasRectangle {
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
+
+  const roundingFn =
+    rounding === 'nearest-half'
+      ? roundToNearestHalf
+      : rounding === 'no-rounding'
+      ? identity
+      : assertNever(rounding)
 
   const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
     // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
     return scaleRect(
       canvasRectangle({
-        x: roundToNearestHalf(rect.left),
-        y: roundToNearestHalf(rect.top),
-        width: roundToNearestHalf(rect.width),
-        height: roundToNearestHalf(rect.height),
-      }),
-      scale,
-    )
-  }
-
-  const boundingRect = element.getBoundingClientRect()
-  const elementRect = domRectToScaledCanvasRectangle(boundingRect)
-  if (withContent === 'without-content') {
-    return elementRect
-  }
-
-  const range = document.createRange()
-  switch (withContent) {
-    case 'only-content':
-      range.selectNodeContents(element)
-      break
-    case 'with-content':
-      range.selectNode(element)
-      break
-    default:
-      assertNever(withContent)
-  }
-  const rangeBounding =
-    // this is needed because jsdom can throw an error on the range.getBoundingClientRect() call, see https://github.com/jsdom/jsdom/issues/3002
-    typeof range.getBoundingClientRect === 'function' ? range.getBoundingClientRect() : boundingRect
-  const contentRect = domRectToScaledCanvasRectangle(rangeBounding)
-
-  switch (withContent) {
-    case 'only-content':
-      return contentRect
-    case 'with-content':
-      return boundingRectangle(elementRect, contentRect)
-    default:
-      assertNever(withContent)
-  }
-}
-
-export function getNonRoundedCanvasRectangleFromElement(
-  element: HTMLElement,
-  canvasScale: number,
-  withContent: 'without-content' | 'with-content' | 'only-content',
-): CanvasRectangle {
-  const scale = canvasScale < 1 ? 1 / canvasScale : 1
-
-  const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
-    // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
-    return scaleRect(
-      canvasRectangle({
-        x: rect.left,
-        y: rect.top,
-        width: rect.width,
-        height: rect.height,
+        x: roundingFn(rect.left),
+        y: roundingFn(rect.top),
+        width: roundingFn(rect.width),
+        height: roundingFn(rect.height),
       }),
       scale,
     )
