@@ -40,6 +40,8 @@ type HorizontalPinRequests =
   | 'left-and-width'
   | 'right-and-width'
   | 'left-and-right'
+  | 'left'
+  | 'right'
   | 'width'
   | 'scale-horizontal'
 
@@ -47,29 +49,23 @@ type VerticalPinRequests =
   | 'top-and-height'
   | 'bottom-and-height'
   | 'top-and-bottom'
+  | 'top'
+  | 'bottom'
   | 'height'
   | 'scale-vertical'
 
 export type RequestedPins = HorizontalPinRequests | VerticalPinRequests
 
-type DetectedPins = {
-  horizontal:
-    | HorizontalPinRequests
-    | 'left'
-    | 'right'
-    | 'width'
-    | 'group-child-error-percentage'
-    | 'mixed'
-  vertical:
-    | VerticalPinRequests
-    | 'top'
-    | 'bottom'
-    | 'height'
-    | 'group-child-error-percentage'
-    | 'mixed'
+export type DetectedPins = {
+  horizontal: HorizontalPinRequests | 'group-child-error-percentage' | 'mixed'
+  vertical: VerticalPinRequests | 'group-child-error-percentage' | 'mixed'
 }
 
-export const FrameChildHorizontalPinChangeOptions = {
+export const FrameChildHorizontalPinChangeOptions: {
+  [key in Exclude<HorizontalPinRequests, 'left' | 'right' | 'width'>]: SelectOption & {
+    value: HorizontalPinRequests
+  }
+} = {
   'left-and-width': {
     value: 'left-and-width',
     label: 'Left',
@@ -91,15 +87,6 @@ export const FrameChildHorizontalPinChangeOptions = {
 export const GroupChildHorizontalPinChangeOptions: {
   [key in HorizontalPinRequests]: SelectOption & { value: HorizontalPinRequests }
 } = {
-  ...FrameChildHorizontalPinChangeOptions,
-  width: {
-    value: 'width',
-    label: 'Width',
-  },
-} as const
-
-export const DetectedHorizontalPinChangeOptions = {
-  ...GroupChildHorizontalPinChangeOptions,
   left: {
     value: 'left',
     label: 'Left',
@@ -107,6 +94,46 @@ export const DetectedHorizontalPinChangeOptions = {
   right: {
     value: 'right',
     label: 'Right',
+  },
+  width: {
+    value: 'width',
+    label: 'Width',
+  },
+  'left-and-width': {
+    value: 'left-and-width',
+    label: 'Left and Width',
+  },
+  'right-and-width': {
+    value: 'right-and-width',
+    label: 'Right and Width',
+  },
+  'left-and-right': {
+    value: 'left-and-right',
+    label: 'Left and Right',
+  },
+  'scale-horizontal': {
+    value: 'scale-horizontal',
+    label: 'Scale',
+  },
+} as const
+
+export const DetectedFrameChildHorizontalPinChangeOptions: {
+  [key in DetectedPins['horizontal']]: SelectOption & {
+    value: DetectedPins['horizontal']
+  }
+} = {
+  ...FrameChildHorizontalPinChangeOptions,
+  left: {
+    value: 'left',
+    label: 'Left',
+  },
+  right: {
+    value: 'right',
+    label: 'Right',
+  },
+  width: {
+    value: 'width',
+    label: 'Width',
   },
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
@@ -118,7 +145,27 @@ export const DetectedHorizontalPinChangeOptions = {
   },
 } as const
 
-export const FrameChildVerticalPinChangeOptions = {
+export const DetectedGroupChildHorizontalPinChangeOptions: {
+  [key in DetectedPins['horizontal']]: SelectOption & {
+    value: DetectedPins['horizontal']
+  }
+} = {
+  ...GroupChildHorizontalPinChangeOptions,
+  'group-child-error-percentage': {
+    value: 'group-child-error-percentage',
+    label: 'Mixed*', // todo write something more clever!
+  },
+  mixed: {
+    value: 'mixed',
+    label: 'Mixed',
+  },
+} as const
+
+export const FrameChildVerticalPinChangeOptions: {
+  [key in Exclude<VerticalPinRequests, 'top' | 'bottom' | 'height'>]: SelectOption & {
+    value: VerticalPinRequests
+  }
+} = {
   'top-and-height': {
     value: 'top-and-height',
     label: 'Top',
@@ -140,15 +187,6 @@ export const FrameChildVerticalPinChangeOptions = {
 export const GroupChildVerticalPinChangeOptions: {
   [key in VerticalPinRequests]: SelectOption & { value: VerticalPinRequests }
 } = {
-  ...FrameChildVerticalPinChangeOptions,
-  height: {
-    value: 'height',
-    label: 'Height',
-  },
-} as const
-
-export const DetectedVerticalPinChangeOptions = {
-  ...GroupChildVerticalPinChangeOptions,
   top: {
     value: 'top',
     label: 'Top',
@@ -157,6 +195,62 @@ export const DetectedVerticalPinChangeOptions = {
     value: 'bottom',
     label: 'Bottom',
   },
+  height: {
+    value: 'height',
+    label: 'Height',
+  },
+  'top-and-height': {
+    value: 'top-and-height',
+    label: 'Top and Height',
+  },
+  'bottom-and-height': {
+    value: 'bottom-and-height',
+    label: 'Bottom and Height',
+  },
+  'top-and-bottom': {
+    value: 'top-and-bottom',
+    label: 'Top and Bottom',
+  },
+  'scale-vertical': {
+    value: 'scale-vertical',
+    label: 'Scale',
+  },
+} as const
+
+export const DetectedFrameChildVerticalPinChangeOptions: {
+  [key in DetectedPins['vertical']]: SelectOption & {
+    value: DetectedPins['vertical']
+  }
+} = {
+  ...FrameChildVerticalPinChangeOptions,
+  top: {
+    value: 'top',
+    label: 'Top',
+  },
+  bottom: {
+    value: 'bottom',
+    label: 'Bottom',
+  },
+  height: {
+    value: 'height',
+    label: 'Height',
+  },
+  'group-child-error-percentage': {
+    value: 'group-child-error-percentage',
+    label: 'Mixed*', // todo write something more clever!
+  },
+  mixed: {
+    value: 'mixed',
+    label: 'Mixed',
+  },
+} as const
+
+export const DetectedGroupChildVerticalPinChangeOptions: {
+  [key in DetectedPins['vertical']]: SelectOption & {
+    value: DetectedPins['vertical']
+  }
+} = {
+  ...GroupChildVerticalPinChangeOptions,
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
     label: 'Mixed*', // todo write something more clever!
@@ -392,25 +486,48 @@ export function getFixedPointsForPinning(pins: DetectedPins): FramePinsInfo {
   return {
     left: {
       isPrimaryPosition:
-        pins.horizontal === 'left-and-right' || pins.horizontal === 'left-and-width',
+        pins.horizontal === 'left-and-right' ||
+        pins.horizontal === 'left-and-width' ||
+        pins.horizontal === 'left',
       isRelativePosition: false,
     },
     top: {
-      isPrimaryPosition: pins.vertical === 'top-and-bottom' || pins.vertical === 'top-and-height',
+      isPrimaryPosition:
+        pins.vertical === 'top-and-bottom' ||
+        pins.vertical === 'top-and-height' ||
+        pins.vertical === 'top',
       isRelativePosition: false,
     },
     bottom: {
       isPrimaryPosition:
-        pins.vertical === 'top-and-bottom' || pins.vertical === 'bottom-and-height',
+        pins.vertical === 'top-and-bottom' ||
+        pins.vertical === 'bottom-and-height' ||
+        pins.vertical === 'bottom',
       isRelativePosition: false,
     },
     right: {
       isPrimaryPosition:
-        pins.horizontal === 'left-and-right' || pins.horizontal === 'right-and-width',
+        pins.horizontal === 'left-and-right' ||
+        pins.horizontal === 'right-and-width' ||
+        pins.horizontal === 'right',
       isRelativePosition: false,
     },
-    width: ignore,
-    height: ignore,
+    width: {
+      isPrimaryPosition:
+        pins.horizontal === 'left-and-width' ||
+        pins.horizontal === 'right-and-width' ||
+        pins.horizontal === 'width' ||
+        pins.horizontal === 'scale-horizontal',
+      isRelativePosition: pins.horizontal === 'scale-horizontal',
+    },
+    height: {
+      isPrimaryPosition:
+        pins.vertical === 'top-and-height' ||
+        pins.vertical === 'bottom-and-height' ||
+        pins.vertical === 'height' ||
+        pins.vertical === 'scale-vertical',
+      isRelativePosition: pins.vertical === 'scale-vertical',
+    },
     centerX:
       pins.horizontal === 'scale-horizontal'
         ? { isPrimaryPosition: true, isRelativePosition: true }
@@ -431,9 +548,11 @@ export function getFrameChangeActionsForFrameChild(
   const pinChange = getPinChanges(metadata, propertyTarget, targets)
   switch (requestedPins) {
     case 'left-and-width':
+    case 'left':
     case 'width':
       return pinChange(['left', 'width'], 'horizontal', 'px')
     case 'right-and-width':
+    case 'right':
       return pinChange(['right', 'width'], 'horizontal', 'px')
     case 'left-and-right':
       return pinChange(['left', 'right'], 'horizontal', 'px')
@@ -441,9 +560,11 @@ export function getFrameChangeActionsForFrameChild(
       return pinChange(['left', 'width'], 'horizontal', '%')
 
     case 'top-and-height':
+    case 'top':
     case 'height':
       return pinChange(['top', 'height'], 'vertical', 'px')
     case 'bottom-and-height':
+    case 'bottom':
       return pinChange(['bottom', 'height'], 'vertical', 'px')
     case 'top-and-bottom':
       return pinChange(['top', 'bottom'], 'vertical', 'px')
@@ -548,6 +669,16 @@ export function getConstraintAndFrameChangeActionsForGroupChild(
         ...setConstraintsForDimension(['left', 'right'], 'horizontal'),
         ...pinChange(['left', 'right'], 'horizontal', 'px'),
       ]
+    case 'left':
+      return [
+        ...setConstraintsForDimension(['left'], 'horizontal'),
+        ...pinChange(['left', 'width'], 'horizontal', 'px'),
+      ]
+    case 'right':
+      return [
+        ...setConstraintsForDimension(['right'], 'horizontal'),
+        ...pinChange(['right', 'width'], 'horizontal', 'px'),
+      ]
     case 'width':
       return [
         ...setConstraintsForDimension(['width'], 'horizontal'),
@@ -573,6 +704,16 @@ export function getConstraintAndFrameChangeActionsForGroupChild(
       return [
         ...setConstraintsForDimension(['top', 'bottom'], 'vertical'),
         ...pinChange(['top', 'bottom'], 'vertical', 'px'),
+      ]
+    case 'top':
+      return [
+        ...setConstraintsForDimension(['top'], 'vertical'),
+        ...pinChange(['top', 'height'], 'vertical', 'px'),
+      ]
+    case 'bottom':
+      return [
+        ...setConstraintsForDimension(['bottom'], 'vertical'),
+        ...pinChange(['bottom', 'height'], 'vertical', 'px'),
       ]
     case 'height':
       return [
