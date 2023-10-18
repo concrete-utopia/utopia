@@ -340,38 +340,36 @@ interface PinWidthControlProps {
 export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <SquareButton onClick={props.toggleWidth} highlight={true} spotlight={true}>
-      <svg width='20' height='20'>
-        <g
-          id='dimensioncontrols-pin-width'
-          stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Width)}
-        >
-          <path
-            d={`M${DimensionStart},${VerticalDimensionButtStart} l0,${DimensionButt}`}
-            id='dimensioncontrols-pin-width-EdgeEnd-l'
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalDimensionEnd},${VerticalDimensionButtStart} l0,${DimensionButt}`}
-            id='dimensioncontrols-pin-width-EdgeEnd-r'
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${DimensionStart},${DimensionVerticalMid} L${HorizontalDimensionEnd},${DimensionVerticalMid}`}
-            id='dimensioncontrols-pin-width-line'
-            strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Width)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M 0,0 0,${DimensionHeight} ${DimensionWidth},0 ${DimensionWidth},${DimensionHeight} z`}
-            strokeLinecap='butt'
-            id='dimensioncontrols-pin-width-transparent'
-            stroke='transparent'
-            fill='transparent'
-          />
-        </g>
-      </svg>
-    </SquareButton>
+    <svg width='20' height='20'>
+      <g
+        id='dimensioncontrols-pin-width'
+        stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Width)}
+      >
+        <path
+          d={`M${DimensionStart},${VerticalDimensionButtStart} l0,${DimensionButt}`}
+          id='dimensioncontrols-pin-width-EdgeEnd-l'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${HorizontalDimensionEnd},${VerticalDimensionButtStart} l0,${DimensionButt}`}
+          id='dimensioncontrols-pin-width-EdgeEnd-r'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${DimensionStart},${DimensionVerticalMid} L${HorizontalDimensionEnd},${DimensionVerticalMid}`}
+          id='dimensioncontrols-pin-width-line'
+          strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Width)}
+          strokeLinecap='round'
+        />
+        <path
+          d={`M 0,0 0,${DimensionHeight} ${DimensionWidth},0 ${DimensionWidth},${DimensionHeight} z`}
+          strokeLinecap='butt'
+          id='dimensioncontrols-pin-width-transparent'
+          stroke='transparent'
+          fill='transparent'
+        />
+      </g>
+    </svg>
   )
 })
 
@@ -385,36 +383,34 @@ interface PinHeightControlProps {
 export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <SquareButton onClick={props.toggleHeight} highlight={true} spotlight={true}>
-      <svg width='20' height='20'>
-        <g
-          id='dimensioncontrols-pin-height'
-          stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
-        >
-          <path
-            d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
-            id='dimensioncontrols-pin-height-EdgeEnd-t'
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${HorizontalDimensionButtStart},${VerticalDimensionEnd} l${DimensionButt},0`}
-            id='dimensioncontrols-pin-height-EdgeEnd-b'
-            strokeLinecap='round'
-          />
-          <path
-            d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
-            id='dimensioncontrols-pin-height-line'
-            strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
-            strokeLinecap='round'
-          />
-          <path
-            d={`M 0,0 ${DimensionWidth},0 0,${DimensionHeight} ${DimensionWidth},${DimensionHeight} z`}
-            id='dimensioncontrols-pin-width-transparent'
-            stroke='transparent'
-            fill='transparent'
-          />
-        </g>
-      </svg>
-    </SquareButton>
+    <svg width='20' height='20'>
+      <g
+        id='dimensioncontrols-pin-height'
+        stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
+      >
+        <path
+          d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
+          id='dimensioncontrols-pin-height-EdgeEnd-t'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${HorizontalDimensionButtStart},${VerticalDimensionEnd} l${DimensionButt},0`}
+          id='dimensioncontrols-pin-height-EdgeEnd-b'
+          strokeLinecap='round'
+        />
+        <path
+          d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
+          id='dimensioncontrols-pin-height-line'
+          strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
+          strokeLinecap='round'
+        />
+        <path
+          d={`M 0,0 ${DimensionWidth},0 0,${DimensionHeight} ${DimensionWidth},${DimensionHeight} z`}
+          id='dimensioncontrols-pin-width-transparent'
+          stroke='transparent'
+          fill='transparent'
+        />
+      </g>
+    </svg>
   )
 })

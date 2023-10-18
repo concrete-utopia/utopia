@@ -56,7 +56,7 @@ type VerticalPinRequests =
 
 export type RequestedPins = HorizontalPinRequests | VerticalPinRequests
 
-type DetectedPins = {
+export type DetectedPins = {
   horizontal:
     | HorizontalPinRequests
     | 'left'
@@ -450,25 +450,48 @@ export function getFixedPointsForPinning(pins: DetectedPins): FramePinsInfo {
   return {
     left: {
       isPrimaryPosition:
-        pins.horizontal === 'left-and-right' || pins.horizontal === 'left-and-width',
+        pins.horizontal === 'left-and-right' ||
+        pins.horizontal === 'left-and-width' ||
+        pins.horizontal === 'left',
       isRelativePosition: false,
     },
     top: {
-      isPrimaryPosition: pins.vertical === 'top-and-bottom' || pins.vertical === 'top-and-height',
+      isPrimaryPosition:
+        pins.vertical === 'top-and-bottom' ||
+        pins.vertical === 'top-and-height' ||
+        pins.vertical === 'top',
       isRelativePosition: false,
     },
     bottom: {
       isPrimaryPosition:
-        pins.vertical === 'top-and-bottom' || pins.vertical === 'bottom-and-height',
+        pins.vertical === 'top-and-bottom' ||
+        pins.vertical === 'bottom-and-height' ||
+        pins.vertical === 'bottom',
       isRelativePosition: false,
     },
     right: {
       isPrimaryPosition:
-        pins.horizontal === 'left-and-right' || pins.horizontal === 'right-and-width',
+        pins.horizontal === 'left-and-right' ||
+        pins.horizontal === 'right-and-width' ||
+        pins.horizontal === 'right',
       isRelativePosition: false,
     },
-    width: ignore,
-    height: ignore,
+    width: {
+      isPrimaryPosition:
+        pins.horizontal === 'left-and-width' ||
+        pins.horizontal === 'right-and-width' ||
+        pins.horizontal === 'width' ||
+        pins.horizontal === 'scale-horizontal',
+      isRelativePosition: pins.horizontal === 'scale-horizontal',
+    },
+    height: {
+      isPrimaryPosition:
+        pins.vertical === 'top-and-height' ||
+        pins.vertical === 'bottom-and-height' ||
+        pins.vertical === 'height' ||
+        pins.vertical === 'scale-vertical',
+      isRelativePosition: pins.vertical === 'scale-vertical',
+    },
     centerX:
       pins.horizontal === 'scale-horizontal'
         ? { isPrimaryPosition: true, isRelativePosition: true }
