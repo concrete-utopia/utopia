@@ -742,6 +742,7 @@ export function isHugFromStyleAttribute(
     return simpleAttribute === MaxContent
   }
 
+  // TODO simpleAttribute == null is not good enough here, see https://github.com/concrete-utopia/utopia/pull/4389#discussion_r1363594423
   return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
 }
 
