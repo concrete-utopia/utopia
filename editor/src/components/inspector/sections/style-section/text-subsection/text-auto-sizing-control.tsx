@@ -13,7 +13,7 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   metadataSelector,
   selectedViewsSelector,
-  useComputedSizeRef,
+  useNonRoundedComputedSizeRef,
 } from '../../../inpector-selectors'
 import type { FixedHugFill } from '../../../inspector-common'
 import { detectFillHugFixedStateMultiselect, isFixedHugFillEqual } from '../../../inspector-common'
@@ -109,8 +109,8 @@ export const TextAutoSizingControl = React.memo(() => {
     [controlStatusAndValueType],
   )
 
-  const widthComputedValue = useComputedSizeRef('width')
-  const heightComputedValue = useComputedSizeRef('height')
+  const widthComputedValue = useNonRoundedComputedSizeRef('width')
+  const heightComputedValue = useNonRoundedComputedSizeRef('height')
 
   const onSubmitValue = React.useCallback(
     (newValue: any) => {

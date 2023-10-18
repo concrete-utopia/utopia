@@ -29,7 +29,7 @@ import {
   metadataSelector,
   pathTreesSelector,
   selectedViewsSelector,
-  useComputedSizeRef,
+  useNonRoundedComputedSizeRef,
 } from './inpector-selectors'
 import type { Axis, FixedHugFill, FixedHugFillMode } from './inspector-common'
 import {
@@ -431,7 +431,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const currentValueRef = useComputedSizeRef(dimension)
+  const currentValueRef = useNonRoundedComputedSizeRef(dimension)
 
   const fillsOtherAxisRef = useRefEditorState(
     (store) =>

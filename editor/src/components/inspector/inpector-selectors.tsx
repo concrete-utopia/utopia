@@ -57,7 +57,9 @@ export const numberOfFlexContainersSelector = createSelector(
   numberOfFlexContainers,
 )
 
-export function useComputedSizeRef(prop: 'width' | 'height'): { readonly current: number | null } {
+export function useNonRoundedComputedSizeRef(prop: 'width' | 'height'): {
+  readonly current: number | null
+} {
   return useRefEditorState((store) => {
     const metadata = metadataSelector(store)
     const elementPath = selectedViewsSelector(store)[0]
