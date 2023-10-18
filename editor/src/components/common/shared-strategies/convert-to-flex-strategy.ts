@@ -12,10 +12,15 @@ import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { fastForEach } from '../../../core/shared/utils'
-import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import {
+  actuallyConvertFramentToFrame,
+  convertFragmentToFrame,
+} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  getElementFragmentLikeType,
   isElementNonDOMElement,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
+  treatElementAsFragmentLike,
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
@@ -172,16 +177,22 @@ export function convertLayoutToFlexCommands(
 
 function ifElementIsFragmentFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
   elementPathTree: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
-  return convertFragmentToFrame(
+  const type = getElementFragmentLikeType(
     metadata,
+    allElementProps,
     elementPathTree,
-    {},
     target,
-    'convert-even-if-it-has-static-children',
+    'sizeless-div-considered-fragment-like',
   )
+  if (type == 'fragment' || type == 'sizeless-div') {
+    return actuallyConvertFramentToFrame(metadata, elementPathTree, __, target)
+  }
+
+  return []
 }
 
 function guessMatchingFlexSetup(
