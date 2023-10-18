@@ -225,6 +225,17 @@ export function setDOMAttribute(element: Element, attributeName: string, value: 
   element.attributes.setNamedItemNS(attr)
 }
 
+function getRoundingFn(rounding: 'nearest-half' | 'no-rounding') {
+  switch (rounding) {
+    case 'nearest-half':
+      return roundToNearestHalf
+    case 'no-rounding':
+      return identity
+    default:
+      assertNever(rounding)
+  }
+}
+
 export function getCanvasRectangleFromElement(
   element: HTMLElement,
   canvasScale: number,
@@ -233,12 +244,7 @@ export function getCanvasRectangleFromElement(
 ): CanvasRectangle {
   const scale = canvasScale < 1 ? 1 / canvasScale : 1
 
-  const roundingFn =
-    rounding === 'nearest-half'
-      ? roundToNearestHalf
-      : rounding === 'no-rounding'
-      ? identity
-      : assertNever(rounding)
+  const roundingFn = getRoundingFn(rounding)
 
   const domRectToScaledCanvasRectangle = (rect: DOMRect) => {
     // canvas container uses scale for <1 zoom level, it should not affect the frame of the element.
