@@ -35,6 +35,7 @@ import {
 } from './simplified-pinning-helpers'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
+import { NO_OP } from '../../core/shared/utils'
 
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
@@ -221,7 +222,7 @@ const ChildPinControl = React.memo(
 
     return (
       <PinControl
-        handlePinMouseDown={onPinControlMouseDown}
+        handlePinMouseDown={NO_OP} // for group children, the visual controls are so confusing, I'm going to disable them until they are fixed
         framePoints={framePoints}
         controlStatus='simple'
         name='group-child-controls'
