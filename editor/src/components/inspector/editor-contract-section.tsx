@@ -17,7 +17,7 @@ import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
   convertFragmentToFrame,
   convertFragmentToGroup,
-  convertFrameToFragmentCommands,
+  convertGroupOrFrameToFragmentCommands,
   convertFrameToGroup,
   convertGroupToFrameCommands,
   getInstanceForFragmentToFrameConversion,
@@ -26,6 +26,7 @@ import {
   getInstanceForFrameToGroupConversion,
   getInstanceForGroupToFrameConversion,
   isConversionForbidden,
+  getCommandsForConversionToDesiredType,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
@@ -155,94 +156,14 @@ export const EditorContractDropdown = React.memo(() => {
 
       const desiredType = value as EditorContract
 
-      if (desiredType === 'not-quite-frame') {
-        throw new Error(
-          'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
-        )
-      }
-
-      const commands = selectedViews.flatMap((elementPath): CanvasCommand[] => {
-        if (currentType === 'fragment') {
-          if (desiredType === 'fragment') {
-            // NOOP
-            return []
-          }
-
-          if (desiredType === 'frame') {
-            return convertFragmentToFrame(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              elementPath,
-              'do-not-convert-if-it-has-static-children',
-            )
-          }
-
-          if (desiredType === 'group') {
-            return convertFragmentToGroup(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
-          }
-          assertNever(desiredType)
-        }
-
-        if (currentType === 'frame' || currentType === 'not-quite-frame') {
-          if (desiredType === 'frame') {
-            // NOOP
-            return []
-          }
-
-          if (desiredType === 'fragment') {
-            return convertFrameToFragmentCommands(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
-          }
-
-          if (desiredType === 'group') {
-            return convertFrameToGroup(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
-          }
-          assertNever(desiredType)
-        }
-
-        if (currentType === 'group') {
-          if (desiredType === 'group') {
-            // NOOP
-            return []
-          }
-
-          if (desiredType === 'fragment') {
-            return convertFrameToFragmentCommands(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
-          }
-
-          if (desiredType === 'frame') {
-            return convertGroupToFrameCommands(
-              metadataRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              elementPath,
-            )
-          }
-          assertNever(desiredType)
-        }
-
-        assertNever(currentType)
-      })
+      const commands = getCommandsForConversionToDesiredType(
+        metadataRef.current,
+        elementPathTreeRef.current,
+        allElementPropsRef.current,
+        selectedViews,
+        currentType,
+        desiredType,
+      )
 
       if (commands.length > 0) {
         dispatch([applyCommandsAction(commands)])

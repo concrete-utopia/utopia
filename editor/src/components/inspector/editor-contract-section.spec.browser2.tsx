@@ -124,6 +124,158 @@ export var storyboard = (
 `
 
 describe('Group section', () => {
+  describe('data-constraints properties on the children of a group will be removed when changing it', () => {
+    it('to a frame', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Group data-uid='group'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 11,
+          left: 111,
+          width: 157,
+          height: 112,
+        }}
+        data-constraints={['left', 'width']}
+        data-uid='f64'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 52,
+          left: 318,
+          width: 139,
+          height: 138,
+        }}
+        data-constraints={['left', 'width']}
+        data-uid='978'
+      />
+    </Group>
+  </Storyboard>
+)
+`,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+
+      await chooseWrapperType(editor, 'group', 'frame')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <div data-uid='group'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 11,
+          left: 111,
+          width: 157,
+          height: 112,
+        }}
+        data-uid='f64'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 52,
+          left: 318,
+          width: 139,
+          height: 138,
+        }}
+        data-uid='978'
+      />
+    </div>
+  </Storyboard>
+)
+`)
+    })
+    it('to a fragment', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <Group data-uid='group'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 11,
+          left: 111,
+          width: 157,
+          height: 112,
+        }}
+        data-constraints={['left', 'width']}
+        data-uid='f64'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 52,
+          left: 318,
+          width: 139,
+          height: 138,
+        }}
+        data-constraints={['left', 'width']}
+        data-uid='978'
+      />
+    </Group>
+  </Storyboard>
+)
+`,
+        'await-first-dom-report',
+      )
+
+      await selectComponentsForTest(editor, [EP.fromString('sb/group')])
+
+      await chooseWrapperType(editor, 'group', 'fragment')
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
+import { Storyboard, Group } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='sb'>
+    <React.Fragment>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 11,
+          left: 111,
+          width: 157,
+          height: 112,
+        }}
+        data-uid='f64'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          top: 52,
+          left: 318,
+          width: 139,
+          height: 138,
+        }}
+        data-uid='978'
+      />
+    </React.Fragment>
+  </Storyboard>
+)
+`)
+    })
+  })
   it('changing the root element of a component should not be allowed', async () => {
     const startingCodeWithComponent = `import * as React from 'react'
 import { Storyboard, Group, Scene } from 'utopia-api'
@@ -1000,6 +1152,7 @@ function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapper
               width: 157,
               height: 112,
             }}
+            ${innerWrapperType === 'group' ? `data-constraints={['left', 'width']}` : ``}
             data-uid='f64'
           />
           <div
@@ -1011,6 +1164,7 @@ function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapper
               width: 139,
               height: 138,
             }}
+            ${innerWrapperType === 'group' ? `data-constraints={['left', 'width']}` : ``}
             data-uid='978'
           />
         ${closingTag(innerWrapperType)}
