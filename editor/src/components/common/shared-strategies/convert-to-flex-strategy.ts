@@ -247,6 +247,8 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
   return []
 }
 
+const NEAR_CENTER_LINE_TOLERANCE = 0.2
+
 function isElementNearCenterLine(
   parentGlobalFrame: CanvasRectangle,
   parentFlexDirection: FlexDirectionRowColumn,
@@ -262,12 +264,20 @@ function isElementNearCenterLine(
 
   const parentCenter = getRectCenter(parentGlobalFrame)
   const childCenter = getRectCenter(childGlobalFrame)
-  if (parentFlexDirection === 'column') {
-    return Math.abs(childCenter.x - parentCenter.x) < parentGlobalFrame.width * 0.2
-  } else if (parentFlexDirection === 'row') {
-    return Math.abs(childCenter.y - parentCenter.y) < parentGlobalFrame.height * 0.2
+  switch (parentFlexDirection) {
+    case 'column':
+      return (
+        Math.abs(childCenter.x - parentCenter.x) <
+        parentGlobalFrame.width * NEAR_CENTER_LINE_TOLERANCE
+      )
+    case 'row':
+      return (
+        Math.abs(childCenter.y - parentCenter.y) <
+        parentGlobalFrame.height * NEAR_CENTER_LINE_TOLERANCE
+      )
+    default:
+      assertNever(parentFlexDirection)
   }
-  assertNever(parentFlexDirection)
 }
 
 function maybeAlignElementsToCenter(
