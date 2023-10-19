@@ -237,9 +237,15 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
   updatedEditor: EditorState
 } {
   let commands: Array<CanvasCommand> = []
-  for (const v of targets) {
-    const metadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, v.target)
-    const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, v.target)
+  for (const targetHugging of targets) {
+    const metadata = MetadataUtils.findElementByElementPath(
+      editor.jsxMetadata,
+      targetHugging.target,
+    )
+    const jsxElement = MetadataUtils.getJSXElementFromMetadata(
+      editor.jsxMetadata,
+      targetHugging.target,
+    )
     if (
       metadata == null ||
       jsxElement == null ||
@@ -247,7 +253,7 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
     ) {
       continue
     }
-    const status = getHuggingElementContentsStatus(editor.jsxMetadata, v.target)
+    const status = getHuggingElementContentsStatus(editor.jsxMetadata, targetHugging.target)
     if (status === 'non-empty') {
       continue
     }
@@ -259,7 +265,7 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
     ) {
       return setCssLengthProperty(
         'always',
-        v.target,
+        targetHugging.target,
         PP.create('style', prop),
         setExplicitCssValue(cssPixelLength(value)),
         flexDirection,
@@ -269,12 +275,20 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
     }
     if (status === 'contains-only-absolute' || status === 'empty') {
       commands.push(
-        ...prunePropsCommands(flexChildAndBottomRightProps, v.target),
-        setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'width', v.frame.width),
-        setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'height', v.frame.height),
+        ...prunePropsCommands(flexChildAndBottomRightProps, targetHugging.target),
+        setCSSDimension(
+          metadata.specialSizeMeasurements.flexDirection,
+          'width',
+          targetHugging.frame.width,
+        ),
+        setCSSDimension(
+          metadata.specialSizeMeasurements.flexDirection,
+          'height',
+          targetHugging.frame.height,
+        ),
       )
 
-      const parentPath = EP.parentPath(v.target)
+      const parentPath = EP.parentPath(targetHugging.target)
       const parentJSXElement = MetadataUtils.getJSXElementFromMetadata(
         editor.jsxMetadata,
         parentPath,
@@ -286,9 +300,17 @@ function runPushIntendedBoundsAndUpdateTargetsHuggingElement(
         EP.isStoryboardPath(parentPath) || parentJSXElement == null || parentIsHugging
       if (shouldSetAbsolutePosition) {
         commands.push(
-          setProperty('always', v.target, PP.create('style', 'position'), 'absolute'),
-          setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'left', v.frame.x),
-          setCSSDimension(metadata.specialSizeMeasurements.flexDirection, 'top', v.frame.y),
+          setProperty('always', targetHugging.target, PP.create('style', 'position'), 'absolute'),
+          setCSSDimension(
+            metadata.specialSizeMeasurements.flexDirection,
+            'left',
+            targetHugging.frame.x,
+          ),
+          setCSSDimension(
+            metadata.specialSizeMeasurements.flexDirection,
+            'top',
+            targetHugging.frame.y,
+          ),
           showToastCommand(
             'Converted to fixed size and absolute position',
             'NOTICE',
@@ -334,23 +356,26 @@ function getUpdateResizedGroupChildrenCommands(
   // we are going to mutate this as we iterate over targets
   let updatedLocalFrames: { [path: string]: LocalFrameAndTarget | undefined } = {}
 
-  for (const v of targets) {
+  for (const targetGroup of targets) {
     const targetIsGroup = allowGroupTrueUp(
       editor.projectContents,
       editor.jsxMetadata,
       editor.elementPathTree,
       editor.allElementProps,
-      v.target,
+      targetGroup.target,
     )
     if (targetIsGroup) {
       const children = MetadataUtils.getChildrenPathsOrdered(
         editor.jsxMetadata,
         editor.elementPathTree,
-        v.target,
+        targetGroup.target,
       )
 
       function frameFromMeasuredBounds(): CanvasRectangle | null {
-        return MetadataUtils.getFrameOrZeroRectInCanvasCoords(v.target, editor.jsxMetadata)
+        return MetadataUtils.getFrameOrZeroRectInCanvasCoords(
+          targetGroup.target,
+          editor.jsxMetadata,
+        )
       }
 
       // The original size of the children before the interaction ran.
@@ -360,7 +385,7 @@ function getUpdateResizedGroupChildrenCommands(
       const groupOriginalBounds = frameFromMeasuredBounds()
 
       if (childrenBounds != null && groupOriginalBounds != null) {
-        const updatedGroupBounds = v.frame
+        const updatedGroupBounds = targetGroup.frame
 
         // if the target is a group and the reason for resizing is _NOT_ child-changed, then resize all the children to fit the new AABB
         const childrenWithFragmentsRetargeted = replaceFragmentLikePathsWithTheirChildrenRecursive(
@@ -489,12 +514,12 @@ function getResizeAncestorGroupsCommands(
     )
   }
 
-  for (const v of targets) {
+  for (const targetGroup of targets) {
     const parentPath = replaceNonDomElementWithFirstDomAncestorPath(
       editor.jsxMetadata,
       editor.allElementProps,
       editor.elementPathTree,
-      EP.parentPath(v.target),
+      EP.parentPath(targetGroup.target),
     )
     const groupTrueUpPermitted = allowGroupTrueUp(
       editor.projectContents,
@@ -513,10 +538,10 @@ function getResizeAncestorGroupsCommands(
       editor.jsxMetadata,
       editor.elementPathTree,
       parentPath,
-    ).filter((c) => !EP.pathsEqual(c, v.target))
+    ).filter((c) => !EP.pathsEqual(c, targetGroup.target))
     const childrenGlobalFrames = childrenExceptTheTarget.map(getGlobalFrame)
 
-    const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, v.frame])
+    const newGlobalFrame = boundingRectangleArray([...childrenGlobalFrames, targetGroup.frame])
     if (newGlobalFrame != null) {
       updatedGlobalFrames[EP.toString(parentPath)] = {
         frame: newGlobalFrame,
