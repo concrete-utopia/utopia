@@ -56,6 +56,7 @@ import {
 import {
   mouseClickAtPoint,
   mouseDownAtPoint,
+  pickFromReactSelectPopupList,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import {
@@ -3443,6 +3444,7 @@ describe('inspector tests with real metadata', () => {
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
       expectGroupToast(renderResult, 'child-has-percentage-pins')
     })
+
     describe('group children', () => {
       // TODO rewrite this to use the dropdown
       setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
@@ -3506,10 +3508,12 @@ describe('inspector tests with real metadata', () => {
         `,
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Scale',
+              'Top and Height',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
           },
           want: `
           <div
@@ -3583,10 +3587,12 @@ describe('inspector tests with real metadata', () => {
         `,
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Top',
+              'Scale',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
           },
           want: `
           <div
@@ -3659,14 +3665,19 @@ describe('inspector tests with real metadata', () => {
         `,
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
-            const control1 = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Scale',
+              'Top and Height',
             )
-            await mouseClickAtPoint(control1, { x: 1, y: 1 })
-            const control2 = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-left',
+
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-width-popuplist',
+              'Left and Width',
+              'Left and Width',
             )
-            await mouseClickAtPoint(control2, { x: 1, y: 1 })
           },
           want: `
           <div
@@ -3740,10 +3751,12 @@ describe('inspector tests with real metadata', () => {
         `,
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Top',
+              'Scale',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
           },
           want: `
           <div
@@ -3820,10 +3833,12 @@ describe('inspector tests with real metadata', () => {
             EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
           ],
           logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Scale',
+              'Top and Height',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
           },
           want: `
          <div
@@ -3902,10 +3917,12 @@ describe('inspector tests with real metadata', () => {
             EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
           ],
           logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Mixed',
+              'Top and Height',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
           },
           want: `
           <div
@@ -3985,10 +4002,12 @@ describe('inspector tests with real metadata', () => {
             EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
           ],
           logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Top',
+              'Scale',
             )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
           },
           want: `
           <div
@@ -4062,12 +4081,12 @@ describe('inspector tests with real metadata', () => {
         `,
           selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
           logic: async (renderResult) => {
-            const control = document.getElementById('frame-child-constraint-width')
-            if (control == null) {
-              throw new Error('cannot find select')
-            }
-
-            await selectEvent.select(control, 'Left')
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-width-popuplist',
+              'Scale',
+              'Left and Width',
+            )
           },
           want: `
           <div
