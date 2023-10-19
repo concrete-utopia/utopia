@@ -528,6 +528,9 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   return onSubmitFixedFillHugType
 }
 
+export const getFixedHugDropdownId = (dimension: 'width' | 'height') =>
+  `'fixed-hug-dropdown-'${dimension}`
+
 export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'height' }) => {
   const { dimension } = props
 
@@ -553,6 +556,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 
   return (
     <PopupList
+      id={getFixedHugDropdownId(dimension)}
       value={optionalMap(selectOption(dimension), currentValue.fixedHugFill?.type) ?? undefined}
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
