@@ -143,16 +143,39 @@ function useGetRoutes() {
       innerRoutes.forEach((route) => {
         const creatorForRoute = creators[route.id]
         if (creatorForRoute != null) {
-          route.action = (args: any) =>
-            creatorForRoute
-              .executionScopeCreator(
-                projectContentsRef.current,
-                fileBlobsRef.current,
-                hiddenInstancesRef.current,
-                displayNoneInstancesRef.current,
-                metadataContext,
-              )
-              .scope['action']?.(args) ?? null
+          route.action = async (args: any) => {
+            const actionScope = creatorForRoute.executionScopeCreator(
+              projectContentsRef.current,
+              fileBlobsRef.current,
+              hiddenInstancesRef.current,
+              displayNoneInstancesRef.current,
+              metadataContext,
+            ).scope
+
+            // Super hacky way of calling the `fetch` function from `server.js` purely to get the context
+            // that it provides, so that we can then provide that to the action function
+            const { context: actionContext } = await actionScope['customServer'].fetch(
+              args.request,
+              {
+                SESSION_SECRET: 'foobar',
+                PUBLIC_STORE_DOMAIN: 'mock.shop',
+              },
+              {
+                waitUntil: () => {},
+              },
+            )
+
+            const patchedArgs = {
+              ...args,
+              context: {
+                ...args.context,
+                ...actionContext,
+              },
+            }
+
+            return actionScope['action']?.(patchedArgs) ?? null
+          }
+
           route.loader = async (args: any) => {
             const loaderScope = creatorForRoute.executionScopeCreator(
               projectContentsRef.current,
