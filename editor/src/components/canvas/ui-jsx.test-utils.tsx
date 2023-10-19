@@ -426,26 +426,26 @@ export async function renderTestEditorWithModel(
     if (workingEditorState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
       ;(() => {
         // updated editor with trued up groups
-        const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
-        const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
-          asyncTestDispatch,
-          [{ action: 'TRUE_UP_GROUPS' }],
-          workingEditorState,
-          spyCollector,
-        )
-        workingEditorState = carryDispatchResultFields(
-          workingEditorState,
-          dispatchResultWithTruedUpGroups,
-        )
+        // const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
+        // const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
+        //   asyncTestDispatch,
+        //   [{ action: 'TRUE_UP_GROUPS' }],
+        //   workingEditorState,
+        //   spyCollector,
+        // )
+        // workingEditorState = carryDispatchResultFields(
+        //   workingEditorState,
+        //   dispatchResultWithTruedUpGroups,
+        // )
 
-        editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
+        // editorDispatchPromises.push(dispatchResultWithTruedUpGroups.entireUpdateFinished)
 
-        if (
-          projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
-        ) {
-          // no group-related re-render / re-measure is needed, bail out
-          return
-        }
+        // if (
+        //   projectContentsBeforeGroupTrueUp === workingEditorState.unpatchedEditor.projectContents
+        // ) {
+        //   // no group-related re-render / re-measure is needed, bail out
+        //   return
+        // }
 
         // re-render the canvas
         {
