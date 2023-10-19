@@ -184,16 +184,9 @@ export const ESLINT_CONFIG: Linter.Config = {
     'no-template-curly-in-string': 'warn',
     'no-this-before-super': 'warn',
     'no-throw-literal': 'warn',
-    'no-undef': 'error',
+    'no-undef': 'off',
     'no-unreachable': 'warn',
-    'no-unused-expressions': [
-      'error',
-      {
-        allowShortCircuit: true,
-        allowTernary: true,
-        allowTaggedTemplates: true,
-      },
-    ],
+    'no-unused-expressions': 'off',
     'no-unused-labels': 'warn',
     // disabling 'no-unused-vars' because the current ui.js is not working nicely with it
     // 'no-unused-vars': [
@@ -203,14 +196,7 @@ export const ESLINT_CONFIG: Linter.Config = {
     //     ignoreRestSiblings: true,
     //   },
     // ],
-    'no-use-before-define': [
-      'error',
-      {
-        functions: false,
-        classes: true,
-        variables: true,
-      },
-    ],
+    'no-use-before-define': 'off',
     'no-useless-computed-key': 'warn',
     'no-useless-concat': 'warn',
     'no-useless-constructor': 'warn',

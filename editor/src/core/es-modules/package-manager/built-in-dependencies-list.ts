@@ -6,18 +6,19 @@ import React from 'react' // this is imported like this so that the monkey patch
 import * as ReactDOM from 'react-dom'
 import * as EmotionReact from '@emotion/react'
 import * as EmotionStyled from '@emotion/styled'
+import * as RemixOxygen from '@shopify/remix-oxygen'
 
 import editorPackageJSON from '../../../../package.json'
 import utopiaAPIPackageJSON from '../../../../../utopia-api/package.json'
 import { applyUIDMonkeyPatch } from '../../../utils/canvas-react-utils'
 import { createRegisterModuleFunction } from '../../property-controls/property-controls-local'
-import type { EditorDispatch } from '../../../components/editor/action-types'
-import type { EditorState } from '../../../components/editor/store/editor-state'
 import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
 import { UtopiaApiGroup } from './group-component'
 import * as RemixRunReact from '@remix-run/react'
 import * as ReactRouter from 'react-router'
-import { SafeLink, SafeOutlet } from './canvas-safe-remix'
+import { SafeLink, SafeOutlet, Links, Meta, Scripts } from './canvas-safe-remix'
+import { createRequestHandler as remixOxygenCreateRequestHandler } from './remix-oxygen'
+import * as RemixServerBuild from './remix-server-build'
 
 applyUIDMonkeyPatch()
 
@@ -89,11 +90,23 @@ export function createBuiltInDependenciesList(
       editorPackageJSON.dependencies['@emotion/styled'],
     ),
     builtInDependency(
+      '@shopify/remix-oxygen',
+      {
+        ...RemixOxygen,
+        createRequestHandler: remixOxygenCreateRequestHandler,
+      },
+      editorPackageJSON.dependencies['@shopify/remix-oxygen'],
+    ),
+    builtInDependency('@remix-run/dev/server-build', RemixServerBuild, '1.19.1'),
+    builtInDependency(
       '@remix-run/react',
       {
         ...RemixRunReact,
         Link: SafeLink,
         Outlet: SafeOutlet,
+        Links,
+        Meta,
+        Scripts,
       },
       editorPackageJSON.dependencies['@remix-run/react'],
     ),

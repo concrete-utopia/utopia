@@ -141,9 +141,7 @@ function useGetRoutes() {
 
     function addLoaderAndActionToRoutes(innerRoutes: DataRouteObject[]) {
       innerRoutes.forEach((route) => {
-        // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
-        // we only ever pass in an empty object for the `routeModules` and never mutate it
-        const creatorForRoute = route.id === 'root' ? null : creators[route.id]
+        const creatorForRoute = creators[route.id]
         if (creatorForRoute != null) {
           route.action = (args: any) =>
             creatorForRoute
@@ -155,16 +153,38 @@ function useGetRoutes() {
                 metadataContext,
               )
               .scope['action']?.(args) ?? null
-          route.loader = (args: any) =>
-            creatorForRoute
-              .executionScopeCreator(
-                projectContentsRef.current,
-                fileBlobsRef.current,
-                hiddenInstancesRef.current,
-                displayNoneInstancesRef.current,
-                metadataContext,
-              )
-              .scope['loader']?.(args) ?? null
+          route.loader = async (args: any) => {
+            const loaderScope = creatorForRoute.executionScopeCreator(
+              projectContentsRef.current,
+              fileBlobsRef.current,
+              hiddenInstancesRef.current,
+              displayNoneInstancesRef.current,
+              metadataContext,
+            ).scope
+
+            // Super hacky way of calling the `fetch` function from `server.js` purely to get the context
+            // that it provides, so that we can then provide that to the loader function
+            const { context: loaderContext } = await loaderScope['customServer'].fetch(
+              args.request,
+              {
+                SESSION_SECRET: 'foobar',
+                PUBLIC_STORE_DOMAIN: 'mock.shop',
+              },
+              {
+                waitUntil: () => {},
+              },
+            )
+
+            const patchedArgs = {
+              ...args,
+              context: {
+                ...args.context,
+                ...loaderContext,
+              },
+            }
+
+            return loaderScope['loader']?.(patchedArgs) ?? null
+          }
         }
 
         addLoaderAndActionToRoutes(route.children ?? [])

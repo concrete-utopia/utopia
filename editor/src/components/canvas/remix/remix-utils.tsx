@@ -344,6 +344,8 @@ export function getRoutesAndModulesFromManifest(
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
 
+  // The root directory should come from remix.config.js, and should default to `/app`, not `/src`
+  // The root file should be root.jsx
   const rootJsFile = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
   if (rootJsFile == null || rootJsFile.type !== 'TEXT_FILE') {
     return null

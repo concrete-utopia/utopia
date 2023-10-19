@@ -67,8 +67,26 @@ export function createExecutionScope(
 
   const fileBlobsForFile = defaultIfNull(emptyFileBlobs, fileBlobs[filePath])
 
-  const { topLevelElements, imports, jsxFactoryFunction, combinedTopLevelArbitraryBlock } =
-    getParseSuccessForFilePath(filePath, projectContents)
+  const {
+    topLevelElements,
+    imports: rawImports,
+    jsxFactoryFunction,
+    combinedTopLevelArbitraryBlock,
+  } = getParseSuccessForFilePath(filePath, projectContents)
+
+  // HACK Add the custom server file to the imports here
+  const isRouteFile = filePath === '/src/root.js' || filePath.startsWith('/src/routes/')
+  const imports = isRouteFile
+    ? {
+        ...rawImports,
+        '/server': {
+          importedAs: null,
+          importedFromWithin: [],
+          importedWithName: 'customServer',
+        },
+      }
+    : rawImports
+
   const requireResult: MapLike<any> = importResultFromImports(filePath, imports, customRequire)
 
   const userRequireFn = (toImport: string) => customRequire(filePath, toImport) // TODO this was a React usecallback

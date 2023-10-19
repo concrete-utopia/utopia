@@ -500,8 +500,10 @@ export function resolveModule(
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
   importOrigin: string,
-  toImport: string,
+  toImportRaw: string,
 ): FileLookupResult {
+  // This is because an alias is provided in jsconfig.json
+  const toImport = toImportRaw.startsWith('~') ? `/src/${toImportRaw.slice(1)}` : toImportRaw
   return resolveModuleAndApplySubstitutions(projectContents, nodeModules, importOrigin, toImport)
 }
 
