@@ -39,6 +39,7 @@ import {
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
+import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 type FlexDirection = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'
@@ -210,7 +211,7 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
     return []
   }
 
-  if (type == 'fragment' || type == 'sizeless-div') {
+  if (type == 'fragment' || type == 'sizeless-div' || treatElementAsGroupLike(metadata, target)) {
     const childInstances = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       replaceFragmentLikePathsWithTheirChildrenRecursive(
