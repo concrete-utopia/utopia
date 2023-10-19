@@ -492,7 +492,7 @@ const getDefaultContainer =
     boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
     backgroundColor: controlStyles.backgroundColor,
     color: controlStyles.mainColor,
-    textTransform: 'capitalize',
+    // textTransform: 'capitalize', // BB I am disabling this to be able to write "Left and Width" as an option
     ...propsStyle,
   })
 
