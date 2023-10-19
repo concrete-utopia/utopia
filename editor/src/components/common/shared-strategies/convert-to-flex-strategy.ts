@@ -40,9 +40,8 @@ import {
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
-import type { FlexDirection } from '../../inspector/common/css-utils'
 
-type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
+type FlexDirection = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'
 
 export function convertLayoutToFlexCommands(
@@ -249,7 +248,7 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
 
 function isElementNearCenterLine(
   parentGlobalFrame: CanvasRectangle,
-  parentFlexDirection: FlexDirectionRowColumn,
+  parentFlexDirection: FlexDirection,
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
 ): boolean {
@@ -263,9 +262,9 @@ function isElementNearCenterLine(
   const parentCenter = getRectCenter(parentGlobalFrame)
   const childCenter = getRectCenter(childGlobalFrame)
   if (parentFlexDirection === 'column') {
-    return Math.abs(childCenter.x - parentCenter.x) < parentGlobalFrame.height * 0.2
+    return Math.abs(childCenter.x - parentCenter.x) < parentGlobalFrame.width * 0.2
   } else if (parentFlexDirection === 'row') {
-    return Math.abs(childCenter.y - parentCenter.y) < parentGlobalFrame.width * 0.2
+    return Math.abs(childCenter.y - parentCenter.y) < parentGlobalFrame.height * 0.2
   }
   assertNever(parentFlexDirection)
 }
@@ -274,7 +273,7 @@ function maybeAlignElementsToCenter(
   metadata: ElementInstanceMetadataMap,
   childrenPaths: ElementPath[],
   targetPath: ElementPath,
-  detectedDirection: FlexDirectionRowColumn,
+  detectedDirection: FlexDirection,
 ) {
   if (onlyChildIsSpan(metadata, childrenPaths)) {
     return [
@@ -308,7 +307,7 @@ function guessMatchingFlexSetup(
   target: ElementPath,
   children: Array<ElementPath>,
 ): {
-  direction: FlexDirectionRowColumn
+  direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
   averageGap: number | null
   padding: string | null
@@ -336,13 +335,13 @@ function guessLayoutDirection(
   target: ElementPath,
   children: Array<ElementPath>,
 ): {
-  direction: FlexDirectionRowColumn
+  direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
   parentRect: CanvasRectangle
   averageGap: number | null
 } {
   const parentRect = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, metadata)
-  const firstGuess: FlexDirectionRowColumn = parentRect.width > parentRect.height ? 'row' : 'column'
+  const firstGuess: FlexDirection = parentRect.width > parentRect.height ? 'row' : 'column'
   const firstGuessResult = detectConfigurationInDirection(
     metadata,
     children,
@@ -368,7 +367,7 @@ function guessLayoutDirection(
 }
 
 function guessPadding(
-  direction: FlexDirectionRowColumn,
+  direction: FlexDirection,
   parentRect: CanvasRectangle,
   sortedChildren: Array<CanvasFrameAndTarget>,
 ): string | null {
@@ -398,11 +397,11 @@ function appendPx(value: number): string {
 function detectConfigurationInDirection(
   metadata: ElementInstanceMetadataMap,
   children: Array<ElementPath>,
-  direction: FlexDirectionRowColumn,
+  direction: FlexDirection,
   parentRect: CanvasRectangle,
 ): {
   childrenDontOverlap: boolean
-  direction: FlexDirectionRowColumn
+  direction: FlexDirection
   sortedChildren: Array<CanvasFrameAndTarget>
   averageGap: number | null
   parentRect: CanvasRectangle
@@ -455,7 +454,7 @@ function detectConfigurationInDirection(
 }
 
 function guessAlignItems(
-  direction: FlexDirectionRowColumn,
+  direction: FlexDirection,
   children: Array<CanvasFrameAndTarget>,
 ): FlexAlignItems | null {
   if (children.length < 2) {
