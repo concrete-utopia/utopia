@@ -55,7 +55,8 @@ import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
 import { parseFlex } from '../../printer-parsers/css/css-parser-flex'
-import { LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
+import type { LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
+import { isLayoutPinnedProp, LayoutPinnedProps } from '../../core/layout/layout-helpers-new'
 import { getLayoutLengthValueOrKeyword } from '../../core/layout/getLayoutProperty'
 import type { Frame } from 'utopia-api/core'
 import { getPinsToDelete } from './common/layout-property-path-hooks'
@@ -647,7 +648,7 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  if (isHugFromStyleAttribute(element.element.value.props, property)) {
+  if (isHugFromStyleAttribute(element.element.value.props, property, 'only-max-content')) {
     const valueWithType = { type: 'hug' as const }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
@@ -726,26 +727,35 @@ export function setToFixedSizeCommands(
   })
 }
 
+const HuggingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
+
 export function isHugFromStyleAttribute(
   props: JSXAttributes,
   property: 'width' | 'height',
+  includeAllHugs: 'include-all-hugs' | 'only-max-content',
 ): boolean {
   const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(props), PP.create('style', property)),
   )
 
-  return simpleAttribute === MaxContent
+  if (includeAllHugs === 'only-max-content') {
+    return simpleAttribute === MaxContent
+  }
+
+  // TODO simpleAttribute == null is not good enough here, see https://github.com/concrete-utopia/utopia/pull/4389#discussion_r1363594423
+  return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
 }
 
 export function isHugFromStyleAttributeOrNull(
   props: JSXAttributes | null,
   property: 'width' | 'height',
+  includeAllHugs: 'include-all-hugs' | 'only-max-content',
 ): boolean {
   if (props == null) {
-    return false
+    return includeAllHugs === 'include-all-hugs' // null size means implicit hug!
   }
-  return isHugFromStyleAttribute(props, property)
+  return isHugFromStyleAttribute(props, property, includeAllHugs)
 }
 
 export function detectFillHugFixedStateMultiselect(
@@ -1236,4 +1246,43 @@ export function setAutoHeightCommands(
     ),
     setHugContentForAxis('vertical', elementPath, parentFlexDirection),
   ]
+}
+
+function getSafeGroupChildConstraintsArray(
+  allElementProps: AllElementProps,
+  path: ElementPath,
+): LayoutPinnedProp[] {
+  const value = allElementProps[EP.toString(path)]?.['data-constraints'] ?? []
+  if (!Array.isArray(value)) {
+    return []
+  }
+  return value.filter((v) => typeof v === 'string' && isLayoutPinnedProp(v))
+}
+
+export function getConstraintsIncludingImplicitForElement(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  element: ElementPath,
+  includeImplicitConstraints: 'include-max-content' | 'only-explicit-constraints',
+) {
+  let constraints: Set<LayoutPinnedProp> = new Set(
+    getSafeGroupChildConstraintsArray(allElementProps, element),
+  )
+
+  if (includeImplicitConstraints === 'only-explicit-constraints') {
+    return Array.from(constraints)
+  }
+
+  // collect implicit constraints
+  const jsxElement = MetadataUtils.getJSXElementFromMetadata(metadata, element)
+  if (jsxElement != null) {
+    if (isHugFromStyleAttribute(jsxElement.props, 'width', 'only-max-content')) {
+      constraints.add('width')
+    }
+    if (isHugFromStyleAttribute(jsxElement.props, 'height', 'only-max-content')) {
+      constraints.add('height')
+    }
+  }
+
+  return Array.from(constraints)
 }

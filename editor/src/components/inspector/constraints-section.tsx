@@ -14,18 +14,22 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { InspectorPropsContext } from './common/property-path-hooks'
-import { PinControl } from './controls/pin-control'
+import { PinControl, PinHeightControl, PinWidthControl } from './controls/pin-control'
 import {
   allElementsAreGroupChildren,
   anySelectedElementGroupOrChildOfGroup,
 } from './fill-hug-fixed-control'
 import { selectedViewsSelector } from './inpector-selectors'
-import type { RequestedPins } from './simplified-pinning-helpers'
+import type { DetectedPins, RequestedPins } from './simplified-pinning-helpers'
 import {
-  HorizontalPinChangeOptions,
-  HorizontalPinChangeOptionsIncludingMixed,
-  VerticalPinChangeOptions,
-  VerticalPinChangeOptionsIncludingMixed,
+  DetectedFrameChildHorizontalPinChangeOptions,
+  DetectedFrameChildVerticalPinChangeOptions,
+  DetectedGroupChildHorizontalPinChangeOptions,
+  DetectedGroupChildVerticalPinChangeOptions,
+  FrameChildHorizontalPinChangeOptions,
+  FrameChildVerticalPinChangeOptions,
+  GroupChildHorizontalPinChangeOptions,
+  GroupChildVerticalPinChangeOptions,
   getConstraintAndFrameChangeActionsForGroupChild,
   getFixedPointsForPinning,
   getFrameChangeActionsForFrameChild,
@@ -33,6 +37,7 @@ import {
 } from './simplified-pinning-helpers'
 import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
+import { NO_OP } from '../../core/shared/utils'
 
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
@@ -66,17 +71,24 @@ export const ConstraintsSection = React.memo(() => {
 ConstraintsSection.displayName = 'ConstraintsSection'
 
 const GroupChildConstraintsSection = React.memo(() => {
+  const pins = useDetectedConstraints('group-child')
+  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
+
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <ChildPinControl isGroupChild='group-child' />
+        <ChildPinControl isGroupChild='group-child' pins={pins} framePinsInfo={framePinsInfo} />
         <FlexColumn style={{ gap: 8 }}>
           <FlexRow css={InspectorRowHoverCSS}>
-            <PinWidthSVG />
+            <PinWidthControl controlStatus='simple' framePins={framePinsInfo} toggleWidth={NO_OP} />
             <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
           </FlexRow>
           <FlexRow css={InspectorRowHoverCSS}>
-            <PinHeightSVG />
+            <PinHeightControl
+              controlStatus='simple'
+              framePins={framePinsInfo}
+              toggleHeight={NO_OP}
+            />
             <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
           </FlexRow>
         </FlexColumn>
@@ -87,17 +99,24 @@ const GroupChildConstraintsSection = React.memo(() => {
 GroupChildConstraintsSection.displayName = 'GroupChildConstraintsSection'
 
 const FrameChildConstraintsSection = React.memo(() => {
+  const pins = useDetectedConstraints('frame-child')
+  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
+
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <ChildPinControl isGroupChild='frame-child' />
+        <ChildPinControl isGroupChild='frame-child' pins={pins} framePinsInfo={framePinsInfo} />
         <FlexColumn css={{ gap: 8 }}>
           <FlexRow css={InspectorRowHoverCSS}>
-            <PinWidthSVG />
+            <PinWidthControl controlStatus='simple' framePins={framePinsInfo} toggleWidth={NO_OP} />
             <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />
           </FlexRow>
           <FlexRow css={InspectorRowHoverCSS}>
-            <PinHeightSVG />
+            <PinHeightControl
+              controlStatus='simple'
+              framePins={framePinsInfo}
+              toggleHeight={NO_OP}
+            />
             <ChildConstraintSelect isGroupChild='frame-child' dimension={'height'} />
           </FlexRow>
         </FlexColumn>
@@ -108,7 +127,15 @@ const FrameChildConstraintsSection = React.memo(() => {
 FrameChildConstraintsSection.displayName = 'FrameChildConstraintsSection'
 
 const ChildPinControl = React.memo(
-  ({ isGroupChild }: { isGroupChild: 'group-child' | 'frame-child' }) => {
+  ({
+    isGroupChild,
+    pins,
+    framePinsInfo,
+  }: {
+    isGroupChild: 'group-child' | 'frame-child'
+    pins: DetectedPins
+    framePinsInfo: FramePinsInfo
+  }) => {
     const dispatch = useDispatch()
 
     const propertyTarget = useContextSelector(InspectorPropsContext, (contextData) => {
@@ -118,8 +145,6 @@ const ChildPinControl = React.memo(
     const selectedViewsRef = useRefEditorState(selectedViewsSelector)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-    const pins = useDetectedConstraints(isGroupChild)
 
     const onPinControlMouseDown = React.useCallback(
       (
@@ -215,12 +240,10 @@ const ChildPinControl = React.memo(
       ],
     )
 
-    const framePoints: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
-
     return (
       <PinControl
-        handlePinMouseDown={onPinControlMouseDown}
-        framePoints={framePoints}
+        handlePinMouseDown={NO_OP} // for group children, the visual controls are so confusing, I'm going to disable them until they are fixed
+        framePoints={framePinsInfo}
         controlStatus='simple'
         name='group-child-controls'
       />
@@ -247,15 +270,37 @@ const ChildConstraintSelect = React.memo(
 
     const pins = useDetectedConstraints(isGroupChild)
 
-    const optionsToUse =
-      dimension === 'width'
-        ? Object.values(HorizontalPinChangeOptions)
-        : Object.values(VerticalPinChangeOptions)
+    const optionsToUse = (() => {
+      if (dimension === 'width') {
+        if (isGroupChild === 'frame-child') {
+          return Object.values(FrameChildHorizontalPinChangeOptions)
+        } else {
+          return Object.values(GroupChildHorizontalPinChangeOptions)
+        }
+      } else {
+        if (isGroupChild === 'frame-child') {
+          return Object.values(FrameChildVerticalPinChangeOptions)
+        } else {
+          return Object.values(GroupChildVerticalPinChangeOptions)
+        }
+      }
+    })()
 
-    const activeOption =
-      dimension === 'width'
-        ? HorizontalPinChangeOptionsIncludingMixed[pins.horizontal]
-        : VerticalPinChangeOptionsIncludingMixed[pins.vertical]
+    const activeOption = (() => {
+      if (dimension === 'width') {
+        if (isGroupChild === 'frame-child') {
+          return DetectedFrameChildHorizontalPinChangeOptions[pins.horizontal]
+        } else {
+          return DetectedGroupChildHorizontalPinChangeOptions[pins.horizontal]
+        }
+      } else {
+        if (isGroupChild === 'frame-child') {
+          return DetectedFrameChildVerticalPinChangeOptions[pins.vertical]
+        } else {
+          return DetectedGroupChildVerticalPinChangeOptions[pins.vertical]
+        }
+      }
+    })()
 
     const onSubmit = React.useCallback(
       (option: SelectOption) => {

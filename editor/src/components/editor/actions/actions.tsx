@@ -1827,6 +1827,7 @@ export const UPDATE_FNS = {
     const updatedEditor: EditorModel = {
       ...editor,
       selectedViews: newlySelectedPaths,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       navigator:
         newlySelectedPaths === editor.selectedViews
           ? editor.navigator
@@ -1843,6 +1844,7 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: [],
       navigator: updateNavigatorCollapsedState([], editor.navigator),
       pasteTargetsToIgnore: [],
@@ -1873,6 +1875,7 @@ export const UPDATE_FNS = {
 
     return {
       ...editor,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: [...editor.selectedViews, ...additionalTargets],
       pasteTargetsToIgnore: [],
     }
@@ -2056,6 +2059,7 @@ export const UPDATE_FNS = {
     )
     return {
       ...withNewElement,
+      leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
       selectedViews: newSelectedViews,
     }
   },
@@ -2184,6 +2188,7 @@ export const UPDATE_FNS = {
         return {
           ...editorWithElementsInserted,
           selectedViews: [actualInsertionPath.intendedParentPath],
+          leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
           highlightedViews: [],
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...editorWithElementsInserted.trueUpGroupsForElementAfterDomWalkerRuns,
@@ -2368,6 +2373,10 @@ export const UPDATE_FNS = {
         return {
           ...withViewsDeleted,
           selectedViews: newSelection,
+          leftMenu: {
+            visible: withViewsDeleted.leftMenu.visible,
+            selectedTab: LeftMenuTab.Navigator,
+          },
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...withViewsDeleted.trueUpGroupsForElementAfterDomWalkerRuns,
             ...adjustedGroupTrueUps.map(trueUpElementChanged),
@@ -4837,6 +4846,7 @@ export const UPDATE_FNS = {
         {
           ...withNewElement,
           selectedViews: newSelectedViews,
+          leftMenu: { visible: editor.leftMenu.visible, selectedTab: LeftMenuTab.Navigator },
           trueUpGroupsForElementAfterDomWalkerRuns: [
             ...editor.trueUpGroupsForElementAfterDomWalkerRuns,
             trueUpElementChanged(newPath),

@@ -17,8 +17,10 @@ import {
   getJSXElementFromProjectContents,
   trueUpElementChanged,
 } from '../../../editor/store/editor-state'
-import { getSafeGroupChildConstraintsArray } from '../../../inspector/fill-hug-fixed-control'
-import { detectFillHugFixedState } from '../../../inspector/inspector-common'
+import {
+  detectFillHugFixedState,
+  getConstraintsIncludingImplicitForElement,
+} from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
 import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../canvas-types'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
@@ -33,7 +35,10 @@ import { ImmediateParentBounds } from '../../controls/parent-bounds'
 import { ImmediateParentOutlines } from '../../controls/parent-outlines'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
 import { ZeroSizeResizeControlWrapper } from '../../controls/zero-sized-element-controls'
-import { onlyFitWhenDraggingThisControl } from '../canvas-strategies'
+import {
+  getDescriptiveStrategyLabelWithRetargetedPaths,
+  onlyFitWhenDraggingThisControl,
+} from '../canvas-strategies'
 import type { CanvasStrategy, InteractionCanvasState } from '../canvas-strategy-types'
 import {
   controlWithProps,
@@ -68,9 +73,10 @@ export function absoluteResizeBoundingBoxStrategy(
     getTargetPathsFromInteractionTarget(canvasState.interactionTarget),
   )
 
-  const retargetedTargets = flattenSelection(
-    retargetStrategyToChildrenOfFragmentLikeElements(canvasState),
-  )
+  const { pathsWereReplaced, paths } = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+
+  const retargetedTargets = flattenSelection(paths)
+
   if (
     retargetedTargets.length === 0 ||
     !retargetedTargets.every((element) => {
@@ -83,7 +89,10 @@ export function absoluteResizeBoundingBoxStrategy(
   return {
     id: 'ABSOLUTE_RESIZE_BOUNDING_BOX',
     name: 'Resize',
-    descriptiveLabel: 'Resizing Elements',
+    descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+      'Resizing Elements',
+      pathsWereReplaced,
+    ),
     icon: {
       category: 'modalities',
       type: 'resize',
@@ -415,7 +424,12 @@ function getConstrainedSizes(
     EP.isDescendantOf(element.elementPath, path),
   )
   for (const element of descendants) {
-    const constraintsArray = getSafeGroupChildConstraintsArray(allElementProps, element.elementPath)
+    const constraintsArray = getConstraintsIncludingImplicitForElement(
+      jsxMetadata,
+      allElementProps,
+      element.elementPath,
+      'only-explicit-constraints', // if we set this to include-implicit-constraints, we can probably delete isDimensionConstrained
+    )
     const constraints = {
       width: isDimensionConstrained(jsxMetadata, element.elementPath, constraintsArray, 'width'),
       height: isDimensionConstrained(jsxMetadata, element.elementPath, constraintsArray, 'height'),

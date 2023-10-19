@@ -378,7 +378,7 @@ const Option = React.memo((props: OptionProps<ComponentOptionItem, false>) => {
         <Icn
           category='element'
           type='component'
-          color={isHovered ? 'primary' : isSelected ? 'on-light-main' : 'main'}
+          color={isHovered ? 'dynamic' : isSelected ? 'on-light-main' : 'main'}
           width={18}
           height={18}
           style={{ transform: 'scale(0.8)' }}
@@ -406,8 +406,6 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
     () => ({
       container: (styles): CSSObject => ({
         height: '100%',
-        paddingLeft: 8,
-        paddingRight: 8,
       }),
       control: (styles): CSSObject => ({
         background: 'transparent',
@@ -445,6 +443,8 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
+          paddingLeft: 8,
+          paddingRight: 8,
         }
       },
       input: (styles): CSSObject => {
@@ -454,7 +454,7 @@ function useSelectStyles(hasResults: boolean): StylesConfig<GroupOptionItem, fal
             controlStyles: getControlStyles('simple'),
           }) as CSSObject),
           paddingLeft: 4,
-          backgroundColor: colorTheme.bg4.value,
+          backgroundColor: colorTheme.bg2.value,
           flexGrow: 1,
           display: 'flex',
           alignItems: 'center',
@@ -639,7 +639,7 @@ const InsertMenuInner = React.memo((props: InsertMenuProps) => {
         controlShouldRenderValue={false}
         hideSelectedOptions={false}
         menuIsOpen
-        placeholder='Filter…'
+        placeholder='Select…'
         tabSelectsValue={false}
         options={options}
         onKeyDown={onKeyDown}

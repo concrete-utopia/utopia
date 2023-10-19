@@ -42,6 +42,7 @@ import { uniqBy } from '../../../../core/shared/array-utils'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../../../core/shared/element-template'
 import type { AllElementProps } from '../../../editor/store/editor-state'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 
 interface VectorAndEdge {
   movement: CanvasVector
@@ -119,7 +120,9 @@ export function keyboardAbsoluteResizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  const { pathsWereReplaced, paths: selectedElements } =
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+
   if (
     selectedElements.length === 0 ||
     !selectedElements.every((element) => {
@@ -132,7 +135,10 @@ export function keyboardAbsoluteResizeStrategy(
   return {
     id: 'KEYBOARD_ABSOLUTE_RESIZE',
     name: 'Resize',
-    descriptiveLabel: 'Resizing Elements',
+    descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+      'Resizing Elements',
+      pathsWereReplaced,
+    ),
     icon: {
       category: 'modalities',
       type: 'moveabs-large',

@@ -1,3 +1,4 @@
+import type { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
@@ -23,7 +24,7 @@ import type {
 import { trueUpElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
-  isHugFromStyleAttribute,
+  getConstraintsIncludingImplicitForElement,
   isHugFromStyleAttributeOrNull,
 } from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
@@ -43,10 +44,10 @@ import {
   setValueKeepingOriginalUnit,
 } from './set-css-length-command'
 import type { FrameWithAllPoints } from './utils/group-resize-utils'
-import { rectangleToSixFramePoints } from './utils/group-resize-utils'
-import { sixFramePointsToCanvasRectangle } from './utils/group-resize-utils'
 import {
+  rectangleToSixFramePoints,
   roundSixPointFrameToNearestWhole,
+  sixFramePointsToCanvasRectangle,
   transformConstrainedLocalFullFrameUsingBoundingBox,
 } from './utils/group-resize-utils'
 import { wildcardPatch } from './wildcard-patch-command'
@@ -217,21 +218,14 @@ function getUpdateResizedGroupChildrenCommands(
             continue
           }
 
-          let constraints: Set<keyof FrameWithAllPoints> = new Set(
-            editor.allElementProps[EP.toString(child)]?.['data-constraints'] ?? [],
+          const constraints: Array<LayoutPinnedProp> = getConstraintsIncludingImplicitForElement(
+            editor.jsxMetadata,
+            editor.allElementProps,
+            child,
+            'include-max-content', // TODO make sure to keep this in sync with detectConstraintsSetForGroupChild
           )
 
           const elementMetadata = MetadataUtils.findElementByElementPath(editor.jsxMetadata, child)
-
-          const jsxElement = MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, child)
-          if (jsxElement != null) {
-            if (isHugFromStyleAttribute(jsxElement.props, 'width')) {
-              constraints.add('width')
-            }
-            if (isHugFromStyleAttribute(jsxElement.props, 'height')) {
-              constraints.add('height')
-            }
-          }
 
           const resizedLocalFramePoints = roundSixPointFrameToNearestWhole(
             transformConstrainedLocalFullFrameUsingBoundingBox(
@@ -239,7 +233,7 @@ function getUpdateResizedGroupChildrenCommands(
               updatedGroupBounds,
               childrenBounds,
               rectangleToSixFramePoints(currentLocalFrame, childrenBounds),
-              Array.from(constraints),
+              constraints,
             ),
           )
 
@@ -481,7 +475,7 @@ function setElementPins(
     ),
   ]
 
-  if (!isHugFromStyleAttributeOrNull(targetProps, 'width')) {
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'width', 'include-all-hugs')) {
     result.push(
       setCssLengthProperty(
         'always',
@@ -494,7 +488,8 @@ function setElementPins(
       ),
     )
   }
-  if (!isHugFromStyleAttributeOrNull(targetProps, 'height')) {
+
+  if (!isHugFromStyleAttributeOrNull(targetProps, 'height', 'include-all-hugs')) {
     result.push(
       setCssLengthProperty(
         'always',

@@ -53,6 +53,8 @@ export function flexReorderStrategy(
     return null
   }
 
+  const FlexReorderFitness = 1.4 // needs to be higher than WeightWithoutExistingOffset in relative-move-strategy, but lower than DragConversionWeight in convert-to-absolute-and-move-strategy
+
   const parentFlexDirection = element?.specialSizeMeasurements.parentFlexDirection
   const reorderDirection = parentFlexDirection === 'column' ? 'vertical' : 'horizontal'
   return {
@@ -88,7 +90,7 @@ export function flexReorderStrategy(
         interactionSession != null &&
         interactionSession.interactionData.type === 'DRAG' &&
         interactionSession.activeControl.type === 'BOUNDING_AREA'
-          ? 1
+          ? FlexReorderFitness
           : 0,
       apply: () => {
         return interactionSession == null

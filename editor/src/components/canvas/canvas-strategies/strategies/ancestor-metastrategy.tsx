@@ -47,7 +47,7 @@ export function ancestorMetaStrategy(
       return []
     }
 
-    const unrolledChildren = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+    const unrolledChildren = retargetStrategyToChildrenOfFragmentLikeElements(canvasState).paths
 
     if (unrolledChildren.length !== 1) {
       return []

@@ -763,6 +763,56 @@ describe('Fixed / Fill / Hug control', () => {
         `),
       )
     })
+    it('rounds up on text elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+        import { App } from '/src/app.js'
+        
+        export var storyboard = (
+          <Storyboard>
+            <div
+              data-testid='parent'
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+                display: 'flex',
+                flexDirection: 'row'
+              }}
+              data-label='Playground'
+            >
+              <span
+                data-testid='child'
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  wordBreak: 'break-word',
+                  width: 'max-content',
+                  height: 'max-content',
+                  contain: 'layout',
+                }}
+              >span</span>
+            </div>
+          </Storyboard>
+        )`,
+        'await-first-dom-report',
+      )
+      const span = await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+      await expectSingleUndo2Saves(editor, async () => {
+        await mouseClickAtPoint(button, { x: 5, y: 5 })
+      })
+
+      expect(span.style.width).toEqual('30px')
+      expect(span.style.height).toEqual(MaxContent)
+    })
   })
 
   describe('groups', () => {

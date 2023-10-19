@@ -1,7 +1,12 @@
 import type { Modifiers } from '../../../../utils/modifiers'
 import { cmdModifier, shiftModifier } from '../../../../utils/modifiers'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import {
+  mouseClickAtPoint,
+  mouseDownAtPoint,
+  mouseDragFromPointWithDelta,
+  mouseMoveToPoint,
+} from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
@@ -107,6 +112,51 @@ describe('Relative move', () => {
           </div>
         `),
         )
+      })
+
+      it('in flex parent flex reorder wins', async () => {
+        const project = makeTestProjectCodeWithSnippet(`
+        <div style={{ display: 'flex', width: '100%', height: '100%' }} data-uid='foo'>
+          <div
+            style={{
+              backgroundColor: '#f0f',
+              position: 'relative',
+              width: 200,
+              height: 200,
+            }}
+            data-uid='bar'
+            data-testid='bar'
+          />
+          <div
+            style={{
+              backgroundColor: '#f0f',
+              position: 'relative',
+              width: 200,
+              height: 200,
+            }}
+            data-uid='bar2'
+            data-testid='bar2'
+          />
+        </div>
+      `)
+
+        const renderResult = await renderTestEditorWithCode(project, 'await-first-dom-report')
+
+        const targetElement = renderResult.renderedDOM.getByTestId('bar')
+        const targetElementBounds = targetElement.getBoundingClientRect()
+        const canvasControlsLayer = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+
+        const startPoint = { x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 }
+
+        await mouseDownAtPoint(canvasControlsLayer, startPoint, { modifiers: cmdModifier })
+
+        await mouseMoveToPoint(canvasControlsLayer, {
+          x: startPoint.x + 10,
+          y: startPoint.y + 10,
+        })
+
+        const activeStrategy = renderResult.getEditorState().strategyState.currentStrategy
+        expect(activeStrategy).toEqual('FLEX_REORDER')
       })
     })
 

@@ -18,6 +18,7 @@ import {
   useColorTheme,
   LargerIcons,
   FlexColumn,
+  colorTheme,
 } from '../../uuiui'
 import { ConsoleAndErrorsPane } from '../code-editor/console-and-errors-pane'
 import { InspectorWidthAtom } from '../inspector/common/inspector-atoms'
@@ -58,7 +59,6 @@ const TopMenuHeight = 35
 // with the top border of the first inspector section
 
 const NothingOpenCard = React.memo(() => {
-  const colorTheme = useColorTheme()
   const dispatch = useDispatch()
   const handleOpenCanvasClick = React.useCallback(() => {
     dispatch([EditorActions.setPanelVisibility('canvas', true)])
@@ -182,8 +182,6 @@ interface ResizableRightPaneProps {
 }
 
 export const RightPane = React.memo<ResizableRightPaneProps>((props) => {
-  const colorTheme = useColorTheme()
-
   const selectedTab = useEditorState(
     Substores.restOfEditor,
     (store) => store.editor.rightMenu.selectedTab,
@@ -292,6 +290,7 @@ export const CodeEditorPane = React.memo<CodeEditorPaneProps>((props) => {
         overflow: 'hidden',
         borderRadius: UtopiaTheme.panelStyles.panelBorderRadius,
         boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        background: colorTheme.bg1.value,
       }}
     >
       <TitleBarCode panelData={props.panelData} />

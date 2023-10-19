@@ -220,7 +220,7 @@ type JSXElementLikeConversion = {
   childInstances: ElementInstanceMetadata[]
 }
 
-type JSXFragmentConversion = {
+export type JSXFragmentConversion = {
   element: JSXFragment
   childInstances: ElementInstanceMetadata[]
   childrenBoundingFrame: CanvasRectangle
@@ -277,26 +277,12 @@ export function getInstanceForFragmentToFrameConversion(
   }
 }
 
-export function convertFragmentToFrame(
+export function actuallyConvertFramentToFrame(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
-  allElementProps: AllElementProps,
+  instance: JSXFragmentConversion,
   elementPath: ElementPath,
-  convertIfStaticChildren:
-    | 'do-not-convert-if-it-has-static-children'
-    | 'convert-even-if-it-has-static-children',
 ): CanvasCommand[] {
-  const instance = getInstanceForFragmentToFrameConversion(
-    metadata,
-    pathTrees,
-    allElementProps,
-    elementPath,
-    convertIfStaticChildren,
-  )
-  if (isConversionForbidden(instance)) {
-    return []
-  }
-
   const { children, uid } = instance.element
 
   const parentBounds =
@@ -341,6 +327,29 @@ export function convertFragmentToFrame(
     ),
     ...offsetChildrenByDelta(instance.childInstances, instance.childrenBoundingFrame),
   ]
+}
+
+export function convertFragmentToFrame(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
+): CanvasCommand[] {
+  const instance = getInstanceForFragmentToFrameConversion(
+    metadata,
+    pathTrees,
+    allElementProps,
+    elementPath,
+    convertIfStaticChildren,
+  )
+  if (isConversionForbidden(instance)) {
+    return []
+  }
+
+  return actuallyConvertFramentToFrame(metadata, pathTrees, instance, elementPath)
 }
 
 export function getInstanceForFragmentToGroupConversion(
@@ -1248,7 +1257,7 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
   }
 
   function setPinPreserveHug(pin: 'width' | 'height', value: number): Array<SetCssLengthProperty> {
-    const pinIsAlreadyHug = isHugFromStyleAttribute(elementCurrentProps, pin)
+    const pinIsAlreadyHug = isHugFromStyleAttribute(elementCurrentProps, pin, 'only-max-content')
 
     if (pinIsAlreadyHug) {
       // we don't need to convert a Hug pin, do nothing here
