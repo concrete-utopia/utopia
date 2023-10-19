@@ -39,6 +39,7 @@ import {
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
+import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
 
 type FlexDirection = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'
@@ -114,12 +115,7 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
-        ...ifElementIsFragmentLikeFirstConvertItToFrame(
-          metadata,
-          allElementProps,
-          elementPathTree,
-          path,
-        ),
+        ...maybeConvertElementToFrame(metadata, allElementProps, elementPathTree, path),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -165,12 +161,7 @@ export function convertLayoutToFlexCommands(
           ]
 
     return [
-      ...ifElementIsFragmentLikeFirstConvertItToFrame(
-        metadata,
-        allElementProps,
-        elementPathTree,
-        path,
-      ),
+      ...maybeConvertElementToFrame(metadata, allElementProps, elementPathTree, path),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -188,7 +179,7 @@ export function convertLayoutToFlexCommands(
   })
 }
 
-function ifElementIsFragmentLikeFirstConvertItToFrame(
+function maybeConvertElementToFrame(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
   elementPathTrees: ElementPathTrees,
@@ -210,7 +201,7 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
     return []
   }
 
-  if (type == 'fragment' || type == 'sizeless-div') {
+  if (type == 'fragment' || type == 'sizeless-div' || treatElementAsGroupLike(metadata, target)) {
     const childInstances = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       replaceFragmentLikePathsWithTheirChildrenRecursive(
