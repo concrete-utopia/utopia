@@ -28,7 +28,7 @@ export const TextAutoSizingTestId = 'textAutoSizing'
 
 function useAutoSizingTypeAndStatus(): {
   status: ControlStatus
-  type: 'fixed' | 'hug' | 'hug-group' | 'computed' | 'detected' | null
+  type: 'fixed' | 'hug' | 'hug-group' | 'computed' | 'detected' | 'scaled' | null
 } {
   const isEditableText = useEditorState(
     Substores.metadata,

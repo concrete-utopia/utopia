@@ -570,6 +570,7 @@ export type FixedHugFill =
   | { type: 'hug-group'; value: CSSNumber } // hug-group has a Fixed value but shows us Hug on the UI to explain Group behavior
   | { type: 'computed'; value: CSSNumber }
   | { type: 'detected'; value: CSSNumber }
+  | { type: 'scaled'; value: CSSNumber }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -655,8 +656,12 @@ export function detectFillHugFixedState(
   const isGroupLike = treatElementAsGroupLike(metadata, elementPath)
 
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
-  if (parsed != null && parsed.unit === '%' && parsed.value === 100) {
-    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fill', value: parsed }
+  if (parsed != null && parsed.unit === '%') {
+    const fillOrScaled = parsed.value === 100 ? 'fill' : 'scaled'
+    const valueWithType: FixedHugFill = {
+      type: isGroupLike ? 'hug-group' : fillOrScaled,
+      value: parsed,
+    }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
@@ -1098,6 +1103,7 @@ export function isFixedHugFillEqual(
       return b.fixedHugFill.type === 'hug'
     case 'fill':
     case 'fixed':
+    case 'scaled':
     case 'computed':
     case 'detected':
     case 'hug-group':
