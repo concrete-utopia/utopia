@@ -247,7 +247,7 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
   return []
 }
 
-const NEAR_CENTER_LINE_TOLERANCE = 0.2
+const NEAR_CENTER_LINE_TOLERANCE_MULTIPLIER = 0.2
 
 function isElementNearCenterLine(
   parentGlobalFrame: CanvasRectangle,
@@ -268,12 +268,12 @@ function isElementNearCenterLine(
     case 'column':
       return (
         Math.abs(childCenter.x - parentCenter.x) <
-        parentGlobalFrame.width * NEAR_CENTER_LINE_TOLERANCE
+        parentGlobalFrame.width * NEAR_CENTER_LINE_TOLERANCE_MULTIPLIER
       )
     case 'row':
       return (
         Math.abs(childCenter.y - parentCenter.y) <
-        parentGlobalFrame.height * NEAR_CENTER_LINE_TOLERANCE
+        parentGlobalFrame.height * NEAR_CENTER_LINE_TOLERANCE_MULTIPLIER
       )
     default:
       assertNever(parentFlexDirection)
