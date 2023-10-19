@@ -43,6 +43,7 @@ function checkGroupSuitability(
         treatElementAsGroupLike(metadata, target) || treatElementAsGroupLike(metadata, parentPath)
       )
     case 'fixed':
+    case 'scaled':
     case 'computed':
     case 'detected':
     case 'hug-group':

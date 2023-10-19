@@ -85,6 +85,7 @@ export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
 
 export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
+export const ScaledLabel = 'Scaled' as const
 export const HugContentsLabel = 'Hug contents' as const
 export const HugGroupContentsLabel = 'Hug contents' as const
 export const ComputedLabel = 'Computed' as const
@@ -96,6 +97,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return FillContainerLabel
     case 'fixed':
       return FixedLabel
+    case 'scaled':
+      return ScaledLabel
     case 'hug':
       return HugContentsLabel
     case 'hug-group':
@@ -115,6 +118,7 @@ export function selectOptionIconType(
 ): string {
   switch (mode) {
     case 'fill':
+    case 'scaled': // TODO: needs separate icon
       return `fill-${dimension}`
     case 'fixed':
       return `fixed-${dimension}`
@@ -658,6 +662,7 @@ function strategyForChangingFillFixedHugType(
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
+    case 'scaled':
     case 'detected':
     case 'computed':
     case 'hug-group':
@@ -672,6 +677,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'computed':
     case 'detected':
     case 'fixed':
+    case 'scaled':
     case 'fill':
     case 'hug-group':
       return value.value
@@ -686,7 +692,7 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
   if (value?.type === 'fixed') {
     return 'AnyValid'
   }
-  if (value?.type === 'fill') {
+  if (value?.type === 'fill' || value?.type === 'scaled') {
     return value.value.unit === '%' ? 'Percent' : 'Unitless'
   }
   return 'Unitless'

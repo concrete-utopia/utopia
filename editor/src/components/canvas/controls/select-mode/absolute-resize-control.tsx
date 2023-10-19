@@ -399,6 +399,8 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
     case 'detected':
     case 'computed':
       return `${actualSize}`
+    case 'scaled':
+      return `${actualSize}%  `
     default:
       assertNever(state)
   }
