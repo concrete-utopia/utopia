@@ -3054,7 +3054,7 @@ export const ComponentInfoKeepDeepEquality: KeepDeepEqualityCall<ComponentInfo> 
     (info) => info.insertMenuLabel,
     StringKeepDeepEquality,
     (info) => info.elementToInsert,
-    ComponentElementToInsertKeepDeepEquality,
+    createCallWithTripleEquals<() => ComponentElementToInsert>(),
     (info) => info.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     componentInfo,
