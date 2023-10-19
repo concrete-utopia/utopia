@@ -699,7 +699,12 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
 }
 
 function isNumberInputEnabled(value: FixedHugFill | null): boolean {
-  return value?.type === 'fixed' || value?.type === 'fill' || value?.type === 'hug-group'
+  return (
+    value?.type === 'fixed' ||
+    value?.type === 'fill' ||
+    value?.type === 'hug-group' ||
+    value?.type === 'scaled'
+  )
 }
 
 export const anySelectedElementGroupOrChildOfGroup = createSelector(
