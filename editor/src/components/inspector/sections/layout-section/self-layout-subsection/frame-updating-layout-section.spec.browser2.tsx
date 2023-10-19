@@ -979,7 +979,7 @@ const controlsTested = new Set(
 
 describe('Frame updating layout section', () => {
   controlsTested.forEach((controlTested) => {
-    it(`${controlTested} control`, () => {
+    describe(`${controlTested} control`, () => {
       const filterOptic = traverseArray<TestCase>().compose(
         filtered((testCase) => {
           return testCase.controlTested === controlTested
