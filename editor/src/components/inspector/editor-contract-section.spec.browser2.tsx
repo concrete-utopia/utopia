@@ -1000,6 +1000,7 @@ function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapper
               width: 157,
               height: 112,
             }}
+            ${innerWrapperType === 'group' ? `data-constraints={['left', 'width']}` : ``}
             data-uid='f64'
           />
           <div
@@ -1011,6 +1012,7 @@ function nestedGroupsWithWrapperType(outerWrapperType: WrapperType, innerWrapper
               width: 139,
               height: 138,
             }}
+            ${innerWrapperType === 'group' ? `data-constraints={['left', 'width']}` : ``}
             data-uid='978'
           />
         ${closingTag(innerWrapperType)}
