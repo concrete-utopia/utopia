@@ -118,9 +118,9 @@ export function selectOptionIconType(
 ): string {
   switch (mode) {
     case 'fill':
-    case 'scaled': // TODO: needs separate icon
       return `fill-${dimension}`
     case 'fixed':
+    case 'scaled': // TODO: needs separate icon
       return `fixed-${dimension}`
     case 'hug':
       return `hug-${dimension}`
