@@ -3446,626 +3446,14 @@ describe('inspector tests with real metadata', () => {
     describe('group children', () => {
       // TODO rewrite this to use the dropdown
       setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
-      const tests: {
-        name: string
+
+      function runTest(test: {
         input: string
         selection: ElementPath[]
         logic: (renderResult: EditorRenderResult) => Promise<void>
         want: string
-      }[] = [
-        {
-          name: 'set constraint for Top, Height using the visual pin control',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'unset constraint for TLBR',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['top']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for TLBR, multiple values',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control1 = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control1, { x: 1, y: 1 })
-            const control2 = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-left',
-            )
-            await mouseClickAtPoint(control2, { x: 1, y: 1 })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                    left: 0,
-                    width: 100,
-                  }}
-                  data-constraints={['top', 'height', 'left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'unset constraint for TLBR, multiple values',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'top', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for TLBR, multiselect',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
-          ],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
-          },
-          want: `
-           <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left', 'width', 'top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    left: 200,
-                    backgroundColor: 'red',
-                    top: 200,
-                    height: 0,
-                  }}
-                  data-constraints={['top', 'height']}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for TLBR, multiselect with already-present values',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'width', 'top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
-          ],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left', 'width', 'top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    left: 200,
-                    backgroundColor: 'red',
-                    top: 200,
-                    height: 0,
-                  }}
-                  data-constraints={['top', 'height']}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'unset constraint for TH, multiselect',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'top']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                  data-constraints={['top']}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
-          ],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    left: 200,
-                    backgroundColor: 'red',
-                    top: 200,
-                    height: 0,
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for Left + Width',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = document.getElementById('frame-child-constraint-width')
-            if (control == null) {
-              throw new Error('cannot find select')
-            }
-
-            await selectEvent.select(control, 'Left')
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    height: 100,
-                    backgroundColor: 'blue',
-                    left: 0,
-                    width: 100,
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-      ]
-      tests.forEach((test, i) => {
-        it(`${i + 1}/${tests.length} ${test.name}`, async () => {
+      }): () => Promise<void> {
+        return async function testBody() {
           const renderResult = await renderTestEditorWithCode(
             formatTestProjectCode(makeTestProjectCodeWithSnippet(test.input)),
             'await-first-dom-report',
@@ -4079,8 +3467,642 @@ describe('inspector tests with real metadata', () => {
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             formatTestProjectCode(makeTestProjectCodeWithSnippet(test.want)),
           )
-        })
-      })
+        }
+      }
+
+      it(
+        'set constraint for Top, Height using the visual pin control',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            const control = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-catcher-pin-top',
+            )
+            await mouseClickAtPoint(control, { x: 1, y: 1 })
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'unset constraint for TLBR',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['top']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            const control = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-pin-centery-transparent',
+            )
+            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for TLBR, multiple values',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            const control1 = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-catcher-pin-top',
+            )
+            await mouseClickAtPoint(control1, { x: 1, y: 1 })
+            const control2 = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-catcher-pin-left',
+            )
+            await mouseClickAtPoint(control2, { x: 1, y: 1 })
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                  left: 0,
+                  width: 100,
+                }}
+                data-constraints={['top', 'height', 'left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'unset constraint for TLBR, multiple values',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'top', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            const control = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-pin-centery-transparent',
+            )
+            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for TLBR, multiselect',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+          ],
+          logic: async (renderResult) => {
+            const control = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-catcher-pin-top',
+            )
+            await mouseClickAtPoint(control, { x: 1, y: 1 })
+          },
+          want: `
+         <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left', 'width', 'top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  left: 200,
+                  backgroundColor: 'red',
+                  top: 200,
+                  height: 0,
+                }}
+                data-constraints={['top', 'height']}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for TLBR, multiselect with already-present values',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'width', 'top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+          ],
+          logic: async (renderResult) => {
+            const control = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-catcher-pin-top',
+            )
+            await mouseClickAtPoint(control, { x: 1, y: 1 })
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left', 'width', 'top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  left: 200,
+                  backgroundColor: 'red',
+                  top: 200,
+                  height: 0,
+                }}
+                data-constraints={['top', 'height']}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'unset constraint for TH, multiselect',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'top']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+                data-constraints={['top']}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+          ],
+          logic: async (renderResult) => {
+            const control = await renderResult.renderedDOM.findByTestId(
+              'group-child-controls-pin-centery-transparent',
+            )
+            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  left: 200,
+                  backgroundColor: 'red',
+                  top: 200,
+                  height: 0,
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for Left + Width',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            const control = document.getElementById('frame-child-constraint-width')
+            if (control == null) {
+              throw new Error('cannot find select')
+            }
+
+            await selectEvent.select(control, 'Left')
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  height: 100,
+                  backgroundColor: 'blue',
+                  left: 0,
+                  width: 100,
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
     })
   })
 })
