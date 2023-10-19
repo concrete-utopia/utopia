@@ -803,6 +803,8 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         flexDirection: 'row',
         gap: 41,
         padding: '80px 52px',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
       }}
       data-uid='container'
     >
@@ -971,6 +973,8 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         flexDirection: 'row',
         gap: 65.6,
         padding: '42px 61px',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
       }}
       data-uid='container'
     >
@@ -1165,6 +1169,8 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         flexDirection: 'row',
         gap: 56.5,
         padding: '56px 24px',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
       }}
       data-uid='container'
     >
