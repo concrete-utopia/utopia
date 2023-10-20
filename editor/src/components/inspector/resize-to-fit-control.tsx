@@ -35,6 +35,8 @@ function checkGroupSuitability(
   const parentPath = EP.parentPath(target)
   switch (mode) {
     case 'hug':
+    case 'squeeze':
+    case 'collapsed':
       // Do not let a group be the target of a resize to fit operation.
       return !treatElementAsGroupLike(metadata, target)
     case 'fill':

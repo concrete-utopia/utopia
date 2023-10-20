@@ -392,6 +392,10 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
     case 'hug':
     case 'hug-group':
       return 'Hug'
+    case 'squeeze':
+      return 'Squeeze'
+    case 'collapsed':
+      return 'Collapsed'
     case 'fixed':
     case 'scaled':
     case 'detected':

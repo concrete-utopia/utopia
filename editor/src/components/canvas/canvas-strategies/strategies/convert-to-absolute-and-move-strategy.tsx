@@ -80,8 +80,8 @@ import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
 import {
+  detectedHugTypeFromMetadata,
   getConvertIndividualElementToAbsoluteCommands,
-  isHugFromStyleAttribute,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
@@ -738,7 +738,7 @@ function createSetParentsToFixedSizeCommands(
       return []
     }
     return firstAncestorsHonoringPropsSize.flatMap((ancestor) => {
-      const parentElement = MetadataUtils.getJSXElementFromMetadata(metadata, ancestor)
+      const parentElement = MetadataUtils.findElementByElementPath(metadata, ancestor)
       if (parentElement == null) {
         return []
       }
@@ -757,6 +757,6 @@ function createSetParentsToFixedSizeCommands(
   return []
 }
 
-function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
-  return isHugFromStyleAttribute(element.props, property, 'include-all-hugs')
+function isHuggingParent(element: ElementInstanceMetadata, property: 'width' | 'height') {
+  return detectedHugTypeFromMetadata(element, property) != null
 }

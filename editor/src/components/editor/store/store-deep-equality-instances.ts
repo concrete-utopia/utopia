@@ -1702,6 +1702,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.fontStyle,
         newSize.textDecorationLine,
         newSize.textBounds,
+        newSize.computedHeightStyle,
+        newSize.computedWidthStyle,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

@@ -824,7 +824,10 @@ function getComputedStyle(
   paths: Array<ElementPath>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
-): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
+): {
+  computedStyle: ComputedStyle | null
+  attributeMetadata: StyleAttributeMetadata | null
+} {
   const isSelectedOnAnyPaths = selectedViews.some((sv) =>
     paths.some((path) => EP.pathsEqual(sv, path)),
   )
@@ -836,6 +839,7 @@ function getComputedStyle(
     }
   }
   const elementStyle = window.getComputedStyle(element)
+  const hello = element.computedStyleMap().get('width')
   const attributesSetByStylesheet = getCachedAttributesComingFromStyleSheets(
     invalidatedPathsForStylesheetCache,
     paths[0], // TODO is this sufficient to use the first path element for caching?
@@ -1051,6 +1055,9 @@ function getSpecialMeasurements(
       })
     : null
 
+  const computedWidthStyle = element.computedStyleMap().get('width')?.toString() ?? null
+  const computedHeightStyle = element.computedStyleMap().get('height')?.toString() ?? null
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1094,6 +1101,8 @@ function getSpecialMeasurements(
     fontStyle,
     textDecorationLine,
     textBounds,
+    computedWidthStyle,
+    computedHeightStyle,
   )
 }
 
