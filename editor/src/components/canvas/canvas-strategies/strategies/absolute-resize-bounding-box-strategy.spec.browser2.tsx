@@ -43,6 +43,7 @@ import {
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
 import {
+  dispatchMouseEnterEventAtPoint,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
   mouseDownAtPoint,
@@ -75,6 +76,7 @@ import {
   SafeGapSmallElementSize,
   SmallElementSize,
 } from '../../controls/bounding-box-hooks'
+import { act } from 'react-dom/test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
@@ -3403,5 +3405,31 @@ describe('Absolute Resize Control', () => {
     expect(resizeControlLeft.style.left).toEqual('')
     expect(resizeControlLeft.style.width).toEqual('10px')
     expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+  })
+  it('dims the size label on hover', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    const sizeLabel = renderResult.renderedDOM.getByTestId(SizeLabelTestId)
+    const sizeLabelBounds = sizeLabel.getBoundingClientRect()
+    act(() => {
+      dispatchMouseEnterEventAtPoint({ x: sizeLabelBounds.x + 2, y: sizeLabelBounds.y + 2 })
+    })
+
+    const { opacity } = sizeLabel.style
+    expect(opacity).toEqual('0.075')
   })
 })
