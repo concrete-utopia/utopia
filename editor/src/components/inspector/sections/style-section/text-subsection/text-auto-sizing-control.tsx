@@ -20,7 +20,7 @@ import { useNonRoundedComputedSizeRef } from '../../../inpector-selectors'
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
-type TextSizingState = 'auto-width' | 'auto-height' | 'fixed-size'
+type TextSizingState = 'auto-width' | 'auto-height' | 'fixed-size' | 'mixed' | 'disabled'
 
 const isConsideredFixed = (type: FixedHugFill['type'] | null | undefined): boolean =>
   type === 'fixed' || type === 'detected'
@@ -28,13 +28,13 @@ const isConsideredFixed = (type: FixedHugFill['type'] | null | undefined): boole
 function detectTextSizingState(
   metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
-): TextSizingState | null {
+): TextSizingState {
   const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
   if (instance == null) {
-    return null
+    return 'disabled'
   }
   if (!MetadataUtils.isSpan(instance)) {
-    return null
+    return 'disabled'
   }
 
   const horizontal = detectFillHugFixedState('horizontal', metadata, elementPath)
@@ -55,28 +55,26 @@ function detectTextSizingState(
     return 'fixed-size'
   }
 
-  return null
+  return 'disabled'
 }
 
 function detectTextSizingStateMultiSelect(
   metadata: ElementInstanceMetadataMap,
   elementPaths: ElementPath[],
-) {
+): TextSizingState {
   if (elementPaths.length === 0) {
-    return null
+    return 'disabled'
   }
 
   const result = detectTextSizingState(metadata, elementPaths[0])
   for (const path of elementPaths.slice(1)) {
     const state = detectTextSizingState(metadata, path)
     if (state !== result) {
-      return null
+      return 'mixed'
     }
   }
   return result
 }
-
-const controlStyles = getControlStyles('simple')
 
 export const TextAutoSizingControl = React.memo(() => {
   const state = useEditorState(
@@ -85,6 +83,16 @@ export const TextAutoSizingControl = React.memo(() => {
       detectTextSizingStateMultiSelect(store.editor.jsxMetadata, store.editor.selectedViews),
     'TextSizingControl state',
   )
+
+  const controlStyles = React.useMemo(() => {
+    if (state === 'disabled') {
+      return getControlStyles('disabled')
+    }
+    if (state === 'mixed') {
+      return getControlStyles('multiselect-mixed-simple-or-unset')
+    }
+    return getControlStyles('simple')
+  }, [state])
 
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
