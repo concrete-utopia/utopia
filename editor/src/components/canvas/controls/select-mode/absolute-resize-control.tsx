@@ -563,6 +563,7 @@ const SizeLabel = React.memo(
           position: 'absolute',
           display: 'flex',
           justifyContent: 'center',
+          pointerEvents: 'none',
         }}
         data-testid='parent-resize-label'
       >
