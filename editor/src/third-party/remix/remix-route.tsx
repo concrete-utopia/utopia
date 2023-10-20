@@ -1,8 +1,8 @@
 import React from 'react'
 import invariant from './invariant'
-import { RemixContextObject } from '@remix-run/react/dist/entry'
+import type { UNSAFE_RemixContextObject as RemixContextObject } from '@remix-run/react'
 import { RemixRootDefaultErrorBoundary } from '@remix-run/react/dist/errorBoundaries'
-import { RemixContext } from '@remix-run/react/dist/components'
+import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import { Outlet, useRouteError } from 'react-router'
 
 function useRemixContext(): RemixContextObject {
