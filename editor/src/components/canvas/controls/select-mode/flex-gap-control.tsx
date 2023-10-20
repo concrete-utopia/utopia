@@ -3,9 +3,11 @@ import * as EP from '../../../../core/shared/element-path'
 import type { CanvasRectangle, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  canvasRectangle,
   isFiniteRectangle,
   size,
   windowPoint,
+  zeroCanvasRect,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -116,7 +118,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     flexGap.direction,
   )
 
-  const contentArea = React.useMemo((): Size => {
+  const contentArea = React.useMemo((): CanvasRectangle => {
     function valueForDimension(
       directions: FlexDirection[],
       direction: FlexDirection,
@@ -132,21 +134,27 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
         (c) => (c.localFrame != null && isFiniteRectangle(c.localFrame) ? c.localFrame : null),
         children,
       ),
-    ) ?? { width: 0, height: 0 }
+    )
 
-    return {
-      width: valueForDimension(
-        ['column', 'column-reverse'],
-        flexGap.direction,
-        bounds.width,
-        flexGapValue.renderedValuePx,
-      ),
-      height: valueForDimension(
-        ['row', 'row-reverse'],
-        flexGap.direction,
-        bounds.height,
-        flexGapValue.renderedValuePx,
-      ),
+    if (bounds == null) {
+      return zeroCanvasRect
+    } else {
+      return canvasRectangle({
+        x: bounds.x,
+        y: bounds.y,
+        width: valueForDimension(
+          ['column', 'column-reverse'],
+          flexGap.direction,
+          bounds.width,
+          flexGapValue.renderedValuePx,
+        ),
+        height: valueForDimension(
+          ['row', 'row-reverse'],
+          flexGap.direction,
+          bounds.height,
+          flexGapValue.renderedValuePx,
+        ),
+      })
     }
   }, [selectedElement, metadata, flexGap, flexGapValue])
 
@@ -208,7 +216,7 @@ interface GapControlSegmentProps {
   hoverEnd: React.MouseEventHandler
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
-  contentArea: Size
+  contentArea: CanvasRectangle
   flexDirection: FlexDirection
   gapValue: CSSNumber
   elementHovered: boolean
@@ -264,6 +272,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
       key={path}
       onMouseEnter={hoverStart}
       onMouseLeave={handleHoverEndInner}
+      data-testid={`gap-control-segment-${path}`}
       style={{
         pointerEvents: 'all',
         position: 'absolute',
@@ -279,6 +288,9 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     >
       <div
         style={{
+          position: 'absolute',
+          left: contentArea.x,
+          top: contentArea.y,
           width: contentArea.width,
           height: contentArea.height,
           display: 'flex',
