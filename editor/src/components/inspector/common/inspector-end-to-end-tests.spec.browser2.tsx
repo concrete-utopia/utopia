@@ -54,6 +54,7 @@ import {
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
 import {
+  expectSelectControlValue,
   mouseClickAtPoint,
   mouseDownAtPoint,
   pickFromReactSelectPopupList,
@@ -283,6 +284,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
     matchInlineSnapshotBrowser(
@@ -371,6 +375,9 @@ describe('inspector tests with real metadata', () => {
       `"multiselect-mixed-simple-or-unset"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `""`)
     matchInlineSnapshotBrowser(topControl.placeholder, `"${MixedPlaceholder}"`)
@@ -450,6 +457,17 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(
+      renderResult,
+      'frame-child-constraint-width-popuplist',
+      'Left and Right',
+    )
+    expectSelectControlValue(
+      renderResult,
+      'frame-child-constraint-height-popuplist',
+      'Top and Bottom',
+    )
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
     matchInlineSnapshotBrowser(
@@ -524,6 +542,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Right')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Bottom')
+
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -592,6 +613,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
 
     matchInlineSnapshotBrowser(topControl.value, `"53"`)
     matchInlineSnapshotBrowser(
@@ -668,6 +692,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
 
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
@@ -758,6 +785,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // this could be improved to be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // this could be improved to be Top
 
     matchInlineSnapshotBrowser(topControl.value, `"0"`)
     matchInlineSnapshotBrowser(
@@ -857,6 +887,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
 
     matchInlineSnapshotBrowser(topControl.value, `"25"`)
     matchInlineSnapshotBrowser(
@@ -958,6 +991,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Scale')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Scale')
+
     matchInlineSnapshotBrowser(topControl.value, `"100"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1057,6 +1093,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // this could be improved to be Scale once we understand calc()
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // this could be improved to be Top
+
     matchInlineSnapshotBrowser(topControl.value, `"220"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1155,6 +1194,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // this should be Left (in follow-up PR)
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // this should be Top (in follow-up PR)
 
     matchInlineSnapshotBrowser(topControl.value, `"33"`)
     matchInlineSnapshotBrowser(
@@ -1290,6 +1332,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
+
     matchInlineSnapshotBrowser(topControl.value, `"100"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1392,6 +1437,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this is wrong, should show Left from css
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this is wrong, should show Top from css
+
     matchInlineSnapshotBrowser(earlyPaddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
       earlyPaddingLeftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1454,6 +1502,9 @@ describe('inspector tests with real metadata', () => {
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this is wrong, should show Left from css
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this is wrong, should show Top from css
 
     matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
@@ -1548,6 +1599,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO should show up as Left!
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO should show up as Top
 
     matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
     matchInlineSnapshotBrowser(
@@ -1826,6 +1880,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
     matchInlineSnapshotBrowser(paddingControl.value, `"14"`)
     matchInlineSnapshotBrowser(
@@ -2072,6 +2129,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
     matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
     matchInlineSnapshotBrowser(
@@ -2118,6 +2178,9 @@ describe('inspector tests with real metadata', () => {
       fontSizeControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
 
   // TODO reinstate once flex shorthand is supported again
@@ -2174,6 +2237,9 @@ describe('inspector tests with real metadata', () => {
     //   flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple"`,
     // )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
 
   it('Flex longhand properties', async () => {
@@ -2236,6 +2302,9 @@ describe('inspector tests with real metadata', () => {
     //   flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple"`,
     // )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
   it('Flex longhand in style props using a simple expression', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -2284,6 +2353,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
   it('Shows multifile selected element properties', async () => {
     let projectContents: ProjectContents = {

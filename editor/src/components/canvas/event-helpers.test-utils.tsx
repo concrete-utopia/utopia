@@ -1012,6 +1012,16 @@ export async function dragElementWithDNDEvents(
   }
 }
 
+export function expectSelectControlValue(
+  renderResult: EditorRenderResult,
+  popuplistTestId: string,
+  expectedCurrentValue: string,
+) {
+  const control = renderResult.renderedDOM.getByTestId(popuplistTestId)
+
+  expect(control.innerText).toEqual(expectedCurrentValue)
+}
+
 export async function pickFromReactSelectPopupList(
   renderResult: EditorRenderResult,
   popuplistTestId: string,
