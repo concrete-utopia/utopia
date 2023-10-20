@@ -191,7 +191,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
 
       const element = elementToReparent(
         fixUtopiaElement(
-          elementFromInsertMenuItem(elementToInsert.value.element, elementUid),
+          elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
           allElementUids,
         ).value,
         elementToInsert.value.importsToAdd,

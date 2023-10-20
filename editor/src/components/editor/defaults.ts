@@ -9,8 +9,6 @@ import {
   jsxElementName,
   jsxAttributesFromMap,
   emptyComments,
-  jsxTextBlock,
-  jsxAttributesEntry,
   simpleAttribute,
 } from '../../core/shared/element-template'
 import type { NormalisedFrame } from 'utopia-api/core'
@@ -173,7 +171,7 @@ export function defaultImgElement(uid: string): JSXElement {
   return jsxElement(
     jsxElementName('img', []),
     uid,
-    [...defaultImageAttributes, simpleAttribute('data-uid', uid)],
+    [...defaultImageAttributes(), simpleAttribute('data-uid', uid)],
     [],
   )
 }

@@ -137,7 +137,7 @@ import {
   unparsed,
 } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { assertNever, fastForEach, getProjectLockedKey } from '../../../core/shared/utils'
+import { assertNever, fastForEach, getProjectLockedKey, identity } from '../../../core/shared/utils'
 import { mergeImports } from '../../../core/workers/common/project-file-utils'
 import type { UtopiaTsWorkers } from '../../../core/workers/common/worker-types'
 import type { IndexPosition } from '../../../utils/utils'
@@ -4681,21 +4681,23 @@ export const UPDATE_FNS = {
 
       const newPath = EP.appendToPath(action.insertionPath.intendedParentPath, newUID)
 
+      const element = action.toInsert.element()
+
       const withNewElement = modifyUnderlyingTargetElement(
         insertionPath.intendedParentPath,
         editor,
-        (element) => element,
+        identity,
         (success, _, underlyingFilePath) => {
           const utopiaComponents = getUtopiaJSXComponentsFromSuccess(success)
 
-          if (action.toInsert.element.type === 'JSX_ELEMENT') {
+          if (element.type === 'JSX_ELEMENT') {
             const propsWithUid = forceRight(
               setJSXValueAtPath(
-                action.toInsert.element.props,
+                element.props,
                 PP.create(UTOPIA_UID_KEY),
                 jsExpressionValue(newUID, emptyComments),
               ),
-              `Could not set data-uid on props of insertable element ${action.toInsert.element.name}`,
+              `Could not set data-uid on props of insertable element ${element.name}`,
             )
             // Potentially add in some default position and sizing.
             let props = propsWithUid
@@ -4716,56 +4718,52 @@ export const UPDATE_FNS = {
               }
             }
 
-            const insertedElementName = action.toInsert.element.name
+            const insertedElementName = element.name
             let withMaybeUpdatedParent = utopiaComponents
             let insertedElementChildren: JSXElementChildren = []
 
-            insertedElementChildren.push(...action.toInsert.element.children)
-            const element = fixUtopiaElement(
+            insertedElementChildren.push(...element.children)
+            const fixedElement = fixUtopiaElement(
               jsxElement(insertedElementName, newUID, props, insertedElementChildren),
               existingUids,
             ).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
-              [element],
+              [fixedElement],
               withMaybeUpdatedParent,
               action.indexPosition,
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
 
             addNewSelectedView(newUID)
-          } else if (action.toInsert.element.type === 'JSX_CONDITIONAL_EXPRESSION') {
-            const element = fixUtopiaElement(
+          } else if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
+            const fixedElement = fixUtopiaElement(
               jsxConditionalExpression(
                 newUID,
-                action.toInsert.element.condition,
-                action.toInsert.element.originalConditionString,
-                action.toInsert.element.whenTrue,
-                action.toInsert.element.whenFalse,
-                action.toInsert.element.comments,
+                element.condition,
+                element.originalConditionString,
+                element.whenTrue,
+                element.whenFalse,
+                element.comments,
               ),
               existingUids,
             ).value
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
-              [element],
+              [fixedElement],
               utopiaComponents,
               action.indexPosition,
             )
             detailsOfUpdate = withInsertedElement.insertionDetails
             newSelectedViews.push(newPath)
-          } else if (action.toInsert.element.type === 'JSX_FRAGMENT') {
-            const element = jsxFragment(
-              newUID,
-              action.toInsert.element.children,
-              action.toInsert.element.longForm,
-            )
+          } else if (element.type === 'JSX_FRAGMENT') {
+            const fixedElement = jsxFragment(newUID, element.children, element.longForm)
 
             withInsertedElement = insertJSXElementChildren(
               insertionPath,
-              [element],
+              [fixedElement],
               utopiaComponents,
               action.indexPosition,
             )
@@ -4773,7 +4771,7 @@ export const UPDATE_FNS = {
 
             addNewSelectedView(newUID)
           } else {
-            assertNever(action.toInsert.element)
+            assertNever(element)
           }
 
           const updatedTopLevelElements = applyUtopiaJSXComponentsChanges(
@@ -4805,22 +4803,19 @@ export const UPDATE_FNS = {
           action.insertionPath.intendedParentPath,
         )
         if (group != null) {
-          switch (action.toInsert.element.type) {
+          switch (element.type) {
             case 'JSX_ELEMENT':
               groupCommands.push(
                 ...createPinChangeCommandsForElementInsertedIntoGroup(
                   newPath,
-                  right(action.toInsert.element.props),
+                  right(element.props),
                   zeroRectIfNullOrInfinity(group.globalFrame),
                   zeroRectIfNullOrInfinity(group.localFrame),
                 ),
               )
               break
             case 'JSX_CONDITIONAL_EXPRESSION':
-              if (
-                action.toInsert.element.whenTrue != null ||
-                action.toInsert.element.whenFalse != null
-              ) {
+              if (element.whenTrue != null || element.whenFalse != null) {
                 // FIXME: This is a mid-step, as the conditional being inserted currently
                 // has nulls in both clauses, resulting in a zero-sized element.
                 groupCommands.push(
@@ -4831,7 +4826,7 @@ export const UPDATE_FNS = {
               }
               break
             case 'JSX_FRAGMENT':
-              if (action.toInsert.element.children.length > 0) {
+              if (element.children.length > 0) {
                 // this needs updating when we support inserting fragments with children
                 throw new Error('unhandled fragment insert into group')
               }

@@ -79,7 +79,7 @@ export function changeConditionalOrFragment(
       actionsToDispatch = [
         insertInsertable(
           insertionPath,
-          insertableComponent(importsToAdd, element, '', [], null),
+          insertableComponent(importsToAdd, () => element, '', [], null),
           fixedSizeForInsertion ? 'add-size' : 'do-not-add',
           floatingMenuState.indexPosition,
         ),
@@ -112,7 +112,8 @@ export function changeElement(
   addContentForInsertion: boolean,
   pickedInsertableComponent: InsertMenuItemValue,
 ): Array<EditorAction> {
-  if (pickedInsertableComponent.element.type !== 'JSX_ELEMENT') {
+  const element = pickedInsertableComponent.element()
+  if (element.type !== 'JSX_ELEMENT') {
     return []
   }
   let actionsToDispatch: Array<EditorAction> = []
@@ -121,14 +122,14 @@ export function changeElement(
       const newUID = generateUidWithExistingComponents(projectContents)
 
       const newElement = jsxElement(
-        pickedInsertableComponent.element.name,
+        element.name,
         newUID,
         setJSXAttributesAttribute(
-          pickedInsertableComponent.element.props,
+          element.props,
           'data-uid',
           jsExpressionValue(newUID, emptyComments),
         ),
-        pickedInsertableComponent.element.children,
+        element.children,
       )
 
       actionsToDispatch = [
@@ -140,13 +141,13 @@ export function changeElement(
       break
     case 'insert':
       let elementToInsert = pickedInsertableComponent
-      if (addContentForInsertion && pickedInsertableComponent.element.children.length === 0) {
+      if (addContentForInsertion && element.children.length === 0) {
         elementToInsert = {
           ...pickedInsertableComponent,
-          element: {
-            ...pickedInsertableComponent.element,
+          element: () => ({
+            ...element,
             children: [jsxTextBlock('Utopia')],
-          },
+          }),
         }
       }
 
@@ -175,11 +176,14 @@ export function changeElement(
       }
       break
     case 'convert':
-      const { element, importsToAdd } = pickedInsertableComponent
       // this is taken from render-as.tsx
       const targetsForUpdates = getElementsToTarget(selectedViews)
       actionsToDispatch = targetsForUpdates.flatMap((path) => {
-        return updateJSXElementName(path, { type: 'JSX_ELEMENT', name: element.name }, importsToAdd)
+        return updateJSXElementName(
+          path,
+          { type: 'JSX_ELEMENT', name: element.name },
+          pickedInsertableComponent.importsToAdd,
+        )
       })
       break
     case 'closed':
@@ -201,7 +205,8 @@ export function getActionsToApplyChange(
   addContentForInsertion: boolean,
   insertMenuItemValue: InsertMenuItemValue,
 ): Array<EditorAction> {
-  switch (insertMenuItemValue.element.type) {
+  const element = insertMenuItemValue.element()
+  switch (element.type) {
     case 'JSX_CONDITIONAL_EXPRESSION':
     case 'JSX_FRAGMENT':
       return changeConditionalOrFragment(
@@ -211,7 +216,7 @@ export function getActionsToApplyChange(
         selectedViews,
         floatingMenuState,
         fixedSizeForInsertion,
-        insertMenuItemValue.element,
+        element,
       )
     case 'JSX_ELEMENT':
       return changeElement(
@@ -225,7 +230,7 @@ export function getActionsToApplyChange(
         insertMenuItemValue,
       )
     default:
-      assertNever(insertMenuItemValue.element)
+      assertNever(element)
   }
 }
 
