@@ -43,9 +43,11 @@ import {
   BakedInStoryboardUID,
 } from '../../../../core/model/scene-utils'
 import {
+  dispatchMouseEnterEventAtPoint,
   mouseClickAtPoint,
   mouseDoubleClickAtPoint,
   mouseDownAtPoint,
+  mouseDragFromPointToPoint,
   mouseDragFromPointWithDelta,
   mouseMoveToPoint,
 } from '../../event-helpers.test-utils'
@@ -74,6 +76,7 @@ import {
   SafeGapSmallElementSize,
   SmallElementSize,
 } from '../../controls/bounding-box-hooks'
+import { act } from 'react-dom/test-utils'
 
 // no mouseup here! it starts the interaction and resizes with drag delta
 async function startDragUsingActions(
@@ -2943,6 +2946,58 @@ describe('Absolute Resize Strategy Canvas Controls', () => {
     expect(renderResult.renderedDOM.getByTestId('guideline-0').style.display).toEqual('block')
     expect(renderResult.renderedDOM.getByTestId('guideline-1').style.display).toEqual('block')
   })
+
+  it('can resize from near the size label', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    const dragDelta = windowPoint({ x: 40, y: -25 })
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+
+    const canvasControl = getResizeControl(renderResult, EdgePositionBottom)
+    if (canvasControl == null) {
+      throw new Error(`Could not find canvas control.`)
+    }
+
+    const resizeCornerBounds = canvasControl.getBoundingClientRect()
+    const startPoint = windowPoint({
+      x: resizeCornerBounds.x + resizeCornerBounds.width / 2,
+      y: resizeCornerBounds.y + resizeCornerBounds.height - 1,
+    })
+
+    const endPoint = {
+      x: startPoint.x + dragDelta.x,
+      y: startPoint.y + dragDelta.y,
+    }
+
+    await mouseDragFromPointToPoint(canvasControl, startPoint, endPoint, { realMouseDown: true })
+
+    await renderResult.getDispatchFollowUpActionsFinished()
+
+    expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 95 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+    )
+  })
 })
 
 describe('Double click on resize edge', () => {
@@ -3350,5 +3405,31 @@ describe('Absolute Resize Control', () => {
     expect(resizeControlLeft.style.left).toEqual('')
     expect(resizeControlLeft.style.width).toEqual('10px')
     expect(resizeControlLeft.style.height).toEqual(`${height}px`)
+  })
+  it('dims the size label on hover', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='aaa'>
+          <div
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 40, top: 50, width: 200, height: 120 }}
+            data-uid='bbb'
+            data-testid='bbb'
+          />
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+
+    const target = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+
+    await renderResult.dispatch([selectComponents([target], false)], true)
+    const sizeLabel = renderResult.renderedDOM.getByTestId(SizeLabelTestId)
+    const sizeLabelBounds = sizeLabel.getBoundingClientRect()
+    act(() => {
+      dispatchMouseEnterEventAtPoint({ x: sizeLabelBounds.x + 2, y: sizeLabelBounds.y + 2 })
+    })
+
+    const { opacity } = sizeLabel.style
+    expect(opacity).toEqual('0.075')
   })
 })
