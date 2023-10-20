@@ -1800,7 +1800,7 @@ export var storyboard = (
 })
 
 describe('Fixed/hug on text elements', () => {
-  it('Sets text element fixed to hug inside the font section', async () => {
+  it('Sets text element from fixed to auto-width inside the font section', async () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
       <div
@@ -1826,7 +1826,7 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 25}}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>
@@ -1834,11 +1834,11 @@ describe('Fixed/hug on text elements', () => {
       `),
     )
   })
-  it('Sets text element hug to fixed inside the font section', async () => {
+  it('Sets text element from fixed to auto-height inside the font section', async () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
       <div
-        style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content', lineHeight: '18px' }}
+        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25 }}
         data-uid='bbb'
         data-testid='bbb'
       >hello text element!</div>
@@ -1860,7 +1860,41 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 120, height: 18, lineHeight: '18px'}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content'}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+      `),
+    )
+  })
+  it('Sets text element from auto-height to fixed inside the font section', async () => {
+    const testCode = `
+    <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content'}}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+`
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+    )
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await editor.dispatch(selectComponents([targetPath], false), true)
+
+    const textFixedSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-2`)
+    await expectSingleUndo2Saves(editor, async () => {
+      await mouseClickAtPoint(textFixedSizeIcon, { x: 2, y: 2 })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 37 }}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>
