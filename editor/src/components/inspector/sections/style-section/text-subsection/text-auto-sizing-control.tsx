@@ -11,11 +11,12 @@ import {
   detectFillHugFixedState,
   setAutoHeightCommands,
   setAutoWidthCommands,
-  sizeToVisualDimensions,
+  setFixedSizeCommands,
 } from '../../../inspector-common'
 import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
 import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import { getControlStyles } from '../../../common/control-styles'
+import { useNonRoundedComputedSizeRef } from '../../../inpector-selectors'
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
@@ -91,32 +92,53 @@ export const TextAutoSizingControl = React.memo(() => {
 
   const dispatch = useDispatch()
 
+  const nonRoundedComputedWidthRef = useNonRoundedComputedSizeRef('width')
+  const nonRoundedComputedHeightRef = useNonRoundedComputedSizeRef('height')
+
   const setAutoWidth = React.useCallback(() => {
     const commands = selectedViewsRef.current.flatMap((elementPath) => {
       const parentFlexDirection =
         MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
           ?.specialSizeMeasurements.parentFlexDirection ?? null
-      return setAutoWidthCommands(metadataRef.current, elementPath, parentFlexDirection)
+      return setAutoWidthCommands(
+        elementPath,
+        parentFlexDirection,
+        nonRoundedComputedHeightRef.current ?? 0,
+      )
     })
     dispatch([applyCommandsAction(commands)])
-  }, [dispatch, metadataRef, selectedViewsRef])
+  }, [dispatch, metadataRef, nonRoundedComputedHeightRef, selectedViewsRef])
 
   const setAutoHeight = React.useCallback(() => {
     const commands = selectedViewsRef.current.flatMap((elementPath) => {
       const parentFlexDirection =
         MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
           ?.specialSizeMeasurements.parentFlexDirection ?? null
-      return setAutoHeightCommands(metadataRef.current, elementPath, parentFlexDirection)
+      return setAutoHeightCommands(
+        elementPath,
+        parentFlexDirection,
+        nonRoundedComputedWidthRef.current ?? 0,
+      )
     })
     dispatch([applyCommandsAction(commands)])
-  }, [dispatch, metadataRef, selectedViewsRef])
+  }, [dispatch, metadataRef, nonRoundedComputedWidthRef, selectedViewsRef])
 
   const setFixedSize = React.useCallback(() => {
     const commands = selectedViewsRef.current.flatMap((elementPath) => {
-      return sizeToVisualDimensions(metadataRef.current, pathTreesRef.current, elementPath)
+      return setFixedSizeCommands(metadataRef.current, pathTreesRef.current, elementPath, {
+        width: nonRoundedComputedWidthRef.current ?? 0,
+        height: nonRoundedComputedHeightRef.current ?? 0,
+      })
     })
     dispatch([applyCommandsAction(commands)])
-  }, [dispatch, metadataRef, pathTreesRef, selectedViewsRef])
+  }, [
+    dispatch,
+    metadataRef,
+    nonRoundedComputedHeightRef,
+    nonRoundedComputedWidthRef,
+    pathTreesRef,
+    selectedViewsRef,
+  ])
 
   const onSubmitValue = React.useCallback(
     (option: any) => {

@@ -1805,7 +1805,7 @@ describe('Fixed/hug on text elements', () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
       <div
-        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25}}
+        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25, fontSize: 15 }}
         data-uid='bbb'
         data-testid='bbb'
       >hello text element!</div>
@@ -1827,7 +1827,7 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 25}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 25, fontSize: 15 }}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>
@@ -1839,7 +1839,7 @@ describe('Fixed/hug on text elements', () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
       <div
-        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25 }}
+        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25, fontSize: 15 }}
         data-uid='bbb'
         data-testid='bbb'
       >hello text element!</div>
@@ -1861,7 +1861,7 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content'}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content', fontSize: 15 }}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>
@@ -1873,7 +1873,7 @@ describe('Fixed/hug on text elements', () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content'}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content', fontSize: 15 }}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>
@@ -1895,7 +1895,7 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 37 }}
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 34, fontSize: 15 }}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>

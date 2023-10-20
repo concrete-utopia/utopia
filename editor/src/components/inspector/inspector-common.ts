@@ -45,6 +45,7 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import type { Size } from '../../core/shared/math-utils'
 import {
   isFiniteRectangle,
   isInfinityRectangle,
@@ -1234,45 +1235,46 @@ export function getConvertIndividualElementToAbsoluteCommands(
 }
 
 export function setAutoWidthCommands(
-  metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
   parentFlexDirection: FlexDirection | null,
+  computedHeight: number,
 ): CanvasCommand[] {
-  const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
-  if (frame == null || isInfinityRectangle(frame)) {
-    return []
-  }
   return [
     setHugContentForAxis('horizontal', elementPath, parentFlexDirection),
     setCssLengthProperty(
       'always',
       elementPath,
       styleP('height'),
-      setExplicitCssValue(cssPixelLength(frame.height)),
+      setExplicitCssValue(cssPixelLength(computedHeight)),
       parentFlexDirection,
     ),
   ]
 }
 
 export function setAutoHeightCommands(
-  metadata: ElementInstanceMetadataMap,
   elementPath: ElementPath,
   parentFlexDirection: FlexDirection | null,
+  computedWidth: number,
 ): CanvasCommand[] {
-  const frame = MetadataUtils.getFrameInCanvasCoords(elementPath, metadata)
-  if (frame == null || isInfinityRectangle(frame)) {
-    return []
-  }
   return [
     setCssLengthProperty(
       'always',
       elementPath,
       styleP('width'),
-      setExplicitCssValue(cssPixelLength(frame.width)),
+      setExplicitCssValue(cssPixelLength(computedWidth)),
       parentFlexDirection,
     ),
     setHugContentForAxis('vertical', elementPath, parentFlexDirection),
   ]
+}
+
+export function setFixedSizeCommands(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+  frame: Size,
+) {
+  return sizeToDimensionsFromFrame(metadata, pathTrees, elementPath, frame)
 }
 
 function getSafeGroupChildConstraintsArray(
