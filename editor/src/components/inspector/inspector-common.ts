@@ -660,7 +660,7 @@ export function detectFillHugFixedState(
         return 'detected-fromcss'
       }
       if (detectedHugType === 'squeeze' || detectedHugType === 'collapsed') {
-        return hugTypeFromStyleProps != null ? 'detected' : 'detected-fromcss'
+        return hugTypeFromStyleProps != null ? 'simple' : 'detected-fromcss'
       }
       return 'simple'
     })()
