@@ -803,6 +803,8 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         flexDirection: 'row',
         gap: 41,
         padding: '80px 52px',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
       }}
       data-uid='container'
     >
@@ -971,6 +973,8 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         flexDirection: 'row',
         gap: 65.6,
         padding: '42px 61px',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
       }}
       data-uid='container'
     >
@@ -1165,6 +1169,8 @@ describe('Smart Convert To Flex if Fragment Children', () => {
         flexDirection: 'row',
         gap: 56.5,
         padding: '56px 24px',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
       }}
       data-uid='container'
     >
@@ -1258,7 +1264,7 @@ describe('Smart convert to flex centered layout', () => {
     )
 
     const targetPath = EP.appendNewElementPath(TestScenePath, ['a'])
-    await editor.dispatch([selectComponents([targetPath], false)], true)
+    await selectComponentsForTest(editor, [targetPath])
 
     await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
 
@@ -1294,6 +1300,236 @@ describe('Smart convert to flex centered layout', () => {
       </span>
     </div>
     `),
+    )
+  })
+  it('adds centered layout if children are clustered around the x axis', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='root'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 52,
+        top: 61,
+        width: 557,
+        height: 155,
+      }}
+      data-testid='container'
+      data-uid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 17,
+          top: 67,
+          width: 50,
+          height: 50,
+        }}
+        data-uid='c32'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 99,
+          top: 42,
+          width: 50,
+          height: 50,
+        }}
+        data-uid='aa1'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 184,
+          top: 78,
+          width: 50,
+          height: 50,
+        }}
+        data-uid='4e1'
+      />
+    </div>
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['root', 'container'])
+    await selectComponentsForTest(editor, [targetPath])
+
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
+
+    const { alignItems, justifyContent, flexDirection } =
+      editor.renderedDOM.getByTestId('container').style
+    expect({ alignItems, justifyContent, flexDirection }).toEqual({
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      flexDirection: 'row',
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='root'>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 52,
+        top: 61,
+        width: 'max-content',
+        height: 'max-content',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 33.5,
+        padding: '27px 17px',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      }}
+      data-testid='container'
+      data-uid='container'
+    >
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 50,
+          height: 50,
+          contain: 'layout',
+        }}
+        data-uid='c32'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 50,
+          height: 50,
+          contain: 'layout',
+        }}
+        data-uid='aa1'
+      />
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 50,
+          height: 50,
+          contain: 'layout',
+        }}
+        data-uid='4e1'
+      />
+    </div>
+  </div>`),
+    )
+  })
+  it('adds centered layout if children are clustered around the y axis', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='root'>
+      <div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 47,
+          top: 15,
+          width: 155,
+          height: 394,
+        }}
+        data-testid='container'
+        data-uid='container'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 33,
+            top: 28,
+            width: 50,
+            height: 50,
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 58,
+            top: 142,
+            width: 50,
+            height: 50,
+          }}
+        />
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 28,
+            top: 223,
+            width: 50,
+            height: 50,
+          }}
+        />
+      </div>
+    </div>`),
+      'await-first-dom-report',
+    )
+
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['root', 'container'])
+    await selectComponentsForTest(editor, [targetPath])
+
+    await expectSingleUndo2Saves(editor, () => pressShiftA(editor))
+
+    const { alignItems, justifyContent, flexDirection } =
+      editor.renderedDOM.getByTestId('container').style
+    expect({ alignItems, justifyContent, flexDirection }).toEqual({
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      flexDirection: 'column',
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`<div style={{ ...props.style }} data-uid='root'><div
+    style={{
+      backgroundColor: '#aaaaaa33',
+      position: 'absolute',
+      left: 47,
+      top: 15,
+      width: 'max-content',
+      height: 'max-content',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 47.5,
+      padding: '28px 33px',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+    }}
+    data-testid='container'
+    data-uid='container'
+  >
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        width: 50,
+        height: 50,
+        contain: 'layout',
+      }}
+      data-uid='9bd'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        width: 50,
+        height: 50,
+        contain: 'layout',
+      }}
+      data-uid='1ff'
+    />
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        width: 50,
+        height: 50,
+        contain: 'layout',
+      }}
+      data-uid='0f3'
+    />
+  </div>
+  </div>`),
     )
   })
 })
