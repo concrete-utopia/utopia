@@ -584,6 +584,7 @@ const SizeLabel = React.memo(
               height: ExplicitHeightHacked / scale,
               opacity: dimmed ? 0.075 : 1,
               transition: '0.1s',
+              pointerEvents: 'initial',
             }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
