@@ -9,29 +9,31 @@ import type {
 } from '../../../core/shared/element-template'
 import { isJSXElementLike, jsxFragment } from '../../../core/shared/element-template'
 import {
-  type CanvasRectangle,
   boundingRectangleArray,
+  getRectCenter,
   nullIfInfinity,
   zeroCanvasRect,
-  getRectCenter,
+  type CanvasRectangle,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach } from '../../../core/shared/utils'
-import type { JSXFragmentConversion } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { actuallyConvertFramentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import {
   getElementFragmentLikeType,
   isElementNonDOMElement,
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import type { JSXFragmentConversion } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { actuallyConvertFramentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import type { AllElementProps } from '../../editor/store/editor-state'
+import type { FlexDirection } from '../../inspector/common/css-utils'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
@@ -40,7 +42,6 @@ import {
   sizeToVisualDimensions,
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
-import type { FlexDirection } from '../../inspector/common/css-utils'
 
 type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'
@@ -212,7 +213,7 @@ function ifElementIsFragmentLikeFirstConvertItToFrame(
     return []
   }
 
-  if (type == 'fragment' || type == 'sizeless-div') {
+  if (type == 'fragment' || type == 'sizeless-div' || treatElementAsGroupLike(metadata, target)) {
     const childInstances = mapDropNulls(
       (path) => MetadataUtils.findElementByElementPath(metadata, path),
       replaceFragmentLikePathsWithTheirChildrenRecursive(

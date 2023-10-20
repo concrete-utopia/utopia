@@ -4,12 +4,10 @@ import * as EP from '../../../core/shared/element-path'
 import { shiftModifier } from '../../../utils/modifiers'
 import { expectSingleUndo2Saves, selectComponentsForTest } from '../../../utils/utils.test-utils'
 import { getRegularNavigatorTargets } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
-import { edgePosition } from '../../canvas/canvas-types'
 import { pressKey } from '../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
-  getPrintedUiJsCodeWithoutUIDs,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
@@ -420,6 +418,7 @@ describe('Smart Convert To Flex', () => {
   `),
     )
   })
+
   it('can convert zero-sized element with absolute children into a flex layout', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`<div
@@ -541,6 +540,36 @@ describe('Smart Convert To Flex', () => {
     </div>
   </div>
 `),
+    )
+  })
+
+  it('converts groups correctly', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `
+			<div style={{ ...props.style }} data-uid='a'>
+				<Group data-uid='parent' style={{ position: 'absolute', left: 0, top: 0, width: 349, height: 239 }}>
+					<div data-uid='foo' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 159, height: 131 }} />
+					<div data-uid='bar' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 190, top: 108, width: 159, height: 131 }} />
+				</Group>
+			</div>
+	  `,
+      ),
+
+      'await-first-dom-report',
+    )
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+		<div style={{ ...props.style }} data-uid='a'>
+			<div data-uid='parent' style={{ position: 'absolute', top: 0, left: 0, width: 'max-content', height: 'max-content', display: 'flex', flexDirection: 'row', gap: 31 }}>
+				<div data-uid='foo' style={{ backgroundColor: '#aaaaaa33', width: 159, height: 131, contain: 'layout' }} />
+				<div data-uid='bar' style={{ backgroundColor: '#aaaaaa33', width: 159, height: 131, contain: 'layout' }} />
+			</div>
+		</div>
+	`),
     )
   })
 })
