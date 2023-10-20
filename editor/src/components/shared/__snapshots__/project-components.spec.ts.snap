@@ -6,17 +6,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "App",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {},
         "name": "App",
         "stylePropOptions": Array [
@@ -47,38 +37,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "div",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "backgroundColor": "#aaaaaa33",
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -94,17 +53,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "span",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -120,17 +69,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "h1",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -146,17 +85,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "h2",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -172,17 +101,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "p",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -198,17 +117,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "button",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -224,17 +133,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "input",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -250,107 +149,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "video",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "height": "120px",
-                  "position": "absolute",
-                  "width": "250px",
-                },
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "controls",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": true,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "autoPlay",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": true,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "loop",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": true,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "src",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "https://dl8.webmfiles.org/big-buck-bunny_trailer.webm",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -366,56 +165,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "img",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "height": "64px",
-                  "position": "absolute",
-                  "width": "64px",
-                },
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "src",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "/editor/utopia-logo-white-fill.png?hash=nocommit",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -438,41 +188,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "comments": Object {
-            "leadingComments": Array [],
-            "trailingComments": Array [],
-          },
-          "condition": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "uid": "",
-            "value": true,
-          },
-          "originalConditionString": "true",
-          "type": "JSX_CONDITIONAL_EXPRESSION",
-          "whenFalse": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "uid": "",
-            "value": null,
-          },
-          "whenTrue": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "uid": "",
-            "value": null,
-          },
-        },
+        "element": [Function],
         "importsToAdd": Object {},
         "name": "Conditional",
         "stylePropOptions": Array [
@@ -488,11 +204,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "longForm": true,
-          "type": "JSX_FRAGMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -514,23 +226,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [
-            Object {
-              "text": "Sample text",
-              "type": "JSX_TEXT_BLOCK",
-              "uid": "",
-            },
-          ],
-          "name": Object {
-            "baseVariable": "span",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {},
         "name": "Sample text",
         "stylePropOptions": Array [
@@ -559,17 +255,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "App",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {},
         "name": "App",
         "stylePropOptions": Array [
@@ -600,38 +286,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "div",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "backgroundColor": "#aaaaaa33",
-                  "position": "absolute",
-                },
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -647,17 +302,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "span",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -673,17 +318,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "h1",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -699,17 +334,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "h2",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -725,17 +350,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "p",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -751,17 +366,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "button",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -777,17 +382,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "input",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -803,107 +398,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "video",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "height": "120px",
-                  "position": "absolute",
-                  "width": "250px",
-                },
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "controls",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": true,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "autoPlay",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": true,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "loop",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": true,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "src",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "https://dl8.webmfiles.org/big-buck-bunny_trailer.webm",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -919,56 +414,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "img",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "style",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": Object {
-                  "height": "64px",
-                  "position": "absolute",
-                  "width": "64px",
-                },
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "src",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "/editor/utopia-logo-white-fill.png?hash=nocommit",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -991,41 +437,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "comments": Object {
-            "leadingComments": Array [],
-            "trailingComments": Array [],
-          },
-          "condition": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "uid": "",
-            "value": true,
-          },
-          "originalConditionString": "true",
-          "type": "JSX_CONDITIONAL_EXPRESSION",
-          "whenFalse": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "uid": "",
-            "value": null,
-          },
-          "whenTrue": Object {
-            "comments": Object {
-              "leadingComments": Array [],
-              "trailingComments": Array [],
-            },
-            "type": "ATTRIBUTE_VALUE",
-            "uid": "",
-            "value": null,
-          },
-        },
+        "element": [Function],
         "importsToAdd": Object {},
         "name": "Conditional",
         "stylePropOptions": Array [
@@ -1041,11 +453,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "longForm": true,
-          "type": "JSX_FRAGMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "react": Object {
             "importedAs": "React",
@@ -1067,23 +475,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [
-            Object {
-              "text": "Sample text",
-              "type": "JSX_TEXT_BLOCK",
-              "uid": "",
-            },
-          ],
-          "name": Object {
-            "baseVariable": "span",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {},
         "name": "Sample text",
         "stylePropOptions": Array [
@@ -1099,17 +491,7 @@ Array [
     "insertableComponents": Array [
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "DatePicker",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -1135,154 +517,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Button",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "disabled",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "type",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "default",
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "shape",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "default",
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "ghost",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "block",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "danger",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "loading",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "target",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "button",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -1308,17 +543,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "InputNumber",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -1344,69 +569,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Row",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "align",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "top",
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "gutter",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "justify",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "center",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -1432,205 +595,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Col",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "flex",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 1,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "offset",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "order",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "pull",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "push",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "xs",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "sm",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "md",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "lg",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "xl",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "xxl",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -1656,69 +621,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Space",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "align",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "center",
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "direction",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "vertical",
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "size",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "middle",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -1744,171 +647,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Menu",
-            "propertyPath": Object {
-              "propertyElements": Array [],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "forceSubMenuRender",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "inlineCollapsed",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "inlineIndent",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 24,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "mode",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "inline",
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "multiple",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "selectable",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": true,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "subMenuCloseDelay",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0.1,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "subMenuOpenDelay",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": 0,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "theme",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": "light",
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -1934,54 +673,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Menu",
-            "propertyPath": Object {
-              "propertyElements": Array [
-                "Item",
-              ],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "disabled",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "danger",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -2007,37 +699,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Menu",
-            "propertyPath": Object {
-              "propertyElements": Array [
-                "SubMenu",
-              ],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "disabled",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -2063,19 +725,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Menu",
-            "propertyPath": Object {
-              "propertyElements": Array [
-                "ItemGroup",
-              ],
-            },
-          },
-          "props": Array [],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,
@@ -2101,190 +751,7 @@ Array [
       },
       Object {
         "defaultSize": null,
-        "element": Object {
-          "children": Array [],
-          "name": Object {
-            "baseVariable": "Typography",
-            "propertyPath": Object {
-              "propertyElements": Array [
-                "Text",
-              ],
-            },
-          },
-          "props": Array [
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "code",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "copyable",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "delete",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "disabled",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "editable",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "ellipsis",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "mark",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "keyboard",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "underline",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-            Object {
-              "comments": Object {
-                "leadingComments": Array [],
-                "trailingComments": Array [],
-              },
-              "key": "strong",
-              "type": "JSX_ATTRIBUTES_ENTRY",
-              "value": Object {
-                "comments": Object {
-                  "leadingComments": Array [],
-                  "trailingComments": Array [],
-                },
-                "type": "ATTRIBUTE_VALUE",
-                "uid": "",
-                "value": false,
-              },
-            },
-          ],
-          "type": "JSX_ELEMENT",
-        },
+        "element": [Function],
         "importsToAdd": Object {
           "antd": Object {
             "importedAs": null,

@@ -106,13 +106,13 @@ export function clearComponentElementToInsertUniqueIDs(
 
 export interface ComponentInfo {
   insertMenuLabel: string
-  elementToInsert: ComponentElementToInsert
+  elementToInsert: () => ComponentElementToInsert
   importsToAdd: Imports
 }
 
 export function componentInfo(
   insertMenuLabel: string,
-  elementToInsert: ComponentElementToInsert,
+  elementToInsert: () => ComponentElementToInsert,
   importsToAdd: Imports,
 ): ComponentInfo {
   return {

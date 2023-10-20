@@ -30,13 +30,20 @@ const cardComponentDescriptor: ComponentDescriptor = {
   variants: [
     {
       insertMenuLabel: 'Card Default',
-      elementToInsert: clearJSXElementWithoutUIDUniqueIDs(
-        jsxElementWithoutUID(
-          'Card',
-          [jsxAttributesEntry('title', jsExpressionValue('Default', emptyComments), emptyComments)],
-          [],
+      elementToInsert: () =>
+        clearJSXElementWithoutUIDUniqueIDs(
+          jsxElementWithoutUID(
+            'Card',
+            [
+              jsxAttributesEntry(
+                'title',
+                jsExpressionValue('Default', emptyComments),
+                emptyComments,
+              ),
+            ],
+            [],
+          ),
         ),
-      ),
       importsToAdd: {
         ['/src/card']: importDetails(null, [importAlias('Card')], null),
       },
@@ -73,16 +80,25 @@ const modifiedCardComponentDescriptor: ComponentDescriptor = {
   variants: [
     {
       insertMenuLabel: 'Card Default',
-      elementToInsert: clearJSXElementWithoutUIDUniqueIDs(
-        jsxElementWithoutUID(
-          'Card',
-          [
-            jsxAttributesEntry('title', jsExpressionValue('Default', emptyComments), emptyComments),
-            jsxAttributesEntry('border', jsExpressionValue('shiny', emptyComments), emptyComments),
-          ],
-          [],
+      elementToInsert: () =>
+        clearJSXElementWithoutUIDUniqueIDs(
+          jsxElementWithoutUID(
+            'Card',
+            [
+              jsxAttributesEntry(
+                'title',
+                jsExpressionValue('Default', emptyComments),
+                emptyComments,
+              ),
+              jsxAttributesEntry(
+                'border',
+                jsExpressionValue('shiny', emptyComments),
+                emptyComments,
+              ),
+            ],
+            [],
+          ),
         ),
-      ),
       importsToAdd: {
         ['/src/card']: importDetails(null, [importAlias('Card')], null),
       },
@@ -110,19 +126,20 @@ const selectorComponentDescriptor: ComponentDescriptor = {
   variants: [
     {
       insertMenuLabel: 'True False Selector',
-      elementToInsert: clearJSXElementWithoutUIDUniqueIDs(
-        jsxElementWithoutUID(
-          'Selector',
-          [
-            jsxAttributesEntry(
-              'value',
-              jsExpressionValue(`'FileNotFound'`, emptyComments),
-              emptyComments,
-            ),
-          ],
-          [],
+      elementToInsert: () =>
+        clearJSXElementWithoutUIDUniqueIDs(
+          jsxElementWithoutUID(
+            'Selector',
+            [
+              jsxAttributesEntry(
+                'value',
+                jsExpressionValue(`'FileNotFound'`, emptyComments),
+                emptyComments,
+              ),
+            ],
+            [],
+          ),
         ),
-      ),
       importsToAdd: {
         ['/src/selector']: importDetails(null, [importAlias('Selector')], null),
       },
@@ -198,35 +215,7 @@ describe('validateControlsToCheck', () => {
                 },
                 "variants": Array [
                   Object {
-                    "elementToInsert": Object {
-                      "children": Array [],
-                      "name": Object {
-                        "baseVariable": "Card",
-                        "propertyPath": Object {
-                          "propertyElements": Array [],
-                        },
-                      },
-                      "props": Array [
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "title",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "uid": "",
-                            "value": "Default",
-                          },
-                        },
-                      ],
-                      "type": "JSX_ELEMENT",
-                    },
+                    "elementToInsert": [Function],
                     "importsToAdd": Object {
                       "/src/card": Object {
                         "importedAs": null,
@@ -364,35 +353,7 @@ describe('validateControlsToCheck', () => {
                   },
                   "variants": Array [
                     Object {
-                      "elementToInsert": Object {
-                        "children": Array [],
-                        "name": Object {
-                          "baseVariable": "Card",
-                          "propertyPath": Object {
-                            "propertyElements": Array [],
-                          },
-                        },
-                        "props": Array [
-                          Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "key": "title",
-                            "type": "JSX_ATTRIBUTES_ENTRY",
-                            "value": Object {
-                              "comments": Object {
-                                "leadingComments": Array [],
-                                "trailingComments": Array [],
-                              },
-                              "type": "ATTRIBUTE_VALUE",
-                              "uid": "",
-                              "value": "Default",
-                            },
-                          },
-                        ],
-                        "type": "JSX_ELEMENT",
-                      },
+                      "elementToInsert": [Function],
                       "importsToAdd": Object {
                         "/src/card": Object {
                           "importedAs": null,
@@ -447,35 +408,7 @@ describe('validateControlsToCheck', () => {
                 },
                 "variants": Array [
                   Object {
-                    "elementToInsert": Object {
-                      "children": Array [],
-                      "name": Object {
-                        "baseVariable": "Selector",
-                        "propertyPath": Object {
-                          "propertyElements": Array [],
-                        },
-                      },
-                      "props": Array [
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "value",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "uid": "",
-                            "value": "'FileNotFound'",
-                          },
-                        },
-                      ],
-                      "type": "JSX_ELEMENT",
-                    },
+                    "elementToInsert": [Function],
                     "importsToAdd": Object {
                       "/src/selector": Object {
                         "importedAs": null,
@@ -537,52 +470,7 @@ describe('validateControlsToCheck', () => {
                 },
                 "variants": Array [
                   Object {
-                    "elementToInsert": Object {
-                      "children": Array [],
-                      "name": Object {
-                        "baseVariable": "Card",
-                        "propertyPath": Object {
-                          "propertyElements": Array [],
-                        },
-                      },
-                      "props": Array [
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "title",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "uid": "",
-                            "value": "Default",
-                          },
-                        },
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "border",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "uid": "",
-                            "value": "shiny",
-                          },
-                        },
-                      ],
-                      "type": "JSX_ELEMENT",
-                    },
+                    "elementToInsert": [Function],
                     "importsToAdd": Object {
                       "/src/card": Object {
                         "importedAs": null,
@@ -632,35 +520,7 @@ describe('validateControlsToCheck', () => {
                 },
                 "variants": Array [
                   Object {
-                    "elementToInsert": Object {
-                      "children": Array [],
-                      "name": Object {
-                        "baseVariable": "Card",
-                        "propertyPath": Object {
-                          "propertyElements": Array [],
-                        },
-                      },
-                      "props": Array [
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "title",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "uid": "",
-                            "value": "Default",
-                          },
-                        },
-                      ],
-                      "type": "JSX_ELEMENT",
-                    },
+                    "elementToInsert": [Function],
                     "importsToAdd": Object {
                       "/src/card": Object {
                         "importedAs": null,
@@ -686,35 +546,7 @@ describe('validateControlsToCheck', () => {
                 },
                 "variants": Array [
                   Object {
-                    "elementToInsert": Object {
-                      "children": Array [],
-                      "name": Object {
-                        "baseVariable": "Card",
-                        "propertyPath": Object {
-                          "propertyElements": Array [],
-                        },
-                      },
-                      "props": Array [
-                        Object {
-                          "comments": Object {
-                            "leadingComments": Array [],
-                            "trailingComments": Array [],
-                          },
-                          "key": "title",
-                          "type": "JSX_ATTRIBUTES_ENTRY",
-                          "value": Object {
-                            "comments": Object {
-                              "leadingComments": Array [],
-                              "trailingComments": Array [],
-                            },
-                            "type": "ATTRIBUTE_VALUE",
-                            "uid": "",
-                            "value": "Default",
-                          },
-                        },
-                      ],
-                      "type": "JSX_ELEMENT",
-                    },
+                    "elementToInsert": [Function],
                     "importsToAdd": Object {
                       "/src/card": Object {
                         "importedAs": null,

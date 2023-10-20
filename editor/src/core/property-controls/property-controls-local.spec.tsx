@@ -84,36 +84,7 @@ describe('registered property controls', () => {
           },
           "variants": Array [
             Object {
-              "elementToInsert": Object {
-                "children": Array [],
-                "name": Object {
-                  "baseVariable": "Card",
-                  "propertyPath": Object {
-                    "propertyElements": Array [],
-                  },
-                },
-                "props": Array [
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "data-uid",
-                    "type": "JSX_ATTRIBUTES_ENTRY",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "uid": "",
-                      "value": "fb0",
-                    },
-                  },
-                ],
-                "type": "JSX_ELEMENT",
-                "uid": "",
-              },
+              "elementToInsert": [Function],
               "importsToAdd": Object {
                 "/src/card": Object {
                   "importedAs": null,
@@ -129,79 +100,7 @@ describe('registered property controls', () => {
               "insertMenuLabel": "Card",
             },
             Object {
-              "elementToInsert": Object {
-                "children": Array [],
-                "name": Object {
-                  "baseVariable": "Card",
-                  "propertyPath": Object {
-                    "propertyElements": Array [],
-                  },
-                },
-                "props": Array [
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "person",
-                    "type": "JSX_ATTRIBUTES_ENTRY",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "definedElsewhere": Array [
-                        "DefaultPerson",
-                      ],
-                      "elementsWithin": Object {},
-                      "javascript": "DefaultPerson",
-                      "originalJavascript": "DefaultPerson",
-                      "sourceMap": Object {
-                        "file": "code.tsx",
-                        "mappings": "OAI2BA",
-                        "names": Array [
-                          "DefaultPerson",
-                        ],
-                        "sources": Array [
-                          "code.tsx",
-                        ],
-                        "sourcesContent": Array [
-                          "import { Card } from '/src/card'; import { DefaultPerson } from '/src/defaults';;
-
-             function Utopia$$$Component(props) {
-                return (
-                  <Card person={DefaultPerson} />
-                )
-               }",
-                        ],
-                        "version": 3,
-                      },
-                      "transpiledJavascript": "return DefaultPerson;",
-                      "type": "ATTRIBUTE_OTHER_JAVASCRIPT",
-                      "uid": "",
-                    },
-                  },
-                  Object {
-                    "comments": Object {
-                      "leadingComments": Array [],
-                      "trailingComments": Array [],
-                    },
-                    "key": "data-uid",
-                    "type": "JSX_ATTRIBUTES_ENTRY",
-                    "value": Object {
-                      "comments": Object {
-                        "leadingComments": Array [],
-                        "trailingComments": Array [],
-                      },
-                      "type": "ATTRIBUTE_VALUE",
-                      "uid": "",
-                      "value": "627",
-                    },
-                  },
-                ],
-                "type": "JSX_ELEMENT",
-                "uid": "",
-              },
+              "elementToInsert": [Function],
               "importsToAdd": Object {
                 "/src/card": Object {
                   "importedAs": null,

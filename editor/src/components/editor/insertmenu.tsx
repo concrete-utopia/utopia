@@ -165,19 +165,16 @@ function componentBeingInserted(
 }
 
 function elementBeingInserted(insertableComponent: InsertableComponent): ElementBeingInserted {
-  switch (insertableComponent.element.type) {
+  const element = insertableComponent.element()
+  switch (element.type) {
     case 'JSX_CONDITIONAL_EXPRESSION':
       return { type: 'conditional' }
     case 'JSX_FRAGMENT':
       return { type: 'fragment' }
     case 'JSX_ELEMENT':
-      return componentBeingInserted(
-        insertableComponent.importsToAdd,
-        insertableComponent.element.name,
-        insertableComponent.element.props,
-      )
+      return componentBeingInserted(insertableComponent.importsToAdd, element.name, element.props)
     default:
-      assertNever(insertableComponent.element)
+      assertNever(element)
   }
 }
 
@@ -201,17 +198,18 @@ const enableInsertMode = (
   createInteractionSessionCommand: CanvasAction,
   dispatch: EditorDispatch,
 ) => {
-  switch (component.element.type) {
+  const element = component.element()
+  switch (element.type) {
     case 'JSX_ELEMENT': {
       const newElement = jsxElement(
-        component.element.name,
+        element.name,
         newUID,
         setJSXAttributesAttribute(
-          addPositionAbsoluteToProps(component.element.props),
+          addPositionAbsoluteToProps(element.props),
           'data-uid',
           jsExpressionValue(newUID, emptyComments),
         ),
-        component.element.children,
+        element.children,
       )
 
       return dispatch(
@@ -257,7 +255,7 @@ const enableInsertMode = (
         'everyone',
       )
     default:
-      assertNever(component.element)
+      assertNever(element)
   }
 }
 
