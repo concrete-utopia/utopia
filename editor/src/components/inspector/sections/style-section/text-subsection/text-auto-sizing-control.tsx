@@ -89,7 +89,7 @@ export const TextAutoSizingControl = React.memo(() => {
 
   const controlStyles = React.useMemo(() => {
     if (state === 'disabled') {
-      return getControlStyles('disabled')
+      return getControlStyles('unset')
     }
     if (state === 'mixed') {
       return getControlStyles('multiselect-mixed-simple-or-unset')
@@ -170,6 +170,8 @@ export const TextAutoSizingControl = React.memo(() => {
     [setAutoHeight, setAutoWidth, setFixedSize],
   )
 
+  const value = state === 'disabled' || state === 'mixed' ? null : state
+
   return (
     <InspectorContextMenuWrapper
       id='textSizing-context-menu'
@@ -184,7 +186,7 @@ export const TextAutoSizingControl = React.memo(() => {
         controlStatus={'simple'}
         controlStyles={controlStyles}
         onSubmitValue={onSubmitValue}
-        value={state}
+        value={value}
         options={
           [
             {
