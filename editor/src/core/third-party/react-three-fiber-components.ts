@@ -9,12 +9,11 @@ import {
   emptyComments,
   jsExpressionOtherJavaScript,
   jsxAttributesEntry,
-  jsExpressionValue,
   jsxElementWithoutUID,
   simpleAttribute,
 } from '../shared/element-template'
 import type { Imports } from '../shared/project-file-types'
-import { importAlias, importDetails } from '../shared/project-file-types'
+import { importDetails } from '../shared/project-file-types'
 
 function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
   return jsxAttributesEntry(
@@ -35,7 +34,7 @@ function threeAttribute(key: string, fromThree: string): JSXAttributesEntry {
 function createBasicComponent(
   name: string,
   propertyControls: PropertyControls,
-  attributes?: JSXAttributes,
+  attributes?: () => JSXAttributes,
   importsToAdd?: Imports,
 ): ComponentDescriptor {
   return {
@@ -44,7 +43,7 @@ function createBasicComponent(
       {
         insertMenuLabel: name,
         importsToAdd: importsToAdd ?? {},
-        elementToInsert: jsxElementWithoutUID(name, attributes ?? [], []),
+        elementToInsert: () => jsxElementWithoutUID(name, attributes?.() ?? [], []),
       },
     ],
   }
@@ -90,28 +89,28 @@ const materialDefaultValues: JSXAttributes = [
 ]
 
 export const ReactThreeFiberComponents: ComponentDescriptorsForFile = {
-  color: createBasicComponent('color', ReactThreeFiberControls.color, [
+  color: createBasicComponent('color', ReactThreeFiberControls.color, () => [
     simpleAttribute('attach', 1),
   ]),
-  fog: createBasicComponent('fog', ReactThreeFiberControls.fog, [
+  fog: createBasicComponent('fog', ReactThreeFiberControls.fog, () => [
     simpleAttribute('near', 1),
     simpleAttribute('far', 1000),
   ]),
-  ambientLight: createBasicComponent('ambientLight', ReactThreeFiberControls.ambientLight, [
+  ambientLight: createBasicComponent('ambientLight', ReactThreeFiberControls.ambientLight, () => [
     simpleAttribute('intensity', 1),
   ]),
   directionalLight: createBasicComponent(
     'directionalLight',
     ReactThreeFiberControls.directionalLight,
-    [simpleAttribute('intensity', 1), simpleAttribute('castShadow', false)],
+    () => [simpleAttribute('intensity', 1), simpleAttribute('castShadow', false)],
   ),
-  pointLight: createBasicComponent('pointLight', ReactThreeFiberControls.pointLight, [
+  pointLight: createBasicComponent('pointLight', ReactThreeFiberControls.pointLight, () => [
     simpleAttribute('intensity', 1),
     simpleAttribute('decay', 1),
     simpleAttribute('distance', 0),
     simpleAttribute('power', 4 * Math.PI),
   ]),
-  spotLight: createBasicComponent('spotLight', ReactThreeFiberControls.spotLight, [
+  spotLight: createBasicComponent('spotLight', ReactThreeFiberControls.spotLight, () => [
     simpleAttribute('intensity', 1),
     simpleAttribute('angle', Math.PI / 3),
     simpleAttribute('castShadow', false),
@@ -120,20 +119,26 @@ export const ReactThreeFiberComponents: ComponentDescriptorsForFile = {
     simpleAttribute('penumbra', 0),
     simpleAttribute('power', 4 * Math.PI),
   ]),
-  boxGeometry: createBasicComponent('boxGeometry', ReactThreeFiberControls.boxGeometry, [
+  boxGeometry: createBasicComponent('boxGeometry', ReactThreeFiberControls.boxGeometry, () => [
     simpleAttribute('morphTargetsRelative', false),
   ]),
-  planeGeometry: createBasicComponent('planeGeometry', ReactThreeFiberControls.planeGeometry, [
-    simpleAttribute('morphTargetsRelative', false),
-  ]),
-  sphereGeometry: createBasicComponent('sphereGeometry', ReactThreeFiberControls.sphereGeometry, [
-    simpleAttribute('morphTargetsRelative', false),
-    simpleAttribute('args', [1, 32, 16, 0, 2 * Math.PI, 0, Math.PI]),
-  ]),
+  planeGeometry: createBasicComponent(
+    'planeGeometry',
+    ReactThreeFiberControls.planeGeometry,
+    () => [simpleAttribute('morphTargetsRelative', false)],
+  ),
+  sphereGeometry: createBasicComponent(
+    'sphereGeometry',
+    ReactThreeFiberControls.sphereGeometry,
+    () => [
+      simpleAttribute('morphTargetsRelative', false),
+      simpleAttribute('args', [1, 32, 16, 0, 2 * Math.PI, 0, Math.PI]),
+    ],
+  ),
   meshBasicMaterial: createBasicComponent(
     'meshBasicMaterial',
     ReactThreeFiberControls.meshBasicMaterial,
-    [
+    () => [
       ...materialDefaultValues,
       simpleAttribute('aoMapIntensity', 1),
       threeAttribute('combine', 'Multiply'),
@@ -150,7 +155,7 @@ export const ReactThreeFiberComponents: ComponentDescriptorsForFile = {
   meshStandardMaterial: createBasicComponent(
     'meshStandardMaterial',
     ReactThreeFiberControls.meshStandardMaterial,
-    [
+    () => [
       ...materialDefaultValues,
       simpleAttribute('aoMapIntensity', 1),
       simpleAttribute('bumpScale', 1),
@@ -172,7 +177,7 @@ export const ReactThreeFiberComponents: ComponentDescriptorsForFile = {
   shadowMaterial: createBasicComponent(
     'shadowMaterial',
     ReactThreeFiberControls.shadowMaterial,
-    [...materialDefaultValues, simpleAttribute('transparent', true)],
+    () => [...materialDefaultValues, simpleAttribute('transparent', true)],
     { three: importDetails(null, [], 'THREE') },
   ),
 }

@@ -27,11 +27,12 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
             importedAs: null,
           },
         },
-        elementToInsert: jsxElementWithoutUID(
-          'Link',
-          [jsxAttributesEntry('to', jsExpressionValue('/', emptyComments), emptyComments)],
-          [jsxTextBlock('Link')],
-        ),
+        elementToInsert: () =>
+          jsxElementWithoutUID(
+            'Link',
+            [jsxAttributesEntry('to', jsExpressionValue('/', emptyComments), emptyComments)],
+            [jsxTextBlock('Link')],
+          ),
       },
     ],
   },
@@ -52,7 +53,7 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
             importedAs: null,
           },
         },
-        elementToInsert: jsxElementWithoutUID('Outlet', [], []),
+        elementToInsert: () => jsxElementWithoutUID('Outlet', [], []),
       },
     ],
   },

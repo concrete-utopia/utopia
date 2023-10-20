@@ -9,7 +9,7 @@ import {
   slightlyOffsetPointBecauseVeryWeirdIssue,
 } from '../../../../utils/utils.test-utils'
 import { setRightMenuTab } from '../../../editor/actions/action-creators'
-import { RightMenuTab } from '../../../editor/store/editor-state'
+import { RightMenuTab, navigatorEntryToKey } from '../../../editor/store/editor-state'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import { DragOutlineControlTestId } from '../../controls/select-mode/drag-outline-control'
 import {
@@ -871,5 +871,90 @@ describe('drag-to-insert', () => {
       `),
       )
     })
+  })
+
+  it('can insert two images', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+    <div
+      data-uid='aaa'
+      style={{
+        width: '100%',
+        height: '100%',
+        backgroundColor: '#FFFFFF',
+        position: 'relative',
+      }}
+    >
+      <div
+        data-uid='larger'
+        data-testid='larger'
+        style={{
+          position: 'absolute',
+          left: 10,
+          top: 10,
+          width: 380,
+          height: 180,
+          backgroundColor: '#d3d3d3',
+        }}
+      />
+      <div
+        data-uid='smaller'
+        data-testid='smaller'
+        style={{
+          position: 'absolute',
+          left: 10,
+          top: 200,
+          width: 20,
+          height: 20,
+          backgroundColor: '#FF0000',
+        }}
+      />
+    </div>
+  `),
+      'await-first-dom-report',
+    )
+
+    const targetParentElement = renderResult.renderedDOM.getByTestId('larger')
+    const targetParentElementBounds = targetParentElement.getBoundingClientRect()
+    const targetPoint = {
+      x: targetParentElementBounds.x + targetParentElementBounds.width / 2,
+      y: targetParentElementBounds.y + targetParentElementBounds.height / 2,
+    }
+
+    await renderResult.dispatch([setRightMenuTab(RightMenuTab.Insert)], false)
+
+    FOR_TESTS_setNextGeneratedUid('ddd')
+
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'no-drag-outline',
+      'img',
+    )
+
+    await renderResult.dispatch([setRightMenuTab(RightMenuTab.Insert)], false)
+
+    FOR_TESTS_setNextGeneratedUid('eee')
+
+    await dragFromInsertMenuDivButtonToPoint(
+      targetPoint,
+      emptyModifiers,
+      renderResult,
+      'no-drag-outline',
+      'img',
+    )
+
+    expect(renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey)).toEqual(
+      [
+        'regular-utopia-storyboard-uid/scene-aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/larger',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/larger/ddd',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/larger/eee',
+        'regular-utopia-storyboard-uid/scene-aaa/app-entity:aaa/smaller',
+      ],
+    )
   })
 })

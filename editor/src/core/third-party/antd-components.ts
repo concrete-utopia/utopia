@@ -5,15 +5,7 @@ import type {
   ComponentDescriptorsForFile,
 } from '../../components/custom-code/code-file'
 import type { JSXAttributes } from '../shared/element-template'
-import {
-  emptyComments,
-  JSXAttributesEntry,
-  jsxAttributesEntry,
-  jsExpressionValue,
-  jsxElementName,
-  jsxElementWithoutUID,
-  simpleAttribute,
-} from '../shared/element-template'
+import { jsxElementName, jsxElementWithoutUID, simpleAttribute } from '../shared/element-template'
 import type { PropertyPathPart } from '../shared/project-file-types'
 
 const StyleObjectProps: PropertyControls = {
@@ -26,7 +18,7 @@ function createBasicComponent(
   baseVariable: string,
   propertyPathParts: PropertyPathPart[],
   propertyControls: PropertyControls,
-  attributes?: JSXAttributes,
+  attributes?: () => JSXAttributes,
 ): ComponentDescriptor {
   return {
     properties: { ...StyleObjectProps, ...propertyControls },
@@ -50,11 +42,12 @@ function createBasicComponent(
             importedAs: null,
           },
         },
-        elementToInsert: jsxElementWithoutUID(
-          jsxElementName(baseVariable, propertyPathParts),
-          attributes ?? [],
-          [],
-        ),
+        elementToInsert: () =>
+          jsxElementWithoutUID(
+            jsxElementName(baseVariable, propertyPathParts),
+            attributes?.() ?? [],
+            [],
+          ),
       },
     ],
   }
@@ -62,7 +55,7 @@ function createBasicComponent(
 
 export const AntdComponents: ComponentDescriptorsForFile = {
   DatePicker: createBasicComponent('DatePicker', [], {}),
-  Button: createBasicComponent('Button', [], AntdControls.Button, [
+  Button: createBasicComponent('Button', [], AntdControls.Button, () => [
     simpleAttribute('disabled', false),
     simpleAttribute('type', 'default'),
     simpleAttribute('shape', 'default'),
@@ -73,12 +66,12 @@ export const AntdComponents: ComponentDescriptorsForFile = {
     simpleAttribute('target', 'button'),
   ]),
   InputNumber: createBasicComponent('InputNumber', [], {}),
-  Row: createBasicComponent('Row', [], AntdControls.Row, [
+  Row: createBasicComponent('Row', [], AntdControls.Row, () => [
     simpleAttribute('align', 'top'),
     simpleAttribute('gutter', 0),
     simpleAttribute('justify', 'center'),
   ]),
-  Col: createBasicComponent('Col', [], AntdControls.Col, [
+  Col: createBasicComponent('Col', [], AntdControls.Col, () => [
     simpleAttribute('flex', 1),
     simpleAttribute('offset', 0),
     simpleAttribute('order', 0),
@@ -91,12 +84,12 @@ export const AntdComponents: ComponentDescriptorsForFile = {
     simpleAttribute('xl', 0),
     simpleAttribute('xxl', 0),
   ]),
-  Space: createBasicComponent('Space', [], AntdControls.Space, [
+  Space: createBasicComponent('Space', [], AntdControls.Space, () => [
     simpleAttribute('align', 'center'),
     simpleAttribute('direction', 'vertical'),
     simpleAttribute('size', 'middle'),
   ]),
-  Menu: createBasicComponent('Menu', [], AntdControls.Menu, [
+  Menu: createBasicComponent('Menu', [], AntdControls.Menu, () => [
     simpleAttribute('forceSubMenuRender', false),
     simpleAttribute('inlineCollapsed', false),
     simpleAttribute('inlineIndent', 24),
@@ -107,24 +100,29 @@ export const AntdComponents: ComponentDescriptorsForFile = {
     simpleAttribute('subMenuOpenDelay', 0.0),
     simpleAttribute('theme', 'light'),
   ]),
-  'Menu.Item': createBasicComponent('Menu', ['Item'], AntdControls['Menu.Item'], [
+  'Menu.Item': createBasicComponent('Menu', ['Item'], AntdControls['Menu.Item'], () => [
     simpleAttribute('disabled', false),
     simpleAttribute('danger', false),
   ]),
-  'Menu.SubMenu': createBasicComponent('Menu', ['SubMenu'], AntdControls['Menu.SubMenu'], [
+  'Menu.SubMenu': createBasicComponent('Menu', ['SubMenu'], AntdControls['Menu.SubMenu'], () => [
     simpleAttribute('disabled', false),
   ]),
   'Menu.ItemGroup': createBasicComponent('Menu', ['ItemGroup'], AntdControls['Menu.ItemGroup']),
-  'Typography.Text': createBasicComponent('Typography', ['Text'], AntdControls['Typography.Text'], [
-    simpleAttribute('code', false),
-    simpleAttribute('copyable', false),
-    simpleAttribute('delete', false),
-    simpleAttribute('disabled', false),
-    simpleAttribute('editable', false),
-    simpleAttribute('ellipsis', false),
-    simpleAttribute('mark', false),
-    simpleAttribute('keyboard', false),
-    simpleAttribute('underline', false),
-    simpleAttribute('strong', false),
-  ]),
+  'Typography.Text': createBasicComponent(
+    'Typography',
+    ['Text'],
+    AntdControls['Typography.Text'],
+    () => [
+      simpleAttribute('code', false),
+      simpleAttribute('copyable', false),
+      simpleAttribute('delete', false),
+      simpleAttribute('disabled', false),
+      simpleAttribute('editable', false),
+      simpleAttribute('ellipsis', false),
+      simpleAttribute('mark', false),
+      simpleAttribute('keyboard', false),
+      simpleAttribute('underline', false),
+      simpleAttribute('strong', false),
+    ],
+  ),
 }
