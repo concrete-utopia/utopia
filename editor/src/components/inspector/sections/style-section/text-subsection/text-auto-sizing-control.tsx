@@ -17,6 +17,7 @@ import type { ElementInstanceMetadataMap } from '../../../../../core/shared/elem
 import type { ElementPath } from '../../../../../core/shared/project-file-types'
 import { getControlStyles } from '../../../common/control-styles'
 import { useNonRoundedComputedSizeRef } from '../../../inpector-selectors'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
@@ -27,13 +28,10 @@ const isConsideredFixed = (type: FixedHugFill['type'] | null | undefined): boole
 
 function detectTextSizingState(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPath: ElementPath,
 ): TextSizingState {
-  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (instance == null) {
-    return 'disabled'
-  }
-  if (!MetadataUtils.isSpan(instance)) {
+  if (!MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, elementPath)) {
     return 'disabled'
   }
 
@@ -60,15 +58,16 @@ function detectTextSizingState(
 
 function detectTextSizingStateMultiSelect(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   elementPaths: ElementPath[],
 ): TextSizingState {
   if (elementPaths.length === 0) {
     return 'disabled'
   }
 
-  const result = detectTextSizingState(metadata, elementPaths[0])
+  const result = detectTextSizingState(metadata, pathTrees, elementPaths[0])
   for (const path of elementPaths.slice(1)) {
-    const state = detectTextSizingState(metadata, path)
+    const state = detectTextSizingState(metadata, pathTrees, path)
     if (state !== result) {
       return 'mixed'
     }
@@ -80,7 +79,11 @@ export const TextAutoSizingControl = React.memo(() => {
   const state = useEditorState(
     Substores.metadata,
     (store) =>
-      detectTextSizingStateMultiSelect(store.editor.jsxMetadata, store.editor.selectedViews),
+      detectTextSizingStateMultiSelect(
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+        store.editor.selectedViews,
+      ),
     'TextSizingControl state',
   )
 
