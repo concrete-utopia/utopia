@@ -214,11 +214,11 @@ export async function mouseDragFromPointToPoint(
   if (options.moveBeforeMouseDown) {
     await mouseMoveToPoint(eventSourceElement, startPoint, options)
   }
-  if (options.realMouseDown) {
-    dispatchMouseDownEventAtPoint(startPoint)
-  } else {
-    await mouseDownAtPoint(eventSourceElement, startPoint, options)
-  }
+  dispatchMouseDownEventAtPoint(startPoint)
+  // if (options.realMouseDown) {
+  // } else {
+  //   await mouseDownAtPoint(eventSourceElement, startPoint, options)
+  // }
 
   if (staggerMoveEvents) {
     const numberOfSteps = 5
