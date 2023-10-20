@@ -26,6 +26,7 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
+import { stopPropagation } from '../../../components/inspector/common/inspector-utils'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -617,6 +618,7 @@ export const PopupList = React.memo<PopupListProps>(
           }}
           openMenuOnFocus={true}
           openMenuOnClick={true}
+          onKeyDown={stopPropagation}
           value={value}
           onChange={selectOnSubmitValue}
           options={options}
