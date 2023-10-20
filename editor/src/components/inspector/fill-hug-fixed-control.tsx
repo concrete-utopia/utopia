@@ -85,6 +85,7 @@ export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
 
 export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
+export const ScaledLabel = 'Scaled' as const
 export const HugContentsLabel = 'Hug contents' as const
 export const HugGroupContentsLabel = 'Hug contents' as const
 export const ComputedLabel = 'Computed' as const
@@ -96,6 +97,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return FillContainerLabel
     case 'fixed':
       return FixedLabel
+    case 'scaled':
+      return ScaledLabel
     case 'hug':
       return HugContentsLabel
     case 'hug-group':
@@ -117,6 +120,7 @@ export function selectOptionIconType(
     case 'fill':
       return `fill-${dimension}`
     case 'fixed':
+    case 'scaled': // TODO: needs separate icon
       return `fixed-${dimension}`
     case 'hug':
       return `hug-${dimension}`
@@ -524,6 +528,9 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   return onSubmitFixedFillHugType
 }
 
+export const getFixedHugDropdownId = (dimension: 'width' | 'height') =>
+  `fixed-hug-dropdown-${dimension}`
+
 export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'height' }) => {
   const { dimension } = props
 
@@ -549,6 +556,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 
   return (
     <PopupList
+      id={getFixedHugDropdownId(dimension)}
       value={optionalMap(selectOption(dimension), currentValue.fixedHugFill?.type) ?? undefined}
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
@@ -658,6 +666,7 @@ function strategyForChangingFillFixedHugType(
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
+    case 'scaled':
     case 'detected':
     case 'computed':
     case 'hug-group':
@@ -672,6 +681,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'computed':
     case 'detected':
     case 'fixed':
+    case 'scaled':
     case 'fill':
     case 'hug-group':
       return value.value
@@ -686,14 +696,19 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
   if (value?.type === 'fixed') {
     return 'AnyValid'
   }
-  if (value?.type === 'fill') {
+  if (value?.type === 'fill' || value?.type === 'scaled') {
     return value.value.unit === '%' ? 'Percent' : 'Unitless'
   }
   return 'Unitless'
 }
 
 function isNumberInputEnabled(value: FixedHugFill | null): boolean {
-  return value?.type === 'fixed' || value?.type === 'fill' || value?.type === 'hug-group'
+  return (
+    value?.type === 'fixed' ||
+    value?.type === 'fill' ||
+    value?.type === 'hug-group' ||
+    value?.type === 'scaled'
+  )
 }
 
 export const anySelectedElementGroupOrChildOfGroup = createSelector(

@@ -393,6 +393,7 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
     case 'hug-group':
       return 'Hug'
     case 'fixed':
+    case 'scaled':
     case 'detected':
     case 'computed':
       return `${actualSize}`
@@ -563,6 +564,7 @@ const SizeLabel = React.memo(
           position: 'absolute',
           display: 'flex',
           justifyContent: 'center',
+          pointerEvents: 'none',
         }}
         data-testid='parent-resize-label'
       >
@@ -583,6 +585,7 @@ const SizeLabel = React.memo(
               height: ExplicitHeightHacked / scale,
               opacity: dimmed ? 0.075 : 1,
               transition: '0.1s',
+              pointerEvents: 'initial',
             }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}

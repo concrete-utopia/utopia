@@ -33,6 +33,7 @@ import {
   FixedLabel,
   HugContentsLabel,
   selectOptionLabel,
+  ScaledLabel,
 } from '../fill-hug-fixed-control'
 import type { Axis, FixedHugFillMode } from '../inspector-common'
 import { MaxContent } from '../inspector-common'
@@ -378,7 +379,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(editor.renderedDOM.getAllByText(FillContainerLabel).length).toEqual(2)
     })
 
-    it('percent values that are not 100% are not classified as fill container', async () => {
+    it('percent values that are not 100% are classified as scaled container', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div
@@ -399,7 +400,7 @@ describe('Fixed / Fill / Hug control', () => {
       ])
 
       expect(editor.renderedDOM.queryAllByText(FillContainerLabel).length).toEqual(0)
-      expect(editor.renderedDOM.getAllByText(FixedLabel).length).toEqual(2)
+      expect(editor.renderedDOM.getAllByText(ScaledLabel).length).toEqual(2)
     })
   })
 

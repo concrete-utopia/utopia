@@ -14,7 +14,7 @@ import { emptyComments, jsxAttributesEntry, jsxElementWithoutUID } from '../shar
 
 const BasicUtopiaComponentDescriptor = (
   name: string,
-  styleProp: JSExpression,
+  styleProp: () => JSExpression,
 ): ComponentDescriptor => {
   return {
     properties: {
@@ -37,22 +37,19 @@ const BasicUtopiaComponentDescriptor = (
             importedAs: null,
           },
         },
-        elementToInsert: jsxElementWithoutUID(
-          name,
-          [jsxAttributesEntry('style', styleProp, emptyComments)],
-          [],
-        ),
+        elementToInsert: () =>
+          jsxElementWithoutUID(name, [jsxAttributesEntry('style', styleProp(), emptyComments)], []),
       },
     ],
   }
 }
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
-  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultElementStyle()),
-  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultRectangleElementStyle()),
-  View: BasicUtopiaComponentDescriptor('View', defaultElementStyle()),
-  FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle()),
-  FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle()),
-  Scene: BasicUtopiaComponentDescriptor('Scene', defaultSceneElementStyle(null)),
-  RemixScene: BasicUtopiaComponentDescriptor('RemixScene', defaultSceneElementStyle(null)),
+  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultElementStyle),
+  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultRectangleElementStyle),
+  View: BasicUtopiaComponentDescriptor('View', defaultElementStyle),
+  FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle),
+  FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle),
+  Scene: BasicUtopiaComponentDescriptor('Scene', () => defaultSceneElementStyle(null)),
+  RemixScene: BasicUtopiaComponentDescriptor('RemixScene', () => defaultSceneElementStyle(null)),
 }

@@ -570,6 +570,7 @@ export type FixedHugFill =
   | { type: 'hug-group'; value: CSSNumber } // hug-group has a Fixed value but shows us Hug on the UI to explain Group behavior
   | { type: 'computed'; value: CSSNumber }
   | { type: 'detected'; value: CSSNumber }
+  | { type: 'scaled'; value: CSSNumber }
 
 export type FixedHugFillMode = FixedHugFill['type']
 
@@ -655,8 +656,21 @@ export function detectFillHugFixedState(
   const isGroupLike = treatElementAsGroupLike(metadata, elementPath)
 
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
-  if (parsed != null && parsed.unit === '%' && parsed.value === 100) {
-    const valueWithType: FixedHugFill = { type: isGroupLike ? 'hug-group' : 'fill', value: parsed }
+  if (parsed != null && parsed.unit === '%') {
+    const type = (() => {
+      if (isGroupLike) {
+        return 'hug-group'
+      }
+      if (parsed.value === 100) {
+        return 'fill'
+      }
+      return 'scaled'
+    })()
+
+    const valueWithType: FixedHugFill = {
+      type: type,
+      value: parsed,
+    }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
   }
 
@@ -1098,6 +1112,7 @@ export function isFixedHugFillEqual(
       return b.fixedHugFill.type === 'hug'
     case 'fill':
     case 'fixed':
+    case 'scaled':
     case 'computed':
     case 'detected':
     case 'hug-group':
@@ -1143,15 +1158,27 @@ export function toggleAbsolutePositioningCommands(
     }
 
     if (MetadataUtils.isPositionAbsolute(element)) {
-      return [
-        ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-        ...(isIntrinsicallyInlineElement(element)
-          ? [
-              ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
-              setProperty('always', elementPath, PP.create('style', 'display'), 'inline-block'),
-            ]
-          : []),
-      ]
+      // First check if the parent is a group and prevent the removal of the position property in this case.
+      const isGroupChild = treatElementAsGroupLike(jsxMetadata, EP.parentPath(elementPath))
+      if (isGroupChild) {
+        return [
+          showToastCommand(
+            'Cannot remove absolute position for group children.',
+            'WARNING',
+            'cannot-remove-group-child-absolute-position',
+          ),
+        ]
+      } else {
+        return [
+          ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+          ...(isIntrinsicallyInlineElement(element)
+            ? [
+                ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
+                setProperty('always', elementPath, PP.create('style', 'display'), 'inline-block'),
+              ]
+            : []),
+        ]
+      }
     } else {
       return getConvertIndividualElementToAbsoluteCommandsFromMetadata(
         elementPath,

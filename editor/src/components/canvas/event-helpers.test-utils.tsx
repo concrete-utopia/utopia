@@ -201,6 +201,7 @@ export async function mouseDragFromPointToPoint(
     midDragCallback?: () => Promise<void>
     moveBeforeMouseDown?: boolean
     skipMouseUp?: boolean
+    realMouseDown?: boolean
   } = {},
 ): Promise<void> {
   const { buttons, ...mouseUpOptions } = options.eventOptions ?? {}
@@ -214,7 +215,11 @@ export async function mouseDragFromPointToPoint(
   if (options.moveBeforeMouseDown) {
     await mouseMoveToPoint(eventSourceElement, startPoint, options)
   }
-  await mouseDownAtPoint(eventSourceElement, startPoint, options)
+  if (options.realMouseDown) {
+    dispatchMouseDownEventAtPoint(startPoint)
+  } else {
+    await mouseDownAtPoint(eventSourceElement, startPoint, options)
+  }
 
   if (staggerMoveEvents) {
     const numberOfSteps = 5
@@ -417,6 +422,90 @@ export async function mouseClickAtPoint(
       }),
     )
   })
+}
+
+export function dispatchMouseDownEventAtPoint(
+  point: Point,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+  } = {},
+) {
+  const modifiers = options.modifiers ?? emptyModifiers
+  const passedEventOptions = options.eventOptions ?? {}
+  const eventOptions = {
+    ctrlKey: modifiers.ctrl,
+    metaKey: modifiers.cmd,
+    altKey: modifiers.alt,
+    shiftKey: modifiers.shift,
+    ...passedEventOptions,
+  }
+  const { buttons, ...mouseUpOptions } = eventOptions ?? {}
+
+  const eventSourceElement = document.elementFromPoint(point.x, point.y)
+  if (eventSourceElement == null) {
+    throw new Error('No DOM element found at point')
+  }
+
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mousedown', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+}
+
+export function dispatchMouseEnterEventAtPoint(
+  point: Point,
+  options: {
+    modifiers?: Modifiers
+    eventOptions?: MouseEventInit
+  } = {},
+) {
+  const modifiers = options.modifiers ?? emptyModifiers
+  const passedEventOptions = options.eventOptions ?? {}
+  const eventOptions = {
+    ctrlKey: modifiers.ctrl,
+    metaKey: modifiers.cmd,
+    altKey: modifiers.alt,
+    shiftKey: modifiers.shift,
+    ...passedEventOptions,
+  }
+  const { buttons, ...mouseUpOptions } = eventOptions ?? {}
+
+  const eventSourceElement = document.elementFromPoint(point.x, point.y)
+  if (eventSourceElement == null) {
+    throw new Error('No DOM element found at point')
+  }
+
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mouseover', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
+
+  eventSourceElement.dispatchEvent(
+    new MouseEvent('mouseenter', {
+      detail: 1,
+      bubbles: true,
+      cancelable: true,
+      clientX: point.x,
+      clientY: point.y,
+      buttons: 1,
+      ...eventOptions,
+    }),
+  )
 }
 
 export function dispatchMouseClickEventAtPoint(
