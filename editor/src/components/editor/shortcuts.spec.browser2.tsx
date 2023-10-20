@@ -95,6 +95,28 @@ describe('shortcuts', () => {
       expect(div.style.left).toEqual('')
       expect(div.style.right).toEqual('')
     })
+    it('when `position: absolute` is set on the selected element, do not remove positioning props if the parent is a group', async () => {
+      const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
+
+      const div = editor.renderedDOM.getByTestId(TestIdOne)
+
+      await selectComponentsForTest(editor, [EP.fromString(`${StoryBoardId}/group/${TestIdOne}`)])
+
+      await expectNoAction(editor, async () => {
+        await pressKey('x')
+      })
+      await editor.getDispatchFollowUpActionsFinished()
+      const currentToastMessages = editor.getEditorState().editor.toasts.map((toast) => {
+        return toast.message
+      })
+      expect(currentToastMessages).toEqual(['Cannot remove absolute position for group children.'])
+
+      expect(div.style.position).toEqual('absolute')
+      expect(div.style.left).toEqual('67px')
+      expect(div.style.top).toEqual('128px')
+      expect(div.style.width).toEqual('161px')
+      expect(div.style.height).toEqual('171px')
+    })
 
     it('when the selected element participates in the layout, absolute positioning props are added to the selected element', async () => {
       const editor = await renderTestEditorWithCode(
@@ -623,53 +645,37 @@ export var storyboard = (
 )
 `
 
-const projectWithNestedGroups = `import * as React from 'react'
-import { Storyboard } from 'utopia-api'
+const projectWithGroup = `import * as React from 'react'
+import { Scene, Storyboard, Group } from 'utopia-api'
 
-export var storyboard = (
-  <Storyboard data-uid='sb'>
-    <div data-uid='outermost-group' data-testid='outermost-group'>
-      <div data-uid='middle-group' data-testid='middle-group'>
-        <div data-uid='group' data-testid='group'>
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 232,
-              top: 305,
-              width: 363,
-              height: 167,
-            }}
-            data-uid='515'
-            data-testid='group-child-1'
-          />
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              position: 'absolute',
-              left: 316,
-              top: 504,
-              width: 163,
-              height: 98,
-            }}
-            data-uid='df9'
-            data-testid='group-child-2'
-          />
-        </div>
-      </div>
+    export var storyboard = (
+  <Storyboard data-uid='${StoryBoardId}'>
+    <Group data-uid='group' data-testid='group'>
       <div
+        data-testid='${TestIdOne}'
         style={{
           backgroundColor: '#aaaaaa33',
           position: 'absolute',
-          left: 769,
-          top: 369,
-          width: 387,
-          height: 245,
+          left: 67,
+          top: 128,
+          width: 161,
+          height: 171,
         }}
-        data-uid='321'
-        data-testid='outermost-group-child'
+        data-uid='${TestIdOne}'
       />
-    </div>
+      <div
+        data-testid='${TestIdTwo}'
+        style={{
+          backgroundColor: '${backgroundColor}',
+          position: 'absolute',
+          left: 183,
+          top: 350,
+          width: 173,
+          height: 222,
+        }}
+        data-uid='${TestIdTwo}'
+      />
+    </Group>
   </Storyboard>
 )
 `
