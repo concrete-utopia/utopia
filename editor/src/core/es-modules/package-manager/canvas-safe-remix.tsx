@@ -65,6 +65,7 @@ export const SafeOutlet = (props: SafeOutletProps): JSX.Element => {
 }
 
 // Why are these causing issues?
+export const PrefetchPageLinks = () => null
 export const Links = () => null
 export const Meta = () => null
 export const Scripts = () => null

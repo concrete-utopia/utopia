@@ -292,6 +292,7 @@ export const ESLINT_CONFIG: Linter.Config = {
     'jsx-a11y/role-has-required-aria-props': 'warn',
     'jsx-a11y/role-supports-aria-props': 'warn',
     'jsx-a11y/scope': 'warn',
+    'no-debugger': 'off',
   },
   settings: {
     react: {

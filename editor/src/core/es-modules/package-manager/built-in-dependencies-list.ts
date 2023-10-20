@@ -16,7 +16,7 @@ import type { UtopiaTsWorkers } from '../../workers/common/worker-types'
 import { UtopiaApiGroup } from './group-component'
 import * as RemixRunReact from '@remix-run/react'
 import * as ReactRouter from 'react-router'
-import { SafeLink, SafeOutlet, Links, Meta, Scripts } from './canvas-safe-remix'
+import { SafeLink, SafeOutlet, PrefetchPageLinks, Links, Meta, Scripts } from './canvas-safe-remix'
 import { createRequestHandler as remixOxygenCreateRequestHandler } from './remix-oxygen'
 import * as RemixServerBuild from './remix-server-build'
 
@@ -104,6 +104,7 @@ export function createBuiltInDependenciesList(
         ...RemixRunReact,
         Link: SafeLink,
         Outlet: SafeOutlet,
+        PrefetchPageLinks,
         Links,
         Meta,
         Scripts,
