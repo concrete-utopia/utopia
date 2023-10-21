@@ -1,5 +1,11 @@
 import localforage from 'localforage'
-import { UTOPIA_BACKEND, THUMBNAIL_ENDPOINT, ASSET_ENDPOINT, BASE_URL } from './env-vars'
+import {
+  UTOPIA_BACKEND,
+  THUMBNAIL_ENDPOINT,
+  ASSET_ENDPOINT,
+  BASE_URL,
+  IS_TEST_ENVIRONMENT,
+} from './env-vars'
 import type { ProjectListing } from './persistence'
 import type { LoginState } from './user'
 import {
@@ -88,6 +94,9 @@ export async function getLoginState(useCache: 'cache' | 'no-cache'): Promise<Log
 let localForageAvailableResult: boolean | null = null
 
 export async function isLocalForageAvailable(): Promise<boolean> {
+  if (IS_TEST_ENVIRONMENT) {
+    return false
+  }
   if (localForageAvailableResult == null) {
     const result = await localforage
       .keys()
