@@ -181,7 +181,7 @@ function callPropertyControlsHook(
             {
               insertMenuLabel: 'App',
               importsToAdd: {},
-              elementToInsert: jsxElementWithoutUID('App', [], []),
+              elementToInsert: () => jsxElementWithoutUID('App', [], []),
             },
           ],
         },
@@ -191,7 +191,7 @@ function callPropertyControlsHook(
             {
               insertMenuLabel: 'OtherComponent',
               importsToAdd: {},
-              elementToInsert: jsxElementWithoutUID('OtherComponent', [], []),
+              elementToInsert: () => jsxElementWithoutUID('OtherComponent', [], []),
             },
           ],
         },

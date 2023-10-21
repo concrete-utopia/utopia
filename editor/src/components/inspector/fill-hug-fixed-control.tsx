@@ -121,6 +121,7 @@ export function selectOptionIconType(
     case 'scaled': // TODO: needs separate icon
       return `fill-${dimension}`
     case 'fixed':
+    case 'scaled': // TODO: needs separate icon
       return `fixed-${dimension}`
     case 'hug':
       return `hug-${dimension}`
@@ -528,6 +529,9 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   return onSubmitFixedFillHugType
 }
 
+export const getFixedHugDropdownId = (dimension: 'width' | 'height') =>
+  `fixed-hug-dropdown-${dimension}`
+
 export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'height' }) => {
   const { dimension } = props
 
@@ -553,6 +557,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 
   return (
     <PopupList
+      id={getFixedHugDropdownId(dimension)}
       value={optionalMap(selectOption(dimension), currentValue.fixedHugFill?.type) ?? undefined}
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
@@ -699,7 +704,12 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
 }
 
 function isNumberInputEnabled(value: FixedHugFill | null): boolean {
-  return value?.type === 'fixed' || value?.type === 'fill' || value?.type === 'hug-group'
+  return (
+    value?.type === 'fixed' ||
+    value?.type === 'fill' ||
+    value?.type === 'hug-group' ||
+    value?.type === 'scaled'
+  )
 }
 
 export const anySelectedElementGroupOrChildOfGroup = createSelector(

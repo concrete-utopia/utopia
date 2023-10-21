@@ -657,9 +657,18 @@ export function detectFillHugFixedState(
 
   const parsed = defaultEither(null, parseCSSLengthPercent(simpleAttribute))
   if (parsed != null && parsed.unit === '%') {
-    const fillOrScaled = parsed.value === 100 ? 'fill' : 'scaled'
+    const type = (() => {
+      if (isGroupLike) {
+        return 'hug-group'
+      }
+      if (parsed.value === 100) {
+        return 'fill'
+      }
+      return 'scaled'
+    })()
+
     const valueWithType: FixedHugFill = {
-      type: isGroupLike ? 'hug-group' : fillOrScaled,
+      type: type,
       value: parsed,
     }
     return { fixedHugFill: valueWithType, controlStatus: 'simple' }
@@ -1149,15 +1158,27 @@ export function toggleAbsolutePositioningCommands(
     }
 
     if (MetadataUtils.isPositionAbsolute(element)) {
-      return [
-        ...nukeAllAbsolutePositioningPropsCommands(elementPath),
-        ...(isIntrinsicallyInlineElement(element)
-          ? [
-              ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
-              setProperty('always', elementPath, PP.create('style', 'display'), 'inline-block'),
-            ]
-          : []),
-      ]
+      // First check if the parent is a group and prevent the removal of the position property in this case.
+      const isGroupChild = treatElementAsGroupLike(jsxMetadata, EP.parentPath(elementPath))
+      if (isGroupChild) {
+        return [
+          showToastCommand(
+            'Cannot remove absolute position for group children.',
+            'WARNING',
+            'cannot-remove-group-child-absolute-position',
+          ),
+        ]
+      } else {
+        return [
+          ...nukeAllAbsolutePositioningPropsCommands(elementPath),
+          ...(isIntrinsicallyInlineElement(element)
+            ? [
+                ...sizeToVisualDimensions(jsxMetadata, elementPathTree, elementPath),
+                setProperty('always', elementPath, PP.create('style', 'display'), 'inline-block'),
+              ]
+            : []),
+        ]
+      }
     } else {
       return getConvertIndividualElementToAbsoluteCommandsFromMetadata(
         elementPath,
