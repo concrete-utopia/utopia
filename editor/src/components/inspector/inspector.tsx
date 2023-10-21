@@ -410,7 +410,6 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                         <PositionSection
                           hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
                         />
-                        <SizingSection />
                       </>,
                     )}
                   </>,
