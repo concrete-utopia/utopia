@@ -27,10 +27,10 @@ import {
   flexChildAndBottomRightProps,
   getConstraintsIncludingImplicitForElement,
   isHugFromStyleAttributeOrNull,
+  isHuggingParent,
   prunePropsCommands,
 } from '../../inspector/inspector-common'
 import type { InteractionLifecycle } from '../canvas-strategies/canvas-strategy-types'
-import { isHuggingParent } from '../canvas-strategies/strategies/convert-to-absolute-and-move-strategy'
 import {
   replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDomElementWithFirstDomAncestorPath,
