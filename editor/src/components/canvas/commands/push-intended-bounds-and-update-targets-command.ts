@@ -1,10 +1,10 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
-import {
-  type ElementInstanceMetadata,
-  type ElementInstanceMetadataMap,
-  type JSXAttributes,
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+  JSXAttributes,
 } from '../../../core/shared/element-template'
 import type { CanvasRectangle } from '../../../core/shared/math-utils'
 import {
