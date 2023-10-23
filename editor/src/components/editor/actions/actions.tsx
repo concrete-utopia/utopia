@@ -348,8 +348,11 @@ import type {
   TrueUpTarget,
   TrueUpHuggingElement,
 } from '../store/editor-state'
-import { trueUpChildrenOfGroupChanged, trueUpHuggingElement } from '../store/editor-state'
-import { trueUpGroupElementChanged } from '../store/editor-state'
+import {
+  trueUpChildrenOfGroupChanged,
+  trueUpHuggingElement,
+  trueUpGroupElementChanged,
+} from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
   BaseCanvasOffset,
