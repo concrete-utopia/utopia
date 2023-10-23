@@ -186,7 +186,7 @@ export function runCanvasCommand(
       return runAppendElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
       return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
-    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING':
+    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS':
       return runPushIntendedBoundsAndUpdateHuggingElements(editorState, command)
 
     case 'DELETE_PROPERTIES':
