@@ -172,168 +172,6 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   }
 }
 
-export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
-  type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS'
-  value: Array<CanvasFrameAndTarget>
-  isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
-}
-
-export function pushIntendedBoundsAndUpdateHuggingElements(
-  value: Array<CanvasFrameAndTarget>,
-  isStartingMetadata: 'starting-metadata' | 'live-metadata',
-): PushIntendedBoundsAndUpdateHuggingElements {
-  return {
-    type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS',
-    whenToRun: 'always',
-    value: value,
-    isStartingMetadata: isStartingMetadata,
-  }
-}
-
-export const runPushIntendedBoundsAndUpdateHuggingElements = (
-  editor: EditorState,
-  command: PushIntendedBoundsAndUpdateHuggingElements,
-): CommandFunctionResult => {
-  const { updatedEditor: editorAfterHuggingElements } = getUpdateResizeHuggingElementsCommands(
-    editor,
-    command.value,
-  )
-
-  let editorStatePatches: Array<EditorStatePatch> = [
-    {
-      projectContents: {
-        $set: editorAfterHuggingElements.projectContents,
-      },
-      toasts: {
-        $set: editorAfterHuggingElements.toasts,
-      },
-    },
-  ]
-
-  return {
-    editorStatePatches: editorStatePatches,
-    commandDescription: `Set Intended Bounds for hugging elements ${command.value
-      .map((c) => EP.toString(c.target))
-      .join(', ')}`,
-  }
-}
-
-function getHuggingElementContentsStatus(
-  jsxMetadata: ElementInstanceMetadataMap,
-  path: ElementPath,
-): 'empty' | 'contains-only-absolute' | 'contains-some-absolute' | 'non-empty' {
-  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
-  const absoluteChildren = children.filter(MetadataUtils.isPositionAbsolute).length
-  if (children.length === 0) {
-    return 'empty'
-  } else if (absoluteChildren === children.length) {
-    return 'contains-only-absolute'
-  } else if (absoluteChildren > 0) {
-    return 'contains-some-absolute'
-  } else {
-    return 'non-empty'
-  }
-}
-
-function getUpdateResizeHuggingElementsCommands(
-  editor: EditorState,
-  targets: Array<CanvasFrameAndTarget>,
-): {
-  updatedEditor: EditorState
-} {
-  let commands: Array<CanvasCommand> = []
-  for (const targetHugging of targets) {
-    const metadata = MetadataUtils.findElementByElementPath(
-      editor.jsxMetadata,
-      targetHugging.target,
-    )
-    const jsxElement = MetadataUtils.getJSXElementFromMetadata(
-      editor.jsxMetadata,
-      targetHugging.target,
-    )
-    if (
-      metadata == null ||
-      jsxElement == null ||
-      !(isHuggingParent(jsxElement, 'width') || isHuggingParent(jsxElement, 'height'))
-    ) {
-      continue
-    }
-    const status = getHuggingElementContentsStatus(editor.jsxMetadata, targetHugging.target)
-    if (status === 'non-empty') {
-      continue
-    }
-
-    function setCSSDimension(
-      flexDirection: FlexDirection | null,
-      prop: 'left' | 'top' | 'width' | 'height',
-      value: number,
-    ) {
-      return setCssLengthProperty(
-        'always',
-        targetHugging.target,
-        PP.create('style', prop),
-        setExplicitCssValue(cssPixelLength(value)),
-        flexDirection,
-        'create-if-not-existing',
-        'warn-about-replacement',
-      )
-    }
-    if (status === 'contains-only-absolute' || status === 'empty') {
-      commands.push(
-        ...prunePropsCommands(flexChildAndBottomRightProps, targetHugging.target),
-        setCSSDimension(
-          metadata.specialSizeMeasurements.flexDirection,
-          'width',
-          targetHugging.frame.width,
-        ),
-        setCSSDimension(
-          metadata.specialSizeMeasurements.flexDirection,
-          'height',
-          targetHugging.frame.height,
-        ),
-      )
-
-      const parentPath = EP.parentPath(targetHugging.target)
-      const parentJSXElement = MetadataUtils.getJSXElementFromMetadata(
-        editor.jsxMetadata,
-        parentPath,
-      )
-      const parentIsHugging =
-        parentJSXElement != null &&
-        (isHuggingParent(parentJSXElement, 'width') || isHuggingParent(parentJSXElement, 'height'))
-      const shouldSetAbsolutePosition =
-        EP.isStoryboardPath(parentPath) || parentJSXElement == null || parentIsHugging
-      if (shouldSetAbsolutePosition) {
-        commands.push(
-          setProperty('always', targetHugging.target, PP.create('style', 'position'), 'absolute'),
-          setCSSDimension(
-            metadata.specialSizeMeasurements.flexDirection,
-            'left',
-            targetHugging.frame.x,
-          ),
-          setCSSDimension(
-            metadata.specialSizeMeasurements.flexDirection,
-            'top',
-            targetHugging.frame.y,
-          ),
-          showToastCommand(
-            'Converted to fixed size and absolute position',
-            'NOTICE',
-            'convert-to-fixed-size',
-          ),
-        )
-      } else {
-        commands.push(
-          showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'),
-        )
-      }
-    }
-  }
-  return {
-    updatedEditor: foldAndApplyCommandsSimple(editor, commands),
-  }
-}
-
 type LocalFrameAndTarget = {
   target: ElementPath
   allSixFramePoints: FrameWithAllPoints
@@ -820,4 +658,166 @@ function keepElementPutInParent(
     ]
   })
   return result
+}
+
+export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
+  type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS'
+  value: Array<CanvasFrameAndTarget>
+  isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
+}
+
+export function pushIntendedBoundsAndUpdateHuggingElements(
+  value: Array<CanvasFrameAndTarget>,
+  isStartingMetadata: 'starting-metadata' | 'live-metadata',
+): PushIntendedBoundsAndUpdateHuggingElements {
+  return {
+    type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS',
+    whenToRun: 'always',
+    value: value,
+    isStartingMetadata: isStartingMetadata,
+  }
+}
+
+export const runPushIntendedBoundsAndUpdateHuggingElements = (
+  editor: EditorState,
+  command: PushIntendedBoundsAndUpdateHuggingElements,
+): CommandFunctionResult => {
+  const { updatedEditor: editorAfterHuggingElements } = getUpdateResizeHuggingElementsCommands(
+    editor,
+    command.value,
+  )
+
+  let editorStatePatches: Array<EditorStatePatch> = [
+    {
+      projectContents: {
+        $set: editorAfterHuggingElements.projectContents,
+      },
+      toasts: {
+        $set: editorAfterHuggingElements.toasts,
+      },
+    },
+  ]
+
+  return {
+    editorStatePatches: editorStatePatches,
+    commandDescription: `Set Intended Bounds for hugging elements ${command.value
+      .map((c) => EP.toString(c.target))
+      .join(', ')}`,
+  }
+}
+
+function getHuggingElementContentsStatus(
+  jsxMetadata: ElementInstanceMetadataMap,
+  path: ElementPath,
+): 'empty' | 'contains-only-absolute' | 'contains-some-absolute' | 'non-empty' {
+  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+  const absoluteChildren = children.filter(MetadataUtils.isPositionAbsolute).length
+  if (children.length === 0) {
+    return 'empty'
+  } else if (absoluteChildren === children.length) {
+    return 'contains-only-absolute'
+  } else if (absoluteChildren > 0) {
+    return 'contains-some-absolute'
+  } else {
+    return 'non-empty'
+  }
+}
+
+function getUpdateResizeHuggingElementsCommands(
+  editor: EditorState,
+  targets: Array<CanvasFrameAndTarget>,
+): {
+  updatedEditor: EditorState
+} {
+  let commands: Array<CanvasCommand> = []
+  for (const targetHugging of targets) {
+    const metadata = MetadataUtils.findElementByElementPath(
+      editor.jsxMetadata,
+      targetHugging.target,
+    )
+    const jsxElement = MetadataUtils.getJSXElementFromMetadata(
+      editor.jsxMetadata,
+      targetHugging.target,
+    )
+    if (
+      metadata == null ||
+      jsxElement == null ||
+      !(isHuggingParent(jsxElement, 'width') || isHuggingParent(jsxElement, 'height'))
+    ) {
+      continue
+    }
+    const status = getHuggingElementContentsStatus(editor.jsxMetadata, targetHugging.target)
+    if (status === 'non-empty') {
+      continue
+    }
+
+    function setCSSDimension(
+      flexDirection: FlexDirection | null,
+      prop: 'left' | 'top' | 'width' | 'height',
+      value: number,
+    ) {
+      return setCssLengthProperty(
+        'always',
+        targetHugging.target,
+        PP.create('style', prop),
+        setExplicitCssValue(cssPixelLength(value)),
+        flexDirection,
+        'create-if-not-existing',
+        'warn-about-replacement',
+      )
+    }
+    if (status === 'contains-only-absolute' || status === 'empty') {
+      commands.push(
+        ...prunePropsCommands(flexChildAndBottomRightProps, targetHugging.target),
+        setCSSDimension(
+          metadata.specialSizeMeasurements.flexDirection,
+          'width',
+          targetHugging.frame.width,
+        ),
+        setCSSDimension(
+          metadata.specialSizeMeasurements.flexDirection,
+          'height',
+          targetHugging.frame.height,
+        ),
+      )
+
+      const parentPath = EP.parentPath(targetHugging.target)
+      const parentJSXElement = MetadataUtils.getJSXElementFromMetadata(
+        editor.jsxMetadata,
+        parentPath,
+      )
+      const parentIsHugging =
+        parentJSXElement != null &&
+        (isHuggingParent(parentJSXElement, 'width') || isHuggingParent(parentJSXElement, 'height'))
+      const shouldSetAbsolutePosition =
+        EP.isStoryboardPath(parentPath) || parentJSXElement == null || parentIsHugging
+      if (shouldSetAbsolutePosition) {
+        commands.push(
+          setProperty('always', targetHugging.target, PP.create('style', 'position'), 'absolute'),
+          setCSSDimension(
+            metadata.specialSizeMeasurements.flexDirection,
+            'left',
+            targetHugging.frame.x,
+          ),
+          setCSSDimension(
+            metadata.specialSizeMeasurements.flexDirection,
+            'top',
+            targetHugging.frame.y,
+          ),
+          showToastCommand(
+            'Converted to fixed size and absolute position',
+            'NOTICE',
+            'convert-to-fixed-size',
+          ),
+        )
+      } else {
+        commands.push(
+          showToastCommand('Added fixed width and height', 'NOTICE', 'added-width-height'),
+        )
+      }
+    }
+  }
+  return {
+    updatedEditor: foldAndApplyCommandsSimple(editor, commands),
+  }
 }
