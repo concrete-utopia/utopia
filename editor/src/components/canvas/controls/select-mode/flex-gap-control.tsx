@@ -3,11 +3,10 @@ import * as EP from '../../../../core/shared/element-path'
 import type { CanvasRectangle, CanvasVector, Size } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
-  canvasRectangle,
   isFiniteRectangle,
   size,
   windowPoint,
-  zeroCanvasRect,
+  zeroSize,
 } from '../../../../core/shared/math-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -33,14 +32,27 @@ import type { CSSNumberWithRenderedValue } from './controls-common'
 import { CanvasLabel, PillHandle, useHoverWithDelay } from './controls-common'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { mapDropNulls } from '../../../../core/shared/array-utils'
+import {
+  getFlexJustifyContent,
+  type FlexAlignment,
+  type FlexJustifyContent,
+  getFlexAlignment,
+} from '../../../inspector/inspector-common'
+import {
+  flipFlexDirection,
+  isReversedFlexDirection,
+  reverseFlexAlignment,
+  reverseJustifyContent,
+} from '../../../../core/model/flex-utils'
+import { optionalMap } from '../../../../core/shared/optional-utils'
 
 interface FlexGapControlProps {
   selectedElement: ElementPath
   updatedGapValue: CSSNumberWithRenderedValue | null
 }
 
-export const FlexGapControlTestId = 'FlexGapControlTestId'
-export const FlexGapControlHandleTestId = 'FlexGapControlHandleTestId'
+export const FlexGapControlTestId = 'flex-gap-control'
+export const FlexGapControlHandleTestId = 'flex-gap-control-handle'
 
 export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((props) => {
   const { selectedElement, updatedGapValue } = props
@@ -118,7 +130,7 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     flexGap.direction,
   )
 
-  const contentArea = React.useMemo((): CanvasRectangle => {
+  const contentArea = React.useMemo((): Size => {
     function valueForDimension(
       directions: FlexDirection[],
       direction: FlexDirection,
@@ -137,11 +149,9 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
     )
 
     if (bounds == null) {
-      return zeroCanvasRect
+      return zeroSize
     } else {
-      return canvasRectangle({
-        x: bounds.x,
-        y: bounds.y,
+      return {
         width: valueForDimension(
           ['column', 'column-reverse'],
           flexGap.direction,
@@ -154,9 +164,23 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
           bounds.height,
           flexGapValue.renderedValuePx,
         ),
-      })
+      }
     }
   }, [selectedElement, metadata, flexGap, flexGapValue])
+
+  const justifyContent = React.useMemo(() => {
+    return (
+      MetadataUtils.findElementByElementPath(metadata, selectedElement)?.specialSizeMeasurements
+        .justifyContent ?? null
+    )
+  }, [metadata, selectedElement])
+
+  const alignItems = React.useMemo(() => {
+    return (
+      MetadataUtils.findElementByElementPath(metadata, selectedElement)?.specialSizeMeasurements
+        .alignItems ?? null
+    )
+  }, [metadata, selectedElement])
 
   return (
     <CanvasOffsetWrapper>
@@ -179,6 +203,8 @@ export const FlexGapControl = controlForStrategyMemoized<FlexGapControlProps>((p
               backgroundShown={backgroundShown}
               isDragging={isDragging}
               gapValue={flexGapValue.value}
+              justifyContent={justifyContent}
+              alignItems={alignItems}
             />
           )
         })}
@@ -216,7 +242,7 @@ interface GapControlSegmentProps {
   hoverEnd: React.MouseEventHandler
   onMouseDown: React.MouseEventHandler
   bounds: CanvasRectangle
-  contentArea: CanvasRectangle
+  contentArea: Size
   flexDirection: FlexDirection
   gapValue: CSSNumber
   elementHovered: boolean
@@ -225,6 +251,8 @@ interface GapControlSegmentProps {
   scale: number
   isDragging: boolean
   backgroundShown: boolean
+  justifyContent: FlexJustifyContent | null
+  alignItems: FlexAlignment | null
 }
 
 const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
@@ -242,6 +270,8 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     scale,
     path,
     backgroundShown,
+    justifyContent,
+    alignItems,
   } = props
 
   const colorTheme = useColorTheme()
@@ -267,6 +297,22 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
   const shouldShowHandle = !isDragging && elementHovered
   const shouldShowBackground = !isDragging && backgroundShown
 
+  // Invert the flex direction for the handle.
+  const segmentFlexDirection = flipFlexDirection(flexDirection)
+
+  // Effectively flip the properties for the main and cross axis, but only permitting
+  // values which we know can be applied to that axis.
+  const segmentJustifyContent =
+    optionalMap((justify) => {
+      // Ensures that the handles appear correctly aligned when the direction is reversed.
+      return isReversedFlexDirection(flexDirection) ? reverseJustifyContent(justify) : justify
+    }, getFlexJustifyContent(alignItems)) ?? undefined
+  const segmentAlignItems =
+    optionalMap((alignment) => {
+      // Ensures that the handles appear correctly aligned when the direction is reversed.
+      return isReversedFlexDirection(flexDirection) ? reverseFlexAlignment(alignment) : alignment
+    }, getFlexAlignment(justifyContent)) ?? undefined
+
   return (
     <div
       key={path}
@@ -280,6 +326,10 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         top: bounds.y,
         width: bounds.width,
         height: bounds.height,
+        display: 'flex',
+        flexDirection: segmentFlexDirection,
+        justifyContent: segmentJustifyContent,
+        alignItems: segmentAlignItems,
         border: isDragging ? `${dragBorderWidth}px solid ${accentColor}` : undefined,
         ...(shouldShowBackground
           ? UtopiaStyles.backgrounds.stripedBackground(accentColor, scale)
@@ -288,9 +338,6 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
     >
       <div
         style={{
-          position: 'absolute',
-          left: contentArea.x,
-          top: contentArea.y,
           width: contentArea.width,
           height: contentArea.height,
           display: 'flex',
@@ -299,7 +346,7 @@ const GapControlSegment = React.memo<GapControlSegmentProps>((props) => {
         }}
       >
         <div
-          data-testid={FlexGapControlHandleTestId}
+          data-testid={`${FlexGapControlHandleTestId}-${path}`}
           style={{
             visibility: shouldShowHandle ? 'visible' : 'hidden',
             padding: hitAreaPadding,
