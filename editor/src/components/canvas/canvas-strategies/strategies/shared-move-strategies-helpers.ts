@@ -39,9 +39,8 @@ import {
 } from '../../commands/adjust-css-length-command'
 import type { CanvasCommand } from '../../commands/commands'
 import {
+  pushIntendedBoundsAndUpdateGroups,
   pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateTargets,
-  PushIntendedBoundsTarget,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
@@ -123,7 +122,7 @@ export function applyMoveCommon(
 
       return strategyApplicationResult([
         ...commandsForSelectedElements.commands,
-        pushIntendedBoundsAndUpdateTargets(
+        pushIntendedBoundsAndUpdateGroups(
           commandsForSelectedElements.intendedBounds.map((b) =>
             pushIntendedBoundsGroup(b.target, b.frame),
           ),
@@ -163,7 +162,7 @@ export function applyMoveCommon(
         ...commandsForSelectedElements.commands,
         updateHighlightedViews('mid-interaction', []),
         setSnappingGuidelines('mid-interaction', guidelinesWithSnappingVector),
-        pushIntendedBoundsAndUpdateTargets(
+        pushIntendedBoundsAndUpdateGroups(
           commandsForSelectedElements.intendedBounds.map((b) =>
             pushIntendedBoundsGroup(b.target, b.frame),
           ),
@@ -307,7 +306,7 @@ export function moveInspectorStrategy(
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
       commands.push(
-        pushIntendedBoundsAndUpdateTargets(
+        pushIntendedBoundsAndUpdateGroups(
           intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
           'starting-metadata',
         ),
@@ -341,7 +340,7 @@ export function directMoveInspectorStrategy(
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
       commands.push(
-        pushIntendedBoundsAndUpdateTargets(
+        pushIntendedBoundsAndUpdateGroups(
           intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
           'starting-metadata',
         ),

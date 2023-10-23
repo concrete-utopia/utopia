@@ -43,8 +43,6 @@ import type { DuplicateElement } from './duplicate-element-command'
 import { runDuplicateElement } from './duplicate-element-command'
 import type { UpdateFunctionCommand } from './update-function-command'
 import { runUpdateFunctionCommand } from './update-function-command'
-import type { PushIntendedBoundsAndUpdateTargets } from './push-intended-bounds-and-update-targets-command'
-import { runPushIntendedBoundsAndUpdateTargets } from './push-intended-bounds-and-update-targets-command'
 import type { DeleteProperties } from './delete-properties-command'
 import { runDeleteProperties } from './delete-properties-command'
 import type { AddImportsToFile } from './add-imports-to-file-command'
@@ -83,6 +81,14 @@ import type { AddElements } from './add-elements-command'
 import { runAddElements } from './add-elements-command'
 import type { QueueTrueUpElement } from './queue-true-up-command'
 import { runQueueTrueUpElement } from './queue-true-up-command'
+import type {
+  PushIntendedBoundsAndUpdateGroups,
+  PushIntendedBoundsAndUpdateHuggingElements,
+} from './push-intended-bounds-and-update-targets-command'
+import {
+  runPushIntendedBoundsAndUpdateGroups,
+  runPushIntendedBoundsAndUpdateHuggingElements,
+} from './push-intended-bounds-and-update-targets-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -116,7 +122,8 @@ export type CanvasCommand =
   | SetCursorCommand
   | SetElementsToRerenderCommand
   | AppendElementsToRerenderCommand
-  | PushIntendedBoundsAndUpdateTargets
+  | PushIntendedBoundsAndUpdateGroups
+  | PushIntendedBoundsAndUpdateHuggingElements
   | DeleteProperties
   | SetProperty
   | UpdatePropIfExists
@@ -177,8 +184,11 @@ export function runCanvasCommand(
       return runSetElementsToRerender(editorState, command)
     case 'APPEND_ELEMENTS_TO_RERENDER_COMMAND':
       return runAppendElementsToRerender(editorState, command)
-    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_TARGETS':
-      return runPushIntendedBoundsAndUpdateTargets(editorState, command, commandLifecycle)
+    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
+      return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
+    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING':
+      return runPushIntendedBoundsAndUpdateHuggingElements(editorState, command)
+
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':

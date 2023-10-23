@@ -36,7 +36,7 @@ import {
 import { getElementDimensions } from './flex-resize-helpers'
 import {
   pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateTargets,
+  pushIntendedBoundsAndUpdateGroups,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
@@ -224,7 +224,7 @@ export function flexResizeBasicStrategy(
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
-            pushIntendedBoundsAndUpdateTargets(
+            pushIntendedBoundsAndUpdateGroups(
               [pushIntendedBoundsGroup(selectedElement, resizedBounds)],
               'starting-metadata',
             ),

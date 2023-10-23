@@ -504,7 +504,12 @@ import type {
   UpdateConfigFromVSCode,
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
-import { pushIntendedBoundsAndUpdateTargets } from '../../canvas/commands/push-intended-bounds-and-update-targets-command'
+import {
+  isPushIntendedBoundsTargetGroup,
+  isPushIntendedBoundsTargetHuggingElement,
+  pushIntendedBoundsAndUpdateGroups,
+  pushIntendedBoundsAndUpdateHuggingElements,
+} from '../../canvas/commands/push-intended-bounds-and-update-targets-command'
 import {
   addToTrueUpElements,
   trueUpTargetToPushIntendedBoundsTarget,
@@ -3863,8 +3868,13 @@ export const UPDATE_FNS = {
         )
       }),
     )
+
+    const groupTargets = targets.filter(isPushIntendedBoundsTargetGroup)
+    const huggingTargets = targets.filter(isPushIntendedBoundsTargetHuggingElement)
+
     const editorAfterTrueUps = foldAndApplyCommandsSimple(editor, [
-      pushIntendedBoundsAndUpdateTargets(targets, 'live-metadata'),
+      pushIntendedBoundsAndUpdateGroups(groupTargets, 'live-metadata'),
+      pushIntendedBoundsAndUpdateHuggingElements(huggingTargets, 'live-metadata'),
     ])
     return {
       ...editorAfterTrueUps,

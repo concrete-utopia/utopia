@@ -1,4 +1,7 @@
-import type { PushIntendedBoundsTarget } from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
+import type {
+  PushIntendedBoundsTargetGroup,
+  PushIntendedBoundsTargetHuggingElement,
+} from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import {
   pushIntendedBoundsHuggingElement,
   pushIntendedBoundsGroup,
@@ -30,7 +33,7 @@ export function trueUpTargetToPushIntendedBoundsTarget(
   metadata: ElementInstanceMetadataMap,
   pathTree: ElementPathTrees,
   trueUpTarget: TrueUpTarget,
-): Array<PushIntendedBoundsTarget | null> {
+): Array<PushIntendedBoundsTargetGroup | PushIntendedBoundsTargetHuggingElement | null> {
   function getFrame(target: ElementPath): CanvasRectangle | null {
     const globalFrame = MetadataUtils.findElementByElementPath(metadata, target)?.globalFrame
     if (globalFrame == null || isInfinityRectangle(globalFrame)) {

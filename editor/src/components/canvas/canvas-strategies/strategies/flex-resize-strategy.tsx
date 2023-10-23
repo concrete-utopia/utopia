@@ -67,7 +67,7 @@ import { treatElementAsGroupLike } from './group-helpers'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import {
   pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateTargets,
+  pushIntendedBoundsAndUpdateGroups,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
@@ -357,7 +357,7 @@ export function flexResizeStrategy(
             updateHighlightedViews('mid-interaction', []),
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
-            pushIntendedBoundsAndUpdateTargets(
+            pushIntendedBoundsAndUpdateGroups(
               [pushIntendedBoundsGroup(selectedElement, newFrame)],
               'starting-metadata',
             ),

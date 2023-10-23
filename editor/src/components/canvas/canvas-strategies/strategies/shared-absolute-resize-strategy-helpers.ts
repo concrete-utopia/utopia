@@ -55,7 +55,7 @@ import type { InspectorStrategy } from '../../../../components/inspector/inspect
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { withUnderlyingTarget } from '../../../../components/editor/store/editor-state'
 import {
-  pushIntendedBoundsAndUpdateTargets,
+  pushIntendedBoundsAndUpdateGroups,
   pushIntendedBoundsGroup,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 
@@ -384,7 +384,7 @@ export function resizeInspectorStrategy(
       )
       commands.push(...changeBoundsResult.commands)
       commands.push(
-        pushIntendedBoundsAndUpdateTargets(
+        pushIntendedBoundsAndUpdateGroups(
           changeBoundsResult.intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
           'starting-metadata',
         ),
@@ -433,7 +433,7 @@ export function directResizeInspectorStrategy(
         )
         commands.push(...changeBoundsResult.commands)
         commands.push(
-          pushIntendedBoundsAndUpdateTargets(
+          pushIntendedBoundsAndUpdateGroups(
             changeBoundsResult.intendedBounds.map((b) =>
               pushIntendedBoundsGroup(b.target, b.frame),
             ),

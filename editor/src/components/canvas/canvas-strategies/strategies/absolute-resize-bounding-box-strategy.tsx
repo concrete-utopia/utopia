@@ -23,8 +23,8 @@ import type { EdgePosition } from '../../canvas-types'
 import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../canvas-types'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
 import {
+  pushIntendedBoundsAndUpdateGroups,
   pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateTargets,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
@@ -251,7 +251,7 @@ export function absoluteResizeBoundingBoxStrategy(
                   edgePosition,
                   ensureFramePointsExist,
                 ),
-                pushIntendedBoundsAndUpdateTargets(
+                pushIntendedBoundsAndUpdateGroups(
                   [pushIntendedBoundsGroup(selectedElement, newFrame)],
                   'starting-metadata',
                 ),

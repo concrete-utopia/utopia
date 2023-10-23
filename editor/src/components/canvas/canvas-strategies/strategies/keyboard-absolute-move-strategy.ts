@@ -31,7 +31,7 @@ import {
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
 import {
   pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateTargets,
+  pushIntendedBoundsAndUpdateGroups,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
@@ -106,7 +106,7 @@ export function keyboardAbsoluteMoveStrategy(
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(
-          pushIntendedBoundsAndUpdateTargets(
+          pushIntendedBoundsAndUpdateGroups(
             intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
             'starting-metadata',
           ),

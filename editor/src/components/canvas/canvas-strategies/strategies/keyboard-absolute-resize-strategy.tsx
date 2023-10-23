@@ -13,7 +13,7 @@ import { EdgePositionBottom, EdgePositionRight } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
 import {
   pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateTargets,
+  pushIntendedBoundsAndUpdateGroups,
 } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -205,7 +205,7 @@ export function keyboardAbsoluteResizeStrategy(
         const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
         commands.push(
-          pushIntendedBoundsAndUpdateTargets(
+          pushIntendedBoundsAndUpdateGroups(
             intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
             'starting-metadata',
           ),

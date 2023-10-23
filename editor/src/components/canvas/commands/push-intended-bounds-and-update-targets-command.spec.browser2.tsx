@@ -16,7 +16,7 @@ function makeScenePath(trailingPath: string): ElementPath {
   return EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:${trailingPath}`)
 }
 
-describe('PushIntendedBoundsAndUpdateTargets', () => {
+describe('PushIntendedBoundsAndUpdate', () => {
   describe('hugging elements', () => {
     describe('flex containers', () => {
       it('keeps the container dimensions when becoming empty (flex) (delete, single element)', async () => {
