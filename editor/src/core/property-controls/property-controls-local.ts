@@ -30,7 +30,6 @@ import {
   applicative3Either,
   bimapEither,
   foldEither,
-  isLeft,
   mapEither,
   sequenceEither,
 } from '../shared/either'
@@ -61,7 +60,7 @@ async function parseInsertOption(
   return mapEither(({ importsToAdd, elementToInsert }) => {
     return {
       insertMenuLabel: insertOption.label ?? componentName,
-      elementToInsert: elementToInsert,
+      elementToInsert: () => elementToInsert,
       importsToAdd: importsToAdd,
     }
   }, parsedParams)

@@ -13,7 +13,7 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import {
   metadataSelector,
   selectedViewsSelector,
-  useComputedSizeRef,
+  useNonRoundedComputedSizeRef,
 } from '../../../inpector-selectors'
 import type { FixedHugFill } from '../../../inspector-common'
 import { detectFillHugFixedStateMultiselect, isFixedHugFillEqual } from '../../../inspector-common'
@@ -22,12 +22,13 @@ import {
   setPropHugStrategies,
 } from '../../../inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
+import { fixedSizeDimensionHandlingText } from '../../../../text-editor/text-handling'
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
 function useAutoSizingTypeAndStatus(): {
   status: ControlStatus
-  type: 'fixed' | 'hug' | 'hug-group' | 'computed' | 'detected' | null
+  type: 'fixed' | 'hug' | 'hug-group' | 'computed' | 'detected' | 'scaled' | null
 } {
   const isEditableText = useEditorState(
     Substores.metadata,
@@ -108,23 +109,28 @@ export const TextAutoSizingControl = React.memo(() => {
     [controlStatusAndValueType],
   )
 
-  const widthComputedValue = useComputedSizeRef('width')
-  const heightComputedValue = useComputedSizeRef('height')
+  const widthComputedValue = useNonRoundedComputedSizeRef('width')
+  const heightComputedValue = useNonRoundedComputedSizeRef('height')
 
   const onSubmitValue = React.useCallback(
     (newValue: any) => {
+      if (selectedViewsRef.current.length === 0) {
+        return
+      }
       if (newValue === 'fixed') {
+        const width = fixedSizeDimensionHandlingText(
+          metadataRef.current,
+          elementPathTreeRef.current,
+          selectedViewsRef.current[0],
+          widthComputedValue.current ?? 0,
+        )
         const widthCommands =
           commandsForFirstApplicableStrategy(
             metadataRef.current,
             selectedViewsRef.current,
             elementPathTreeRef.current,
             allElementPropsRef.current,
-            setPropFixedSizeStrategies(
-              'always',
-              'horizontal',
-              cssNumber(widthComputedValue.current ?? 0, null),
-            ),
+            setPropFixedSizeStrategies('always', 'horizontal', cssNumber(width, null)),
           ) ?? []
         const heightCommands =
           commandsForFirstApplicableStrategy(

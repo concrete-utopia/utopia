@@ -19,6 +19,7 @@ import {
   printCSSNumber,
 } from '../../../inspector/common/css-utils'
 import { setProperty } from '../../commands/set-property-command'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
 import { emptyStrategyApplicationResult, strategyApplicationResult } from '../canvas-strategy-types'
 import type { InteractionSession } from '../interaction-state'
@@ -29,9 +30,8 @@ export function keyboardSetFontSizeStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const validTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState).filter(
-    (path) => isValidTarget(canvasState.startingMetadata, path),
-  )
+  const { pathsWereReplaced, paths } = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  const validTargets = paths.filter((path) => isValidTarget(canvasState.startingMetadata, path))
 
   if (validTargets.length === 0) {
     return null
@@ -40,7 +40,10 @@ export function keyboardSetFontSizeStrategy(
   return {
     id: 'set-font-size',
     name: 'Set font size',
-    descriptiveLabel: 'Changing Font Size',
+    descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+      'Changing Font Size',
+      pathsWereReplaced,
+    ),
     icon: {
       category: 'tools',
       type: 'pointer',

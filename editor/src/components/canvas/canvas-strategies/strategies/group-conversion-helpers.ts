@@ -13,7 +13,7 @@ import {
   removePaddingProperties,
 } from '../../../../core/model/margin-and-padding'
 import { arrayAccumulate, mapDropNulls } from '../../../../core/shared/array-utils'
-import { isLeft, isRight, right } from '../../../../core/shared/either'
+import { defaultEither, isLeft, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
@@ -23,6 +23,7 @@ import type {
   JSXConditionalExpression,
   JSXElement,
   JSXElementChild,
+  JSXElementChildren,
   JSXElementLike,
   JSXFragment,
   SpecialSizeMeasurements,
@@ -121,6 +122,9 @@ import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-h
 import { createMoveCommandsForElement } from './shared-move-strategies-helpers'
 import { getConditionalActiveCase } from '../../../../core/model/conditionals'
 import { showToastCommand } from '../../commands/show-toast-command'
+import { unsetJSXValueAtPath } from '../../../../core/shared/jsx-attributes'
+import type { Optic } from '../../../../core/shared/optics/optics'
+import type { EditorContract } from './contracts/contract-helpers'
 
 const GroupImport: Imports = {
   'utopia-api': {
@@ -220,7 +224,7 @@ type JSXElementLikeConversion = {
   childInstances: ElementInstanceMetadata[]
 }
 
-type JSXFragmentConversion = {
+export type JSXFragmentConversion = {
   element: JSXFragment
   childInstances: ElementInstanceMetadata[]
   childrenBoundingFrame: CanvasRectangle
@@ -277,26 +281,12 @@ export function getInstanceForFragmentToFrameConversion(
   }
 }
 
-export function convertFragmentToFrame(
+export function actuallyConvertFramentToFrame(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
-  allElementProps: AllElementProps,
+  instance: JSXFragmentConversion,
   elementPath: ElementPath,
-  convertIfStaticChildren:
-    | 'do-not-convert-if-it-has-static-children'
-    | 'convert-even-if-it-has-static-children',
 ): CanvasCommand[] {
-  const instance = getInstanceForFragmentToFrameConversion(
-    metadata,
-    pathTrees,
-    allElementProps,
-    elementPath,
-    convertIfStaticChildren,
-  )
-  if (isConversionForbidden(instance)) {
-    return []
-  }
-
   const { children, uid } = instance.element
 
   const parentBounds =
@@ -341,6 +331,29 @@ export function convertFragmentToFrame(
     ),
     ...offsetChildrenByDelta(instance.childInstances, instance.childrenBoundingFrame),
   ]
+}
+
+export function convertFragmentToFrame(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPath: ElementPath,
+  convertIfStaticChildren:
+    | 'do-not-convert-if-it-has-static-children'
+    | 'convert-even-if-it-has-static-children',
+): CanvasCommand[] {
+  const instance = getInstanceForFragmentToFrameConversion(
+    metadata,
+    pathTrees,
+    allElementProps,
+    elementPath,
+    convertIfStaticChildren,
+  )
+  if (isConversionForbidden(instance)) {
+    return []
+  }
+
+  return actuallyConvertFramentToFrame(metadata, pathTrees, instance, elementPath)
 }
 
 export function getInstanceForFragmentToGroupConversion(
@@ -455,34 +468,19 @@ export function convertFragmentToGroup(
   ]
 }
 
-export function convertGroupToFragment(
-  metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
-  elementPath: ElementPath,
-): Array<CanvasCommand> {
-  const parentPath = EP.parentPath(elementPath)
-  const instance = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  if (instance == null || isLeft(instance.element) || !isJSXElementLike(instance.element.value)) {
-    return []
-  }
+const childrenPropsOptic: Optic<JSXElementChildren, JSXAttributes> =
+  traverseArray<JSXElementChild>().compose(fromTypeGuard(isJSXElement)).compose(fromField('props'))
 
-  const { children, uid } = instance.element.value
-
-  return [
-    deleteElement('always', elementPath),
-    addElement('always', childInsertionPath(parentPath), jsxFragment(uid, children, true), {
-      indexPosition: absolute(
-        MetadataUtils.getIndexInParent(metadata, elementPathTree, elementPath),
-      ),
-      importsToAdd: {
-        react: {
-          importedAs: 'React',
-          importedFromWithin: [],
-          importedWithName: null,
-        },
-      },
-    }),
-  ]
+function removeDataConstraintsFromChildren(children: JSXElementChildren): JSXElementChildren {
+  // Remove the `data-constraints` property from each of the children passed in, if possible.
+  return modify(
+    childrenPropsOptic,
+    (attributes) => {
+      const updatedChildrenProps = unsetJSXValueAtPath(attributes, PP.create('data-constraints'))
+      return defaultEither(attributes, updatedChildrenProps)
+    },
+    children,
+  )
 }
 
 export function convertSizelessDivToFrameCommands(
@@ -608,7 +606,7 @@ export function getInstanceForFrameToFragmentConversion(
   return { element: instance.element.value, childInstances: childInstances }
 }
 
-export function convertFrameToFragmentCommands(
+export function convertGroupOrFrameToFragmentCommands(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
@@ -625,6 +623,7 @@ export function convertFrameToFragmentCommands(
   }
 
   const { children, uid } = instance.element
+  const updatedChildren = removeDataConstraintsFromChildren(children)
 
   const parentOffset =
     MetadataUtils.findElementByElementPath(metadata, elementPath)?.specialSizeMeasurements.offset ??
@@ -635,7 +634,7 @@ export function convertFrameToFragmentCommands(
     addElement(
       'always',
       childInsertionPath(EP.parentPath(elementPath)),
-      jsxFragment(uid, children, true),
+      jsxFragment(uid, updatedChildren, true),
       {
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
         importsToAdd: {
@@ -788,13 +787,13 @@ export function convertGroupToFrameCommands(
     return []
   }
   const { children, uid, props } = instance
-
+  const updatedChildren = removeDataConstraintsFromChildren(children)
   return [
     deleteElement('always', elementPath),
     addElement(
       'always',
       childInsertionPath(EP.parentPath(elementPath)),
-      jsxElement('div', uid, props, children),
+      jsxElement('div', uid, props, updatedChildren),
       {
         indexPosition: absolute(MetadataUtils.getIndexInParent(metadata, pathTrees, elementPath)),
       },
@@ -1248,7 +1247,7 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
   }
 
   function setPinPreserveHug(pin: 'width' | 'height', value: number): Array<SetCssLengthProperty> {
-    const pinIsAlreadyHug = isHugFromStyleAttribute(elementCurrentProps, pin)
+    const pinIsAlreadyHug = isHugFromStyleAttribute(elementCurrentProps, pin, 'only-max-content')
 
     if (pinIsAlreadyHug) {
       // we don't need to convert a Hug pin, do nothing here
@@ -1267,4 +1266,87 @@ function setElementPinsForLocalRectangleEnsureTwoPinsPerDimension(
     ...setPinPreserveHug('height', localFrame.height),
   ]
   return result
+}
+
+export function getCommandsForConversionToDesiredType(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  selectedViews: Array<ElementPath>,
+  currentType: EditorContract,
+  desiredType: EditorContract,
+): Array<CanvasCommand> {
+  if (desiredType === 'not-quite-frame') {
+    throw new Error(
+      'Invariant violation: not-quite-frame should never be a selectable option in the dropdown',
+    )
+  }
+
+  return selectedViews.flatMap((elementPath) => {
+    if (currentType === 'fragment') {
+      if (desiredType === 'fragment') {
+        // NOOP
+        return []
+      }
+
+      if (desiredType === 'frame') {
+        return convertFragmentToFrame(
+          metadata,
+          elementPathTree,
+          allElementProps,
+          elementPath,
+          'do-not-convert-if-it-has-static-children',
+        )
+      }
+
+      if (desiredType === 'group') {
+        return convertFragmentToGroup(metadata, elementPathTree, allElementProps, elementPath)
+      }
+      assertNever(desiredType)
+    }
+
+    if (currentType === 'frame' || currentType === 'not-quite-frame') {
+      if (desiredType === 'frame') {
+        // NOOP
+        return []
+      }
+
+      if (desiredType === 'fragment') {
+        return convertGroupOrFrameToFragmentCommands(
+          metadata,
+          elementPathTree,
+          allElementProps,
+          elementPath,
+        )
+      }
+
+      if (desiredType === 'group') {
+        return convertFrameToGroup(metadata, elementPathTree, allElementProps, elementPath)
+      }
+      assertNever(desiredType)
+    }
+
+    if (currentType === 'group') {
+      if (desiredType === 'group') {
+        // NOOP
+        return []
+      }
+
+      if (desiredType === 'fragment') {
+        return convertGroupOrFrameToFragmentCommands(
+          metadata,
+          elementPathTree,
+          allElementProps,
+          elementPath,
+        )
+      }
+
+      if (desiredType === 'frame') {
+        return convertGroupToFrameCommands(metadata, elementPathTree, allElementProps, elementPath)
+      }
+      assertNever(desiredType)
+    }
+
+    return assertNever(currentType)
+  })
 }

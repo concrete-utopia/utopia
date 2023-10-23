@@ -226,6 +226,7 @@ import {
   combine9EqualityCalls,
   unionDeepEquality,
   combine13EqualityCalls,
+  combine14EqualityCalls,
 } from '../../../utils/deep-equality'
 import {
   ElementPathArrayKeepDeepEquality,
@@ -1738,7 +1739,7 @@ const ConditionValueKeepDeepEquality: KeepDeepEqualityCall<ConditionValue> = uni
 )
 
 export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<ElementInstanceMetadata> =
-  combine13EqualityCalls(
+  combine14EqualityCalls(
     (metadata) => metadata.elementPath,
     ElementPathKeepDeepEquality,
     (metadata) => metadata.element,
@@ -1747,6 +1748,8 @@ export const ElementInstanceMetadataKeepDeepEquality: KeepDeepEqualityCall<Eleme
     nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.localFrame,
     nullableDeepEquality(MaybeInfinityLocalRectangleKeepDeepEquality),
+    (metadata) => metadata.nonRoundedGlobalFrame,
+    nullableDeepEquality(MaybeInfinityCanvasRectangleKeepDeepEquality),
     (metadata) => metadata.componentInstance,
     createCallWithTripleEquals(),
     (metadata) => metadata.isEmotionOrStyledComponent,
@@ -3046,7 +3049,7 @@ export const ComponentInfoKeepDeepEquality: KeepDeepEqualityCall<ComponentInfo> 
     (info) => info.insertMenuLabel,
     StringKeepDeepEquality,
     (info) => info.elementToInsert,
-    ComponentElementToInsertKeepDeepEquality,
+    createCallWithTripleEquals<() => ComponentElementToInsert>(),
     (info) => info.importsToAdd,
     objectDeepEquality(ImportDetailsKeepDeepEquality),
     componentInfo,

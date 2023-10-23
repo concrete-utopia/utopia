@@ -6,6 +6,7 @@ import { mouseDragFromPointToPoint } from '../event-helpers.test-utils'
 import { renderTestEditorWithCode } from '../ui-jsx.test-utils'
 import { toggleHidden } from '../../editor/actions/action-creators'
 import { shiftModifier } from '../../../utils/modifiers'
+import { selectComponents } from '../../editor/actions/meta-actions'
 
 describe('Selection area', () => {
   it('can select an element on the storyboard', async () => {
@@ -767,5 +768,56 @@ export var ${BakedInStoryboardVariableName} = (props) => {
         'root/bar',
       ])
     }
+  })
+  it('ignores elements that are not visible because of overflow', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+import * as React from 'react'
+
+export var ${BakedInStoryboardVariableName} = (props) => {
+    return (
+        <div data-uid='root'>
+            <div data-uid='outer' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 3, top: 67, width: 232, height: 'max-content', display: 'flex', flexDirection: 'row', padding: '45px 50px' }}>
+				<div data-uid='inner' style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0px 0px 0px 20px', width: '100%', height: 70, overflowX: 'scroll', justifyContent: 'space-between', flexWrap: 'nowrap', gap: 20 }}>
+					{
+						// @utopia/uid=list
+						[1, 2, 3, 4, 5, 6, 7, 8].map((k) => (
+							<div key={k} style={{ backgroundColor: '#aaaaaa33', width: 50, height: 50 }}>
+							{k}
+							</div>
+						))
+					}
+				</div>
+			</div>
+        </div>
+    )
+}
+`,
+      'await-first-dom-report',
+    )
+    const container = renderResult.renderedDOM.getByTestId(CanvasControlsContainerID)
+    const rect = container.getBoundingClientRect()
+
+    await mouseDragFromPointToPoint(
+      container,
+      { x: rect.x + 620, y: rect.y + 100 },
+      { x: rect.x + 670, y: rect.y + 310 },
+      { moveBeforeMouseDown: true, staggerMoveEvents: true },
+    )
+
+    expect(renderResult.getEditorState().editor.selectedViews).toHaveLength(0)
+
+    await renderResult.dispatch(selectComponents([EP.fromString('root/outer/inner')], true), true)
+
+    await mouseDragFromPointToPoint(
+      container,
+      { x: rect.x + 620, y: rect.y + 100 },
+      { x: rect.x + 670, y: rect.y + 310 },
+      { moveBeforeMouseDown: true, staggerMoveEvents: true, modifiers: shiftModifier },
+    )
+
+    expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
+      'root/outer/inner',
+    ])
   })
 })

@@ -29,11 +29,12 @@ import {
   metadataSelector,
   pathTreesSelector,
   selectedViewsSelector,
-  useComputedSizeRef,
+  useNonRoundedComputedSizeRef,
 } from './inpector-selectors'
 import type { Axis, FixedHugFill, FixedHugFillMode } from './inspector-common'
 import {
   detectFillHugFixedStateMultiselect,
+  getConstraintsIncludingImplicitForElement,
   getFixedFillHugOptionsForElement,
   isFixedHugFillEqual,
 } from './inspector-common'
@@ -57,6 +58,7 @@ import { when } from '../../utils/react-conditionals'
 import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
 import type { AllElementProps, EditorState } from '../editor/store/editor-state'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
 import type { EditorDispatch, EditorAction } from '../editor/action-types'
 import {
@@ -83,6 +85,7 @@ export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
 
 export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
+export const ScaledLabel = 'Scaled' as const
 export const HugContentsLabel = 'Hug contents' as const
 export const HugGroupContentsLabel = 'Hug contents' as const
 export const ComputedLabel = 'Computed' as const
@@ -94,6 +97,8 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return FillContainerLabel
     case 'fixed':
       return FixedLabel
+    case 'scaled':
+      return ScaledLabel
     case 'hug':
       return HugContentsLabel
     case 'hug-group':
@@ -115,6 +120,7 @@ export function selectOptionIconType(
     case 'fill':
       return `fill-${dimension}`
     case 'fixed':
+    case 'scaled': // TODO: needs separate icon
       return `fixed-${dimension}`
     case 'hug':
       return `hug-${dimension}`
@@ -232,31 +238,37 @@ export const GroupChildPinControl = React.memo(() => {
       width: checkGroupChildConstraint(
         'width',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       height: checkGroupChildConstraint(
         'height',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       top: checkGroupChildConstraint(
         'top',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       left: checkGroupChildConstraint(
         'left',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       bottom: checkGroupChildConstraint(
         'bottom',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
       right: checkGroupChildConstraint(
         'right',
         store.editor.selectedViews,
+        store.editor.jsxMetadata,
         store.editor.allElementProps,
       ),
     }),
@@ -431,7 +443,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
-  const currentValueRef = useComputedSizeRef(dimension)
+  const currentValueRef = useNonRoundedComputedSizeRef(dimension)
 
   const fillsOtherAxisRef = useRefEditorState(
     (store) =>
@@ -516,6 +528,9 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
   return onSubmitFixedFillHugType
 }
 
+export const getFixedHugDropdownId = (dimension: 'width' | 'height') =>
+  `fixed-hug-dropdown-${dimension}`
+
 export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'height' }) => {
   const { dimension } = props
 
@@ -541,6 +556,7 @@ export const FixedHugDropdown = React.memo((props: { dimension: 'width' | 'heigh
 
   return (
     <PopupList
+      id={getFixedHugDropdownId(dimension)}
       value={optionalMap(selectOption(dimension), currentValue.fixedHugFill?.type) ?? undefined}
       options={fixedHugFillOptions}
       onSubmitValue={onSubmitFixedFillHugType}
@@ -562,6 +578,7 @@ export const GroupConstraintSelect = React.memo(
         checkGroupChildConstraint(
           dimension,
           store.editor.selectedViews,
+          store.editor.jsxMetadata,
           store.editor.allElementProps,
         ),
       'GroupConstraintSelect constraintType',
@@ -649,6 +666,7 @@ function strategyForChangingFillFixedHugType(
     case 'hug':
       return setPropHugStrategies(axis)
     case 'fixed':
+    case 'scaled':
     case 'detected':
     case 'computed':
     case 'hug-group':
@@ -663,6 +681,7 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'computed':
     case 'detected':
     case 'fixed':
+    case 'scaled':
     case 'fill':
     case 'hug-group':
       return value.value
@@ -677,14 +696,19 @@ function pickNumberType(value: FixedHugFill | null): CSSNumberType {
   if (value?.type === 'fixed') {
     return 'AnyValid'
   }
-  if (value?.type === 'fill') {
+  if (value?.type === 'fill' || value?.type === 'scaled') {
     return value.value.unit === '%' ? 'Percent' : 'Unitless'
   }
   return 'Unitless'
 }
 
 function isNumberInputEnabled(value: FixedHugFill | null): boolean {
-  return value?.type === 'fixed' || value?.type === 'fill' || value?.type === 'hug-group'
+  return (
+    value?.type === 'fixed' ||
+    value?.type === 'fill' ||
+    value?.type === 'hug-group' ||
+    value?.type === 'scaled'
+  )
 }
 
 export const anySelectedElementGroupOrChildOfGroup = createSelector(
@@ -722,10 +746,16 @@ export const allElementsAreGroupChildren = createSelector(
 function checkGroupChildConstraint(
   dimension: LayoutPinnedProp,
   selectedViews: ElementPath[],
+  metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
 ): GroupChildConstraintOptionType | 'mixed' {
   const constrained = selectedViews.filter((path) =>
-    getSafeGroupChildConstraintsArray(allElementProps, path).includes(dimension),
+    getConstraintsIncludingImplicitForElement(
+      metadata,
+      allElementProps,
+      path,
+      'only-explicit-constraints',
+    ).includes(dimension),
   ).length
   if (constrained === selectedViews.length) {
     return 'constrained'
@@ -760,17 +790,6 @@ function groupChildConstraintOption(type: GroupChildConstraintOptionType): Selec
   }
 }
 
-export function getSafeGroupChildConstraintsArray(
-  allElementProps: AllElementProps,
-  path: ElementPath,
-): LayoutPinnedProp[] {
-  const value = allElementProps[EP.toString(path)]?.['data-constraints'] ?? []
-  if (!Array.isArray(value)) {
-    return []
-  }
-  return value.filter((v) => typeof v === 'string' && isLayoutPinnedProp(v))
-}
-
 export type ConstraintsMode = 'add' | 'remove'
 
 function setGroupChildConstraint(
@@ -785,7 +804,13 @@ function setGroupChildConstraint(
       return option === 'constrained' ? 'add' : 'remove'
     }
     const notAllContainDimension = selectedViews.some(
-      (path) => !getSafeGroupChildConstraintsArray(allElementProps, path).includes(dimension),
+      (path) =>
+        !getConstraintsIncludingImplicitForElement(
+          {},
+          allElementProps,
+          path,
+          'only-explicit-constraints',
+        ).includes(dimension),
     )
     return notAllContainDimension ? 'add' : 'remove'
   }
@@ -794,7 +819,12 @@ function setGroupChildConstraint(
   const prop = PP.create('data-constraints')
 
   const actions: EditorAction[] = mapDropNulls((path) => {
-    const constraints = getSafeGroupChildConstraintsArray(allElementProps, path)
+    const constraints = getConstraintsIncludingImplicitForElement(
+      {},
+      allElementProps,
+      path,
+      'only-explicit-constraints',
+    )
     const newProps = makeUpdatedConstraintsPropArray(constraints, mode, dimension)
     return newProps.length === 0
       ? unsetProperty(path, prop)

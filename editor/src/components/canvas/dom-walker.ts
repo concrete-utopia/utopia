@@ -466,7 +466,12 @@ export function runDomWalker({
 
     // getCanvasRectangleFromElement is costly, so I made it lazy. we only need the value inside globalFrameForElement
     const containerRect = lazyValue(() => {
-      return getCanvasRectangleFromElement(canvasRootContainer, scale, 'without-content')
+      return getCanvasRectangleFromElement(
+        canvasRootContainer,
+        scale,
+        'without-content',
+        'nearest-half',
+      )
     })
 
     const validPaths: Array<ElementPath> | null = optionalMap(
@@ -643,12 +648,26 @@ function collectMetadataForElement(
   tagName: string
   globalFrame: CanvasRectangle
   localFrame: LocalRectangle
+  nonRoundedGlobalFrame: CanvasRectangle
   specialSizeMeasurementsObject: SpecialSizeMeasurements
   textContentsMaybe: string | null
 } {
   const tagName: string = element.tagName.toLowerCase()
-  const globalFrame = globalFrameForElement(element, scale, containerRectLazy, 'without-content')
+  const globalFrame = globalFrameForElement(
+    element,
+    scale,
+    containerRectLazy,
+    'without-content',
+    'nearest-half',
+  )
   const localFrame = localRectangle(Utils.offsetRect(globalFrame, Utils.negate(parentPoint)))
+  const nonRoundedGlobalFrame = globalFrameForElement(
+    element,
+    scale,
+    containerRectLazy,
+    'without-content',
+    'no-rounding',
+  )
 
   const textContentsMaybe = element.textContent
 
@@ -663,6 +682,7 @@ function collectMetadataForElement(
     tagName: tagName,
     globalFrame: globalFrame,
     localFrame: localFrame,
+    nonRoundedGlobalFrame: nonRoundedGlobalFrame,
     specialSizeMeasurementsObject: specialSizeMeasurementsObject,
     textContentsMaybe: textContentsMaybe,
   }
@@ -747,14 +767,20 @@ function collectAndCreateMetadataForElement(
   pathsForElement: ElementPath[],
   globalProps: DomWalkerInternalGlobalProps,
 ) {
-  const { tagName, globalFrame, localFrame, specialSizeMeasurementsObject, textContentsMaybe } =
-    collectMetadataForElement(
-      element,
-      parentPoint,
-      closestOffsetParentPath,
-      globalProps.scale,
-      globalProps.containerRectLazy,
-    )
+  const {
+    tagName,
+    globalFrame,
+    localFrame,
+    nonRoundedGlobalFrame,
+    specialSizeMeasurementsObject,
+    textContentsMaybe,
+  } = collectMetadataForElement(
+    element,
+    parentPoint,
+    closestOffsetParentPath,
+    globalProps.scale,
+    globalProps.containerRectLazy,
+  )
 
   const { computedStyle, attributeMetadata } = getComputedStyle(
     element,
@@ -773,6 +799,7 @@ function collectAndCreateMetadataForElement(
       left(tagName),
       globalFrame,
       localFrame,
+      nonRoundedGlobalFrame,
       false,
       false,
       specialSizeMeasurementsObject,
@@ -855,12 +882,24 @@ function getSpecialMeasurements(
 
   const coordinateSystemBounds =
     element.offsetParent instanceof HTMLElement
-      ? globalFrameForElement(element.offsetParent, scale, containerRectLazy, 'without-content')
+      ? globalFrameForElement(
+          element.offsetParent,
+          scale,
+          containerRectLazy,
+          'without-content',
+          'nearest-half',
+        )
       : null
 
   const immediateParentBounds =
     element.parentElement instanceof HTMLElement
-      ? globalFrameForElement(element.parentElement, scale, containerRectLazy, 'without-content')
+      ? globalFrameForElement(
+          element.parentElement,
+          scale,
+          containerRectLazy,
+          'without-content',
+          'nearest-half',
+        )
       : null
 
   const parentElementStyle =
@@ -944,6 +983,7 @@ function getSpecialMeasurements(
     scale,
     containerRectLazy,
     'without-content',
+    'nearest-half',
   )
 
   const globalFrameWithTextContent = globalFrameForElement(
@@ -951,6 +991,7 @@ function getSpecialMeasurements(
     scale,
     containerRectLazy,
     'with-content',
+    'nearest-half',
   )
 
   const globalContentBoxForChildren = canvasRectangle({
@@ -996,7 +1037,7 @@ function getSpecialMeasurements(
   const textDecorationLine = elementStyle.textDecorationLine
 
   const textBounds = elementContainsOnlyText(element)
-    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content'), {
+    ? stretchRect(getCanvasRectangleFromElement(element, scale, 'only-content', 'nearest-half'), {
         w:
           maybeValueFromComputedStyle(elementStyle.paddingLeft) +
           maybeValueFromComputedStyle(elementStyle.paddingRight) +
@@ -1081,8 +1122,9 @@ function globalFrameForElement(
   scale: number,
   containerRectLazy: () => CanvasRectangle,
   withContent: 'without-content' | 'with-content',
+  rounding: 'nearest-half' | 'no-rounding',
 ) {
-  const elementRect = getCanvasRectangleFromElement(element, scale, withContent)
+  const elementRect = getCanvasRectangleFromElement(element, scale, withContent, rounding)
 
   return Utils.offsetRect(elementRect, Utils.negate(containerRectLazy()))
 }
@@ -1127,6 +1169,7 @@ function walkCanvasRootFragment(
       left('Storyboard'),
       infinityCanvasRectangle,
       infinityLocalRectangle,
+      infinityCanvasRectangle,
       false,
       false,
       emptySpecialSizeMeasurements,
@@ -1212,6 +1255,7 @@ function walkSceneInner(
     globalProps.scale,
     globalProps.containerRectLazy,
     'without-content',
+    'nearest-half',
   )
 
   let childPaths: Array<ElementPath> = []
@@ -1290,6 +1334,7 @@ function walkElements(
       globalProps.scale,
       globalProps.containerRectLazy,
       'without-content',
+      'nearest-half',
     )
 
     // Check this is a path we're interested in, otherwise skip straight to the children

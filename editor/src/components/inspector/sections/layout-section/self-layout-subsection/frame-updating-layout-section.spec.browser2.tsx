@@ -2,12 +2,8 @@ import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../../core/model/scene-utils'
-import type {
-  LocalRectangle,
-  MaybeInfinityLocalRectangle,
-  MaybeInfinityRectangle,
-} from '../../../../../core/shared/math-utils'
-import { canvasRectangle, localRectangle } from '../../../../../core/shared/math-utils'
+import type { MaybeInfinityLocalRectangle } from '../../../../../core/shared/math-utils'
+import { localRectangle } from '../../../../../core/shared/math-utils'
 import {
   filtered,
   fromField,
@@ -19,7 +15,6 @@ import {
   TestAppUID,
   TestSceneUID,
   formatTestProjectCode,
-  getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
   renderTestEditorWithCode,
 } from '../../../../canvas/ui-jsx.test-utils'
@@ -29,6 +24,7 @@ import { RegisteredCanvasStrategies } from '../../../../canvas/canvas-strategies
 import { act, fireEvent } from '@testing-library/react'
 import { mouseClickAtPoint } from '../../../../canvas/event-helpers.test-utils'
 import { getDomRectCenter } from '../../../../../core/shared/dom-utils'
+import { getFixedHugDropdownId } from '../../../fill-hug-fixed-control'
 
 async function updateInputValue(
   renderResult: EditorRenderResult,
@@ -112,6 +108,8 @@ interface TestCase {
   actionChange: (renderResult: EditorRenderResult) => Promise<void>
   expectedFrames: { [key: string]: MaybeInfinityLocalRectangle | null }
   expectedProject: string
+  expectedFixedHugDropdownWidthValue: string
+  expectedFixedHugDropdownHeightValue: string
 }
 
 const testCases: Array<TestCase> = [
@@ -175,6 +173,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Left',
@@ -238,6 +238,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Left',
@@ -328,6 +330,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Top',
@@ -389,6 +393,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Top',
@@ -452,6 +458,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Top',
@@ -542,6 +550,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Width',
@@ -603,6 +613,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Width',
@@ -666,6 +678,73 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Scaled',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
+  },
+  {
+    controlTested: 'Width',
+    projectContext: 'single element with percentage value selected (height is 100%)',
+    changeApplied: 'setting value directly',
+    baseProject: `<div
+      style={{
+        position: 'absolute',
+        height: 900,
+        width: 800,
+        contain: 'layout',
+      }}
+      data-uid={'root-div'}
+    >
+      <Rectangle
+        style={{
+          backgroundColor: '#FF69B4AB',
+          position: 'absolute',
+          left: 90,
+          top: 100,
+          width: '25%',
+          height: '100%',
+        }}
+        data-uid={'rectangle-1'}
+      />
+    </div>`,
+    actionChange: async (renderResult) => {
+      // Select the rectangle.
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
+      ])
+
+      // Change the width field.
+      await updateInputValue(renderResult, `frame-width-number-input`, '110')
+    },
+    expectedFrames: {
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+        localRectangle({
+          x: 90,
+          y: 100,
+          width: 110,
+          height: 900,
+        }),
+    },
+    expectedProject: `<div
+      style={{
+        position: 'absolute',
+        height: 900,
+        width: 800,
+        contain: 'layout',
+      }}
+    >
+      <Rectangle
+        style={{
+          backgroundColor: '#FF69B4AB',
+          position: 'absolute',
+          left: 90,
+          top: 100,
+          width: '13.75%',
+          height: '100%',
+        }}
+      />
+    </div>`,
+    expectedFixedHugDropdownWidthValue: 'Scaled',
+    expectedFixedHugDropdownHeightValue: 'Fill container',
   },
   {
     controlTested: 'Width',
@@ -756,6 +835,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Height',
@@ -817,6 +898,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
   {
     controlTested: 'Height',
@@ -880,6 +963,73 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Scaled',
+  },
+  {
+    controlTested: 'Height',
+    projectContext: 'single element with percentage value selected (width is 100%)',
+    changeApplied: 'setting value directly',
+    baseProject: `<div
+      style={{
+        position: 'absolute',
+        height: 900,
+        width: 800,
+        contain: 'layout',
+      }}
+      data-uid={'root-div'}
+    >
+      <Rectangle
+        style={{
+          backgroundColor: '#FF69B4AB',
+          position: 'absolute',
+          left: 90,
+          top: 100,
+          width: '100%',
+          height: '25%',
+        }}
+        data-uid={'rectangle-1'}
+      />
+    </div>`,
+    actionChange: async (renderResult) => {
+      // Select the rectangle.
+      await selectComponentsForTest(renderResult, [
+        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
+      ])
+
+      // Change the height field.
+      await updateInputValue(renderResult, `frame-height-number-input`, '110')
+    },
+    expectedFrames: {
+      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+        localRectangle({
+          x: 90,
+          y: 100,
+          width: 800,
+          height: 110,
+        }),
+    },
+    expectedProject: `<div
+      style={{
+        position: 'absolute',
+        height: 900,
+        width: 800,
+        contain: 'layout',
+      }}
+    >
+      <Rectangle
+        style={{
+          backgroundColor: '#FF69B4AB',
+          position: 'absolute',
+          left: 90,
+          top: 100,
+          width: '100%',
+          height: '12.22%',
+        }}
+      />
+    </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fill container',
+    expectedFixedHugDropdownHeightValue: 'Scaled',
   },
   {
     controlTested: 'Height',
@@ -970,6 +1120,8 @@ const testCases: Array<TestCase> = [
         }}
       />
     </div>`,
+    expectedFixedHugDropdownWidthValue: 'Fixed',
+    expectedFixedHugDropdownHeightValue: 'Fixed',
   },
 ]
 
@@ -979,7 +1131,7 @@ const controlsTested = new Set(
 
 describe('Frame updating layout section', () => {
   controlsTested.forEach((controlTested) => {
-    it(`${controlTested} control`, () => {
+    describe(`${controlTested} control`, () => {
       const filterOptic = traverseArray<TestCase>().compose(
         filtered((testCase) => {
           return testCase.controlTested === controlTested
@@ -996,6 +1148,16 @@ describe('Frame updating layout section', () => {
 
           await testCase.actionChange(editor)
           await editor.getDispatchFollowUpActionsFinished()
+
+          const widthDropdown = await editor.renderedDOM.findByTestId(
+            getFixedHugDropdownId('width') + '-label',
+          )
+          expect(widthDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownWidthValue)
+
+          const heightDropdown = await editor.renderedDOM.findByTestId(
+            getFixedHugDropdownId('height') + '-label',
+          )
+          expect(heightDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownHeightValue)
 
           // Check the expected frames.
           const metadataMap = editor.getEditorState().editor.jsxMetadata

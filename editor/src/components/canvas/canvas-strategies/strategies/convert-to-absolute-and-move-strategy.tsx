@@ -81,8 +81,10 @@ import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
 import {
   getConvertIndividualElementToAbsoluteCommands,
+  isHugFromStyleAttribute,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 
 export type SetHuggingParentToFixed =
   | 'set-hugging-parent-to-fixed'
@@ -99,19 +101,28 @@ export const convertToAbsoluteAndMoveStrategy = convertToAbsoluteAndMoveStrategy
 export const convertToAbsoluteAndMoveAndSetParentFixedStrategy =
   convertToAbsoluteAndMoveStrategyFactory('set-hugging-parent-to-fixed')
 
-function getBasicStrategyProperties(setHuggingParentToFixed: SetHuggingParentToFixed) {
+function getBasicStrategyProperties(
+  setHuggingParentToFixed: SetHuggingParentToFixed,
+  pathsWereReplaced: boolean,
+) {
   switch (setHuggingParentToFixed) {
     case 'set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveAndSetParentFixedStrategyID,
         name: 'Move (Abs + Set Parent Fixed)',
-        descriptiveLabel: 'Converting To Absolute And Moving (setting parent to fixed)',
+        descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+          'Converting To Absolute And Moving (setting parent to fixed)',
+          pathsWereReplaced,
+        ),
       }
     case 'dont-set-hugging-parent-to-fixed':
       return {
         id: ConvertToAbsoluteAndMoveStrategyID,
         name: 'Move (Abs)',
-        descriptiveLabel: 'Converting To Absolute And Moving',
+        descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+          'Converting To Absolute And Moving',
+          pathsWereReplaced,
+        ),
       }
     default:
       assertNever(setHuggingParentToFixed)
@@ -124,7 +135,8 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
     interactionSession: InteractionSession | null,
   ): CanvasStrategy | null => {
     const originalTargets = retargetStrategyToTopMostFragmentLikeElement(canvasState) // this needs a better variable name
-    const retargetedTargets = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+    const { pathsWereReplaced, paths: retargetedTargets } =
+      retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
     if (
       !retargetedTargets.every((element) => {
@@ -140,6 +152,14 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
     ) {
       return null
     }
+
+    const isPositionRelative = retargetedTargets.every((element) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(
+        canvasState.startingMetadata,
+        element,
+      )
+      return elementMetadata?.specialSizeMeasurements.position === 'relative'
+    })
 
     // When the parent is not hugging, don't offer the strategy which sets it to fixed size
     if (setHuggingParentToFixed === 'set-hugging-parent-to-fixed') {
@@ -183,10 +203,11 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
       hasAutoLayoutSiblings,
       autoLayoutSiblingsBounds,
       originalTargets.length > 1,
+      isPositionRelative,
     )
 
     return {
-      ...getBasicStrategyProperties(setHuggingParentToFixed),
+      ...getBasicStrategyProperties(setHuggingParentToFixed, pathsWereReplaced),
       icon: {
         category: 'modalities',
         type: 'moveabs-large',
@@ -264,13 +285,14 @@ function convertToAbsoluteAndMoveStrategyFactory(setHuggingParentToFixed: SetHug
 }
 
 const BaseWeight = 0.5
-const DragConversionWeight = 1.5
+const DragConversionWeight = 1.5 // needs to be higher then FlexReorderFitness in flex-reorder-strategy
 
 function getFitness(
   interactionSession: InteractionSession | null,
   hasAutoLayoutSiblings: boolean,
   autoLayoutSiblingsBounds: CanvasRectangle | null,
   multipleTargets: boolean,
+  isPositionRelative: boolean,
 ): number {
   if (
     interactionSession != null &&
@@ -287,8 +309,9 @@ function getFitness(
     }
 
     if (!hasAutoLayoutSiblings) {
-      if (multipleTargets) {
+      if (multipleTargets || isPositionRelative) {
         // multi-selection should require a spacebar press to activate
+        // position relative can be just moved with relative move, no need to convert to absolute when relative move is applicable
         return BaseWeight
       }
       return DragConversionWeight
@@ -302,7 +325,7 @@ function getFitness(
     const isInsideBoundingBoxOfSiblings =
       autoLayoutSiblingsBounds != null && rectContainsPoint(autoLayoutSiblingsBounds, pointOnCanvas)
 
-    return isInsideBoundingBoxOfSiblings ? BaseWeight : DragConversionWeight
+    return isInsideBoundingBoxOfSiblings || isPositionRelative ? BaseWeight : DragConversionWeight
   }
 
   return 0

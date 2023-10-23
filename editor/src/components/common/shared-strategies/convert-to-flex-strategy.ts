@@ -1,28 +1,39 @@
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
-import { last, sortBy } from '../../../core/shared/array-utils'
-import { foldEither, isLeft } from '../../../core/shared/either'
+import { last, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
+import { isLeft } from '../../../core/shared/either'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
 } from '../../../core/shared/element-template'
-import { isJSXElementLike } from '../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import { isJSXElementLike, jsxFragment } from '../../../core/shared/element-template'
+import {
+  boundingRectangleArray,
+  getRectCenter,
+  nullIfInfinity,
+  zeroCanvasRect,
+  type CanvasRectangle,
+} from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import { fastForEach } from '../../../core/shared/utils'
-import { convertFragmentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { assertNever, fastForEach } from '../../../core/shared/utils'
 import {
+  getElementFragmentLikeType,
   isElementNonDOMElement,
+  replaceFragmentLikePathsWithTheirChildrenRecursive,
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
+import type { JSXFragmentConversion } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { actuallyConvertFramentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import type { AllElementProps } from '../../editor/store/editor-state'
+import type { FlexDirection } from '../../inspector/common/css-utils'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
@@ -32,7 +43,7 @@ import {
 } from '../../inspector/inspector-common'
 import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-contents-basic-strategy'
 
-type FlexDirection = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
+type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'
 
 export function convertLayoutToFlexCommands(
@@ -106,7 +117,12 @@ export function convertLayoutToFlexCommands(
     if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
       // special case: we only have a single child which has a size of 100%.
       return [
-        ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
+        ...ifElementIsFragmentLikeFirstConvertItToFrame(
+          metadata,
+          allElementProps,
+          elementPathTree,
+          path,
+        ),
         setProperty('always', path, PP.create('style', 'display'), 'flex'),
         setProperty('always', path, PP.create('style', 'flexDirection'), direction),
         ...(childWidth100Percent
@@ -152,7 +168,12 @@ export function convertLayoutToFlexCommands(
           ]
 
     return [
-      ...ifElementIsFragmentFirstConvertItToFrame(metadata, elementPathTree, path),
+      ...ifElementIsFragmentLikeFirstConvertItToFrame(
+        metadata,
+        allElementProps,
+        elementPathTree,
+        path,
+      ),
       setProperty('always', path, PP.create('style', 'display'), 'flex'),
       setProperty('always', path, PP.create('style', 'flexDirection'), direction),
       ...setPropertyOmitNullProp('always', path, PP.create('style', 'gap'), averageGap),
@@ -165,23 +186,135 @@ export function convertLayoutToFlexCommands(
         ...sizeToVisualDimensions(metadata, elementPathTree, child),
       ]),
       ...rearrangeCommands,
-      ...optionalCenterAlignCommands,
+      ...maybeAlignElementsToCenter(metadata, childrenPaths, path, direction, parentFlexDirection),
     ]
   })
 }
 
-function ifElementIsFragmentFirstConvertItToFrame(
+function ifElementIsFragmentLikeFirstConvertItToFrame(
   metadata: ElementInstanceMetadataMap,
-  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  elementPathTrees: ElementPathTrees,
   target: ElementPath,
 ): Array<CanvasCommand> {
-  return convertFragmentToFrame(
+  const type = getElementFragmentLikeType(
     metadata,
-    elementPathTree,
-    {},
+    allElementProps,
+    elementPathTrees,
     target,
-    'convert-even-if-it-has-static-children',
+    'sizeless-div-considered-fragment-like',
   )
+  const elementInstace = MetadataUtils.findElementByElementPath(metadata, target)
+  if (
+    elementInstace == null ||
+    isLeft(elementInstace.element) ||
+    !isJSXElementLike(elementInstace.element.value)
+  ) {
+    return []
+  }
+
+  if (type == 'fragment' || type == 'sizeless-div' || treatElementAsGroupLike(metadata, target)) {
+    const childInstances = mapDropNulls(
+      (path) => MetadataUtils.findElementByElementPath(metadata, path),
+      replaceFragmentLikePathsWithTheirChildrenRecursive(
+        metadata,
+        allElementProps,
+        elementPathTrees,
+        MetadataUtils.getChildrenPathsOrdered(metadata, elementPathTrees, target),
+      ),
+    )
+
+    const childrenBoundingFrame =
+      boundingRectangleArray(
+        mapDropNulls(
+          (rect) => nullIfInfinity(rect),
+          childInstances.map((c) => c.globalFrame),
+        ),
+      ) ?? zeroCanvasRect
+
+    const instance: JSXFragmentConversion = {
+      element: jsxFragment(
+        elementInstace.element.value.uid,
+        elementInstace.element.value.children,
+        false,
+      ),
+      childInstances: childInstances,
+      childrenBoundingFrame: childrenBoundingFrame,
+      specialSizeMeasurements: elementInstace.specialSizeMeasurements,
+    }
+    return actuallyConvertFramentToFrame(metadata, elementPathTrees, instance, target)
+  }
+
+  return []
+}
+
+const NEAR_CENTER_LINE_TOLERANCE_MULTIPLIER = 0.2
+
+function isElementNearCenterLine(
+  parentGlobalFrame: CanvasRectangle,
+  parentFlexDirection: FlexDirectionRowColumn,
+  metadata: ElementInstanceMetadataMap,
+  elementPath: ElementPath,
+): boolean {
+  const childGlobalFrame = nullIfInfinity(
+    MetadataUtils.getFrameInCanvasCoords(elementPath, metadata),
+  )
+  if (childGlobalFrame == null) {
+    return false
+  }
+
+  const parentCenter = getRectCenter(parentGlobalFrame)
+  const childCenter = getRectCenter(childGlobalFrame)
+  switch (parentFlexDirection) {
+    case 'column':
+      return (
+        Math.abs(childCenter.x - parentCenter.x) <
+        parentGlobalFrame.width * NEAR_CENTER_LINE_TOLERANCE_MULTIPLIER
+      )
+    case 'row':
+      return (
+        Math.abs(childCenter.y - parentCenter.y) <
+        parentGlobalFrame.height * NEAR_CENTER_LINE_TOLERANCE_MULTIPLIER
+      )
+    default:
+      assertNever(parentFlexDirection)
+  }
+}
+
+function maybeAlignElementsToCenter(
+  metadata: ElementInstanceMetadataMap,
+  childrenPaths: ElementPath[],
+  targetPath: ElementPath,
+  detectedDirection: FlexDirectionRowColumn,
+  parentFlexDirection: FlexDirection | null,
+) {
+  if (onlyChildIsSpan(metadata, childrenPaths)) {
+    return [
+      setProperty('always', targetPath, PP.create('style', 'alignItems'), 'center'),
+      setProperty('always', targetPath, PP.create('style', 'justifyContent'), 'center'),
+      setHugContentForAxis('horizontal', childrenPaths[0], parentFlexDirection),
+      setHugContentForAxis('vertical', childrenPaths[0], parentFlexDirection),
+    ]
+  }
+
+  const parentGlobalFrame = nullIfInfinity(
+    MetadataUtils.getFrameInCanvasCoords(targetPath, metadata),
+  )
+  if (parentGlobalFrame == null) {
+    return []
+  }
+
+  const allChildrenAlongCenterLine = childrenPaths.every((child) =>
+    isElementNearCenterLine(parentGlobalFrame, detectedDirection, metadata, child),
+  )
+  if (!allChildrenAlongCenterLine) {
+    return []
+  }
+
+  return [
+    setProperty('always', targetPath, PP.create('style', 'alignItems'), 'center'),
+    setProperty('always', targetPath, PP.create('style', 'justifyContent'), 'flex-start'),
+  ]
 }
 
 function guessMatchingFlexSetup(
@@ -189,7 +322,7 @@ function guessMatchingFlexSetup(
   target: ElementPath,
   children: Array<ElementPath>,
 ): {
-  direction: FlexDirection
+  direction: FlexDirectionRowColumn
   sortedChildren: Array<CanvasFrameAndTarget>
   averageGap: number | null
   padding: string | null
@@ -217,13 +350,13 @@ function guessLayoutDirection(
   target: ElementPath,
   children: Array<ElementPath>,
 ): {
-  direction: FlexDirection
+  direction: FlexDirectionRowColumn
   sortedChildren: Array<CanvasFrameAndTarget>
   parentRect: CanvasRectangle
   averageGap: number | null
 } {
   const parentRect = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, metadata)
-  const firstGuess: FlexDirection = parentRect.width > parentRect.height ? 'row' : 'column'
+  const firstGuess: FlexDirectionRowColumn = parentRect.width > parentRect.height ? 'row' : 'column'
   const firstGuessResult = detectConfigurationInDirection(
     metadata,
     children,
@@ -249,7 +382,7 @@ function guessLayoutDirection(
 }
 
 function guessPadding(
-  direction: FlexDirection,
+  direction: FlexDirectionRowColumn,
   parentRect: CanvasRectangle,
   sortedChildren: Array<CanvasFrameAndTarget>,
 ): string | null {
@@ -279,11 +412,11 @@ function appendPx(value: number): string {
 function detectConfigurationInDirection(
   metadata: ElementInstanceMetadataMap,
   children: Array<ElementPath>,
-  direction: FlexDirection,
+  direction: FlexDirectionRowColumn,
   parentRect: CanvasRectangle,
 ): {
   childrenDontOverlap: boolean
-  direction: FlexDirection
+  direction: FlexDirectionRowColumn
   sortedChildren: Array<CanvasFrameAndTarget>
   averageGap: number | null
   parentRect: CanvasRectangle
@@ -336,7 +469,7 @@ function detectConfigurationInDirection(
 }
 
 function guessAlignItems(
-  direction: FlexDirection,
+  direction: FlexDirectionRowColumn,
   children: Array<CanvasFrameAndTarget>,
 ): FlexAlignItems | null {
   if (children.length < 2) {

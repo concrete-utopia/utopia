@@ -430,6 +430,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       width: 100,
       height: 200,
     }),
+    nonRoundedGlobalFrame: canvasRectangle({
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 200,
+    }),
     componentInstance: true,
     isEmotionOrStyledComponent: false,
     specialSizeMeasurements: {
@@ -541,6 +547,12 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       height: 200,
     }),
     localFrame: localRectangle({
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 200,
+    }),
+    nonRoundedGlobalFrame: canvasRectangle({
       x: 10,
       y: 20,
       width: 100,
@@ -688,6 +700,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
+      nonRoundedGlobalFrame: canvasRectangle({
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 200,
+      }),
       componentInstance: true,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: {
@@ -806,6 +824,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         width: 100,
         height: 200,
       }),
+      nonRoundedGlobalFrame: canvasRectangle({
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 200,
+      }),
       componentInstance: true,
       isEmotionOrStyledComponent: false,
       specialSizeMeasurements: {
@@ -919,6 +943,12 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         height: 200,
       }),
       localFrame: localRectangle({
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 200,
+      }),
+      nonRoundedGlobalFrame: canvasRectangle({
         x: 10,
         y: 20,
         width: 100,

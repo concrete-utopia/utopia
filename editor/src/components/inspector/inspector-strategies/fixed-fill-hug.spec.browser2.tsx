@@ -33,6 +33,7 @@ import {
   FixedLabel,
   HugContentsLabel,
   selectOptionLabel,
+  ScaledLabel,
 } from '../fill-hug-fixed-control'
 import type { Axis, FixedHugFillMode } from '../inspector-common'
 import { MaxContent } from '../inspector-common'
@@ -378,7 +379,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(editor.renderedDOM.getAllByText(FillContainerLabel).length).toEqual(2)
     })
 
-    it('percent values that are not 100% are not classified as fill container', async () => {
+    it('percent values that are not 100% are classified as scaled container', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
         <div
@@ -399,7 +400,7 @@ describe('Fixed / Fill / Hug control', () => {
       ])
 
       expect(editor.renderedDOM.queryAllByText(FillContainerLabel).length).toEqual(0)
-      expect(editor.renderedDOM.getAllByText(FixedLabel).length).toEqual(2)
+      expect(editor.renderedDOM.getAllByText(ScaledLabel).length).toEqual(2)
     })
   })
 
@@ -762,6 +763,56 @@ describe('Fixed / Fill / Hug control', () => {
         </div>
         `),
       )
+    })
+    it('rounds up on text elements', async () => {
+      const editor = await renderTestEditorWithCode(
+        `import * as React from 'react'
+        import { Storyboard } from 'utopia-api'
+        import { App } from '/src/app.js'
+        
+        export var storyboard = (
+          <Storyboard>
+            <div
+              data-testid='parent'
+              style={{
+                width: 700,
+                height: 759,
+                position: 'absolute',
+                left: 212,
+                top: 128,
+                display: 'flex',
+                flexDirection: 'row'
+              }}
+              data-label='Playground'
+            >
+              <span
+                data-testid='child'
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  wordBreak: 'break-word',
+                  width: 'max-content',
+                  height: 'max-content',
+                  contain: 'layout',
+                }}
+              >span</span>
+            </div>
+          </Storyboard>
+        )`,
+        'await-first-dom-report',
+      )
+      const span = await select(editor, 'child')
+
+      const control = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
+
+      await mouseClickAtPoint(control, { x: 5, y: 5 })
+
+      const button = (await editor.renderedDOM.findAllByText(FixedLabel))[0]
+      await expectSingleUndo2Saves(editor, async () => {
+        await mouseClickAtPoint(button, { x: 5, y: 5 })
+      })
+
+      expect(span.style.width).toEqual('30px')
+      expect(span.style.height).toEqual(MaxContent)
     })
   })
 

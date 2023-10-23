@@ -18,7 +18,7 @@ import { useColorTheme } from '../../../../uuiui'
 import type { EditorDispatch } from '../../../editor/action-types'
 import { applyCommandsAction } from '../../../editor/actions/action-creators'
 import { useDispatch } from '../../../editor/store/dispatch-context'
-import { getMetadata } from '../../../editor/store/editor-state'
+import { AllElementProps, getMetadata } from '../../../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../../../editor/store/store-hook'
 import type { FixedHugFill } from '../../../inspector/inspector-common'
 import {
@@ -40,12 +40,15 @@ import { isZeroSizedElement } from '../outline-utils'
 import { useMaybeHighlightElement } from './select-mode-hooks'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
 import { treatElementAsGroupLike } from '../../canvas-strategies/strategies/group-helpers'
+import { treatElementAsFragmentLike } from '../../canvas-strategies/strategies/fragment-like-helpers'
+import { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 
 export const AbsoluteResizeControlTestId = (targets: Array<ElementPath>): string =>
   `${targets.map(EP.toString).sort()}-absolute-resize-control`
 
 interface AbsoluteResizeControlProps {
   targets: Array<ElementPath>
+  pathsWereReplaced: boolean
 }
 
 export const SizeLabelID = 'SizeLabel'
@@ -56,7 +59,7 @@ function shouldUseSmallElementResizeControl(size: number, scale: number): boolea
 }
 
 export const AbsoluteResizeControl = controlForStrategyMemoized(
-  ({ targets }: AbsoluteResizeControlProps) => {
+  ({ targets, pathsWereReplaced }: AbsoluteResizeControlProps) => {
     const scale = useEditorState(
       Substores.canvasOffset,
       (store) => store.editor.canvas.scale,
@@ -186,7 +189,7 @@ export const AbsoluteResizeControl = controlForStrategyMemoized(
             position={{ x: 1, y: 1 }}
             cursor={CSSCursor.ResizeNWSE}
           />
-          <SizeLabel ref={resizeRef} targets={targets} />
+          <SizeLabel ref={resizeRef} targets={targets} pathsWereReplaced={pathsWereReplaced} />
         </div>
       </CanvasOffsetWrapper>
     )
@@ -393,6 +396,7 @@ const sizeLabel = (state: FixedHugFill['type'], actualSize: number): string => {
     case 'hug-group':
       return 'Hug'
     case 'fixed':
+    case 'scaled':
     case 'detected':
     case 'computed':
       return `${actualSize}`
@@ -425,12 +429,27 @@ function sizeLabelGroup(): SizeLabelGroup {
   }
 }
 
-export type SizeLabelContents = SizeLabelSize | SizeLabelGroup
+export type SizeLabelChildren = {
+  type: 'SIZE_LABEL_CHILDREN'
+  h: string
+  v: string
+}
+
+function sizeLabelChildren(h: string, v: string): SizeLabelChildren {
+  return {
+    type: 'SIZE_LABEL_CHILDREN',
+    h: h,
+    v: v,
+  }
+}
+
+export type SizeLabelContents = SizeLabelSize | SizeLabelGroup | SizeLabelChildren
 
 function sizeLabelContents(
   metadata: ElementInstanceMetadataMap,
   selectedElements: Array<ElementPath>,
   boundingBox: CanvasRectangle | null,
+  pathsWereReplaced: boolean,
 ): SizeLabelContents | null {
   if (selectedElements.length === 0) {
     return null
@@ -455,6 +474,14 @@ function sizeLabelContents(
     const vertical =
       detectFillHugFixedState('vertical', metadata, selectedElements[0]).fixedHugFill?.type ??
       'fixed'
+
+    if (pathsWereReplaced) {
+      return sizeLabelChildren(
+        sizeLabel(horizontal, globalFrame.width),
+        sizeLabel(vertical, globalFrame.height),
+      )
+    }
+
     return sizeLabelWithDimensions(
       sizeLabel(horizontal, globalFrame.width),
       sizeLabel(vertical, globalFrame.height),
@@ -470,6 +497,7 @@ function sizeLabelContents(
 
 interface SizeLabelProps {
   targets: Array<ElementPath>
+  pathsWereReplaced: boolean
 }
 
 const FontSize = 11
@@ -488,13 +516,15 @@ function getLabelText(label: SizeLabelContents | null): string | null {
       return 'Group'
     case 'SIZE_LABEL_WITH_DIMENSIONS':
       return `${label.h} x ${label.v}`
+    case 'SIZE_LABEL_CHILDREN':
+      return `(Children) ${label.h} x ${label.v}`
     default:
       assertNever(label)
   }
 }
 
 const SizeLabel = React.memo(
-  React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets }, ref) => {
+  React.forwardRef<HTMLDivElement, SizeLabelProps>(({ targets, pathsWereReplaced }, ref) => {
     const scale = useEditorState(
       Substores.canvas,
       (store) => store.editor.canvas.scale,
@@ -511,7 +541,7 @@ const SizeLabel = React.memo(
       targets.map((t) => nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(t, metadata))),
     )
 
-    const label = sizeLabelContents(metadata, targets, boundingBox)
+    const label = sizeLabelContents(metadata, targets, boundingBox, pathsWereReplaced)
     const labelText = getLabelText(label)
 
     const [dimmed, setDimmed] = React.useState(false)
@@ -563,6 +593,7 @@ const SizeLabel = React.memo(
           position: 'absolute',
           display: 'flex',
           justifyContent: 'center',
+          pointerEvents: 'none',
         }}
         data-testid='parent-resize-label'
       >
@@ -583,6 +614,7 @@ const SizeLabel = React.memo(
               height: ExplicitHeightHacked / scale,
               opacity: dimmed ? 0.075 : 1,
               transition: '0.1s',
+              pointerEvents: 'initial',
             }}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}

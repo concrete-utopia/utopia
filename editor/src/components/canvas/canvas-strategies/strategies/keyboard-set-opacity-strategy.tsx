@@ -5,6 +5,7 @@ import Keyboard, { isDigit } from '../../../../utils/keyboard'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { emptyModifiers, Modifier } from '../../../../utils/modifiers'
 import { setProperty } from '../../commands/set-property-command'
+import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
 import type { InteractionCanvasState, CanvasStrategy } from '../canvas-strategy-types'
 import {
   getTargetPathsFromInteractionTarget,
@@ -19,7 +20,8 @@ export function keyboardSetOpacityStrategy(
   canvasState: InteractionCanvasState,
   interactionSession: InteractionSession | null,
 ): CanvasStrategy | null {
-  const selectedElements = retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
+  const { pathsWereReplaced, paths: selectedElements } =
+    retargetStrategyToChildrenOfFragmentLikeElements(canvasState)
 
   if (selectedElements.length === 0) {
     return null
@@ -28,7 +30,10 @@ export function keyboardSetOpacityStrategy(
   return {
     id: 'set-opacity',
     name: 'Set opacity',
-    descriptiveLabel: 'Changing Opacity',
+    descriptiveLabel: getDescriptiveStrategyLabelWithRetargetedPaths(
+      'Changing Opacity',
+      pathsWereReplaced,
+    ),
     icon: {
       category: 'tools',
       type: 'pointer',

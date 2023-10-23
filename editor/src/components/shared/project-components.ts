@@ -51,7 +51,7 @@ export type StylePropOption = 'do-not-add' | 'add-size'
 
 export interface InsertableComponent {
   importsToAdd: Imports
-  element: ComponentElementToInsert
+  element: () => ComponentElementToInsert
   name: string
   stylePropOptions: Array<StylePropOption>
   defaultSize: Size | null
@@ -59,7 +59,7 @@ export interface InsertableComponent {
 
 export function insertableComponent(
   importsToAdd: Imports,
-  element: ComponentElementToInsert,
+  element: () => ComponentElementToInsert,
   name: string,
   stylePropOptions: Array<StylePropOption>,
   defaultSize: Size | null,
@@ -77,12 +77,12 @@ export function clearInsertableComponentUniqueIDs(
   insertableComponentToFix: InsertableComponent,
 ): InsertableComponent {
   const updatedElement =
-    typeof insertableComponentToFix.element === 'string'
-      ? insertableComponentToFix.element
-      : clearComponentElementToInsertUniqueIDs(insertableComponentToFix.element)
+    typeof insertableComponentToFix.element() === 'string'
+      ? insertableComponentToFix.element()
+      : clearComponentElementToInsertUniqueIDs(insertableComponentToFix.element())
   return {
     ...insertableComponentToFix,
-    element: updatedElement,
+    element: () => updatedElement,
   }
 }
 
@@ -269,7 +269,7 @@ const stockHTMLPropertyControls: PropertyControls = {
 function makeHTMLDescriptor(
   tag: string,
   extraPropertyControls: PropertyControls,
-  attributes?: JSXAttributes,
+  attributes?: () => JSXAttributes,
 ): ComponentDescriptor {
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
@@ -287,13 +287,13 @@ function makeHTMLDescriptor(
             importedWithName: null,
           },
         },
-        elementToInsert: jsxElementWithoutUID(tag, attributes ?? [], []),
+        elementToInsert: () => jsxElementWithoutUID(tag, attributes?.() ?? [], []),
       },
     ],
   }
 }
 
-export const defaultImageAttributes: JSXAttributes = [
+export const defaultImageAttributes = (): JSXAttributes => [
   simpleAttribute('style', {
     width: '64px',
     height: '64px',
@@ -303,9 +303,7 @@ export const defaultImageAttributes: JSXAttributes = [
 ]
 
 const basicHTMLElementsDescriptors = {
-  div: makeHTMLDescriptor(
-    'div',
-    {},
+  div: makeHTMLDescriptor('div', {}, () =>
     jsxAttributesFromMap({
       style: defaultElementStyle(),
     }),
@@ -335,7 +333,7 @@ const basicHTMLElementsDescriptors = {
         control: 'style-controls',
       },
     },
-    [
+    () => [
       simpleAttribute('style', {
         width: '250px',
         height: '120px',
@@ -367,13 +365,14 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Conditional',
-        elementToInsert: jsxConditionalExpressionWithoutUID(
-          jsExpressionValue(true, emptyComments),
-          'true',
-          jsExpressionValue(null, emptyComments),
-          jsExpressionValue(null, emptyComments),
-          emptyComments,
-        ),
+        elementToInsert: () =>
+          jsxConditionalExpressionWithoutUID(
+            jsExpressionValue(true, emptyComments),
+            'true',
+            jsExpressionValue(null, emptyComments),
+            jsExpressionValue(null, emptyComments),
+            emptyComments,
+          ),
         importsToAdd: {},
       },
     ],
@@ -386,7 +385,7 @@ const groupElementsDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Group',
-        elementToInsert: groupJSXElement([]),
+        elementToInsert: () => groupJSXElement([]),
         importsToAdd: groupJSXElementImportsToAdd(),
       },
     ],
@@ -395,7 +394,7 @@ const groupElementsDescriptors: ComponentDescriptorsForFile = {
 
 export const fragmentComponentInfo: ComponentInfo = {
   insertMenuLabel: 'Fragment',
-  elementToInsert: jsxFragmentWithoutUID([], true),
+  elementToInsert: () => jsxFragmentWithoutUID([], true),
   importsToAdd: {
     react: {
       importedAs: 'React',
@@ -418,7 +417,7 @@ const samplesDescriptors: ComponentDescriptorsForFile = {
     variants: [
       {
         insertMenuLabel: 'Sample text',
-        elementToInsert: jsxElementWithoutUID('span', [], [jsxTextBlock('Sample text')]),
+        elementToInsert: () => jsxElementWithoutUID('span', [], [jsxTextBlock('Sample text')]),
         importsToAdd: {},
       },
     ],
@@ -552,7 +551,7 @@ export function getComponentGroups(
             insertableComponents.push(
               insertableComponent(
                 exportedComponent.importsToAdd,
-                jsxElementWithoutUID(exportedComponent.listingName, [], []),
+                () => jsxElementWithoutUID(exportedComponent.listingName, [], []),
                 exportedComponent.listingName,
                 stylePropOptions,
                 null,

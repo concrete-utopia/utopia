@@ -1981,6 +1981,8 @@ export var ${BakedInStoryboardVariableName} = (props) => {
             expect(guidelines).toHaveLength(2)
             await wait(5000)
           },
+          moveBeforeMouseDown: true,
+          staggerMoveEvents: true,
         },
       )
     })
