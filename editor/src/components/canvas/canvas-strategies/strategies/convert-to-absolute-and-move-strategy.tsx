@@ -757,13 +757,6 @@ function createSetParentsToFixedSizeCommands(
   return []
 }
 
-const HuggingWidthHeightValues = ['max-content', 'min-content', 'fit-content', 'auto']
-
 export function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
-  const simpleAttribute = defaultEither(
-    null,
-    getSimpleAttributeAtPath(right(element.props), PP.create('style', property)),
-  )
-
-  return simpleAttribute == null || HuggingWidthHeightValues.includes(simpleAttribute)
+  return isHugFromStyleAttribute(element.props, property, 'include-all-hugs')
 }
