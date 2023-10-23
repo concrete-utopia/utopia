@@ -98,53 +98,6 @@ export function isPushIntendedBoundsTargetGroup(u: unknown): u is PushIntendedBo
   return (u as PushIntendedBoundsTargetGroup).type === 'PUSH_INTENDED_BOUNDS_GROUP'
 }
 
-export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
-  type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING'
-  value: Array<PushIntendedBoundsTargetHuggingElement>
-  isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
-}
-
-export function pushIntendedBoundsAndUpdateHuggingElements(
-  value: Array<PushIntendedBoundsTargetHuggingElement>,
-  isStartingMetadata: 'starting-metadata' | 'live-metadata',
-): PushIntendedBoundsAndUpdateHuggingElements {
-  return {
-    type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING',
-    whenToRun: 'always',
-    value: value,
-    isStartingMetadata: isStartingMetadata,
-  }
-}
-
-export const runPushIntendedBoundsAndUpdateHuggingElements = (
-  editor: EditorState,
-  command: PushIntendedBoundsAndUpdateHuggingElements,
-): CommandFunctionResult => {
-  const huggingTargets = command.value.filter(isPushIntendedBoundsTargetHuggingElement)
-  const { updatedEditor: editorAfterHuggingElements } = getUpdateResizeHuggingElementsCommands(
-    editor,
-    huggingTargets,
-  )
-
-  // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
-  let editorStatePatches: Array<EditorStatePatch> = []
-  editorStatePatches.push({
-    projectContents: {
-      $set: editorAfterHuggingElements.projectContents,
-    },
-    toasts: {
-      $set: editorAfterHuggingElements.toasts,
-    },
-  })
-
-  return {
-    editorStatePatches: editorStatePatches,
-    commandDescription: `Set Intended Bounds for ${command.value
-      .map((c) => EP.toString(c.target))
-      .join(', ')}`,
-  }
-}
-
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<PushIntendedBoundsTargetGroup>
@@ -186,40 +139,81 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   )
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
-  const editorPatch = {
-    projectContents: { $set: editorAfterResizingAncestors.projectContents },
-    toasts: { $set: editorAfterResizingAncestors.toasts },
+  let editorStatePatches: Array<EditorStatePatch> = [
+    {
+      projectContents: { $set: editorAfterResizingAncestors.projectContents },
+      toasts: { $set: editorAfterResizingAncestors.toasts },
+    },
+  ]
+  if (commandLifecycle === 'mid-interaction') {
+    editorStatePatches.push({
+      canvas: {
+        controls: {
+          strategyIntendedBounds: {
+            $push: [...command.value, ...resizeAncestorsIntendedBounds],
+          },
+        },
+      },
+    })
+  }
+  if (commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp) {
+    editorStatePatches.push({
+      trueUpElementsAfterDomWalkerRuns: {
+        $set: resizedGroupChildren.map(trueUpGroupElementChanged),
+      },
+    })
   }
 
-  const intendedBoundsPatch =
-    commandLifecycle === 'mid-interaction'
-      ? [
-          {
-            canvas: {
-              controls: {
-                strategyIntendedBounds: {
-                  $push: [...command.value, ...resizeAncestorsIntendedBounds],
-                },
-              },
-            },
-          },
-        ]
-      : []
+  return {
+    editorStatePatches: editorStatePatches,
+    commandDescription: `Set Intended Bounds for groups ${command.value
+      .map((c) => EP.toString(c.target))
+      .join(', ')}`,
+  }
+}
 
-  const queueFollowUpGroupTrueUpPatch: Array<EditorStatePatch> =
-    commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp
-      ? [
-          {
-            trueUpElementsAfterDomWalkerRuns: {
-              $set: resizedGroupChildren.map(trueUpGroupElementChanged),
-            },
-          },
-        ]
-      : []
+export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
+  type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING'
+  value: Array<PushIntendedBoundsTargetHuggingElement>
+  isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
+}
+
+export function pushIntendedBoundsAndUpdateHuggingElements(
+  value: Array<PushIntendedBoundsTargetHuggingElement>,
+  isStartingMetadata: 'starting-metadata' | 'live-metadata',
+): PushIntendedBoundsAndUpdateHuggingElements {
+  return {
+    type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING',
+    whenToRun: 'always',
+    value: value,
+    isStartingMetadata: isStartingMetadata,
+  }
+}
+
+export const runPushIntendedBoundsAndUpdateHuggingElements = (
+  editor: EditorState,
+  command: PushIntendedBoundsAndUpdateHuggingElements,
+): CommandFunctionResult => {
+  const huggingTargets = command.value.filter(isPushIntendedBoundsTargetHuggingElement)
+  const { updatedEditor: editorAfterHuggingElements } = getUpdateResizeHuggingElementsCommands(
+    editor,
+    huggingTargets,
+  )
+
+  let editorStatePatches: Array<EditorStatePatch> = [
+    {
+      projectContents: {
+        $set: editorAfterHuggingElements.projectContents,
+      },
+      toasts: {
+        $set: editorAfterHuggingElements.toasts,
+      },
+    },
+  ]
 
   return {
-    editorStatePatches: [editorPatch, ...intendedBoundsPatch, ...queueFollowUpGroupTrueUpPatch],
-    commandDescription: `Set Intended Bounds for ${command.value
+    editorStatePatches: editorStatePatches,
+    commandDescription: `Set Intended Bounds for hugging elements ${command.value
       .map((c) => EP.toString(c.target))
       .join(', ')}`,
   }
