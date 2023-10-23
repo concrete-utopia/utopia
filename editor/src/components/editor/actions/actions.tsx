@@ -3874,7 +3874,7 @@ export const UPDATE_FNS = {
 
     const editorAfterTrueUps = foldAndApplyCommandsSimple(editor, [
       pushIntendedBoundsAndUpdateGroups(groupTargets, 'live-metadata'),
-      pushIntendedBoundsAndUpdateHuggingElements(huggingTargets, 'live-metadata'),
+      pushIntendedBoundsAndUpdateHuggingElements(huggingTargets),
     ])
     return {
       ...editorAfterTrueUps,

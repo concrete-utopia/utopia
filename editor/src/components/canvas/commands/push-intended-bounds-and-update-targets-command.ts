@@ -671,18 +671,15 @@ function keepElementPutInParent(
 export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS'
   value: Array<CanvasFrameAndTarget>
-  isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
 }
 
 export function pushIntendedBoundsAndUpdateHuggingElements(
   value: Array<CanvasFrameAndTarget>,
-  isStartingMetadata: 'starting-metadata' | 'live-metadata',
 ): PushIntendedBoundsAndUpdateHuggingElements {
   return {
     type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS',
     whenToRun: 'always',
     value: value,
-    isStartingMetadata: isStartingMetadata,
   }
 }
 
