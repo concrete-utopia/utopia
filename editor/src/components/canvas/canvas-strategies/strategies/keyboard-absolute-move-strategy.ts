@@ -29,10 +29,7 @@ import {
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
-import {
-  pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateGroups,
-} from '../../commands/push-intended-bounds-and-update-targets-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-targets-command'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import type { InteractionSession } from '../interaction-state'
@@ -105,12 +102,7 @@ export function keyboardAbsoluteMoveStrategy(
         const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
 
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
-        commands.push(
-          pushIntendedBoundsAndUpdateGroups(
-            intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
-            'starting-metadata',
-          ),
-        )
+        commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
         commands.push(setElementsToRerenderCommand(selectedElements))
         return strategyApplicationResult(commands)
       } else {

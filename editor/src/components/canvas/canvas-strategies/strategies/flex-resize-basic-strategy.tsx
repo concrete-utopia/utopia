@@ -34,10 +34,7 @@ import {
   resizeBoundingBox,
 } from './resize-helpers'
 import { getElementDimensions } from './flex-resize-helpers'
-import {
-  pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateGroups,
-} from '../../commands/push-intended-bounds-and-update-targets-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
@@ -225,7 +222,7 @@ export function flexResizeBasicStrategy(
             setCursorCommand(pickCursorFromEdgePosition(edgePosition)),
             setElementsToRerenderCommand(selectedElements),
             pushIntendedBoundsAndUpdateGroups(
-              [pushIntendedBoundsGroup(selectedElement, resizedBounds)],
+              [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
             ),
             ...groupChildren.map((c) =>

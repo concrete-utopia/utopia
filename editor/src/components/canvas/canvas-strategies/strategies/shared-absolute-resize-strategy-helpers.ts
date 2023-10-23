@@ -54,10 +54,7 @@ import { addOrMergeIntendedBounds } from './shared-keyboard-strategy-helpers'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { withUnderlyingTarget } from '../../../../components/editor/store/editor-state'
-import {
-  pushIntendedBoundsAndUpdateGroups,
-  pushIntendedBoundsGroup,
-} from '../../commands/push-intended-bounds-and-update-targets-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-targets-command'
 
 export function createResizeCommands(
   element: JSXElement,
@@ -384,10 +381,7 @@ export function resizeInspectorStrategy(
       )
       commands.push(...changeBoundsResult.commands)
       commands.push(
-        pushIntendedBoundsAndUpdateGroups(
-          changeBoundsResult.intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
-          'starting-metadata',
-        ),
+        pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'starting-metadata'),
       )
       commands.push(setElementsToRerenderCommand(selectedElements))
       return commands
@@ -433,12 +427,7 @@ export function directResizeInspectorStrategy(
         )
         commands.push(...changeBoundsResult.commands)
         commands.push(
-          pushIntendedBoundsAndUpdateGroups(
-            changeBoundsResult.intendedBounds.map((b) =>
-              pushIntendedBoundsGroup(b.target, b.frame),
-            ),
-            'starting-metadata',
-          ),
+          pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'starting-metadata'),
         )
       }
       commands.push(setElementsToRerenderCommand(selectedElements))

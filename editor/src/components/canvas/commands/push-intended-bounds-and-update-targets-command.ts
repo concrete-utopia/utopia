@@ -56,9 +56,9 @@ import {
 } from './utils/group-resize-utils'
 import { wildcardPatch } from './wildcard-patch-command'
 
-export type PushIntendedBoundsTargetGroup = {
+export interface PushIntendedBoundsTargetGroup extends CanvasFrameAndTarget {
   type: 'PUSH_INTENDED_BOUNDS_GROUP'
-} & CanvasFrameAndTarget
+}
 
 export function pushIntendedBoundsGroup(
   target: ElementPath,
@@ -71,9 +71,9 @@ export function pushIntendedBoundsGroup(
   }
 }
 
-export type PushIntendedBoundsTargetHuggingElement = {
+export interface PushIntendedBoundsTargetHuggingElement extends CanvasFrameAndTarget {
   type: 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT'
-} & CanvasFrameAndTarget
+}
 
 export function pushIntendedBoundsHuggingElement(
   target: ElementPath,
@@ -100,12 +100,12 @@ export function isPushIntendedBoundsTargetGroup(u: unknown): u is PushIntendedBo
 
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
-  value: Array<PushIntendedBoundsTargetGroup>
+  value: Array<CanvasFrameAndTarget>
   isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
 }
 
 export function pushIntendedBoundsAndUpdateGroups(
-  value: Array<PushIntendedBoundsTargetGroup>,
+  value: Array<CanvasFrameAndTarget>,
   isStartingMetadata: 'starting-metadata' | 'live-metadata',
 ): PushIntendedBoundsAndUpdateGroups {
   return {
@@ -174,12 +174,12 @@ export const runPushIntendedBoundsAndUpdateGroups = (
 
 export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING'
-  value: Array<PushIntendedBoundsTargetHuggingElement>
+  value: Array<CanvasFrameAndTarget>
   isStartingMetadata: 'starting-metadata' | 'live-metadata' // TODO rename to reflect that what this stores is whether the command is running as a queued true up or as a predictive change during a user interaction
 }
 
 export function pushIntendedBoundsAndUpdateHuggingElements(
-  value: Array<PushIntendedBoundsTargetHuggingElement>,
+  value: Array<CanvasFrameAndTarget>,
   isStartingMetadata: 'starting-metadata' | 'live-metadata',
 ): PushIntendedBoundsAndUpdateHuggingElements {
   return {
@@ -194,10 +194,9 @@ export const runPushIntendedBoundsAndUpdateHuggingElements = (
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateHuggingElements,
 ): CommandFunctionResult => {
-  const huggingTargets = command.value.filter(isPushIntendedBoundsTargetHuggingElement)
   const { updatedEditor: editorAfterHuggingElements } = getUpdateResizeHuggingElementsCommands(
     editor,
-    huggingTargets,
+    command.value,
   )
 
   let editorStatePatches: Array<EditorStatePatch> = [
@@ -238,7 +237,7 @@ function getHuggingElementContentsStatus(
 
 function getUpdateResizeHuggingElementsCommands(
   editor: EditorState,
-  targets: Array<PushIntendedBoundsTargetHuggingElement>,
+  targets: Array<CanvasFrameAndTarget>,
 ): {
   updatedEditor: EditorState
 } {
@@ -355,9 +354,9 @@ function rectangleFromChildrenBounds(
 
 function getUpdateResizedGroupChildrenCommands(
   editor: EditorState,
-  groupTargets: Array<PushIntendedBoundsTargetGroup>,
+  groupTargets: Array<CanvasFrameAndTarget>,
 ): { updatedEditor: EditorState; resizedGroupChildren: Array<ElementPath> } {
-  const targets: Array<PushIntendedBoundsTargetGroup> = [...groupTargets]
+  const targets: Array<CanvasFrameAndTarget> = [...groupTargets]
 
   // we are going to mutate this as we iterate over targets
   let updatedLocalFrames: { [path: string]: LocalFrameAndTarget | undefined } = {}
@@ -461,12 +460,10 @@ function getUpdateResizedGroupChildrenCommands(
             allSixFramePoints: adjustedResizedLocalFramePoints,
             target: child,
           }
-          targets.push(
-            pushIntendedBoundsGroup(
-              child,
-              sixFramePointsToCanvasRectangle(adjustedResizedLocalFramePoints),
-            ),
-          )
+          targets.push({
+            target: child,
+            frame: sixFramePointsToCanvasRectangle(adjustedResizedLocalFramePoints),
+          })
         }
       }
     }
@@ -504,7 +501,7 @@ function getUpdateResizedGroupChildrenCommands(
 
 function getResizeAncestorGroupsCommands(
   editor: EditorState,
-  targets: Array<PushIntendedBoundsTargetGroup>,
+  targets: Array<CanvasFrameAndTarget>,
   addGroupSizeIfNonExistant: CreateIfNotExistant,
 ): { updatedEditor: EditorState; intendedBounds: Array<CanvasFrameAndTarget> } {
   // we are going to mutate this as we iterate over targets
@@ -553,7 +550,7 @@ function getResizeAncestorGroupsCommands(
         frame: newGlobalFrame,
         target: parentPath,
       }
-      targets.push(pushIntendedBoundsGroup(parentPath, newGlobalFrame))
+      targets.push({ target: parentPath, frame: newGlobalFrame })
     }
   }
 

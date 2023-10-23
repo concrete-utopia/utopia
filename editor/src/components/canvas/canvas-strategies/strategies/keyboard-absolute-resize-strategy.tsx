@@ -11,10 +11,7 @@ import Keyboard from '../../../../utils/keyboard'
 import type { CanvasFrameAndTarget, EdgePosition } from '../../canvas-types'
 import { EdgePositionBottom, EdgePositionRight } from '../../canvas-types'
 import type { CanvasCommand } from '../../commands/commands'
-import {
-  pushIntendedBoundsGroup,
-  pushIntendedBoundsAndUpdateGroups,
-} from '../../commands/push-intended-bounds-and-update-targets-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-targets-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
 import { AbsoluteResizeControl } from '../../controls/select-mode/absolute-resize-control'
@@ -204,12 +201,7 @@ export function keyboardAbsoluteResizeStrategy(
         const snapTargets = [...children, ...parentsAndSiblings]
         const guidelines = getKeyboardStrategyGuidelines(snapTargets, interactionSession, newFrame)
         commands.push(setSnappingGuidelines('mid-interaction', guidelines))
-        commands.push(
-          pushIntendedBoundsAndUpdateGroups(
-            intendedBounds.map((b) => pushIntendedBoundsGroup(b.target, b.frame)),
-            'starting-metadata',
-          ),
-        )
+        commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
         commands.push(setElementsToRerenderCommand(selectedElements))
         return strategyApplicationResult(commands)
       } else {
