@@ -6,7 +6,6 @@ import type { ElementInstanceMetadataMap } from '../../core/shared/element-templ
 import { isJSXElement } from '../../core/shared/element-template'
 import type { CanvasRectangle, CanvasVector } from '../../core/shared/math-utils'
 import { canvasRectangle, isInfinityRectangle } from '../../core/shared/math-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import { assertNever } from '../../core/shared/utils'
 import { CSSCursor } from './canvas-types'
@@ -17,6 +16,7 @@ import type { Sides } from 'utopia-api/core'
 import { sides } from 'utopia-api/core'
 import { styleStringInArray } from '../../utils/common-constants'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { isReversedFlexDirection } from '../../core/model/flex-utils'
 
 export interface PathWithBounds {
   bounds: CanvasRectangle
@@ -129,7 +129,9 @@ export function gapControlBoundsFromMetadata(
 
   // Needs to handle reversed content as that will be flipped in the visual order, which changes
   // what elements will be either side of the gaps.
-  const possiblyReversedChildren = flexDirection.endsWith('-reverse') ? reverse(children) : children
+  const possiblyReversedChildren = isReversedFlexDirection(flexDirection)
+    ? reverse(children)
+    : children
 
   const childCanvasBounds = stripNulls(
     possiblyReversedChildren
