@@ -16,12 +16,12 @@ import {
 import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import {
-  trueUpGroupElementChanged,
-  type AllElementProps,
-  type EditorState,
-  type EditorStatePatch,
+import type {
+  AllElementProps,
+  EditorState,
+  EditorStatePatch,
 } from '../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
   getConstraintsIncludingImplicitForElement,
