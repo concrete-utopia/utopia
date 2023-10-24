@@ -68,6 +68,66 @@ describe('registered property controls', () => {
     await wait(10) // this is quite ugly but we want to wait for a timeout(0) in ui-jsx-canvas before calling validateControlsToCheck
     const editorState = renderResult.getEditorState().editor
 
-    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`undefined`)
+    expect(editorState.propertyControlsInfo['/src/card']).toMatchInlineSnapshot(`
+      Object {
+        "Card": Object {
+          "properties": Object {
+            "background": Object {
+              "control": "color",
+            },
+            "label": Object {
+              "control": "string-input",
+            },
+            "visible": Object {
+              "control": "checkbox",
+            },
+          },
+          "variants": Array [
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "Card",
+            },
+            Object {
+              "elementToInsert": [Function],
+              "importsToAdd": Object {
+                "/src/card": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "Card",
+                      "name": "Card",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+                "/src/defaults": Object {
+                  "importedAs": null,
+                  "importedFromWithin": Array [
+                    Object {
+                      "alias": "DefaultPerson",
+                      "name": "DefaultPerson",
+                    },
+                  ],
+                  "importedWithName": null,
+                },
+              },
+              "insertMenuLabel": "ID Card",
+            },
+          ],
+        },
+      }
+    `)
   })
 })

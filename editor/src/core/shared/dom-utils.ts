@@ -348,9 +348,15 @@ export function defaultDisplayTypeForHTMLElement(elementName: string): 'inline' 
 }
 
 export function hugPropertiesFromComputedStyleMap(
-  styleMap: StylePropertyMapReadOnly,
+  styleMap: StylePropertyMapReadOnly | null,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): HugPropertyWidthHeight {
+  if (styleMap == null) {
+    return {
+      width: null,
+      height: null,
+    }
+  }
   return {
     width: hugPropertyFromStyleValue(
       styleMap.get('width')?.toString() ?? null,
