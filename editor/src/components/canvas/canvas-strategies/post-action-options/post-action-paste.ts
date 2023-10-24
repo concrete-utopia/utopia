@@ -39,7 +39,7 @@ import type {
   PastePostActionMenuData,
   PasteToReplacePostActionMenuData,
 } from '../../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
   replaceWithElementsWrappedInFragmentBehaviour,
@@ -47,7 +47,7 @@ import {
 import type { CanvasCommand } from '../../commands/commands'
 import { foldAndApplyCommandsInner } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { updateFunctionCommand } from '../../commands/update-function-command'
 import { updateSelectedViews } from '../../commands/update-selected-views-command'
@@ -361,7 +361,7 @@ export function staticReparentAndUpdatePosition(
         },
       },
     }),
-    ...groupTrueUpPaths.map((path) => queueGroupTrueUp([trueUpElementChanged(path)])),
+    ...groupTrueUpPaths.map((path) => queueTrueUpElement([trueUpGroupElementChanged(path)])),
   ])
 }
 

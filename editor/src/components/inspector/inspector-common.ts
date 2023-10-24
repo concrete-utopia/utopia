@@ -13,6 +13,7 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXAttributes,
+  JSXElement,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -45,6 +46,7 @@ import {
   setPropHugStrategies,
 } from './inspector-strategies/inspector-strategies'
 import { commandsForFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
+import type { Size } from '../../core/shared/math-utils'
 import {
   isFiniteRectangle,
   isInfinityRectangle,
@@ -71,6 +73,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
+import { setHugContentForAxis } from './inspector-strategies/hug-contents-basic-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -406,7 +409,7 @@ export const flexChildProps = [
   styleP('flexBasis'),
 ]
 
-const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
+export const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
 
 export function prunePropsCommands(
   props: PropertyPath[],
@@ -1232,6 +1235,49 @@ export function getConvertIndividualElementToAbsoluteCommands(
   ]
 }
 
+export function setAutoWidthCommands(
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection | null,
+  computedHeight: number,
+): CanvasCommand[] {
+  return [
+    setHugContentForAxis('horizontal', elementPath, parentFlexDirection),
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('height'),
+      setExplicitCssValue(cssPixelLength(computedHeight)),
+      parentFlexDirection,
+    ),
+  ]
+}
+
+export function setAutoHeightCommands(
+  elementPath: ElementPath,
+  parentFlexDirection: FlexDirection | null,
+  computedWidth: number,
+): CanvasCommand[] {
+  return [
+    setCssLengthProperty(
+      'always',
+      elementPath,
+      styleP('width'),
+      setExplicitCssValue(cssPixelLength(computedWidth)),
+      parentFlexDirection,
+    ),
+    setHugContentForAxis('vertical', elementPath, parentFlexDirection),
+  ]
+}
+
+export function setFixedSizeCommands(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+  frame: Size,
+) {
+  return sizeToDimensionsFromFrame(metadata, pathTrees, elementPath, frame)
+}
+
 function getSafeGroupChildConstraintsArray(
   allElementProps: AllElementProps,
   path: ElementPath,
@@ -1269,4 +1315,8 @@ export function getConstraintsIncludingImplicitForElement(
   }
 
   return Array.from(constraints)
+}
+
+export function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
+  return isHugFromStyleAttribute(element.props, property, 'include-all-hugs')
 }

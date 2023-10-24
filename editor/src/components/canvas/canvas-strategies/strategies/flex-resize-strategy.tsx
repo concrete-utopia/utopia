@@ -64,9 +64,9 @@ import { strictEvery, mapDropNulls } from '../../../../core/shared/array-utils'
 import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from './group-helpers'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { trueUpElementChanged } from '../../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'
 
@@ -120,7 +120,7 @@ export function flexResizeStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: { targets: selectedElements },
+        props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
       }),
@@ -358,7 +358,9 @@ export function flexResizeStrategy(
               [{ target: selectedElement, frame: newFrame }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
+            ...groupChildren.map((c) =>
+              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
+            ),
           ])
         } else {
           return strategyApplicationResult([

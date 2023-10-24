@@ -155,11 +155,11 @@ export function useModelControlledTransformableState<T>(
   return [localState, onSubmitValueAndUpdateLocalState]
 }
 
-export const stopPropagation = (e: React.MouseEvent) => {
+export const stopPropagation = (e: { stopPropagation: () => void }) => {
   e.stopPropagation()
 }
 
-export const preventDefault = (e: React.SyntheticEvent) => {
+export const preventDefault = (e: { preventDefault: () => void }) => {
   e.preventDefault()
 }
 

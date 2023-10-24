@@ -4,7 +4,6 @@ import { isInfinityRectangle } from '../../../../core/shared/math-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import type { LengthPropertyToAdjust } from '../../commands/adjust-css-length-command'
 import {
-  AdjustCssLengthProperties,
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
@@ -34,12 +33,11 @@ import {
   pickCursorFromEdgePosition,
   resizeBoundingBox,
 } from './resize-helpers'
-import { FlexDirection } from '../../../inspector/common/css-utils'
 import { getElementDimensions } from './flex-resize-helpers'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
-import { trueUpElementChanged } from '../../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
 export function flexResizeBasicStrategy(
   canvasState: InteractionCanvasState,
@@ -102,7 +100,7 @@ export function flexResizeBasicStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: { targets: selectedElements },
+        props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
       }),
@@ -227,7 +225,9 @@ export function flexResizeBasicStrategy(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
+            ...groupChildren.map((c) =>
+              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
+            ),
           ])
         } else {
           return strategyApplicationResult([

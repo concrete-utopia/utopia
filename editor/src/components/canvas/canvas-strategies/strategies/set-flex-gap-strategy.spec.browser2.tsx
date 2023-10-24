@@ -1,3 +1,4 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "checkFlexGapHandlesPositionedCorrectly"] }] */
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
 import {
   FlexGapControlHandleTestId,
@@ -11,6 +12,10 @@ import { shiftModifier } from '../../../../utils/modifiers'
 import { FlexGapTearThreshold } from './set-flex-gap-strategy'
 import type { CanvasPoint } from '../../../../core/shared/math-utils'
 import { canvasPoint } from '../../../../core/shared/math-utils'
+import { checkFlexGapHandlesPositionedCorrectly } from '../../controls/select-mode/flex-gap-control.test-utils'
+import { BakedInStoryboardUID } from '../../../../core/model/scene-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import * as EP from '../../../../core/shared/element-path'
 
 const DivTestId = 'mydiv'
 
@@ -52,7 +57,9 @@ export var storyboard = (
 
     const gapControls = [
       ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+      ...editor.renderedDOM.queryAllByTestId((testId) =>
+        testId.startsWith(FlexGapControlHandleTestId),
+      ),
     ]
 
     expect(gapControls).toEqual([])
@@ -110,9 +117,13 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
+
     const gapControls = [
       ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+      ...editor.renderedDOM.queryAllByTestId((testId) =>
+        testId.startsWith(FlexGapControlHandleTestId),
+      ),
     ]
 
     expect(gapControls.length).toEqual(2)
@@ -162,7 +173,9 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandles = editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId)
+    const gapControlHandles = editor.renderedDOM.queryAllByTestId((testId) =>
+      testId.startsWith(FlexGapControlHandleTestId),
+    )
 
     expect(gapControlHandles).toEqual([])
   })
@@ -183,7 +196,9 @@ export var storyboard = (
 
     const gapControls = [
       ...editor.renderedDOM.queryAllByTestId(FlexGapControlTestId),
-      ...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId),
+      ...editor.renderedDOM.queryAllByTestId((testId) =>
+        testId.startsWith(FlexGapControlHandleTestId),
+      ),
     ]
 
     expect(gapControls).toEqual([])
@@ -203,7 +218,11 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControls = [...editor.renderedDOM.queryAllByTestId(FlexGapControlHandleTestId)]
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
+
+    const gapControls = editor.renderedDOM.queryAllByTestId((testId) =>
+      testId.startsWith(FlexGapControlHandleTestId),
+    )
 
     expect(gapControls.length).toEqual(3)
   })
@@ -226,7 +245,9 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId((testId) =>
+      testId.startsWith(FlexGapControlHandleTestId),
+    )
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -241,6 +262,8 @@ export var storyboard = (
 
     await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
+
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithGap({ gap: `gap: '${initialGap + dragDelta}px',`, flexDirection: 'row' }),
@@ -267,7 +290,9 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId((testId) =>
+      testId.startsWith(FlexGapControlHandleTestId),
+    )
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -284,6 +309,8 @@ export var storyboard = (
       modifiers: shiftModifier,
     })
     await editor.getDispatchFollowUpActionsFinished()
+
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithGap({ gap: `gap: '${coarseValue}px',`, flexDirection: 'row' }),
@@ -305,7 +332,9 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId((testId) =>
+      testId.startsWith(FlexGapControlHandleTestId),
+    )
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -320,6 +349,8 @@ export var storyboard = (
 
     await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
+
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithGap({ gap: `gap: '3.4em',`, flexDirection: 'row' }),
@@ -344,7 +375,9 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId((testId) =>
+      testId.startsWith(FlexGapControlHandleTestId),
+    )
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -359,6 +392,8 @@ export var storyboard = (
 
     await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
+
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithGap({ gap: `gap: '${initialGap + dragDelta}px',`, flexDirection: 'column' }),
@@ -380,7 +415,9 @@ export var storyboard = (
       y: divBounds.y + 5,
     })
 
-    const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+    const gapControlHandle = editor.renderedDOM.getByTestId((testId) =>
+      testId.startsWith(FlexGapControlHandleTestId),
+    )
     const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
     const center = {
@@ -396,6 +433,8 @@ export var storyboard = (
     await mouseDragFromPointToPoint(gapControlHandle, center, endPoint)
     await editor.getDispatchFollowUpActionsFinished()
 
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
+
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithGap({ gap: `gap: '0px',`, flexDirection: 'row' }),
     )
@@ -408,6 +447,8 @@ export var storyboard = (
     )
 
     await doGapResize(editor, canvasPoint({ x: FlexGapTearThreshold - 12 - 1, y: 0 }))
+
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithNoGap({ flexDirection: 'row' }),
@@ -422,6 +463,8 @@ export var storyboard = (
 
     await doGapResize(editor, canvasPoint({ x: 0, y: FlexGapTearThreshold - 12 - 1 }))
 
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
+
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithNoGap({ flexDirection: 'column' }),
     )
@@ -434,6 +477,8 @@ export var storyboard = (
     )
 
     await doGapResize(editor, canvasPoint({ x: -(FlexGapTearThreshold - 12 - 1), y: 0 }))
+
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
 
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithNoGap({ flexDirection: 'row-reverse' }),
@@ -448,15 +493,369 @@ export var storyboard = (
 
     await doGapResize(editor, canvasPoint({ x: 0, y: -(FlexGapTearThreshold - 12 - 1) }))
 
+    await checkFlexGapHandlesPositionedCorrectly(editor, DivTestId)
+
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       testCodeWithNoGap({ flexDirection: 'column-reverse' }),
     )
+  })
+
+  it('the gap handles show up where expected in a series of cases', async () => {
+    const editor = await renderTestEditorWithCode(
+      testCodeWithGapExamples(),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(editor, [EP.fromString(`${BakedInStoryboardUID}/example-1`)])
+    await checkFlexGapHandlesPositionedCorrectly(editor, 'example-1')
+
+    await selectComponentsForTest(editor, [EP.fromString(`${BakedInStoryboardUID}/example-2`)])
+    await checkFlexGapHandlesPositionedCorrectly(editor, 'example-2')
+
+    await selectComponentsForTest(editor, [EP.fromString(`${BakedInStoryboardUID}/example-3`)])
+    await checkFlexGapHandlesPositionedCorrectly(editor, 'example-3')
+
+    await selectComponentsForTest(editor, [EP.fromString(`${BakedInStoryboardUID}/example-4`)])
+    await checkFlexGapHandlesPositionedCorrectly(editor, 'example-4')
+
+    await selectComponentsForTest(editor, [EP.fromString(`${BakedInStoryboardUID}/example-5`)])
+    await checkFlexGapHandlesPositionedCorrectly(editor, 'example-5')
+
+    await selectComponentsForTest(editor, [EP.fromString(`${BakedInStoryboardUID}/example-6`)])
+    await checkFlexGapHandlesPositionedCorrectly(editor, 'example-6')
   })
 })
 
 interface GapTestCodeParams {
   flexDirection: string
   gap: string
+}
+
+function testCodeWithGapExamples(): string {
+  return `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid='${BakedInStoryboardUID}'>
+    <div
+      data-uid={'example-1'}
+      data-testid={'example-1'}
+      style={{
+        height: 'max-content',
+        position: 'absolute',
+        left: 50,
+        top: 50,
+        display: 'flex',
+        flexDirection: 'column',
+        width: 263,
+        gap: 30,
+        padding: '30px 15px 34px 15px',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+      }}
+    >
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+    </div>
+    <div
+      data-uid={'example-2'}    
+      data-testid={'example-2'}
+      style={{
+        height: 'max-content',
+        position: 'absolute',
+        left: 350,
+        top: 50,
+        display: 'flex',
+        flexDirection: 'column',
+        width: 263,
+        gap: 30,
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+      }}
+    >
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+    </div>
+    <div
+      data-uid={'example-3'}    
+      data-testid={'example-3'}
+      style={{
+        height: 'max-content',
+        position: 'absolute',
+        left: 50,
+        top: 305,
+        display: 'flex',
+        flexDirection: 'column',
+        width: 263,
+        gap: 30,
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+      }}
+    >
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+    </div>
+    <div
+      data-uid={'example-4'}    
+      data-testid={'example-4'}
+      style={{
+        height: 'max-content',
+        position: 'absolute',
+        left: 400,
+        top: 305,
+        display: 'flex',
+        flexDirection: 'column',
+        width: 263,
+        gap: 30,
+        justifyContent: 'flex-start',
+      }}
+    >
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+        }}
+      >
+        absolute this
+      </span>
+    </div>
+    <div
+      data-uid={'example-5'}    
+      data-testid={'example-5'}
+      style={{
+        height: 145,
+        position: 'absolute',
+        left: 50,
+        top: 550,
+        display: 'flex',
+        flexDirection: 'row',
+        width: 414,
+        gap: 30,
+        alignItems: 'flex-end',
+        justifyContent: 'flex-start',
+      }}
+    >
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+    </div>
+    <div
+      data-uid={'example-6'}    
+      data-testid={'example-6'}
+      style={{
+        height: 145,
+        position: 'absolute',
+        left: 500,
+        top: 550,
+        display: 'flex',
+        flexDirection: 'row-reverse',
+        width: 414,
+        gap: 30,
+        alignItems: 'flex-end',
+        justifyContent: 'flex-start',
+      }}
+    >
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+      <span
+        style={{
+          backgroundColor: 'magenta',
+          color: 'white',
+          width: 'max-content',
+        }}
+      >
+        absolute this
+      </span>
+    </div>
+  </Storyboard>
+)
+`
 }
 
 function testCodeWithGap(params: GapTestCodeParams): string {
@@ -560,7 +959,9 @@ async function doGapResize(editor: EditorRenderResult, delta: CanvasPoint) {
     y: divBounds.y + 5,
   })
 
-  const gapControlHandle = editor.renderedDOM.getByTestId(FlexGapControlHandleTestId)
+  const gapControlHandle = editor.renderedDOM.getByTestId((testId) =>
+    testId.startsWith(FlexGapControlHandleTestId),
+  )
   const gapControlBounds = gapControlHandle.getBoundingClientRect()
 
   const center = {

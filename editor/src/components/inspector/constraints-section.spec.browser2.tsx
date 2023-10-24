@@ -23,14 +23,14 @@ const testChild = (params: {
     await renderResult.dispatch([selectComponents([params.elementPath], false)], true)
 
     const widthConstraintDropdown = renderResult.renderedDOM.getByTestId(
-      'frame-child-constraint-width-label',
+      'frame-child-constraint-width-popuplist',
     )
     expect(widthConstraintDropdown.textContent).toEqual(
       params.expectedWidthConstraintDropdownOption,
     )
 
     const heightConstraintDropdown = renderResult.renderedDOM.getByTestId(
-      'frame-child-constraint-height-label',
+      'frame-child-constraint-height-popuplist',
     )
     expect(heightConstraintDropdown.textContent).toEqual(
       params.expectedHeightConstraintDropdownOption,

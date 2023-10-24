@@ -82,6 +82,7 @@ import { showToastCommand } from '../../commands/show-toast-command'
 import {
   getConvertIndividualElementToAbsoluteCommands,
   isHugFromStyleAttribute,
+  isHuggingParent,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
@@ -755,8 +756,4 @@ function createSetParentsToFixedSizeCommands(
   }
 
   return []
-}
-
-function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
-  return isHugFromStyleAttribute(element.props, property, 'include-all-hugs')
 }

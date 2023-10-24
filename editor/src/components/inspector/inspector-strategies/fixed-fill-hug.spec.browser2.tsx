@@ -37,7 +37,10 @@ import {
 } from '../fill-hug-fixed-control'
 import type { Axis, FixedHugFillMode } from '../inspector-common'
 import { MaxContent } from '../inspector-common'
-import { TextAutoSizingTestId } from '../sections/style-section/text-subsection/text-auto-sizing-control'
+import {
+  TextAutoSizingTestId,
+  detectTextSizingStateMultiSelect,
+} from '../sections/style-section/text-subsection/text-auto-sizing-control'
 import { BakedInStoryboardUID } from '../../../core/model/scene-utils'
 
 describe('Fixed / Fill / Hug control', () => {
@@ -1801,11 +1804,168 @@ export var storyboard = (
 })
 
 describe('Fixed/hug on text elements', () => {
-  it('Sets text element fixed to hug inside the font section', async () => {
+  it('detects auto sizing settings', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`<div
+    style={{
+      height: '100%',
+      width: '100%',
+      contain: 'layout',
+    }}
+    data-uid='root'
+  >
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 75,
+        top: 122,
+        width: 255,
+        height: 72,
+      }}
+      data-uid='hug-x-hug'
+    >
+      <span
+        style={{
+          position: 'absolute',
+          wordBreak: 'break-word',
+          left: 53,
+          top: 26,
+          width: 'max-content',
+          height: 'max-content',
+        }}
+        data-uid='hug-x-hug-text'
+      >
+        Hug x Hug
+      </span>
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 75,
+        top: 214,
+        width: 255,
+        height: 72,
+      }}
+      data-uid='auto-width'
+    >
+      <span
+        style={{
+          position: 'absolute',
+          wordBreak: 'break-word',
+          left: 53,
+          top: 27,
+          width: 'max-content',
+          height: 'max-content',
+        }}
+        data-uid='auto-width-text'
+      >
+        Auto Width
+      </span>
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 75,
+        top: 316,
+        width: 255,
+        height: 72,
+      }}
+      data-uid='auto-height'
+    >
+      <span
+        style={{
+          position: 'absolute',
+          wordBreak: 'break-word',
+          left: 53,
+          top: 27,
+          width: 85.8828125,
+          height: 'max-content',
+        }}
+        data-uid='auto-height-text'
+      >
+        Auto Height
+      </span>
+    </div>
+    <div
+      style={{
+        backgroundColor: '#aaaaaa33',
+        position: 'absolute',
+        left: 75,
+        top: 411,
+        width: 255,
+        height: 72,
+      }}
+      data-uid='fixed-size'
+    >
+      <span
+        style={{
+          position: 'absolute',
+          wordBreak: 'break-word',
+          left: 53,
+          top: 27,
+          height: 19,
+          width: 86,
+        }}
+        data-uid='fixed-size-text'
+      >
+        Fixed Width
+      </span>
+    </div>
+  </div>`),
+      'await-first-dom-report',
+    )
+
+    const settings = [
+      ['hug-x-hug', 'auto-width'],
+      ['auto-width', 'auto-width'],
+      ['auto-height', 'auto-height'],
+      ['fixed-size', 'fixed-size'],
+    ] as const
+
+    for (const [uid, expectedSetting] of settings) {
+      await selectComponentsForTest(renderResult, [
+        EP.appendNewElementPath(TestScenePath, ['root', uid, `${uid}-text`]),
+      ])
+      const { jsxMetadata, elementPathTree, selectedViews } = renderResult.getEditorState().editor
+      const setting = detectTextSizingStateMultiSelect(jsxMetadata, elementPathTree, selectedViews)
+      expect(setting).toEqual(expectedSetting)
+    }
+    {
+      await selectComponentsForTest(renderResult, [])
+      const { jsxMetadata, elementPathTree, selectedViews } = renderResult.getEditorState().editor
+      const disabledSetting = detectTextSizingStateMultiSelect(
+        jsxMetadata,
+        elementPathTree,
+        selectedViews,
+      )
+      expect(disabledSetting).toEqual('disabled')
+    }
+
+    {
+      await selectComponentsForTest(
+        renderResult,
+        settings.map(([uid]) =>
+          EP.appendNewElementPath(TestScenePath, ['root', uid, `${uid}-text`]),
+        ),
+      )
+
+      const { jsxMetadata, elementPathTree, selectedViews } = renderResult.getEditorState().editor
+      const mixedSetting = detectTextSizingStateMultiSelect(
+        jsxMetadata,
+        elementPathTree,
+        selectedViews,
+      )
+      expect(mixedSetting).toEqual('mixed')
+    }
+  })
+  it('Sets text element from fixed to auto-width inside the font section', async () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
       <div
-        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25}}
+        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25, fontSize: 15 }}
         data-uid='bbb'
         data-testid='bbb'
       >hello text element!</div>
@@ -1827,7 +1987,7 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content'}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 25, fontSize: 15 }}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>
@@ -1835,11 +1995,11 @@ describe('Fixed/hug on text elements', () => {
       `),
     )
   })
-  it('Sets text element hug to fixed inside the font section', async () => {
+  it('Sets text element from fixed to auto-height inside the font section', async () => {
     const testCode = `
     <div style={{ ...props.style }} data-uid='aaa'>
       <div
-        style={{ position: 'absolute', left: 40, top: 20, width: 'max-content', height: 'max-content', lineHeight: '18px' }}
+        style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 25, fontSize: 15 }}
         data-uid='bbb'
         data-testid='bbb'
       >hello text element!</div>
@@ -1861,7 +2021,41 @@ describe('Fixed/hug on text elements', () => {
       makeTestProjectCodeWithSnippet(`
       <div style={{ ...props.style }} data-uid='aaa'>
         <div
-          style={{ position: 'absolute', left: 40, top: 20, width: 120, height: 18, lineHeight: '18px'}}
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content', fontSize: 15 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+      `),
+    )
+  })
+  it('Sets text element from auto-height to fixed inside the font section', async () => {
+    const testCode = `
+    <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 'max-content', fontSize: 15 }}
+          data-uid='bbb'
+          data-testid='bbb'
+        >hello text element!</div>
+      </div>
+`
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(testCode),
+      'await-first-dom-report',
+    )
+    const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
+    await editor.dispatch(selectComponents([targetPath], false), true)
+
+    const textFixedSizeIcon = editor.renderedDOM.getByTestId(`${TextAutoSizingTestId}-2`)
+    await expectSingleUndo2Saves(editor, async () => {
+      await mouseClickAtPoint(textFixedSizeIcon, { x: 2, y: 2 })
+    })
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+      <div style={{ ...props.style }} data-uid='aaa'>
+        <div
+          style={{ position: 'absolute', left: 40, top: 20, width: 100, height: 34, fontSize: 15 }}
           data-uid='bbb'
           data-testid='bbb'
         >hello text element!</div>

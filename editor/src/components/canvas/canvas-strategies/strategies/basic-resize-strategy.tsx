@@ -21,7 +21,6 @@ import {
 } from '../../canvas-utils'
 import type { LengthPropertyToAdjust } from '../../commands/adjust-css-length-command'
 import {
-  AdjustCssLengthProperties,
   adjustCssLengthProperties,
   lengthPropertyToAdjust,
 } from '../../commands/adjust-css-length-command'
@@ -52,12 +51,9 @@ import {
   resizeBoundingBox,
 } from './resize-helpers'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
-import {
-  trueUpChildrenOfElementChanged,
-  trueUpElementChanged,
-} from '../../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
 export const BASIC_RESIZE_STRATEGY_ID = 'BASIC_RESIZE'
 
@@ -103,7 +99,7 @@ export function basicResizeStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: { targets: selectedElements },
+        props: { targets: selectedElements, pathsWereReplaced: false },
         key: 'absolute-resize-control',
         show: 'always-visible',
       }),
@@ -228,7 +224,9 @@ export function basicResizeStrategy(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) => queueGroupTrueUp([trueUpElementChanged(c.elementPath)])),
+            ...groupChildren.map((c) =>
+              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
+            ),
           ])
         } else {
           return strategyApplicationResult([

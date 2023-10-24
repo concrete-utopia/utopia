@@ -43,8 +43,6 @@ import type { DuplicateElement } from './duplicate-element-command'
 import { runDuplicateElement } from './duplicate-element-command'
 import type { UpdateFunctionCommand } from './update-function-command'
 import { runUpdateFunctionCommand } from './update-function-command'
-import type { PushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
-import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
 import type { DeleteProperties } from './delete-properties-command'
 import { runDeleteProperties } from './delete-properties-command'
 import type { AddImportsToFile } from './add-imports-to-file-command'
@@ -81,8 +79,12 @@ import { runWrapInContainerCommand } from './wrap-in-container-command'
 import { patchProjectContentsWithParsedFile } from './patch-utils'
 import type { AddElements } from './add-elements-command'
 import { runAddElements } from './add-elements-command'
-import type { QueueGroupTrueUp } from './queue-group-true-up-command'
-import { runQueueGroupTrueUp } from './queue-group-true-up-command'
+import type { QueueTrueUpElement } from './queue-true-up-command'
+import { runQueueTrueUpElement } from './queue-true-up-command'
+import type { PushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
+import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
+import type { PushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
+import { runPushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
@@ -117,6 +119,7 @@ export type CanvasCommand =
   | SetElementsToRerenderCommand
   | AppendElementsToRerenderCommand
   | PushIntendedBoundsAndUpdateGroups
+  | PushIntendedBoundsAndUpdateHuggingElements
   | DeleteProperties
   | SetProperty
   | UpdatePropIfExists
@@ -133,7 +136,7 @@ export type CanvasCommand =
   | RearrangeChildren
   | DeleteElement
   | WrapInContainerCommand
-  | QueueGroupTrueUp
+  | QueueTrueUpElement
 
 export function runCanvasCommand(
   editorState: EditorState,
@@ -179,6 +182,9 @@ export function runCanvasCommand(
       return runAppendElementsToRerender(editorState, command)
     case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS':
       return runPushIntendedBoundsAndUpdateGroups(editorState, command, commandLifecycle)
+    case 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS':
+      return runPushIntendedBoundsAndUpdateHuggingElements(editorState, command)
+
     case 'DELETE_PROPERTIES':
       return runDeleteProperties(editorState, command)
     case 'SET_PROPERTY':
@@ -211,8 +217,8 @@ export function runCanvasCommand(
       return runDeleteElement(editorState, command)
     case 'WRAP_IN_CONTAINER':
       return runWrapInContainerCommand(editorState, command)
-    case 'QUEUE_GROUP_TRUE_UP':
-      return runQueueGroupTrueUp(editorState, command)
+    case 'QUEUE_TRUE_UP_ELEMENT':
+      return runQueueTrueUpElement(editorState, command)
     default:
       const _exhaustiveCheck: never = command
       throw new Error(`Unhandled canvas command ${JSON.stringify(command)}`)
