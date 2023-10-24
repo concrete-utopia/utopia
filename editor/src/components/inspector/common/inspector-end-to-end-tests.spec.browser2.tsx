@@ -3207,13 +3207,7 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('groups', () => {
-    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
-    function expectGroupToast(renderResult: EditorRenderResult, state: InvalidGroupState) {
-      const editorState = renderResult.getEditorState().editor
-      expect(editorState.toasts.length).toBe(1)
-      expect(editorState.toasts[0].level).toBe('ERROR')
-      expect(editorState.toasts[0].message).toBe(invalidGroupStateToString(state))
-    }
+    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
     it('ignores removing pins from a group child', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippetStyledComponents(`
@@ -3249,17 +3243,17 @@ describe('inspector tests with real metadata', () => {
       })
 
       const leftControl = (await renderResult.renderedDOM.findByTestId(
-        'position-left-number-input',
+        'frame-left-number-input',
       )) as HTMLInputElement
 
       expect(leftControl.value).toBe('30')
 
       const elementFrame = getFrame(targetPath, renderResult)
 
-      await setControlValue('position-left-number-input', '', renderResult.renderedDOM)
+      await setControlValue('frame-left-number-input', '', renderResult.renderedDOM)
 
+      // Nothing changed
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
-      expectGroupToast(renderResult, 'child-has-missing-pins')
     })
     it('ignores setting percentage pins on a group', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -3301,17 +3295,17 @@ describe('inspector tests with real metadata', () => {
       })
 
       const leftControl = (await renderResult.renderedDOM.findByTestId(
-        'position-left-number-input',
+        'frame-left-number-input',
       )) as HTMLInputElement
 
       expect(leftControl.value).toBe('10')
 
       const elementFrame = getFrame(targetPath, renderResult)
 
-      await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
+      await setControlValue('frame-left-number-input', '25%', renderResult.renderedDOM)
 
+      // Nothing changed
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
-      expectGroupToast(renderResult, 'group-has-percentage-pins')
     })
     it('ignores settings percentage pins on a group child if the parent has no explicit width and height', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -3354,17 +3348,17 @@ describe('inspector tests with real metadata', () => {
       })
 
       const leftControl = (await renderResult.renderedDOM.findByTestId(
-        'position-left-number-input',
+        'frame-left-number-input',
       )) as HTMLInputElement
 
       expect(leftControl.value).toBe('30')
 
       const elementFrame = getFrame(targetPath, renderResult)
 
-      await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
+      await setControlValue('frame-left-number-input', '25%', renderResult.renderedDOM)
 
+      // Nothing changed
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
-      expectGroupToast(renderResult, 'child-has-percentage-pins')
     })
     it('ignores settings percentage pins on a group child if the parent has explicit width and height', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -3408,17 +3402,17 @@ describe('inspector tests with real metadata', () => {
       })
 
       const leftControl = (await renderResult.renderedDOM.findByTestId(
-        'position-left-number-input',
+        'frame-left-number-input',
       )) as HTMLInputElement
 
       expect(leftControl.value).toBe('30')
 
       const elementFrame = getFrame(targetPath, renderResult)
 
-      await setControlValue('position-left-number-input', '25%', renderResult.renderedDOM)
+      await setControlValue('frame-left-number-input', '25%', renderResult.renderedDOM)
 
+      // Nothing changed
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
-      expectGroupToast(renderResult, 'child-has-percentage-pins')
     })
 
     describe('group children', () => {
