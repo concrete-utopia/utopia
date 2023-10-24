@@ -2809,6 +2809,269 @@ export var storyboard = (props) => {
       })
     })
 
+    describe('paste next to multiselection', () => {
+      it('paste next to multiselection of flex elements', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 38,
+                top: 12,
+                width: 802,
+                height: 337,
+                display: 'flex',
+                flexDirection: 'row',
+                padding: '74px 42px 74px 42px',
+                gap: 12,
+              }}
+              data-uid='container'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0075ff',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-uid='div'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0075ff',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='last'
+              />
+            </div>
+          </div>`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [
+          makeTargetPath('root/container/div'),
+          makeTargetPath('root/container/last'),
+        ])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 38,
+            top: 12,
+            width: 802,
+            height: 337,
+            display: 'flex',
+            flexDirection: 'row',
+            padding: '74px 42px 74px 42px',
+            gap: 12,
+          }}
+          data-uid='container'
+        >
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 100,
+              height: 100,
+              contain: 'layout',
+            }}
+            data-uid='div'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='last'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              contain: 'layout',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='aag'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='las'
+          />
+        </div>
+      </div>`),
+        )
+      })
+
+      it('paste next to multiselection of absolute elements', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 38,
+              top: 12,
+              width: 802,
+              height: 337,
+              padding: '74px 42px 74px 42px',
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                backgroundColor: '#0075ff',
+                width: 100,
+                height: 100,
+                contain: 'layout',
+                position: 'absolute',
+                left: 42,
+                top: 74,
+              }}
+              data-uid='div'
+            />
+            <div
+              style={{
+                backgroundColor: '#0075ff',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 154,
+                top: 74,
+              }}
+              data-uid='last'
+            />
+          </div>
+        </div>`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [
+          makeTargetPath('root/container/div'),
+          makeTargetPath('root/container/last'),
+        ])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 38,
+            top: 12,
+            width: 802,
+            height: 337,
+            padding: '74px 42px 74px 42px',
+          }}
+          data-uid='container'
+        >
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 100,
+              height: 100,
+              contain: 'layout',
+              position: 'absolute',
+              left: 42,
+              top: 74,
+            }}
+            data-uid='div'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 154,
+              top: 74,
+            }}
+            data-uid='last'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 100,
+              height: 100,
+              contain: 'layout',
+              position: 'absolute',
+              left: 214,
+              top: 74,
+            }}
+            data-uid='aaj'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 326,
+              top: 74,
+            }}
+            data-uid='las'
+          />
+        </div>
+      </div>
+`),
+        )
+      })
+    })
+
     describe('paste into a conditional', () => {
       describe('root', () => {
         it('pastes the element below the conditional', async () => {

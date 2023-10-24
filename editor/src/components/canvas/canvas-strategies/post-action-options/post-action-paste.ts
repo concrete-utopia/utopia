@@ -104,6 +104,52 @@ export interface ElementOrPathToInsert {
   newUID: string
 }
 
+function findIntendedCoordinates(
+  target: ReparentTargetForPaste,
+  editorStateContext: EditorStateContext,
+  pasteContext: PasteContext,
+  elementPaste: ElementPaste,
+): CanvasPoint {
+  if (pasteContext.insertionPosition == null) {
+    return absolutePositionForPaste(
+      target,
+      elementPaste.originalElementPath,
+      pasteContext.elementPasteWithMetadata.elements.map((element) => element.originalElementPath),
+      {
+        originalTargetMetadata: pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+        originalPathTrees: pasteContext.targetOriginalPathTrees,
+        currentMetadata: editorStateContext.startingMetadata,
+        currentPathTrees: editorStateContext.startingElementPathTrees,
+      },
+      editorStateContext.startingAllElementProps,
+      editorStateContext.startingElementPathTrees,
+      pasteContext.canvasViewportCenter,
+    )
+  }
+
+  const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
+    target.parentPath.intendedParentPath,
+    editorStateContext.startingMetadata,
+    canvasRectangle({
+      x: pasteContext.insertionPosition.x,
+      y: pasteContext.insertionPosition.y,
+      width: 0,
+      height: 0,
+    }),
+  )
+
+  return offsetPoint(
+    pointRelativeToNewParent != null
+      ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
+      : pasteContext.insertionPosition,
+    offsetPositionInPasteBoundingBox(
+      elementPaste.originalElementPath,
+      pasteContext.elementPasteWithMetadata.elements.map((element) => element.originalElementPath),
+      pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
+    ),
+  )
+}
+
 function pasteChoiceCommon(
   target: ReparentTargetForPaste,
   editorStateContext: EditorStateContext,
@@ -131,51 +177,12 @@ function pasteChoiceCommon(
       const elementWithUID = fixUtopiaElement(elementPaste.element, new Set(existingIDs))
       fixedUIDMappingNewUIDS.push(...elementWithUID.mappings.map((value) => value.newUID))
 
-      const intendedCoordinates = (() => {
-        if (pasteContext.insertionPosition != null) {
-          const pointRelativeToNewParent = MetadataUtils.getFrameRelativeToTargetContainingBlock(
-            target.parentPath.intendedParentPath,
-            editorStateContext.startingMetadata,
-            canvasRectangle({
-              x: pasteContext.insertionPosition.x,
-              y: pasteContext.insertionPosition.y,
-              width: 0,
-              height: 0,
-            }),
-          )
-
-          return offsetPoint(
-            pointRelativeToNewParent != null
-              ? canvasPoint({ x: pointRelativeToNewParent.x, y: pointRelativeToNewParent.y })
-              : pasteContext.insertionPosition,
-            offsetPositionInPasteBoundingBox(
-              elementPaste.originalElementPath,
-              pasteContext.elementPasteWithMetadata.elements.map(
-                (element) => element.originalElementPath,
-              ),
-              pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-            ),
-          )
-        } else {
-          return absolutePositionForPaste(
-            target,
-            elementPaste.originalElementPath,
-            pasteContext.elementPasteWithMetadata.elements.map(
-              (element) => element.originalElementPath,
-            ),
-            {
-              originalTargetMetadata:
-                pasteContext.elementPasteWithMetadata.targetOriginalContextMetadata,
-              originalPathTrees: pasteContext.targetOriginalPathTrees,
-              currentMetadata: editorStateContext.startingMetadata,
-              currentPathTrees: editorStateContext.startingElementPathTrees,
-            },
-            editorStateContext.startingAllElementProps,
-            editorStateContext.startingElementPathTrees,
-            pasteContext.canvasViewportCenter,
-          )
-        }
-      })()
+      const intendedCoordinates = findIntendedCoordinates(
+        target,
+        editorStateContext,
+        pasteContext,
+        elementPaste,
+      )
 
       const pathAfterReparent = elementPathFromInsertionPath(
         target.parentPath,
@@ -699,7 +706,7 @@ function pasteToReplaceCommands(
     return [
       updateFunctionCommand('always', (updatedEditor, commandLifecycle) => {
         const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-        const position = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
+        const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
         const strategy = MetadataUtils.isPositionAbsolute(element)
           ? 'REPARENT_AS_ABSOLUTE'
           : 'REPARENT_AS_STATIC'
@@ -726,6 +733,7 @@ function pasteToReplaceCommands(
           {
             type: 'sibling',
             siblingPath: target,
+            siblingBounds: frame,
             parentPath: parentInsertionPath,
           },
           {
@@ -747,7 +755,7 @@ function pasteToReplaceCommands(
             targetOriginalPathTrees: originalPathTree,
             canvasViewportCenter: zeroCanvasPoint,
             reparentStrategy: strategy,
-            insertionPosition: position,
+            insertionPosition: frame,
             keepSelectedViews: true,
             originalAllElementProps: editor.allElementProps,
           },

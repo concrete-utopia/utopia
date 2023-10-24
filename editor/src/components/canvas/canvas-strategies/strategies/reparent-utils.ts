@@ -40,9 +40,17 @@ import type { Either } from '../../../../core/shared/either'
 import { left, right } from '../../../../core/shared/either'
 import { maybeBranchConditionalCase } from '../../../../core/model/conditionals'
 import type { NonEmptyArray } from '../../../../core/shared/array-utils'
-import { mapDropNulls, isNonEmptyArray } from '../../../../core/shared/array-utils'
-import type { MaybeInfinityCanvasRectangle } from '../../../../core/shared/math-utils'
-import { isInfinityRectangle } from '../../../../core/shared/math-utils'
+import {
+  mapDropNulls,
+  isNonEmptyArray,
+  lastOfNonEmptyArray,
+} from '../../../../core/shared/array-utils'
+import type { CanvasRectangle } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  isInfinityRectangle,
+  nullIfInfinity,
+} from '../../../../core/shared/math-utils'
 import { isElementRenderedBySameComponent } from './reparent-helpers/reparent-helpers'
 import type { ParsedCopyData } from '../../../../utils/clipboard'
 
@@ -287,14 +295,7 @@ export function placeholderCloneCommands(
   return { commands: commands, duplicatedElementNewUids: duplicatedElementNewUids }
 }
 
-function rectangleSizesEqual(
-  a: MaybeInfinityCanvasRectangle | null,
-  b: MaybeInfinityCanvasRectangle | null,
-): boolean {
-  if (a == null || b == null || isInfinityRectangle(a) || isInfinityRectangle(b)) {
-    return false
-  }
-
+function rectangleSizesEqual(a: CanvasRectangle, b: CanvasRectangle): boolean {
   return a.height === b.height && a.width === b.width
 }
 
@@ -302,6 +303,7 @@ export type ReparentTargetForPaste =
   | {
       type: 'sibling'
       siblingPath: ElementPath
+      siblingBounds: CanvasRectangle
       parentPath: InsertionPath
     }
   | { type: 'parent'; parentPath: InsertionPath }
@@ -368,55 +370,73 @@ function pasteNextToSameSizedElement(
   selectedViews: NonEmptyArray<ElementPath>,
   metadata: ElementInstanceMetadataMap,
 ): ReparentTargetForPaste | null {
-  const targetPath = selectedViews[0]
-  const elementPasteEntry = copyData.elementPaste.at(0)
-  if (elementPasteEntry == null) {
+  const selectedViewsAABB = boundingRectangleArray(
+    selectedViews.map((path) =>
+      nullIfInfinity(MetadataUtils.getFrameInCanvasCoords(path, metadata)),
+    ),
+  )
+  const pastedElementsAABB = boundingRectangleArray(
+    copyData.elementPaste.map((element) =>
+      nullIfInfinity(
+        MetadataUtils.getFrameInCanvasCoords(
+          element.originalElementPath,
+          copyData.originalContextMetadata,
+        ),
+      ),
+    ),
+  )
+
+  if (
+    selectedViewsAABB == null ||
+    pastedElementsAABB == null ||
+    !rectangleSizesEqual(selectedViewsAABB, pastedElementsAABB)
+  ) {
     return null
   }
 
-  const selectedViewAABB = MetadataUtils.getFrameInCanvasCoords(targetPath, metadata)
-  // if the pasted item's BB is the same size as the selected item's BB
-  const pastedElementAABB = MetadataUtils.getFrameInCanvasCoords(
-    elementPasteEntry.originalElementPath,
-    copyData.originalContextMetadata,
-  )
-  // if the selected item's parent is autolayouted
-  const parentInstance = MetadataUtils.findElementByElementPath(metadata, EP.parentPath(targetPath))
-
-  const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
-
-  const pastingAbsoluteToAbsolute =
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(metadata, targetPath),
-    ) &&
-    MetadataUtils.isPositionAbsolute(
-      MetadataUtils.findElementByElementPath(
-        copyData.originalContextMetadata,
-        elementPasteEntry.originalElementPath,
-      ),
-    )
+  const parentPath = EP.getCommonParentOfNonemptyPathArray(selectedViews)
 
   const pastedElementNames = mapDropNulls(
     (element) => MetadataUtils.getJSXElementName(element.element),
     copyData.elementPaste,
   )
 
-  const parentPath = EP.parentPath(targetPath)
   const targetElementSupportsInsertedElement = MetadataUtils.canInsertElementsToTargetText(
     parentPath,
     metadata,
     pastedElementNames,
   )
 
+  if (!targetElementSupportsInsertedElement) {
+    return null
+  }
+
+  const parentInstance = MetadataUtils.findElementByElementPath(metadata, parentPath)
+
+  const isSelectedViewParentAutolayouted = MetadataUtils.isFlexLayoutedContainer(parentInstance)
+  const selectedViewsAbsolute = selectedViews.every((path) =>
+    MetadataUtils.isPositionAbsolute(MetadataUtils.findElementByElementPath(metadata, path)),
+  )
+  const pastedElementsAbsolute = copyData.elementPaste.every((element) =>
+    MetadataUtils.isPositionAbsolute(
+      MetadataUtils.findElementByElementPath(
+        copyData.originalContextMetadata,
+        element.originalElementPath,
+      ),
+    ),
+  )
+
+  const pastingAbsoluteToAbsolute = selectedViewsAbsolute && pastedElementsAbsolute
+
   if (
-    rectangleSizesEqual(selectedViewAABB, pastedElementAABB) &&
     (isSelectedViewParentAutolayouted || pastingAbsoluteToAbsolute) &&
     targetElementSupportsInsertedElement
   ) {
     return {
       type: 'sibling',
-      siblingPath: targetPath,
-      parentPath: childInsertionPath(EP.parentPath(targetPath)),
+      siblingPath: lastOfNonEmptyArray(selectedViews),
+      siblingBounds: selectedViewsAABB,
+      parentPath: childInsertionPath(parentPath),
     }
   }
   return null
