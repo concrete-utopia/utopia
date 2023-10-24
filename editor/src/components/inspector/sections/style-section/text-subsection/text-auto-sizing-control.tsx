@@ -38,6 +38,10 @@ function detectTextSizingState(
   const horizontal = detectFillHugFixedState('horizontal', metadata, elementPath)
   const vertical = detectFillHugFixedState('vertical', metadata, elementPath)
 
+  if (horizontal.fixedHugFill?.type === 'hug' && vertical.fixedHugFill?.type === 'hug') {
+    return 'auto-width'
+  }
+
   if (horizontal.fixedHugFill?.type === 'hug' && isConsideredFixed(vertical.fixedHugFill?.type)) {
     return 'auto-width'
   }
