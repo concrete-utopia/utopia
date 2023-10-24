@@ -646,6 +646,39 @@ describe('Absolute Resize Strategy', () => {
     const absoluteResizeControl = editor.renderedDOM.queryAllByTestId(SizeLabelTestId)
     expect(absoluteResizeControl).toEqual([])
   })
+  it('sizeless element shows (Children) in size label', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(`
+        <div style={{ width: '100%', height: '100%' }} data-uid='root'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+            }}
+            data-uid='sizeless'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 179,
+                top: 114,
+                width: 188,
+                height: 161,
+              }}
+              data-uid='child'
+            />
+          </div>
+        </div>
+      `),
+      'await-first-dom-report',
+    )
+    await selectComponentsForTest(editor, [
+      EP.appendNewElementPath(TestScenePath, ['root', 'sizeless']),
+    ])
+    const sizeLabel = await editor.renderedDOM.findByTestId(SizeLabelTestId)
+    expect(sizeLabel.textContent).toEqual('(Children) 188 x 161')
+  })
   it('resizes component instances that honour the size properties', async () => {
     const renderResult = await renderTestEditorWithCode(
       projectDoesHonourSizeProperties(300, 300),
