@@ -3,15 +3,13 @@ import {
   HorizontalLayoutPinnedProps,
   VerticalLayoutPinnedProps,
   isHorizontalLayoutPinnedProp,
-  isLayoutPinnedProp,
   isVerticalLayoutPinnedProp,
   type LayoutPinnedProp,
 } from '../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import * as EP from '../../core/shared/element-path'
 import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
-import { nullIfInfinity } from '../../core/shared/math-utils'
+import { localRectangle, nullIfInfinity } from '../../core/shared/math-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import { assertNever } from '../../core/shared/utils'
@@ -33,8 +31,8 @@ import {
 import {
   getConstraintsIncludingImplicitForElement,
   getFramePointsFromMetadataTypeFixed,
-  isHugFromStyleAttribute,
 } from './inspector-common'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 type HorizontalPinRequests =
   | 'left-and-width'
@@ -555,11 +553,12 @@ export function getFixedPointsForPinning(pins: DetectedPins): FramePinsInfo {
 
 export function getFrameChangeActionsForFrameChild(
   metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
   propertyTarget: ReadonlyArray<string>,
   targets: Array<ElementPath>,
   requestedPins: RequestedPins,
 ): Array<SetProp | UnsetProperty> {
-  const pinChange = getPinChanges(metadata, propertyTarget, targets)
+  const pinChange = getPinChanges(metadata, pathTrees, propertyTarget, targets)
   switch (requestedPins) {
     case 'left-and-width':
     case 'left':
@@ -593,6 +592,7 @@ export function getFrameChangeActionsForFrameChild(
 const getPinChanges =
   (
     metadata: ElementInstanceMetadataMap,
+    pathTrees: ElementPathTrees,
     propertyTarget: ReadonlyArray<string>,
     targets: Array<ElementPath>,
   ) =>
@@ -609,9 +609,26 @@ const getPinChanges =
     )
 
     const setActions: Array<SetProp> = targets.flatMap((target) => {
-      const localFrame = nullIfInfinity(
-        MetadataUtils.findElementByElementPath(metadata, target)?.localFrame,
-      )
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
+      let localFrame = nullIfInfinity(elementMetadata?.localFrame)
+      if (
+        MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, target) &&
+        localFrame != null
+      ) {
+        const nonRoundedWidth = Math.ceil(
+          nullIfInfinity(
+            MetadataUtils.findElementByElementPath(metadata, target)?.nonRoundedGlobalFrame,
+          )?.width ?? localFrame.width,
+        )
+
+        localFrame = localRectangle({
+          x: localFrame.x,
+          y: localFrame.y,
+          height: localFrame.height,
+          width: nonRoundedWidth,
+        })
+      }
+
       const coordinateSystemBounds = MetadataUtils.findElementByElementPath(metadata, target)
         ?.specialSizeMeasurements.coordinateSystemBounds
 
@@ -638,11 +655,12 @@ const getPinChanges =
 export function getConstraintAndFrameChangeActionsForGroupChild(
   metadata: ElementInstanceMetadataMap,
   allElementProps: AllElementProps,
+  pathTrees: ElementPathTrees,
   propertyTarget: ReadonlyArray<string>,
   targets: Array<ElementPath>,
   requestedPins: RequestedPins,
 ): Array<SetProp | UnsetProperty> {
-  const pinChange = getPinChanges(metadata, propertyTarget, targets)
+  const pinChange = getPinChanges(metadata, pathTrees, propertyTarget, targets)
   const setConstraintsForDimension = (
     constraintsToSet: Array<LayoutPinnedProp>,
     dimension: 'horizontal' | 'vertical',
