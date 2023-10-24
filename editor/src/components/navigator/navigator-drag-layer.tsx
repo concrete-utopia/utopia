@@ -33,6 +33,8 @@ export const NavigatorDragLayer = React.memo(() => {
     difference: (monitor.getDifferenceFromInitialOffset() as WindowPoint) ?? zeroPoint,
   }))
 
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
+
   const navigatorEntry = React.useMemo(
     () => regularNavigatorEntry(item?.elementPath ?? emptyElementPath),
     [item?.elementPath],
@@ -48,8 +50,8 @@ export const NavigatorDragLayer = React.memo(() => {
   )
 
   const offset = windowPoint({
-    x: initialOffset.x + difference.x,
-    y: initialOffset.y + difference.y,
+    x: initialOffset.x + difference.x - (containerRef.current?.getBoundingClientRect()?.x ?? 0),
+    y: initialOffset.y + difference.y - (containerRef.current?.getBoundingClientRect()?.y ?? 0),
   })
 
   const icon = useLayoutOrElementIcon(navigatorEntry)?.iconProps ?? {}
@@ -58,6 +60,7 @@ export const NavigatorDragLayer = React.memo(() => {
 
   return hidden ? null : (
     <div
+      ref={containerRef}
       style={{
         position: 'fixed',
         pointerEvents: 'none',
