@@ -7,7 +7,7 @@ import type {
   ElementInstanceMetadataMap,
   JSXAttributes,
 } from '../../../core/shared/element-template'
-import type { CanvasRectangle } from '../../../core/shared/math-utils'
+import type { CanvasRectangle, Size } from '../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
   nullIfInfinity,
@@ -16,12 +16,12 @@ import {
 import { forceNotNull, isNotNull } from '../../../core/shared/optional-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
-import type {
-  AllElementProps,
-  EditorState,
-  EditorStatePatch,
+import {
+  trueUpGroupElementChanged,
+  type AllElementProps,
+  type EditorState,
+  type EditorStatePatch,
 } from '../../editor/store/editor-state'
-import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
   getConstraintsIncludingImplicitForElement,
@@ -93,41 +93,52 @@ export const runPushIntendedBoundsAndUpdateGroups = (
   )
 
   // TODO this is the worst editor patch in history, this should be much more fine grained, only patching the elements that changed
-  let editorStatePatches: Array<EditorStatePatch> = [
-    {
-      projectContents: { $set: editorAfterResizingAncestors.projectContents },
-      toasts: { $set: editorAfterResizingAncestors.toasts },
-    },
-  ]
-  if (commandLifecycle === 'mid-interaction') {
-    editorStatePatches.push({
-      canvas: {
-        controls: {
-          strategyIntendedBounds: {
-            $push: [...command.value, ...resizeAncestorsIntendedBounds],
-          },
-        },
-      },
-    })
-  }
-  if (commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp) {
-    editorStatePatches.push({
-      trueUpElementsAfterDomWalkerRuns: {
-        $set: resizedGroupChildren.map(trueUpGroupElementChanged),
-      },
-    })
+  const editorPatch = {
+    projectContents: { $set: editorAfterResizingAncestors.projectContents },
+    toasts: { $set: editorAfterResizingAncestors.toasts },
   }
 
+  const intendedBoundsPatch =
+    commandLifecycle === 'mid-interaction'
+      ? pushIntendedBoundsPatch([...command.value, ...resizeAncestorsIntendedBounds])
+      : []
+
+  const queueFollowUpGroupTrueUpPatch: Array<EditorStatePatch> =
+    commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp
+      ? [
+          {
+            trueUpElementsAfterDomWalkerRuns: {
+              $set: resizedGroupChildren.map((c) => trueUpGroupElementChanged(c)),
+            },
+          },
+        ]
+      : []
+
   return {
-    editorStatePatches: editorStatePatches,
-    commandDescription: `Set Intended Bounds for groups ${command.value
+    editorStatePatches: [editorPatch, ...intendedBoundsPatch, ...queueFollowUpGroupTrueUpPatch],
+    commandDescription: `Set Intended Bounds for ${command.value
       .map((c) => EP.toString(c.target))
       .join(', ')}`,
   }
 }
 
+function pushIntendedBoundsPatch(
+  intendedBounds: Array<CanvasFrameAndTarget>,
+): Array<EditorStatePatch> {
+  return [
+    {
+      canvas: {
+        controls: {
+          strategyIntendedBounds: { $push: intendedBounds },
+        },
+      },
+    },
+  ]
+}
+
 type LocalFrameAndTarget = {
   target: ElementPath
+  parentSize: Size
   allSixFramePoints: FrameWithAllPoints
 }
 
@@ -249,6 +260,7 @@ function getUpdateResizedGroupChildrenCommands(
 
           updatedLocalFrames[EP.toString(child)] = {
             allSixFramePoints: adjustedResizedLocalFramePoints,
+            parentSize: updatedGroupBounds,
             target: child,
           }
           targets.push({
@@ -278,6 +290,7 @@ function getUpdateResizedGroupChildrenCommands(
         elementToUpdate,
         MetadataUtils.getJSXElementFromMetadata(editor.jsxMetadata, elementToUpdate)?.props ?? null,
         frameAndTarget.allSixFramePoints,
+        frameAndTarget.parentSize,
         metadata.specialSizeMeasurements.parentFlexDirection,
       ),
     )
@@ -419,6 +432,7 @@ function setElementPins(
   target: ElementPath,
   targetProps: JSXAttributes | null,
   framePoints: FrameWithAllPoints,
+  parentSize: Size,
   parentFlexDirection: FlexDirection | null,
 ): Array<CanvasCommand> {
   // TODO retarget Fragments

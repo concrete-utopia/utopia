@@ -52,9 +52,9 @@ import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import { MetadataUtils } from '../../../../core/model/element-metadata-utils'
 import { addOrMergeIntendedBounds } from './shared-keyboard-strategy-helpers'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { withUnderlyingTarget } from '../../../../components/editor/store/editor-state'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 
 export function createResizeCommands(
   element: JSXElement,
