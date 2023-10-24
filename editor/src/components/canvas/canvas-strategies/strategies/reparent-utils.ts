@@ -40,7 +40,11 @@ import type { Either } from '../../../../core/shared/either'
 import { left, right } from '../../../../core/shared/either'
 import { maybeBranchConditionalCase } from '../../../../core/model/conditionals'
 import type { NonEmptyArray } from '../../../../core/shared/array-utils'
-import { mapDropNulls, isNonEmptyArray } from '../../../../core/shared/array-utils'
+import {
+  mapDropNulls,
+  isNonEmptyArray,
+  lastOfNonEmptyArray,
+} from '../../../../core/shared/array-utils'
 import type { CanvasRectangle } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
@@ -434,7 +438,7 @@ function pasteNextToSameSizedElement(
   ) {
     return {
       type: 'sibling',
-      siblingPath: selectedViews[0],
+      siblingPath: lastOfNonEmptyArray(selectedViews),
       siblingBounds: selectedViewsAABB,
       parentPath: childInsertionPath(parentPath),
     }
