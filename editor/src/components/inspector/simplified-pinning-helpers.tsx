@@ -33,7 +33,7 @@ import {
   getFramePointsFromMetadataTypeFixed,
 } from './inspector-common'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import { getNonRoundedLocalRectangle } from '../text-editor/text-handling'
+import { getLocalRectangleWithFixedWidthHandlingText } from '../text-editor/text-handling'
 
 type HorizontalPinRequests =
   | 'left-and-width'
@@ -610,7 +610,9 @@ const getPinChanges =
     )
 
     const setActions: Array<SetProp> = targets.flatMap((target) => {
-      const localFrame = nullIfInfinity(getNonRoundedLocalRectangle(metadata, pathTrees, target))
+      const localFrame = nullIfInfinity(
+        getLocalRectangleWithFixedWidthHandlingText(metadata, pathTrees, target),
+      )
 
       const coordinateSystemBounds = MetadataUtils.findElementByElementPath(metadata, target)
         ?.specialSizeMeasurements.coordinateSystemBounds

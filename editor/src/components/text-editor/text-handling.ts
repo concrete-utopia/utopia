@@ -275,7 +275,7 @@ export function fixedSizeDimensionHandlingText(
   return containsText ? roundUpToPreventTextWrapping(dimensionValue) : dimensionValue
 }
 
-export function getNonRoundedLocalRectangle(
+export function getLocalRectangleWithFixedWidthHandlingText(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   elementPath: ElementPath,
