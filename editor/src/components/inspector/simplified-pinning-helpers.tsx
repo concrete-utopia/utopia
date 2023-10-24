@@ -33,7 +33,7 @@ import {
   getFramePointsFromMetadataTypeFixed,
 } from './inspector-common'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
-import { roundUpToPreventTextWrapping } from '../text-editor/text-handling'
+import { getNonRoundedLocalRectangle } from '../text-editor/text-handling'
 
 type HorizontalPinRequests =
   | 'left-and-width'
@@ -610,25 +610,7 @@ const getPinChanges =
     )
 
     const setActions: Array<SetProp> = targets.flatMap((target) => {
-      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, target)
-      let localFrame = nullIfInfinity(elementMetadata?.localFrame)
-      if (
-        MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, target) &&
-        localFrame != null
-      ) {
-        const nonRoundedWidth = roundUpToPreventTextWrapping(
-          nullIfInfinity(
-            MetadataUtils.findElementByElementPath(metadata, target)?.nonRoundedGlobalFrame,
-          )?.width ?? localFrame.width,
-        )
-
-        localFrame = localRectangle({
-          x: localFrame.x,
-          y: localFrame.y,
-          height: localFrame.height,
-          width: nonRoundedWidth,
-        })
-      }
+      const localFrame = nullIfInfinity(getNonRoundedLocalRectangle(metadata, pathTrees, target))
 
       const coordinateSystemBounds = MetadataUtils.findElementByElementPath(metadata, target)
         ?.specialSizeMeasurements.coordinateSystemBounds

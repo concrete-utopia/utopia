@@ -1,5 +1,5 @@
 import type { ElementPath } from '../../core/shared/project-file-types'
-import type { DerivedState, EditorState } from '../editor/store/editor-state'
+import type { EditorState } from '../editor/store/editor-state'
 import {
   getElementFromProjectContents,
   modifyUnderlyingTargetElement,
@@ -25,7 +25,8 @@ import fastDeepEquals from 'fast-deep-equal'
 import { getUtopiaID } from '../../core/shared/uid-utils'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { nullIfInfinity, zeroCanvasRect } from '../../core/shared/math-utils'
+import type { MaybeInfinityLocalRectangle } from '../../core/shared/math-utils'
+import { isInfinityRectangle, localRectangle, nullIfInfinity } from '../../core/shared/math-utils'
 
 // Validate this by making the type `Set<keyof CSSProperties>`.
 export const stylePropertiesEligibleForMerge: Set<string> = new Set([
@@ -259,7 +260,7 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
 }
 
 // extracted into a separate function so that the intention is clear
-export function roundUpToPreventTextWrapping(value: number): number {
+function roundUpToPreventTextWrapping(value: number): number {
   return Math.ceil(value)
 }
 
@@ -272,4 +273,34 @@ export function fixedSizeDimensionHandlingText(
   // Fixed dimensions for a text containing element need to be rounded up to prevent wrapping.
   const containsText = MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, elementPath)
   return containsText ? roundUpToPreventTextWrapping(dimensionValue) : dimensionValue
+}
+
+export function getNonRoundedLocalRectangle(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+): MaybeInfinityLocalRectangle | null {
+  const elementMetadata = MetadataUtils.findElementByElementPath(metadata, elementPath)
+  let localFrame = elementMetadata?.localFrame ?? null
+
+  if (
+    localFrame == null ||
+    isInfinityRectangle(localFrame) ||
+    !MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, elementPath)
+  ) {
+    return localFrame
+  }
+
+  const nonRoundedWidth = roundUpToPreventTextWrapping(
+    nullIfInfinity(
+      MetadataUtils.findElementByElementPath(metadata, elementPath)?.nonRoundedGlobalFrame,
+    )?.width ?? localFrame.width,
+  )
+
+  return localRectangle({
+    x: localFrame.x,
+    y: localFrame.y,
+    height: localFrame.height,
+    width: nonRoundedWidth,
+  })
 }
