@@ -843,7 +843,6 @@ function getComputedStyle(
     }
   }
   const elementStyle = window.getComputedStyle(element)
-  const hello = element.computedStyleMap().get('width')
   const attributesSetByStylesheet = getCachedAttributesComingFromStyleSheets(
     invalidatedPathsForStylesheetCache,
     paths[0], // TODO is this sufficient to use the first path element for caching?
