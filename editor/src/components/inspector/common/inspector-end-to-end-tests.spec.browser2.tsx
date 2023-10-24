@@ -3250,7 +3250,7 @@ describe('inspector tests with real metadata', () => {
 
       const elementFrame = getFrame(targetPath, renderResult)
 
-      await setControlValue('position-left-number-input', '', renderResult.renderedDOM)
+      await setControlValue('frame-left-number-input', '', renderResult.renderedDOM)
 
       // Nothing changed
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
