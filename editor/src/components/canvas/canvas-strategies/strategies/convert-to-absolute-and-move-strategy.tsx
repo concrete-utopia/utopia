@@ -80,6 +80,7 @@ import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
 import {
   getConvertIndividualElementToAbsoluteCommands,
+  isHuggingParent,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
 import { getDescriptiveStrategyLabelWithRetargetedPaths } from '../canvas-strategies'
@@ -753,8 +754,4 @@ function createSetParentsToFixedSizeCommands(
   }
 
   return []
-}
-
-function isHuggingParent(element: ElementInstanceMetadata, property: 'width' | 'height') {
-  return element.specialSizeMeasurements.computedHugProperty[property] != null
 }

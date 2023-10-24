@@ -79,8 +79,8 @@ import type { AddToast, ApplyCommandsAction } from '../../../editor/action-types
 import { applyCommandsAction, showToast } from '../../../editor/actions/action-creators'
 import type { AllElementProps, NavigatorEntry } from '../../../editor/store/editor-state'
 import {
-  trueUpChildrenOfElementChanged,
-  trueUpElementChanged,
+  trueUpChildrenOfGroupChanged,
+  trueUpGroupElementChanged,
 } from '../../../editor/store/editor-state'
 import {
   childInsertionPath,
@@ -102,7 +102,7 @@ import { EdgePositionBottomRight } from '../../canvas-types'
 import { addElement } from '../../commands/add-element-command'
 import type { CanvasCommand } from '../../commands/commands'
 import { deleteElement } from '../../commands/delete-element-command'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
 import {
   setCssLengthProperty,
@@ -733,7 +733,7 @@ export function convertFrameToGroup(
       getConvertIndividualElementToAbsoluteCommandsFromMetadata(c, metadata, pathTrees),
     ),
     ...prunePropsCommands(flexContainerProps, elementPath), // flex-related stuff is pruned
-    queueGroupTrueUp([trueUpChildrenOfElementChanged(elementPath)]),
+    queueTrueUpElement([trueUpChildrenOfGroupChanged(elementPath)]),
     showToastCommand(
       'Converted to group and removed styling',
       'INFO',
@@ -1092,7 +1092,7 @@ export function createWrapInGroupActions(
     insertGroupCommand,
     ...pinChangeCommands,
     selectNewGroup,
-    queueGroupTrueUp([trueUpElementChanged(groupPath)]),
+    queueTrueUpElement([trueUpGroupElementChanged(groupPath)]),
   ])
 }
 

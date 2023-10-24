@@ -442,7 +442,7 @@ describe('actions', () => {
               <div data-uid='child2' style={{ position: 'absolute', width: 10, height: 10, top: 0, left: 40, background: 'blue' }} />
               <div data-uid='child4' style={{ position: 'absolute', width: 10, height: 10, top: 40, left: 40, background: 'blue' }} />
             </Group>
-            <div data-uid='foo' />
+            <div data-uid='foo' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 50 }} />
           </View>
         `,
         wantSelection: [makeTargetPath('view/group/child1'), makeTargetPath('view/foo')],
@@ -458,7 +458,7 @@ describe('actions', () => {
         `,
         targets: [makeTargetPath('view/group/child1')],
         wantCode: `
-          <View data-uid='view' />
+          <View data-uid='view' style={{ width: 400, height: 10, position: 'absolute', left: 0, top: 0 }} />
         `,
         wantSelection: [makeTargetPath('view')],
       },
@@ -477,7 +477,7 @@ describe('actions', () => {
         `,
         targets: [makeTargetPath(`root/g1/g2/f1/child`)],
         wantCode: `
-          <div data-uid='root' />
+          <div data-uid='root' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 0 }} />
         `,
         wantSelection: [makeTargetPath(`root`)],
       },
@@ -521,7 +521,7 @@ describe('actions', () => {
         `,
         targets: [makeTargetPath(`root/g1/g2/f1/child`), makeTargetPath(`root/g1/delete-me`)],
         wantCode: `
-          <div data-uid='root' />
+          <div data-uid='root' style={{ width: 400, height: 0, position: 'absolute', left: 0, top: 0 }} />
         `,
         wantSelection: [makeTargetPath(`root`)],
       },
@@ -2805,6 +2805,269 @@ export var storyboard = (props) => {
             data-uid='aao'
           />
         </div>`),
+        )
+      })
+    })
+
+    describe('paste next to multiselection', () => {
+      it('paste next to multiselection of flex elements', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 38,
+                top: 12,
+                width: 802,
+                height: 337,
+                display: 'flex',
+                flexDirection: 'row',
+                padding: '74px 42px 74px 42px',
+                gap: 12,
+              }}
+              data-uid='container'
+            >
+              <div
+                style={{
+                  backgroundColor: '#0075ff',
+                  width: 100,
+                  height: 100,
+                  contain: 'layout',
+                }}
+                data-uid='div'
+              />
+              <div
+                style={{
+                  backgroundColor: '#0075ff',
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='last'
+              />
+            </div>
+          </div>`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [
+          makeTargetPath('root/container/div'),
+          makeTargetPath('root/container/last'),
+        ])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 38,
+            top: 12,
+            width: 802,
+            height: 337,
+            display: 'flex',
+            flexDirection: 'row',
+            padding: '74px 42px 74px 42px',
+            gap: 12,
+          }}
+          data-uid='container'
+        >
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 100,
+              height: 100,
+              contain: 'layout',
+            }}
+            data-uid='div'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='last'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              contain: 'layout',
+              width: 100,
+              height: 100,
+            }}
+            data-uid='aag'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+            }}
+            data-uid='las'
+          />
+        </div>
+      </div>`),
+        )
+      })
+
+      it('paste next to multiselection of absolute elements', async () => {
+        const editor = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(`<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 38,
+              top: 12,
+              width: 802,
+              height: 337,
+              padding: '74px 42px 74px 42px',
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                backgroundColor: '#0075ff',
+                width: 100,
+                height: 100,
+                contain: 'layout',
+                position: 'absolute',
+                left: 42,
+                top: 74,
+              }}
+              data-uid='div'
+            />
+            <div
+              style={{
+                backgroundColor: '#0075ff',
+                width: 50,
+                height: 50,
+                position: 'absolute',
+                left: 154,
+                top: 74,
+              }}
+              data-uid='last'
+            />
+          </div>
+        </div>`),
+          'await-first-dom-report',
+        )
+
+        await selectComponentsForTest(editor, [
+          makeTargetPath('root/container/div'),
+          makeTargetPath('root/container/last'),
+        ])
+        await pressKey('c', { modifiers: cmdModifier })
+
+        const canvasRoot = editor.renderedDOM.getByTestId('canvas-root')
+
+        firePasteEvent(canvasRoot)
+
+        // Wait for the next frame
+        await clipboardMock.pasteDone
+        await editor.getDispatchFollowUpActionsFinished()
+
+        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(`<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <div
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 38,
+            top: 12,
+            width: 802,
+            height: 337,
+            padding: '74px 42px 74px 42px',
+          }}
+          data-uid='container'
+        >
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 100,
+              height: 100,
+              contain: 'layout',
+              position: 'absolute',
+              left: 42,
+              top: 74,
+            }}
+            data-uid='div'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 154,
+              top: 74,
+            }}
+            data-uid='last'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 100,
+              height: 100,
+              contain: 'layout',
+              position: 'absolute',
+              left: 214,
+              top: 74,
+            }}
+            data-uid='aaj'
+          />
+          <div
+            style={{
+              backgroundColor: '#0075ff',
+              width: 50,
+              height: 50,
+              position: 'absolute',
+              left: 326,
+              top: 74,
+            }}
+            data-uid='las'
+          />
+        </div>
+      </div>
+`),
         )
       })
     })

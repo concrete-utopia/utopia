@@ -90,7 +90,6 @@ import type {
   JSExpressionFunctionCall,
   JSExpressionNestedArray,
   JSExpressionNestedObject,
-  JSExpressionOtherJavaScript,
   JSXAttributes,
   JSExpressionValue,
   JSXElement,
@@ -193,7 +192,6 @@ import type {
   MaybeInfinityCanvasRectangle,
   MaybeInfinityLocalRectangle,
   MaybeInfinityRectangle,
-  pointsEqual,
   Rectangle,
   Size,
 } from '../../../core/shared/math-utils'
@@ -215,11 +213,9 @@ import {
   undefinableDeepEquality,
   combine4EqualityCalls,
   combine12EqualityCalls,
-  combine11EqualityCalls,
   combine1EqualityCall,
   createCallWithShallowEquals,
   combine10EqualityCalls,
-  ComplexMapKeepDeepEquality,
   createCallWithDeepEquals,
   readOnlyArrayDeepEquality,
   StringKeepDeepEquality,
@@ -321,19 +317,19 @@ import type {
   PasteHerePostActionMenuData,
   PasteToReplacePostActionMenuData,
   NavigatorReparentPostActionMenuData,
-  TrueUpElementChanged,
-  TrueUpChildrenOfElementChanged,
+  TrueUpGroupElementChanged,
+  TrueUpChildrenOfGroupChanged,
   TrueUpTarget,
   InvalidOverrideNavigatorEntry,
+  TrueUpHuggingElement,
 } from './editor-state'
 import {
-  trueUpElementChanged,
-  trueUpChildrenOfElementChanged,
+  trueUpGroupElementChanged,
+  trueUpChildrenOfGroupChanged,
   invalidOverrideNavigatorEntry,
+  trueUpHuggingElement,
 } from './editor-state'
 import {
-  TransientCanvasState,
-  transientCanvasState,
   editorStateNodeModules,
   editorStateLeftMenu,
   editorStateRightMenu,
@@ -381,7 +377,6 @@ import {
   conditionalClauseNavigatorEntry,
   syntheticNavigatorEntry,
   internalClipboard,
-  PostActionMenuSession,
 } from './editor-state'
 import type {
   CornerGuideline,
@@ -4076,14 +4071,27 @@ export const PostActionMenuDataKeepDeepEquality: KeepDeepEqualityCall<PostAction
   return keepDeepEqualityResult(newValue, false)
 }
 
-export const TrueUpElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpElementChanged> =
-  combine1EqualityCall((value) => value.target, ElementPathKeepDeepEquality, trueUpElementChanged)
+export const TrueUpGroupElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpGroupElementChanged> =
+  combine1EqualityCall(
+    (value) => value.target,
+    ElementPathKeepDeepEquality,
+    trueUpGroupElementChanged,
+  )
 
-export const TrueUpChildrenOfElementChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpChildrenOfElementChanged> =
+export const TrueUpChildrenOfGroupChangedKeepDeepEquality: KeepDeepEqualityCall<TrueUpChildrenOfGroupChanged> =
   combine1EqualityCall(
     (value) => value.targetParent,
     ElementPathKeepDeepEquality,
-    trueUpChildrenOfElementChanged,
+    trueUpChildrenOfGroupChanged,
+  )
+
+export const TrueUpHuggingElementKeepDeepEquality: KeepDeepEqualityCall<TrueUpHuggingElement> =
+  combine2EqualityCalls(
+    (value) => value.target,
+    ElementPathKeepDeepEquality,
+    (value) => value.frame,
+    CanvasRectangleKeepDeepEquality,
+    (target, frame) => trueUpHuggingElement(target, frame),
   )
 
 export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = (
@@ -4091,14 +4099,19 @@ export const TrueUpTargetKeepDeepEquality: KeepDeepEqualityCall<TrueUpTarget> = 
   newValue,
 ) => {
   switch (oldValue.type) {
-    case 'TRUE_UP_ELEMENT_CHANGED':
+    case 'TRUE_UP_GROUP_ELEMENT_CHANGED':
       if (oldValue.type === newValue.type) {
-        return TrueUpElementChangedKeepDeepEquality(oldValue, newValue)
+        return TrueUpGroupElementChangedKeepDeepEquality(oldValue, newValue)
       }
       break
-    case 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED':
+    case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
       if (oldValue.type === newValue.type) {
-        return TrueUpChildrenOfElementChangedKeepDeepEquality(oldValue, newValue)
+        return TrueUpChildrenOfGroupChangedKeepDeepEquality(oldValue, newValue)
+      }
+      break
+    case 'TRUE_UP_HUGGING_ELEMENT':
+      if (oldValue.type === newValue.type) {
+        return TrueUpHuggingElementKeepDeepEquality(oldValue, newValue)
       }
       break
     default:
@@ -4136,11 +4149,9 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
   )
   const isLoadedResult = BooleanKeepDeepEquality(oldValue.isLoaded, newValue.isLoaded)
 
-  const trueUpGroupsForElementAfterDomWalkerRunsResult = arrayDeepEquality(
-    TrueUpTargetKeepDeepEquality,
-  )(
-    oldValue.trueUpGroupsForElementAfterDomWalkerRuns,
-    newValue.trueUpGroupsForElementAfterDomWalkerRuns,
+  const trueUpElementsAfterDomWalkerRunsResult = arrayDeepEquality(TrueUpTargetKeepDeepEquality)(
+    oldValue.trueUpElementsAfterDomWalkerRuns,
+    newValue.trueUpElementsAfterDomWalkerRuns,
   )
 
   const spyMetadataResult = ElementInstanceMetadataMapKeepDeepEquality(
@@ -4390,7 +4401,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
     projectDescriptionResult.areEqual &&
     projectVersionResult.areEqual &&
     isLoadedResult.areEqual &&
-    trueUpGroupsForElementAfterDomWalkerRunsResult.areEqual &&
+    trueUpElementsAfterDomWalkerRunsResult.areEqual &&
     spyMetadataResult.areEqual &&
     domMetadataResult.areEqual &&
     jsxMetadataResult.areEqual &&
@@ -4470,7 +4481,7 @@ export const EditorStateKeepDeepEquality: KeepDeepEqualityCall<EditorState> = (
       projectDescriptionResult.value,
       projectVersionResult.value,
       isLoadedResult.value,
-      trueUpGroupsForElementAfterDomWalkerRunsResult.value,
+      trueUpElementsAfterDomWalkerRunsResult.value,
       spyMetadataResult.value,
       domMetadataResult.value,
       jsxMetadataResult.value,

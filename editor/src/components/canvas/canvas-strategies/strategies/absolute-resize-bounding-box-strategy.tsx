@@ -15,7 +15,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { AllElementProps } from '../../../editor/store/editor-state'
 import {
   getJSXElementFromProjectContents,
-  trueUpElementChanged,
+  trueUpGroupElementChanged,
 } from '../../../editor/store/editor-state'
 import {
   detectFillHugFixedState,
@@ -25,7 +25,7 @@ import type { EdgePosition } from '../../canvas-types'
 import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../canvas-types'
 import { isEdgePositionEqualTo } from '../../canvas-utils'
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
-import { queueGroupTrueUp } from '../../commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCursorCommand } from '../../commands/set-cursor-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { setSnappingGuidelines } from '../../commands/set-snapping-guidelines-command'
@@ -261,7 +261,7 @@ export function absoluteResizeBoundingBoxStrategy(
                   [{ target: selectedElement, frame: newFrame }],
                   'starting-metadata',
                 ),
-                queueGroupTrueUp(childGroups.map(trueUpElementChanged)),
+                queueTrueUpElement(childGroups.map(trueUpGroupElementChanged)),
               ]
             })
 

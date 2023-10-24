@@ -486,6 +486,8 @@ export function absolutePositionForReparent(
   )
 }
 
+const PASTE_NEXT_TO_OFFSET = 10
+
 export function absolutePositionForPaste(
   target: ReparentTargetForPaste,
   reparentedElementPath: ElementPath,
@@ -507,9 +509,12 @@ export function absolutePositionForPaste(
     )
   }
 
-  const siblingBounds = MetadataUtils.getFrameInCanvasCoords(
-    target.siblingPath,
-    metadata.currentMetadata,
+  const siblingBounds = target.siblingBounds
+
+  const multiselectOffset = offsetPositionInPasteBoundingBox(
+    reparentedElementPath,
+    allElementPathsToReparent,
+    metadata.originalTargetMetadata,
   )
 
   const parentBounds = EP.isStoryboardPath(target.parentPath.intendedParentPath)
@@ -528,8 +533,11 @@ export function absolutePositionForPaste(
     return zeroCanvasPoint
   }
 
-  return canvasPoint({
-    x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
-    y: siblingBounds.y - parentBounds.y,
-  })
+  return offsetPoint(
+    canvasPoint({
+      x: siblingBounds.x - parentBounds.x + siblingBounds.width + PASTE_NEXT_TO_OFFSET,
+      y: siblingBounds.y - parentBounds.y,
+    }),
+    multiselectOffset,
+  )
 }

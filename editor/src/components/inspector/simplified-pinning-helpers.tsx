@@ -335,6 +335,13 @@ function detectPinsSetForFrameChild(
       return 'left-and-right'
     }
     if (
+      framePoints.left == null &&
+      framePoints.right == null &&
+      isCssNumberAndFixedSize(framePoints.width)
+    ) {
+      return 'left-and-width' // this is technically true, although maybe we should be more honest and call this Width
+    }
+    if (
       isCssNumberAndPercentage(framePoints.left) &&
       framePoints.right == null &&
       isCssNumberAndPercentage(framePoints.width)
@@ -365,6 +372,13 @@ function detectPinsSetForFrameChild(
       framePoints.height == null
     ) {
       return 'top-and-bottom'
+    }
+    if (
+      framePoints.top == null &&
+      framePoints.bottom == null &&
+      isCssNumberAndFixedSize(framePoints.height)
+    ) {
+      return 'top-and-height' // this is technically true, although maybe we should be more honest and call this Height
     }
     if (
       isCssNumberAndPercentage(framePoints.top) &&

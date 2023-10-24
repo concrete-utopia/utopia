@@ -26,6 +26,7 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
+import { stopPropagation } from '../../../components/inspector/common/inspector-utils'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -469,7 +470,7 @@ const SingleValue = (props: SingleValueProps<SelectOption>) => {
         </div>
       )}
       <span
-        data-testid={`${props.selectProps.id}-label`}
+        data-testid={props.selectProps.id == null ? undefined : `${props.selectProps.id}-popuplist`}
         style={{ paddingLeft: iconShown ? 22 : 4 }}
       >
         {props.children}
@@ -492,7 +493,7 @@ const getDefaultContainer =
     boxShadow: `inset 0 0 0 1px ${controlStyles.borderColor}`,
     backgroundColor: controlStyles.backgroundColor,
     color: controlStyles.mainColor,
-    textTransform: 'capitalize',
+    // textTransform: 'capitalize', // BB I am disabling this to be able to write "Left and Width" as an option
     ...propsStyle,
   })
 
@@ -617,6 +618,7 @@ export const PopupList = React.memo<PopupListProps>(
           }}
           openMenuOnFocus={true}
           openMenuOnClick={true}
+          onKeyDown={stopPropagation}
           value={value}
           onChange={selectOnSubmitValue}
           options={options}

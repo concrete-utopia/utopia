@@ -1,189 +1,180 @@
 import React from 'react'
 import { MetadataUtils } from '../../../../../core/model/element-metadata-utils'
-import { strictEvery } from '../../../../../core/shared/array-utils'
 import { InspectorContextMenuWrapper } from '../../../../context-menu-wrapper'
 import { applyCommandsAction } from '../../../../editor/actions/action-creators'
 import { useDispatch } from '../../../../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../../../../editor/store/store-hook'
-import type { ControlStatus } from '../../../common/control-status'
-import { getControlStyles } from '../../../common/control-styles'
-import { cssNumber } from '../../../common/css-utils'
 import type { OptionChainOption } from '../../../controls/option-chain-control'
 import { OptionChainControl } from '../../../controls/option-chain-control'
-import {
-  metadataSelector,
-  selectedViewsSelector,
-  useNonRoundedComputedSizeRef,
-} from '../../../inpector-selectors'
 import type { FixedHugFill } from '../../../inspector-common'
-import { detectFillHugFixedStateMultiselect, isFixedHugFillEqual } from '../../../inspector-common'
 import {
-  setPropFixedSizeStrategies,
-  setPropHugStrategies,
-} from '../../../inspector-strategies/inspector-strategies'
-import { commandsForFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
-import { fixedSizeDimensionHandlingText } from '../../../../text-editor/text-handling'
+  detectFillHugFixedState,
+  setAutoHeightCommands,
+  setAutoWidthCommands,
+  setFixedSizeCommands,
+} from '../../../inspector-common'
+import type { ElementInstanceMetadataMap } from '../../../../../core/shared/element-template'
+import type { ElementPath } from '../../../../../core/shared/project-file-types'
+import { getControlStyles } from '../../../common/control-styles'
+import { useNonRoundedComputedSizeRef } from '../../../inpector-selectors'
+import type { ElementPathTrees } from '../../../../../core/shared/element-path-tree'
 
 export const TextAutoSizingTestId = 'textAutoSizing'
 
-function useAutoSizingTypeAndStatus(): {
-  status: ControlStatus
-  type:
-    | 'fixed'
-    | 'hug'
-    | 'hug-group'
-    | 'computed'
-    | 'detected'
-    | 'scaled'
-    | 'squeeze'
-    | 'collapsed'
-    | null
-} {
-  const isEditableText = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return strictEvery(store.editor.selectedViews, (path) =>
-        MetadataUtils.targetTextEditableAndHasText(
-          store.editor.jsxMetadata,
-          store.editor.elementPathTree,
-          path,
-        ),
-      )
-    },
-    'TextAutoSizingControl isEditableText',
-  )
+type TextSizingState = 'auto-width' | 'auto-height' | 'fixed-size' | 'mixed' | 'disabled'
 
-  const widthFillHugFixedState = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return detectFillHugFixedStateMultiselect(
-        'horizontal',
-        store.editor.jsxMetadata,
-        store.editor.selectedViews,
-      )
-    },
-    'TextAutoSizingControl fixedHugFillState width',
-    isFixedHugFillEqual,
-  )
+const isConsideredFixed = (type: FixedHugFill['type'] | null | undefined): boolean =>
+  type === 'fixed' || type === 'detected'
 
-  const heightFillHugFixedState = useEditorState(
-    Substores.metadata,
-    (store) => {
-      return detectFillHugFixedStateMultiselect(
-        'vertical',
-        store.editor.jsxMetadata,
-        store.editor.selectedViews,
-      )
-    },
-    'TextAutoSizingControl fixedHugFillState height',
-    isFixedHugFillEqual,
-  )
-
-  let fixedHugState: FixedHugFill | null = null
-  if (
-    widthFillHugFixedState.fixedHugFill != null &&
-    widthFillHugFixedState.fixedHugFill.type !== 'fill' &&
-    heightFillHugFixedState.fixedHugFill != null &&
-    heightFillHugFixedState.fixedHugFill.type !== 'fill'
-  ) {
-    if (widthFillHugFixedState.fixedHugFill.type === heightFillHugFixedState.fixedHugFill.type) {
-      fixedHugState = widthFillHugFixedState.fixedHugFill
-    }
+function detectTextSizingState(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  elementPath: ElementPath,
+): TextSizingState {
+  if (!MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, elementPath)) {
+    return 'disabled'
   }
 
-  const controlStatus = React.useMemo(() => {
-    if (!isEditableText) {
-      return 'disabled'
-    } else {
-      return widthFillHugFixedState.controlStatus
+  const horizontal = detectFillHugFixedState('horizontal', metadata, elementPath)
+  const vertical = detectFillHugFixedState('vertical', metadata, elementPath)
+
+  if (horizontal.fixedHugFill?.type === 'hug' && vertical.fixedHugFill?.type === 'hug') {
+    return 'auto-width'
+  }
+
+  if (horizontal.fixedHugFill?.type === 'hug' && isConsideredFixed(vertical.fixedHugFill?.type)) {
+    return 'auto-width'
+  }
+
+  if (vertical.fixedHugFill?.type === 'hug' && isConsideredFixed(horizontal.fixedHugFill?.type)) {
+    return 'auto-height'
+  }
+
+  if (
+    isConsideredFixed(horizontal.fixedHugFill?.type) &&
+    isConsideredFixed(vertical.fixedHugFill?.type)
+  ) {
+    return 'fixed-size'
+  }
+
+  return 'disabled'
+}
+
+export function detectTextSizingStateMultiSelect(
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  elementPaths: ElementPath[],
+): TextSizingState {
+  if (elementPaths.length === 0) {
+    return 'disabled'
+  }
+
+  const result = detectTextSizingState(metadata, pathTrees, elementPaths[0])
+  for (const path of elementPaths.slice(1)) {
+    const state = detectTextSizingState(metadata, pathTrees, path)
+    if (state !== result) {
+      return 'mixed'
     }
-  }, [widthFillHugFixedState, isEditableText])
-
-  const type =
-    controlStatus === 'disabled' || controlStatus === 'unset' ? null : fixedHugState?.type ?? null
-
-  return { status: controlStatus, type: type }
+  }
+  return result
 }
 
 export const TextAutoSizingControl = React.memo(() => {
-  const dispatch = useDispatch()
-  const metadataRef = useRefEditorState(metadataSelector)
-  const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
-
-  const controlStatusAndValueType = useAutoSizingTypeAndStatus()
-  const controlStyles = React.useMemo(
-    () => getControlStyles(controlStatusAndValueType.status),
-    [controlStatusAndValueType],
+  const state = useEditorState(
+    Substores.metadata,
+    (store) =>
+      detectTextSizingStateMultiSelect(
+        store.editor.jsxMetadata,
+        store.editor.elementPathTree,
+        store.editor.selectedViews,
+      ),
+    'TextSizingControl state',
   )
 
-  const widthComputedValue = useNonRoundedComputedSizeRef('width')
-  const heightComputedValue = useNonRoundedComputedSizeRef('height')
+  const controlStyles = React.useMemo(() => {
+    if (state === 'disabled') {
+      return getControlStyles('unset')
+    }
+    if (state === 'mixed') {
+      return getControlStyles('multiselect-mixed-simple-or-unset')
+    }
+    return getControlStyles('simple')
+  }, [state])
+
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+  const pathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
+
+  const dispatch = useDispatch()
+
+  const nonRoundedComputedWidthRef = useNonRoundedComputedSizeRef('width')
+  const nonRoundedComputedHeightRef = useNonRoundedComputedSizeRef('height')
+
+  const setAutoWidth = React.useCallback(() => {
+    const commands = selectedViewsRef.current.flatMap((elementPath) => {
+      const parentFlexDirection =
+        MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+          ?.specialSizeMeasurements.parentFlexDirection ?? null
+      return setAutoWidthCommands(
+        elementPath,
+        parentFlexDirection,
+        nonRoundedComputedHeightRef.current ?? 0,
+      )
+    })
+    dispatch([applyCommandsAction(commands)])
+  }, [dispatch, metadataRef, nonRoundedComputedHeightRef, selectedViewsRef])
+
+  const setAutoHeight = React.useCallback(() => {
+    const commands = selectedViewsRef.current.flatMap((elementPath) => {
+      const parentFlexDirection =
+        MetadataUtils.findElementByElementPath(metadataRef.current, elementPath)
+          ?.specialSizeMeasurements.parentFlexDirection ?? null
+      return setAutoHeightCommands(
+        elementPath,
+        parentFlexDirection,
+        nonRoundedComputedWidthRef.current ?? 0,
+      )
+    })
+    dispatch([applyCommandsAction(commands)])
+  }, [dispatch, metadataRef, nonRoundedComputedWidthRef, selectedViewsRef])
+
+  const setFixedSize = React.useCallback(() => {
+    const commands = selectedViewsRef.current.flatMap((elementPath) => {
+      return setFixedSizeCommands(metadataRef.current, pathTreesRef.current, elementPath, {
+        width: nonRoundedComputedWidthRef.current ?? 0,
+        height: nonRoundedComputedHeightRef.current ?? 0,
+      })
+    })
+    dispatch([applyCommandsAction(commands)])
+  }, [
+    dispatch,
+    metadataRef,
+    nonRoundedComputedHeightRef,
+    nonRoundedComputedWidthRef,
+    pathTreesRef,
+    selectedViewsRef,
+  ])
 
   const onSubmitValue = React.useCallback(
-    (newValue: any) => {
-      if (selectedViewsRef.current.length === 0) {
-        return
-      }
-      if (newValue === 'fixed') {
-        const width = fixedSizeDimensionHandlingText(
-          metadataRef.current,
-          elementPathTreeRef.current,
-          selectedViewsRef.current[0],
-          widthComputedValue.current ?? 0,
-        )
-        const widthCommands =
-          commandsForFirstApplicableStrategy(
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            setPropFixedSizeStrategies('always', 'horizontal', cssNumber(width, null)),
-          ) ?? []
-        const heightCommands =
-          commandsForFirstApplicableStrategy(
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            setPropFixedSizeStrategies(
-              'always',
-              'vertical',
-              cssNumber(heightComputedValue.current ?? 0, null),
-            ),
-          ) ?? []
-        dispatch([applyCommandsAction([...widthCommands, ...heightCommands])])
-      } else {
-        const widthCommands =
-          commandsForFirstApplicableStrategy(
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            setPropHugStrategies('horizontal'),
-          ) ?? []
-        const heightCommands =
-          commandsForFirstApplicableStrategy(
-            metadataRef.current,
-            selectedViewsRef.current,
-            elementPathTreeRef.current,
-            allElementPropsRef.current,
-            setPropHugStrategies('vertical'),
-          ) ?? []
-        dispatch([applyCommandsAction([...widthCommands, ...heightCommands])])
+    (option: any) => {
+      switch (option) {
+        case 'auto-width':
+          setAutoWidth()
+          break
+        case 'auto-height':
+          setAutoHeight()
+          break
+        case 'fixed-size':
+          setFixedSize()
+          break
+        default:
+          return
       }
     },
-    [
-      metadataRef,
-      selectedViewsRef,
-      elementPathTreeRef,
-      allElementPropsRef,
-      widthComputedValue,
-      heightComputedValue,
-      dispatch,
-    ],
+    [setAutoHeight, setAutoWidth, setFixedSize],
   )
+
+  const value = state === 'disabled' || state === 'mixed' ? null : state
 
   return (
     <InspectorContextMenuWrapper
@@ -196,32 +187,43 @@ export const TextAutoSizingControl = React.memo(() => {
         id='textAutoSizing'
         key='textAutoSizing'
         testId={TextAutoSizingTestId}
-        controlStatus={controlStatusAndValueType.status}
+        controlStatus={'simple'}
         controlStyles={controlStyles}
         onSubmitValue={onSubmitValue}
-        value={controlStatusAndValueType.type}
+        value={value}
         options={
           [
             {
-              value: 'hug',
-              tooltip: 'Auto',
+              value: 'auto-width',
+              tooltip: 'Auto Width',
               icon: {
                 category: 'typography',
-                type: 'auto',
+                type: 'auto-width',
                 color: 'secondary',
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
               },
             },
             {
-              value: 'fixed',
+              value: 'auto-height',
+              tooltip: 'Auto Height',
+              icon: {
+                category: 'typography',
+                type: 'auto-height',
+                color: 'secondary',
+                width: 18,
+                height: 18,
+              },
+            },
+            {
+              value: 'fixed-size',
               tooltip: 'Fixed',
               icon: {
                 category: 'typography',
-                type: 'fixed',
+                type: 'fixed-size',
                 color: 'secondary',
-                width: 16,
-                height: 16,
+                width: 18,
+                height: 18,
               },
             },
           ] as Array<OptionChainOption<string | number>>
