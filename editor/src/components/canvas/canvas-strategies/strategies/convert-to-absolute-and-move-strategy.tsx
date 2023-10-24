@@ -76,11 +76,9 @@ import { AutoLayoutSiblingsOutline } from '../../controls/autolayout-siblings-ou
 import { memoize } from '../../../../core/shared/memoize'
 import { childInsertionPath } from '../../../editor/store/insertion-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
-import { cssPixelLength } from '../../../inspector/common/css-utils'
 import type { ProjectContentTreeRoot } from '../../../assets'
 import { showToastCommand } from '../../commands/show-toast-command'
 import {
-  detectedHugTypeFromMetadata,
   getConvertIndividualElementToAbsoluteCommands,
   sizeToVisualDimensions,
 } from '../../../inspector/inspector-common'
@@ -758,5 +756,5 @@ function createSetParentsToFixedSizeCommands(
 }
 
 function isHuggingParent(element: ElementInstanceMetadata, property: 'width' | 'height') {
-  return detectedHugTypeFromMetadata(element, property) != null
+  return element.specialSizeMeasurements.computedHugProperty[property] != null
 }

@@ -1616,6 +1616,9 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.textBounds,
       newSize.textBounds,
     ).areEqual
+    const computedHugPropertyEqual =
+      oldSize.computedHugProperty.width === newSize.computedHugProperty.width &&
+      oldSize.computedHugProperty.height === newSize.computedHugProperty.height
 
     const areEqual =
       offsetResult.areEqual &&
@@ -1657,7 +1660,8 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       fontWeightEquals &&
       fontStyleEquals &&
       textDecorationLineEquals &&
-      textBoundsEqual
+      textBoundsEqual &&
+      computedHugPropertyEqual
     if (areEqual) {
       return keepDeepEqualityResult(oldSize, true)
     } else {
@@ -1702,8 +1706,7 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
         newSize.fontStyle,
         newSize.textDecorationLine,
         newSize.textBounds,
-        newSize.computedHeightStyle,
-        newSize.computedWidthStyle,
+        newSize.computedHugProperty,
       )
       return keepDeepEqualityResult(sizeMeasurements, false)
     }

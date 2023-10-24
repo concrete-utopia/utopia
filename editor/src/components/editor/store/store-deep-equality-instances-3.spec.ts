@@ -289,8 +289,10 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     fontStyle: 'normal',
     textDecorationLine: 'none',
     textBounds: null,
-    computedWidthStyle: null,
-    computedHeightStyle: null,
+    computedHugProperty: {
+      width: null,
+      height: null,
+    },
   }
 
   const newDifferentValue: SpecialSizeMeasurements = {
@@ -377,8 +379,10 @@ describe('SpecialSizeMeasurementsKeepDeepEquality', () => {
     fontStyle: 'normal',
     textDecorationLine: 'none',
     textBounds: null,
-    computedWidthStyle: null,
-    computedHeightStyle: null,
+    computedHugProperty: {
+      width: null,
+      height: null,
+    },
   }
 
   it('same reference returns the same reference', () => {
@@ -526,8 +530,10 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       fontStyle: 'normal',
       textDecorationLine: 'none',
       textBounds: null,
-      computedWidthStyle: null,
-      computedHeightStyle: null,
+      computedHugProperty: {
+        width: null,
+        height: null,
+      },
     },
     computedStyle: {
       a: 'a',
@@ -650,8 +656,10 @@ describe('ElementInstanceMetadataKeepDeepEquality', () => {
       fontStyle: 'normal',
       textDecorationLine: 'none',
       textBounds: null,
-      computedWidthStyle: null,
-      computedHeightStyle: null,
+      computedHugProperty: {
+        width: null,
+        height: null,
+      },
     },
     computedStyle: {
       a: 'a',
@@ -800,8 +808,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         fontStyle: 'normal',
         textDecorationLine: 'none',
         textBounds: null,
-        computedWidthStyle: null,
-        computedHeightStyle: null,
+        computedHugProperty: {
+          width: null,
+          height: null,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -926,8 +936,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         fontStyle: 'normal',
         textDecorationLine: 'none',
         textBounds: null,
-        computedWidthStyle: null,
-        computedHeightStyle: null,
+        computedHugProperty: {
+          width: null,
+          height: null,
+        },
       },
       computedStyle: {
         a: 'a',
@@ -1052,8 +1064,10 @@ describe('ElementInstanceMetadataMapKeepDeepEquality', () => {
         fontStyle: 'normal',
         textDecorationLine: 'none',
         textBounds: null,
-        computedWidthStyle: null,
-        computedHeightStyle: null,
+        computedHugProperty: {
+          width: null,
+          height: null,
+        },
       },
       computedStyle: {
         a: 'a',

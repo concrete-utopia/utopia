@@ -1,9 +1,16 @@
 import type { ReactDOM } from 'react'
-import type { CanvasRectangle } from './math-utils'
-import { boundingRectangle, canvasRectangle, roundToNearestHalf, scaleRect } from './math-utils'
+import type { CanvasRectangle, MaybeInfinityCanvasRectangle } from './math-utils'
+import {
+  boundingRectangle,
+  canvasRectangle,
+  isNotNullFiniteRectangle,
+  roundToNearestHalf,
+  scaleRect,
+} from './math-utils'
 import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 import { assertNever, identity } from './utils'
+import type { HugProperty, HugPropertyWidthHeight } from './element-template'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -338,4 +345,50 @@ export function defaultDisplayTypeForHTMLElement(elementName: string): 'inline' 
   } else {
     return null
   }
+}
+
+export function hugPropertiesFromComputedStyleMap(
+  styleMap: StylePropertyMapReadOnly,
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+): HugPropertyWidthHeight {
+  return {
+    width: hugPropertyFromStyleValue(
+      styleMap.get('width')?.toString() ?? null,
+      'width',
+      globalFrame,
+    ),
+    height: hugPropertyFromStyleValue(
+      styleMap.get('height')?.toString() ?? null,
+      'height',
+      globalFrame,
+    ),
+  }
+}
+
+export function hugPropertyFromStyleValue(
+  value: string | null,
+  property: 'width' | 'height',
+  globalFrame: MaybeInfinityCanvasRectangle | null,
+): HugProperty | null {
+  const hugProp = (() => {
+    if ((value === null || value === 'auto') && property === 'height') {
+      return 'hug'
+    }
+    if ((value === null || value === 'auto') && property === 'width') {
+      return null
+    }
+    if (value === 'max-content') {
+      return 'hug'
+    }
+    if (value === 'min-content') {
+      return 'squeeze'
+    }
+
+    return null
+  })()
+
+  if (isNotNullFiniteRectangle(globalFrame) && globalFrame[property] === 0 && hugProp != null) {
+    return 'collapsed'
+  }
+  return hugProp
 }

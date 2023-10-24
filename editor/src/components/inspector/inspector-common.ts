@@ -13,7 +13,6 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXAttributes,
-  SpecialSizeMeasurements,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -50,8 +49,8 @@ import {
   isFiniteRectangle,
   isInfinityRectangle,
   roundRectangleToNearestWhole,
-  type LocalRectangle,
 } from '../../core/shared/math-utils'
+import type { LocalRectangle, MaybeInfinityCanvasRectangle } from '../../core/shared/math-utils'
 import { inlineHtmlElements } from '../../utils/html-elements'
 import { intersection } from '../../core/shared/set-utils'
 import { showToastCommand } from '../canvas/commands/show-toast-command'
@@ -73,6 +72,7 @@ import {
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { isZeroSizedElement } from '../canvas/controls/outline-utils'
+import { hugPropertyFromStyleValue } from '../../core/shared/dom-utils'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -652,9 +652,13 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  const detectedHugType = detectedHugTypeFromMetadata(element, property)
+  const detectedHugType = element.specialSizeMeasurements.computedHugProperty[property]
   if (detectedHugType != null) {
-    const hugTypeFromStyleProps = hugTypeFromStyleAttribute(element.element.value.props, property)
+    const hugTypeFromStyleProps = hugTypeFromStyleAttribute(
+      element.element.value.props,
+      property,
+      element.globalFrame,
+    )
     const controlStatus: ControlStatus = (() => {
       if (detectedHugType !== hugTypeFromStyleProps) {
         return 'detected-fromcss'
@@ -779,56 +783,56 @@ export function isHugFromStyleAttribute(
 export function hugTypeFromStyleAttribute(
   props: JSXAttributes,
   property: 'width' | 'height',
+  globalFrame: MaybeInfinityCanvasRectangle | null,
 ): 'hug' | 'squeeze' | 'collapsed' | null {
   const simpleAttribute = defaultEither(
     null,
     getSimpleAttributeAtPath(right(props), PP.create('style', property)),
   )
 
-  return hugTypeFromStyleValue(simpleAttribute, property)
+  return hugPropertyFromStyleValue(simpleAttribute, property, globalFrame)
 }
 
-function hugTypeFromStyleValue(
-  value: string | null,
-  property: 'width' | 'height',
-): 'hug' | 'squeeze' | null {
-  if (value === null && property === 'height') {
-    return 'hug'
-  }
-  if (value === null && property === 'width') {
-    return null
-  }
-  if (value === 'max-content') {
-    return 'hug'
-  }
-  if (value === 'min-content') {
-    return 'squeeze'
-  }
+// export function hugTypeFromStyleValue(
+//   value: string | null,
+//   property: 'width' | 'height',
+// ): 'hug' | 'squeeze' | null {
+//   if (value === null && property === 'height') {
+//     return 'hug'
+//   }
+//   if (value === null && property === 'width') {
+//     return null
+//   }
+//   if (value === 'max-content') {
+//     return 'hug'
+//   }
+//   if (value === 'min-content') {
+//     return 'squeeze'
+//   }
 
-  return null
-}
+//   return null
+// }
 
-export function detectedHugTypeFromMetadata(
-  element: ElementInstanceMetadata,
-  property: 'width' | 'height',
-): 'hug' | 'squeeze' | 'collapsed' | null {
-  const styleValue =
-    element.specialSizeMeasurements[
-      property === 'width' ? 'computedWidthStyle' : 'computedHeightStyle'
-    ]
-  const hugType = hugTypeFromStyleValue(styleValue, property)
-  if (hugType == null) {
-    return null
-  }
-  const collapsed =
-    element.globalFrame != null &&
-    isFiniteRectangle(element.globalFrame) &&
-    element.globalFrame[property] === 0
-  if (collapsed) {
-    return 'collapsed'
-  }
-  return hugType
-}
+// export function detectedHugTypeFromMetadata(
+//   element: ElementInstanceMetadata,
+//   property: 'width' | 'height',
+// ): 'hug' | 'squeeze' | 'collapsed' | null {
+//   const hugType =
+//     element.specialSizeMeasurements[
+//       property === 'width' ? 'computedHugPropertyWidth' : 'computedHugPropertyHeight'
+//     ]
+//   if (hugType == null) {
+//     return null
+//   }
+//   const collapsed =
+//     element.globalFrame != null &&
+//     isFiniteRectangle(element.globalFrame) &&
+//     element.globalFrame[property] === 0
+//   if (collapsed) {
+//     return 'collapsed'
+//   }
+//   return hugType
+// }
 
 export function isHugFromStyleAttributeOrNull(
   props: JSXAttributes | null,

@@ -20,7 +20,11 @@ import {
   emptyAttributeMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
+import {
+  getCanvasRectangleFromElement,
+  getDOMAttribute,
+  hugPropertiesFromComputedStyleMap,
+} from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -1055,8 +1059,10 @@ function getSpecialMeasurements(
       })
     : null
 
-  const computedWidthStyle = element.computedStyleMap().get('width')?.toString() ?? null
-  const computedHeightStyle = element.computedStyleMap().get('height')?.toString() ?? null
+  const computedHugProperty = hugPropertiesFromComputedStyleMap(
+    element.computedStyleMap(),
+    globalFrame,
+  )
 
   return specialSizeMeasurements(
     offset,
@@ -1101,8 +1107,7 @@ function getSpecialMeasurements(
     fontStyle,
     textDecorationLine,
     textBounds,
-    computedWidthStyle,
-    computedHeightStyle,
+    computedHugProperty,
   )
 }
 
