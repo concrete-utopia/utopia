@@ -1,12 +1,15 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testGroupChild", "testFrameChild"] }] */
 
+import { screen } from '@testing-library/react'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPath } from '../../core/shared/project-file-types'
 import {
+  formatTestProjectCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../editor/actions/action-creators'
+import { InspectorSectionConstraintsTestId } from './constraints-section'
 
 const testChild = (params: {
   snippet: string
@@ -206,5 +209,31 @@ describe('Constraints Section', () => {
         expectedHeightConstraintDropdownOption: 'Bottom',
       }),
     )
+  })
+
+  it('is hidden when there are no contents', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+				</Storyboard>
+			)
+		  }
+	  `),
+      'await-first-dom-report',
+    )
+
+    await renderResult.dispatch([selectComponents([EP.fromString('sb/group')], true)], true)
+
+    const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+    expect(section).toBeNull()
   })
 })

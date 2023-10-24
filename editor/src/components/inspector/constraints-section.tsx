@@ -38,6 +38,8 @@ import {
 import { UIGridRow } from './widgets/ui-grid-row'
 import { NO_OP } from '../../core/shared/utils'
 
+export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
+
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
     Substores.metadata,
@@ -62,6 +64,7 @@ export const ConstraintsSection = React.memo(() => {
     <React.Fragment>
       <InspectorSubsectionHeader>
         <FlexRow
+          data-testId={InspectorSectionConstraintsTestId}
           style={{
             flexGrow: 1,
             height: 42,
