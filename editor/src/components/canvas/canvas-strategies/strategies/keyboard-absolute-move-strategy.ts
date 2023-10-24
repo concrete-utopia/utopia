@@ -29,7 +29,7 @@ import {
   getLastKeyPressState,
 } from './shared-keyboard-strategy-helpers'
 import { defaultIfNull } from '../../../../core/shared/optional-utils'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-targets-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import type { CanvasFrameAndTarget } from '../../canvas-types'
 import { honoursPropsPosition } from './absolute-utils'
 import type { InteractionSession } from '../interaction-state'

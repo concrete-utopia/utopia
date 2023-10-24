@@ -65,7 +65,7 @@ import type { ElementPath } from '../../../../core/shared/project-file-types'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { treatElementAsGroupLike } from './group-helpers'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-targets-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'
 
 export const FLEX_RESIZE_STRATEGY_ID = 'FLEX_RESIZE'

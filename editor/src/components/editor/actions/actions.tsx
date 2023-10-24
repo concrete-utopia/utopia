@@ -508,12 +508,6 @@ import type {
   UpdateFromCodeEditor,
 } from './actions-from-vscode'
 import {
-  isPushIntendedBoundsTargetGroup,
-  isPushIntendedBoundsTargetHuggingElement,
-  pushIntendedBoundsAndUpdateGroups,
-  pushIntendedBoundsAndUpdateHuggingElements,
-} from '../../canvas/commands/push-intended-bounds-and-update-targets-command'
-import {
   addToTrueUpElements,
   getCommandsForPushIntendedBounds,
 } from '../../../core/model/true-up-targets'

@@ -34,7 +34,7 @@ import {
   resizeBoundingBox,
 } from './resize-helpers'
 import { getElementDimensions } from './flex-resize-helpers'
-import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-targets-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { treatElementAsGroupLike } from './group-helpers'
 import { trueUpGroupElementChanged } from '../../../editor/store/editor-state'

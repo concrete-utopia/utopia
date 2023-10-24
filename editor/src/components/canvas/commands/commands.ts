@@ -84,11 +84,11 @@ import { runQueueTrueUpElement } from './queue-true-up-command'
 import type {
   PushIntendedBoundsAndUpdateGroups,
   PushIntendedBoundsAndUpdateHuggingElements,
-} from './push-intended-bounds-and-update-targets-command'
+} from './push-intended-bounds-and-update-groups-command'
 import {
   runPushIntendedBoundsAndUpdateGroups,
   runPushIntendedBoundsAndUpdateHuggingElements,
-} from './push-intended-bounds-and-update-targets-command'
+} from './push-intended-bounds-and-update-groups-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>

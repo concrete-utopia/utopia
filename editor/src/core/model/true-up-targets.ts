@@ -1,12 +1,10 @@
 import type { CanvasFrameAndTarget } from '../../components/canvas/canvas-types'
-import type {
-  PushIntendedBoundsAndUpdateGroups,
-  PushIntendedBoundsAndUpdateHuggingElements,
-} from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
+import type { PushIntendedBoundsAndUpdateGroups } from '../../components/canvas/commands/push-intended-bounds-and-update-groups-command'
+import { pushIntendedBoundsAndUpdateGroups } from '../../components/canvas/commands/push-intended-bounds-and-update-groups-command'
 import {
-  pushIntendedBoundsAndUpdateGroups,
   pushIntendedBoundsAndUpdateHuggingElements,
-} from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
+  type PushIntendedBoundsAndUpdateHuggingElements,
+} from '../../components/canvas/commands/push-intended-bounds-and-update-hugging-elements-command'
 import type { EditorState, TrueUpTarget } from '../../components/editor/store/editor-state'
 import { mapDropNulls } from '../shared/array-utils'
 import * as EP from '../shared/element-path'
