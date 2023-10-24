@@ -486,6 +486,8 @@ export function absolutePositionForReparent(
   )
 }
 
+const PASTE_NEXT_TO_OFFSET = 10
+
 export function absolutePositionForPaste(
   target: ReparentTargetForPaste,
   reparentedElementPath: ElementPath,
@@ -529,7 +531,7 @@ export function absolutePositionForPaste(
   }
 
   return canvasPoint({
-    x: siblingBounds.x - parentBounds.x + siblingBounds.width + 10,
+    x: siblingBounds.x - parentBounds.x + siblingBounds.width + PASTE_NEXT_TO_OFFSET,
     y: siblingBounds.y - parentBounds.y,
   })
 }
