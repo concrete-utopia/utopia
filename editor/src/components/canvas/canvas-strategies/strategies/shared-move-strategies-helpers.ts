@@ -298,7 +298,7 @@ export function moveInspectorStrategy(
         commands.push(...moveCommandsResult.commands)
         intendedBounds.push(...moveCommandsResult.intendedBounds)
       }
-      commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'starting-metadata'))
+      commands.push(pushIntendedBoundsAndUpdateGroups(intendedBounds, 'live-metadata'))
       commands.push(setElementsToRerenderCommand(selectedElementPaths))
       return commands
     },
