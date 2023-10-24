@@ -706,7 +706,7 @@ function pasteToReplaceCommands(
     return [
       updateFunctionCommand('always', (updatedEditor, commandLifecycle) => {
         const element = MetadataUtils.findElementByElementPath(editor.jsxMetadata, target)
-        const position = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
+        const frame = MetadataUtils.getFrameOrZeroRectInCanvasCoords(target, editor.jsxMetadata)
         const strategy = MetadataUtils.isPositionAbsolute(element)
           ? 'REPARENT_AS_ABSOLUTE'
           : 'REPARENT_AS_STATIC'
@@ -733,6 +733,7 @@ function pasteToReplaceCommands(
           {
             type: 'sibling',
             siblingPath: target,
+            siblingBounds: frame,
             parentPath: parentInsertionPath,
           },
           {
@@ -754,7 +755,7 @@ function pasteToReplaceCommands(
             targetOriginalPathTrees: originalPathTree,
             canvasViewportCenter: zeroCanvasPoint,
             reparentStrategy: strategy,
-            insertionPosition: position,
+            insertionPosition: frame,
             keepSelectedViews: true,
             originalAllElementProps: editor.allElementProps,
           },
