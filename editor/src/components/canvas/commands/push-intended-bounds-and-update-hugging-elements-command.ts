@@ -36,7 +36,7 @@ export const runPushIntendedBoundsAndUpdateHuggingElements = (
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateHuggingElements,
 ): CommandFunctionResult => {
-  const { updatedEditor: editorAfterHuggingElements } = getUpdateResizeHuggingElementsCommands(
+  const { updatedEditor: editorAfterHuggingElements } = applyUpdateResizeHuggingElementsCommands(
     editor,
     command,
   )
@@ -77,7 +77,7 @@ function getHuggingElementContentsStatus(
   }
 }
 
-function getUpdateResizeHuggingElementsCommands(
+function applyUpdateResizeHuggingElementsCommands(
   editor: EditorState,
   command: PushIntendedBoundsAndUpdateHuggingElements,
 ): {
