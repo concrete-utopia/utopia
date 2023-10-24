@@ -146,7 +146,7 @@ export function keyboardAbsoluteResizeStrategy(
     controlsToRender: [
       controlWithProps({
         control: AbsoluteResizeControl,
-        props: { targets: selectedElements },
+        props: { targets: selectedElements, pathsWereReplaced: pathsWereReplaced },
         key: 'absolute-resize-control',
         show: 'visible-except-when-other-strategy-is-active',
       }),
