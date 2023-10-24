@@ -1,12 +1,14 @@
+import type { CanvasFrameAndTarget } from '../../components/canvas/canvas-types'
 import type {
-  PushIntendedBoundsTargetGroup,
-  PushIntendedBoundsTargetHuggingElement,
+  PushIntendedBoundsAndUpdateGroups,
+  PushIntendedBoundsAndUpdateHuggingElements,
 } from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import {
-  pushIntendedBoundsHuggingElement,
-  pushIntendedBoundsGroup,
+  pushIntendedBoundsAndUpdateGroups,
+  pushIntendedBoundsAndUpdateHuggingElements,
 } from '../../components/canvas/commands/push-intended-bounds-and-update-targets-command'
 import type { EditorState, TrueUpTarget } from '../../components/editor/store/editor-state'
+import { mapDropNulls } from '../shared/array-utils'
 import * as EP from '../shared/element-path'
 import type { ElementPathTrees } from '../shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../shared/element-template'
@@ -29,11 +31,16 @@ export function trueUpTargetToDescription(trueUpTarget: TrueUpTarget): string {
   }
 }
 
-export function trueUpTargetToPushIntendedBoundsTarget(
+type PushIntendedBoundsCommand =
+  | PushIntendedBoundsAndUpdateGroups
+  | PushIntendedBoundsAndUpdateHuggingElements
+
+export function getCommandsForPushIntendedBounds(
   metadata: ElementInstanceMetadataMap,
   pathTree: ElementPathTrees,
-  trueUpTarget: TrueUpTarget,
-): Array<PushIntendedBoundsTargetGroup | PushIntendedBoundsTargetHuggingElement | null> {
+  targets: TrueUpTarget[],
+  isStartingMetadata: 'starting-metadata' | 'live-metadata',
+): Array<PushIntendedBoundsCommand> {
   function getFrame(target: ElementPath): CanvasRectangle | null {
     const globalFrame = MetadataUtils.findElementByElementPath(metadata, target)?.globalFrame
     if (globalFrame == null || isInfinityRectangle(globalFrame)) {
@@ -41,26 +48,43 @@ export function trueUpTargetToPushIntendedBoundsTarget(
     }
     return globalFrame
   }
-  switch (trueUpTarget.type) {
-    case 'TRUE_UP_GROUP_ELEMENT_CHANGED':
-      const elementFrame = getFrame(trueUpTarget.target)
-      return [
-        elementFrame != null ? pushIntendedBoundsGroup(trueUpTarget.target, elementFrame) : null,
-      ]
-    case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
-      return MetadataUtils.getChildrenPathsOrdered(
-        metadata,
-        pathTree,
-        trueUpTarget.targetParent,
-      ).map((path) => {
-        const childFrame = getFrame(path)
-        return childFrame != null ? pushIntendedBoundsGroup(path, childFrame) : null
-      })
-    case 'TRUE_UP_HUGGING_ELEMENT':
-      return [pushIntendedBoundsHuggingElement(trueUpTarget.target, trueUpTarget.frame)]
-    default:
-      assertNever(trueUpTarget)
+
+  let groupTargets: Array<CanvasFrameAndTarget> = []
+  let huggingElementTargets: Array<CanvasFrameAndTarget> = []
+
+  for (const trueUpTarget of targets) {
+    switch (trueUpTarget.type) {
+      case 'TRUE_UP_GROUP_ELEMENT_CHANGED':
+        const elementFrame = getFrame(trueUpTarget.target)
+        if (elementFrame != null) {
+          groupTargets.push({ target: trueUpTarget.target, frame: elementFrame })
+        }
+        break
+      case 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED':
+        const children = MetadataUtils.getChildrenPathsOrdered(
+          metadata,
+          pathTree,
+          trueUpTarget.targetParent,
+        )
+        groupTargets.push(
+          ...mapDropNulls((child) => {
+            const frame = getFrame(child)
+            return frame != null ? { target: child, frame: frame } : null
+          }, children),
+        )
+        break
+      case 'TRUE_UP_HUGGING_ELEMENT':
+        huggingElementTargets.push(trueUpTarget)
+        break
+      default:
+        assertNever(trueUpTarget)
+    }
   }
+
+  return [
+    pushIntendedBoundsAndUpdateGroups(groupTargets, isStartingMetadata),
+    pushIntendedBoundsAndUpdateHuggingElements(huggingElementTargets),
+  ]
 }
 
 export function addToTrueUpElements(

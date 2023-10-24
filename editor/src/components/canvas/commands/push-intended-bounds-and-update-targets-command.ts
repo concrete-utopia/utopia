@@ -61,30 +61,8 @@ export interface PushIntendedBoundsTargetGroup extends CanvasFrameAndTarget {
   type: 'PUSH_INTENDED_BOUNDS_GROUP'
 }
 
-export function pushIntendedBoundsGroup(
-  target: ElementPath,
-  frame: CanvasRectangle,
-): PushIntendedBoundsTargetGroup {
-  return {
-    type: 'PUSH_INTENDED_BOUNDS_GROUP',
-    target: target,
-    frame: frame,
-  }
-}
-
 export interface PushIntendedBoundsTargetHuggingElement extends CanvasFrameAndTarget {
   type: 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT'
-}
-
-export function pushIntendedBoundsHuggingElement(
-  target: ElementPath,
-  frame: CanvasRectangle,
-): PushIntendedBoundsTargetHuggingElement {
-  return {
-    type: 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT',
-    target: target,
-    frame: frame,
-  }
 }
 
 export function isPushIntendedBoundsTargetHuggingElement(

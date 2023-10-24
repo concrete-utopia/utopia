@@ -515,7 +515,7 @@ import {
 } from '../../canvas/commands/push-intended-bounds-and-update-targets-command'
 import {
   addToTrueUpElements,
-  trueUpTargetToPushIntendedBoundsTarget,
+  getCommandsForPushIntendedBounds,
 } from '../../../core/model/true-up-targets'
 import {
   groupStateFromJSXElement,
@@ -3861,24 +3861,13 @@ export const UPDATE_FNS = {
     }
   },
   TRUE_UP_ELEMENTS: (editor: EditorModel): EditorModel => {
-    const targets = mapDropNulls(
-      (target) => target,
-      editor.trueUpElementsAfterDomWalkerRuns.flatMap((trueUpTarget) => {
-        return trueUpTargetToPushIntendedBoundsTarget(
-          editor.jsxMetadata,
-          editor.elementPathTree,
-          trueUpTarget,
-        )
-      }),
+    const commandsToRun = getCommandsForPushIntendedBounds(
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      editor.trueUpElementsAfterDomWalkerRuns,
+      'live-metadata',
     )
-
-    const groupTargets = targets.filter(isPushIntendedBoundsTargetGroup)
-    const huggingTargets = targets.filter(isPushIntendedBoundsTargetHuggingElement)
-
-    const editorAfterTrueUps = foldAndApplyCommandsSimple(editor, [
-      pushIntendedBoundsAndUpdateGroups(groupTargets, 'live-metadata'),
-      pushIntendedBoundsAndUpdateHuggingElements(huggingTargets),
-    ])
+    const editorAfterTrueUps = foldAndApplyCommandsSimple(editor, commandsToRun)
     return {
       ...editorAfterTrueUps,
       trueUpElementsAfterDomWalkerRuns: [],
