@@ -52,14 +52,6 @@ import {
 } from './utils/group-resize-utils'
 import { wildcardPatch } from './wildcard-patch-command'
 
-export interface PushIntendedBoundsTargetGroup extends CanvasFrameAndTarget {
-  type: 'PUSH_INTENDED_BOUNDS_GROUP'
-}
-
-export function isPushIntendedBoundsTargetGroup(u: unknown): u is PushIntendedBoundsTargetGroup {
-  return (u as PushIntendedBoundsTargetGroup).type === 'PUSH_INTENDED_BOUNDS_GROUP'
-}
-
 export interface PushIntendedBoundsAndUpdateGroups extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_GROUPS'
   value: Array<CanvasFrameAndTarget>

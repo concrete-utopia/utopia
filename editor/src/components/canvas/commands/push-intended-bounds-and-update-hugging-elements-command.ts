@@ -17,18 +17,6 @@ import { setCssLengthProperty, setExplicitCssValue } from './set-css-length-comm
 import { setProperty } from './set-property-command'
 import { showToastCommand } from './show-toast-command'
 
-export interface PushIntendedBoundsTargetHuggingElement extends CanvasFrameAndTarget {
-  type: 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT'
-}
-
-export function isPushIntendedBoundsTargetHuggingElement(
-  u: unknown,
-): u is PushIntendedBoundsTargetHuggingElement {
-  return (
-    (u as PushIntendedBoundsTargetHuggingElement).type === 'PUSH_INTENDED_BOUNDS_HUGGING_ELEMENT'
-  )
-}
-
 export interface PushIntendedBoundsAndUpdateHuggingElements extends BaseCommand {
   type: 'PUSH_INTENDED_BOUNDS_AND_UPDATE_HUGGING_ELEMENTS'
   value: Array<CanvasFrameAndTarget>

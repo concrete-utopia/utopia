@@ -81,14 +81,10 @@ import type { AddElements } from './add-elements-command'
 import { runAddElements } from './add-elements-command'
 import type { QueueTrueUpElement } from './queue-true-up-command'
 import { runQueueTrueUpElement } from './queue-true-up-command'
-import type {
-  PushIntendedBoundsAndUpdateGroups,
-  PushIntendedBoundsAndUpdateHuggingElements,
-} from './push-intended-bounds-and-update-groups-command'
-import {
-  runPushIntendedBoundsAndUpdateGroups,
-  runPushIntendedBoundsAndUpdateHuggingElements,
-} from './push-intended-bounds-and-update-groups-command'
+import type { PushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
+import { runPushIntendedBoundsAndUpdateGroups } from './push-intended-bounds-and-update-groups-command'
+import type { PushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
+import { runPushIntendedBoundsAndUpdateHuggingElements } from './push-intended-bounds-and-update-hugging-elements-command'
 
 export interface CommandFunctionResult {
   editorStatePatches: Array<EditorStatePatch>
