@@ -52,7 +52,7 @@ export const RadiusRow = React.memo(() => {
       items={contextMenuItems}
       data={null}
     >
-      <UIGridRow tall padded={true} variant='<---1fr--->|------172px-------|'>
+      <UIGridRow tall padded={false} variant='<---1fr--->|------172px-------|'>
         <PropertyLabel
           target={[]}
           propNamesToUnset={contextMenuLabel}
