@@ -5,7 +5,6 @@ import { PaddingRow } from '../../layout-section/layout-system-subsection/layout
 import { BlendModeRow } from './blendmode-row'
 import { OpacityRow } from './opacity-row'
 import { OverflowRow } from './overflow-row'
-import { RadiusRow } from './radius-row'
 
 export const ContainerSubsection = React.memo(() => {
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
@@ -29,7 +28,6 @@ export const ContainerSubsection = React.memo(() => {
       </InspectorSubsectionHeader>
       <OpacityRow />
       <OverflowRow />
-      <RadiusRow />
       <PaddingRow />
       <SeeMoreHOC visible={seeMoreVisible}>
         <BlendModeRow />
