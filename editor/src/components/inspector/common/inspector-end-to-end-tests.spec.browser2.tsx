@@ -3243,7 +3243,7 @@ describe('inspector tests with real metadata', () => {
       })
 
       const leftControl = (await renderResult.renderedDOM.findByTestId(
-        'position-left-number-input',
+        'frame-left-number-input',
       )) as HTMLInputElement
 
       expect(leftControl.value).toBe('30')
