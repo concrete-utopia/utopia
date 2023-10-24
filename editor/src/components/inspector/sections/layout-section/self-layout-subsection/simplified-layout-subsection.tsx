@@ -5,6 +5,7 @@ import { FixedHugDropdown } from '../../../fill-hug-fixed-control'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
 import { ClipContentControl } from './clip-content-control'
 import { FrameUpdatingLayoutSection } from './frame-updating-layout-section'
+import { RadiusRow } from '../../style-section/container-subsection/radius-row'
 
 export const SimplifiedLayoutSubsection = React.memo(() => {
   return (
@@ -30,6 +31,9 @@ export const SimplifiedLayoutSubsection = React.memo(() => {
           <FixedHugDropdown dimension='width' />
           <FixedHugDropdown dimension='height' />
         </UIGridRow>
+        <FlexRow style={{ minHeight: undefined, gap: 4 }}>
+          <RadiusRow />
+        </FlexRow>
         <FlexRow style={{ minHeight: undefined, gap: 4 }}>
           <ClipContentControl />
         </FlexRow>
