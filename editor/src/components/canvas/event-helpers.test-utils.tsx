@@ -13,6 +13,7 @@ import type { EditorRenderResult } from './ui-jsx.test-utils'
 import { wait } from '../../utils/utils.test-utils'
 import type { WindowPoint } from '../../core/shared/math-utils'
 import { offsetPoint } from '../../core/shared/math-utils'
+import selectEvent from 'react-select-event'
 
 // TODO Should the mouse move and mouse up events actually be fired at the parent of the event source?
 // Or document.body?
@@ -1098,4 +1099,29 @@ export async function dragElementWithDNDEvents(
       )
     })
   }
+}
+
+export function expectSelectControlValue(
+  renderResult: EditorRenderResult,
+  popuplistTestId: string,
+  expectedCurrentValue: string,
+) {
+  const control = renderResult.renderedDOM.getByTestId(popuplistTestId)
+
+  expect(control.innerText).toEqual(expectedCurrentValue)
+}
+
+export async function pickFromReactSelectPopupList(
+  renderResult: EditorRenderResult,
+  popuplistTestId: string,
+  expectedCurrentValue: string | null,
+  selectValue: string,
+) {
+  const control = renderResult.renderedDOM.getByTestId(popuplistTestId)
+
+  if (expectedCurrentValue != null) {
+    expect(control.innerText).toEqual(expectedCurrentValue)
+  }
+
+  await selectEvent.select(control, selectValue)
 }

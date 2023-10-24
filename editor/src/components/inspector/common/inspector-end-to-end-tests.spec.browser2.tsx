@@ -54,8 +54,10 @@ import {
   ConditionalsControlSwitchBranchesTestId,
 } from '../sections/layout-section/conditional-section'
 import {
+  expectSelectControlValue,
   mouseClickAtPoint,
   mouseDownAtPoint,
+  pickFromReactSelectPopupList,
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import {
@@ -162,7 +164,7 @@ async function pressKeyTimes(
 }
 
 describe('inspector tests with real metadata', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   it('padding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -256,22 +258,16 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
-    )) as HTMLInputElement
-    const bottomControl = (await renderResult.renderedDOM.findByTestId(
-      'position-bottom-number-input',
-    )) as HTMLInputElement
-    const rightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-right-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
@@ -288,6 +284,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
     matchInlineSnapshotBrowser(
@@ -300,18 +299,6 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(bottomControl.value, `"178"`)
-    matchInlineSnapshotBrowser(
-      bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
-    )
-
-    matchInlineSnapshotBrowser(rightControl.value, `"79"`)
-    matchInlineSnapshotBrowser(
-      rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
     )
   })
   it('TLWH layout controls in multiselect', async () => {
@@ -360,22 +347,16 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath1)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
-    )) as HTMLInputElement
-    const bottomControl = (await renderResult.renderedDOM.findByTestId(
-      'position-bottom-number-input',
-    )) as HTMLInputElement
-    const rightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-right-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"266px"`)
@@ -394,6 +375,9 @@ describe('inspector tests with real metadata', () => {
       `"multiselect-mixed-simple-or-unset"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
     matchInlineSnapshotBrowser(topControl.value, `""`)
     matchInlineSnapshotBrowser(topControl.placeholder, `"${MixedPlaceholder}"`)
@@ -410,20 +394,8 @@ describe('inspector tests with real metadata', () => {
       `"multiselect-mixed-simple-or-unset"`,
     )
 
-    matchInlineSnapshotBrowser(bottomControl.value, `"178"`)
-    matchInlineSnapshotBrowser(
-      bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"multiselect-identical-unset"`,
-    )
-
-    matchInlineSnapshotBrowser(rightControl.value, `"79"`)
-    matchInlineSnapshotBrowser(
-      rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"multiselect-identical-unset"`,
-    )
-
     // Ensure that changing a value during multiselect doesn't cause duplicate UIDs
-    await setControlValue('position-top-number-input', '10', renderResult.renderedDOM)
+    await setControlValue('frame-top-number-input', '10', renderResult.renderedDOM)
     await renderResult.getDispatchFollowUpActionsFinished()
     expect(renderResult.getActionsCausingDuplicateUIDs().length).toEqual(0)
   })
@@ -461,34 +433,39 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
-    )) as HTMLInputElement
-    const bottomControl = (await renderResult.renderedDOM.findByTestId(
-      'position-bottom-number-input',
-    )) as HTMLInputElement
-    const rightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-right-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"335"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
+    )
+
+    expectSelectControlValue(
+      renderResult,
+      'frame-child-constraint-width-popuplist',
+      'Left and Right',
+    )
+    expectSelectControlValue(
+      renderResult,
+      'frame-child-constraint-height-popuplist',
+      'Top and Bottom',
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['top'], `"98px"`)
@@ -502,20 +479,6 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(leftControl.value, `"55"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['bottom'], `"200px"`)
-    matchInlineSnapshotBrowser(bottomControl.value, `"200"`)
-    matchInlineSnapshotBrowser(
-      bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['right'], `"10px"`)
-    matchInlineSnapshotBrowser(rightControl.value, `"10"`)
-    matchInlineSnapshotBrowser(
-      rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
   })
@@ -553,22 +516,16 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
-    )) as HTMLInputElement
-    const bottomControl = (await renderResult.renderedDOM.findByTestId(
-      'position-bottom-number-input',
-    )) as HTMLInputElement
-    const rightControl = (await renderResult.renderedDOM.findByTestId(
-      'position-right-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['width'], `"203px"`)
@@ -585,29 +542,18 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Right')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Bottom')
+
     matchInlineSnapshotBrowser(topControl.value, `"98"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(leftControl.value, `"187"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"detected"`,
-    )
-
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['bottom'], `"200px"`)
-    matchInlineSnapshotBrowser(bottomControl.value, `"200"`)
-    matchInlineSnapshotBrowser(
-      bottomControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['right'], `"10px"`)
-    matchInlineSnapshotBrowser(rightControl.value, `"10"`)
-    matchInlineSnapshotBrowser(
-      rightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
   })
@@ -644,37 +590,40 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"10vw"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"220"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"124pt"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"165.5"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(topControl.value, `"1.4cm"`)
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
+
+    matchInlineSnapshotBrowser(topControl.value, `"53"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(leftControl.value, `"2em"`)
+    matchInlineSnapshotBrowser(leftControl.value, `"32"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -715,10 +664,10 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -743,6 +692,9 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
 
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
@@ -801,16 +753,16 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
     const paddingControl = (await renderResult.renderedDOM.findByTestId(
       'padding-one',
@@ -821,35 +773,32 @@ describe('inspector tests with real metadata', () => {
     const opacityControl = (await renderResult.renderedDOM.findByTestId(
       'opacity-number-input',
     )) as HTMLInputElement
-    const minWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-minWidth-number-input',
-    )) as HTMLInputElement
-    const maxWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'position-maxWidth-number-input',
-    )) as HTMLInputElement
 
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // this could be improved to be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // this could be improved to be Top
 
     matchInlineSnapshotBrowser(topControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(leftControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
@@ -867,20 +816,6 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
     matchInlineSnapshotBrowser(
       opacityControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['minWidth'], `"0px"`)
-    matchInlineSnapshotBrowser(minWidthControl.value, `"0"`)
-    matchInlineSnapshotBrowser(
-      minWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple"`,
-    )
-
-    matchInlineSnapshotBrowser(metadata.computedStyle?.['maxWidth'], `"none"`)
-    matchInlineSnapshotBrowser(maxWidthControl.value, `""`)
-    matchInlineSnapshotBrowser(
-      maxWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
   })
@@ -920,16 +855,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -941,17 +876,20 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"203px"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"102px"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
 
     matchInlineSnapshotBrowser(topControl.value, `"25"`)
     matchInlineSnapshotBrowser(
@@ -1020,16 +958,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1041,25 +979,28 @@ describe('inspector tests with real metadata', () => {
       'radius-one',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"80%"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"320"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(heightControl.value, `"65%"`)
+    matchInlineSnapshotBrowser(heightControl.value, `"260"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(topControl.value, `"25%"`)
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Scale')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Scale')
+
+    matchInlineSnapshotBrowser(topControl.value, `"100"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
 
-    matchInlineSnapshotBrowser(leftControl.value, `"10%"`)
+    matchInlineSnapshotBrowser(leftControl.value, `"40"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
@@ -1119,16 +1060,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1143,25 +1084,28 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"88"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // this could be improved to be Scale once we understand calc()
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // this could be improved to be Top
 
     matchInlineSnapshotBrowser(topControl.value, `"220"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(leftControl.value, `"100"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"simple-unknown-css"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"44"`)
@@ -1218,16 +1162,16 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1242,25 +1186,28 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"150"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"130"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // this should be Left (in follow-up PR)
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // this should be Top (in follow-up PR)
 
     matchInlineSnapshotBrowser(topControl.value, `"33"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(leftControl.value, `"74"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"4"`)
@@ -1349,16 +1296,16 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const topControl = (await renderResult.renderedDOM.findByTestId(
-      'position-top-number-input',
+      'frame-top-number-input',
     )) as HTMLInputElement
     const leftControl = (await renderResult.renderedDOM.findByTestId(
-      'position-left-number-input',
+      'frame-left-number-input',
     )) as HTMLInputElement
     const paddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1385,6 +1332,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Left')
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Top')
+
     matchInlineSnapshotBrowser(topControl.value, `"100"`)
     matchInlineSnapshotBrowser(
       topControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
@@ -1394,7 +1344,7 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(leftControl.value, `"30"`)
     matchInlineSnapshotBrowser(
       leftControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(paddingLeftControl.value, `"5"`)
@@ -1458,10 +1408,10 @@ describe('inspector tests with real metadata', () => {
     const earlyMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const earlyWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const earlyHeightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const earlyPaddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1477,15 +1427,18 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(earlyWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       earlyWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(earlyMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(earlyHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       earlyHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this is wrong, should show Left from css
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this is wrong, should show Top from css
 
     matchInlineSnapshotBrowser(earlyPaddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
@@ -1521,10 +1474,10 @@ describe('inspector tests with real metadata', () => {
     const laterMetadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const laterWidthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const laterHeightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const laterPaddingLeftControl = (await renderResult.renderedDOM.findByTestId(
       'padding-L',
@@ -1540,15 +1493,18 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(laterWidthControl.value, `"203"`)
     matchInlineSnapshotBrowser(
       laterWidthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(laterMetadata.computedStyle?.['height'], `"102px"`)
     matchInlineSnapshotBrowser(laterHeightControl.value, `"102"`)
     matchInlineSnapshotBrowser(
       laterHeightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this is wrong, should show Left from css
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this is wrong, should show Top from css
 
     matchInlineSnapshotBrowser(laterPaddingLeftControl.value, `"16"`)
     matchInlineSnapshotBrowser(
@@ -1617,10 +1573,10 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const paddingControl = (await renderResult.renderedDOM.findByTestId(
       'padding-one',
@@ -1635,14 +1591,17 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"0"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO should show up as Left!
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO should show up as Top
 
     matchInlineSnapshotBrowser(paddingControl.value, `"0"`)
     matchInlineSnapshotBrowser(
@@ -1699,7 +1658,7 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
 
     expect(widthControl.value).toBe('0')
@@ -1757,7 +1716,7 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
 
     expect(widthControl.value).toBe('0')
@@ -1765,7 +1724,7 @@ describe('inspector tests with real metadata', () => {
     await pressKeyTimes(widthControl, renderResult, ['ArrowUp'])
     expect(widthControl.value).toBe('1')
 
-    await setControlValue('hug-fixed-fill-width', '100', renderResult.renderedDOM)
+    await setControlValue('frame-width-number-input', '100', renderResult.renderedDOM)
     await renderResult.getDispatchFollowUpActionsFinished()
 
     expect(widthControl.value).toBe('100')
@@ -1810,7 +1769,7 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
 
     expect(widthControl.value).toBe('0')
@@ -1892,10 +1851,10 @@ describe('inspector tests with real metadata', () => {
     const metadata = renderResult.getEditorState().editor.jsxMetadata[EP.toString(targetPath)]
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
     const paddingControl = (await renderResult.renderedDOM.findByTestId(
       'padding-one',
@@ -1911,15 +1870,18 @@ describe('inspector tests with real metadata', () => {
     matchInlineSnapshotBrowser(widthControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['height'], `"250px"`)
     matchInlineSnapshotBrowser(heightControl.value, `"250"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
 
     matchInlineSnapshotBrowser(metadata.computedStyle?.['paddingLeft'], `"14px"`)
     matchInlineSnapshotBrowser(paddingControl.value, `"14"`)
@@ -2167,6 +2129,9 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
+
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
     matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
     matchInlineSnapshotBrowser(
@@ -2213,6 +2178,9 @@ describe('inspector tests with real metadata', () => {
       fontSizeControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"detected"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
 
   // TODO reinstate once flex shorthand is supported again
@@ -2244,8 +2212,8 @@ describe('inspector tests with real metadata', () => {
     // const flexBasis = (await renderResult.renderedDOM.findByTestId(
     //   'position-flexBasis-number-input',
     // )) as HTMLInputElement
-    const flexGrow = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'frame-width-number-input',
     )) as HTMLInputElement
     // const flexShrink = (await renderResult.renderedDOM.findByTestId(
     //   'position-flexShrink-number-input',
@@ -2258,9 +2226,9 @@ describe('inspector tests with real metadata', () => {
     //   `"simple"`,
     // )
     matchInlineSnapshotBrowser(metadata.computedStyle?.['flexGrow'], `"1"`)
-    matchInlineSnapshotBrowser(flexGrow.value, `"1"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"400"`)
     matchInlineSnapshotBrowser(
-      flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
     // matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
@@ -2269,6 +2237,9 @@ describe('inspector tests with real metadata', () => {
     //   flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple"`,
     // )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
 
   it('Flex longhand properties', async () => {
@@ -2306,8 +2277,8 @@ describe('inspector tests with real metadata', () => {
     // const flexBasis = (await renderResult.renderedDOM.findByTestId(
     //   'position-flexBasis-number-input',
     // )) as HTMLInputElement
-    const flexGrow = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+    const widthControl = (await renderResult.renderedDOM.findByTestId(
+      'frame-width-number-input',
     )) as HTMLInputElement
     // const flexShrink = (await renderResult.renderedDOM.findByTestId(
     //   'position-flexShrink-number-input',
@@ -2320,9 +2291,9 @@ describe('inspector tests with real metadata', () => {
     //   `"simple"`,
     // )
     matchInlineSnapshotBrowser(metadata.computedStyle?.['flexGrow'], `"1"`)
-    matchInlineSnapshotBrowser(flexGrow.value, `"1"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"400"`)
     matchInlineSnapshotBrowser(
-      flexGrow.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
+      widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
     // matchInlineSnapshotBrowser(metadata.computedStyle?.['flexShrink'], `"0"`)
@@ -2331,6 +2302,9 @@ describe('inspector tests with real metadata', () => {
     //   flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple"`,
     // )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
   it('Flex longhand in style props using a simple expression', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -2362,23 +2336,26 @@ describe('inspector tests with real metadata', () => {
     })
 
     const widthControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-width',
+      'frame-width-number-input',
     )) as HTMLInputElement
     const heightControl = (await renderResult.renderedDOM.findByTestId(
-      'hug-fixed-fill-height',
+      'frame-height-number-input',
     )) as HTMLInputElement
 
-    matchInlineSnapshotBrowser(widthControl.value, `"1"`)
+    matchInlineSnapshotBrowser(widthControl.value, `"400"`)
     matchInlineSnapshotBrowser(
       widthControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"controlled"`,
+      `"simple"`,
     )
 
     matchInlineSnapshotBrowser(heightControl.value, `"130"`)
     matchInlineSnapshotBrowser(
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
-      `"disabled"`,
+      `"simple"`,
     )
+
+    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
+    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
   it('Shows multifile selected element properties', async () => {
     let projectContents: ProjectContents = {
@@ -3443,629 +3420,18 @@ describe('inspector tests with real metadata', () => {
       expect(getFrame(targetPath, renderResult)).toBe(elementFrame)
       expectGroupToast(renderResult, 'child-has-percentage-pins')
     })
-    xdescribe('group children', () => {
+
+    describe('group children', () => {
       // TODO rewrite this to use the dropdown
       setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
-      const tests: {
-        name: string
+
+      function runTest(test: {
         input: string
         selection: ElementPath[]
         logic: (renderResult: EditorRenderResult) => Promise<void>
         want: string
-      }[] = [
-        {
-          name: 'set constraint for Top, Height using the visual pin control',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'unset constraint for TLBR',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['top']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for TLBR, multiple values',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control1 = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control1, { x: 1, y: 1 })
-            const control2 = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-left',
-            )
-            await mouseClickAtPoint(control2, { x: 1, y: 1 })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                    left: 0,
-                    width: 100,
-                  }}
-                  data-constraints={['top', 'height', 'left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'unset constraint for TLBR, multiple values',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'top', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for TLBR, multiselect',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
-          ],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
-          },
-          want: `
-           <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left', 'width', 'top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    left: 200,
-                    backgroundColor: 'red',
-                    top: 200,
-                    height: 0,
-                  }}
-                  data-constraints={['top', 'height']}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for TLBR, multiselect with already-present values',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'width', 'top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
-          ],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-catcher-pin-top',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left', 'width', 'top', 'height']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    left: 200,
-                    backgroundColor: 'red',
-                    top: 200,
-                    height: 0,
-                  }}
-                  data-constraints={['top', 'height']}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'unset constraint for TH, multiselect',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                  data-constraints={['left', 'top']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                  data-constraints={['top']}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
-            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
-          ],
-          logic: async (renderResult) => {
-            const control = await renderResult.renderedDOM.findByTestId(
-              'group-child-controls-pin-centery-transparent',
-            )
-            await mouseClickAtPoint(control, { x: 1, y: 1 }, { modifiers: cmdModifier })
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    left: 0,
-                    width: 100,
-                    backgroundColor: 'blue',
-                    top: 0,
-                    height: 100,
-                  }}
-                  data-constraints={['left']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    left: 200,
-                    backgroundColor: 'red',
-                    top: 200,
-                    height: 0,
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-        {
-          name: 'set constraint for Left + Width',
-          input: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: 100,
-                    height: 100,
-                    backgroundColor: 'blue'
-                  }}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
-          logic: async (renderResult) => {
-            const control = document.getElementById('frame-child-constraint-width')
-            if (control == null) {
-              throw new Error('cannot find select')
-            }
-
-            await selectEvent.select(control, 'Left')
-          },
-          want: `
-            <div
-              style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
-              data-uid='aaa'
-            >
-              <Group
-                data-uid='group'
-              >
-                <div
-                  data-uid='foo'
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    height: 100,
-                    backgroundColor: 'blue',
-                    left: 0,
-                    width: 100,
-                  }}
-                  data-constraints={['left', 'width']}
-                />
-                <div
-                  data-uid='bar'
-                  style={{
-                    position: 'absolute',
-                    top: 200,
-                    left: 200,
-                    backgroundColor: 'red'
-                  }}
-                />
-              </Group>
-            </div>
-          `,
-        },
-      ]
-      tests.forEach((test, i) => {
-        it(`${i + 1}/${tests.length} ${test.name}`, async () => {
+      }): () => Promise<void> {
+        return async function testBody() {
           const renderResult = await renderTestEditorWithCode(
             formatTestProjectCode(makeTestProjectCodeWithSnippet(test.input)),
             'await-first-dom-report',
@@ -4079,8 +3445,659 @@ describe('inspector tests with real metadata', () => {
           expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
             formatTestProjectCode(makeTestProjectCodeWithSnippet(test.want)),
           )
-        })
-      })
+        }
+      }
+
+      it(
+        'set constraint for Top, Height using the visual pin control',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Scale',
+              'Top and Height',
+            )
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'unset constraint for TLBR',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['top']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Top',
+              'Scale',
+            )
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for TLBR, multiple values',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Scale',
+              'Top and Height',
+            )
+
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-width-popuplist',
+              'Left and Width',
+              'Left and Width',
+            )
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                  left: 0,
+                  width: 100,
+                }}
+                data-constraints={['top', 'height', 'left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'unset constraint for TLBR, multiple values',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'top', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Top',
+              'Scale',
+            )
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for TLBR, multiselect',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+          ],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Scale',
+              'Top and Height',
+            )
+          },
+          want: `
+         <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left', 'width', 'top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  left: 200,
+                  backgroundColor: 'red',
+                  top: 200,
+                  height: 0,
+                }}
+                data-constraints={['top', 'height']}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for TLBR, multiselect with already-present values',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'width', 'top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+          ],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Mixed',
+              'Top and Height',
+            )
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left', 'width', 'top', 'height']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  left: 200,
+                  backgroundColor: 'red',
+                  top: 200,
+                  height: 0,
+                }}
+                data-constraints={['top', 'height']}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'unset constraint for TH, multiselect',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+                data-constraints={['left', 'top']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+                data-constraints={['top']}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo']),
+            EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'bar']),
+          ],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-height-popuplist',
+              'Top',
+              'Scale',
+            )
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  width: 100,
+                  backgroundColor: 'blue',
+                  top: 0,
+                  height: 100,
+                }}
+                data-constraints={['left']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  left: 200,
+                  backgroundColor: 'red',
+                  top: 200,
+                  height: 0,
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
+
+      it(
+        'set constraint for Left + Width',
+        runTest({
+          input: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'blue'
+                }}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+          selection: [EP.appendNewElementPath(TestScenePath, ['aaa', 'group', 'foo'])],
+          logic: async (renderResult) => {
+            await pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-width-popuplist',
+              'Scale',
+              'Left and Width',
+            )
+          },
+          want: `
+          <div
+            style={{ position: 'absolute', backgroundColor: '#FFFFFF' }}
+            data-uid='aaa'
+          >
+            <Group
+              data-uid='group'
+            >
+              <div
+                data-uid='foo'
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  height: 100,
+                  backgroundColor: 'blue',
+                  left: 0,
+                  width: 100,
+                }}
+                data-constraints={['left', 'width']}
+              />
+              <div
+                data-uid='bar'
+                style={{
+                  position: 'absolute',
+                  top: 200,
+                  left: 200,
+                  backgroundColor: 'red'
+                }}
+              />
+            </Group>
+          </div>
+        `,
+        }),
+      )
     })
   })
 })
