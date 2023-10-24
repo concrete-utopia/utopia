@@ -268,7 +268,7 @@ export const TextSubsection = React.memo(() => {
           id='textAlign-context-menu'
           items={textAlignContextMenuItems}
           data={null}
-          style={{ gridColumn: '3 / span 4' }}
+          style={{ gridColumn: '4 / span 3' }}
         >
           <OptionChainControl
             id='textAlign'
