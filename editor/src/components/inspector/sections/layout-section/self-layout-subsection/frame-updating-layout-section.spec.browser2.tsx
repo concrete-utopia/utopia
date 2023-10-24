@@ -1150,12 +1150,12 @@ describe('Frame updating layout section', () => {
           await editor.getDispatchFollowUpActionsFinished()
 
           const widthDropdown = await editor.renderedDOM.findByTestId(
-            getFixedHugDropdownId('width') + '-label',
+            getFixedHugDropdownId('width') + '-popuplist',
           )
           expect(widthDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownWidthValue)
 
           const heightDropdown = await editor.renderedDOM.findByTestId(
-            getFixedHugDropdownId('height') + '-label',
+            getFixedHugDropdownId('height') + '-popuplist',
           )
           expect(heightDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownHeightValue)
 
