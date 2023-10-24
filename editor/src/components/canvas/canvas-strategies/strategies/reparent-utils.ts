@@ -296,10 +296,6 @@ export function placeholderCloneCommands(
 }
 
 function rectangleSizesEqual(a: CanvasRectangle, b: CanvasRectangle): boolean {
-  if (isInfinityRectangle(a) || isInfinityRectangle(b)) {
-    return false
-  }
-
   return a.height === b.height && a.width === b.width
 }
 
