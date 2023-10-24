@@ -258,6 +258,11 @@ export function collapseTextElements(target: ElementPath, editor: EditorState): 
   return editor
 }
 
+// extracted into a separate function so that the intention is clear
+export function roundUpToPreventTextWrapping(value: number): number {
+  return Math.ceil(value)
+}
+
 export function fixedSizeDimensionHandlingText(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -266,5 +271,5 @@ export function fixedSizeDimensionHandlingText(
 ): number {
   // Fixed dimensions for a text containing element need to be rounded up to prevent wrapping.
   const containsText = MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, elementPath)
-  return containsText ? Math.ceil(dimensionValue) : dimensionValue
+  return containsText ? roundUpToPreventTextWrapping(dimensionValue) : dimensionValue
 }

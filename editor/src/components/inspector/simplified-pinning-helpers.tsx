@@ -33,6 +33,7 @@ import {
   getFramePointsFromMetadataTypeFixed,
 } from './inspector-common'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { roundUpToPreventTextWrapping } from '../text-editor/text-handling'
 
 type HorizontalPinRequests =
   | 'left-and-width'
@@ -615,7 +616,7 @@ const getPinChanges =
         MetadataUtils.targetTextEditableAndHasText(metadata, pathTrees, target) &&
         localFrame != null
       ) {
-        const nonRoundedWidth = Math.ceil(
+        const nonRoundedWidth = roundUpToPreventTextWrapping(
           nullIfInfinity(
             MetadataUtils.findElementByElementPath(metadata, target)?.nonRoundedGlobalFrame,
           )?.width ?? localFrame.width,
