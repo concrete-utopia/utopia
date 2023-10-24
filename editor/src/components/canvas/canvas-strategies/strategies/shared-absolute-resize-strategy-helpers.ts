@@ -79,13 +79,13 @@ export function createResizeCommandsSettingMissingProps(
   elementParentBounds: CanvasRectangle,
   elementParentFlexDirection: FlexDirection | null,
 ): { commands: SetCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
-  const pinsThatCanBrAffectedByEdgePosition = pinsForEdgePosition(edgePosition)
+  const pinsThatCanBeAffectedByEdgePosition = pinsForEdgePosition(edgePosition)
   const currentPinsPlusEnsuredPins = ensureAtLeastTwoPinsForEdgePosition(
     right(element.props),
     edgePosition,
   )
 
-  const pinsToChangeOrAdd = pinsThatCanBrAffectedByEdgePosition.filter((pin) =>
+  const pinsToChangeOrAdd = pinsThatCanBeAffectedByEdgePosition.filter((pin) =>
     currentPinsPlusEnsuredPins.includes(pin),
   )
 
