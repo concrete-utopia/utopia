@@ -1300,33 +1300,53 @@ export interface PostActionMenuSession {
   postActionMenuData: PostActionMenuData
 }
 
-export interface TrueUpElementChanged {
-  type: 'TRUE_UP_ELEMENT_CHANGED'
+export interface TrueUpGroupElementChanged {
+  type: 'TRUE_UP_GROUP_ELEMENT_CHANGED'
   target: ElementPath
 }
 
-export function trueUpElementChanged(target: ElementPath): TrueUpElementChanged {
+export function trueUpGroupElementChanged(target: ElementPath): TrueUpGroupElementChanged {
   return {
-    type: 'TRUE_UP_ELEMENT_CHANGED',
+    type: 'TRUE_UP_GROUP_ELEMENT_CHANGED',
     target: target,
   }
 }
 
-export interface TrueUpChildrenOfElementChanged {
-  type: 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED'
+export interface TrueUpChildrenOfGroupChanged {
+  type: 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED'
   targetParent: ElementPath
 }
 
-export function trueUpChildrenOfElementChanged(
+export function trueUpChildrenOfGroupChanged(
   targetParent: ElementPath,
-): TrueUpChildrenOfElementChanged {
+): TrueUpChildrenOfGroupChanged {
   return {
-    type: 'TRUE_UP_CHILDREN_OF_ELEMENT_CHANGED',
+    type: 'TRUE_UP_CHILDREN_OF_GROUP_CHANGED',
     targetParent: targetParent,
   }
 }
 
-export type TrueUpTarget = TrueUpElementChanged | TrueUpChildrenOfElementChanged
+export interface TrueUpHuggingElement {
+  type: 'TRUE_UP_HUGGING_ELEMENT'
+  target: ElementPath
+  frame: CanvasRectangle
+}
+
+export function trueUpHuggingElement(
+  target: ElementPath,
+  frame: CanvasRectangle,
+): TrueUpHuggingElement {
+  return {
+    type: 'TRUE_UP_HUGGING_ELEMENT',
+    target: target,
+    frame: frame,
+  }
+}
+
+export type TrueUpTarget =
+  | TrueUpGroupElementChanged
+  | TrueUpChildrenOfGroupChanged
+  | TrueUpHuggingElement
 
 // FIXME We need to pull out ProjectState from here
 export interface EditorState {
@@ -1338,7 +1358,7 @@ export interface EditorState {
   projectDescription: string
   projectVersion: number
   isLoaded: boolean
-  trueUpGroupsForElementAfterDomWalkerRuns: Array<TrueUpTarget>
+  trueUpElementsAfterDomWalkerRuns: Array<TrueUpTarget>
   spyMetadata: ElementInstanceMetadataMap // this is coming from the canvas spy report.
   domMetadata: ElementInstanceMetadataMap // this is coming from the dom walking report.
   jsxMetadata: ElementInstanceMetadataMap // this is a merged result of the two above.
@@ -1416,7 +1436,7 @@ export function editorState(
   projectDescription: string,
   projectVersion: number,
   isLoaded: boolean,
-  trueUpGroupsForElementAfterDomWalkerRuns: Array<TrueUpTarget>,
+  trueUpElementsAfterDomWalkerRuns: Array<TrueUpTarget>,
   spyMetadata: ElementInstanceMetadataMap,
   domMetadata: ElementInstanceMetadataMap,
   jsxMetadata: ElementInstanceMetadataMap,
@@ -1493,7 +1513,7 @@ export function editorState(
     projectDescription: projectDescription,
     projectVersion: projectVersion,
     isLoaded: isLoaded,
-    trueUpGroupsForElementAfterDomWalkerRuns: trueUpGroupsForElementAfterDomWalkerRuns,
+    trueUpElementsAfterDomWalkerRuns: trueUpElementsAfterDomWalkerRuns,
     spyMetadata: spyMetadata,
     domMetadata: domMetadata,
     jsxMetadata: jsxMetadata,
@@ -2270,7 +2290,7 @@ export function createEditorState(dispatch: EditorDispatch): EditorState {
     projectDescription: 'Made with Utopia',
     projectVersion: CURRENT_PROJECT_VERSION,
     isLoaded: false,
-    trueUpGroupsForElementAfterDomWalkerRuns: [],
+    trueUpElementsAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,
@@ -2638,7 +2658,7 @@ export function editorModelFromPersistentModel(
     projectDescription: persistentModel.projectDescription,
     projectVersion: persistentModel.projectVersion,
     isLoaded: false,
-    trueUpGroupsForElementAfterDomWalkerRuns: [],
+    trueUpElementsAfterDomWalkerRuns: [],
     spyMetadata: emptyJsxMetadata,
     domMetadata: emptyJsxMetadata,
     jsxMetadata: emptyJsxMetadata,

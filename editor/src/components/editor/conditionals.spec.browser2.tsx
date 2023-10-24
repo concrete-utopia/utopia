@@ -31,7 +31,7 @@ import {
   wrapInElement,
 } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
-import type { EditorState, EditorStorePatched } from './store/editor-state'
+import type { EditorStorePatched } from './store/editor-state'
 import type { InsertionPath } from './store/insertion-path'
 import {
   childInsertionPath,
@@ -277,23 +277,23 @@ describe('conditionals', () => {
     })
     it('keeps the selection on the null branch (multiple targets)', async () => {
       const startSnippet = `
-        <div data-uid='aaa'>
-        {
-          // @utopia/uid=conditional1
-          true ? (
-            <div data-uid='bbb' data-testid='bbb'>foo</div>
-          ) : (
-            <div data-uid='ccc' data-testid='ccc'>bar</div>
-          )
-        }
-        {
-          // @utopia/uid=conditional2
-          true ? (
-            <div data-uid='ddd' data-testid='ddd'>foo</div>
-          ) : (
-            <div data-uid='eee' data-testid='eee'>bar</div>
-          )
-        }
+        <div data-uid='aaa' data-testid='aaa'>
+          {
+            // @utopia/uid=conditional1
+            true ? (
+              <div data-uid='bbb' data-testid='bbb'>foo</div>
+            ) : (
+              <div data-uid='ccc' data-testid='ccc'>bar</div>
+            )
+          }
+          {
+            // @utopia/uid=conditional2
+            true ? (
+              <div data-uid='ddd' data-testid='ddd'>foo</div>
+            ) : (
+              <div data-uid='eee' data-testid='eee'>bar</div>
+            )
+          }
           <div data-uid='fff' data-testid='fff'>
             <div data-uid='ggg' data-testid='ggg'>baz</div>
           </div>
@@ -318,9 +318,19 @@ describe('conditionals', () => {
         await renderResult.dispatch([deleteSelected()], true)
       })
 
+      const divAAA = (await renderResult.renderedDOM.findByTestId('aaa')).getBoundingClientRect()
+      const divFFF = (await renderResult.renderedDOM.findByTestId('fff')).getBoundingClientRect()
+      // doing this dance because of possible font render discrepancies between local and CI
+      expect(divFFF.height).toBeGreaterThanOrEqual(18)
+      expect(divFFF.height).toBeLessThanOrEqual(20)
+      expect(divFFF.width).toBeGreaterThanOrEqual(400)
+      expect(divFFF.width).toBeLessThanOrEqual(401)
+      const left = divFFF.left - divAAA.left
+      const top = divFFF.top - divAAA.top
+
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
-            <div data-uid='aaa'>
+            <div data-uid='aaa' data-testid='aaa'>
             {
               // @utopia/uid=conditional1
               true ? (
@@ -337,7 +347,7 @@ describe('conditionals', () => {
                 null
               )
             }
-              <div data-uid='fff' data-testid='fff' />
+              <div data-uid='fff' data-testid='fff' style={{ width: ${divFFF.width}, height: ${divFFF.height}, position: 'absolute', left: ${left}, top: ${top} }} />
             </div>
          `),
       )

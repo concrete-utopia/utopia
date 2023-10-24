@@ -21,7 +21,7 @@ import type {
   EditorState,
   EditorStatePatch,
 } from '../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { cssPixelLength, type FlexDirection } from '../../inspector/common/css-utils'
 import {
   getConstraintsIncludingImplicitForElement,
@@ -107,8 +107,8 @@ export const runPushIntendedBoundsAndUpdateGroups = (
     commandLifecycle === 'end-interaction' && !commandRanBecauseOfQueuedTrueUp
       ? [
           {
-            trueUpGroupsForElementAfterDomWalkerRuns: {
-              $set: resizedGroupChildren.map((c) => trueUpElementChanged(c)),
+            trueUpElementsAfterDomWalkerRuns: {
+              $set: resizedGroupChildren.map((c) => trueUpGroupElementChanged(c)),
             },
           },
         ]

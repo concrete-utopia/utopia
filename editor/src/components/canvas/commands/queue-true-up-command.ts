@@ -1,37 +1,37 @@
-import type { ProjectContentTreeRoot } from '../../../components/assets'
+import type { ProjectContentTreeRoot } from '../../assets'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { AllElementProps, EditorState, TrueUpTarget } from '../../editor/store/editor-state'
-import { trueUpElementChanged } from '../../editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../editor/store/editor-state'
 import { allowGroupTrueUp } from '../canvas-strategies/strategies/group-helpers'
 import type { BaseCommand, CommandFunction } from './commands'
-import { trueUpTargetToDescription } from '../../../core/model/groups'
+import { trueUpTargetToDescription } from '../../../core/model/true-up-targets'
 
-export interface QueueGroupTrueUp extends BaseCommand {
-  type: 'QUEUE_GROUP_TRUE_UP'
+export interface QueueTrueUpElement extends BaseCommand {
+  type: 'QUEUE_TRUE_UP_ELEMENT'
   targets: Array<TrueUpTarget>
 }
 
-export function queueGroupTrueUp(targets: Array<TrueUpTarget>): QueueGroupTrueUp {
+export function queueTrueUpElement(targets: Array<TrueUpTarget>): QueueTrueUpElement {
   return {
-    type: 'QUEUE_GROUP_TRUE_UP',
+    type: 'QUEUE_TRUE_UP_ELEMENT',
     whenToRun: 'on-complete',
     targets: targets,
   }
 }
 
-export const runQueueGroupTrueUp: CommandFunction<QueueGroupTrueUp> = (
-  editorState: EditorState,
-  command: QueueGroupTrueUp,
+export const runQueueTrueUpElement: CommandFunction<QueueTrueUpElement> = (
+  _: EditorState,
+  command: QueueTrueUpElement,
 ) => {
   return {
     commandDescription: `Once the interaction has finished: ${command.targets
       .map((target) => trueUpTargetToDescription(target))
       .join(', ')}`,
-    editorStatePatches: [{ trueUpGroupsForElementAfterDomWalkerRuns: { $push: command.targets } }],
+    editorStatePatches: [{ trueUpElementsAfterDomWalkerRuns: { $push: command.targets } }],
   }
 }
 
@@ -42,11 +42,13 @@ export function getRequiredGroupTrueUps(
   pathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
   target: ElementPath,
-): Array<QueueGroupTrueUp> {
+): Array<QueueTrueUpElement> {
   const parentPath = EP.parentPath(target)
   if (allowGroupTrueUp(projectContents, metadata, pathTrees, allElementProps, parentPath)) {
     const siblings = MetadataUtils.getSiblingsOrdered(metadata, pathTrees, target)
-    return [queueGroupTrueUp(siblings.map((sibling) => trueUpElementChanged(sibling.elementPath)))]
+    return [
+      queueTrueUpElement(siblings.map((sibling) => trueUpGroupElementChanged(sibling.elementPath))),
+    ]
   } else {
     return []
   }

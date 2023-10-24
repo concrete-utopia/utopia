@@ -132,7 +132,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'UPDATE_PROJECT_SERVER_STATE':
       return true
 
-    case 'TRUE_UP_GROUPS':
+    case 'TRUE_UP_ELEMENTS':
     case 'EXECUTE_POST_ACTION_MENU_CHOICE':
     case 'NEW':
     case 'LOAD':

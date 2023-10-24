@@ -10,12 +10,12 @@ import type { CSSNumber } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import { removeExtraPinsWhenSettingSize, widthHeightFromAxis } from '../inspector-common'
 import type { InspectorStrategy } from './inspector-strategy'
-import { queueGroupTrueUp } from '../../canvas/commands/queue-group-true-up-command'
+import { queueTrueUpElement } from '../../canvas/commands/queue-true-up-command'
 import {
   groupErrorToastCommand,
   maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
-import { trueUpElementChanged } from '../../../components/editor/store/editor-state'
+import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
 
 export const fixedSizeBasicStrategy = (
   whenToRun: WhenToRun,
@@ -52,7 +52,7 @@ export const fixedSizeBasicStrategy = (
           setExplicitCssValue(value),
           parentFlexDirection,
         ),
-        queueGroupTrueUp([trueUpElementChanged(path)]),
+        queueTrueUpElement([trueUpGroupElementChanged(path)]),
       ]
     })
   },

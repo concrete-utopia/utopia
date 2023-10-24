@@ -13,6 +13,7 @@ import type {
   ElementInstanceMetadata,
   ElementInstanceMetadataMap,
   JSXAttributes,
+  JSXElement,
 } from '../../core/shared/element-template'
 import {
   isJSXElement,
@@ -406,7 +407,7 @@ export const flexChildProps = [
   styleP('flexBasis'),
 ]
 
-const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
+export const flexChildAndBottomRightProps = [...flexChildProps, styleP('bottom'), styleP('right')]
 
 export function prunePropsCommands(
   props: PropertyPath[],
@@ -1269,4 +1270,8 @@ export function getConstraintsIncludingImplicitForElement(
   }
 
   return Array.from(constraints)
+}
+
+export function isHuggingParent(element: JSXElement, property: 'width' | 'height') {
+  return isHugFromStyleAttribute(element.props, property, 'include-all-hugs')
 }

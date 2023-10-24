@@ -423,13 +423,13 @@ export async function renderTestEditorWithModel(
     }
 
     // true-up groups if needed
-    if (workingEditorState.unpatchedEditor.trueUpGroupsForElementAfterDomWalkerRuns.length > 0) {
+    if (workingEditorState.unpatchedEditor.trueUpElementsAfterDomWalkerRuns.length > 0) {
       ;(() => {
         // updated editor with trued up groups
         const projectContentsBeforeGroupTrueUp = workingEditorState.unpatchedEditor.projectContents
         const dispatchResultWithTruedUpGroups = editorDispatchActionRunner(
           asyncTestDispatch,
-          [{ action: 'TRUE_UP_GROUPS' }],
+          [{ action: 'TRUE_UP_ELEMENTS' }],
           workingEditorState,
           spyCollector,
         )
