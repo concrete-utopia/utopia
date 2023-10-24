@@ -60,7 +60,7 @@ function detectTextSizingState(
   return 'disabled'
 }
 
-function detectTextSizingStateMultiSelect(
+export function detectTextSizingStateMultiSelect(
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
   elementPaths: ElementPath[],
