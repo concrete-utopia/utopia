@@ -211,7 +211,7 @@ describe('Constraints Section', () => {
     )
   })
 
-  it('is hidden when there are no contents', async () => {
+  it('is hidden when the selection does not contain elements for which pins are applicable', async () => {
     const renderResult = await renderTestEditorWithCode(
       formatTestProjectCode(`
 		  import * as React from 'react'
