@@ -1,15 +1,11 @@
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "makeTestCase"] }] */
+
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../../core/model/scene-utils'
 import type { MaybeInfinityLocalRectangle } from '../../../../../core/shared/math-utils'
 import { localRectangle } from '../../../../../core/shared/math-utils'
-import {
-  filtered,
-  fromField,
-  traverseArray,
-} from '../../../../../core/shared/optics/optic-creators'
-import { forEachOf, toArrayOf } from '../../../../../core/shared/optics/optic-utilities'
 import type { EditorRenderResult } from '../../../../canvas/ui-jsx.test-utils'
 import {
   TestAppUID,
@@ -101,9 +97,6 @@ function makeTestProjectCodeWithoutUIDs(componentInnards: string): string {
 }
 
 interface TestCase {
-  controlTested: string
-  projectContext: string
-  changeApplied: string
   baseProject: string
   actionChange: (renderResult: EditorRenderResult) => Promise<void>
   expectedFrames: { [key: string]: MaybeInfinityLocalRectangle | null }
@@ -112,1069 +105,1043 @@ interface TestCase {
   expectedFixedHugDropdownHeightValue: string
 }
 
-const testCases: Array<TestCase> = [
-  {
-    controlTested: 'Left',
-    projectContext: 'single element selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the left field.
-      await updateInputValue(renderResult, `frame-left-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 110,
-          y: 100,
-          width: 200,
-          height: 300,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 110,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Left',
-    projectContext: 'single element with percentage value selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: '25%',
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the left field.
-      await updateInputValue(renderResult, `frame-left-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 110,
-          y: 100,
-          width: 200,
-          height: 300,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: '13.75%',
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Left',
-    projectContext: 'multiple elements selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 400,
-          top: 300,
-          width: 25,
-          height: 35,
-        }}
-        data-uid={'rectangle-2'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`),
-      ])
-
-      // Change the left field.
-      await updateInputValue(renderResult, `frame-left-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 110,
-          y: 100,
-          width: 200,
-          height: 300,
-        }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
-        localRectangle({
-          x: 110,
-          y: 300,
-          width: 25,
-          height: 35,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 110,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 110,
-          top: 300,
-          width: 25,
-          height: 35,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Top',
-    projectContext: 'single element selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the top field.
-      await updateInputValue(renderResult, `frame-top-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 110,
-          width: 200,
-          height: 300,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 110,
-          width: 200,
-          height: 300,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Top',
-    projectContext: 'single element with percentage value selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: '25%',
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the top field.
-      await updateInputValue(renderResult, `frame-top-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 110,
-          width: 200,
-          height: 300,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: '12.22%',
-          width: 200,
-          height: 300,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Top',
-    projectContext: 'multiple elements selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 400,
-          top: 300,
-          width: 25,
-          height: 35,
-        }}
-        data-uid={'rectangle-2'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`),
-      ])
-
-      // Change the top field.
-      await updateInputValue(renderResult, `frame-top-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 110,
-          width: 200,
-          height: 300,
-        }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
-        localRectangle({
-          x: 400,
-          y: 110,
-          width: 25,
-          height: 35,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 110,
-          width: 200,
-          height: 300,
-        }}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 400,
-          top: 110,
-          width: 25,
-          height: 35,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Width',
-    projectContext: 'single element selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the width field.
-      await updateInputValue(renderResult, `frame-width-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 110,
-          height: 300,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 110,
-          height: 300,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Width',
-    projectContext: 'single element with percentage value selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: '25%',
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the width field.
-      await updateInputValue(renderResult, `frame-width-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 110,
-          height: 300,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: '13.75%',
-          height: 300,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Scaled',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Width',
-    projectContext: 'single element with percentage value selected (height is 100%)',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: '25%',
-          height: '100%',
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the width field.
-      await updateInputValue(renderResult, `frame-width-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 110,
-          height: 900,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: '13.75%',
-          height: '100%',
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Scaled',
-    expectedFixedHugDropdownHeightValue: 'Fill container',
-  },
-  {
-    controlTested: 'Width',
-    projectContext: 'multiple elements selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 400,
-          top: 300,
-          width: 25,
-          height: 35,
-        }}
-        data-uid={'rectangle-2'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`),
-      ])
-
-      // Change the width field.
-      await updateInputValue(renderResult, `frame-width-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 110,
-          height: 300,
-        }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
-        localRectangle({
-          x: 400,
-          y: 300,
-          width: 110,
-          height: 35,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 110,
-          height: 300,
-        }}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 400,
-          top: 300,
-          width: 110,
-          height: 35,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Height',
-    projectContext: 'single element selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the height field.
-      await updateInputValue(renderResult, `frame-height-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 200,
-          height: 110,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 110,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-  {
-    controlTested: 'Height',
-    projectContext: 'single element with percentage value selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: '25%',
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the height field.
-      await updateInputValue(renderResult, `frame-height-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 200,
-          height: 110,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: '12.22%',
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Scaled',
-  },
-  {
-    controlTested: 'Height',
-    projectContext: 'single element with percentage value selected (width is 100%)',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: '100%',
-          height: '25%',
-        }}
-        data-uid={'rectangle-1'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-      ])
-
-      // Change the height field.
-      await updateInputValue(renderResult, `frame-height-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 800,
-          height: 110,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        position: 'absolute',
-        height: 900,
-        width: 800,
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: '100%',
-          height: '12.22%',
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fill container',
-    expectedFixedHugDropdownHeightValue: 'Scaled',
-  },
-  {
-    controlTested: 'Height',
-    projectContext: 'multiple elements selected',
-    changeApplied: 'setting value directly',
-    baseProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-      data-uid={'root-div'}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 300,
-        }}
-        data-uid={'rectangle-1'}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 400,
-          top: 300,
-          width: 25,
-          height: 35,
-        }}
-        data-uid={'rectangle-2'}
-      />
-    </div>`,
-    actionChange: async (renderResult) => {
-      // Select the rectangle.
-      await selectComponentsForTest(renderResult, [
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`),
-        EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`),
-      ])
-
-      // Change the height field.
-      await updateInputValue(renderResult, `frame-height-number-input`, '110')
-    },
-    expectedFrames: {
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
-        localRectangle({
-          x: 90,
-          y: 100,
-          width: 200,
-          height: 110,
-        }),
-      [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
-        localRectangle({
-          x: 400,
-          y: 300,
-          width: 25,
-          height: 110,
-        }),
-    },
-    expectedProject: `<div
-      style={{
-        height: '100%',
-        width: '100%',
-        contain: 'layout',
-      }}
-    >
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 90,
-          top: 100,
-          width: 200,
-          height: 110,
-        }}
-      />
-      <Rectangle
-        style={{
-          backgroundColor: '#FF69B4AB',
-          position: 'absolute',
-          left: 400,
-          top: 300,
-          width: 25,
-          height: 110,
-        }}
-      />
-    </div>`,
-    expectedFixedHugDropdownWidthValue: 'Fixed',
-    expectedFixedHugDropdownHeightValue: 'Fixed',
-  },
-]
-
-const controlsTested = new Set(
-  toArrayOf(traverseArray<TestCase>().compose(fromField('controlTested')), testCases),
-)
-
 describe('Frame updating layout section', () => {
-  controlsTested.forEach((controlTested) => {
-    describe(`${controlTested} control`, () => {
-      const filterOptic = traverseArray<TestCase>().compose(
-        filtered((testCase) => {
-          return testCase.controlTested === controlTested
-        }),
+  function makeTestCase(testCase: TestCase) {
+    return async () => {
+      const editor = await renderTestEditorWithCode(
+        makeTestProjectCode(testCase.baseProject),
+        'await-first-dom-report',
+        RegisteredCanvasStrategies,
+        { 'Simplified Layout Section': true },
       )
-      forEachOf(filterOptic, testCases, (testCase) => {
-        it(`with a ${testCase.projectContext} when ${testCase.changeApplied}`, async () => {
-          const editor = await renderTestEditorWithCode(
-            makeTestProjectCode(testCase.baseProject),
-            'await-first-dom-report',
-            RegisteredCanvasStrategies,
-            { 'Simplified Layout Section': true },
-          )
 
-          await testCase.actionChange(editor)
-          await editor.getDispatchFollowUpActionsFinished()
+      await testCase.actionChange(editor)
+      await editor.getDispatchFollowUpActionsFinished()
 
-          const widthDropdown = await editor.renderedDOM.findByTestId(
-            getFixedHugDropdownId('width') + '-popuplist',
-          )
-          expect(widthDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownWidthValue)
+      const widthDropdown = await editor.renderedDOM.findByTestId(
+        getFixedHugDropdownId('width') + '-popuplist',
+      )
+      expect(widthDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownWidthValue)
 
-          const heightDropdown = await editor.renderedDOM.findByTestId(
-            getFixedHugDropdownId('height') + '-popuplist',
-          )
-          expect(heightDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownHeightValue)
+      const heightDropdown = await editor.renderedDOM.findByTestId(
+        getFixedHugDropdownId('height') + '-popuplist',
+      )
+      expect(heightDropdown.textContent).toEqual(testCase.expectedFixedHugDropdownHeightValue)
 
-          // Check the expected frames.
-          const metadataMap = editor.getEditorState().editor.jsxMetadata
-          for (const [path, expectedFrame] of Object.entries(testCase.expectedFrames)) {
-            const metadataForElement = metadataMap[path]
-            expect(metadataForElement).not.toBeNull()
-            expect(metadataForElement).not.toBeUndefined()
-            const actualLocalFrame = metadataForElement.localFrame
-            expect(actualLocalFrame).toEqual(expectedFrame)
-          }
+      // Check the expected frames.
+      const metadataMap = editor.getEditorState().editor.jsxMetadata
+      for (const [path, expectedFrame] of Object.entries(testCase.expectedFrames)) {
+        const metadataForElement = metadataMap[path]
+        expect(metadataForElement).not.toBeNull()
+        expect(metadataForElement).not.toBeUndefined()
+        const actualLocalFrame = metadataForElement.localFrame
+        expect(actualLocalFrame).toEqual(expectedFrame)
+      }
 
-          // Check the expected code.
-          expect(
-            formatTestProjectCode(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState())),
-          ).toEqual(makeTestProjectCodeWithoutUIDs(testCase.expectedProject))
-        })
-      })
-    })
+      // Check the expected code.
+      expect(formatTestProjectCode(getPrintedUiJsCodeWithoutUIDs(editor.getEditorState()))).toEqual(
+        makeTestProjectCodeWithoutUIDs(testCase.expectedProject),
+      )
+    }
+  }
+
+  describe('Left control', () => {
+    it(
+      'with a single element selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the left field.
+          await updateInputValue(renderResult, `frame-left-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 110,
+              y: 100,
+              width: 200,
+              height: 300,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 110,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with single element with percentage value selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: '25%',
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the left field.
+          await updateInputValue(renderResult, `frame-left-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 110,
+              y: 100,
+              width: 200,
+              height: 300,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: '13.75%',
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with multiple elements selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 400,
+                top: 300,
+                width: 25,
+                height: 35,
+              }}
+              data-uid={'rectangle-2'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`,
+            ),
+          ])
+
+          // Change the left field.
+          await updateInputValue(renderResult, `frame-left-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 110,
+              y: 100,
+              width: 200,
+              height: 300,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
+            localRectangle({
+              x: 110,
+              y: 300,
+              width: 25,
+              height: 35,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 110,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 110,
+                top: 300,
+                width: 25,
+                height: 35,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+  })
+
+  describe('Top control', () => {
+    it(
+      'with a single element selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-top-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 110,
+              width: 200,
+              height: 300,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 110,
+                width: 200,
+                height: 300,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with a single element with percentage value selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: '25%',
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-top-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 110,
+              width: 200,
+              height: 300,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: '12.22%',
+                width: 200,
+                height: 300,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with multiple elements selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 400,
+                top: 300,
+                width: 25,
+                height: 35,
+              }}
+              data-uid={'rectangle-2'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-top-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 110,
+              width: 200,
+              height: 300,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
+            localRectangle({
+              x: 400,
+              y: 110,
+              width: 25,
+              height: 35,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 110,
+                width: 200,
+                height: 300,
+              }}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 400,
+                top: 110,
+                width: 25,
+                height: 35,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+  })
+
+  describe('Width control', () => {
+    it(
+      'with a single element selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the width field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 100,
+              width: 110,
+              height: 300,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 110,
+                height: 300,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with single element with percentage value selected (height is 100%) when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: '25%',
+                height: '100%',
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the width field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 100,
+              width: 110,
+              height: 900,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: '13.75%',
+                height: '100%',
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Scaled',
+        expectedFixedHugDropdownHeightValue: 'Fill container',
+      }),
+    )
+
+    it(
+      'with multiple elements selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 400,
+                top: 300,
+                width: 25,
+                height: 35,
+              }}
+              data-uid={'rectangle-2'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`,
+            ),
+          ])
+
+          // Change the width field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 100,
+              width: 110,
+              height: 300,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
+            localRectangle({
+              x: 400,
+              y: 300,
+              width: 110,
+              height: 35,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 110,
+                height: 300,
+              }}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 400,
+                top: 300,
+                width: 110,
+                height: 35,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+  })
+
+  describe('Height control', () => {
+    it(
+      'with single element selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the height field.
+          await updateInputValue(renderResult, `frame-height-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 100,
+              width: 200,
+              height: 110,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 110,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with single element with percentage value selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: '25%',
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the height field.
+          await updateInputValue(renderResult, `frame-height-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 100,
+              width: 200,
+              height: 110,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: '12.22%',
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Scaled',
+      }),
+    )
+
+    it(
+      'with single element with percentage value selected (width is 100%) when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: '100%',
+                height: '25%',
+              }}
+              data-uid={'rectangle-1'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+          ])
+
+          // Change the height field.
+          await updateInputValue(renderResult, `frame-height-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 100,
+              width: 800,
+              height: 110,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              position: 'absolute',
+              height: 900,
+              width: 800,
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: '100%',
+                height: '12.22%',
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fill container',
+        expectedFixedHugDropdownHeightValue: 'Scaled',
+      }),
+    )
+
+    it(
+      'with multiple elements selected when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid={'root-div'}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 300,
+              }}
+              data-uid={'rectangle-1'}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 400,
+                top: 300,
+                width: 25,
+                height: 35,
+              }}
+              data-uid={'rectangle-2'}
+            />
+          </div>`,
+        actionChange: async (renderResult) => {
+          // Select the rectangle.
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`,
+            ),
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`,
+            ),
+          ])
+
+          // Change the height field.
+          await updateInputValue(renderResult, `frame-height-number-input`, '110')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-1`]:
+            localRectangle({
+              x: 90,
+              y: 100,
+              width: 200,
+              height: 110,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/rectangle-2`]:
+            localRectangle({
+              x: 400,
+              y: 300,
+              width: 25,
+              height: 110,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 90,
+                top: 100,
+                width: 200,
+                height: 110,
+              }}
+            />
+            <Rectangle
+              style={{
+                backgroundColor: '#FF69B4AB',
+                position: 'absolute',
+                left: 400,
+                top: 300,
+                width: 25,
+                height: 110,
+              }}
+            />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
   })
 })
