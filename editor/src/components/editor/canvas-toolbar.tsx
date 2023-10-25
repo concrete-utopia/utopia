@@ -200,6 +200,8 @@ function switchToSelectModeCloseMenus(dispatch: EditorDispatch) {
   )
 }
 
+export const WrapInDivButtonTestId = 'wrap-in-div-button'
+
 export const CanvasToolbar = React.memo(() => {
   const dispatch = useDispatch()
   const theme = useColorTheme()
@@ -670,7 +672,11 @@ export const CanvasToolbar = React.memo(() => {
                   />
 
                   <Tooltip title='Wrap in div' placement='bottom'>
-                    <InsertModeButton iconType='div' onClick={wrapInDivAndClose} />
+                    <InsertModeButton
+                      testid={WrapInDivButtonTestId}
+                      iconType='div'
+                      onClick={wrapInDivAndClose}
+                    />
                   </Tooltip>
                   <Tile style={{ height: '100%' }}>
                     <CanvasToolbarSearch actionWith={convertToAndClose} />

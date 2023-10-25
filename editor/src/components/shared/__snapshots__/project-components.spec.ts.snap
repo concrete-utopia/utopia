@@ -51,6 +51,13 @@ Array [
           "add-size",
         ],
       },
+    ],
+    "source": Object {
+      "type": "HTML_DIV",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
       Object {
         "defaultSize": null,
         "element": [Function],
@@ -300,6 +307,13 @@ Array [
           "add-size",
         ],
       },
+    ],
+    "source": Object {
+      "type": "HTML_DIV",
+    },
+  },
+  Object {
+    "insertableComponents": Array [
       Object {
         "defaultSize": null,
         "element": [Function],
