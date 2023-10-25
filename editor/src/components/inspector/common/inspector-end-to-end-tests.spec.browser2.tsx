@@ -4155,6 +4155,7 @@ describe('inspector tests with real metadata', () => {
 })
 
 describe('Inspector fields and code remain in sync', () => {
+  // TODO flipping this to true highlights a big issue with adjustCssLengthProperties, see https://github.com/concrete-utopia/utopia/pull/4421
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
   const propsToTest = [
     {
