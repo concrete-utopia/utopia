@@ -11,6 +11,7 @@ import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 import { assertNever, identity } from './utils'
 import type { HugProperty, HugPropertyWidthHeight } from './element-template'
+import { AbsolutePin } from '../../components/canvas/canvas-strategies/strategies/resize-helpers'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -358,17 +359,23 @@ export function hugPropertiesFromComputedStyleMap(
       height: null,
     }
   }
+  const pins = ['top', 'left', 'bottom', 'left'].filter((pin) => {
+    const pinValue = styleMap.get(pin)?.toString()
+    return pinValue != null && pinValue != 'auto'
+  }) as Array<'left' | 'top' | 'right' | 'bottom'>
 
   return {
     width: hugPropertyFromStyleValue(
       styleMap.get('width')?.toString() ?? 'auto',
       'width',
+      pins,
       display,
       globalFrame,
     ),
     height: hugPropertyFromStyleValue(
       styleMap.get('height')?.toString() ?? 'auto',
       'height',
+      pins,
       display,
       globalFrame,
     ),
@@ -378,10 +385,17 @@ export function hugPropertiesFromComputedStyleMap(
 export function hugPropertyFromStyleValue(
   value: string,
   property: 'width' | 'height',
+  pins: Array<'left' | 'top' | 'right' | 'bottom'>,
   display: string,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): HugProperty | null {
   const hugProp = (() => {
+    if (property === 'width' && pins.includes('left') && pins.includes('right')) {
+      return null
+    }
+    if (property === 'height' && pins.includes('top') && pins.includes('bottom')) {
+      return null
+    }
     if (value === 'auto' && property === 'width' && display === 'block') {
       return null // TODO: in this case this is a fill, unify this with fill detection
     }

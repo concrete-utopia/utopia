@@ -799,8 +799,15 @@ export function hugTypeFromStyleAttribute(
     null,
     getSimpleAttributeAtPath(right(props), PP.create('style', property)),
   )
+  const pins = ['top', 'right', 'bottom', 'left'].filter((pin) => {
+    const pinValue = defaultEither(
+      null,
+      getSimpleAttributeAtPath(right(props), PP.create('style', pin)),
+    )
+    return pinValue != null && pinValue != 'auto'
+  }) as Array<'left' | 'top' | 'right' | 'bottom'>
 
-  return hugPropertyFromStyleValue(simpleAttribute, property, display, globalFrame)
+  return hugPropertyFromStyleValue(simpleAttribute, property, pins, display, globalFrame)
 }
 
 export function isHugFromStyleAttributeOrNull(
