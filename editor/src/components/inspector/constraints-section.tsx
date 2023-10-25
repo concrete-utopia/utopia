@@ -35,9 +35,10 @@ import {
   getFrameChangeActionsForFrameChild,
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
-import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
 import { NO_OP } from '../../core/shared/utils'
+
+export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
 
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
@@ -51,10 +52,19 @@ export const ConstraintsSection = React.memo(() => {
     'ConstraintsSection onlyGroupChildrenSelected',
   )
 
+  const showSection = React.useMemo(() => {
+    return noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected
+  }, [noGroupOrGroupChildrenSelected, onlyGroupChildrenSelected])
+
+  if (!showSection) {
+    return null
+  }
+
   return (
     <React.Fragment>
       <InspectorSubsectionHeader>
         <FlexRow
+          data-testId={InspectorSectionConstraintsTestId}
           style={{
             flexGrow: 1,
             height: 42,
@@ -145,6 +155,7 @@ const ChildPinControl = React.memo(
     const selectedViewsRef = useRefEditorState(selectedViewsSelector)
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+    const elementPathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
 
     const onPinControlMouseDown = React.useCallback(
       (
@@ -217,12 +228,14 @@ const ChildPinControl = React.memo(
             ? getConstraintAndFrameChangeActionsForGroupChild(
                 metadataRef.current,
                 allElementPropsRef.current,
+                elementPathTreesRef.current,
                 propertyTarget,
                 selectedViewsRef.current,
                 requestedPinChange,
               )
             : getFrameChangeActionsForFrameChild(
                 metadataRef.current,
+                elementPathTreesRef.current,
                 propertyTarget,
                 selectedViewsRef.current,
                 requestedPinChange,
@@ -231,12 +244,14 @@ const ChildPinControl = React.memo(
       },
       [
         dispatch,
+        isGroupChild,
         metadataRef,
         allElementPropsRef,
-        selectedViewsRef,
-        isGroupChild,
+        elementPathTreesRef,
         propertyTarget,
-        pins,
+        selectedViewsRef,
+        pins.horizontal,
+        pins.vertical,
       ],
     )
 
@@ -266,6 +281,7 @@ const ChildConstraintSelect = React.memo(
       selectedViews: store.editor.selectedViews,
       metadata: store.editor.jsxMetadata,
       allElementProps: store.editor.allElementProps,
+      elementPathTrees: store.editor.elementPathTree,
     }))
 
     const pins = useDetectedConstraints(isGroupChild)
@@ -310,12 +326,14 @@ const ChildConstraintSelect = React.memo(
             ? getConstraintAndFrameChangeActionsForGroupChild(
                 editorRef.current.metadata,
                 editorRef.current.allElementProps,
+                editorRef.current.elementPathTrees,
                 propertyTarget,
                 editorRef.current.selectedViews,
                 requestedPins,
               )
             : getFrameChangeActionsForFrameChild(
                 editorRef.current.metadata,
+                editorRef.current.elementPathTrees,
                 propertyTarget,
                 editorRef.current.selectedViews,
                 requestedPins,
