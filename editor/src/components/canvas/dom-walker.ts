@@ -1060,7 +1060,11 @@ function getSpecialMeasurements(
 
   const computedStyleMap =
     typeof element.computedStyleMap === 'function' ? element.computedStyleMap() : null // TODO: this is for jest tests, no computedStyleMap in jsdom :()
-  const computedHugProperty = hugPropertiesFromComputedStyleMap(computedStyleMap, globalFrame)
+  const computedHugProperty = hugPropertiesFromComputedStyleMap(
+    computedStyleMap,
+    elementStyle.display,
+    globalFrame,
+  )
 
   return specialSizeMeasurements(
     offset,

@@ -580,6 +580,12 @@ export type FixedHugFill =
 
 export type FixedHugFillMode = FixedHugFill['type']
 
+export function isHuggingFixedHugFill(fixedHugFillMode: FixedHugFillMode | null | undefined) {
+  return (
+    fixedHugFillMode === 'hug' || fixedHugFillMode === 'squeeze' || fixedHugFillMode === 'collapsed'
+  )
+}
+
 export function detectFillHugFixedState(
   axis: Axis,
   metadata: ElementInstanceMetadataMap,
@@ -659,6 +665,7 @@ export function detectFillHugFixedState(
     const hugTypeFromStyleProps = hugTypeFromStyleAttribute(
       element.element.value.props,
       property,
+      element.specialSizeMeasurements.display,
       element.globalFrame,
     )
     const controlStatus: ControlStatus = (() => {
@@ -785,6 +792,7 @@ export function isHugFromStyleAttribute(
 export function hugTypeFromStyleAttribute(
   props: JSXAttributes,
   property: 'width' | 'height',
+  display: string,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): 'hug' | 'squeeze' | 'collapsed' | null {
   const simpleAttribute = defaultEither(
@@ -792,49 +800,8 @@ export function hugTypeFromStyleAttribute(
     getSimpleAttributeAtPath(right(props), PP.create('style', property)),
   )
 
-  return hugPropertyFromStyleValue(simpleAttribute, property, globalFrame)
+  return hugPropertyFromStyleValue(simpleAttribute, property, display, globalFrame)
 }
-
-// export function hugTypeFromStyleValue(
-//   value: string | null,
-//   property: 'width' | 'height',
-// ): 'hug' | 'squeeze' | null {
-//   if (value === null && property === 'height') {
-//     return 'hug'
-//   }
-//   if (value === null && property === 'width') {
-//     return null
-//   }
-//   if (value === 'max-content') {
-//     return 'hug'
-//   }
-//   if (value === 'min-content') {
-//     return 'squeeze'
-//   }
-
-//   return null
-// }
-
-// export function detectedHugTypeFromMetadata(
-//   element: ElementInstanceMetadata,
-//   property: 'width' | 'height',
-// ): 'hug' | 'squeeze' | 'collapsed' | null {
-//   const hugType =
-//     element.specialSizeMeasurements[
-//       property === 'width' ? 'computedHugPropertyWidth' : 'computedHugPropertyHeight'
-//     ]
-//   if (hugType == null) {
-//     return null
-//   }
-//   const collapsed =
-//     element.globalFrame != null &&
-//     isFiniteRectangle(element.globalFrame) &&
-//     element.globalFrame[property] === 0
-//   if (collapsed) {
-//     return 'collapsed'
-//   }
-//   return hugType
-// }
 
 export function isHugFromStyleAttributeOrNull(
   props: JSXAttributes | null,
@@ -1072,7 +1039,9 @@ export function setParentToFixedIfHugCommands(
     return []
   }
 
-  const isHug = detectFillHugFixedState(axis, metadata, parentPath).fixedHugFill?.type === 'hug'
+  const isHug = isHuggingFixedHugFill(
+    detectFillHugFixedState(axis, metadata, parentPath).fixedHugFill?.type,
+  )
   if (!isHug) {
     return []
   }

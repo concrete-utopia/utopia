@@ -349,6 +349,7 @@ export function defaultDisplayTypeForHTMLElement(elementName: string): 'inline' 
 
 export function hugPropertiesFromComputedStyleMap(
   styleMap: StylePropertyMapReadOnly | null,
+  display: string,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): HugPropertyWidthHeight {
   if (styleMap == null) {
@@ -357,33 +358,34 @@ export function hugPropertiesFromComputedStyleMap(
       height: null,
     }
   }
+
   return {
     width: hugPropertyFromStyleValue(
-      styleMap.get('width')?.toString() ?? null,
+      styleMap.get('width')?.toString() ?? 'auto',
       'width',
+      display,
       globalFrame,
     ),
     height: hugPropertyFromStyleValue(
-      styleMap.get('height')?.toString() ?? null,
+      styleMap.get('height')?.toString() ?? 'auto',
       'height',
+      display,
       globalFrame,
     ),
   }
 }
 
 export function hugPropertyFromStyleValue(
-  value: string | null,
+  value: string,
   property: 'width' | 'height',
+  display: string,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): HugProperty | null {
   const hugProp = (() => {
-    if ((value === null || value === 'auto') && property === 'height') {
-      return 'hug'
+    if (value === 'auto' && property === 'width' && display === 'block') {
+      return null // TODO: in this case this is a fill, unify this with fill detection
     }
-    if ((value === null || value === 'auto') && property === 'width') {
-      return null
-    }
-    if (value === 'max-content') {
+    if (value === 'auto' || value === 'max-content') {
       return 'hug'
     }
     if (value === 'min-content') {

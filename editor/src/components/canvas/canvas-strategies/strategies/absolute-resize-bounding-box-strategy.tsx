@@ -20,6 +20,7 @@ import {
 import {
   detectFillHugFixedState,
   getConstraintsIncludingImplicitForElement,
+  isHuggingFixedHugFill,
 } from '../../../inspector/inspector-common'
 import type { EdgePosition } from '../../canvas-types'
 import { EdgePositionLeft, EdgePositionTop, EdgePositionTopLeft } from '../../canvas-types'
@@ -400,8 +401,10 @@ function isDimensionConstrained(
 ): boolean {
   return (
     constraintsArray.includes(dimension) ||
-    detectFillHugFixedState(dimension === 'width' ? 'horizontal' : 'vertical', jsxMetadata, path)
-      .fixedHugFill?.type === 'hug' // hug is treated as a constrained dimension
+    isHuggingFixedHugFill(
+      detectFillHugFixedState(dimension === 'width' ? 'horizontal' : 'vertical', jsxMetadata, path)
+        .fixedHugFill?.type,
+    ) // hug is treated as a constrained dimension
   )
 }
 

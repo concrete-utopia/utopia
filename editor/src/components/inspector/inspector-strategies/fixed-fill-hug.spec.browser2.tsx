@@ -9,6 +9,7 @@ import {
   expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
+  wait,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'
@@ -1659,7 +1660,7 @@ describe('Fixed / Fill / Hug control', () => {
     </div>
   </div>
     `
-    it('element with no explicit size is classified as `Detected`', async () => {
+    it('element with no explicit size is classified as `Detected` height and `Hug contents` width', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(project),
         'await-first-dom-report',
@@ -1669,7 +1670,8 @@ describe('Fixed / Fill / Hug control', () => {
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container/text`),
       ])
 
-      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(1)
+      expect(editor.renderedDOM.getAllByText(HugContentsLabel).length).toEqual(1)
 
       await selectComponentsForTest(editor, [
         EP.fromString(
@@ -1677,7 +1679,7 @@ describe('Fixed / Fill / Hug control', () => {
         ),
       ])
 
-      expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
+      expect(editor.renderedDOM.getAllByText(HugContentsLabel).length).toEqual(2)
 
       await selectComponentsForTest(editor, [
         EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}`),
@@ -1686,7 +1688,7 @@ describe('Fixed / Fill / Hug control', () => {
       expect(editor.renderedDOM.getAllByText(DetectedLabel).length).toEqual(2)
     })
 
-    it('can set from detected to fixed size', async () => {
+    it('can set from detected and hug to fixed size', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(project),
         'await-first-dom-report',
@@ -1718,7 +1720,7 @@ describe('Fixed / Fill / Hug control', () => {
           ),
         ])
 
-        const control = (await editor.renderedDOM.findAllByText(DetectedLabel))[0]
+        const control = (await editor.renderedDOM.findAllByText(HugContentsLabel))[0]
 
         await mouseClickAtPoint(control, { x: 5, y: 5 })
 
