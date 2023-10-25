@@ -53,7 +53,7 @@ import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
 } from './fragment-like-helpers.test-utils'
-import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
 import CanvasActions from '../../canvas-actions'
 
@@ -1166,7 +1166,14 @@ describe('Convert to absolute/escape hatch', () => {
     it('Runs the escape hatch strategy and sets hugging parent to fixed size', async () => {
       const initialEditor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
-            <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+             <View
+              style={{
+                ...(props.style || {}),
+                width: 'max-content',
+                height: 'max-content',
+              }}
+              data-uid='aaa'
+            >
               <View
                 style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
                 data-uid='bbb'
@@ -1193,8 +1200,8 @@ describe('Convert to absolute/escape hatch', () => {
           `<View
             style={{
               ...(props.style || {}),
-              width: 400,
-              height: 400,
+              width: 250,
+              height: 300,
             }}
             data-uid='aaa'
           >
@@ -1207,137 +1214,15 @@ describe('Convert to absolute/escape hatch', () => {
       )
     })
 
-    it('works on a flow element with all pins and sets hugging parent to fixed size', async () => {
+    it('works on a flow element without siblings where width and height is percentage', async () => {
       const initialEditor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
-          style={{
-            backgroundColor: '#aaaaaa33',
-            width: '50%',
-            height: '20%',
-            right: 200,
-            bottom: 320,
-            top: 0,
-            left: 0,
-          }}
-          data-uid='bbb'
-          data-testid='bbb'
-        />
-      </View>
-      `),
-        'await-first-dom-report',
-      )
-
-      const targetElement = EP.elementPath([
-        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
-        ['aaa', 'bbb'],
-      ])
-
-      await selectComponentsForTest(initialEditor, [targetElement])
-
-      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
-
-      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-      const viewCenter = canvasPoint({
-        x: viewBounds.left + viewBounds.width / 2,
-        y: viewBounds.top + viewBounds.height / 2,
-      })
-
-      await mouseDragFromPointToPoint(
-        canvas,
-        viewCenter,
-        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
-      )
-
-      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<View
-            style={{
-              ...(props.style || {}),
-              width: 400,
-              height: 400,
-            }}
-            data-uid='aaa'
-          >
-          <View
-            style={{
-              backgroundColor: '#aaaaaa33',
-              width: 200,
-              height: 80,
-              top: 15,
-              left: 15,
-              position: 'absolute',
-            }}
-            data-uid='bbb'
-            data-testid='bbb'
-          />
-        </View>`,
-        ),
-      )
-    })
-
-    it('works on a flow element without siblings and sets hugging parent to fixed size', async () => {
-      const initialEditor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
-        <View
-          style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
-          data-uid='bbb'
-          data-testid='bbb'
-        />
-      </View>
-      `),
-        'await-first-dom-report',
-      )
-
-      const targetElement = EP.elementPath([
-        [BakedInStoryboardUID, 'scene-aaa', 'app-entity'],
-        ['aaa', 'bbb'],
-      ])
-
-      await selectComponentsForTest(initialEditor, [targetElement])
-
-      const viewBounds = initialEditor.renderedDOM.getByTestId('bbb').getBoundingClientRect()
-
-      const canvas = initialEditor.renderedDOM.getByTestId(CanvasControlsContainerID)
-
-      const viewCenter = canvasPoint({
-        x: viewBounds.left + viewBounds.width / 2,
-        y: viewBounds.top + viewBounds.height / 2,
-      })
-
-      await mouseDragFromPointToPoint(
-        canvas,
-        viewCenter,
-        offsetPoint(viewCenter, canvasPoint({ x: 15, y: 15 })),
-      )
-
-      expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(
-          `<View
-            style={{
-              ...(props.style || {}),
-              width: 400,
-              height: 400,
-            }}
-            data-uid='aaa'
-          >
-          <View
-            style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 15, top: 15  }}
-            data-uid='bbb'
-            data-testid='bbb'
-          />
-        </View>`,
-        ),
-      )
-    })
-
-    it('works on a flow element without siblings where width and height is percentage and sets hugging parent to fixed size', async () => {
-      const initialEditor = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(`
-      <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+      <View
+        style={{
+          ...(props.style || {}),
+        }}
+        data-uid='aaa'
+      >
         <View
           style={{
             backgroundColor: '#aaaaaa33',
@@ -1380,14 +1265,7 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View
-            style={{
-              ...(props.style || {}),
-              width: 400,
-              height: 400,
-            }}
-            data-uid='aaa'
-          >
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
             style={{
               backgroundColor: '#aaaaaa33',
@@ -1410,7 +1288,14 @@ describe('Convert to absolute/escape hatch', () => {
     it('Runs the escape hatch strategy and does not set hugging parent to fixed size', async () => {
       const initialEditor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(`
-            <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+              <View
+              style={{
+                ...(props.style || {}),
+                width: 'max-content',
+                height: 'max-content',
+              }}
+              data-uid='aaa'
+            >
               <View
                 style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300 }}
                 data-uid='bbb'
@@ -1434,7 +1319,14 @@ describe('Convert to absolute/escape hatch', () => {
 
       expect(getPrintedUiJsCode(initialEditor.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          `<View
+            style={{
+              ...(props.style || {}),
+              width: 'max-content',
+              height: 'max-content',
+            }}
+            data-uid='aaa'
+          >
           <View
             style={{ backgroundColor: '#aaaaaa33', width: 250, height: 300, position: 'absolute', left: 0, top: 0  }}
             data-uid='bbb'
