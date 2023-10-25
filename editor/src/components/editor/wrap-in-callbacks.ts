@@ -48,7 +48,7 @@ type WrapInDivError =
   | 'Cannot determine the bounding box of selected elements'
   | 'Cannot insert into parent of selected elements'
 
-function wrapInDivCommands(
+export function wrapInDivCommands(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
