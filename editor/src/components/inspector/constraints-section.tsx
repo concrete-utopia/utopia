@@ -35,9 +35,10 @@ import {
   getFrameChangeActionsForFrameChild,
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
-import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
 import { UIGridRow } from './widgets/ui-grid-row'
 import { NO_OP } from '../../core/shared/utils'
+
+export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
 
 export const ConstraintsSection = React.memo(() => {
   const noGroupOrGroupChildrenSelected = !useEditorState(
@@ -51,10 +52,19 @@ export const ConstraintsSection = React.memo(() => {
     'ConstraintsSection onlyGroupChildrenSelected',
   )
 
+  const showSection = React.useMemo(() => {
+    return noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected
+  }, [noGroupOrGroupChildrenSelected, onlyGroupChildrenSelected])
+
+  if (!showSection) {
+    return null
+  }
+
   return (
     <React.Fragment>
       <InspectorSubsectionHeader>
         <FlexRow
+          data-testId={InspectorSectionConstraintsTestId}
           style={{
             flexGrow: 1,
             height: 42,
