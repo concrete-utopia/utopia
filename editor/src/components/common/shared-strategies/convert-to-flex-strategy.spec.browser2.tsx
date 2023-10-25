@@ -599,7 +599,7 @@ describe('Smart Convert To Flex', () => {
               top: 29,
               width: 'max-content',
             }}
-            data-constraints={['left']}
+            data-constraints={['left', 'right']}
           >
             Hello World
           </span>
@@ -642,7 +642,7 @@ describe('Smart Convert To Flex', () => {
     expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
       makeTestProjectCodeWithSnippet(`
 		<div style={{ ...props.style }} data-uid='a'>
-      <Group
+      <div
         data-uid='parent'
         style={{
           height: 204,
@@ -652,7 +652,7 @@ describe('Smart Convert To Flex', () => {
           width: 584,
           display: 'flex',
           flexDirection: 'row',
-          justifyContent: 'space-between',
+          gap: 32,
         }}
       >
         <div
@@ -664,7 +664,6 @@ describe('Smart Convert To Flex', () => {
             width: 59,
             flexGrow: 0,
           }}
-          data-constraints={['left', 'width']}
         />
         <span
           data-uid='second'
@@ -673,9 +672,8 @@ describe('Smart Convert To Flex', () => {
             fontSize: '31px',
             height: 119,
             width: 'max-content',
-            flexGrow: 0.75,
+            flexGrow: 1,
           }}
-          data-constraints={['left']}
         >
           Hello World
         </span>
@@ -688,9 +686,8 @@ describe('Smart Convert To Flex', () => {
             width: 119,
             flexGrow: 0,
           }}
-          data-constraints={['right', 'width']}
         />
-      </Group>
+      </div>
 		</div>
 	`),
     )

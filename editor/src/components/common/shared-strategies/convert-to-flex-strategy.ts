@@ -1,4 +1,3 @@
-import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { isLeft } from '../../../core/shared/either'
@@ -30,7 +29,10 @@ import {
   replaceNonDOMElementPathsWithTheirChildrenRecursive,
 } from '../../canvas/canvas-strategies/strategies/fragment-like-helpers'
 import type { JSXFragmentConversion } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { actuallyConvertFramentToFrame } from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import {
+  actuallyConvertFramentToFrame,
+  getCommandsForConversionToDesiredType,
+} from '../../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
@@ -61,7 +63,7 @@ function checkConstraintsForThreeElementRow(
 ): boolean {
   // We're looking for this pattern of constraints:
   // - ['left', 'width']
-  // - ['left']
+  // - ['left', 'right']
   // - ['right', 'width']
   const firstChildConstraints = getSafeGroupChildConstraintsArray(allElementProps, firstChildPath)
   const secondChildConstraints = getSafeGroupChildConstraintsArray(allElementProps, secondChildPath)
@@ -70,8 +72,9 @@ function checkConstraintsForThreeElementRow(
     firstChildConstraints.length === 2 &&
     firstChildConstraints.includes('left') &&
     firstChildConstraints.includes('width') &&
-    secondChildConstraints.length === 1 &&
+    secondChildConstraints.length === 2 &&
     secondChildConstraints.includes('left') &&
+    secondChildConstraints.includes('right') &&
     thirdChildConstraints.length === 2 &&
     thirdChildConstraints.includes('right') &&
     thirdChildConstraints.includes('width')
@@ -226,38 +229,31 @@ export function convertLayoutToFlexCommands(
               thirdChildPath,
             )
           ) {
-            const parentFrame = zeroRectIfNullOrInfinity(parentInstance.localFrame)
             const firstFrame = zeroRectIfNullOrInfinity(firstChildElement.localFrame)
             const secondFrame = zeroRectIfNullOrInfinity(secondChildElement.localFrame)
-            const thirdFrame = zeroRectIfNullOrInfinity(thirdChildElement.localFrame)
-            const freeSpace =
-              parentFrame.width - firstFrame.width - secondFrame.width - thirdFrame.width
-            const outerElementWidth = firstFrame.width + thirdFrame.width
-            const secondFrameWantedWidth =
-              parentFrame.width - outerElementWidth - (secondFrame.x - firstFrame.width) * 2
 
-            const secondFrameFlexGrow = roundTo(
-              (secondFrameWantedWidth - secondFrame.width) / freeSpace,
-              2,
-            )
+            const gapValue = roundTo(secondFrame.x - firstFrame.width, 2)
 
             return [
               // Configure the parent element.
+              ...getCommandsForConversionToDesiredType(
+                metadata,
+                elementPathTree,
+                allElementProps,
+                [path],
+                'group',
+                'frame',
+              ),
               setProperty('always', path, PP.create('style', 'display'), 'flex'),
               setProperty('always', path, PP.create('style', 'flexDirection'), 'row'),
-              setProperty('always', path, PP.create('style', 'justifyContent'), 'space-between'),
+              setProperty('always', path, PP.create('style', 'gap'), gapValue),
               // Configure and reorder the "first" element.
               ...nukeAllAbsolutePositioningPropsCommands(firstChildPath),
               setProperty('always', firstChildPath, PP.create('style', 'flexGrow'), 0),
               reorderElement('always', firstChildPath, absolute(0)),
               // Configure and reorder the "second" element.
               ...nukeAllAbsolutePositioningPropsCommands(secondChildPath),
-              setProperty(
-                'always',
-                secondChildPath,
-                PP.create('style', 'flexGrow'),
-                secondFrameFlexGrow,
-              ),
+              setProperty('always', secondChildPath, PP.create('style', 'flexGrow'), 1),
               reorderElement('always', secondChildPath, absolute(1)),
               // Configure and reorder the "third" element.
               ...nukeAllAbsolutePositioningPropsCommands(thirdChildPath),
