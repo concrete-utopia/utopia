@@ -1354,6 +1354,176 @@ describe('Frame updating layout section', () => {
     )
 
     it(
+      'with nested Groups when setting the inner group width directly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 75,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '200')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 300,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 100,
+              y: 75,
+              width: 200,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 100,
+              y: 50,
+              width: 100,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+      >
+        <Group
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 300,
+            height: 175,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 100,
+              height: 75,
+            }}
+          />
+          <Group
+            style={{
+              position: 'absolute',
+              left: 100,
+              top: 75,
+              width: 200,
+              height: 100,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 50,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 100,
+                top: 50,
+                width: 100,
+                height: 50,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
+      }),
+    )
+
+    it(
       'with nested Groups, the outer Group has left-right props, no width prop. setting value indirectly',
       makeTestCase({
         baseProject: `<div
