@@ -533,6 +533,31 @@ export function rectangleIntersection<C extends CoordinateMarker>(
   }
 }
 
+export function doRectanglesIntersect<C extends CoordinateMarker>(
+  rect1: MaybeInfinityRectangle<C>,
+  rect2: MaybeInfinityRectangle<C>,
+): boolean {
+  if (isInfinityRectangle(rect1) || isInfinityRectangle(rect2)) {
+    // Infinity rectangles intersect with anything and everything.
+    return true
+  } else {
+    return rectangleIntersection(rect1, rect2) != null
+  }
+}
+
+export function anyRectanglesIntersect<C extends CoordinateMarker>(
+  rectangles: Array<MaybeInfinityRectangle<C>>,
+): boolean {
+  for (let firstIndex = 0; firstIndex < rectangles.length; firstIndex++) {
+    for (let secondIndex = firstIndex + 1; secondIndex < rectangles.length; secondIndex++) {
+      if (doRectanglesIntersect(rectangles[firstIndex], rectangles[secondIndex])) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 export function pointDifference<C extends CoordinateMarker>(
   from: Point<C>,
   to: Point<C>,

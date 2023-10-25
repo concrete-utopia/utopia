@@ -1,3 +1,4 @@
+import { LayoutPinnedProp } from '../../../core/layout/layout-helpers-new'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { last, mapDropNulls, sortBy } from '../../../core/shared/array-utils'
 import { isLeft } from '../../../core/shared/either'
@@ -14,10 +15,14 @@ import {
   nullIfInfinity,
   zeroCanvasRect,
   type CanvasRectangle,
+  anyRectanglesIntersect,
+  zeroRectIfNullOrInfinity,
+  roundTo,
 } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { assertNever, fastForEach } from '../../../core/shared/utils'
+import { absolute } from '../../../utils/utils'
 import {
   getElementFragmentLikeType,
   isElementNonDOMElement,
@@ -30,6 +35,7 @@ import { treatElementAsGroupLike } from '../../canvas/canvas-strategies/strategi
 import type { CanvasFrameAndTarget } from '../../canvas/canvas-types'
 import type { CanvasCommand } from '../../canvas/commands/commands'
 import { rearrangeChildren } from '../../canvas/commands/rearrange-children-command'
+import { reorderElement } from '../../canvas/commands/reorder-element-command'
 import { setProperty, setPropertyOmitNullProp } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import type { AllElementProps } from '../../editor/store/editor-state'
@@ -37,6 +43,7 @@ import type { FlexDirection } from '../../inspector/common/css-utils'
 import {
   childIs100PercentSizedInEitherDirection,
   convertWidthToFlexGrowOptionally,
+  getSafeGroupChildConstraintsArray,
   nukeAllAbsolutePositioningPropsCommands,
   onlyChildIsSpan,
   sizeToVisualDimensions,
@@ -45,6 +52,55 @@ import { setHugContentForAxis } from '../../inspector/inspector-strategies/hug-c
 
 type FlexDirectionRowColumn = 'row' | 'column' // a limited subset as we won't never guess row-reverse or column-reverse
 type FlexAlignItems = 'center' | 'flex-end'
+
+function checkConstraintsForThreeElementRow(
+  allElementProps: AllElementProps,
+  firstChildPath: ElementPath,
+  secondChildPath: ElementPath,
+  thirdChildPath: ElementPath,
+): boolean {
+  // We're looking for this pattern of constraints:
+  // - ['left', 'width']
+  // - ['left']
+  // - ['right', 'width']
+  const firstChildConstraints = getSafeGroupChildConstraintsArray(allElementProps, firstChildPath)
+  const secondChildConstraints = getSafeGroupChildConstraintsArray(allElementProps, secondChildPath)
+  const thirdChildConstraints = getSafeGroupChildConstraintsArray(allElementProps, thirdChildPath)
+  return (
+    firstChildConstraints.length === 2 &&
+    firstChildConstraints.includes('left') &&
+    firstChildConstraints.includes('width') &&
+    secondChildConstraints.length === 1 &&
+    secondChildConstraints.includes('left') &&
+    thirdChildConstraints.length === 2 &&
+    thirdChildConstraints.includes('right') &&
+    thirdChildConstraints.includes('width')
+  )
+}
+
+function anyOverlappingFrames(...elementMetadataEntries: Array<ElementInstanceMetadata>): boolean {
+  const globalFrames = mapDropNulls((metadata) => metadata.globalFrame, elementMetadataEntries)
+  return anyRectanglesIntersect(globalFrames)
+}
+
+function laidOutAsRow(...elementMetadataEntries: Array<ElementInstanceMetadata>): boolean {
+  if (anyOverlappingFrames(...elementMetadataEntries)) {
+    return false
+  } else {
+    for (let frontIndex: number = 0; frontIndex < elementMetadataEntries.length - 1; frontIndex++) {
+      const backIndex = frontIndex + 1
+      const frontMetadata = elementMetadataEntries[frontIndex]
+      const backMetadata = elementMetadataEntries[backIndex]
+      if (
+        zeroRectIfNullOrInfinity(frontMetadata.globalFrame).x >
+        zeroRectIfNullOrInfinity(backMetadata.globalFrame).x
+      ) {
+        return false
+      }
+    }
+    return true
+  }
+}
 
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
@@ -137,6 +193,80 @@ export function convertLayoutToFlexCommands(
         ]),
         ...optionalCenterAlignCommands,
       ]
+    }
+
+    if (childrenPaths.length === 3) {
+      const childrenMetadata = mapDropNulls(
+        (childPath) => MetadataUtils.findElementByElementPath(metadata, childPath),
+        childrenPaths,
+      )
+      if (childrenMetadata.length === 3) {
+        // This should make the logic independent of the ordering within the code,
+        // as their logical order does not necessarily relate to their visual position.
+        const childrenMetadataOrderedByHorizontalPosition = sortBy(
+          childrenMetadata,
+          (first, second) => {
+            return (
+              zeroRectIfNullOrInfinity(first.localFrame).x -
+              zeroRectIfNullOrInfinity(second.localFrame).x
+            )
+          },
+        )
+        // Get the reordered metadata and paths.
+        const [firstChildElement, secondChildElement, thirdChildElement] =
+          childrenMetadataOrderedByHorizontalPosition
+        const [firstChildPath, secondChildPath, thirdChildPath] =
+          childrenMetadataOrderedByHorizontalPosition.map((meta) => meta.elementPath)
+        if (laidOutAsRow(firstChildElement, secondChildElement, thirdChildElement)) {
+          if (
+            checkConstraintsForThreeElementRow(
+              allElementProps,
+              firstChildPath,
+              secondChildPath,
+              thirdChildPath,
+            )
+          ) {
+            const parentFrame = zeroRectIfNullOrInfinity(parentInstance.localFrame)
+            const firstFrame = zeroRectIfNullOrInfinity(firstChildElement.localFrame)
+            const secondFrame = zeroRectIfNullOrInfinity(secondChildElement.localFrame)
+            const thirdFrame = zeroRectIfNullOrInfinity(thirdChildElement.localFrame)
+            const freeSpace =
+              parentFrame.width - firstFrame.width - secondFrame.width - thirdFrame.width
+            const outerElementWidth = firstFrame.width + thirdFrame.width
+            const secondFrameWantedWidth =
+              parentFrame.width - outerElementWidth - (secondFrame.x - firstFrame.width) * 2
+
+            const secondFrameFlexGrow = roundTo(
+              (secondFrameWantedWidth - secondFrame.width) / freeSpace,
+              2,
+            )
+
+            return [
+              // Configure the parent element.
+              setProperty('always', path, PP.create('style', 'display'), 'flex'),
+              setProperty('always', path, PP.create('style', 'flexDirection'), 'row'),
+              setProperty('always', path, PP.create('style', 'justifyContent'), 'space-between'),
+              // Configure and reorder the "first" element.
+              ...nukeAllAbsolutePositioningPropsCommands(firstChildPath),
+              setProperty('always', firstChildPath, PP.create('style', 'flexGrow'), 0),
+              reorderElement('always', firstChildPath, absolute(0)),
+              // Configure and reorder the "second" element.
+              ...nukeAllAbsolutePositioningPropsCommands(secondChildPath),
+              setProperty(
+                'always',
+                secondChildPath,
+                PP.create('style', 'flexGrow'),
+                secondFrameFlexGrow,
+              ),
+              reorderElement('always', secondChildPath, absolute(1)),
+              // Configure and reorder the "third" element.
+              ...nukeAllAbsolutePositioningPropsCommands(thirdChildPath),
+              setProperty('always', thirdChildPath, PP.create('style', 'flexGrow'), 0),
+              reorderElement('always', thirdChildPath, absolute(2)),
+            ]
+          }
+        }
+      }
     }
 
     const rearrangedChildrenPaths = rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(

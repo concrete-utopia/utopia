@@ -20,7 +20,7 @@ import {
 import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath, navigatorEntryToKey } from '../../editor/store/editor-state'
 import type { PersistentModel } from '../../editor/store/editor-state'
-import { AddRemoveLayouSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
+import { AddRemoveLayoutSystemControlTestId } from '../../inspector/add-remove-layout-system-control'
 import { CanvasControlsContainerID } from '../controls/new-canvas-controls'
 import type { RemixSceneLabelButtonType } from '../controls/select-mode/remix-scene-label'
 import {
@@ -1599,7 +1599,7 @@ export default function Index() {
 
     const absoluteDiv = await clickElementOnCanvasControlsLayer(renderResult, AbsoluteDivTestId)
 
-    const targetElement = renderResult.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
+    const targetElement = renderResult.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
     await mouseClickAtPoint(targetElement, { x: 1, y: 1 }, { modifiers: cmdModifier })
 
     expect(absoluteDiv.style.display).toEqual('flex')
