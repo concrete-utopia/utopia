@@ -105,6 +105,137 @@ function laidOutAsRow(...elementMetadataEntries: Array<ElementInstanceMetadata>)
   }
 }
 
+type CommandsOrNotApplicable = Array<CanvasCommand> | 'not-applicable'
+
+function convertSingleChildWith100PercentSize(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
+  parentFlexDirection: FlexDirection | null,
+  path: ElementPath,
+  childrenPaths: Array<ElementPath>,
+  direction: FlexDirectionRowColumn,
+): CommandsOrNotApplicable {
+  const firstChildPath = childrenPaths[0]
+
+  const { childWidth100Percent, childHeight100Percent } = childIs100PercentSizedInEitherDirection(
+    metadata,
+    firstChildPath,
+  )
+
+  const optionalCenterAlignCommands = onlyChildIsSpan(metadata, childrenPaths)
+    ? [
+        setProperty('always', path, PP.create('style', 'alignItems'), 'center'),
+        setProperty('always', path, PP.create('style', 'justifyContent'), 'center'),
+        setHugContentForAxis('horizontal', firstChildPath, parentFlexDirection),
+        setHugContentForAxis('vertical', firstChildPath, parentFlexDirection),
+      ]
+    : []
+
+  if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
+    return [
+      ...ifElementIsFragmentLikeFirstConvertItToFrame(
+        metadata,
+        allElementProps,
+        elementPathTree,
+        path,
+      ),
+      setProperty('always', path, PP.create('style', 'display'), 'flex'),
+      setProperty('always', path, PP.create('style', 'flexDirection'), direction),
+      ...(childWidth100Percent
+        ? []
+        : [setHugContentForAxis('horizontal', path, parentFlexDirection)]),
+      ...(childHeight100Percent
+        ? []
+        : [setHugContentForAxis('vertical', path, parentFlexDirection)]),
+      ...childrenPaths.flatMap((child) => [
+        ...nukeAllAbsolutePositioningPropsCommands(child),
+        ...convertWidthToFlexGrowOptionally(metadata, child, direction),
+      ]),
+      ...optionalCenterAlignCommands,
+    ]
+  }
+
+  return 'not-applicable'
+}
+
+function convertThreeElementGroupRow(
+  metadata: ElementInstanceMetadataMap,
+  allElementProps: AllElementProps,
+  elementPathTree: ElementPathTrees,
+  path: ElementPath,
+  childrenPaths: Array<ElementPath>,
+): CommandsOrNotApplicable {
+  if (childrenPaths.length === 3) {
+    const childrenMetadata = mapDropNulls(
+      (childPath) => MetadataUtils.findElementByElementPath(metadata, childPath),
+      childrenPaths,
+    )
+    if (childrenMetadata.length === 3) {
+      // This should make the logic independent of the ordering within the code,
+      // as their logical order does not necessarily relate to their visual position.
+      const childrenMetadataOrderedByHorizontalPosition = sortBy(
+        childrenMetadata,
+        (first, second) => {
+          return (
+            zeroRectIfNullOrInfinity(first.localFrame).x -
+            zeroRectIfNullOrInfinity(second.localFrame).x
+          )
+        },
+      )
+      // Get the reordered metadata and paths.
+      const [firstChildElement, secondChildElement, thirdChildElement] =
+        childrenMetadataOrderedByHorizontalPosition
+      const [firstChildPath, secondChildPath, thirdChildPath] =
+        childrenMetadataOrderedByHorizontalPosition.map((meta) => meta.elementPath)
+      if (laidOutAsRow(firstChildElement, secondChildElement, thirdChildElement)) {
+        if (
+          checkConstraintsForThreeElementRow(
+            allElementProps,
+            firstChildPath,
+            secondChildPath,
+            thirdChildPath,
+          )
+        ) {
+          const firstFrame = zeroRectIfNullOrInfinity(firstChildElement.localFrame)
+          const secondFrame = zeroRectIfNullOrInfinity(secondChildElement.localFrame)
+
+          const gapValue = roundTo(secondFrame.x - firstFrame.width, 2)
+
+          return [
+            // Configure the parent element.
+            ...getCommandsForConversionToDesiredType(
+              metadata,
+              elementPathTree,
+              allElementProps,
+              [path],
+              'group',
+              'frame',
+            ),
+            setProperty('always', path, PP.create('style', 'display'), 'flex'),
+            setProperty('always', path, PP.create('style', 'flexDirection'), 'row'),
+            setProperty('always', path, PP.create('style', 'gap'), gapValue),
+            // Configure and reorder the "first" element.
+            ...nukeAllAbsolutePositioningPropsCommands(firstChildPath),
+            setProperty('always', firstChildPath, PP.create('style', 'flexGrow'), 0),
+            reorderElement('always', firstChildPath, absolute(0)),
+            // Configure and reorder the "second" element.
+            ...nukeAllAbsolutePositioningPropsCommands(secondChildPath),
+            setProperty('always', secondChildPath, PP.create('style', 'flexGrow'), 1),
+            reorderElement('always', secondChildPath, absolute(1)),
+            // Configure and reorder the "third" element.
+            ...nukeAllAbsolutePositioningPropsCommands(thirdChildPath),
+            setProperty('always', thirdChildPath, PP.create('style', 'flexGrow'), 0),
+            reorderElement('always', thirdChildPath, absolute(2)),
+          ]
+        }
+      }
+    }
+  }
+
+  return 'not-applicable'
+}
+
 export function convertLayoutToFlexCommands(
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
@@ -152,117 +283,37 @@ export function convertLayoutToFlexCommands(
       return [setProperty('always', path, PP.create('style', 'display'), 'flex')]
     }
 
-    const { direction, sortedChildren, averageGap, padding, alignItems } = guessMatchingFlexSetup(
+    const { direction, averageGap, sortedChildren, padding, alignItems } = guessMatchingFlexSetup(
       metadata,
       path,
       childrenPaths,
     )
     const sortedChildrenPaths = sortedChildren.map((c) => EP.dynamicPathToStaticPath(c.target))
 
-    const { childWidth100Percent, childHeight100Percent } = childIs100PercentSizedInEitherDirection(
+    // Special case: We only have a single child which has a size of 100%.
+    const possibleSingleChildWith100PercentSize = convertSingleChildWith100PercentSize(
       metadata,
-      childrenPaths[0],
+      allElementProps,
+      elementPathTree,
+      parentFlexDirection,
+      path,
+      childrenPaths,
+      direction,
     )
-
-    const optionalCenterAlignCommands = onlyChildIsSpan(metadata, childrenPaths)
-      ? [
-          setProperty('always', path, PP.create('style', 'alignItems'), 'center'),
-          setProperty('always', path, PP.create('style', 'justifyContent'), 'center'),
-          setHugContentForAxis('horizontal', childrenPaths[0], parentFlexDirection),
-          setHugContentForAxis('vertical', childrenPaths[0], parentFlexDirection),
-        ]
-      : []
-
-    if (childrenPaths.length === 1 && (childWidth100Percent || childHeight100Percent)) {
-      // special case: we only have a single child which has a size of 100%.
-      return [
-        ...ifElementIsFragmentLikeFirstConvertItToFrame(
-          metadata,
-          allElementProps,
-          elementPathTree,
-          path,
-        ),
-        setProperty('always', path, PP.create('style', 'display'), 'flex'),
-        setProperty('always', path, PP.create('style', 'flexDirection'), direction),
-        ...(childWidth100Percent
-          ? []
-          : [setHugContentForAxis('horizontal', path, parentFlexDirection)]),
-        ...(childHeight100Percent
-          ? []
-          : [setHugContentForAxis('vertical', path, parentFlexDirection)]),
-        ...childrenPaths.flatMap((child) => [
-          ...nukeAllAbsolutePositioningPropsCommands(child),
-          ...convertWidthToFlexGrowOptionally(metadata, child, direction),
-        ]),
-        ...optionalCenterAlignCommands,
-      ]
+    if (possibleSingleChildWith100PercentSize !== 'not-applicable') {
+      return possibleSingleChildWith100PercentSize
     }
 
-    if (childrenPaths.length === 3) {
-      const childrenMetadata = mapDropNulls(
-        (childPath) => MetadataUtils.findElementByElementPath(metadata, childPath),
-        childrenPaths,
-      )
-      if (childrenMetadata.length === 3) {
-        // This should make the logic independent of the ordering within the code,
-        // as their logical order does not necessarily relate to their visual position.
-        const childrenMetadataOrderedByHorizontalPosition = sortBy(
-          childrenMetadata,
-          (first, second) => {
-            return (
-              zeroRectIfNullOrInfinity(first.localFrame).x -
-              zeroRectIfNullOrInfinity(second.localFrame).x
-            )
-          },
-        )
-        // Get the reordered metadata and paths.
-        const [firstChildElement, secondChildElement, thirdChildElement] =
-          childrenMetadataOrderedByHorizontalPosition
-        const [firstChildPath, secondChildPath, thirdChildPath] =
-          childrenMetadataOrderedByHorizontalPosition.map((meta) => meta.elementPath)
-        if (laidOutAsRow(firstChildElement, secondChildElement, thirdChildElement)) {
-          if (
-            checkConstraintsForThreeElementRow(
-              allElementProps,
-              firstChildPath,
-              secondChildPath,
-              thirdChildPath,
-            )
-          ) {
-            const firstFrame = zeroRectIfNullOrInfinity(firstChildElement.localFrame)
-            const secondFrame = zeroRectIfNullOrInfinity(secondChildElement.localFrame)
-
-            const gapValue = roundTo(secondFrame.x - firstFrame.width, 2)
-
-            return [
-              // Configure the parent element.
-              ...getCommandsForConversionToDesiredType(
-                metadata,
-                elementPathTree,
-                allElementProps,
-                [path],
-                'group',
-                'frame',
-              ),
-              setProperty('always', path, PP.create('style', 'display'), 'flex'),
-              setProperty('always', path, PP.create('style', 'flexDirection'), 'row'),
-              setProperty('always', path, PP.create('style', 'gap'), gapValue),
-              // Configure and reorder the "first" element.
-              ...nukeAllAbsolutePositioningPropsCommands(firstChildPath),
-              setProperty('always', firstChildPath, PP.create('style', 'flexGrow'), 0),
-              reorderElement('always', firstChildPath, absolute(0)),
-              // Configure and reorder the "second" element.
-              ...nukeAllAbsolutePositioningPropsCommands(secondChildPath),
-              setProperty('always', secondChildPath, PP.create('style', 'flexGrow'), 1),
-              reorderElement('always', secondChildPath, absolute(1)),
-              // Configure and reorder the "third" element.
-              ...nukeAllAbsolutePositioningPropsCommands(thirdChildPath),
-              setProperty('always', thirdChildPath, PP.create('style', 'flexGrow'), 0),
-              reorderElement('always', thirdChildPath, absolute(2)),
-            ]
-          }
-        }
-      }
+    // Special case: Group with 3 child elements in a row with some specific `data-constraints`.
+    const possibleThreeElementGroupRow = convertThreeElementGroupRow(
+      metadata,
+      allElementProps,
+      elementPathTree,
+      path,
+      childrenPaths,
+    )
+    if (possibleThreeElementGroupRow !== 'not-applicable') {
+      return possibleThreeElementGroupRow
     }
 
     const rearrangedChildrenPaths = rearrangedPathsWithFlexConversionMeasurementBoundariesIntact(
