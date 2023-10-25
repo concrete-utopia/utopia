@@ -10,7 +10,10 @@ import {
   type ElementInstanceMetadataMap,
   type JSXElement,
 } from '../../../../core/shared/element-template'
-import { roundRectangleToNearestWhole } from '../../../../core/shared/math-utils'
+import {
+  canvasRectangleToLocalRectangle,
+  roundRectangleToNearestWhole,
+} from '../../../../core/shared/math-utils'
 import type {
   CanvasPoint,
   CanvasRectangle,
@@ -43,7 +46,7 @@ import {
 } from '../../commands/adjust-css-length-command'
 import { pointGuidelineToBoundsEdge } from '../../controls/guideline-helpers'
 import type { AbsolutePin } from './resize-helpers'
-import { resizeBoundingBox } from './resize-helpers'
+import { ensureAtLeastTwoPinsForEdgePosition, resizeBoundingBox } from './resize-helpers'
 import type { FlexDirection } from '../../../inspector/common/css-utils'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
@@ -55,58 +58,78 @@ import type { InspectorStrategy } from '../../../../components/inspector/inspect
 import { pushIntendedBoundsAndUpdateGroups } from '../../commands/push-intended-bounds-and-update-groups-command'
 import { setElementsToRerenderCommand } from '../../commands/set-elements-to-rerender-command'
 import { withUnderlyingTarget } from '../../../../components/editor/store/editor-state'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
+import { getFullFrame } from '../../../frame'
+import invariant from '../../../../third-party/remix/invariant'
+import {
+  rectangleToSixFramePoints,
+  transformConstrainedLocalFullFrameUsingBoundingBox,
+} from '../../commands/utils/group-resize-utils'
 
 export function createResizeCommands(
   element: JSXElement,
   selectedElement: ElementPath,
   edgePosition: EdgePosition,
   drag: CanvasVector,
-  elementGlobalFrame: CanvasRectangle | null,
-  elementParentBounds: CanvasRectangle | null,
+  elementGlobalFrame: CanvasRectangle,
+  elementParentBounds: CanvasRectangle,
   elementParentFlexDirection: FlexDirection | null,
-): { commands: AdjustCssLengthProperties[]; intendedBounds: CanvasFrameAndTarget | null } {
-  const pins = pinsForEdgePosition(edgePosition)
-  const properties = mapDropNulls((pin) => {
+): { commands: SetCssLengthProperty[]; intendedBounds: CanvasFrameAndTarget | null } {
+  const pinsThatCanBrAffectedByEdgePosition = pinsForEdgePosition(edgePosition)
+  const currentPinsPlusEnsuredPins = ensureAtLeastTwoPinsForEdgePosition(
+    right(element.props),
+    edgePosition,
+  )
+
+  const pinsToChangeOrAdd = pinsThatCanBrAffectedByEdgePosition.filter((pin) =>
+    currentPinsPlusEnsuredPins.includes(pin),
+  )
+
+  const resizedGlobalFrame = roundRectangleToNearestWhole(
+    resizeBoundingBox(elementGlobalFrame, drag, edgePosition, null, 'non-center-based'),
+  )
+
+  const resizedLocalFullFrame = rectangleToSixFramePoints(
+    canvasRectangleToLocalRectangle(resizedGlobalFrame, elementParentBounds),
+    elementParentBounds,
+  )
+
+  const setCssLengthPropertyCommands = mapDropNulls((pin) => {
     const horizontal = isHorizontalPoint(
       // TODO avoid using the loaded FramePoint enum
       framePointForPinnedProp(pin),
     )
-    const negative =
-      pin === 'right' ||
-      pin === 'bottom' ||
-      (pin === 'width' && edgePosition.x === 0) ||
-      (pin === 'height' && edgePosition.y === 0)
-    const value = getLayoutProperty(pin, right(element.props), styleStringInArray)
-    if (isRight(value) && value.value != null) {
-      // TODO what to do about missing properties?
-      return lengthPropertyToAdjust(
-        stylePropPathMappingFn(pin, styleStringInArray),
-        (horizontal ? drag.x : drag.y) * (negative ? -1 : 1),
-        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
-        'create-if-not-existing',
-      )
-    } else {
-      return null
-    }
-  }, pins)
 
-  const adjustPropertiesCommand = adjustCssLengthProperties(
-    'always',
-    selectedElement,
-    elementParentFlexDirection,
-    properties,
-  )
+    const adjustedValue = resizedLocalFullFrame[pin]
+
+    return setCssLengthProperty(
+      'always',
+      selectedElement,
+      stylePropPathMappingFn(pin, styleStringInArray),
+      setValueKeepingOriginalUnit(
+        adjustedValue,
+        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+      ),
+      elementParentFlexDirection,
+
+      'create-if-not-existing',
+      'warn-about-replacement',
+    )
+  }, pinsToChangeOrAdd)
 
   const intendedBounds: CanvasFrameAndTarget | null =
     elementGlobalFrame == null
       ? null
       : {
-          frame: roundRectangleToNearestWhole(
-            resizeBoundingBox(elementGlobalFrame, drag, edgePosition, null, 'non-center-based'),
-          ),
+          frame: resizedGlobalFrame,
           target: selectedElement,
         }
-  return { commands: [adjustPropertiesCommand], intendedBounds }
+
+  return { commands: setCssLengthPropertyCommands, intendedBounds }
 }
 
 function pinsForEdgePosition(edgePosition: EdgePosition): AbsolutePin[] {
@@ -322,11 +345,19 @@ export function changeBounds(
       startingMetadata,
       selectedElement,
     )
-    const elementParentBounds =
-      elementMetadata?.specialSizeMeasurements.immediateParentBounds ?? null
+    const elementParentBounds = elementMetadata?.specialSizeMeasurements.immediateParentBounds
     const elementParentFlexDirection =
       elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null
-    const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame ?? null)
+    const elementGlobalFrame = nullIfInfinity(elementMetadata?.globalFrame)
+
+    invariant(
+      elementGlobalFrame != null,
+      "Error in changeBounds: the element's global frame was null or infinity",
+    )
+    invariant(
+      elementParentBounds != null,
+      "Error in changeBounds: the element's global frame was null or infinity",
+    )
 
     if (element != null && isJSXElement(element)) {
       const elementResult = createResizeCommands(
