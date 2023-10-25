@@ -4092,6 +4092,64 @@ describe('inspector tests with real metadata', () => {
         `,
         }),
       )
+
+      it(
+        'set hugging text to scale',
+        runTest({
+          input: `<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+        data-uid='root'
+      >
+        <span
+          style={{
+            position: 'absolute',
+            wordBreak: 'break-word',
+            left: 261,
+            top: 139,
+            height: 19,
+            width: 'max-content',
+          }}
+          data-uid='text'
+        >
+          span
+        </span>
+      </div>`,
+          selection: [EP.appendNewElementPath(TestScenePath, ['root', 'text'])],
+          logic: async (renderResult) =>
+            pickFromReactSelectPopupList(
+              renderResult,
+              'frame-child-constraint-width-popuplist',
+              'Left',
+              'Scale',
+            ),
+          want: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <span
+            style={{
+              position: 'absolute',
+              wordBreak: 'break-word',
+              top: 139,
+              height: 19,
+              left: '65.3%',
+              width: '7.5%',
+            }}
+            data-uid='text'
+          >
+            span
+          </span>
+        </div>`,
+        }),
+      )
     })
   })
 })
