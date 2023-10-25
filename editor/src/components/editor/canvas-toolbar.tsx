@@ -300,13 +300,10 @@ export const CanvasToolbar = React.memo(() => {
     convertToAndClose(convertToFragmentMenuItem)
   }, [convertToAndClose])
 
-  const wrapInDivAndClose = React.useCallback(
-    (event: React.MouseEvent<Element>) => {
-      wrapInDivCallback(event)
-      dispatchSwitchToSelectModeCloseMenus()
-    },
-    [dispatchSwitchToSelectModeCloseMenus, wrapInDivCallback],
-  )
+  const wrapInDivAndClose = React.useCallback(() => {
+    wrapInDivCallback()
+    dispatchSwitchToSelectModeCloseMenus()
+  }, [dispatchSwitchToSelectModeCloseMenus, wrapInDivCallback])
 
   const toInsertAndClose = React.useCallback(
     (toInsert: InsertMenuItem | null) => {
