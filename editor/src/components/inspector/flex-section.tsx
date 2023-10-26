@@ -18,7 +18,7 @@ import { FlexGapControl } from './sections/layout-section/flex-container-subsect
 import { FlexContainerControls } from './sections/layout-section/flex-container-subsection/flex-container-subsection'
 import { FlexCol } from 'utopia-api'
 
-const areElementsFlexContainersSelector = createSelector(
+export const areElementsFlexContainersSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   detectAreElementsFlexContainers,
@@ -56,9 +56,6 @@ export const FlexSection = React.memo(() => {
           </UIGridRow>
           <UIGridRow padded={false} variant='<-------------1fr------------->'>
             <SpacedPackedControl />
-          </UIGridRow>
-          <UIGridRow padded={false} variant='<-------------1fr------------->'>
-            <PaddingRow />
           </UIGridRow>
         </FlexCol>,
       )}
