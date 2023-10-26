@@ -246,12 +246,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
   const routeModules = useGetRouteModules(basePath)
 
   const setNavigationData = useSetAtom(RemixNavigationAtom)
-
-  // FIXME Figure out how to re-enable this without breaking fetchers
-  // const currentEntriesRef = useCurrentEntriesRef(EP.toString(basePath))
-  const currentEntries = undefined
-  const currentEntriesRef = React.useRef(currentEntries)
-  currentEntriesRef.current = currentEntries
+  const currentEntriesRef = useCurrentEntriesRef(EP.toString(basePath))
 
   // The router always needs to be updated otherwise new routes won't work without a refresh
   // We need to create the new router with the current location in the initial entries to
