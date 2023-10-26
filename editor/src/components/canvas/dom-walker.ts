@@ -23,7 +23,7 @@ import type { ElementPath } from '../../core/shared/project-file-types'
 import {
   getCanvasRectangleFromElement,
   getDOMAttribute,
-  hugPropertiesFromComputedStyleMap,
+  hugPropertiesFromStyleMap,
 } from '../../core/shared/dom-utils'
 import {
   applicative4Either,
@@ -1060,9 +1060,8 @@ function getSpecialMeasurements(
 
   const computedStyleMap =
     typeof element.computedStyleMap === 'function' ? element.computedStyleMap() : null // TODO: this is for jest tests, no computedStyleMap in jsdom :()
-  const computedHugProperty = hugPropertiesFromComputedStyleMap(
-    computedStyleMap,
-    elementStyle.display,
+  const computedHugProperty = hugPropertiesFromStyleMap(
+    (styleProp: string) => computedStyleMap?.get(styleProp)?.toString() ?? null,
     globalFrame,
   )
 

@@ -73,7 +73,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
-import { hugPropertyFromStyleValue } from '../../core/shared/dom-utils'
+import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-basic-strategy'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
@@ -795,19 +795,14 @@ export function hugTypeFromStyleAttribute(
   display: string,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): 'hug' | 'squeeze' | 'collapsed' | null {
-  const simpleAttribute = defaultEither(
-    null,
-    getSimpleAttributeAtPath(right(props), PP.create('style', property)),
-  )
-  const pins = ['top', 'right', 'bottom', 'left'].filter((pin) => {
-    const pinValue = defaultEither(
-      null,
-      getSimpleAttributeAtPath(right(props), PP.create('style', pin)),
-    )
-    return pinValue != null && pinValue != 'auto'
-  }) as Array<'left' | 'top' | 'right' | 'bottom'>
+  const getStyleValue = (prop: string) =>
+    prop === 'display'
+      ? display
+      : defaultEither(null, getSimpleAttributeAtPath(right(props), PP.create('style', prop)))
 
-  return hugPropertyFromStyleValue(simpleAttribute, property, pins, display, globalFrame)
+  const hugProperties = hugPropertiesFromStyleMap(getStyleValue, globalFrame)
+
+  return hugProperties[property]
 }
 
 export function isHugFromStyleAttributeOrNull(

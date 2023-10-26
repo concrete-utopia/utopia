@@ -11,7 +11,7 @@ import { URL_HASH } from '../../common/env-vars'
 import { blockLevelHtmlElements, inlineHtmlElements } from '../../utils/html-elements'
 import { assertNever, identity } from './utils'
 import type { HugProperty, HugPropertyWidthHeight } from './element-template'
-import { AbsolutePin } from '../../components/canvas/canvas-strategies/strategies/resize-helpers'
+import type { AbsolutePin } from '../../components/canvas/canvas-strategies/strategies/resize-helpers'
 
 export const intrinsicHTMLElementNames: Array<keyof ReactDOM> = [
   'a',
@@ -348,32 +348,28 @@ export function defaultDisplayTypeForHTMLElement(elementName: string): 'inline' 
   }
 }
 
-export function hugPropertiesFromComputedStyleMap(
-  styleMap: StylePropertyMapReadOnly | null,
-  display: string,
+export function hugPropertiesFromStyleMap(
+  getStyleValue: (key: AbsolutePin | 'display') => string | null,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): HugPropertyWidthHeight {
-  if (styleMap == null) {
-    return {
-      width: null,
-      height: null,
-    }
-  }
-  const pins = ['top', 'left', 'bottom', 'left'].filter((pin) => {
-    const pinValue = styleMap.get(pin)?.toString()
+  const pins = (
+    ['left', 'top', 'right', 'bottom'] as Array<'left' | 'top' | 'right' | 'bottom'>
+  ).filter((pin) => {
+    const pinValue = getStyleValue(pin)
     return pinValue != null && pinValue != 'auto'
-  }) as Array<'left' | 'top' | 'right' | 'bottom'>
+  })
 
+  const display = getStyleValue('display')
   return {
     width: hugPropertyFromStyleValue(
-      styleMap.get('width')?.toString() ?? 'auto',
+      getStyleValue('width') ?? 'auto',
       'width',
       pins,
       display,
       globalFrame,
     ),
     height: hugPropertyFromStyleValue(
-      styleMap.get('height')?.toString() ?? 'auto',
+      getStyleValue('height') ?? 'auto',
       'height',
       pins,
       display,
@@ -382,11 +378,11 @@ export function hugPropertiesFromComputedStyleMap(
   }
 }
 
-export function hugPropertyFromStyleValue(
+function hugPropertyFromStyleValue(
   value: string,
   property: 'width' | 'height',
   pins: Array<'left' | 'top' | 'right' | 'bottom'>,
-  display: string,
+  display: string | null,
   globalFrame: MaybeInfinityCanvasRectangle | null,
 ): HugProperty | null {
   const hugProp = (() => {

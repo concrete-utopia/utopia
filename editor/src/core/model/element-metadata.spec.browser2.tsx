@@ -1,4 +1,5 @@
 /// <reference types="karma-viewport" />
+/* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "makeTestCase"] }] */
 
 import * as EP from '../shared/element-path'
 import {
@@ -11,6 +12,7 @@ import {
   FragmentLikeElementUid,
 } from '../../components/canvas/canvas-strategies/strategies/fragment-like-helpers.test-utils'
 import {
+  formatTestProjectCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
   TestAppUID,
@@ -26,8 +28,8 @@ import { canvasRectangle, localRectangle, zeroCanvasRect } from '../shared/math-
 import type { ElementPath } from '../shared/project-file-types'
 import { MetadataUtils } from './element-metadata-utils'
 import { elementOnlyHasTextChildren } from './element-template-utils'
-import { wait } from './performance-scripts'
-import { BakedInStoryboardUID } from './scene-utils'
+import { BakedInStoryboardUID, BakedInStoryboardVariableName } from './scene-utils'
+import type { HugPropertyWidthHeight } from '../shared/element-template'
 
 describe('Frame calculation for fragments', () => {
   // Components with root fragments do not appear in the DOM, so the dom walker does not find them, and they
@@ -929,6 +931,374 @@ describe('fillSpyOnlyMetadata', () => {
 
     expect(metadata!.specialSizeMeasurements.layoutSystemForChildren).toEqual('flex')
   })
+})
+
+describe('computedHugProperty', () => {
+  async function makeTestCase(
+    snippet: string,
+    target: ElementPath,
+    expected: HugPropertyWidthHeight,
+  ) {
+    const code = `
+      import * as React from 'react'
+      import { Scene, Storyboard, View, Group } from 'utopia-api'
+
+      const css = \`.minContent {
+        width: min-content;
+        height: min-content;
+      }
+
+      .maxContent {
+        width: max-content;
+        height: max-content;
+      }
+      
+      .auto {
+        width: auto;
+        height: auto;
+      }\`
+
+      export var App = (props) => (
+        <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          ${snippet}
+        </div>
+      )
+
+      export var ${BakedInStoryboardVariableName} = (props) => {
+        return (
+          <Storyboard data-uid='${BakedInStoryboardUID}'>
+            <style>{css}</style>
+            <Scene
+              style={{ left: 0, top: 0, width: 400, height: 400 }}
+              data-uid='${TestSceneUID}'
+            >
+              <App
+                data-uid='${TestAppUID}'
+                style={{ position: 'absolute', bottom: 0, left: 0, right: 0, top: 0 }}
+              />
+            </Scene>
+          </Storyboard>
+        )
+      }
+`
+
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(code),
+      'await-first-dom-report',
+    )
+
+    const metadata = MetadataUtils.findElementByElementPath(
+      renderResult.getEditorState().editor.jsxMetadata,
+      target,
+    )
+    expect(metadata).not.toBeNull()
+
+    expect(metadata!.specialSizeMeasurements.computedHugProperty).toEqual(expected)
+  }
+
+  describe('from style props', () => {
+    it('computedHugProperty.width/height is hug when width/height is max-content', async () => {
+      await makeTestCase(
+        `<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 'max-content',
+          height: 'max-content',
+        }}
+        data-uid='div'
+      >
+        Hug a Utopia!
+      </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'hug', height: 'hug' },
+      )
+    })
+
+    it('computedHugProperty.width/height is squeeze when width/height is min-content', async () => {
+      await makeTestCase(
+        `<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 'min-content',
+          height: 'min-content',
+        }}
+        data-uid='div'
+      >
+        Hug a Utopia!
+      </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'squeeze', height: 'squeeze' },
+      )
+    })
+
+    it('computedHugProperty.width/height is collapsed when it is hugging but children size is zero', async () => {
+      await makeTestCase(
+        `<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          width: 'max-content',
+          height: 'max-content',
+        }}
+        data-uid='div'
+      />`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'collapsed', height: 'collapsed' },
+      )
+    })
+
+    it('computedHugProperty.width/height is null when TLBR pins are set', async () => {
+      await makeTestCase(
+        `<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          position: 'absolute',
+          left: 79,
+          top: 357,
+          bottom: 457,
+          right: 109,
+        }}
+        data-uid='div'
+      >
+        Hug a Utopia!
+      </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: null, height: null },
+      )
+    })
+
+    it('computedHugProperty.width is null and height is hug when width/height is not set and no TLBR set (for display block)', async () => {
+      await makeTestCase(
+        `<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+        }}
+        data-uid='div'
+      >
+        Hug a Utopia!
+      </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: null, height: 'hug' },
+      )
+    })
+
+    it('computedHugProperty.width/height is null and height is hug when width/height is not set and no TLBR set (for display inline)', async () => {
+      await makeTestCase(
+        `<span
+        style={{
+          backgroundColor: '#aaaaaa33',
+        }}
+        data-uid='div'
+      >
+        Hug a Utopia!
+      </span>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'hug', height: 'hug' },
+      )
+    })
+
+    it('computedHugProperty.width is null and height is hug when width/height is auto (for display block)', async () => {
+      await makeTestCase(
+        `<div
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 'auto',
+          height: 'auto',
+        }}
+        data-uid='div'
+      >
+        Hug a Utopia!
+      </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: null, height: 'hug' },
+      )
+    })
+
+    it('computedHugProperty.width/height is null and height is hug when width/height is auto (for display inline)', async () => {
+      await makeTestCase(
+        `<span
+        style={{
+          backgroundColor: '#aaaaaa33',
+          width: 'auto',
+          height: 'auto',
+        }}
+        data-uid='div'
+      >
+        Hug a Utopia!
+      </span>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'hug', height: 'hug' },
+      )
+    })
+  })
+
+  describe('from css', () => {
+    it('computedHugProperty.width/height is hug when width/height is max-content', async () => {
+      await makeTestCase(
+        `<div
+          className='maxContent'
+          style={{
+            backgroundColor: '#aaaaaa33',
+          }}
+          data-uid='div'
+        >
+          Hug a Utopia!
+        </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'hug', height: 'hug' },
+      )
+    })
+
+    it('computedHugProperty.width/height is squeeze when width/height is min-content', async () => {
+      await makeTestCase(
+        `<div
+          className='minContent'
+          style={{
+            backgroundColor: '#aaaaaa33',
+          }}
+          data-uid='div'
+        >
+          Hug a Utopia!
+        </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'squeeze', height: 'squeeze' },
+      )
+    })
+
+    it('computedHugProperty.width/height is collapsed when it is hugging but children size is zero', async () => {
+      await makeTestCase(
+        `<div
+          className='maxContent'
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+          }}
+          data-uid='div'
+        />`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'collapsed', height: 'collapsed' },
+      )
+    })
+
+    it('computedHugProperty.width is null and height is hug when width/height is auto (for display block)', async () => {
+      await makeTestCase(
+        `<div
+          className='auto'
+          style={{
+            backgroundColor: '#aaaaaa33',
+          }}
+          data-uid='div'
+        >
+          Hug a Utopia!
+        </div>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: null, height: 'hug' },
+      )
+    })
+
+    it('computedHugProperty.width/height is null and height is hug when width/height is auto (for display inline)', async () => {
+      await makeTestCase(
+        `<span
+          className='auto'
+          style={{
+            backgroundColor: '#aaaaaa33',
+            width: 'auto',
+            height: 'auto',
+          }}
+          data-uid='div'
+        >
+          Hug a Utopia!
+        </span>`,
+        EP.appendNewElementPath(TestScenePath, ['root', 'div']),
+        { width: 'hug', height: 'hug' },
+      )
+    })
+  })
+
+  // it('computedHugProperty.width is hug when width is max-content', async () => {
+  //   const renderResult = await renderTestEditorWithCode(
+  //     makeTestProjectCodeWithSnippet(`<div
+  //       style={{
+  //         height: '100%',
+  //         width: '100%',
+  //         contain: 'layout',
+  //       }}
+  //       data-uid='root'
+  //     >
+  //       <div
+  //         style={{
+  //           backgroundColor: '#aaaaaa33',
+  //           position: 'absolute',
+  //           left: 79,
+  //           top: 357,
+  //           height: 174,
+  //           width: 'max-content',
+  //         }}
+  //         data-uid='div'
+  //       >
+  //         Hug a Utopia!
+  //       </div>
+  //     </div>`),
+  //     'await-first-dom-report',
+  //   )
+
+  //   const targetPath = EP.appendNewElementPath(TestScenePath, ['root', 'div'])
+  //   const metadata = MetadataUtils.findElementByElementPath(
+  //     renderResult.getEditorState().editor.jsxMetadata,
+  //     targetPath,
+  //   )
+  //   expect(metadata).not.toBeNull()
+
+  //   expect(metadata!.specialSizeMeasurements.computedHugProperty.width).toEqual('hug')
+  // })
+
+  // it('computedHugProperty.width is squeeze when width is min-content', async () => {
+  //   const renderResult = await renderTestEditorWithCode(
+  //     makeTestProjectCodeWithSnippet(`<div
+  //       style={{
+  //         height: '100%',
+  //         width: '100%',
+  //         contain: 'layout',
+  //       }}
+  //       data-uid='root'
+  //     >
+  //       <div
+  //         style={{
+  //           backgroundColor: '#aaaaaa33',
+  //           position: 'absolute',
+  //           left: 79,
+  //           top: 357,
+  //           height: 174,
+  //           width: 'min-content',
+  //         }}
+  //         data-uid='div'
+  //       >
+  //         Hug a Utopia!
+  //       </div>
+  //     </div>`),
+  //     'await-first-dom-report',
+  //   )
+
+  //   const targetPath = EP.appendNewElementPath(TestScenePath, ['root', 'div'])
+  //   const metadata = MetadataUtils.findElementByElementPath(
+  //     renderResult.getEditorState().editor.jsxMetadata,
+  //     targetPath,
+  //   )
+  //   expect(metadata).not.toBeNull()
+
+  //   expect(metadata!.specialSizeMeasurements.computedHugProperty.width).toEqual('squeeze')
+  // })
 })
 
 const TestProjectWithSeveralComponents = `
