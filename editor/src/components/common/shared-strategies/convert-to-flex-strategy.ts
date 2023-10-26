@@ -244,6 +244,13 @@ export function convertLayoutToFlexCommands(
                 'group',
                 'frame',
               ),
+              ...maybeAlignElementsToCenter(
+                metadata,
+                childrenPaths,
+                path,
+                direction,
+                parentFlexDirection,
+              ),
               setProperty('always', path, PP.create('style', 'display'), 'flex'),
               setProperty('always', path, PP.create('style', 'flexDirection'), 'row'),
               setProperty('always', path, PP.create('style', 'gap'), gapValue),
