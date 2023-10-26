@@ -650,6 +650,8 @@ describe('Smart Convert To Flex', () => {
           left: 14,
           top: 343,
           width: 584,
+          alignItems: 'center',
+          justifyContent: 'flex-start',
           display: 'flex',
           flexDirection: 'row',
           gap: 32,

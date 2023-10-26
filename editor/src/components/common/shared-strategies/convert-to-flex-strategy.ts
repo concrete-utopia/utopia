@@ -165,6 +165,8 @@ function convertThreeElementGroupRow(
   elementPathTree: ElementPathTrees,
   path: ElementPath,
   childrenPaths: Array<ElementPath>,
+  parentFlexDirection: FlexDirection | null,
+  direction: FlexDirectionRowColumn,
 ): CommandsOrNotApplicable {
   if (childrenPaths.length === 3) {
     const childrenMetadata = mapDropNulls(
@@ -211,6 +213,13 @@ function convertThreeElementGroupRow(
               [path],
               'group',
               'frame',
+            ),
+            ...maybeAlignElementsToCenter(
+              metadata,
+              childrenPaths,
+              path,
+              direction,
+              parentFlexDirection,
             ),
             setProperty('always', path, PP.create('style', 'display'), 'flex'),
             setProperty('always', path, PP.create('style', 'flexDirection'), 'row'),
@@ -311,6 +320,8 @@ export function convertLayoutToFlexCommands(
       elementPathTree,
       path,
       childrenPaths,
+      parentFlexDirection,
+      direction,
     )
     if (possibleThreeElementGroupRow !== 'not-applicable') {
       return possibleThreeElementGroupRow
