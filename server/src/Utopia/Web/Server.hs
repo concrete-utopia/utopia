@@ -154,7 +154,7 @@ serverApplication = serve apiProxy
 -}
 runWarpServer :: Server API -> H.HashMap Text Meters -> Bool -> IO AssetResultCache -> Warp.Settings -> IO ThreadId
 runWarpServer serverAPI meterMap shouldForceSSL assetsCache settings = forkIO $ Warp.runSettings settings
-  $ limitRequestSizeMiddleware (1024 * 1024 * 5) -- 5MB
+  $ limitRequestSizeMiddleware (1024 * 1024 * 50) -- 5MB
   $ ifRequest (const shouldForceSSL) forceSSL
   $ redirector [projectPathRedirection, previewInnerPathRedirection]
   $ projectToPPathMiddleware

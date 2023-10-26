@@ -8,7 +8,7 @@ import type { ElementPath } from '../../../core/shared/project-file-types'
 import { useRefEditorState, useEditorState, Substores } from '../../editor/store/store-hook'
 import * as EP from '../../../core/shared/element-path'
 import { PathPropHOC } from './path-props-hoc'
-import { atom, useAtom, useSetAtom } from 'jotai'
+import { atom, useAtom, useAtomValue, useSetAtom } from 'jotai'
 import { getDefaultExportNameAndUidFromFile } from '../../../core/model/project-file-utils'
 import { OutletPathContext } from './remix-utils'
 import { UiJsxCanvasCtxAtom } from '../ui-jsx-canvas'
@@ -76,20 +76,22 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
-      const createExecutionScope = () =>
-        value.executionScopeCreator(
-          projectContentsRef.current,
-          fileBlobsRef.current,
-          hiddenInstancesRef.current,
-          displayNoneInstancesRef.current,
-          metadataContext,
-        ).scope
+      // We only want to call this once, when mounting the UtopiaRemixRootComponent, as otherwise
+      // any time we render the default export we'll actually be remounting everything
+      const executionScope = value.executionScopeCreator(
+        projectContentsRef.current,
+        fileBlobsRef.current,
+        hiddenInstancesRef.current,
+        displayNoneInstancesRef.current,
+        metadataContext,
+      ).scope
 
+      // TODO Balazs wants us to actually make this look like a component
       const defaultComponent = (componentProps: any) =>
-        createExecutionScope()[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
+        executionScope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
       const errorBoundary = value.createErrorBoundary
-        ? (componentProps: any) => createExecutionScope()['ErrorBoundary']?.(componentProps) ?? null
+        ? (componentProps: any) => executionScope['ErrorBoundary']?.(componentProps) ?? null
         : undefined
 
       const routeModule: RouteModule = {
@@ -142,19 +144,19 @@ function useGetRoutes() {
     function addLoaderAndActionToRoutes(innerRoutes: DataRouteObject[]) {
       innerRoutes.forEach((route) => {
         const creatorForRoute = creators[route.id]
+        const executionScope = creatorForRoute.executionScopeCreator(
+          projectContentsRef.current,
+          fileBlobsRef.current,
+          hiddenInstancesRef.current,
+          displayNoneInstancesRef.current,
+          metadataContext,
+        ).scope
+
         if (creatorForRoute != null) {
           route.action = async (args: any) => {
-            const actionScope = creatorForRoute.executionScopeCreator(
-              projectContentsRef.current,
-              fileBlobsRef.current,
-              hiddenInstancesRef.current,
-              displayNoneInstancesRef.current,
-              metadataContext,
-            ).scope
-
             // Super hacky way of calling the `fetch` function from `server.js` purely to get the context
             // that it provides, so that we can then provide that to the action function
-            const { context: actionContext } = await actionScope['customServer'].fetch(
+            const { context: actionContext } = await executionScope['customServer'].fetch(
               args.request,
               {
                 SESSION_SECRET: 'foobar',
@@ -173,21 +175,13 @@ function useGetRoutes() {
               },
             }
 
-            return actionScope['action']?.(patchedArgs) ?? null
+            return (await executionScope['action']?.(patchedArgs)) ?? null
           }
 
           route.loader = async (args: any) => {
-            const loaderScope = creatorForRoute.executionScopeCreator(
-              projectContentsRef.current,
-              fileBlobsRef.current,
-              hiddenInstancesRef.current,
-              displayNoneInstancesRef.current,
-              metadataContext,
-            ).scope
-
             // Super hacky way of calling the `fetch` function from `server.js` purely to get the context
             // that it provides, so that we can then provide that to the loader function
-            const { context: loaderContext } = await loaderScope['customServer'].fetch(
+            const { context: loaderContext } = await executionScope['customServer'].fetch(
               args.request,
               {
                 SESSION_SECRET: 'foobar',
@@ -206,7 +200,7 @@ function useGetRoutes() {
               },
             }
 
-            return loaderScope['loader']?.(patchedArgs) ?? null
+            return (await executionScope['loader']?.(patchedArgs)) ?? null
           }
         }
 
@@ -232,6 +226,16 @@ export interface UtopiaRemixRootComponentProps {
   [UTOPIA_PATH_KEY]: ElementPath
 }
 
+function useCurrentEntriesRef(basePath: string) {
+  const navigationData = useAtomValue(RemixNavigationAtom)
+
+  const currentEntries = navigationData[basePath]?.entries
+  const currentEntriesRef = React.useRef(currentEntries)
+  currentEntriesRef.current = currentEntries
+
+  return currentEntriesRef
+}
+
 export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootComponentProps) => {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
 
@@ -241,9 +245,11 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const routeModules = useGetRouteModules(basePath)
 
-  const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
+  const setNavigationData = useSetAtom(RemixNavigationAtom)
 
-  const currentEntries = navigationData[EP.toString(basePath)]?.entries
+  // FIXME Figure out how to re-enable this without breaking fetchers
+  // const currentEntriesRef = useCurrentEntriesRef(EP.toString(basePath))
+  const currentEntries = undefined
   const currentEntriesRef = React.useRef(currentEntries)
   currentEntriesRef.current = currentEntries
 
@@ -256,7 +262,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
     }
     const initialEntries = currentEntriesRef.current == null ? undefined : currentEntriesRef.current
     return createMemoryRouter(routes, { initialEntries: initialEntries })
-  }, [routes])
+  }, [routes, currentEntriesRef])
 
   const setNavigationDataForRouter = React.useCallback(
     (
