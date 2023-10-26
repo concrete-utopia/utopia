@@ -119,7 +119,6 @@ import {
 import { isEmptyGroup } from './group-helpers'
 import type { AbsolutePin } from './resize-helpers'
 import { ensureAtLeastTwoPinsForEdgePosition, isHorizontalPin } from './resize-helpers'
-import { createMoveCommandsForElement } from './shared-move-strategies-helpers'
 import { getConditionalActiveCase } from '../../../../core/model/conditionals'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { unsetJSXValueAtPath } from '../../../../core/shared/jsx-attributes'
