@@ -85,7 +85,6 @@ export const getAdjustMoveCommands =
   (
     snappedDragVector: CanvasPoint,
   ): {
-    commands: Array<AdjustCssLengthProperties>
     commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
     intendedBounds: Array<CanvasFrameAndTarget>
   } => {
