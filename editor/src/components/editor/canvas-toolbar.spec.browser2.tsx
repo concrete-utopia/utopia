@@ -23,6 +23,7 @@ import {
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   TestAppUID,
+  TestScenePath,
   TestSceneUID,
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
@@ -36,8 +37,10 @@ import {
   InsertConditionalButtonTestId,
   InsertMenuButtonTestId,
   PlayModeButtonTestId,
+  WrapInDivButtonTestId,
 } from './canvas-toolbar'
 import { StoryboardFilePath, PlaygroundFilePath, navigatorEntryToKey } from './store/editor-state'
+import { cmdModifier } from '../../utils/modifiers'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -1259,6 +1262,272 @@ export var Playground = () => {
       )
     })
   })
+
+  describe('wrap in div', () => {
+    const entryPoints = {
+      'click wrap in div button': async (renderResult: EditorRenderResult): Promise<void> => {
+        const element = renderResult.renderedDOM.getByText('Wrap')
+        await mouseClickAtPoint(element, { x: 2, y: 2 })
+
+        const wrapInDivButton = renderResult.renderedDOM.getByTestId(WrapInDivButtonTestId)
+        await mouseClickAtPoint(wrapInDivButton, { x: 2, y: 2 })
+      },
+      'choose div from dropdown': async (renderResult: EditorRenderResult): Promise<void> => {
+        const element = renderResult.renderedDOM.getByText('Wrap')
+        await mouseClickAtPoint(element, { x: 2, y: 2 })
+        await searchInFloatingMenu(renderResult, 'div')
+      },
+      'cmd + enter': (): Promise<void> => pressKey('Enter', { modifiers: cmdModifier }),
+    }
+
+    Object.entries(entryPoints).forEach(([entrypoint, trigger]) => {
+      describe(`${entrypoint}`, () => {
+        it('wrap absolute elements', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(` <div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 20,
+                top: 22,
+                width: 48,
+                height: 41,
+              }}
+              data-uid='one'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 82,
+                top: 28,
+                width: 38,
+                height: 29,
+              }}
+              data-uid='two'
+            />
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [
+            EP.appendNewElementPath(TestScenePath, ['root', 'one']),
+            EP.appendNewElementPath(TestScenePath, ['root', 'two']),
+          ])
+          await trigger(renderResult)
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra/one',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/wra/two',
+          ])
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(` <div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              contain: 'layout',
+              width: 100,
+              height: 41,
+              position: 'absolute',
+              top: 22,
+              left: 20,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 48,
+                height: 41,
+              }}
+              data-uid='one'
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 62,
+                top: 6,
+                width: 38,
+                height: 29,
+              }}
+              data-uid='two'
+            />
+          </div>
+        </div>`),
+          )
+        })
+        it('wrap flex elements', async () => {
+          const renderResult = await renderTestEditorWithCode(
+            makeTestProjectCodeWithSnippet(` <div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+            data-uid='root'
+          >
+            <div
+              style={{
+                contain: 'layout',
+                width: 'max-content',
+                height: 'max-content',
+                position: 'absolute',
+                top: 22,
+                left: 20,
+                display: 'flex',
+                flexDirection: 'row',
+                gap: 12,
+                alignItems: 'center',
+                justifyContent: 'flex-start',
+              }}
+              data-uid='container'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 48,
+                  height: 41,
+                  contain: 'layout',
+                }}
+                data-uid='one'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                }}
+                data-uid='two'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                }}
+                data-uid='three'
+              />
+            </div>
+          </div>`),
+            'await-first-dom-report',
+          )
+          await selectComponentsForTest(renderResult, [
+            EP.appendNewElementPath(TestScenePath, ['root', 'container', 'one']),
+            EP.appendNewElementPath(TestScenePath, ['root', 'container', 'two']),
+          ])
+          await trigger(renderResult)
+
+          expect(
+            renderResult.getEditorState().derived.navigatorTargets.map(navigatorEntryToKey),
+          ).toEqual([
+            'regular-utopia-storyboard-uid/scene-aaa',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/one',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/wra/two',
+            'regular-utopia-storyboard-uid/scene-aaa/app-entity:root/container/three',
+          ])
+
+          expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+            makeTestProjectCodeWithSnippet(`<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid='root'
+        >
+          <div
+            style={{
+              contain: 'layout',
+              width: 'max-content',
+              height: 'max-content',
+              position: 'absolute',
+              top: 22,
+              left: 20,
+              display: 'flex',
+              flexDirection: 'row',
+              gap: 12,
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+            }}
+            data-uid='container'
+          >
+            <div
+              style={{
+                contain: 'layout',
+                width: 98,
+                height: 41,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 48,
+                  height: 41,
+                  contain: 'layout',
+                  top: 0,
+                  left: 0,
+                  position: 'absolute',
+                }}
+                data-uid='one'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  width: 38,
+                  height: 29,
+                  contain: 'layout',
+                  top: 6,
+                  left: 60,
+                  position: 'absolute',
+                }}
+                data-uid='two'
+              />
+            </div>
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                width: 38,
+                height: 29,
+                contain: 'layout',
+              }}
+              data-uid='three'
+            />
+          </div>
+        </div>`),
+          )
+        })
+      })
+    })
+  })
 })
 
 async function clickEmptySlot(editor: EditorRenderResult) {
@@ -1291,13 +1560,4 @@ async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
     fireEvent.blur(searchBox)
     fireEvent.keyDown(searchBox, { key: 'Enter', keyCode: 13, metaKey: true })
   })
-}
-
-function expectChildrenNotSupportedToastToBePresent(editor: EditorRenderResult) {
-  expect(editor.getEditorState().editor.toasts.length).toEqual(1)
-  expect(editor.getEditorState().editor.toasts[0].level).toEqual('INFO')
-  expect(editor.getEditorState().editor.toasts[0].message).toEqual(
-    'Selected element does not support children',
-  )
-  expect(editor.getEditorState().editor.toasts[0].persistent).toEqual(false)
 }
