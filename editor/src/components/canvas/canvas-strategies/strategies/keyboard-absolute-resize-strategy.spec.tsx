@@ -234,8 +234,8 @@ describe('Keyboard Absolute Resize Strategy', () => {
     [['left', 'up'] as Array<KeyCharacter>, shiftCmdModifier, -10, -10],
     [['left', 'right'] as Array<KeyCharacter>, shiftCmdModifier, 0, 0],
   ])(
-    'Key %s with modifiers %o keeps expressions intact',
-    async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
+    'Key %s with modifiers %o replaces expressions and fires a toast',
+    async (keys: Array<KeyCharacter>, modifiers: Modifiers, deltaW: number, deltaH: number) => {
       const targetElement = elementPath([
         ['scene-aaa', 'app-entity'],
         ['aaa', 'bbb'],
@@ -245,7 +245,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250 + props.width, height: 300 + 5 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: 250 + props.width, height: 300 + props.height }}
         data-uid='bbb'
       />
     </View>
@@ -255,8 +255,20 @@ describe('Keyboard Absolute Resize Strategy', () => {
 
       const finalEditor = pressKeys(initialEditor, keyboardAbsoluteResizeStrategy, keys, modifiers)
 
+      const horizontalKeysPressed = keys.some((k) => ['left', 'right'].includes(k))
+      const verticalKeysPressed = keys.some((k) => ['up', 'down'].includes(k))
+
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
-        testPrintCodeFromEditorState(initialEditor),
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, width: ${
+              !horizontalKeysPressed ? '250 + props.width' : 250 + deltaW
+            }, height: ${!verticalKeysPressed ? '300 + props.height' : 300 + deltaH} }}
+            data-uid='bbb'
+          />
+        </View>`,
+        ),
       )
     },
   )
