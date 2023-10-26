@@ -126,6 +126,7 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
   let propsToUpdate: Array<ValueAtPath> = []
 
   let percentageValueWasReplaced: boolean = false
+  const javascriptExpressionValueWasReplaced: boolean = isLeft(simpleValueResult) // Left for jsxSimpleAttributeToValue means "not simple" which means a javascript expression like `5 + props.hello`
 
   const parsePercentResult = parseCSSPercent(simpleValueResult.value)
   if (
@@ -182,6 +183,23 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
         editorStateWithPropsDeleted.toasts,
         notice(
           'One or more percentage based style properties were replaced with a pixel based one.',
+          'INFO',
+          false,
+          'percentage-pin-replaced',
+        ),
+      ),
+    )
+  }
+
+  if (
+    command.whenReplacingPercentageValues === 'warn-about-replacement' &&
+    javascriptExpressionValueWasReplaced
+  ) {
+    editorStatePatches.push(
+      addToastPatch(
+        editorStateWithPropsDeleted.toasts,
+        notice(
+          `props.${PP.toString(command.property)} was replaced by a px value`,
           'INFO',
           false,
           'percentage-pin-replaced',
