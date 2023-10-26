@@ -69,10 +69,12 @@ export function wrapInDivCommands(
     return left('Cannot determine the bounding box of selected elements')
   }
 
-  const wrapperUid = generateConsistentUID(
-    'wrapper',
-    new Set(getAllUniqueUids(projectContents).allIDs),
-  )
+  const allIds = new Set(getAllUniqueUids(projectContents).allIDs)
+
+  const wrapperUid = generateConsistentUID('wrapper', allIds)
+  allIds.add(wrapperUid)
+
+  const fragmentWrapperUid = generateConsistentUID('fragment-wrapper', allIds)
 
   const parentPath = EP.getCommonParentOfNonemptyPathArray(selectedViews)
   const insertionPath = getInsertionPath(
@@ -80,7 +82,7 @@ export function wrapInDivCommands(
     projectContents,
     metadata,
     elementPathTrees,
-    '',
+    fragmentWrapperUid,
     1,
   )
   if (insertionPath == null) {
