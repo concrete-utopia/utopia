@@ -40,6 +40,7 @@ import {
   WrapInDivButtonTestId,
 } from './canvas-toolbar'
 import { StoryboardFilePath, PlaygroundFilePath, navigatorEntryToKey } from './store/editor-state'
+import { cmdModifier } from '../../utils/modifiers'
 
 function slightlyOffsetWindowPointBecauseVeryWeirdIssue(point: { x: number; y: number }) {
   // FIXME when running in headless chrome, the result of getBoundingClientRect will be slightly
@@ -1276,6 +1277,7 @@ export var Playground = () => {
         await mouseClickAtPoint(element, { x: 2, y: 2 })
         await searchInFloatingMenu(renderResult, 'div')
       },
+      'cmd + enter': (): Promise<void> => pressKey('Enter', { modifiers: cmdModifier }),
     }
 
     Object.entries(entryPoints).forEach(([entrypoint, trigger]) => {

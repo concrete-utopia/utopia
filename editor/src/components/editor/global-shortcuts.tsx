@@ -16,7 +16,6 @@ import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
 import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
 import {
-  cssPixelLength,
   toggleBackgroundLayers,
   toggleBorder,
   toggleShadow,
@@ -103,7 +102,7 @@ import {
   WRAP_IN_DIV,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
-import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
+import { getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
@@ -116,9 +115,7 @@ import {
   jsxAttributesFromMap,
   jsExpressionValue,
   jsxElement,
-  jsxFragment,
   isJSXElementLike,
-  jsxElementName,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -133,39 +130,17 @@ import {
 } from '../inspector/inspector-strategies/inspector-strategies'
 import {
   detectAreElementsFlexContainers,
-  nukeAllAbsolutePositioningPropsCommands,
-  sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
-  isIntrinsicallyInlineElement,
-  setElementTopLeft,
-  nukeSizingPropsForAxisCommand,
   toggleAbsolutePositioningCommands,
 } from '../inspector/inspector-common'
 import type { CSSProperties } from 'react'
-import { setProperty } from '../canvas/commands/set-property-command'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import {
-  setCssLengthProperty,
-  setExplicitCssValue,
-} from '../canvas/commands/set-css-length-command'
-import {
-  isFiniteRectangle,
-  isInfinityRectangle,
-  zeroCanvasPoint,
-  zeroCanvasRect,
-} from '../../core/shared/math-utils'
+import { zeroCanvasPoint } from '../../core/shared/math-utils'
 import * as EP from '../../core/shared/element-path'
-import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
-import {
-  createWrapInGroupActions,
-  groupConversionCommands,
-} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { isRight } from '../../core/shared/either'
+import { createWrapInGroupActions } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { isLeft, isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
-import { generateConsistentUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { wrapInDivCommands } from './wrap-in-callbacks'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -970,16 +945,17 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
-        let uid = generateConsistentUID(
-          'wrapper',
-          new Set(getAllUniqueUids(editor.projectContents).uniqueIDs),
+        const result = wrapInDivCommands(
+          editor.jsxMetadata,
+          editor.elementPathTree,
+          editor.allElementProps,
+          editor.projectContents,
+          editor.selectedViews,
         )
-        return [
-          EditorActions.wrapInElement(editor.selectedViews, {
-            element: defaultDivElement(uid),
-            importsToAdd: {},
-          }),
-        ]
+        if (isLeft(result)) {
+          return []
+        }
+        return [EditorActions.applyCommandsAction(result.value)]
       },
     })
   }
