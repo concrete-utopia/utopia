@@ -4,7 +4,11 @@ import {
   hasStyleControls,
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
-import type { JSXAttributes, JSXElementChild } from '../../core/shared/element-template'
+import type {
+  JSXAttributes,
+  JSXElementChild,
+  UtopiaJSXComponent,
+} from '../../core/shared/element-template'
 import {
   emptyComments,
   jsExpressionValue,
@@ -25,7 +29,7 @@ import type {
 } from '../../core/shared/npm-dependency-types'
 import { isResolvedNpmDependency } from '../../core/shared/npm-dependency-types'
 import type { Imports, ProjectFile } from '../../core/shared/project-file-types'
-import { isTextFile } from '../../core/shared/project-file-types'
+import { getTopLevelElementByExportsDetail, isTextFile } from '../../core/shared/project-file-types'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { SelectOption } from '../../uuiui-deps'
 import type { ProjectContentTreeRoot } from '../assets'
@@ -39,7 +43,10 @@ import type {
 } from '../custom-code/code-file'
 import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
 import { defaultElementStyle } from '../editor/defaults'
-import { getExportedComponentImports } from '../editor/export-utils'
+import {
+  getExportedComponentImports,
+  getExportedComponentImportsFromParseSuccess,
+} from '../editor/export-utils'
 import {
   groupJSXElement,
   groupJSXElementImportsToAdd,
@@ -506,8 +513,25 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
   return groups
 }
 
-function eligibleForMode(insertMenuMode: InsertMenuMode, component: ComponentDescriptor): boolean {
+function isDescriptorEligibleForMode(
+  insertMenuMode: InsertMenuMode,
+  component: ComponentDescriptor,
+): boolean {
   return insertMenuMode === 'wrap' ? component.supportsChildren : true
+}
+
+function isUtopiaJSXComponentEligibleForMode(
+  insertMenuMode: InsertMenuMode,
+  element: UtopiaJSXComponent | null,
+): boolean {
+  if (insertMenuMode === 'wrap') {
+    return (
+      element != null &&
+      element.param != null &&
+      elementUsesProperty(element.rootElement, element.param, 'children')
+    )
+  }
+  return true
 }
 
 export function getComponentGroups(
@@ -522,48 +546,52 @@ export function getComponentGroups(
   // Add entries for the exported components of files within the project.
   walkContentsTree(projectContents, (fullPath: string, file: ProjectFile) => {
     if (isTextFile(file)) {
-      const possibleExportedComponents = getExportedComponentImports(
+      if (file.fileContents.parsed.type !== 'PARSE_SUCCESS') {
+        return
+      }
+      const parsed = file.fileContents.parsed
+      const possibleExportedComponents = getExportedComponentImportsFromParseSuccess(
         originatingPath,
         fullPath,
         file.fileContents.parsed,
       )
-      if (possibleExportedComponents != null) {
-        let insertableComponents: Array<InsertableComponent> = []
-        fastForEach(possibleExportedComponents, (exportedComponent) => {
-          const pathWithoutExtension = dropFileExtension(fullPath)
-          const propertyControls = propertyControlsForComponentInFile(
-            exportedComponent.listingName,
-            pathWithoutExtension,
-            propertyControlsInfo,
-          )
+      let insertableComponents: Array<InsertableComponent> = []
+      fastForEach(possibleExportedComponents, (exportedComponent) => {
+        const pathWithoutExtension = dropFileExtension(fullPath)
+        const propertyControls = propertyControlsForComponentInFile(
+          exportedComponent.listingName,
+          pathWithoutExtension,
+          propertyControlsInfo,
+        )
 
-          // Drill down into the property controls to see if this has an appropriate style object entry.
-          const stylePropOptions = hasStyleControls(propertyControls)
-            ? addSizeAndNotStyleProp
-            : doNotAddStyleProp
+        // Drill down into the property controls to see if this has an appropriate style object entry.
+        const stylePropOptions = hasStyleControls(propertyControls)
+          ? addSizeAndNotStyleProp
+          : doNotAddStyleProp
 
-          const propertyControlsForDependency =
-            propertyControlsInfo[fullPath] ?? propertyControlsInfo[pathWithoutExtension]
-          if (
-            propertyControlsForDependency != null &&
-            propertyControlsForDependency[exportedComponent.listingName] != null
-          ) {
-            const descriptor = propertyControlsForDependency[exportedComponent.listingName]
-            if (eligibleForMode(insertMenuMode, descriptor)) {
-              fastForEach(descriptor.variants, (insertOption) => {
-                insertableComponents.push(
-                  insertableComponent(
-                    insertOption.importsToAdd,
-                    insertOption.elementToInsert,
-                    insertOption.insertMenuLabel,
-                    stylePropOptions,
-                    null,
-                  ),
-                )
-              })
-            }
-          } else {
-            // TODO: check exported components for `children`
+        const propertyControlsForDependency =
+          propertyControlsInfo[fullPath] ?? propertyControlsInfo[pathWithoutExtension]
+        if (
+          propertyControlsForDependency != null &&
+          propertyControlsForDependency[exportedComponent.listingName] != null
+        ) {
+          const descriptor = propertyControlsForDependency[exportedComponent.listingName]
+          if (isDescriptorEligibleForMode(insertMenuMode, descriptor)) {
+            fastForEach(descriptor.variants, (insertOption) => {
+              insertableComponents.push(
+                insertableComponent(
+                  insertOption.importsToAdd,
+                  insertOption.elementToInsert,
+                  insertOption.insertMenuLabel,
+                  stylePropOptions,
+                  null,
+                ),
+              )
+            })
+          }
+        } else {
+          const element = getTopLevelElementByExportsDetail(parsed, exportedComponent.listingName)
+          if (isUtopiaJSXComponentEligibleForMode(insertMenuMode, element)) {
             insertableComponents.push(
               insertableComponent(
                 exportedComponent.importsToAdd,
@@ -574,14 +602,14 @@ export function getComponentGroups(
               ),
             )
           }
-        })
-        result.push(
-          insertableComponentGroup(
-            insertableComponentGroupProjectComponent(fullPath),
-            insertableComponents,
-          ),
-        )
-      }
+        }
+      })
+      result.push(
+        insertableComponentGroup(
+          insertableComponentGroupProjectComponent(fullPath),
+          insertableComponents,
+        ),
+      )
     }
   })
 
@@ -597,7 +625,7 @@ export function getComponentGroups(
       const stylePropOptions = hasStyleControls(propertyControls)
         ? addSizeAndNotStyleProp
         : doNotAddStyleProp
-      if (eligibleForMode(insertMenuMode, component)) {
+      if (isDescriptorEligibleForMode(insertMenuMode, component)) {
         fastForEach(component.variants, (insertOption) => {
           insertableComponents.push(
             insertableComponent(

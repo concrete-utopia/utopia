@@ -1,6 +1,10 @@
 import type { ImportType, NormalisedFrame } from 'utopia-api/core'
-import type { ArbitraryJSBlock, ImportStatement, TopLevelElement } from './element-template'
-import { JSExpression, JSExpressionOtherJavaScript } from './element-template'
+import type {
+  ArbitraryJSBlock,
+  ImportStatement,
+  TopLevelElement,
+  UtopiaJSXComponent,
+} from './element-template'
 import type { ErrorMessage } from './error-messages'
 import { arrayEqualsByValue, objectEquals } from './utils'
 
@@ -761,3 +765,14 @@ export type NodeModules = {
 
 // Key here is the full filename.
 export type ProjectContents = { [filepath: string]: ProjectFile }
+
+export function getTopLevelElementByExportsDetail(
+  file: ParseSuccess,
+  nameToLookFor: string,
+): UtopiaJSXComponent | null {
+  return (
+    file.topLevelElements.find(
+      (t): t is UtopiaJSXComponent => t.type === 'UTOPIA_JSX_COMPONENT' && t.name === nameToLookFor,
+    ) ?? null
+  )
+}
