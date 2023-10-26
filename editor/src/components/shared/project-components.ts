@@ -527,7 +527,6 @@ export function getComponentGroups(
         fullPath,
         file.fileContents.parsed,
       )
-      // TODO: check exported components for `children`
       if (possibleExportedComponents != null) {
         let insertableComponents: Array<InsertableComponent> = []
         fastForEach(possibleExportedComponents, (exportedComponent) => {
@@ -564,6 +563,7 @@ export function getComponentGroups(
               })
             }
           } else {
+            // TODO: check exported components for `children`
             insertableComponents.push(
               insertableComponent(
                 exportedComponent.importsToAdd,
