@@ -57,9 +57,6 @@ export const FlexSection = React.memo(() => {
           <UIGridRow padded={false} variant='<-------------1fr------------->'>
             <SpacedPackedControl />
           </UIGridRow>
-          <UIGridRow padded={false} variant='<-------------1fr------------->'>
-            <PaddingRow />
-          </UIGridRow>
         </FlexCol>,
       )}
     </div>
