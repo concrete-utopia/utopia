@@ -105,13 +105,16 @@ describe('Keyboard Absolute Resize Strategy', () => {
 
       const finalEditor = pressKeys(initialEditor, keyboardAbsoluteResizeStrategy, keys, modifiers)
 
+      const horizontalKeysPressed = keys.some((k) => ['left', 'right'].includes(k))
+      const verticalKeysPressed = keys.some((k) => ['up', 'down'].includes(k))
+
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: '${
-            250 + deltaW
-          }px', height: '${300 + deltaH}px' }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '50px', top: '50px', width: ${
+            !horizontalKeysPressed ? "'250px'" : 250 + deltaW
+          }, height: ${!verticalKeysPressed ? "'300px'" : 300 + deltaH} }}
           data-uid='bbb'
         />
       </View>`,
@@ -145,7 +148,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 100, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -159,7 +162,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: ${50 - deltaW}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: ${100 - deltaW}
           , bottom: ${50 - deltaH}, width: ${250 + deltaW}, height: ${300 + deltaH} }}
           data-uid='bbb'
         />
@@ -194,7 +197,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 100, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -209,7 +212,7 @@ describe('Keyboard Absolute Resize Strategy', () => {
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: ${
-            50 - deltaW
+            100 - deltaW
           }, bottom: ${50 - deltaH}, width: ${250 + deltaW}, height: ${300 + deltaH} }}
           data-uid='bbb'
         />
