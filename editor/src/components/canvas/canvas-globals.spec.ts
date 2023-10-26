@@ -216,6 +216,7 @@ describe('validateControlsToCheck', () => {
                     "label": "Title",
                   },
                 },
+                "supportsChildren": false,
                 "variants": Array [
                   Object {
                     "elementToInsert": [Function],
@@ -354,6 +355,7 @@ describe('validateControlsToCheck', () => {
                       "label": "Title",
                     },
                   },
+                  "supportsChildren": false,
                   "variants": Array [
                     Object {
                       "elementToInsert": [Function],
@@ -409,6 +411,7 @@ describe('validateControlsToCheck', () => {
                     ],
                   },
                 },
+                "supportsChildren": false,
                 "variants": Array [
                   Object {
                     "elementToInsert": [Function],
@@ -471,6 +474,7 @@ describe('validateControlsToCheck', () => {
                     "label": "Title",
                   },
                 },
+                "supportsChildren": false,
                 "variants": Array [
                   Object {
                     "elementToInsert": [Function],
@@ -521,6 +525,7 @@ describe('validateControlsToCheck', () => {
                     "label": "Title",
                   },
                 },
+                "supportsChildren": false,
                 "variants": Array [
                   Object {
                     "elementToInsert": [Function],
@@ -547,6 +552,7 @@ describe('validateControlsToCheck', () => {
                     "label": "Title",
                   },
                 },
+                "supportsChildren": false,
                 "variants": Array [
                   Object {
                     "elementToInsert": [Function],
