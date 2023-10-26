@@ -27,6 +27,7 @@ const cardComponentDescriptor: ComponentDescriptor = {
       label: 'Title',
     },
   },
+  supportsChildren: false,
   variants: [
     {
       insertMenuLabel: 'Card Default',
@@ -77,6 +78,7 @@ const modifiedCardComponentDescriptor: ComponentDescriptor = {
       label: 'Border',
     },
   },
+  supportsChildren: false,
   variants: [
     {
       insertMenuLabel: 'Card Default',
@@ -123,6 +125,7 @@ const selectorComponentDescriptor: ComponentDescriptor = {
       options: ['True', 'False', 'FileNotFound'],
     },
   },
+  supportsChildren: false,
   variants: [
     {
       insertMenuLabel: 'True False Selector',

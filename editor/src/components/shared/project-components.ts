@@ -4,7 +4,7 @@ import {
   hasStyleControls,
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
-import type { JSXAttributes } from '../../core/shared/element-template'
+import type { JSXAttributes, JSXElementChild } from '../../core/shared/element-template'
 import {
   emptyComments,
   jsExpressionValue,
@@ -46,6 +46,9 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import type { InsertMenuMode } from '../canvas/ui/floating-insert-menu-helpers'
 import { insertMenuModes } from '../canvas/ui/floating-insert-menu-helpers'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { elementUsesProperty } from '../../core/model/element-template-utils'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -271,12 +274,14 @@ function makeHTMLDescriptor(
   extraPropertyControls: PropertyControls,
   attributes?: () => JSXAttributes,
 ): ComponentDescriptor {
+  const supportsChildren = intrinsicHTMLElementNamesThatSupportChildren.includes(tag) // TODO: maybe circ dep
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
   return {
     properties: propertyControls,
+    supportsChildren: supportsChildren,
     variants: [
       {
         insertMenuLabel: tag,
@@ -362,6 +367,7 @@ const basicHTMLElementsDescriptors = {
 const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
   conditional: {
     properties: {},
+    supportsChildren: true,
     variants: [
       {
         insertMenuLabel: 'Conditional',
@@ -382,6 +388,7 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
 const groupElementsDescriptors: ComponentDescriptorsForFile = {
   group: {
     properties: {},
+    supportsChildren: true,
     variants: [
       {
         insertMenuLabel: 'Group',
@@ -407,6 +414,7 @@ export const fragmentComponentInfo: ComponentInfo = {
 const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
+    supportsChildren: true,
     variants: [fragmentComponentInfo],
   },
 }
@@ -414,6 +422,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
 const samplesDescriptors: ComponentDescriptorsForFile = {
   sampleText: {
     properties: {},
+    supportsChildren: false,
     variants: [
       {
         insertMenuLabel: 'Sample text',
@@ -497,6 +506,10 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
   return groups
 }
 
+function eligibleForMode(insertMenuMode: InsertMenuMode, component: ComponentDescriptor): boolean {
+  return insertMenuMode === 'wrap' ? component.supportsChildren : true
+}
+
 export function getComponentGroups(
   insertMenuMode: InsertMenuMode,
   packageStatus: PackageStatusMap,
@@ -514,6 +527,7 @@ export function getComponentGroups(
         fullPath,
         file.fileContents.parsed,
       )
+      // TODO: check exported components for `children`
       if (possibleExportedComponents != null) {
         let insertableComponents: Array<InsertableComponent> = []
         fastForEach(possibleExportedComponents, (exportedComponent) => {
@@ -536,17 +550,19 @@ export function getComponentGroups(
             propertyControlsForDependency[exportedComponent.listingName] != null
           ) {
             const descriptor = propertyControlsForDependency[exportedComponent.listingName]
-            fastForEach(descriptor.variants, (insertOption) => {
-              insertableComponents.push(
-                insertableComponent(
-                  insertOption.importsToAdd,
-                  insertOption.elementToInsert,
-                  insertOption.insertMenuLabel,
-                  stylePropOptions,
-                  null,
-                ),
-              )
-            })
+            if (eligibleForMode(insertMenuMode, descriptor)) {
+              fastForEach(descriptor.variants, (insertOption) => {
+                insertableComponents.push(
+                  insertableComponent(
+                    insertOption.importsToAdd,
+                    insertOption.elementToInsert,
+                    insertOption.insertMenuLabel,
+                    stylePropOptions,
+                    null,
+                  ),
+                )
+              })
+            }
           } else {
             insertableComponents.push(
               insertableComponent(
@@ -570,7 +586,6 @@ export function getComponentGroups(
   })
 
   function addDependencyDescriptor(
-    moduleName: string | null,
     groupType: InsertableComponentGroupType,
     components: ComponentDescriptorsForFile,
   ): void {
@@ -582,40 +597,37 @@ export function getComponentGroups(
       const stylePropOptions = hasStyleControls(propertyControls)
         ? addSizeAndNotStyleProp
         : doNotAddStyleProp
-
-      fastForEach(component.variants, (insertOption) => {
-        insertableComponents.push(
-          insertableComponent(
-            insertOption.importsToAdd,
-            insertOption.elementToInsert,
-            insertOption.insertMenuLabel,
-            stylePropOptions,
-            null,
-          ),
-        )
-      })
+      if (eligibleForMode(insertMenuMode, component)) {
+        fastForEach(component.variants, (insertOption) => {
+          insertableComponents.push(
+            insertableComponent(
+              insertOption.importsToAdd,
+              insertOption.elementToInsert,
+              insertOption.insertMenuLabel,
+              stylePropOptions,
+              null,
+            ),
+          )
+        })
+      }
     })
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
 
   // Add HTML entries.
-  addDependencyDescriptor(null, insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
+  addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
 
   // Add conditionals group.
-  addDependencyDescriptor(
-    null,
-    insertableComponentGroupConditionals(),
-    conditionalElementsDescriptors,
-  )
+  addDependencyDescriptor(insertableComponentGroupConditionals(), conditionalElementsDescriptors)
 
   // Add fragment group.
-  addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
+  addDependencyDescriptor(insertableComponentGroupFragment(), fragmentElementsDescriptors)
 
   // Add samples group.
-  addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
+  addDependencyDescriptor({ type: 'SAMPLES_GROUP' }, samplesDescriptors)
 
   // Add groups group.
-  addDependencyDescriptor(null, insertableComponentGroupGroups(), groupElementsDescriptors) // TODO instead of this, use createWrapInGroupActions!
+  addDependencyDescriptor(insertableComponentGroupGroups(), groupElementsDescriptors) // TODO instead of this, use createWrapInGroupActions!
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
@@ -630,7 +642,6 @@ export function getComponentGroups(
         if (infoKey.startsWith(dependency.name)) {
           const propertyControlsForDependency = propertyControlsInfo[infoKey]
           addDependencyDescriptor(
-            dependency.name,
             insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
             propertyControlsForDependency,
           )

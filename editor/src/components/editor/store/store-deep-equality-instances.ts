@@ -3063,9 +3063,11 @@ export function PropertyControlsKeepDeepEquality(
 }
 
 export const ComponentDescriptorKeepDeepEquality: KeepDeepEqualityCall<ComponentDescriptor> =
-  combine2EqualityCalls(
+  combine3EqualityCalls(
     (descriptor) => descriptor.properties,
     PropertyControlsKeepDeepEquality,
+    (descriptor) => descriptor.supportsChildren,
+    BooleanKeepDeepEquality,
     (descriptor) => descriptor.variants,
     arrayDeepEquality(ComponentInfoKeepDeepEquality),
     componentDescriptor,

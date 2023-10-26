@@ -1,3 +1,4 @@
+import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { BakedInStoryboardVariableName } from '../../core/model/scene-utils'
 import type { UtopiaJSXComponent } from '../../core/shared/element-template'
 import { isUtopiaJSXComponent } from '../../core/shared/element-template'

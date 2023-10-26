@@ -1,4 +1,4 @@
-import { PropertyControls, ImportType } from '../property-controls/property-controls'
+import type { PropertyControls } from '../property-controls/property-controls'
 
 export interface ComponentInsertOption {
   code: string
@@ -8,6 +8,7 @@ export interface ComponentInsertOption {
 
 export interface ComponentToRegister {
   properties: PropertyControls
+  supportsChildren: boolean
   variants: Array<ComponentInsertOption>
 }
 

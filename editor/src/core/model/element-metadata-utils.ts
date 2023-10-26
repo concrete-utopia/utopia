@@ -1078,6 +1078,13 @@ export const MetadataUtils = {
       }
     }
   },
+  intrinsicElementThatSupportsChildren: (element: JSXElementChild) => {
+    return (
+      isJSXElement(element) &&
+      isIntrinsicHTMLElement(element.name) &&
+      intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+    )
+  },
   targetTextEditable(
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
@@ -1101,11 +1108,7 @@ export const MetadataUtils = {
     }
 
     const elementValue = element.element.value
-    if (
-      isJSXElement(elementValue) &&
-      isIntrinsicHTMLElement(elementValue.name) &&
-      !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
-    ) {
+    if (!MetadataUtils.intrinsicElementThatSupportsChildren(elementValue)) {
       return false
     }
     if (isJSXConditionalExpression(elementValue)) {
