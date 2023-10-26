@@ -5,9 +5,18 @@ import { PaddingRow } from '../../layout-section/layout-system-subsection/layout
 import { BlendModeRow } from './blendmode-row'
 import { OpacityRow } from './opacity-row'
 import { OverflowRow } from './overflow-row'
+import { Substores, useEditorState } from '../../../../editor/store/store-hook'
+import { areElementsFlexContainersSelector } from '../../../flex-section'
+import { unless } from '../../../../../utils/react-conditionals'
 
 export const ContainerSubsection = React.memo(() => {
   const [seeMoreVisible, toggleSeeMoreVisible] = useToggle(false)
+
+  const allElementsInFlexLayout = useEditorState(
+    Substores.metadata,
+    areElementsFlexContainersSelector,
+    'ContainerSection areAllElementsInFlexLayout',
+  )
 
   return (
     <>
@@ -28,7 +37,7 @@ export const ContainerSubsection = React.memo(() => {
       </InspectorSubsectionHeader>
       <OpacityRow />
       <OverflowRow />
-      <PaddingRow />
+      {unless(allElementsInFlexLayout, <PaddingRow />)}
       <SeeMoreHOC visible={seeMoreVisible}>
         <BlendModeRow />
       </SeeMoreHOC>

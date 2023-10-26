@@ -18,7 +18,7 @@ import { FlexGapControl } from './sections/layout-section/flex-container-subsect
 import { FlexContainerControls } from './sections/layout-section/flex-container-subsection/flex-container-subsection'
 import { FlexCol } from 'utopia-api'
 
-const areElementsFlexContainersSelector = createSelector(
+export const areElementsFlexContainersSelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   detectAreElementsFlexContainers,
