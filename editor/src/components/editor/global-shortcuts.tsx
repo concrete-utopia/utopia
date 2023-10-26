@@ -137,10 +137,10 @@ import type { CSSProperties } from 'react'
 import { zeroCanvasPoint } from '../../core/shared/math-utils'
 import * as EP from '../../core/shared/element-path'
 import { createWrapInGroupActions } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { isLeft, isRight } from '../../core/shared/either'
+import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
-import { wrapInDivCommands } from './wrap-in-callbacks'
+import { wrapInDivStrategy } from './wrap-in-callbacks'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -945,17 +945,17 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
-        const result = wrapInDivCommands(
+        const commands = commandsForFirstApplicableStrategy(
           editor.jsxMetadata,
+          editor.selectedViews,
           editor.elementPathTree,
           editor.allElementProps,
-          editor.projectContents,
-          editor.selectedViews,
+          [wrapInDivStrategy(editor.projectContents)],
         )
-        if (isLeft(result)) {
+        if (commands == null) {
           return []
         }
-        return [EditorActions.applyCommandsAction(result.value)]
+        return [EditorActions.applyCommandsAction(commands)]
       },
     })
   }

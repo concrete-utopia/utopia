@@ -34,8 +34,8 @@ import { useRefEditorState } from './store/store-hook'
 import { getInsertionPath } from './store/insertion-path'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
-import { wrapInDivCommands } from './wrap-in-callbacks'
-import { isRight } from '../../core/shared/either'
+import { wrapInDivStrategy } from './wrap-in-callbacks'
+import { commandsForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 
 export function changeConditionalOrFragment(
   projectContents: ProjectContentTreeRoot,
@@ -129,15 +129,16 @@ export function changeElement(
   switch (floatingMenuState.insertMenuMode) {
     case 'wrap':
       if (source?.type === 'HTML_DIV') {
-        const result = wrapInDivCommands(
+        const commands = commandsForFirstApplicableStrategy(
           jsxMetadata,
+          selectedViews,
           elementPathTree,
           allElementProps,
-          projectContents,
-          selectedViews,
+          [wrapInDivStrategy(projectContents)],
         )
-        if (isRight(result)) {
-          actionsToDispatch = [applyCommandsAction(result.value)]
+
+        if (commands != null) {
+          actionsToDispatch = [applyCommandsAction(commands)]
         }
         break
       }

@@ -42,13 +42,31 @@ import type { IndexPosition } from '../../utils/utils'
 import { absolute } from '../../utils/utils'
 import { setProperty } from '../canvas/commands/set-property-command'
 import * as PP from '../../core/shared/property-path'
+import type { InspectorStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 
 type WrapInDivError =
   | 'No elements selected'
   | 'Cannot determine the bounding box of selected elements'
   | 'Cannot insert into parent of selected elements'
 
-export function wrapInDivCommands(
+export const wrapInDivStrategy = (projectContents: ProjectContentTreeRoot): InspectorStrategy => ({
+  name: 'Wrap in div',
+  strategy: (metadata, selectedViews, elementPathTrees, allElementProps) => {
+    const result = wrapInDivCommands(
+      metadata,
+      elementPathTrees,
+      allElementProps,
+      projectContents,
+      selectedViews,
+    )
+    if (isLeft(result)) {
+      return null
+    }
+    return result.value
+  },
+})
+
+function wrapInDivCommands(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,
