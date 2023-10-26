@@ -2,7 +2,7 @@ import React from 'react'
 import { createSelector } from 'reselect'
 import { when } from '../../utils/react-conditionals'
 import { Substores, useEditorState } from '../editor/store/store-hook'
-import { AddRemoveLayouSystemControl } from './add-remove-layout-system-control'
+import { AddRemoveLayoutSystemControl } from './add-remove-layout-system-control'
 import { FlexDirectionToggle } from './flex-direction-control'
 import { selectedViewsSelector, metadataSelector } from './inpector-selectors'
 import { detectAreElementsFlexContainers } from './inspector-common'
@@ -33,7 +33,7 @@ export const FlexSection = React.memo(() => {
 
   return (
     <div>
-      <AddRemoveLayouSystemControl />
+      <AddRemoveLayoutSystemControl />
       {when(
         allElementsInFlexLayout,
         <FlexCol css={{ gap: 10 }}>

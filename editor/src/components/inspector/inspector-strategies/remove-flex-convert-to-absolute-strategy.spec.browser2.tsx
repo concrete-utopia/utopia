@@ -3,7 +3,7 @@ import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-cont
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../../canvas/ui-jsx.test-utils'
-import { AddRemoveLayouSystemControlTestId } from '../add-remove-layout-system-control'
+import { AddRemoveLayoutSystemControlTestId } from '../add-remove-layout-system-control'
 
 describe('remove-flex-convert-to-absolute strategy', () => {
   it('remove flex layout', async () => {
@@ -54,7 +54,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 }
 
 async function clickOn(editor: EditorRenderResult): Promise<void> {
-  const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
+  const plusButton = editor.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
 
   await mouseClickAtPoint(plusButton, { x: 2, y: 2 })
 }

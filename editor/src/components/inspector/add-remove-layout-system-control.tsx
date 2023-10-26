@@ -20,16 +20,16 @@ import { detectAreElementsFlexContainers } from './inspector-common'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { useDispatch } from '../editor/store/dispatch-context'
 
-export const AddRemoveLayouSystemControlTestId = (): string => 'AddRemoveLayouSystemControlTestId'
+export const AddRemoveLayoutSystemControlTestId = (): string => 'AddRemoveLayoutSystemControlTestId'
 
 interface AddRemoveLayoutSystemControlProps {}
 
-export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
+export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemControlProps>(() => {
   const isFlexLayoutedContainer = useEditorState(
     Substores.metadata,
     (store) =>
       detectAreElementsFlexContainers(metadataSelector(store), selectedViewsSelector(store)),
-    'AddRemoveLayouSystemControl, isFlexLayoutedContainer',
+    'AddRemoveLayoutSystemControl isFlexLayoutedContainer',
   )
 
   const dispatch = useDispatch()
@@ -89,7 +89,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
       </FlexRow>
       {isFlexLayoutedContainer ? (
         <SquareButton
-          data-testid={AddRemoveLayouSystemControlTestId()}
+          data-testid={AddRemoveLayoutSystemControlTestId()}
           highlight
           onClick={removeLayoutSystem}
         >
@@ -97,7 +97,7 @@ export const AddRemoveLayouSystemControl = React.memo<AddRemoveLayoutSystemContr
         </SquareButton>
       ) : (
         <SquareButton
-          data-testid={AddRemoveLayouSystemControlTestId()}
+          data-testid={AddRemoveLayoutSystemControlTestId()}
           highlight
           onClick={addLayoutSystem}
         >
