@@ -4,7 +4,7 @@ import { assertNever } from '../../core/shared/utils'
 import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseMoveToPoint } from '../canvas/event-helpers.test-utils'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { selectComponents } from '../editor/actions/action-creators'
+import { clearSelection, selectComponents } from '../editor/actions/action-creators'
 import { AspectRatioLockButtonTestId } from './sections/layout-section/self-layout-subsection/gigantic-size-pins-subsection'
 import { cmdModifier } from '../../utils/modifiers'
 import { wait } from '../../utils/utils.test-utils'
@@ -37,6 +37,65 @@ export var App = (props) => {
         }}
         data-label='Red'
       />
+      <div
+        data-uid='div-green'
+        data-testid='div-green'
+        style={{
+          position: 'absolute',
+          left: 160,
+          top: 160,
+          width: 100,
+          height: 100,
+          backgroundColor: 'green',
+        }}
+        data-label='Green'
+      />
+      <div
+        data-uid='div-blue'
+        data-testid='div-blue'
+        style={{
+          position: 'absolute',
+          left: 270,
+          top: 270,
+          width: 100,
+          height: 100,
+          backgroundColor: 'blue',
+        }}
+        data-label='Blue'
+      />
+    </div>
+  );
+};
+
+export var storyboard = (
+  <Storyboard data-uid="storyboard">
+    <Scene
+      data-uid="scene-1"
+      style={{ position: "absolute", left: 0, top: 0, width: 375, height: 812 }}
+    >
+      <App data-uid="app" />
+    </Scene>
+  </Storyboard>
+);
+`
+}
+
+function exampleProjectToCheckPaddingControls(): string {
+  return `import * as React from "react";
+import { Scene, Storyboard, jsx } from "utopia-api";
+
+export var App = (props) => {
+  return (
+    <div
+      data-uid="app-root"
+      style={{
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#FFFFFF",
+        position: "relative",
+        display: "flex"
+      }}
+    >
       <div
         data-uid='div-green'
         data-testid='div-green'
@@ -194,6 +253,36 @@ export var storyboard = (
 
     // Click on the blue div.
     await clickOnElementCheckTop('div-blue', '270')
+  })
+  it('check that only one pair of padding controls shows up at a time', async () => {
+    const editor = await renderTestEditorWithCode(
+      exampleProjectToCheckPaddingControls(),
+      'await-first-dom-report',
+    )
+
+    function validatePaddingControlCount(): void {
+      const paddingHControls = editor.renderedDOM.queryAllByTestId('padding-H')
+      const paddingVControls = editor.renderedDOM.queryAllByTestId('padding-V')
+      expect(paddingHControls).toHaveLength(1)
+      expect(paddingVControls).toHaveLength(1)
+    }
+
+    await editor.dispatch([clearSelection()], true)
+    await editor.getDispatchFollowUpActionsFinished()
+    validatePaddingControlCount()
+
+    const appRootPath = elementPath([['storyboard', 'scene-1', 'app'], ['app-root']])
+    await editor.dispatch([selectComponents([appRootPath], false)], true)
+    await editor.getDispatchFollowUpActionsFinished()
+    validatePaddingControlCount()
+
+    const divPath = elementPath([
+      ['storyboard', 'scene-1', 'app'],
+      ['app-root', 'div-green'],
+    ])
+    await editor.dispatch([selectComponents([divPath], false)], true)
+    await editor.getDispatchFollowUpActionsFinished()
+    validatePaddingControlCount()
   })
   it('removes the transform property when clicking the cross on that section', async () => {
     const resultCode = await setupRemovalTest('inspector-transform-remove-all')

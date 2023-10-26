@@ -4,7 +4,7 @@ import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-control
 import { mouseClickAtPoint, pressKey } from '../canvas/event-helpers.test-utils'
 import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import { renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
-import { AddRemoveLayouSystemControlTestId } from './add-remove-layout-system-control'
+import { AddRemoveLayoutSystemControlTestId } from './add-remove-layout-system-control'
 
 describe('add layout system', () => {
   it('add and remove layout system via keyboard shortcut', async () => {
@@ -206,7 +206,7 @@ async function selectDiv(editor: EditorRenderResult): Promise<HTMLElement> {
 }
 
 async function clickOn(editor: EditorRenderResult) {
-  const flexDirectionToggle = editor.renderedDOM.getByTestId(AddRemoveLayouSystemControlTestId())
+  const flexDirectionToggle = editor.renderedDOM.getByTestId(AddRemoveLayoutSystemControlTestId())
 
   await mouseClickAtPoint(flexDirectionToggle, { x: 2, y: 2 })
 }
