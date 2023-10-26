@@ -70,7 +70,7 @@ import {
   transformConstrainedLocalFullFrameUsingBoundingBox,
 } from '../../commands/utils/group-resize-utils'
 
-export function createResizeCommands(
+export function createResizeCommandsSettingMissingProps(
   element: JSXElement,
   selectedElement: ElementPath,
   edgePosition: EdgePosition,
@@ -360,7 +360,7 @@ export function changeBounds(
     )
 
     if (element != null && isJSXElement(element)) {
-      const elementResult = createResizeCommands(
+      const elementResult = createResizeCommandsSettingMissingProps(
         element,
         selectedElement,
         edgePosition,
