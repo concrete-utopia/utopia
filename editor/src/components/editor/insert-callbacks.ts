@@ -1,5 +1,6 @@
 import React from 'react'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   jsxConditionalExpression,
   jsxElement,
@@ -18,7 +19,12 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import { enableInsertModeForJSXElement, showToast } from './actions/action-creators'
+import {
+  applyCommandsAction,
+  enableInsertModeForJSXElement,
+  selectComponents,
+  showToast,
+} from './actions/action-creators'
 import {
   defaultButtonElement,
   defaultDivElement,
@@ -29,6 +35,7 @@ import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
+import type { ToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import {
   elementToReparent,
   getTargetParentForOneShotInsertion,
@@ -41,10 +48,19 @@ import { notice } from '../common/notice'
 import * as PP from '../../core/shared/property-path'
 import { setJSXValueInAttributeAtPath } from '../../core/shared/jsx-attributes'
 import { defaultEither, isLeft } from '../../core/shared/either'
-import { executeFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
+import { resultForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 import { insertAsAbsoluteStrategy } from './one-shot-insertion-strategies/insert-as-absolute-strategy'
 import { insertAsStaticStrategy } from './one-shot-insertion-strategies/insert-as-static-strategy'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import type { CanvasPoint } from '../../core/shared/math-utils'
+import type { CanvasCommand } from '../canvas/commands/commands'
+import type { InsertionPath } from './store/insertion-path'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { IndexPosition } from '../../utils/utils'
+import type { AllElementProps, EditorStateNodeModules } from './store/editor-state'
+import type { BuiltInDependencies } from '../../core/es-modules/package-manager/built-in-dependencies-list'
+import type { ProjectContentTreeRoot } from '../assets'
 
 function shouldSubjectBeWrappedWithConditional(
   subject: InsertionSubject,
@@ -155,7 +171,60 @@ function useEnterDrawToInsertForElement(elementFactory: (newUID: string) => JSXE
   )
 }
 
-export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void {
+interface insertWithStrategiesResult {
+  commands: CanvasCommand[]
+  newPath: ElementPath
+}
+
+export function insertWithStrategies(
+  element: ToReparent,
+  targetParent: InsertionPath,
+  editorContext: {
+    metadata: ElementInstanceMetadataMap
+    elementPathTree: ElementPathTrees
+    allElementProps: AllElementProps
+    selectedViews: ElementPath[]
+    projectContents: ProjectContentTreeRoot
+    nodeModules: EditorStateNodeModules
+    builtInDependencies: BuiltInDependencies
+  },
+  insertionContext: Partial<{
+    position: CanvasPoint
+    indexPosition: IndexPosition
+  }>,
+): insertWithStrategiesResult | null {
+  const result = resultForFirstApplicableStrategy(
+    editorContext.metadata,
+    editorContext.selectedViews,
+    editorContext.elementPathTree,
+    editorContext.allElementProps,
+    [
+      insertAsAbsoluteStrategy(
+        element,
+        targetParent,
+        editorContext.builtInDependencies,
+        editorContext.projectContents,
+        editorContext.nodeModules.files,
+        { toPosition: insertionContext.position, indexPosition: insertionContext.indexPosition },
+      ),
+      insertAsStaticStrategy(
+        element,
+        targetParent,
+        editorContext.builtInDependencies,
+        editorContext.projectContents,
+        editorContext.nodeModules.files,
+        { indexPosition: insertionContext.indexPosition },
+      ),
+    ],
+  )
+
+  if (result == null) {
+    return null
+  }
+  return { commands: result.commands, newPath: result.data.newPath }
+}
+
+export function useToInsert(): (elementToInsert: InsertMenuItem | null) => ElementPath | null {
   const dispatch = useDispatch()
   const builtInDependenciesRef = useRefEditorState((store) => store.builtInDependencies)
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -167,9 +236,9 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   const nodeModulesRef = useRefEditorState((store) => store.editor.nodeModules)
 
   return React.useCallback(
-    (elementToInsert: InsertMenuItem | null) => {
+    (elementToInsert: InsertMenuItem | null): ElementPath | null => {
       if (elementToInsert == null) {
-        return
+        return null
       }
 
       const storyboardPath = getStoryboardElementPath(
@@ -178,7 +247,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
       )
       if (storyboardPath == null) {
         // if there's no storyboard, there's not much you can do
-        return
+        return null
       }
 
       const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
@@ -212,32 +281,30 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
             notice(targetParent.value, 'INFO', false, 'to-insert-does-not-support-children'),
           ),
         ])
-        return
+        return null
       }
 
-      executeFirstApplicableStrategy(
-        dispatch,
-        jsxMetadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        [
-          insertAsAbsoluteStrategy(
-            element,
-            targetParent.value.parentPath,
-            builtInDependenciesRef.current,
-            projectContentsRef.current,
-            nodeModulesRef.current.files,
-          ),
-          insertAsStaticStrategy(
-            element,
-            targetParent.value.parentPath,
-            builtInDependenciesRef.current,
-            projectContentsRef.current,
-            nodeModulesRef.current.files,
-          ),
-        ],
+      const result = insertWithStrategies(
+        element,
+        targetParent.value.parentPath,
+        {
+          metadata: jsxMetadataRef.current,
+          elementPathTree: elementPathTreeRef.current,
+          allElementProps: allElementPropsRef.current,
+          selectedViews: selectedViewsRef.current,
+          projectContents: projectContentsRef.current,
+          builtInDependencies: builtInDependenciesRef.current,
+          nodeModules: nodeModulesRef.current,
+        },
+        {},
       )
+
+      if (result == null) {
+        return null
+      }
+
+      dispatch([applyCommandsAction(result.commands), selectComponents([result.newPath], false)])
+      return result.newPath
     },
     [
       allElementPropsRef,
@@ -253,7 +320,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
   )
 }
 
-function elementFromInsertMenuItem(
+export function elementFromInsertMenuItem(
   element: ComponentElementToInsert,
   uid: string,
 ): JSXElementChild {

@@ -44,12 +44,11 @@ import { useToolbarMode } from './canvas-toolbar-states'
 import { when } from '../../utils/react-conditionals'
 import { StrategyIndicator } from '../canvas/controls/select-mode/strategy-indicator'
 import { toggleAbsolutePositioningCommands } from '../inspector/inspector-common'
-import { NO_OP } from '../../core/shared/utils'
 import { createFilter } from 'react-select'
 import WindowedSelect from 'react-windowed-select'
 import { InspectorInputEmotionStyle } from '../../uuiui/inputs/base-input'
 import { stopPropagation } from '../inspector/common/inspector-utils'
-import { useConvertTo } from './convert-callbacks'
+import { useConvertTo, useWrapInto } from './convert-callbacks'
 import { useWrapInDiv } from './wrap-in-callbacks'
 import { ElementsOutsideVisibleAreaIndicator } from './elements-outside-visible-area-indicator'
 import { useResetRemixApps } from '../canvas/remix/remix-hooks'
@@ -141,7 +140,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
         filterOption={createFilter({ ignoreAccents: true })}
         styles={{
           ...componentSelectorStyles,
-          menuPortal: (styles: CSSObject): CSSObject => {
+          menuPortal: (): CSSObject => {
             return {
               zIndex: -2,
               padding: '0 8px',
@@ -153,7 +152,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
               pointerEvents: 'initial',
             }
           },
-          input: (styles: CSSObject): CSSObject => {
+          input: (): CSSObject => {
             return {
               ...(InspectorInputEmotionStyle({
                 hasLabel: false,
@@ -171,7 +170,7 @@ export const CanvasToolbarSearch = React.memo((props: CanvasToolbarSearchProps) 
               borderStyle: 'solid',
             }
           },
-          menuList: (styles: CSSObject): CSSObject => {
+          menuList: (): CSSObject => {
             return {
               position: 'relative',
               maxHeight: 210,
@@ -225,6 +224,7 @@ export const CanvasToolbar = React.memo(() => {
   )
   const wrapInDivCallback = useWrapInDiv()
 
+  const wrapIntoCallback = useWrapInto()
   const convertToCallback = useConvertTo()
   const toInsertCallback = useToInsert()
 
@@ -273,6 +273,14 @@ export const CanvasToolbar = React.memo(() => {
   const dispatchSwitchToSelectModeCloseMenus = React.useCallback(() => {
     switchToSelectModeCloseMenus(dispatch)
   }, [dispatch])
+
+  const wrapIntoAndClose = React.useCallback(
+    (convertTo: InsertMenuItem | null) => {
+      wrapIntoCallback(convertTo)
+      dispatchSwitchToSelectModeCloseMenus()
+    },
+    [dispatchSwitchToSelectModeCloseMenus, wrapIntoCallback],
+  )
 
   const convertToAndClose = React.useCallback(
     (convertTo: InsertMenuItem | null) => {
@@ -679,7 +687,7 @@ export const CanvasToolbar = React.memo(() => {
                     />
                   </Tooltip>
                   <Tile style={{ height: '100%' }}>
-                    <CanvasToolbarSearch actionWith={convertToAndClose} />
+                    <CanvasToolbarSearch actionWith={wrapIntoAndClose} />
                   </Tile>
                 </FlexRow>,
               ),
@@ -795,13 +803,6 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
     'CanvasToolbar canvasInLiveMode',
   )
   const iconCategory = props.iconCategory ?? 'element'
-  const onClickHandler = React.useCallback(
-    (event: React.MouseEvent<Element>) => {
-      event.stopPropagation()
-      props.onClick(event)
-    },
-    [props],
-  )
   const setIsHoveredTrue = React.useCallback(() => {
     setIsHovered(true)
   }, [])
@@ -850,7 +851,7 @@ const Tooltip = (props: TooltipProps) => {
   )
 }
 
-const Separator = React.memo((props) => {
+const Separator = React.memo(() => {
   return (
     <div
       style={{

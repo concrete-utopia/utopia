@@ -66,7 +66,7 @@ export const wrapInDivStrategy = (projectContents: ProjectContentTreeRoot): Insp
   },
 })
 
-function wrapInDivCommands(
+export function wrapInDivCommands(
   metadata: ElementInstanceMetadataMap,
   elementPathTrees: ElementPathTrees,
   allElementProps: AllElementProps,

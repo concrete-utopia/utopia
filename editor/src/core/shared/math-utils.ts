@@ -1,3 +1,4 @@
+import type { NonEmptyArray } from './array-utils'
 import { stripNulls } from './array-utils'
 import type { Either } from './either'
 import { left, right, mapEither } from './either'
@@ -614,6 +615,17 @@ export function boundingRectangleArray<C extends CoordinateMarker>(
     return null
   }
   const [firstRectangle, ...remainingRectangles] = filtered
+  if (remainingRectangles.length === 0) {
+    return firstRectangle
+  } else {
+    return remainingRectangles.reduce(boundingRectangle, firstRectangle)
+  }
+}
+
+export function nonEmptyboundingRectangleArray<C extends CoordinateMarker>(
+  rectangles: NonEmptyArray<Rectangle<C>>,
+): Rectangle<C> {
+  const [firstRectangle, ...remainingRectangles] = rectangles
   if (remainingRectangles.length === 0) {
     return firstRectangle
   } else {
