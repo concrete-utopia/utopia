@@ -116,7 +116,8 @@ function cursorForKeysPressed(
   keysPressed: KeysPressed,
   mouseButtonsPressed: MouseButtonsPressed,
 ): CSSCursor | null {
-  if (keysPressed['z']) {
+  if (keysPressed['z'] && !keysPressed['cmd']) {
+    // must omit `cmd` to avoid triggering on undo/redo
     return keysPressed['alt'] ? CSSCursor.ZoomOut : CSSCursor.ZoomIn
   }
   if (keysPressed['space']) {
