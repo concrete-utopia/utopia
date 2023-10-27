@@ -1,30 +1,49 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
 import { jsx } from '@emotion/react'
+import createCachedSelector from 're-reselect'
 import React from 'react'
 import { createSelector } from 'reselect'
+import { FlexCol } from 'utopia-api'
+import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
+import { type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { mapDropNulls, safeIndex, strictEvery } from '../../core/shared/array-utils'
+import * as EP from '../../core/shared/element-path'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
+import { emptyComments, jsExpressionValue } from '../../core/shared/element-template'
 import { optionalMap } from '../../core/shared/optional-utils'
+import type { ElementPath } from '../../core/shared/project-file-types'
+import * as PP from '../../core/shared/property-path'
 import { intersection } from '../../core/shared/set-utils'
 import { assertNever } from '../../core/shared/utils'
-import {
-  FlexRow,
-  InspectorSubsectionHeader,
-  NumberInput,
-  PopupList,
-  useColorTheme,
-  UtopiaTheme,
-} from '../../uuiui'
-import type {
-  ControlStatus,
-  ControlStyles,
-  OnSubmitValueOrUnknownOrEmpty,
-  SelectOption,
-} from '../../uuiui-deps'
+import { NumberInput, PopupList, useColorTheme, UtopiaTheme } from '../../uuiui'
+import type { SelectOption } from '../../uuiui-deps'
 import { getControlStyles, InspectorRowHoverCSS } from '../../uuiui-deps'
+import { MixedPlaceholder } from '../../uuiui/inputs/base-input'
+import {
+  convertGroupToFrameCommands,
+  getInstanceForGroupToFrameConversion,
+  isConversionForbidden,
+} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
+import { notice } from '../common/notice'
+import type { EditorAction, EditorDispatch } from '../editor/action-types'
+import {
+  applyCommandsAction,
+  setProp_UNSAFE,
+  showToast,
+  unsetProperty,
+} from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
+import type { AllElementProps } from '../editor/store/editor-state'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import type { CSSNumber, CSSNumberType, UnknownOrEmptyInput } from './common/css-utils'
 import { cssNumber } from './common/css-utils'
+import type { FramePinsInfo } from './common/layout-property-path-hooks'
+import { PinControl } from './controls/pin-control'
 import {
   metadataSelector,
   pathTreesSelector,
@@ -45,41 +64,8 @@ import {
 } from './inspector-strategies/inspector-strategies'
 import type { InspectorStrategy } from './inspector-strategies/inspector-strategy'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
-import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
-import type { ElementPath } from '../../core/shared/project-file-types'
-import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
-import * as EP from '../../core/shared/element-path'
-import * as PP from '../../core/shared/property-path'
 import type { GridRowVariant } from './widgets/ui-grid-row'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { mapDropNulls, safeIndex, uniqBy } from '../../core/shared/array-utils'
-import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
-import { when } from '../../utils/react-conditionals'
-import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
-import { isLayoutPinnedProp, type LayoutPinnedProp } from '../../core/layout/layout-helpers-new'
-import type { AllElementProps, EditorState } from '../editor/store/editor-state'
-import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
-import { jsExpressionValue, emptyComments } from '../../core/shared/element-template'
-import type { EditorDispatch, EditorAction } from '../editor/action-types'
-import {
-  unsetProperty,
-  setProp_UNSAFE,
-  applyCommandsAction,
-  showToast,
-} from '../editor/actions/action-creators'
-import { FlexCol } from 'utopia-api'
-import { PinControl } from './controls/pin-control'
-import type { FramePinsInfo } from './common/layout-property-path-hooks'
-import { MixedPlaceholder } from '../../uuiui/inputs/base-input'
-import { PinHeightSVG, PinWidthSVG } from './utility-controls/pin-control'
-import {
-  convertGroupToFrameCommands,
-  getInstanceForGroupToFrameConversion,
-  isConversionForbidden,
-} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import { notice } from '../common/notice'
-import createCachedSelector from 're-reselect'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -731,16 +717,11 @@ export const anySelectedElementGroupOrChildOfGroup = createSelector(
 
 export const allElementsAreGroupChildren = createSelector(
   metadataSelector,
-  (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
-  (metadata, pathTrees, selectedViews): boolean => {
-    if (selectedViews.length === 0) {
-      return false
-    }
-    function elementOrAnyChildGroup(path: ElementPath) {
+  (metadata, selectedViews): boolean => {
+    return strictEvery(selectedViews, (path: ElementPath) => {
       return treatElementAsGroupLike(metadata, EP.parentPath(path))
-    }
-    return selectedViews.every(elementOrAnyChildGroup)
+    })
   },
 )
 
@@ -748,10 +729,7 @@ export const allElementsArePositionedAbsolutelySelector = createSelector(
   metadataSelector,
   selectedViewsSelector,
   (metadata, selectedViews): boolean => {
-    if (selectedViews.length === 0) {
-      return false
-    }
-    return selectedViews.every((path) => {
+    return strictEvery(selectedViews, (path) => {
       return MetadataUtils.isPositionAbsolute(
         MetadataUtils.findElementByElementPath(metadata, path),
       )
