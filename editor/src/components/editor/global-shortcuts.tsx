@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import type { ElementPath, Imports } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import type { KeyCharacter, KeysPressed } from '../../utils/keyboard'
@@ -30,7 +30,6 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultSpanElement,
-  defaultUnstyledDivElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
@@ -72,7 +71,6 @@ import {
   TOGGLE_SHADOW_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
-  WRAP_ELEMENT_DEFAULT_SHORTCUT,
   WRAP_ELEMENT_PICKER_SHORTCUT,
   ZOOM_CANVAS_IN_SHORTCUT,
   ZOOM_CANVAS_OUT_SHORTCUT,
@@ -109,12 +107,10 @@ import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import type { ElementInstanceMetadataMap, JSXElement } from '../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   emptyComments,
-  jsxAttributesFromMap,
   jsExpressionValue,
-  jsxElement,
   isJSXElementLike,
 } from '../../core/shared/element-template'
 import {
@@ -133,7 +129,6 @@ import {
   toggleResizeToFitSetToFixed,
   toggleAbsolutePositioningCommands,
 } from '../inspector/inspector-common'
-import type { CSSProperties } from 'react'
 import { zeroCanvasPoint } from '../../core/shared/math-utils'
 import * as EP from '../../core/shared/element-path'
 import { createWrapInGroupActions } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
@@ -557,18 +552,6 @@ export function handleKeyDown(
       },
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) ? [EditorActions.unwrapElements(editor.selectedViews)] : []
-      },
-      [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) && editor.selectedViews.length > 0
-          ? [
-              EditorActions.wrapInElement(
-                editor.selectedViews,
-                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
-                  generateUidWithExistingComponents(editor.projectContents),
-                ),
-              ),
-            ]
-          : []
       },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
@@ -1069,43 +1052,4 @@ function addCreateHoverInteractionActionToSwitchModeAction(
       createHoverInteractionViaMouse(mousePoint, modifiers, boundingArea(), 'zero-drag-permitted'),
     ),
   ]
-}
-
-function detectBestWrapperElement(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-  makeUid: () => string,
-): { element: JSXElement; importsToAdd: Imports } {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  const uid = makeUid()
-  if (
-    element == null ||
-    element.specialSizeMeasurements.parentFlexDirection == null ||
-    element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
-  ) {
-    return { element: defaultUnstyledDivElement(uid), importsToAdd: {} }
-  }
-
-  const style: CSSProperties = {
-    display: 'flex',
-    flexDirection: element.specialSizeMeasurements.parentFlexDirection,
-    contain: 'layout',
-  }
-
-  if (
-    element.specialSizeMeasurements.parentFlexGap != null &&
-    element.specialSizeMeasurements.parentFlexGap !== 0
-  ) {
-    style.gap = element.specialSizeMeasurements.parentFlexGap
-  }
-
-  const props = jsxAttributesFromMap({
-    'data-uid': jsExpressionValue(uid, emptyComments),
-    style: jsExpressionValue(style, emptyComments),
-  })
-
-  return {
-    element: jsxElement('div', uid, props, []),
-    importsToAdd: {},
-  }
 }
