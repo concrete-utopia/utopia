@@ -167,7 +167,7 @@ describe('Constraints Section', () => {
     it(
       'Span without size shows up as Scale / Scale constrained',
       testGroupChild({
-        snippet: `<span data-uid='target'>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Scale',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -176,7 +176,7 @@ describe('Constraints Section', () => {
     it(
       'Span with only width shows up as Scale / Scale',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 150 }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 150, position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Scale',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -185,7 +185,7 @@ describe('Constraints Section', () => {
     it(
       'Span with max-content width shows up as Width / Scale',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 'max-content', position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -194,7 +194,7 @@ describe('Constraints Section', () => {
     it(
       'Element with max-content width does not change if selecting the same option again',
       testGroupChild({
-        snippet: `<span data-uid='target' data-testid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' data-testid='target' style={{ width: 'max-content', position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Scale',
         after: async (renderResult) => {
@@ -222,7 +222,7 @@ describe('Constraints Section', () => {
     it(
       'Span with max-content width height shows up as Width / Height',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 'max-content', height: 'max-content' }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 'max-content', height: 'max-content', position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Height',
       }),
@@ -231,7 +231,7 @@ describe('Constraints Section', () => {
     it(
       'Span with size shows up as Scale',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 150, height: 30 }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 150, height: 30, position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Scale',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -240,7 +240,7 @@ describe('Constraints Section', () => {
     it(
       'Div with right and bottom pins and size shows up as Right / Bottom',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ right: 150, bottom: 50, width: 150, height: 30 }} data-constraints={['right', 'bottom']}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ right: 150, bottom: 50, width: 150, height: 30, position: 'absolute' }} data-constraints={['right', 'bottom']}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Right',
         expectedHeightConstraintDropdownOption: 'Bottom',
       }),
@@ -273,7 +273,6 @@ describe('Constraints Section', () => {
       const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
       expect(section).toBeNull()
     })
-
     it('is hidden when the selection contains groups', async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
@@ -326,6 +325,73 @@ describe('Constraints Section', () => {
 
       await renderResult.dispatch(
         [selectComponents([EP.fromString('sb/group/child1'), EP.fromString('sb/foo')], true)],
+        true,
+      )
+
+      const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+      expect(section).toBeNull()
+    })
+    it('is hidden when the selection contains non-absolute elements', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+					<div data-uid='flex' style={{ position: 'absolute', left: 200, top: 200, width: 'max-content', height: 'max-content', display: 'flex', gap: 10 }}>
+						<div data-uid='foo1' style={{ backgroundColor: '#f0f', width: 70, height: 70 }} />
+						<div data-uid='foo2' style={{ backgroundColor: '#f0f', width: 70, height: 70 }} />
+						<div data-uid='foo3' style={{ backgroundColor: '#f0f', width: 70, height: 70 }} />
+					</div>
+				</Storyboard>
+			)
+		  }
+	  `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [selectComponents([EP.fromString('sb/group'), EP.fromString('sb/flex/foo2')], true)],
+        true,
+      )
+
+      const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+      expect(section).toBeNull()
+    })
+    it('is hidden when the selection contains non-absolute elements (bad group child)', async () => {
+      // most likely this will never happen in reality, because group children are always absolute, but
+      // this is to validate the intersection with the other conditions.
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group1' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+					<Group data-uid='group2' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div data-uid='bad' style={{ backgroundColor: '#f00', position: 'relative', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+				</Storyboard>
+			)
+		  }
+	  `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [selectComponents([EP.fromString('sb/group'), EP.fromString('sb/grop2/bad')], true)],
         true,
       )
 
