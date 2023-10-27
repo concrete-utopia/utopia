@@ -2,6 +2,7 @@ import * as React from 'react'
 import { isNonEmptyArray, mapDropNulls } from '../..//core/shared/array-utils'
 import { getCommonParent } from '../..//core/shared/element-path'
 import type {
+  ElementInstanceMetadataMap,
   JSXConditionalExpressionWithoutUID,
   JSXFragmentWithoutUID,
 } from '../..//core/shared/element-template'
@@ -20,16 +21,17 @@ import { useDispatch } from './store/dispatch-context'
 import { useRefEditorState } from './store/store-hook'
 import { childInsertionPath } from './store/insertion-path'
 import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
-import { wrapInDivCommands } from './wrap-in-callbacks'
 import { elementFromInsertItem, insertWithStrategies } from './insert-callbacks'
 import {
   getTargetParentForOneShotInsertion,
   pathToReparent,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
+import type { CanvasPoint, LocalRectangle } from '../../core/shared/math-utils'
 import {
   canvasPoint,
   nonEmptyboundingRectangleArray,
   nullIfInfinity,
+  zeroRectangle,
 } from '../../core/shared/math-utils'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import * as PP from '../../core/shared/property-path'
@@ -38,6 +40,8 @@ import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
 import { isLeft } from '../../core/shared/either'
 import { absolute } from '../../utils/utils'
+import type { CanvasCommand } from '../canvas/commands/commands'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export function convertToConditionalOrFragment(
   selectedViews: Array<ElementPath>,
@@ -117,23 +121,32 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
   )
 }
 
-/**
- * Wrap with Strategies
- * - insert element into the parent of the selected elements, at the right index position
- * - if necessary, move the inserted element to where the BB of the selected elements was
- * - reparent the original selected elements into the new inserted element
- * - if absolute, size the element to the AABB of the original elements
- *
- * - do this all with a single undo step
- */
+interface ElementWrappingInfo {
+  elementPath: ElementPath
+  positionInBoundingBox: CanvasPoint
+  indexInParent: number
+}
 
-/**
- * TODO
- * - separate the convert and wrap code paths
- * - factor out element creation from `useWrapInto` and `useToInsert`
- * - insert all selected elements with `insertWithStrategies`
- * - tests
- */
+function getElementWrappingInfo(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
+  selectedElementsAABB: LocalRectangle,
+  selectedElements: ElementPath[],
+): ElementWrappingInfo[] {
+  return selectedElements.map((path) => {
+    const frame =
+      nullIfInfinity(MetadataUtils.findElementByElementPath(metadata, path)?.localFrame) ??
+      zeroRectangle
+    return {
+      elementPath: path,
+      indexInParent: MetadataUtils.getIndexInParent(metadata, elementPathTrees, path) ?? 0,
+      positionInBoundingBox: canvasPoint({
+        x: frame.x - selectedElementsAABB.x,
+        y: frame.y - selectedElementsAABB.y,
+      }),
+    }
+  })
+}
 
 export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
   const dispatch = useDispatch()
@@ -149,25 +162,6 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
   return React.useCallback(
     (wrapIntoElement: InsertMenuItem | null) => {
       if (wrapIntoElement == null) {
-        return
-      }
-
-      // TODO: not great
-      if (wrapIntoElement.source === 'Div') {
-        // TODO: could be a strategy
-        const result = wrapInDivCommands(
-          jsxMetadataRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          projectContentsRef.current,
-          selectedViewsRef.current,
-        )
-
-        if (isLeft(result)) {
-          return
-        }
-
-        dispatch([applyCommandsAction(result.value)])
         return
       }
 
@@ -227,6 +221,13 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       const selectedViewsAABB = nonEmptyboundingRectangleArray(existingSelectedAABBs)
 
+      const wrappingInfo = getElementWrappingInfo(
+        jsxMetadataRef.current,
+        elementPathTreeRef.current,
+        selectedViewsAABB,
+        originalSelectedElements,
+      )
+
       const selectedViewsTopLeft = canvasPoint({ x: selectedViewsAABB.x, y: selectedViewsAABB.y })
 
       const wrapperInsertResult = insertWithStrategies(
@@ -251,22 +252,32 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       const newParentPath = wrapperInsertResult.newPath
 
-      const result = insertWithStrategies(
-        pathToReparent(originalSelectedElements[0]), // TODO: all children
-        childInsertionPath(newParentPath),
-        {
-          metadata: jsxMetadataRef.current,
-          elementPathTree: elementPathTreeRef.current,
-          allElementProps: allElementPropsRef.current,
-          selectedViews: selectedViewsRef.current,
-          projectContents: projectContentsRef.current,
-          builtInDependencies: builtInDependenciesRef.current,
-          nodeModules: nodeModulesRef.current,
-        },
-        {},
-      )
+      let moveElementsIntoWrapperCommands: CanvasCommand[] = []
 
-      if (result == null) {
+      for (const elementInfo of wrappingInfo) {
+        const result = insertWithStrategies(
+          pathToReparent(elementInfo.elementPath),
+          childInsertionPath(newParentPath),
+          {
+            metadata: jsxMetadataRef.current,
+            elementPathTree: elementPathTreeRef.current,
+            allElementProps: allElementPropsRef.current,
+            selectedViews: selectedViewsRef.current,
+            projectContents: projectContentsRef.current,
+            builtInDependencies: builtInDependenciesRef.current,
+            nodeModules: nodeModulesRef.current,
+          },
+          {
+            indexPosition: absolute(elementInfo.indexInParent),
+            position: elementInfo.positionInBoundingBox,
+          },
+        )
+        if (result != null) {
+          moveElementsIntoWrapperCommands = moveElementsIntoWrapperCommands.concat(result.commands)
+        }
+      }
+
+      if (moveElementsIntoWrapperCommands.length === 0) {
         return
       }
 
@@ -289,7 +300,7 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       dispatch([
         mergeWithPrevUndo([
-          applyCommandsAction([...result.commands, ...widthHeightCommands]),
+          applyCommandsAction([...moveElementsIntoWrapperCommands, ...widthHeightCommands]),
           selectComponents([newParentPath], false),
         ]),
       ])
