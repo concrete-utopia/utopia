@@ -1324,7 +1324,7 @@ export function setFixedSizeCommands(
   return sizeToDimensionsFromFrame(metadata, pathTrees, elementPath, frame)
 }
 
-function getSafeGroupChildConstraintsArray(
+export function getSafeGroupChildConstraintsArray(
   allElementProps: AllElementProps,
   path: ElementPath,
 ): LayoutPinnedProp[] {

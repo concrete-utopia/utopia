@@ -3661,13 +3661,13 @@ describe('inspector tests with real metadata', () => {
                 data-uid='foo'
                 style={{
                   position: 'absolute',
+                  left: 0,
+                  width: 100,
                   backgroundColor: 'blue',
                   top: 0,
                   height: 100,
-                  left: 0,
-                  width: 100,
                 }}
-                data-constraints={['top', 'height', 'left', 'width']}
+                data-constraints={['left', 'width', 'top', 'height']}
               />
               <div
                 data-uid='bar'
@@ -4155,6 +4155,7 @@ describe('inspector tests with real metadata', () => {
 })
 
 describe('Inspector fields and code remain in sync', () => {
+  // TODO flipping this to true highlights a big issue with adjustCssLengthProperties, see https://github.com/concrete-utopia/utopia/pull/4421
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
   const propsToTest = [
     {

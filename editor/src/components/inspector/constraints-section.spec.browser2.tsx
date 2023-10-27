@@ -1,18 +1,24 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "testGroupChild", "testFrameChild"] }] */
 
+import { screen } from '@testing-library/react'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPath } from '../../core/shared/project-file-types'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
+  formatTestProjectCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../editor/actions/action-creators'
+import { InspectorSectionConstraintsTestId } from './constraints-section'
+import { pickFromReactSelectPopupList } from '../canvas/event-helpers.test-utils'
 
 const testChild = (params: {
   snippet: string
   elementPath: ElementPath
   expectedWidthConstraintDropdownOption: string
   expectedHeightConstraintDropdownOption: string
+  after?: (renderResult: EditorRenderResult) => Promise<void>
 }) =>
   async function testBody() {
     const renderResult = await renderTestEditorWithCode(
@@ -35,6 +41,10 @@ const testChild = (params: {
     expect(heightConstraintDropdown.textContent).toEqual(
       params.expectedHeightConstraintDropdownOption,
     )
+
+    if (params.after != null) {
+      await params.after(renderResult)
+    }
   }
 
 const testFrameChild = (params: {
@@ -58,6 +68,7 @@ const testGroupChild = (params: {
   snippet: string
   expectedWidthConstraintDropdownOption: string
   expectedHeightConstraintDropdownOption: string
+  after?: (renderResult: EditorRenderResult) => Promise<void>
 }) =>
   testChild({
     ...params,
@@ -181,6 +192,34 @@ describe('Constraints Section', () => {
     )
 
     it(
+      'Element with max-content width does not change if selecting the same option again',
+      testGroupChild({
+        snippet: `<span data-uid='target' data-testid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
+        expectedWidthConstraintDropdownOption: 'Width',
+        expectedHeightConstraintDropdownOption: 'Scale',
+        after: async (renderResult) => {
+          await renderResult.dispatch(
+            [
+              selectComponents(
+                [EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:app-root/group/target`)],
+                false,
+              ),
+            ],
+            true,
+          )
+          await pickFromReactSelectPopupList(
+            renderResult,
+            'frame-child-constraint-width-popuplist',
+            'Width',
+            'Width',
+          )
+          const target = await renderResult.renderedDOM.findByTestId('target')
+          expect(target.style.width).toBe('max-content')
+        },
+      }),
+    )
+
+    it(
       'Span with max-content width height shows up as Width / Height',
       testGroupChild({
         snippet: `<span data-uid='target' style={{ width: 'max-content', height: 'max-content' }}>An implicitly constrained span</span>`,
@@ -206,5 +245,92 @@ describe('Constraints Section', () => {
         expectedHeightConstraintDropdownOption: 'Bottom',
       }),
     )
+  })
+
+  describe('hidden behaviour', () => {
+    it('is hidden when the selection is made of groups', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+				</Storyboard>
+			)
+		  }
+	  `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch([selectComponents([EP.fromString('sb/group')], true)], true)
+
+      const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+      expect(section).toBeNull()
+    })
+
+    it('is hidden when the selection contains groups', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+					<div data-uid='foo' style={{ position: 'absolute', left: 200, top: 200, width: 50, height: 50, background: 'red' }} />
+				</Storyboard>
+			)
+		  }
+	  `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [selectComponents([EP.fromString('sb/group'), EP.fromString('sb/foo')], true)],
+        true,
+      )
+
+      const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+      expect(section).toBeNull()
+    })
+    it('is hidden when the selection contains group children and non-group-children', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+					<div data-uid='foo' style={{ position: 'absolute', left: 200, top: 200, width: 50, height: 50, background: 'red' }} />
+				</Storyboard>
+			)
+		  }
+	  `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [selectComponents([EP.fromString('sb/group/child1'), EP.fromString('sb/foo')], true)],
+        true,
+      )
+
+      const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+      expect(section).toBeNull()
+    })
   })
 })

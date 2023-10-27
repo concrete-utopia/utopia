@@ -376,6 +376,346 @@ describe('Frame updating layout section', () => {
         expectedFixedHugDropdownHeightValue: 'Fixed',
       }),
     )
+
+    it(
+      'with nested Groups when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 75,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-left-number-input`, '100')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 100,
+              y: 0,
+              width: 200,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 100,
+              y: 75,
+              width: 100,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 50,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 50,
+              y: 50,
+              width: 50,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 0,
+                width: 200,
+                height: 175,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 100,
+                  height: 75,
+                }}
+              />
+              <Group
+                style={{
+                  position: 'absolute',
+                  left: 100,
+                  top: 75,
+                  width: 100,
+                  height: 100,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 50,
+                    top: 50,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+              </Group>
+            </Group>
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
+      }),
+    )
+
+    it(
+      'with nested Groups that are not trued up when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 50,
+                top: 75,
+                width: 50,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 25,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 25,
+                  top: 50,
+                  width: 25,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-left-number-input`, '100')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 100,
+              y: 0,
+              width: 200,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 100,
+              y: 75,
+              width: 100,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 50,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 50,
+              y: 50,
+              width: 50,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 0,
+                width: 200,
+                height: 175,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 100,
+                  height: 75,
+                }}
+              />
+              <Group
+                style={{
+                  position: 'absolute',
+                  left: 100,
+                  top: 75,
+                  width: 100,
+                  height: 100,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 50,
+                    top: 50,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+              </Group>
+            </Group>
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
+      }),
+    )
   })
 
   describe('Top control', () => {
@@ -604,6 +944,353 @@ describe('Frame updating layout section', () => {
                 height: 35,
               }}
             />
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Fixed',
+        expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with nested Groups when setting value indirectly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              bottom: 200,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 75,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-top-number-input`, '125')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 0,
+              y: 125,
+              width: 200,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 100,
+              y: 75,
+              width: 100,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 50,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 50,
+              y: 50,
+              width: 50,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Group
+              style={{
+                position: 'absolute',
+                left: 0,
+                bottom: 100,
+                width: 200,
+                height: 175,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 100,
+                  height: 75,
+                }}
+              />
+              <Group
+                style={{
+                  position: 'absolute',
+                  left: 100,
+                  top: 75,
+                  width: 100,
+                  height: 100,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 50,
+                    top: 50,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+              </Group>
+            </Group>
+          </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
+      }),
+    )
+
+    it(
+      'with nested Groups when setting the Top for a group child directly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 75,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/outer-group-child`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-top-number-input`, '175')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 0,
+              y: 75,
+              width: 200,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/outer-group-child`]:
+            localRectangle({
+              x: 0,
+              y: 100,
+              width: 100,
+              height: 75,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 100,
+              y: 0,
+              width: 100,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 50,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 50,
+              y: 50,
+              width: 50,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+            style={{
+              height: '100%',
+              width: '100%',
+              contain: 'layout',
+            }}
+          >
+            <Group
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 75,
+                width: 200,
+                height: 175,
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 100,
+                  width: 100,
+                  height: 75,
+                }}
+              />
+              <Group
+                style={{
+                  position: 'absolute',
+                  left: 100,
+                  top: 0,
+                  width: 100,
+                  height: 100,
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 0,
+                    top: 0,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+                <div
+                  style={{
+                    backgroundColor: '#aaaaaa33',
+                    position: 'absolute',
+                    left: 50,
+                    top: 50,
+                    width: 50,
+                    height: 50,
+                  }}
+                />
+              </Group>
+            </Group>
           </div>`,
         expectedFixedHugDropdownWidthValue: 'Fixed',
         expectedFixedHugDropdownHeightValue: 'Fixed',
@@ -840,6 +1527,686 @@ describe('Frame updating layout section', () => {
           </div>`,
         expectedFixedHugDropdownWidthValue: 'Fixed',
         expectedFixedHugDropdownHeightValue: 'Fixed',
+      }),
+    )
+
+    it(
+      'with nested Groups when setting value directly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 75,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '400')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 400,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 200,
+              y: 75,
+              width: 200,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 100,
+              y: 50,
+              width: 100,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+      >
+        <Group
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 400,
+            height: 175,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 75,
+            }}
+          />
+          <Group
+            style={{
+              position: 'absolute',
+              left: 200,
+              top: 75,
+              width: 200,
+              height: 100,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 50,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 100,
+                top: 50,
+                width: 100,
+                height: 50,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
+      }),
+    )
+
+    it(
+      'with nested Groups that are not trued up because the user messed with their code when setting value directly they also become trued up',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 50,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 50,
+                top: 75,
+                width: 50,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 25,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 25,
+                  top: 50,
+                  width: 25,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '400')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 400,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 200,
+              y: 75,
+              width: 200,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 100,
+              y: 50,
+              width: 100,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+      >
+        <Group
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 400,
+            height: 175,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 75,
+            }}
+          />
+          <Group
+            style={{
+              position: 'absolute',
+              left: 200,
+              top: 75,
+              width: 200,
+              height: 100,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 50,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 100,
+                top: 50,
+                width: 100,
+                height: 50,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
+      }),
+    )
+
+    it(
+      'with nested Groups when setting the inner group width directly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 75,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '200')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 300,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 100,
+              y: 75,
+              width: 200,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 100,
+              y: 50,
+              width: 100,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+      >
+        <Group
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: 300,
+            height: 175,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 100,
+              height: 75,
+            }}
+          />
+          <Group
+            style={{
+              position: 'absolute',
+              left: 100,
+              top: 75,
+              width: 200,
+              height: 100,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 50,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 100,
+                top: 50,
+                width: 100,
+                height: 50,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
+      }),
+    )
+
+    it(
+      'with nested Groups, the outer Group has left-right props, no width prop. setting value indirectly',
+      makeTestCase({
+        baseProject: `<div
+          style={{
+            height: '100%',
+            width: '100%',
+            contain: 'layout',
+          }}
+          data-uid={'root-div'}
+        >
+          <Group
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              right: 200,
+              height: 175,
+            }}
+            data-uid='outer-group'
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 75,
+              }}
+              data-uid='outer-group-child'
+            />
+            <Group
+              style={{
+                position: 'absolute',
+                left: 100,
+                top: 75,
+                width: 100,
+                height: 100,
+              }}
+              data-uid='inner-group'
+            >
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-1'
+              />
+              <div
+                style={{
+                  backgroundColor: '#aaaaaa33',
+                  position: 'absolute',
+                  left: 50,
+                  top: 50,
+                  width: 50,
+                  height: 50,
+                }}
+                data-uid='inner-child-2'
+              />
+            </Group>
+          </Group>
+        </div>`,
+        actionChange: async (renderResult) => {
+          await selectComponentsForTest(renderResult, [
+            EP.fromString(
+              `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`,
+            ),
+          ])
+
+          // Change the top field.
+          await updateInputValue(renderResult, `frame-width-number-input`, '400')
+        },
+        expectedFrames: {
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 400,
+              height: 175,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group`]:
+            localRectangle({
+              x: 200,
+              y: 75,
+              width: 200,
+              height: 100,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-1`]:
+            localRectangle({
+              x: 0,
+              y: 0,
+              width: 100,
+              height: 50,
+            }),
+          [`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/outer-group/inner-group/inner-child-2`]:
+            localRectangle({
+              x: 100,
+              y: 50,
+              width: 100,
+              height: 50,
+            }),
+        },
+        expectedProject: `<div
+        style={{
+          height: '100%',
+          width: '100%',
+          contain: 'layout',
+        }}
+      >
+        <Group
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            right: 0,
+            height: 175,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 75,
+            }}
+          />
+          <Group
+            style={{
+              position: 'absolute',
+              left: 200,
+              top: 75,
+              width: 200,
+              height: 100,
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 100,
+                height: 50,
+              }}
+            />
+            <div
+              style={{
+                backgroundColor: '#aaaaaa33',
+                position: 'absolute',
+                left: 100,
+                top: 50,
+                width: 100,
+                height: 50,
+              }}
+            />
+          </Group>
+        </Group>
+      </div>`,
+        expectedFixedHugDropdownWidthValue: 'Hug contents',
+        expectedFixedHugDropdownHeightValue: 'Hug contents',
       }),
     )
   })

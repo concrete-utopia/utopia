@@ -381,7 +381,7 @@ export function resizeInspectorStrategy(
       )
       commands.push(...changeBoundsResult.commands)
       commands.push(
-        pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'starting-metadata'),
+        pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'live-metadata'),
       )
       commands.push(setElementsToRerenderCommand(selectedElements))
       return commands
@@ -427,7 +427,7 @@ export function directResizeInspectorStrategy(
         )
         commands.push(...changeBoundsResult.commands)
         commands.push(
-          pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'starting-metadata'),
+          pushIntendedBoundsAndUpdateGroups(changeBoundsResult.intendedBounds, 'live-metadata'),
         )
       }
       commands.push(setElementsToRerenderCommand(selectedElements))

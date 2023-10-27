@@ -572,6 +572,128 @@ describe('Smart Convert To Flex', () => {
 	`),
     )
   })
+
+  it('converts groups with constraints that imply a certain row-like layout', async () => {
+    const editor = await renderTestEditorWithCode(
+      makeTestProjectCodeWithSnippet(
+        `
+			<div style={{ ...props.style }} data-uid='a'>
+        <Group
+          data-uid='parent'
+          style={{
+            height: 204,
+            position: 'absolute',
+            left: 14,
+            top: 343,
+            width: 584,
+          }}
+        >
+          <span
+            data-uid='second'
+            style={{
+              wordBreak: 'break-word',
+              fontSize: '31px',
+              height: 119,
+              position: 'absolute',
+              left: 91,
+              top: 29,
+              width: 'max-content',
+            }}
+            data-constraints={['left', 'right']}
+          >
+            Hello World
+          </span>
+          <div
+            data-uid='third'
+            style={{
+              backgroundColor: '#FF69B4AB',
+              height: 204,
+              contain: 'layout',
+              width: 119,
+              position: 'absolute',
+              left: 465,
+              top: 0,
+            }}
+            data-constraints={['right', 'width']}
+          />
+          <div
+            data-uid='first'
+            style={{
+              backgroundColor: '#FF69B4AB',
+              height: 204,
+              contain: 'layout',
+              width: 59,
+              position: 'absolute',
+              left: 0,
+              top: 0,
+            }}
+            data-constraints={['left', 'width']}
+          />
+        </Group>
+			</div>
+	  `,
+      ),
+
+      'await-first-dom-report',
+    )
+
+    await convertParentToFlex(editor)
+
+    expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+      makeTestProjectCodeWithSnippet(`
+		<div style={{ ...props.style }} data-uid='a'>
+      <div
+        data-uid='parent'
+        style={{
+          height: 204,
+          position: 'absolute',
+          left: 14,
+          top: 343,
+          width: 584,
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: 32,
+        }}
+      >
+        <div
+          data-uid='first'
+          style={{
+            backgroundColor: '#FF69B4AB',
+            height: 204,
+            contain: 'layout',
+            width: 59,
+            flexGrow: 0,
+          }}
+        />
+        <span
+          data-uid='second'
+          style={{
+            wordBreak: 'break-word',
+            fontSize: '31px',
+            height: 119,
+            width: 'max-content',
+            flexGrow: 1,
+          }}
+        >
+          Hello World
+        </span>
+        <div
+          data-uid='third'
+          style={{
+            backgroundColor: '#FF69B4AB',
+            height: 204,
+            contain: 'layout',
+            width: 119,
+            flexGrow: 0,
+          }}
+        />
+      </div>
+		</div>
+	`),
+    )
+  })
 })
 
 describe('Smart Convert to Flex Reordering Children if Needed', () => {
