@@ -35,7 +35,10 @@ import type { InsertionSubject } from './editor-modes'
 import { useDispatch } from './store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from './store/store-hook'
 import type { InsertMenuItem } from '../canvas/ui/floating-insert-menu'
-import type { ToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
+import type {
+  ElementToReparent,
+  ToReparent,
+} from '../canvas/canvas-strategies/strategies/reparent-utils'
 import {
   elementToReparent,
   getTargetParentForOneShotInsertion,
@@ -224,6 +227,29 @@ export function insertWithStrategies(
   return { commands: result.commands, newPath: result.data.newPath }
 }
 
+export function elementFromInsertItem(
+  projectContents: ProjectContentTreeRoot,
+  elementToInsert: InsertMenuItem,
+): ElementToReparent {
+  const allElementUids = new Set(getAllUniqueUids(projectContents).uniqueIDs)
+
+  const wrappedUid = generateConsistentUID('wrapper', allElementUids)
+
+  allElementUids.add(wrappedUid)
+
+  const elementUid = generateConsistentUID('element', allElementUids)
+
+  const element = elementToReparent(
+    fixUtopiaElement(
+      elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
+      allElementUids,
+    ).value,
+    elementToInsert.value.importsToAdd,
+  )
+
+  return element
+}
+
 export function useToInsert(): (elementToInsert: InsertMenuItem | null) => ElementPath | null {
   const dispatch = useDispatch()
   const builtInDependenciesRef = useRefEditorState((store) => store.builtInDependencies)
@@ -250,21 +276,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => Eleme
         return null
       }
 
-      const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
-
-      const wrappedUid = generateConsistentUID('wrapper', allElementUids)
-
-      allElementUids.add(wrappedUid)
-
-      const elementUid = generateConsistentUID('element', allElementUids)
-
-      const element = elementToReparent(
-        fixUtopiaElement(
-          elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
-          allElementUids,
-        ).value,
-        elementToInsert.value.importsToAdd,
-      )
+      const element = elementFromInsertItem(projectContentsRef.current, elementToInsert)
 
       const targetParent = getTargetParentForOneShotInsertion(
         storyboardPath,
@@ -320,7 +332,7 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => Eleme
   )
 }
 
-export function elementFromInsertMenuItem(
+function elementFromInsertMenuItem(
   element: ComponentElementToInsert,
   uid: string,
 ): JSXElementChild {

@@ -1,46 +1,28 @@
 import * as React from 'react'
-import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import { isNonEmptyArray, mapDropNulls, safeIndex } from '../..//core/shared/array-utils'
-import { emptyElementPath, getCommonParent } from '../..//core/shared/element-path'
+import { isNonEmptyArray, mapDropNulls } from '../..//core/shared/array-utils'
+import { getCommonParent } from '../..//core/shared/element-path'
 import type {
-  ElementInstanceMetadataMap,
   JSXConditionalExpressionWithoutUID,
   JSXFragmentWithoutUID,
-} from '../..//core/shared/element-template'
-import {
-  emptyComments,
-  jsExpressionValue,
-  jsxElement,
-  jsxTextBlock,
-  setJSXAttributesAttribute,
 } from '../..//core/shared/element-template'
 import type { ElementPath, Imports } from '../..//core/shared/project-file-types'
 import { assertNever } from '../..//core/shared/utils'
 import { emptyImports } from '../..//core/workers/common/project-file-utils'
-import type { ProjectContentTreeRoot } from '../assets'
 import { getElementsToTarget } from '../inspector/common/inspector-utils'
-import type { InsertableComponentGroupType } from '../shared/project-components'
-import { insertableComponent, insertableComponentGroupDiv } from '../shared/project-components'
 import type { EditorAction } from './action-types'
 import {
-  wrapInElement,
-  insertInsertable,
   updateJSXElementName,
   applyCommandsAction,
   selectComponents,
   mergeWithPrevUndo,
 } from './actions/action-creators'
 import { useDispatch } from './store/dispatch-context'
-import type { AllElementProps, FloatingInsertMenuState } from './store/editor-state'
 import { useRefEditorState } from './store/store-hook'
-import { childInsertionPath, getInsertionPath } from './store/insertion-path'
-import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import { childInsertionPath } from './store/insertion-path'
 import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
-import { wrapInDivCommands, wrapInDivStrategy } from './wrap-in-callbacks'
-import { commandsForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
-import { elementFromInsertMenuItem, insertWithStrategies } from './insert-callbacks'
+import { wrapInDivCommands } from './wrap-in-callbacks'
+import { elementFromInsertItem, insertWithStrategies } from './insert-callbacks'
 import {
-  elementToReparent,
   getTargetParentForOneShotInsertion,
   pathToReparent,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
@@ -54,8 +36,6 @@ import * as PP from '../../core/shared/property-path'
 import { sizeToDimensionsFromFrame } from '../inspector/inspector-common'
 import { deleteProperties } from '../canvas/commands/delete-properties-command'
 import { getStoryboardElementPath } from '../../core/model/scene-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
-import { generateConsistentUID, fixUtopiaElement } from '../../core/shared/uid-utils'
 import { isLeft } from '../../core/shared/either'
 import { absolute } from '../../utils/utils'
 
@@ -196,26 +176,7 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
         openFileRef.current,
       )
 
-      if (storyboardPath == null) {
-        // if there's no storyboard, there's not much you can do
-        return
-      }
-
-      const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).uniqueIDs)
-
-      const wrappedUid = generateConsistentUID('wrapper', allElementUids)
-
-      allElementUids.add(wrappedUid)
-
-      const elementUid = generateConsistentUID('element', allElementUids)
-
-      const element = elementToReparent(
-        fixUtopiaElement(
-          elementFromInsertMenuItem(wrapIntoElement.value.element(), elementUid),
-          allElementUids,
-        ).value,
-        wrapIntoElement.value.importsToAdd,
-      )
+      const element = elementFromInsertItem(projectContentsRef.current, wrapIntoElement)
 
       const originalSelectedElements = [...selectedViewsRef.current]
       if (!isNonEmptyArray(originalSelectedElements)) {
@@ -224,6 +185,11 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       const commonParent = getCommonParent(originalSelectedElements)
       if (commonParent == null) {
+        return
+      }
+
+      if (storyboardPath == null) {
+        // if there's no storyboard, there's not much you can do
         return
       }
 
