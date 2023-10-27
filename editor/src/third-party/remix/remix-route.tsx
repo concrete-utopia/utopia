@@ -4,7 +4,6 @@ import {
   UNSAFE_RemixContextObject as RemixContextObject,
   UNSAFE_RemixContext as RemixContext,
 } from '@remix-run/react'
-import { RemixRootDefaultErrorBoundary } from '@remix-run/react/dist/errorBoundaries'
 import { Outlet, useRouteError } from 'react-router'
 
 function useRemixContext(): RemixContextObject {
@@ -50,10 +49,9 @@ export function RemixRouteError({ id }: { id: string }) {
   let error = useRouteError()
   let { ErrorBoundary } = routeModules[id]
 
+  // This should always be the case, because we've already checked the ErrorBoundary exists, but just in case
   if (ErrorBoundary) {
     return <ErrorBoundary />
-  } else if (id === 'root') {
-    return <RemixRootDefaultErrorBoundary error={error} />
   }
 
   throw error
