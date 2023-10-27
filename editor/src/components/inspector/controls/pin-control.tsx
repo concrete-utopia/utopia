@@ -4,13 +4,16 @@ import type { ControlStyles } from '../common/control-styles'
 import type { ControlStatus } from '../common/control-status'
 import { getControlStyles } from '../common/control-styles'
 import { FramePoint } from 'utopia-api/core'
-import type {
-  LayoutPinnedProp,
-  LayoutPinnedPropIncludingCenter,
-} from '../../../core/layout/layout-helpers-new'
-import type { FramePinsInfo } from '../common/layout-property-path-hooks'
-import { UtopiaTheme, SquareButton, colorTheme, color } from '../../../uuiui'
-import { unless } from '../../../utils/react-conditionals'
+import type { LayoutPinnedPropIncludingCenter } from '../../../core/layout/layout-helpers-new'
+import { usePinToggling, type FramePinsInfo } from '../common/layout-property-path-hooks'
+import { UtopiaTheme, colorTheme } from '../../../uuiui'
+import { unless, when } from '../../../utils/react-conditionals'
+import { FlexCol, FlexRow } from 'utopia-api'
+import { getFixedPointsForPinning, useDetectedConstraints } from '../simplified-pinning-helpers'
+import { GroupChildPinControl, setGroupChildConstraint } from '../fill-hug-fixed-control'
+import { assertNever } from '../../../core/shared/utils'
+import { useDispatch } from '../../editor/store/dispatch-context'
+import { useRefEditorState } from '../../editor/store/store-hook'
 
 interface PinControlProps {
   handlePinMouseDown: (
@@ -24,6 +27,7 @@ interface PinControlProps {
   className?: string
   style?: React.CSSProperties
   exclude?: ExcludePinControls
+  regularBorder: boolean
 }
 
 export type ExcludePinControls = {
@@ -110,7 +114,11 @@ export const PinControl = (props: PinControlProps) => {
         version='1.1'
         xmlns='http://www.w3.org/2000/svg'
         vectorEffect='non-scaling-stroke'
-        style={{ border: `1px solid ${colorTheme.fg8.value}`, borderRadius: 2 }}
+        style={
+          props.regularBorder
+            ? { border: `1px solid ${colorTheme.fg8.value}`, borderRadius: 2 }
+            : {}
+        }
       >
         <rect
           id={getTestId(props.name, 'box')}
@@ -340,7 +348,7 @@ interface PinWidthControlProps {
 export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <svg width='20' height='20'>
+    <svg width='20' height='20' onClick={props.toggleWidth}>
       <g
         id='dimensioncontrols-pin-width'
         stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Width)}
@@ -383,7 +391,7 @@ interface PinHeightControlProps {
 export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <svg width='20' height='20'>
+    <svg width='20' height='20' onClick={props.toggleHeight}>
       <g
         id='dimensioncontrols-pin-height'
         stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
@@ -412,5 +420,83 @@ export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
         />
       </g>
     </svg>
+  )
+})
+
+export interface CombinedPinControlProps {
+  isGroupChild: 'group-child' | 'frame-child'
+}
+
+export const CombinedPinControl = React.memo((props: CombinedPinControlProps) => {
+  const pins = useDetectedConstraints(props.isGroupChild)
+  const dispatch = useDispatch()
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
+  const { togglePin } = usePinToggling()
+  const toggleGroupChildOrFrameChildPin = React.useCallback(
+    (layoutProp: LayoutPinnedPropIncludingCenter) => {
+      switch (props.isGroupChild) {
+        case 'frame-child':
+          togglePin(layoutProp)
+          break
+        case 'group-child':
+          if (layoutProp !== 'centerX' && layoutProp !== 'centerY') {
+            setGroupChildConstraint(
+              dispatch,
+              'toggle',
+              selectedViewsRef.current,
+              allElementPropsRef.current,
+              layoutProp,
+            )
+          }
+          break
+        default:
+          assertNever(props.isGroupChild)
+      }
+    },
+    [props.isGroupChild, togglePin, dispatch, selectedViewsRef, allElementPropsRef],
+  )
+  const toggleWidth = React.useCallback(() => {
+    toggleGroupChildOrFrameChildPin('width')
+  }, [toggleGroupChildOrFrameChildPin])
+  const toggleHeight = React.useCallback(() => {
+    toggleGroupChildOrFrameChildPin('height')
+  }, [toggleGroupChildOrFrameChildPin])
+  return (
+    <FlexRow css={{ border: `1px solid ${colorTheme.subduedBorder.value}`, margin: `2px` }}>
+      {when(props.isGroupChild === 'group-child', <GroupChildPinControl />)}
+      {when(
+        props.isGroupChild === 'frame-child',
+        <PinControl
+          handlePinMouseDown={togglePin}
+          name={'pin-control'}
+          controlStatus={'simple'}
+          framePoints={framePinsInfo}
+          regularBorder={false}
+        />,
+      )}
+      <FlexCol
+        css={{
+          justifyContent: 'space-evenly',
+          borderLeft: `1px solid ${colorTheme.subduedBorder.value}`,
+        }}
+      >
+        <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
+          <PinWidthControl
+            controlStatus={'simple'}
+            framePins={framePinsInfo}
+            toggleWidth={toggleWidth}
+          />
+        </FlexRow>
+        <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
+          <PinHeightControl
+            controlStatus={'simple'}
+            framePins={framePinsInfo}
+            toggleHeight={toggleHeight}
+          />
+        </FlexRow>
+      </FlexCol>
+    </FlexRow>
   )
 })

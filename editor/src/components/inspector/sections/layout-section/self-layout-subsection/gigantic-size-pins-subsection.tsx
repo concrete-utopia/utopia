@@ -322,6 +322,7 @@ const PinControls = React.memo((props: PinControlsProps) => {
         controlStatus='simple'
         handlePinMouseDown={props.togglePin}
         name='positioncontrols'
+        regularBorder={true}
       />
     </InspectorContextMenuWrapper>
   )
