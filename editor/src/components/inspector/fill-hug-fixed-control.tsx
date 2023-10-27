@@ -79,6 +79,7 @@ import {
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { notice } from '../common/notice'
 import createCachedSelector from 're-reselect'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -740,6 +741,21 @@ export const allElementsAreGroupChildren = createSelector(
       return treatElementAsGroupLike(metadata, EP.parentPath(path))
     }
     return selectedViews.every(elementOrAnyChildGroup)
+  },
+)
+
+export const allElementsArePositionedAbsolutelySelector = createSelector(
+  metadataSelector,
+  selectedViewsSelector,
+  (metadata, selectedViews): boolean => {
+    if (selectedViews.length === 0) {
+      return false
+    }
+    return selectedViews.every((path) => {
+      return MetadataUtils.isPositionAbsolute(
+        MetadataUtils.findElementByElementPath(metadata, path),
+      )
+    })
   },
 )
 

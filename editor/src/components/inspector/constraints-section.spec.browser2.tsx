@@ -273,7 +273,6 @@ describe('Constraints Section', () => {
       const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
       expect(section).toBeNull()
     })
-
     it('is hidden when the selection contains groups', async () => {
       const renderResult = await renderTestEditorWithCode(
         formatTestProjectCode(`
@@ -326,6 +325,73 @@ describe('Constraints Section', () => {
 
       await renderResult.dispatch(
         [selectComponents([EP.fromString('sb/group/child1'), EP.fromString('sb/foo')], true)],
+        true,
+      )
+
+      const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+      expect(section).toBeNull()
+    })
+    it('is hidden when the selection contains non-absolute elements', async () => {
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+					<div data-uid='flex' style={{ position: 'absolute', left: 200, top: 200, width: 'max-content', height: 'max-content', display: 'flex', gap: 10 }}>
+						<div data-uid='foo1' style={{ backgroundColor: '#f0f', width: 70, height: 70 }} />
+						<div data-uid='foo2' style={{ backgroundColor: '#f0f', width: 70, height: 70 }} />
+						<div data-uid='foo3' style={{ backgroundColor: '#f0f', width: 70, height: 70 }} />
+					</div>
+				</Storyboard>
+			)
+		  }
+	  `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [selectComponents([EP.fromString('sb/group'), EP.fromString('sb/flex/foo2')], true)],
+        true,
+      )
+
+      const section = screen.queryByTestId(InspectorSectionConstraintsTestId)
+      expect(section).toBeNull()
+    })
+    it('is hidden when the selection contains non-absolute elements (bad group child)', async () => {
+      // most likely this will never happen in reality, because group children are always absolute, but
+      // this is to validate the intersection with the other conditions.
+      const renderResult = await renderTestEditorWithCode(
+        formatTestProjectCode(`
+		  import * as React from 'react'
+		  import { Group, Storyboard } from 'utopia-api'
+
+		  var storyboard = () => {
+			return (
+				<Storyboard data-uid='sb'>
+					<Group data-uid='group1' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+					<Group data-uid='group2' style={{ position: 'absolute', left: 0, top: 0, width: 164, height: 129 }}>
+      					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 70, height: 70 }} />
+      					<div data-uid='bad' style={{ backgroundColor: '#f00', position: 'relative', left: 84, top: 49, width: 80, height: 80 }} />
+    				</Group>
+				</Storyboard>
+			)
+		  }
+	  `),
+        'await-first-dom-report',
+      )
+
+      await renderResult.dispatch(
+        [selectComponents([EP.fromString('sb/group'), EP.fromString('sb/grop2/bad')], true)],
         true,
       )
 

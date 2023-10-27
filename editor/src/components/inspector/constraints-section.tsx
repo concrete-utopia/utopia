@@ -17,6 +17,7 @@ import { InspectorPropsContext } from './common/property-path-hooks'
 import { PinControl, PinHeightControl, PinWidthControl } from './controls/pin-control'
 import {
   allElementsAreGroupChildren,
+  allElementsArePositionedAbsolutelySelector,
   anySelectedElementGroupOrChildOfGroup,
 } from './fill-hug-fixed-control'
 import { selectedViewsSelector } from './inpector-selectors'
@@ -51,10 +52,22 @@ export const ConstraintsSection = React.memo(() => {
     allElementsAreGroupChildren,
     'ConstraintsSection onlyGroupChildrenSelected',
   )
+  const allElementsArePositionedAbsolutely = useEditorState(
+    Substores.metadata,
+    allElementsArePositionedAbsolutelySelector,
+    'ConstraintsSection allElementsArePositionedAbsolutely',
+  )
 
   const showSection = React.useMemo(() => {
-    return noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected
-  }, [noGroupOrGroupChildrenSelected, onlyGroupChildrenSelected])
+    return (
+      allElementsArePositionedAbsolutely &&
+      (noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected)
+    )
+  }, [
+    noGroupOrGroupChildrenSelected,
+    onlyGroupChildrenSelected,
+    allElementsArePositionedAbsolutely,
+  ])
 
   if (!showSection) {
     return null
