@@ -16,6 +16,7 @@ import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
+import type { MapLike } from 'typescript'
 
 type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
@@ -35,7 +36,7 @@ export interface RemixNavigationAtomData {
 export const ActiveRemixSceneAtom = atom<ElementPath>(EP.emptyElementPath)
 export const RemixNavigationAtom = atom<RemixNavigationAtomData>({})
 
-function useGetRouteModules(basePath: ElementPath) {
+function useCreateExecutionScopes(): { [routeId: string]: MapLike<any> } {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const fileBlobsRef = useRefEditorState((store) => store.editor.canvas.base64Blobs)
@@ -47,6 +48,46 @@ function useGetRouteModules(basePath: ElementPath) {
     usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
   )
 
+  return React.useMemo(() => {
+    if (remixDerivedDataRef.current == null) {
+      return {}
+    }
+
+    let executionScopes: { [routeId: string]: MapLike<any> } = {}
+    for (const [routeId, value] of Object.entries(
+      remixDerivedDataRef.current.routeModuleCreators,
+    )) {
+      const nameAndUid = getDefaultExportNameAndUidFromFile(
+        projectContentsRef.current,
+        value.filePath,
+      )
+      if (nameAndUid == null) {
+        continue
+      }
+      executionScopes[routeId] = value.executionScopeCreator(
+        projectContentsRef.current,
+        fileBlobsRef.current,
+        hiddenInstancesRef.current,
+        displayNoneInstancesRef.current,
+        metadataContext,
+      ).scope
+    }
+
+    return executionScopes
+  }, [
+    displayNoneInstancesRef,
+    fileBlobsRef,
+    hiddenInstancesRef,
+    metadataContext,
+    projectContentsRef,
+    remixDerivedDataRef,
+  ])
+}
+
+function useGetRouteModules() {
+  const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+
   const defaultExports = useEditorState(
     Substores.derived,
     (store) => {
@@ -57,6 +98,8 @@ function useGetRouteModules(basePath: ElementPath) {
     },
     'useGetRouteModules defaultExports',
   )
+
+  const executionScopes = useCreateExecutionScopes()
 
   return React.useMemo(() => {
     const defaultExportsIgnored = defaultExports // Forcibly update the routeModules only when the default exports have changed
@@ -77,26 +120,19 @@ function useGetRouteModules(basePath: ElementPath) {
         continue
       }
 
-      const createExecutionScope = () =>
-        value.executionScopeCreator(
-          projectContentsRef.current,
-          fileBlobsRef.current,
-          hiddenInstancesRef.current,
-          displayNoneInstancesRef.current,
-          metadataContext,
-        ).scope
+      const executionScope = executionScopes[routeId]
 
-      const defaultComponent = (componentProps: any) =>
-        createExecutionScope()[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
+      const DefaultComponent = (componentProps: any) =>
+        executionScope[nameAndUid.name]?.(componentProps) ?? <React.Fragment />
 
-      const errorBoundary = value.createErrorBoundary
-        ? (componentProps: any) => createExecutionScope()['ErrorBoundary']?.(componentProps) ?? null
+      const ErrorBoundary = value.createErrorBoundary
+        ? (componentProps: any) => executionScope['ErrorBoundary']?.(componentProps) ?? null
         : undefined
 
       const routeModule: RouteModule = {
         ...value,
-        ErrorBoundary: errorBoundary == undefined ? undefined : PathPropHOC(errorBoundary),
-        default: PathPropHOC(defaultComponent),
+        ErrorBoundary: ErrorBoundary == undefined ? undefined : PathPropHOC(ErrorBoundary),
+        default: PathPropHOC(DefaultComponent),
       }
 
       routeModulesResult[routeId] = routeModule
@@ -104,15 +140,7 @@ function useGetRouteModules(basePath: ElementPath) {
     }
 
     return routeModulesResult
-  }, [
-    defaultExports,
-    metadataContext,
-    remixDerivedDataRef,
-    projectContentsRef,
-    fileBlobsRef,
-    hiddenInstancesRef,
-    displayNoneInstancesRef,
-  ])
+  }, [defaultExports, remixDerivedDataRef, projectContentsRef, executionScopes])
 }
 
 function useGetRoutes() {
@@ -123,49 +151,20 @@ function useGetRoutes() {
   )
 
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
-  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
-  const fileBlobsRef = useRefEditorState((store) => store.editor.canvas.base64Blobs)
-  const hiddenInstancesRef = useRefEditorState((store) => store.editor.hiddenInstances)
-  const displayNoneInstancesRef = useRefEditorState((store) => store.editor.displayNoneInstances)
-
-  let metadataContext: UiJsxCanvasContextData = forceNotNull(
-    `Missing UiJsxCanvasCtxAtom provider`,
-    usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
-  )
+  const executionScopes = useCreateExecutionScopes()
 
   return React.useMemo(() => {
     if (remixDerivedDataRef.current == null) {
       return routes
     }
 
-    const creators = remixDerivedDataRef.current.routeModuleCreators
-
     function addLoaderAndActionToRoutes(innerRoutes: DataRouteObject[]) {
       innerRoutes.forEach((route) => {
-        // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
-        // we only ever pass in an empty object for the `routeModules` and never mutate it
-        const creatorForRoute = route.id === 'root' ? null : creators[route.id]
-        if (creatorForRoute != null) {
-          route.action = (args: any) =>
-            creatorForRoute
-              .executionScopeCreator(
-                projectContentsRef.current,
-                fileBlobsRef.current,
-                hiddenInstancesRef.current,
-                displayNoneInstancesRef.current,
-                metadataContext,
-              )
-              .scope['action']?.(args) ?? null
-          route.loader = (args: any) =>
-            creatorForRoute
-              .executionScopeCreator(
-                projectContentsRef.current,
-                fileBlobsRef.current,
-                hiddenInstancesRef.current,
-                displayNoneInstancesRef.current,
-                metadataContext,
-              )
-              .scope['loader']?.(args) ?? null
+        const executionScope = executionScopes[route.id]
+
+        if (executionScope != null) {
+          route.action = (args: any) => executionScope['action']?.(args) ?? null
+          route.loader = (args: any) => executionScope['loader']?.(args) ?? null
         }
 
         addLoaderAndActionToRoutes(route.children ?? [])
@@ -175,15 +174,7 @@ function useGetRoutes() {
     addLoaderAndActionToRoutes(routes)
 
     return routes
-  }, [
-    displayNoneInstancesRef,
-    metadataContext,
-    fileBlobsRef,
-    hiddenInstancesRef,
-    projectContentsRef,
-    remixDerivedDataRef,
-    routes,
-  ])
+  }, [remixDerivedDataRef, routes, executionScopes])
 }
 
 export interface UtopiaRemixRootComponentProps {
@@ -197,7 +188,7 @@ export const UtopiaRemixRootComponent = React.memo((props: UtopiaRemixRootCompon
 
   const basePath = props[UTOPIA_PATH_KEY]
 
-  const routeModules = useGetRouteModules(basePath)
+  const routeModules = useGetRouteModules()
 
   const [navigationData, setNavigationData] = useAtom(RemixNavigationAtom)
 
