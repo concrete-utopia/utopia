@@ -3661,13 +3661,13 @@ describe('inspector tests with real metadata', () => {
                 data-uid='foo'
                 style={{
                   position: 'absolute',
+                  left: 0,
+                  width: 100,
                   backgroundColor: 'blue',
                   top: 0,
                   height: 100,
-                  left: 0,
-                  width: 100,
                 }}
-                data-constraints={['top', 'height', 'left', 'width']}
+                data-constraints={['left', 'width', 'top', 'height']}
               />
               <div
                 data-uid='bar'

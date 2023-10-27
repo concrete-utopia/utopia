@@ -321,6 +321,10 @@ const ChildConstraintSelect = React.memo(
     const onSubmit = React.useCallback(
       (option: SelectOption) => {
         const requestedPins: RequestedPins = option.value
+        if (activeOption.label === option.label) {
+          // using the same *label* as a noop to ensure consistency between the different dispatches
+          return
+        }
         dispatch(
           isGroupChild === 'group-child'
             ? getConstraintAndFrameChangeActionsForGroupChild(
@@ -340,7 +344,7 @@ const ChildConstraintSelect = React.memo(
               ),
         )
       },
-      [dispatch, propertyTarget, editorRef, isGroupChild],
+      [dispatch, propertyTarget, editorRef, isGroupChild, activeOption],
     )
 
     return (
