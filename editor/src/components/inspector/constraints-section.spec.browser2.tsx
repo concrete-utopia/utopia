@@ -3,6 +3,7 @@
 import { screen } from '@testing-library/react'
 import * as EP from '../../core/shared/element-path'
 import type { ElementPath } from '../../core/shared/project-file-types'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   formatTestProjectCode,
   makeTestProjectCodeWithSnippet,
@@ -10,12 +11,14 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import { selectComponents } from '../editor/actions/action-creators'
 import { InspectorSectionConstraintsTestId } from './constraints-section'
+import { pickFromReactSelectPopupList } from '../canvas/event-helpers.test-utils'
 
 const testChild = (params: {
   snippet: string
   elementPath: ElementPath
   expectedWidthConstraintDropdownOption: string
   expectedHeightConstraintDropdownOption: string
+  after?: (renderResult: EditorRenderResult) => Promise<void>
 }) =>
   async function testBody() {
     const renderResult = await renderTestEditorWithCode(
@@ -38,6 +41,10 @@ const testChild = (params: {
     expect(heightConstraintDropdown.textContent).toEqual(
       params.expectedHeightConstraintDropdownOption,
     )
+
+    if (params.after != null) {
+      await params.after(renderResult)
+    }
   }
 
 const testFrameChild = (params: {
@@ -61,6 +68,7 @@ const testGroupChild = (params: {
   snippet: string
   expectedWidthConstraintDropdownOption: string
   expectedHeightConstraintDropdownOption: string
+  after?: (renderResult: EditorRenderResult) => Promise<void>
 }) =>
   testChild({
     ...params,
@@ -180,6 +188,34 @@ describe('Constraints Section', () => {
         snippet: `<span data-uid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Scale',
+      }),
+    )
+
+    it(
+      'Element with max-content width does not change if selecting the same option again',
+      testGroupChild({
+        snippet: `<span data-uid='target' data-testid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
+        expectedWidthConstraintDropdownOption: 'Width',
+        expectedHeightConstraintDropdownOption: 'Scale',
+        after: async (renderResult) => {
+          await renderResult.dispatch(
+            [
+              selectComponents(
+                [EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:app-root/group/target`)],
+                false,
+              ),
+            ],
+            true,
+          )
+          await pickFromReactSelectPopupList(
+            renderResult,
+            'frame-child-constraint-width-popuplist',
+            'Width',
+            'Width',
+          )
+          const target = await renderResult.renderedDOM.findByTestId('target')
+          expect(target.style.width).toBe('max-content')
+        },
       }),
     )
 
