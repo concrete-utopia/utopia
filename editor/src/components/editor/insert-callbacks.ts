@@ -230,22 +230,15 @@ export function insertWithStrategies(
 export function elementFromInsertItem(
   projectContents: ProjectContentTreeRoot,
   elementToInsert: InsertMenuItem,
-): ElementToReparent {
+): JSXElementChild {
   const allElementUids = new Set(getAllUniqueUids(projectContents).uniqueIDs)
-
-  const wrappedUid = generateConsistentUID('wrapper', allElementUids)
-
-  allElementUids.add(wrappedUid)
 
   const elementUid = generateConsistentUID('element', allElementUids)
 
-  const element = elementToReparent(
-    fixUtopiaElement(
-      elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
-      allElementUids,
-    ).value,
-    elementToInsert.value.importsToAdd,
-  )
+  const element = fixUtopiaElement(
+    elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
+    allElementUids,
+  ).value
 
   return element
 }
@@ -276,7 +269,10 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => Eleme
         return null
       }
 
-      const element = elementFromInsertItem(projectContentsRef.current, elementToInsert)
+      const element = elementToReparent(
+        elementFromInsertItem(projectContentsRef.current, elementToInsert),
+        elementToInsert.value.importsToAdd,
+      )
 
       const targetParent = getTargetParentForOneShotInsertion(
         storyboardPath,

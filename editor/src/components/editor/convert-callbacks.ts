@@ -1,9 +1,11 @@
 import * as React from 'react'
+import type { NonEmptyArray } from '../..//core/shared/array-utils'
 import { isNonEmptyArray, mapDropNulls } from '../..//core/shared/array-utils'
-import { getCommonParent } from '../..//core/shared/element-path'
+import * as EP from '../..//core/shared/element-path'
 import type {
   ElementInstanceMetadataMap,
   JSXConditionalExpressionWithoutUID,
+  JSXElementChild,
   JSXFragmentWithoutUID,
 } from '../..//core/shared/element-template'
 import type { ElementPath, Imports } from '../..//core/shared/project-file-types'
@@ -19,10 +21,20 @@ import {
 } from './actions/action-creators'
 import { useDispatch } from './store/dispatch-context'
 import { useRefEditorState } from './store/store-hook'
-import { childInsertionPath } from './store/insertion-path'
+import type { ConditionalClauseInsertBehavior } from './store/insertion-path'
+import {
+  childInsertionPath,
+  conditionalClauseInsertionPath,
+  getElementPathFromInsertionPath,
+  replaceWithElementsWrappedInFragmentBehaviour,
+  replaceWithSingleElement,
+  wrapInFragmentAndAppendElements,
+} from './store/insertion-path'
 import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
 import { elementFromInsertItem, insertWithStrategies } from './insert-callbacks'
+import type { ElementToReparent } from '../canvas/canvas-strategies/strategies/reparent-utils'
 import {
+  elementToReparent,
   getTargetParentForOneShotInsertion,
   pathToReparent,
 } from '../canvas/canvas-strategies/strategies/reparent-utils'
@@ -42,6 +54,14 @@ import { isLeft } from '../../core/shared/either'
 import { absolute } from '../../utils/utils'
 import type { CanvasCommand } from '../canvas/commands/commands'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
+import type { ProjectContentTreeRoot } from '../assets'
+import { addElement } from '../canvas/commands/add-element-command'
+import { reparentElement } from '../canvas/commands/reparent-element-command'
+import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { generateConsistentUID } from '../../core/shared/uid-utils'
+import { deleteElement } from '../canvas/commands/delete-element-command'
+import { addElements } from '../canvas/commands/add-elements-command'
+import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
 
 export function convertToConditionalOrFragment(
   selectedViews: Array<ElementPath>,
@@ -148,6 +168,82 @@ function getElementWrappingInfo(
   })
 }
 
+export function wrapWithFragmentOrConditional(
+  metadata: ElementInstanceMetadataMap,
+  elementPathTrees: ElementPathTrees,
+  projectContents: ProjectContentTreeRoot,
+  storyboardPath: ElementPath,
+  selectedViews: NonEmptyArray<ElementPath>,
+  wrapperUid: string,
+  element: JSXElementChild,
+): CanvasCommand[] | null {
+  if (element.type !== 'JSX_FRAGMENT' && element.type !== 'JSX_CONDITIONAL_EXPRESSION') {
+    return null
+  }
+
+  const commonParent = EP.getCommonParentOfNonemptyPathArray(selectedViews)
+
+  const targetParent = getTargetParentForOneShotInsertion(
+    storyboardPath,
+    projectContents,
+    [commonParent],
+    metadata,
+    [element],
+    elementPathTrees,
+  )
+
+  if (isLeft(targetParent)) {
+    return null
+  }
+
+  const indexInParent =
+    MetadataUtils.getIndexInParent(metadata, elementPathTrees, selectedViews[0]) ?? 0
+
+  const newParentPath = EP.appendToPath(
+    getElementPathFromInsertionPath(targetParent.value.parentPath),
+    element.uid,
+  )
+
+  if (element.type === 'JSX_FRAGMENT') {
+    return [
+      addElement('always', targetParent.value.parentPath, element, {
+        indexPosition: absolute(indexInParent),
+      }),
+      ...selectedViews.map((path) =>
+        reparentElement('always', path, childInsertionPath(newParentPath)),
+      ),
+      updateSelectedViews('always', [newParentPath]),
+    ]
+  }
+
+  const jsxElements = mapDropNulls(
+    (path) => MetadataUtils.getJSXElementFromMetadata(metadata, path),
+    selectedViews,
+  )
+
+  if (element.type === 'JSX_CONDITIONAL_EXPRESSION') {
+    const insertBehaviour: ConditionalClauseInsertBehavior =
+      selectedViews.length > 1
+        ? replaceWithElementsWrappedInFragmentBehaviour(wrapperUid)
+        : replaceWithSingleElement()
+
+    return [
+      addElement('always', targetParent.value.parentPath, element, {
+        indexPosition: absolute(indexInParent),
+      }),
+      ...selectedViews.map((path) => deleteElement('always', path)),
+      addElements(
+        'always',
+        conditionalClauseInsertionPath(newParentPath, 'true-case', insertBehaviour),
+        jsxElements,
+      ),
+      updateSelectedViews('always', [newParentPath]),
+    ]
+  }
+
+  assertNever(element)
+}
+
 export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
@@ -170,20 +266,44 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
         openFileRef.current,
       )
 
-      const element = elementFromInsertItem(projectContentsRef.current, wrapIntoElement)
+      if (storyboardPath == null) {
+        // if there's no storyboard, there's not much you can do
+        return
+      }
 
       const originalSelectedElements = [...selectedViewsRef.current]
       if (!isNonEmptyArray(originalSelectedElements)) {
         return
       }
 
-      const commonParent = getCommonParent(originalSelectedElements)
-      if (commonParent == null) {
+      let element: JSXElementChild | ElementToReparent = elementFromInsertItem(
+        projectContentsRef.current,
+        wrapIntoElement,
+      )
+
+      const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).allIDs)
+      allElementUids.add(element.uid)
+      const wrapperUid = generateConsistentUID('wrapper', allElementUids)
+
+      const fragmentOrConditionalCommands = wrapWithFragmentOrConditional(
+        jsxMetadataRef.current,
+        elementPathTreeRef.current,
+        projectContentsRef.current,
+        storyboardPath,
+        originalSelectedElements,
+        wrapperUid,
+        element,
+      )
+
+      if (fragmentOrConditionalCommands != null) {
+        dispatch([applyCommandsAction(fragmentOrConditionalCommands)])
         return
       }
 
-      if (storyboardPath == null) {
-        // if there's no storyboard, there's not much you can do
+      element = elementToReparent(element, wrapIntoElement.value.importsToAdd)
+
+      const commonParent = EP.getCommonParent(originalSelectedElements)
+      if (commonParent == null) {
         return
       }
 
