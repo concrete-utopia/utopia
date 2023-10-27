@@ -3,8 +3,10 @@
 // Copy pasted and adapted from Remix: https://github.com/remix-run/remix/blob/8779b24d0e51cc49a887d16afab9789557b80124/packages/remix-react/routes.tsx
 
 import React from 'react'
-import { FutureConfig } from '@remix-run/react/dist/entry'
-import { RouteModules } from '@remix-run/react/dist/routeModules'
+import {
+  UNSAFE_FutureConfig as FutureConfig,
+  UNSAFE_RouteModules as RouteModules,
+} from '@remix-run/react'
 import { DataRouteObject, ShouldRevalidateFunction } from 'react-router'
 import invariant from './invariant'
 import { isRouteErrorResponse, useRouteError } from '@remix-run/react'

@@ -1,4 +1,4 @@
-import { RemixContext } from '@remix-run/react/dist/components'
+import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import type { RouteModules, RouteModule } from '@remix-run/react/dist/routeModules'
 import React from 'react'
 import type { DataRouteObject, Location } from 'react-router'
