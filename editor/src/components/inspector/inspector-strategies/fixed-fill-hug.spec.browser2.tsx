@@ -9,7 +9,6 @@ import {
   expectSingleUndo2Saves,
   selectComponentsForTest,
   setFeatureForBrowserTestsUseInDescribeBlockOnly,
-  wait,
 } from '../../../utils/utils.test-utils'
 import { CanvasControlsContainerID } from '../../canvas/controls/new-canvas-controls'
 import { mouseClickAtPoint, mouseDoubleClickAtPoint } from '../../canvas/event-helpers.test-utils'

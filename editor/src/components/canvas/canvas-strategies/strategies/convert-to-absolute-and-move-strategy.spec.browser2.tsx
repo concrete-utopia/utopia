@@ -53,7 +53,7 @@ import {
   getClosingFragmentLikeTag,
   getOpeningFragmentLikeTag,
 } from './fragment-like-helpers.test-utils'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
 import { ConvertToAbsoluteAndMoveStrategyID } from './convert-to-absolute-and-move-strategy'
 import CanvasActions from '../../canvas-actions'
 
