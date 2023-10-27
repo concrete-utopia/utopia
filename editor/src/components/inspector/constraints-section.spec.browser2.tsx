@@ -167,7 +167,7 @@ describe('Constraints Section', () => {
     it(
       'Span without size shows up as Scale / Scale constrained',
       testGroupChild({
-        snippet: `<span data-uid='target'>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Scale',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -176,7 +176,7 @@ describe('Constraints Section', () => {
     it(
       'Span with only width shows up as Scale / Scale',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 150 }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 150, position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Scale',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -185,7 +185,7 @@ describe('Constraints Section', () => {
     it(
       'Span with max-content width shows up as Width / Scale',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 'max-content', position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -194,7 +194,7 @@ describe('Constraints Section', () => {
     it(
       'Element with max-content width does not change if selecting the same option again',
       testGroupChild({
-        snippet: `<span data-uid='target' data-testid='target' style={{ width: 'max-content' }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' data-testid='target' style={{ width: 'max-content', position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Scale',
         after: async (renderResult) => {
@@ -222,7 +222,7 @@ describe('Constraints Section', () => {
     it(
       'Span with max-content width height shows up as Width / Height',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 'max-content', height: 'max-content' }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 'max-content', height: 'max-content', position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Width',
         expectedHeightConstraintDropdownOption: 'Height',
       }),
@@ -231,7 +231,7 @@ describe('Constraints Section', () => {
     it(
       'Span with size shows up as Scale',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ width: 150, height: 30 }}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ width: 150, height: 30, position: 'absolute' }}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Scale',
         expectedHeightConstraintDropdownOption: 'Scale',
       }),
@@ -240,7 +240,7 @@ describe('Constraints Section', () => {
     it(
       'Div with right and bottom pins and size shows up as Right / Bottom',
       testGroupChild({
-        snippet: `<span data-uid='target' style={{ right: 150, bottom: 50, width: 150, height: 30 }} data-constraints={['right', 'bottom']}>An implicitly constrained span</span>`,
+        snippet: `<span data-uid='target' style={{ right: 150, bottom: 50, width: 150, height: 30, position: 'absolute' }} data-constraints={['right', 'bottom']}>An implicitly constrained span</span>`,
         expectedWidthConstraintDropdownOption: 'Right',
         expectedHeightConstraintDropdownOption: 'Bottom',
       }),
