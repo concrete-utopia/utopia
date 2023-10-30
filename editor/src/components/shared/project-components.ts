@@ -29,7 +29,7 @@ import type {
 } from '../../core/shared/npm-dependency-types'
 import { isResolvedNpmDependency } from '../../core/shared/npm-dependency-types'
 import type { Imports, ProjectFile } from '../../core/shared/project-file-types'
-import { getTopLevelElementByExportsDetail, isTextFile } from '../../core/shared/project-file-types'
+import { isTextFile } from '../../core/shared/project-file-types'
 import { assertNever, fastForEach } from '../../core/shared/utils'
 import type { SelectOption } from '../../uuiui-deps'
 import type { ProjectContentTreeRoot } from '../assets'
@@ -56,6 +56,7 @@ import { insertMenuModes } from '../canvas/ui/floating-insert-menu-helpers'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { elementUsesProperty } from '../../core/model/element-template-utils'
 import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
+import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
