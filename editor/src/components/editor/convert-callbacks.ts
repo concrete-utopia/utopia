@@ -28,7 +28,6 @@ import {
   getElementPathFromInsertionPath,
   replaceWithElementsWrappedInFragmentBehaviour,
   replaceWithSingleElement,
-  wrapInFragmentAndAppendElements,
 } from './store/insertion-path'
 import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
 import { elementFromInsertItem, insertWithStrategies } from './insert-callbacks'
@@ -323,10 +322,7 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       element = elementToReparent(element, wrapIntoElement.value.importsToAdd)
 
-      const commonParent = EP.getCommonParent(originalSelectedElements)
-      if (commonParent == null) {
-        return
-      }
+      const commonParent = EP.getCommonParentOfNonemptyPathArray(originalSelectedElements)
 
       const targetParent = getTargetParentForOneShotInsertion(
         storyboardPath,
@@ -385,6 +381,7 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
         },
         { position: selectedViewsTopLeft, indexPosition: absolute(indexInParent) },
       )
+
       if (wrapperInsertResult == null) {
         return
       }
@@ -418,13 +415,10 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
         }
       }
 
-      if (moveElementsIntoWrapperCommands.length === 0) {
-        return
-      }
-
       const isWrappingIntoFlex = MetadataUtils.isFlexLayoutedContainer(
         MetadataUtils.findElementByElementPath(jsxMetadataRef.current, newParentPath),
       )
+
       const widthHeightCommands = isWrappingIntoFlex
         ? [
             deleteProperties('always', newParentPath, [

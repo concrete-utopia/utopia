@@ -35,6 +35,16 @@ export interface InspectorStrategy {
   ) => Array<CanvasCommand> | null
 }
 
+export interface MultiPhaseInspectorStrategy {
+  name: string
+  strategy: (
+    metadata: ElementInstanceMetadataMap,
+    selectedElementPaths: Array<ElementPath>,
+    elementPathTree: ElementPathTrees,
+    allElementProps: AllElementProps,
+  ) => Generator<Array<CanvasCommand> | null, void>
+}
+
 export function resultForFirstApplicableStrategy<T extends undefined | Record<string, unknown>>(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
@@ -84,5 +94,36 @@ export function executeFirstApplicableStrategy(
   )
   if (commands != null) {
     dispatch([applyCommandsAction(commands)])
+  }
+}
+
+export function executeFirstMultiPhaseStrategy(
+  dispatch: EditorDispatch,
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: ElementPath[],
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+  strategies: MultiPhaseInspectorStrategy[],
+): void {
+  function executeMultiPhaseStrategy(strategy: MultiPhaseInspectorStrategy): 'success' | 'fail' {
+    for (const commands of strategy.strategy(
+      metadata,
+      selectedViews,
+      elementPathTree,
+      allElementProps,
+    )) {
+      if (commands == null) {
+        return 'fail'
+      }
+      dispatch([applyCommandsAction(commands)])
+    }
+    return 'success'
+  }
+
+  for (const strategy of strategies) {
+    const result = executeMultiPhaseStrategy(strategy)
+    if (result === 'success') {
+      return
+    }
   }
 }
