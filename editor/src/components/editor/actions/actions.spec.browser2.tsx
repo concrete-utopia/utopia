@@ -24,7 +24,6 @@ import {
   truncateHistory,
   undo,
   unwrapElements,
-  wrapInElement,
 } from './action-creators'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import type { ElementPaste } from '../action-types'
@@ -36,11 +35,10 @@ import {
   wrapInFragmentAndAppendElements,
 } from '../store/insertion-path'
 import { getElementFromRenderResult } from './actions.test-utils'
-import { jsxFragment } from '../../../core/shared/element-template'
-import { defaultDivElement } from '../defaults'
 import {
   expectNoAction,
   expectSingleUndoNSaves,
+  searchInFloatingMenu,
   selectComponentsForTest,
 } from '../../../utils/utils.test-utils'
 import {
@@ -54,7 +52,10 @@ import {
   pressKey,
 } from '../../canvas/event-helpers.test-utils'
 import { cmdModifier, shiftCmdModifier } from '../../../utils/modifiers'
-import { FOR_TESTS_setNextGeneratedUids } from '../../../core/model/element-template-utils.test-utils'
+import {
+  FOR_TESTS_setNextGeneratedUid,
+  FOR_TESTS_setNextGeneratedUids,
+} from '../../../core/model/element-template-utils.test-utils'
 import { createTestProjectWithMultipleFiles } from '../../../sample-projects/sample-project-utils.test-utils'
 import {
   LeftMenuTab,
@@ -75,10 +76,6 @@ import {
 } from '../../canvas/canvas-strategies/post-action-options/post-action-paste'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
 import { FloatingPostActionMenuTestId } from '../../canvas/controls/select-mode/post-action-menu'
-import {
-  groupJSXElement,
-  groupJSXElementImportsToAdd,
-} from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 
@@ -7007,24 +7004,52 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch(
-        [
-          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-            element: defaultDivElement(testUID),
-            importsToAdd: {},
-          }),
-        ],
-        true,
+
+      await wrapInElement(
+        renderResult,
+        [makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')],
+        testUID,
+        'div',
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
-            <div data-uid='ccc' style={{position: 'absolute', left: 20, top: 50, bottom: 150, width: 100}} />
-            <div data-uid='ddd' style={{width: 60, height: 60}} />
-          </div>
-        </div>`,
+          `<div
+              data-uid='aaa'
+              style={{ contain: 'layout', width: 300, height: 300 }}
+            >
+              <div
+                style={{
+                  contain: 'layout',
+                  width: 120,
+                  height: 150,
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                }}
+              >
+                <div
+                  data-uid='ccc'
+                  style={{
+                    position: 'absolute',
+                    left: 20,
+                    top: 50,
+                    width: 100,
+                    height: 100,
+                  }}
+                />
+                <div
+                  data-uid='ddd'
+                  style={{
+                    width: 60,
+                    height: 60,
+                    top: 0,
+                    left: 0,
+                    position: 'absolute',
+                  }}
+                />
+              </div>
+            </div>`,
         ),
       )
       expect(renderResult.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -7046,34 +7071,56 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch(
-        [
-          wrapInElement([makeTargetPath('aaa/bbb/eee'), makeTargetPath('aaa/bbb/ddd')], {
-            element: defaultDivElement(testUID),
-            importsToAdd: {},
-          }),
-        ],
-        true,
+
+      await wrapInElement(
+        renderResult,
+        [makeTargetPath('aaa/bbb/ddd'), makeTargetPath('aaa/bbb/eee')],
+        testUID,
+        'div',
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(
-          `<div data-uid='aaa' style={{contain: 'layout', width: 300, height: 300}}>
-          <div data-uid='bbb' style={{display: 'flex', gap: 10, padding: 10, contain: 'layout'}}>
-            <div data-uid='ccc' style={{width: 100, height: 60}} />
-            <div style={{backgroundColor: '#aaaaaa33', position: 'absolute'}} data-uid='${testUID}'>
-              <div data-uid='ddd' style={{flexGrow: 1, height: '100%'}} />
-              <div data-uid='eee' style={{width: 100, height: 60}} />
+          `<div
+            data-uid='aaa'
+            style={{ contain: 'layout', width: 300, height: 300 }}
+          >
+            <div
+              data-uid='bbb'
+              style={{ display: 'flex', gap: 10, padding: 10 }}
+            >
+              <div data-uid='ccc' style={{ width: 100, height: 60 }} />
+              <div
+                style={{
+                  contain: 'layout',
+                  width: 170,
+                  height: 60,
+                }}
+              >
+                <div
+                  data-uid='ddd'
+                  style={{
+                    height: 0,
+                    width: 60,
+                    top: 0,
+                    left: 0,
+                    position: 'absolute',
+                  }}
+                />
+                <div
+                  data-uid='eee'
+                  style={{
+                    width: 100,
+                    height: 60,
+                    top: 0,
+                    left: 70,
+                    position: 'absolute',
+                  }}
+                />
+              </div>
             </div>
-          </div>
-        </div>`,
+          </div>`,
         ),
-      )
-      expect(renderResult.getEditorState().editor.toasts).toHaveLength(1)
-      const firstToast = safeIndex(renderResult.getEditorState().editor.toasts, 0)
-      expect(firstToast?.level).toEqual('INFO')
-      expect(firstToast?.message).toEqual(
-        "Added `contain: 'layout'` to the parent of the newly added element.",
       )
     })
     it(`Wraps 2 elements with a fragment`, async () => {
@@ -7088,14 +7135,12 @@ export var storyboard = (
         makeTestProjectCodeWithSnippet(testCode),
         'await-first-dom-report',
       )
-      await renderResult.dispatch(
-        [
-          wrapInElement([makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')], {
-            element: jsxFragment(testUID, [], true),
-            importsToAdd: {},
-          }),
-        ],
-        true,
+
+      await wrapInElement(
+        renderResult,
+        [makeTargetPath('aaa/ccc'), makeTargetPath('aaa/ddd')],
+        testUID,
+        'Fragment',
       )
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7120,15 +7165,8 @@ export var storyboard = (
           makeTestProjectCodeWithSnippet(testCode),
           'await-first-dom-report',
         )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/group')], {
-              element: { ...groupJSXElement([]), uid: 'foo' },
-              importsToAdd: groupJSXElementImportsToAdd(),
-            }),
-          ],
-          true,
-        )
+
+        await wrapInElement(renderResult, [makeTargetPath('aaa/group')], 'foo', 'Group')
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
           makeTestProjectCodeWithSnippet(`
@@ -7157,14 +7195,12 @@ export var storyboard = (
           formatTestProjectCode(makeTestProjectCodeWithSnippet(testCode)),
           'await-first-dom-report',
         )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')], {
-              element: { ...groupJSXElement([]), uid: 'grp' },
-              importsToAdd: groupJSXElementImportsToAdd(),
-            }),
-          ],
-          true,
+
+        await wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')],
+          'grp',
+          'Group',
         )
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7208,14 +7244,12 @@ export var storyboard = (
           formatTestProjectCode(makeTestProjectCodeWithSnippet(testCode)),
           'await-first-dom-report',
         )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')], {
-              element: { ...groupJSXElement([]), uid: 'grp' },
-              importsToAdd: groupJSXElementImportsToAdd(),
-            }),
-          ],
-          true,
+
+        await wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')],
+          'grp',
+          'Group',
         )
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7252,14 +7286,12 @@ export var storyboard = (
           formatTestProjectCode(makeTestProjectCodeWithSnippet(testCode)),
           'await-first-dom-report',
         )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')], {
-              element: { ...groupJSXElement([]), uid: 'grp' },
-              importsToAdd: groupJSXElementImportsToAdd(),
-            }),
-          ],
-          true,
+
+        await wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond')],
+          'grp',
+          'Group',
         )
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7301,14 +7333,12 @@ export var storyboard = (
           formatTestProjectCode(makeTestProjectCodeWithSnippet(testCode)),
           'await-first-dom-report',
         )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond1')], {
-              element: { ...groupJSXElement([]), uid: 'grp' },
-              importsToAdd: groupJSXElementImportsToAdd(),
-            }),
-          ],
-          true,
+
+        await wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond1')],
+          'grp',
+          'Group',
         )
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7362,14 +7392,12 @@ export var storyboard = (
           formatTestProjectCode(makeTestProjectCodeWithSnippet(testCode)),
           'await-first-dom-report',
         )
-        await renderResult.dispatch(
-          [
-            wrapInElement([makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond1')], {
-              element: { ...groupJSXElement([]), uid: 'grp' },
-              importsToAdd: groupJSXElementImportsToAdd(),
-            }),
-          ],
-          true,
+
+        await wrapInElement(
+          renderResult,
+          [makeTargetPath('aaa/foo'), makeTargetPath('aaa/cond1')],
+          'grp',
+          'Group',
         )
 
         expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
@@ -7530,4 +7558,16 @@ export var storyboard = (
 
 function comparePathStrings(a: ElementPath, b: ElementPath): number {
   return EP.toString(a).localeCompare(EP.toString(b))
+}
+
+async function wrapInElement(
+  renderResult: EditorRenderResult,
+  pathsToWrap: ElementPath[],
+  uid: string,
+  query: string,
+) {
+  await selectComponentsForTest(renderResult, pathsToWrap)
+  await pressKey('w') // open the wrap menu
+  FOR_TESTS_setNextGeneratedUid(uid)
+  await searchInFloatingMenu(renderResult, query)
 }

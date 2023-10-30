@@ -1,6 +1,6 @@
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { generateUidWithExistingComponents } from '../../core/model/element-template-utils'
-import type { ElementPath, Imports } from '../../core/shared/project-file-types'
+import type { ElementPath } from '../../core/shared/project-file-types'
 import { importAlias, importDetails } from '../../core/shared/project-file-types'
 import * as PP from '../../core/shared/property-path'
 import type { KeyCharacter, KeysPressed } from '../../utils/keyboard'
@@ -16,7 +16,6 @@ import Canvas from '../canvas/canvas'
 import CanvasActions from '../canvas/canvas-actions'
 import { getAllTargetsAtPoint } from '../canvas/dom-lookup'
 import {
-  cssPixelLength,
   toggleBackgroundLayers,
   toggleBorder,
   toggleShadow,
@@ -31,7 +30,6 @@ import {
   defaultEllipseElement,
   defaultRectangleElement,
   defaultSpanElement,
-  defaultUnstyledDivElement,
 } from './defaults'
 import { EditorModes, isInsertMode, isLiveMode, isSelectMode, isTextEditMode } from './editor-modes'
 import { insertImage } from './image-insert'
@@ -73,7 +71,6 @@ import {
   TOGGLE_SHADOW_SHORTCUT,
   UNDO_CHANGES_SHORTCUT,
   UNWRAP_ELEMENT_SHORTCUT,
-  WRAP_ELEMENT_DEFAULT_SHORTCUT,
   WRAP_ELEMENT_PICKER_SHORTCUT,
   ZOOM_CANVAS_IN_SHORTCUT,
   ZOOM_CANVAS_OUT_SHORTCUT,
@@ -103,22 +100,18 @@ import {
   WRAP_IN_DIV,
 } from './shortcut-definitions'
 import type { EditorState, LockedElements, NavigatorEntry } from './store/editor-state'
-import { DerivedState, getOpenFile, RightMenuTab } from './store/editor-state'
+import { getOpenFile, RightMenuTab } from './store/editor-state'
 import { CanvasMousePositionRaw, WindowMousePositionRaw } from '../../utils/global-positions'
 import { pickColorWithEyeDropper } from '../canvas/canvas-utils'
 import {
   boundingArea,
   createHoverInteractionViaMouse,
 } from '../canvas/canvas-strategies/interaction-state'
-import type { ElementInstanceMetadataMap, JSXElement } from '../../core/shared/element-template'
+import type { ElementInstanceMetadataMap } from '../../core/shared/element-template'
 import {
   emptyComments,
-  jsxAttributesFromMap,
   jsExpressionValue,
-  jsxElement,
-  jsxFragment,
   isJSXElementLike,
-  jsxElementName,
 } from '../../core/shared/element-template'
 import {
   toggleTextBold,
@@ -133,39 +126,16 @@ import {
 } from '../inspector/inspector-strategies/inspector-strategies'
 import {
   detectAreElementsFlexContainers,
-  nukeAllAbsolutePositioningPropsCommands,
-  sizeToVisualDimensions,
   toggleResizeToFitSetToFixed,
-  isIntrinsicallyInlineElement,
-  setElementTopLeft,
-  nukeSizingPropsForAxisCommand,
   toggleAbsolutePositioningCommands,
 } from '../inspector/inspector-common'
-import type { CSSProperties } from 'react'
-import { setProperty } from '../canvas/commands/set-property-command'
-import { replaceFragmentLikePathsWithTheirChildrenRecursive } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import {
-  setCssLengthProperty,
-  setExplicitCssValue,
-} from '../canvas/commands/set-css-length-command'
-import {
-  isFiniteRectangle,
-  isInfinityRectangle,
-  zeroCanvasPoint,
-  zeroCanvasRect,
-} from '../../core/shared/math-utils'
+import { zeroCanvasPoint } from '../../core/shared/math-utils'
 import * as EP from '../../core/shared/element-path'
-import { mapDropNulls, stripNulls } from '../../core/shared/array-utils'
-import { optionalMap } from '../../core/shared/optional-utils'
-import {
-  createWrapInGroupActions,
-  groupConversionCommands,
-} from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
+import { createWrapInGroupActions } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { isRight } from '../../core/shared/either'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import { createPasteToReplacePostActionActions } from '../canvas/canvas-strategies/post-action-options/post-action-options'
-import { generateConsistentUID } from '../../core/shared/uid-utils'
-import { getAllUniqueUids } from '../../core/model/get-unique-ids'
+import { wrapInDivStrategy } from './wrap-in-callbacks'
 
 function updateKeysPressed(
   keysPressed: KeysPressed,
@@ -583,18 +553,6 @@ export function handleKeyDown(
       [UNWRAP_ELEMENT_SHORTCUT]: () => {
         return isSelectMode(editor.mode) ? [EditorActions.unwrapElements(editor.selectedViews)] : []
       },
-      [WRAP_ELEMENT_DEFAULT_SHORTCUT]: () => {
-        return isSelectMode(editor.mode) && editor.selectedViews.length > 0
-          ? [
-              EditorActions.wrapInElement(
-                editor.selectedViews,
-                detectBestWrapperElement(editor.jsxMetadata, editor.selectedViews[0], () =>
-                  generateUidWithExistingComponents(editor.projectContents),
-                ),
-              ),
-            ]
-          : []
-      },
       [WRAP_ELEMENT_PICKER_SHORTCUT]: () => {
         return isSelectMode(editor.mode)
           ? [EditorActions.openFloatingInsertMenu({ insertMenuMode: 'wrap' })]
@@ -970,16 +928,17 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
-        let uid = generateConsistentUID(
-          'wrapper',
-          new Set(getAllUniqueUids(editor.projectContents).uniqueIDs),
+        const commands = commandsForFirstApplicableStrategy(
+          editor.jsxMetadata,
+          editor.selectedViews,
+          editor.elementPathTree,
+          editor.allElementProps,
+          [wrapInDivStrategy(editor.projectContents)],
         )
-        return [
-          EditorActions.wrapInElement(editor.selectedViews, {
-            element: defaultDivElement(uid),
-            importsToAdd: {},
-          }),
-        ]
+        if (commands == null) {
+          return []
+        }
+        return [EditorActions.applyCommandsAction(commands)]
       },
     })
   }
@@ -1093,43 +1052,4 @@ function addCreateHoverInteractionActionToSwitchModeAction(
       createHoverInteractionViaMouse(mousePoint, modifiers, boundingArea(), 'zero-drag-permitted'),
     ),
   ]
-}
-
-function detectBestWrapperElement(
-  metadata: ElementInstanceMetadataMap,
-  elementPath: ElementPath,
-  makeUid: () => string,
-): { element: JSXElement; importsToAdd: Imports } {
-  const element = MetadataUtils.findElementByElementPath(metadata, elementPath)
-  const uid = makeUid()
-  if (
-    element == null ||
-    element.specialSizeMeasurements.parentFlexDirection == null ||
-    element.specialSizeMeasurements.parentLayoutSystem !== 'flex'
-  ) {
-    return { element: defaultUnstyledDivElement(uid), importsToAdd: {} }
-  }
-
-  const style: CSSProperties = {
-    display: 'flex',
-    flexDirection: element.specialSizeMeasurements.parentFlexDirection,
-    contain: 'layout',
-  }
-
-  if (
-    element.specialSizeMeasurements.parentFlexGap != null &&
-    element.specialSizeMeasurements.parentFlexGap !== 0
-  ) {
-    style.gap = element.specialSizeMeasurements.parentFlexGap
-  }
-
-  const props = jsxAttributesFromMap({
-    'data-uid': jsExpressionValue(uid, emptyComments),
-    style: jsExpressionValue(style, emptyComments),
-  })
-
-  return {
-    element: jsxElement('div', uid, props, []),
-    importsToAdd: {},
-  }
 }

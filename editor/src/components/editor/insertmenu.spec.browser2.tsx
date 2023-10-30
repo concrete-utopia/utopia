@@ -53,10 +53,9 @@ describe('insert menu', () => {
 
       document.execCommand('insertText', false, 'elem')
 
-      expect(getInsertItems().length).toEqual(10)
+      expect(getInsertItems().length).toEqual(9)
       expect(getInsertItems().map((s) => s.innerText)).toEqual([
         // html elements group
-        'div',
         'span',
         'h1',
         'h2',

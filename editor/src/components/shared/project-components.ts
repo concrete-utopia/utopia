@@ -104,6 +104,14 @@ export interface InsertableComponentGroupHTML {
   type: 'HTML_GROUP'
 }
 
+export interface InsertableComponentGroupDiv {
+  type: 'HTML_DIV'
+}
+
+export function insertableComponentGroupDiv(): InsertableComponentGroupDiv {
+  return { type: 'HTML_DIV' }
+}
+
 export function insertableComponentGroupHTML(): InsertableComponentGroupHTML {
   return {
     type: 'HTML_GROUP',
@@ -173,6 +181,7 @@ export function insertableComponentGroupProjectDependency(
 
 export type InsertableComponentGroupType =
   | InsertableComponentGroupHTML
+  | InsertableComponentGroupDiv
   | InsertableComponentGroupProjectComponent
   | InsertableComponentGroupProjectDependency
   | InsertableComponentGroupConditionals
@@ -222,6 +231,8 @@ export function getInsertableGroupLabel(insertableType: InsertableComponentGroup
       return 'Fragment'
     case 'GROUPS_GROUP':
       return 'Group'
+    case 'HTML_DIV':
+      return 'Div'
     default:
       assertNever(insertableType)
   }
@@ -237,6 +248,7 @@ export function getInsertableGroupPackageStatus(
     case 'CONDITIONALS_GROUP':
     case 'FRAGMENT_GROUP':
     case 'GROUPS_GROUP':
+    case 'HTML_DIV':
       return 'loaded'
     case 'PROJECT_DEPENDENCY_GROUP':
       return insertableType.dependencyStatus
@@ -315,11 +327,6 @@ export const defaultImageAttributes = (): JSXAttributes => [
 ]
 
 const basicHTMLElementsDescriptors = {
-  div: makeHTMLDescriptor('div', {}, () =>
-    jsxAttributesFromMap({
-      style: defaultElementStyle(),
-    }),
-  ),
   span: makeHTMLDescriptor('span', {}),
   h1: makeHTMLDescriptor('h1', {}),
   h2: makeHTMLDescriptor('h2', {}),
@@ -368,6 +375,14 @@ const basicHTMLElementsDescriptors = {
       },
     },
     defaultImageAttributes,
+  ),
+}
+
+const divComponentGroup = {
+  div: makeHTMLDescriptor('div', {}, () =>
+    jsxAttributesFromMap({
+      style: defaultElementStyle(),
+    }),
   ),
 }
 
@@ -642,6 +657,8 @@ export function getComponentGroups(
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
 
+  addDependencyDescriptor(null, insertableComponentGroupDiv(), divComponentGroup)
+
   // Add HTML entries.
   addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
 
@@ -732,6 +749,7 @@ export function insertMenuModesForInsertableComponentGroupType(
     case 'PROJECT_COMPONENT_GROUP':
     case 'PROJECT_DEPENDENCY_GROUP':
     case 'SAMPLES_GROUP':
+    case 'HTML_DIV':
       return insertMenuModes.all
     case 'GROUPS_GROUP':
       return insertMenuModes.onlyWrap

@@ -14,21 +14,28 @@ import {
   jsxTextBlock,
   setJSXAttributesAttribute,
 } from '../..//core/shared/element-template'
-import type { ElementPath, Imports, NodeModules } from '../..//core/shared/project-file-types'
+import type { ElementPath, Imports } from '../..//core/shared/project-file-types'
 import { assertNever } from '../..//core/shared/utils'
 import { emptyImports } from '../..//core/workers/common/project-file-utils'
 import type { ProjectContentTreeRoot } from '../assets'
 import { getElementsToTarget } from '../inspector/common/inspector-utils'
+import type { InsertableComponentGroupType } from '../shared/project-components'
 import { insertableComponent } from '../shared/project-components'
 import type { EditorAction } from './action-types'
-import { wrapInElement, insertInsertable, updateJSXElementName } from './actions/action-creators'
+import {
+  wrapInElement,
+  insertInsertable,
+  updateJSXElementName,
+  applyCommandsAction,
+} from './actions/action-creators'
 import { useDispatch } from './store/dispatch-context'
-import type { FloatingInsertMenuState } from './store/editor-state'
+import type { AllElementProps, FloatingInsertMenuState } from './store/editor-state'
 import { useRefEditorState } from './store/store-hook'
 import { getInsertionPath } from './store/insertion-path'
-import type { RemixRoutingTable } from './store/remix-derived-data'
 import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 import type { InsertMenuItem, InsertMenuItemValue } from '../canvas/ui/floating-insert-menu'
+import { wrapInDivStrategy } from './wrap-in-callbacks'
+import { commandsForFirstApplicableStrategy } from '../inspector/inspector-strategies/inspector-strategy'
 
 export function changeConditionalOrFragment(
   projectContents: ProjectContentTreeRoot,
@@ -106,11 +113,13 @@ export function changeElement(
   projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   selectedViews: Array<ElementPath>,
   floatingMenuState: FloatingInsertMenuState,
   fixedSizeForInsertion: boolean,
   addContentForInsertion: boolean,
   pickedInsertableComponent: InsertMenuItemValue,
+  source: InsertableComponentGroupType | null,
 ): Array<EditorAction> {
   const element = pickedInsertableComponent.element()
   if (element.type !== 'JSX_ELEMENT') {
@@ -119,6 +128,21 @@ export function changeElement(
   let actionsToDispatch: Array<EditorAction> = []
   switch (floatingMenuState.insertMenuMode) {
     case 'wrap':
+      if (source?.type === 'HTML_DIV') {
+        const commands = commandsForFirstApplicableStrategy(
+          jsxMetadata,
+          selectedViews,
+          elementPathTree,
+          allElementProps,
+          [wrapInDivStrategy(projectContents)],
+        )
+
+        if (commands != null) {
+          actionsToDispatch = [applyCommandsAction(commands)]
+        }
+        break
+      }
+
       const newUID = generateUidWithExistingComponents(projectContents)
 
       const newElement = jsxElement(
@@ -199,6 +223,7 @@ export function getActionsToApplyChange(
   projectContents: ProjectContentTreeRoot,
   jsxMetadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   selectedViews: Array<ElementPath>,
   floatingMenuState: FloatingInsertMenuState,
   fixedSizeForInsertion: boolean,
@@ -223,11 +248,13 @@ export function getActionsToApplyChange(
         projectContents,
         jsxMetadata,
         elementPathTree,
+        allElementProps,
         selectedViews,
         floatingMenuState,
         fixedSizeForInsertion,
         addContentForInsertion,
         insertMenuItemValue,
+        insertMenuItemValue.source,
       )
     default:
       assertNever(element)
@@ -240,6 +267,7 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
   const jsxMetadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.projectContents)
   const floatingMenuStateRef = useRefEditorState((store) => store.editor.floatingInsertMenu)
 
   return React.useCallback(
@@ -250,6 +278,7 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
           projectContentsRef.current,
           jsxMetadataRef.current,
           elementPathTreeRef.current,
+          allElementPropsRef.current,
           selectedViewsRef.current,
           floatingMenuStateRef.current,
           false,
@@ -260,6 +289,7 @@ export function useConvertTo(): (convertTo: InsertMenuItem | null) => void {
       }
     },
     [
+      allElementPropsRef,
       dispatch,
       elementPathTreeRef,
       floatingMenuStateRef,

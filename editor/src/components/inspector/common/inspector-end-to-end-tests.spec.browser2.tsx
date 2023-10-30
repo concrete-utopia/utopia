@@ -1806,6 +1806,7 @@ describe('inspector tests with real metadata', () => {
             <div
               className='customClassName'
               data-uid={'bbb'}
+			  style={{ position: 'absolute' }}
             ></div>
           </div>
         )
@@ -2129,9 +2130,6 @@ describe('inspector tests with real metadata', () => {
       `"simple"`,
     )
 
-    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
-    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
-
     matchInlineSnapshotBrowser(metadata.computedStyle?.['opacity'], `"1"`)
     matchInlineSnapshotBrowser(opacityControl.value, `"1"`)
     matchInlineSnapshotBrowser(
@@ -2152,7 +2150,7 @@ describe('inspector tests with real metadata', () => {
           }}
           data-uid={'aaa'}
         >
-          <div data-uid={'bbb'}>hello</div>
+          <div data-uid={'bbb'} style={{ position: 'absolute' }}>hello</div>
         </div>
       `),
       'await-first-dom-report',
@@ -2193,7 +2191,7 @@ describe('inspector tests with real metadata', () => {
           }}
           data-uid={'aaa'}
         >
-          <div data-uid={'bbb'} style={{flex: '1 0 15px'}}>hello</div>
+          <div data-uid={'bbb'} style={{ flex: '1 0 15px' }}>hello</div>
         </div>
       `),
       'await-first-dom-report',
@@ -2237,9 +2235,6 @@ describe('inspector tests with real metadata', () => {
     //   flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple"`,
     // )
-
-    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
-    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
 
   it('Flex longhand properties', async () => {
@@ -2302,9 +2297,6 @@ describe('inspector tests with real metadata', () => {
     //   flexShrink.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
     //   `"simple"`,
     // )
-
-    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
-    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
   it('Flex longhand in style props using a simple expression', async () => {
     const renderResult = await renderTestEditorWithCode(
@@ -2353,9 +2345,6 @@ describe('inspector tests with real metadata', () => {
       heightControl.attributes.getNamedItemNS(null, 'data-controlstatus')?.value,
       `"simple"`,
     )
-
-    expectSelectControlValue(renderResult, 'frame-child-constraint-width-popuplist', 'Mixed') // TODO this should be Left
-    expectSelectControlValue(renderResult, 'frame-child-constraint-height-popuplist', 'Mixed') // TODO this should be Top
   })
   it('Shows multifile selected element properties', async () => {
     let projectContents: ProjectContents = {
@@ -3661,13 +3650,13 @@ describe('inspector tests with real metadata', () => {
                 data-uid='foo'
                 style={{
                   position: 'absolute',
+                  left: 0,
+                  width: 100,
                   backgroundColor: 'blue',
                   top: 0,
                   height: 100,
-                  left: 0,
-                  width: 100,
                 }}
-                data-constraints={['top', 'height', 'left', 'width']}
+                data-constraints={['left', 'width', 'top', 'height']}
               />
               <div
                 data-uid='bar'
