@@ -606,7 +606,7 @@ export function getComponentGroups(
           }
         } else {
           const element = getTopLevelElementByExportsDetail(parsed, exportedComponent.listingName)
-          if (isUtopiaJSXComponentEligibleForMode(insertMenuMode, element)) {
+          if (element == null || isUtopiaJSXComponentEligibleForMode(insertMenuMode, element)) {
             insertableComponents.push(
               insertableComponent(
                 exportedComponent.importsToAdd,
