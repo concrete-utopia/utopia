@@ -121,7 +121,7 @@ function useGetRouteModules(basePath: ElementPath) {
   ])
 }
 
-const RouteExportsForRouteObject: Array<keyof RouteObject> = [
+export const RouteExportsForRouteObject: Array<keyof RouteObject> = [
   'action',
   'loader',
   'handle',
@@ -157,7 +157,7 @@ function useGetRoutes() {
       innerRoutes.forEach((route) => {
         // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
         // we only ever pass in an empty object for the `routeModules` and never mutate it
-        const creatorForRoute = route.id === 'root' ? null : creators[route.id]
+        const creatorForRoute = creators[route.id] ?? null
         if (creatorForRoute != null) {
           for (const routeExport of RouteExportsForRouteObject) {
             route[routeExport] = (args: any) =>
@@ -171,17 +171,6 @@ function useGetRoutes() {
                 )
                 .scope[routeExport]?.(args) ?? null
           }
-
-          route.loader = (args: any) =>
-            creatorForRoute
-              .executionScopeCreator(
-                projectContentsRef.current,
-                fileBlobsRef.current,
-                hiddenInstancesRef.current,
-                displayNoneInstancesRef.current,
-                metadataContext,
-              )
-              .scope['loader']?.(args) ?? null
         }
 
         addExportsToRoutes(route.children ?? [])
