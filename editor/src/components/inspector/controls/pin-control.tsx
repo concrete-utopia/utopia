@@ -339,7 +339,6 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
   const { togglePin } = usePinToggling()
   const toggleGroupChildOrFrameChildPin = React.useCallback(
     (layoutProp: LayoutPinnedPropIncludingCenter) => {
-      console.log('props.isGroupChild', props.isGroupChild)
       switch (props.isGroupChild) {
         case 'frame-child':
           togglePin(layoutProp)
@@ -362,7 +361,6 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
     [props.isGroupChild, togglePin, dispatch, selectedViewsRef, allElementPropsRef],
   )
   const toggleWidth = React.useCallback(() => {
-    console.log('toggleWidth')
     toggleGroupChildOrFrameChildPin('width')
   }, [toggleGroupChildOrFrameChildPin])
   const toggleHeight = React.useCallback(() => {

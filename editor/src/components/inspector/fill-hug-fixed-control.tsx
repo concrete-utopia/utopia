@@ -718,11 +718,6 @@ export const anySelectedElementGroupOrChildOfGroup = createSelector(
   selectedViewsSelector,
   (metadata, pathTrees, selectedViews): boolean => {
     function elementOrAnyChildGroup(path: ElementPath) {
-      console.log('is the element a Group', treatElementAsGroupLike(metadata, path))
-      console.log(
-        'or is the parent a group',
-        treatElementAsGroupLike(metadata, EP.parentPath(path)),
-      )
       return (
         // is the element a Group
         treatElementAsGroupLike(metadata, path) ||
@@ -739,13 +734,10 @@ export const allElementsAreGroupChildren = createSelector(
   (store: MetadataSubstate) => store.editor.elementPathTree,
   selectedViewsSelector,
   (metadata, pathTrees, selectedViews): boolean => {
-    console.log('allElementsAreGroupChildren selector')
     if (selectedViews.length === 0) {
-      console.log('Bail')
       return false
     }
     function elementOrAnyChildGroup(path: ElementPath) {
-      console.log('elementOrAnyChildGroup', treatElementAsGroupLike(metadata, EP.parentPath(path)))
       return treatElementAsGroupLike(metadata, EP.parentPath(path))
     }
     return selectedViews.every(elementOrAnyChildGroup)
@@ -808,7 +800,6 @@ export function setGroupChildConstraint(
   allElementProps: AllElementProps,
   dimension: LayoutPinnedProp,
 ) {
-  console.log('setGroupChildConstraint')
   function getMode(): ConstraintsMode {
     if (option !== 'toggle') {
       return option === 'constrained' ? 'add' : 'remove'
