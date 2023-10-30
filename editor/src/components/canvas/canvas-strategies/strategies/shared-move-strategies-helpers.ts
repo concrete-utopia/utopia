@@ -247,11 +247,15 @@ export function getMoveCommandsForSelectedElement(
 
   invariant(
     globalFrame != null,
-    "Error in changeBounds: the element's global frame was null or infinity",
+    `Error in changeBounds: the ${EP.toString(
+      selectedElement,
+    )} element's global frame was null or infinity`,
   )
   invariant(
     elementParentBounds != null,
-    "Error in changeBounds: the element's global frame was null or infinity",
+    `Error in changeBounds: the ${EP.toString(
+      selectedElement,
+    )} element's coordinateSystemBounds was null`,
   )
 
   if (element == null) {

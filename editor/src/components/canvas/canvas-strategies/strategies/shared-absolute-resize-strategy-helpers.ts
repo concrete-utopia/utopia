@@ -5,6 +5,7 @@ import type { LayoutEdgeProp, LayoutPinnedProp } from '../../../../core/layout/l
 import { framePointForPinnedProp } from '../../../../core/layout/layout-helpers-new'
 import { mapDropNulls, stripNulls } from '../../../../core/shared/array-utils'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
+import * as EP from '../../../../core/shared/element-path'
 import {
   isJSXElement,
   type ElementInstanceMetadataMap,
@@ -352,11 +353,15 @@ export function changeBounds(
 
     invariant(
       elementGlobalFrame != null,
-      "Error in changeBounds: the element's global frame was null or infinity",
+      `Error in changeBounds: the ${EP.toString(
+        selectedElement,
+      )} element's global frame was null or infinity`,
     )
     invariant(
       elementParentBounds != null,
-      "Error in changeBounds: the element's global frame was null or infinity",
+      `Error in changeBounds: the ${EP.toString(
+        selectedElement,
+      )} element's coordinateSystemBounds was null`,
     )
 
     if (element != null && isJSXElement(element)) {
