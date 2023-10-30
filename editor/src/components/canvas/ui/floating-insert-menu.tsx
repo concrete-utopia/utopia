@@ -273,6 +273,7 @@ export const CustomComponentOption = (props: OptionProps<InsertMenuItem, false>)
     <div
       ref={innerRef}
       {...innerProps}
+      data-testid={`floating-menu-item-${label}`}
       style={{
         boxSizing: 'border-box',
         height: UtopiaTheme.layout.rowHeight.smaller,
