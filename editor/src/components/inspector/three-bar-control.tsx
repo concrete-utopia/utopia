@@ -9,7 +9,7 @@ import {
   selectedViewsSelector,
 } from './inpector-selectors'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
-import { UtopiaTheme, colorTheme, useColorTheme } from '../../uuiui'
+import { UtopiaTheme, colorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import { setFlexAlignStrategies } from './inspector-strategies/inspector-strategies'
@@ -246,8 +246,6 @@ export const ThreeBarControl = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const dispatch = useDispatch()
 
@@ -268,39 +266,27 @@ export const ThreeBarControl = React.memo(() => {
     () =>
       executeFirstApplicableStrategy(
         dispatch,
-        metadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        setFlexAlignStrategies('flex-start'),
+        setFlexAlignStrategies(metadataRef.current, selectedViewsRef.current, 'flex-start'),
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, selectedViewsRef],
   )
 
   const setAlignItemsCenter = React.useCallback(
     () =>
       executeFirstApplicableStrategy(
         dispatch,
-        metadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        setFlexAlignStrategies('center'),
+        setFlexAlignStrategies(metadataRef.current, selectedViewsRef.current, 'center'),
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, selectedViewsRef],
   )
 
   const setAlignItemsEnd = React.useCallback(
     () =>
       executeFirstApplicableStrategy(
         dispatch,
-        metadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        setFlexAlignStrategies('flex-end'),
+        setFlexAlignStrategies(metadataRef.current, selectedViewsRef.current, 'flex-end'),
       ),
-    [allElementPropsRef, dispatch, metadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, metadataRef, selectedViewsRef],
   )
 
   const shouldShow = nFlexContainers > 0 && packedSpacedSetting === 'spaced'

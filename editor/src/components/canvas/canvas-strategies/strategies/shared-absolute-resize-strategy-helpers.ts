@@ -356,6 +356,8 @@ export function changeBounds(
 }
 
 export function resizeInspectorStrategy(
+  metadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   originalFrame: CanvasRectangle,
   edgePosition: EdgePosition,
@@ -363,12 +365,7 @@ export function resizeInspectorStrategy(
 ): InspectorStrategy {
   return {
     name: 'Resize by pixels',
-    strategy: (
-      metadata: ElementInstanceMetadataMap,
-      selectedElements: Array<ElementPath>,
-      _elementPathTree: ElementPathTrees,
-      _allElementProps: AllElementProps,
-    ): Array<CanvasCommand> | null => {
+    strategy: (): Array<CanvasCommand> | null => {
       let commands: Array<CanvasCommand> = []
       const changeBoundsResult = changeBounds(
         projectContents,
@@ -390,18 +387,15 @@ export function resizeInspectorStrategy(
 }
 
 export function directResizeInspectorStrategy(
+  metadata: ElementInstanceMetadataMap,
+  selectedElements: Array<ElementPath>,
   projectContents: ProjectContentTreeRoot,
   widthOrHeight: 'width' | 'height',
   newPixelValue: number,
 ): InspectorStrategy {
   return {
     name: 'Resize to pixel size',
-    strategy: (
-      metadata: ElementInstanceMetadataMap,
-      selectedElements: Array<ElementPath>,
-      _elementPathTree: ElementPathTrees,
-      _allElementProps: AllElementProps,
-    ): Array<CanvasCommand> | null => {
+    strategy: (): Array<CanvasCommand> | null => {
       let commands: Array<CanvasCommand> = []
       for (const selectedElement of selectedElements) {
         const edgePosition: EdgePosition =

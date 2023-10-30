@@ -129,13 +129,15 @@ export function changeElement(
   switch (floatingMenuState.insertMenuMode) {
     case 'wrap':
       if (source?.type === 'HTML_DIV') {
-        const commands = commandsForFirstApplicableStrategy(
-          jsxMetadata,
-          selectedViews,
-          elementPathTree,
-          allElementProps,
-          [wrapInDivStrategy(projectContents)],
-        )
+        const commands = commandsForFirstApplicableStrategy([
+          wrapInDivStrategy(
+            jsxMetadata,
+            selectedViews,
+            elementPathTree,
+            allElementProps,
+            projectContents,
+          ),
+        ])
 
         if (commands != null) {
           actionsToDispatch = [applyCommandsAction(commands)]

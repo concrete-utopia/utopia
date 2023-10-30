@@ -1,7 +1,7 @@
 import type { BuiltInDependencies } from '../../../core/es-modules/package-manager/built-in-dependencies-list'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import type { NodeModules, ElementPath } from '../../../core/shared/project-file-types'
+import type { NodeModules } from '../../../core/shared/project-file-types'
 import { front } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { getStaticReparentPropertyChanges } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-property-changes'
@@ -17,18 +17,16 @@ import type { InsertionPath } from '../store/insertion-path'
 
 export const insertAsStaticStrategy = (
   element: ElementToReparent,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
 ): InspectorStrategy => ({
   name: 'Insert as absolute',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
+  strategy: () => {
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
       allElementProps,

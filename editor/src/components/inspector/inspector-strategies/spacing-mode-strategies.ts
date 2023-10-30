@@ -14,8 +14,9 @@ type InnerStrategy = (
 ) => Array<CanvasCommand>
 
 const mapInspectorStrategy =
-  (innerStrategy: InnerStrategy): InspectorStrategy['strategy'] =>
-  (metadata, elementPaths) =>
+  (metadata: ElementInstanceMetadataMap, elementPaths: ElementPath[]) =>
+  (innerStrategy: InnerStrategy) =>
+  () =>
     nullOrNonEmpty(elementPaths.flatMap((elementPath) => innerStrategy(metadata, elementPath)))
 
 function setSpacingModePackedSingleElement(
@@ -33,10 +34,13 @@ function setSpacingModePackedSingleElement(
   return [setProperty('always', elementPath, PP.create('style', 'justifyContent'), 'flex-start')]
 }
 
-export const setSpacingModePacked: InspectorStrategy = {
+export const setSpacingModePacked = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): InspectorStrategy => ({
   name: 'Set spacing mode to packed',
-  strategy: mapInspectorStrategy(setSpacingModePackedSingleElement),
-}
+  strategy: mapInspectorStrategy(metadata, elementPaths)(setSpacingModePackedSingleElement),
+})
 
 function setSpacingModeSpaceBetweenSingleElement(
   metadata: ElementInstanceMetadataMap,
@@ -56,7 +60,10 @@ function setSpacingModeSpaceBetweenSingleElement(
   ]
 }
 
-export const setSpacingModeSpaceBetween: InspectorStrategy = {
+export const setSpacingModeSpaceBetween = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): InspectorStrategy => ({
   name: 'Set spacing mode to packed',
-  strategy: mapInspectorStrategy(setSpacingModeSpaceBetweenSingleElement),
-}
+  strategy: mapInspectorStrategy(metadata, elementPaths)(setSpacingModeSpaceBetweenSingleElement),
+})

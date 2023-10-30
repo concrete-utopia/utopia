@@ -333,7 +333,6 @@ const ResizeEdge = React.memo(
     const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
     const selectedElementsRef = useRefEditorState((store) => store.editor.selectedViews)
     const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-    const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
     const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
 
@@ -355,20 +354,14 @@ const ResizeEdge = React.memo(
     const onEdgeDblClick = React.useCallback(() => {
       executeFirstApplicableStrategy(
         dispatch,
-        metadataRef.current,
-        selectedElementsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        setPropHugStrategies(invert(props.direction)),
+        setPropHugStrategies(
+          metadataRef.current,
+          selectedElementsRef.current,
+          elementPathTreeRef.current,
+          invert(props.direction),
+        ),
       )
-    }, [
-      allElementPropsRef,
-      dispatch,
-      metadataRef,
-      props.direction,
-      elementPathTreeRef,
-      selectedElementsRef,
-    ])
+    }, [dispatch, metadataRef, props.direction, elementPathTreeRef, selectedElementsRef])
 
     return (
       <div
