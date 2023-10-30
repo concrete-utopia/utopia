@@ -1056,7 +1056,7 @@ describe('computedHugProperty', () => {
       )
     })
 
-    it('computedHugProperty.width/height is not-hugging when TLBR pins are set', async () => {
+    it('computedHugProperty.width/height is null when TLBR pins are set', async () => {
       await makeTestCase(
         `<div
         style={{
@@ -1072,7 +1072,7 @@ describe('computedHugProperty', () => {
         Hug a Utopia!
       </div>`,
         EP.appendNewElementPath(TestScenePath, ['root', 'div']),
-        { width: 'not-hugging', height: 'not-hugging' },
+        { width: null, height: null },
       )
     })
 
@@ -1087,7 +1087,7 @@ describe('computedHugProperty', () => {
         Hug a Utopia!
       </div>`,
         EP.appendNewElementPath(TestScenePath, ['root', 'div']),
-        { width: 'not-hugging', height: 'hug' },
+        { width: null, height: 'hug' },
       )
     })
 
@@ -1119,7 +1119,7 @@ describe('computedHugProperty', () => {
         Hug a Utopia!
       </div>`,
         EP.appendNewElementPath(TestScenePath, ['root', 'div']),
-        { width: 'not-hugging', height: 'hug' },
+        { width: null, height: 'hug' },
       )
     })
 
@@ -1203,7 +1203,7 @@ describe('computedHugProperty', () => {
           Hug a Utopia!
         </div>`,
         EP.appendNewElementPath(TestScenePath, ['root', 'div']),
-        { width: 'not-hugging', height: 'hug' },
+        { width: null, height: 'hug' },
       )
     })
 

@@ -2018,10 +2018,10 @@ export function elementInstanceMetadata(
 export type DetectedLayoutSystem = 'flex' | 'grid' | 'flow' | 'none'
 export type SettableLayoutSystem = 'flex' | 'flow' | 'grid' | LayoutSystem
 export type TextDirection = 'ltr' | 'rtl'
-export type HugProperty = 'hug' | 'squeeze' | 'collapsed' | 'not-hugging'
+export type HugProperty = 'hug' | 'squeeze' | 'collapsed'
 export type HugPropertyWidthHeight = {
-  width: HugProperty
-  height: HugProperty
+  width: HugProperty | null
+  height: HugProperty | null
 }
 
 export interface SpecialSizeMeasurements {
@@ -2065,7 +2065,7 @@ export interface SpecialSizeMeasurements {
   fontWeight: string | null
   fontStyle: string | null
   textDecorationLine: string | null
-  computedHugProperty: HugPropertyWidthHeight | null
+  computedHugProperty: HugPropertyWidthHeight
 }
 
 export function specialSizeMeasurements(
@@ -2109,7 +2109,7 @@ export function specialSizeMeasurements(
   fontStyle: string | null,
   textDecorationLine: string | null,
   textBounds: CanvasRectangle | null,
-  computedHugProperty: HugPropertyWidthHeight | null,
+  computedHugProperty: HugPropertyWidthHeight,
 ): SpecialSizeMeasurements {
   return {
     offset,
@@ -2200,7 +2200,7 @@ export const emptySpecialSizeMeasurements = specialSizeMeasurements(
   null,
   null,
   null,
-  null,
+  { width: null, height: null },
 )
 
 export const emptyComputedStyle: ComputedStyle = {}

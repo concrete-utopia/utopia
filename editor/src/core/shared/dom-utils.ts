@@ -384,7 +384,7 @@ function hugPropertyFromStyleValue(
   pins: Array<'left' | 'top' | 'right' | 'bottom'>,
   display: string | null,
   globalFrame: MaybeInfinityCanvasRectangle | null,
-): HugProperty {
+): HugProperty | null {
   const hugProp = (() => {
     // width/height max-content and min-content are efective even when the dimensions are overspecified, e.g. left, right and width are all set
     if (value === 'max-content') {
@@ -395,21 +395,21 @@ function hugPropertyFromStyleValue(
     }
     // when the pins specify the width/height and no width/height is not set (or set to auto), it is not hugging
     if (property === 'width' && pins.includes('left') && pins.includes('right')) {
-      return 'not-hugging'
+      return null
     }
     if (property === 'height' && pins.includes('top') && pins.includes('bottom')) {
-      return 'not-hugging'
+      return null
     }
     // width is not set neither explicitly nor by the pins, but the display is block, then it is not hugging
     if (value === 'auto' && property === 'width' && display === 'block') {
-      return 'not-hugging' // TODO: in this case this is a fill, unify this with fill detection
+      return null // TODO: in this case this is a fill, unify this with fill detection
     }
     // width/height is not set neither explicitly nor by the pins, in this case it hugs
     if (value === 'auto') {
       return 'hug'
     }
 
-    return 'not-hugging'
+    return null
   })()
 
   if (isNotNullFiniteRectangle(globalFrame) && globalFrame[property] === 0 && hugProp != null) {
