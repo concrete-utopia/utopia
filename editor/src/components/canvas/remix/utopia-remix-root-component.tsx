@@ -1,7 +1,7 @@
 import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
 import type { UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
 import React from 'react'
-import type { DataRouteObject, Location } from 'react-router'
+import type { DataRouteObject, Location, RouteObject } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -93,10 +93,16 @@ function useGetRouteModules(basePath: ElementPath) {
         ? (componentProps: any) => createExecutionScope()['ErrorBoundary']?.(componentProps) ?? null
         : undefined
 
+      const links: RouteModule['links'] = () => createExecutionScope()['links'] ?? null
+      const meta: RouteModule['meta'] = (args: any) =>
+        createExecutionScope()['meta']?.(args) ?? null
+
       const routeModule: RouteModule = {
         ...value,
         ErrorBoundary: errorBoundary == undefined ? undefined : PathPropHOC(errorBoundary),
         default: PathPropHOC(defaultComponent),
+        links: links,
+        meta: meta,
       }
 
       routeModulesResult[routeId] = routeModule
@@ -114,6 +120,13 @@ function useGetRouteModules(basePath: ElementPath) {
     displayNoneInstancesRef,
   ])
 }
+
+const RouteExportsForRouteObject: Array<keyof RouteObject> = [
+  'action',
+  'loader',
+  'handle',
+  'shouldRevalidate',
+]
 
 function useGetRoutes() {
   const routes = useEditorState(
@@ -140,22 +153,25 @@ function useGetRoutes() {
 
     const creators = remixDerivedDataRef.current.routeModuleCreators
 
-    function addLoaderAndActionToRoutes(innerRoutes: DataRouteObject[]) {
+    function addExportsToRoutes(innerRoutes: DataRouteObject[]) {
       innerRoutes.forEach((route) => {
         // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
         // we only ever pass in an empty object for the `routeModules` and never mutate it
         const creatorForRoute = route.id === 'root' ? null : creators[route.id]
         if (creatorForRoute != null) {
-          route.action = (args: any) =>
-            creatorForRoute
-              .executionScopeCreator(
-                projectContentsRef.current,
-                fileBlobsRef.current,
-                hiddenInstancesRef.current,
-                displayNoneInstancesRef.current,
-                metadataContext,
-              )
-              .scope['action']?.(args) ?? null
+          for (const routeExport of RouteExportsForRouteObject) {
+            route[routeExport] = (args: any) =>
+              creatorForRoute
+                .executionScopeCreator(
+                  projectContentsRef.current,
+                  fileBlobsRef.current,
+                  hiddenInstancesRef.current,
+                  displayNoneInstancesRef.current,
+                  metadataContext,
+                )
+                .scope[routeExport]?.(args) ?? null
+          }
+
           route.loader = (args: any) =>
             creatorForRoute
               .executionScopeCreator(
@@ -168,11 +184,11 @@ function useGetRoutes() {
               .scope['loader']?.(args) ?? null
         }
 
-        addLoaderAndActionToRoutes(route.children ?? [])
+        addExportsToRoutes(route.children ?? [])
       })
     }
 
-    addLoaderAndActionToRoutes(routes)
+    addExportsToRoutes(routes)
 
     return routes
   }, [
