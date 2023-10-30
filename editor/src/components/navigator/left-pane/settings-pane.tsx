@@ -38,6 +38,9 @@ import { load } from '../../../components/editor/actions/actions'
 import { when } from '../../../utils/react-conditionals'
 import { useTriggerForkProject } from '../../editor/persistence-hooks'
 import { SettingsPanel } from '../../inspector/sections/settings-panel/inspector-settingspanel'
+import { saveUserPreferencesDefaultLayout } from '../../common/user-preferences'
+import { useGridPanelState } from '../../canvas/grid-panels-state'
+import { notice } from '../../common/notice'
 
 const themeOptions = [
   {
@@ -208,6 +211,15 @@ export const SettingsPane = React.memo(() => {
 
   const onForkProjectClicked = useTriggerForkProject()
 
+  const [panelState] = useGridPanelState()
+
+  const onSavePanelsLayout = React.useCallback(() => {
+    void saveUserPreferencesDefaultLayout(panelState)
+    dispatch([
+      EditorActions.addToast(notice('Saved panels layout as default for new project.', 'SUCCESS')),
+    ])
+  }, [panelState, dispatch])
+
   return (
     <FlexColumn
       id='leftPaneSettings'
@@ -296,6 +308,23 @@ export const SettingsPane = React.memo(() => {
               onSubmitValue={handleSubmitValueTheme}
               style={{ width: 150 }}
             />
+          </UIGridRow>
+          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+            <span style={{ color: colorTheme.fg2.value }}>Panels </span>
+            <Button
+              outline={false}
+              highlight
+              onClick={onSavePanelsLayout}
+              style={{
+                width: '100%',
+                cursor: 'pointer',
+                height: UtopiaTheme.layout.inputHeight.default,
+                background: colorTheme.dynamicBlue.value,
+                color: colorTheme.bg1.value,
+              }}
+            >
+              Save panels as default
+            </Button>
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <br />

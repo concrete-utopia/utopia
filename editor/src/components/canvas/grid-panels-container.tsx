@@ -23,28 +23,40 @@ import {
   GridPanelHorizontalGapHalf,
   GridHorizontalExtraPadding,
 } from './stored-layout'
-import { loadUserPreferences, saveUserPreferences } from '../common/user-preferences'
+import {
+  getProjectStoredLayoutOrDefault,
+  loadUserPreferences,
+  saveUserPreferencesProjectLayout,
+} from '../common/user-preferences'
+import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export const GridPanelsContainer = React.memo(() => {
   const [panelStateLoaded, setPanelStateLoaded] = React.useState(false)
   const [panelState, setPanelState] = useGridPanelState()
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'GridPanelsContainer projectId',
+  )
 
   React.useEffect(() => {
-    async function loadPrefs() {
+    if (projectId == null || panelStateLoaded) {
+      return
+    }
+    setPanelStateLoaded(true)
+    async function loadPrefs(id: string) {
       const prefs = await loadUserPreferences()
-      setPanelState(prefs.storedLayout)
+      setPanelState(getProjectStoredLayoutOrDefault(prefs.panelsLayout, id))
     }
-    if (!panelStateLoaded) {
-      setPanelStateLoaded(true)
-      void loadPrefs()
-    }
-  }, [panelStateLoaded, setPanelState])
+    void loadPrefs(projectId)
+  }, [panelStateLoaded, setPanelState, projectId])
 
   React.useEffect(() => {
-    if (panelStateLoaded) {
-      void saveUserPreferences({ storedLayout: panelState })
+    if (projectId == null || !panelStateLoaded) {
+      return
     }
-  }, [panelStateLoaded, panelState])
+    void saveUserPreferencesProjectLayout(projectId, panelState)
+  }, [panelStateLoaded, panelState, projectId])
 
   const orderedPanels = useResolvedGridPanels()
 
