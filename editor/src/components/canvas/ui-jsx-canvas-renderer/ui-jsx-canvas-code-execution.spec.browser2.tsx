@@ -10,9 +10,12 @@ import { emptySet } from '../../../core/shared/set-utils'
 import { lintAndParse } from '../../../core/workers/parser-printer/parser-printer'
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { getProjectFileByFilePath } from '../../assets'
-import { updateFile } from '../../editor/actions/action-creators'
+import { switchEditorMode, updateFile } from '../../editor/actions/action-creators'
+import { updateFromCodeEditor } from '../../editor/actions/actions-from-vscode'
+import { EditorModes } from '../../editor/editor-modes'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
-import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
+import { mouseClickAtPoint } from '../event-helpers.test-utils'
+import { type EditorRenderResult, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 
 const indirectFilePath = '/src/indirect.js'
 const indirectDependencyValueBefore = 'Initial indirect dependency value'
@@ -121,5 +124,183 @@ describe('Updating a transitive dependency', () => {
     expect(appRootDivAfter.innerText).toEqual(
       `IndirectDependencyValue: ${indirectDependencyValueAfter}`,
     )
+  })
+})
+
+describe('Re-mounting is avoided when', () => {
+  const switchToLiveMode = (editor: EditorRenderResult) =>
+    editor.dispatch([switchEditorMode(EditorModes.liveMode())], true)
+
+  const clickButton = async (editor: EditorRenderResult) => {
+    const targetElement = editor.renderedDOM.getByTestId('clicky')
+    const targetElementBounds = targetElement.getBoundingClientRect()
+
+    const clickPoint = { x: targetElementBounds.x + 5, y: targetElementBounds.y + 5 }
+    await mouseClickAtPoint(targetElement, clickPoint)
+  }
+
+  const updateCode = async (editor: EditorRenderResult, filePath: string, newCode: string) => {
+    await editor.dispatch([updateFromCodeEditor(filePath, newCode, null)], true)
+    await editor.getDispatchFollowUpActionsFinished()
+  }
+
+  const startingJsConstText = 'Clicked '
+  const updatedJsConstText = 'Clicked: '
+
+  const startingComponentText = '{text}{n} times'
+  const updatedComponentText = '{text}{n} times!'
+
+  function getClickerCode(jsConstText: string, componentText: string): string {
+    return `
+      import * as React from 'react'
+
+      const text = '${jsConstText}'
+
+      export const TextElem = () => {
+        const [n, setN] = React.useState(0)
+        const click = React.useCallback(
+          () => setN((v) => v + 1),
+          [setN],
+        )
+
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 200,
+            }}
+            onMouseDown={click}
+            data-testid='clicky'
+          >
+            ${componentText}
+          </div>
+        )
+      }
+
+      export default function Clicker() {
+        return <TextElem />
+      }
+    `
+  }
+
+  it('arbitrary JS or a component is edited in a regular project', async () => {
+    const clickerComponentFile = '/src/clicker.js'
+
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+      import Clicker from '${clickerComponentFile}'
+
+      export var storyboard = (
+        <Storyboard>
+          <Clicker />
+        </Storyboard>
+      )
+      `,
+      [clickerComponentFile]: getClickerCode(startingJsConstText, startingComponentText),
+    })
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    await switchToLiveMode(renderResult)
+
+    // Ensure we can find the original text
+    expect(renderResult.renderedDOM.queryByText('Clicked 0 times')).not.toBeNull()
+
+    await clickButton(renderResult)
+
+    // Ensure it has been updated
+    expect(renderResult.renderedDOM.queryByText('Clicked 1 times')).not.toBeNull()
+
+    // Update the top level arbitrary JS block
+    await updateCode(
+      renderResult,
+      clickerComponentFile,
+      getClickerCode(updatedJsConstText, startingComponentText),
+    )
+
+    // Check that it has updated without resetting the state
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times')).not.toBeNull()
+
+    // Update the component itself
+    await updateCode(
+      renderResult,
+      clickerComponentFile,
+      getClickerCode(updatedJsConstText, updatedComponentText),
+    )
+
+    // Check again that it has updated without resetting the state
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times!')).not.toBeNull()
+  })
+
+  it('arbitrary JS or a component is edited in a remix project', async () => {
+    const clickerRouteFile = '/src/routes/_index.js'
+
+    const project = createModifiedProject({
+      [StoryboardFilePath]: `import * as React from 'react'
+      import { RemixScene, Storyboard } from 'utopia-api'
+
+      export var storyboard = (
+        <Storyboard>
+          <RemixScene
+            style={{
+              position: 'absolute',
+              left: 0,
+              top: 0,
+              width: 200,
+              height: 200,
+            }}
+          />
+        </Storyboard>
+      )
+      `,
+      ['/src/root.js']: `import React from 'react'
+      import { Outlet } from '@remix-run/react'
+
+      export default function Root() {
+        return (
+          <div data-uid='rootdiv'>
+            <Outlet data-uid='outlet'/>
+          </div>
+        )
+      }
+      `,
+      [clickerRouteFile]: getClickerCode(startingJsConstText, startingComponentText),
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    await switchToLiveMode(renderResult)
+
+    // Ensure we can find the original text
+    expect(renderResult.renderedDOM.queryByText('Clicked 0 times')).not.toBeNull()
+
+    await clickButton(renderResult)
+
+    // Ensure it has been updated
+    expect(renderResult.renderedDOM.queryByText('Clicked 1 times')).not.toBeNull()
+
+    // Update the top level arbitrary JS block
+    await updateCode(
+      renderResult,
+      clickerRouteFile,
+      getClickerCode(updatedJsConstText, startingComponentText),
+    )
+
+    // Check that it has updated without resetting the state
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times')).not.toBeNull()
+
+    // Update the component itself
+    await updateCode(
+      renderResult,
+      clickerRouteFile,
+      getClickerCode(updatedJsConstText, updatedComponentText),
+    )
+
+    // Check again that it has updated without resetting the state
+    expect(renderResult.renderedDOM.queryByText('Clicked: 1 times!')).not.toBeNull()
   })
 })
