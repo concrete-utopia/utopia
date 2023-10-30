@@ -14,6 +14,7 @@ import { GroupChildPinControl, setGroupChildConstraint } from '../fill-hug-fixed
 import { assertNever } from '../../../core/shared/utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../editor/store/store-hook'
+import { PinHeightControl, PinWidthControl } from '../utility-controls/pin-control'
 
 interface PinControlProps {
   handlePinMouseDown: (
@@ -325,104 +326,6 @@ export const PinControl = (props: PinControlProps) => {
   )
 }
 
-const DimensionWidth = 20
-const DimensionHeight = 20
-const DimensionVerticalMid = DimensionHeight / 2
-const DimensionHorizontalMid = DimensionWidth / 2
-
-const DimensionInset = 5
-const DimensionStart = DimensionInset
-const HorizontalDimensionEnd = DimensionWidth - DimensionInset
-const VerticalDimensionEnd = DimensionHeight - DimensionInset
-const DimensionButt = 4
-const HorizontalDimensionButtStart = DimensionHorizontalMid - DimensionButt / 2
-const VerticalDimensionButtStart = DimensionVerticalMid - DimensionButt / 2
-
-interface PinWidthControlProps {
-  controlStatus: ControlStatus
-  framePins: FramePinsInfo
-  mixed?: boolean
-  toggleWidth: () => void
-}
-
-export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
-  const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
-  return (
-    <svg width='20' height='20' onClick={props.toggleWidth}>
-      <g
-        id='dimensioncontrols-pin-width'
-        stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Width)}
-      >
-        <path
-          d={`M${DimensionStart},${VerticalDimensionButtStart} l0,${DimensionButt}`}
-          id='dimensioncontrols-pin-width-EdgeEnd-l'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${HorizontalDimensionEnd},${VerticalDimensionButtStart} l0,${DimensionButt}`}
-          id='dimensioncontrols-pin-width-EdgeEnd-r'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${DimensionStart},${DimensionVerticalMid} L${HorizontalDimensionEnd},${DimensionVerticalMid}`}
-          id='dimensioncontrols-pin-width-line'
-          strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Width)}
-          strokeLinecap='round'
-        />
-        <path
-          d={`M 0,0 0,${DimensionHeight} ${DimensionWidth},0 ${DimensionWidth},${DimensionHeight} z`}
-          strokeLinecap='butt'
-          id='dimensioncontrols-pin-width-transparent'
-          stroke='transparent'
-          fill='transparent'
-        />
-      </g>
-    </svg>
-  )
-})
-
-interface PinHeightControlProps {
-  controlStatus: ControlStatus
-  framePins: FramePinsInfo
-  mixed?: boolean
-  toggleHeight: () => void
-}
-
-export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
-  const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
-  return (
-    <svg width='20' height='20' onClick={props.toggleHeight}>
-      <g
-        id='dimensioncontrols-pin-height'
-        stroke={getStrokeColor(controlStyles, props.framePins, props.mixed, FramePoint.Height)}
-      >
-        <path
-          d={`M${HorizontalDimensionButtStart},${DimensionStart} l${DimensionButt},0`}
-          id='dimensioncontrols-pin-height-EdgeEnd-t'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${HorizontalDimensionButtStart},${VerticalDimensionEnd} l${DimensionButt},0`}
-          id='dimensioncontrols-pin-height-EdgeEnd-b'
-          strokeLinecap='round'
-        />
-        <path
-          d={`M${DimensionHorizontalMid},${DimensionStart} L${DimensionHorizontalMid},${VerticalDimensionEnd}`}
-          id='dimensioncontrols-pin-height-line'
-          strokeDasharray={getStrokeDashArray(props.framePins, props.mixed, FramePoint.Height)}
-          strokeLinecap='round'
-        />
-        <path
-          d={`M 0,0 ${DimensionWidth},0 0,${DimensionHeight} ${DimensionWidth},${DimensionHeight} z`}
-          id='dimensioncontrols-pin-width-transparent'
-          stroke='transparent'
-          fill='transparent'
-        />
-      </g>
-    </svg>
-  )
-})
-
 export interface CombinedPinControlProps {
   isGroupChild: 'group-child' | 'frame-child'
 }
@@ -436,6 +339,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
   const { togglePin } = usePinToggling()
   const toggleGroupChildOrFrameChildPin = React.useCallback(
     (layoutProp: LayoutPinnedPropIncludingCenter) => {
+      console.log('props.isGroupChild', props.isGroupChild)
       switch (props.isGroupChild) {
         case 'frame-child':
           togglePin(layoutProp)
@@ -458,6 +362,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
     [props.isGroupChild, togglePin, dispatch, selectedViewsRef, allElementPropsRef],
   )
   const toggleWidth = React.useCallback(() => {
+    console.log('toggleWidth')
     toggleGroupChildOrFrameChildPin('width')
   }, [toggleGroupChildOrFrameChildPin])
   const toggleHeight = React.useCallback(() => {

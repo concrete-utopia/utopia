@@ -21,12 +21,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { InspectorPropsContext } from './common/property-path-hooks'
-import {
-  CombinedPinControl,
-  PinControl,
-  PinHeightControl,
-  PinWidthControl,
-} from './controls/pin-control'
+import { CombinedPinControl, PinControl } from './controls/pin-control'
 import {
   allElementsAreGroupChildren,
   anySelectedElementGroupOrChildOfGroup,
@@ -43,7 +38,6 @@ import {
   GroupChildHorizontalPinChangeOptions,
   GroupChildVerticalPinChangeOptions,
   getConstraintAndFrameChangeActionsForGroupChild,
-  getFixedPointsForPinning,
   getFrameChangeActionsForFrameChild,
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
@@ -63,10 +57,13 @@ export const ConstraintsSection = React.memo(() => {
     allElementsAreGroupChildren,
     'ConstraintsSection onlyGroupChildrenSelected',
   )
+  console.log('noGroupOrGroupChildrenSelected', noGroupOrGroupChildrenSelected)
+  console.log('onlyGroupChildrenSelected', onlyGroupChildrenSelected)
 
   const showSection = React.useMemo(() => {
     return noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected
   }, [noGroupOrGroupChildrenSelected, onlyGroupChildrenSelected])
+  console.log('showSection', showSection)
 
   if (!showSection) {
     return null
@@ -93,6 +90,7 @@ export const ConstraintsSection = React.memo(() => {
 ConstraintsSection.displayName = 'ConstraintsSection'
 
 const GroupChildConstraintsSection = React.memo(() => {
+  console.log('GroupChildConstraintsSection')
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
@@ -108,6 +106,7 @@ const GroupChildConstraintsSection = React.memo(() => {
 GroupChildConstraintsSection.displayName = 'GroupChildConstraintsSection'
 
 const FrameChildConstraintsSection = React.memo(() => {
+  console.log('FrameChildConstraintsSection')
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>

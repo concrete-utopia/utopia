@@ -17,7 +17,7 @@ import {
   useInspectorLayoutInfo,
 } from '../../../common/property-path-hooks'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import { PinControl, PinHeightControl, PinWidthControl } from '../../../controls/pin-control'
+import { PinControl } from '../../../controls/pin-control'
 import { PropertyLabel } from '../../../widgets/property-label'
 import type { SelfLayoutTab } from './self-layout-subsection'
 import {
@@ -35,6 +35,7 @@ import type { OnSubmitValueOrUnknownOrEmpty } from '../../../controls/control'
 import { FlexCol } from 'utopia-api'
 import { treatElementAsGroupLike } from '../../../../canvas/canvas-strategies/strategies/group-helpers'
 import { useEditorState, Substores } from '../../../../editor/store/store-hook'
+import { PinHeightControl, PinWidthControl } from '../../../utility-controls/pin-control'
 
 interface PinsLayoutNumberControlProps {
   label: string
