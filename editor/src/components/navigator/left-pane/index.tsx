@@ -5,7 +5,6 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { FlexColumn, FlexRow, UtopiaTheme, colorTheme } from '../../../uuiui'
 import { MenuTab } from '../../../uuiui/menu-tab'
-import type { StoredPanel } from '../../canvas/grid-panels-state'
 import type { EditorAction, EditorDispatch, LoginState } from '../../editor/action-types'
 import { setLeftMenuTab } from '../../editor/actions/action-creators'
 import { useDispatch } from '../../editor/store/dispatch-context'
@@ -17,6 +16,7 @@ import { TitleBarProjectTitle } from '../../titlebar/title-bar'
 import { NavigatorComponent } from '../navigator'
 import { ContentsPane } from './contents-pane'
 import { GithubPane } from './github-pane'
+import type { StoredPanel } from '../../canvas/stored-layout'
 
 export interface LeftPaneProps {
   editorState: EditorState

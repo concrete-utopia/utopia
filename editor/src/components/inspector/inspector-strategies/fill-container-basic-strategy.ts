@@ -1,5 +1,4 @@
 import * as PP from '../../../core/shared/property-path'
-import * as EP from '../../../core/shared/element-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import { clamp } from '../../../core/shared/math-utils'
 import { setProperty } from '../../canvas/commands/set-property-command'
@@ -25,14 +24,18 @@ import {
   groupErrorToastCommand,
   maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 
 export const fillContainerStrategyFlow = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): InspectorStrategy => ({
   name: 'Set to Fill Container',
-  strategy: (metadata, elementPaths) => {
+  strategy: () => {
     const elements = elementPaths.filter((elementPath) =>
       fillContainerApplicable(metadata, elementPath),
     )
@@ -78,12 +81,14 @@ export interface FillContainerStrategyFlexParentOverrides {
 }
 
 export const fillContainerStrategyFlexParent = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   axis: Axis,
   value: 'default' | number,
   overrides: Partial<FillContainerStrategyFlexParentOverrides> = {},
 ): InspectorStrategy => ({
   name: 'Set to Fill Container, in flex layout',
-  strategy: (metadata, elementPaths) => {
+  strategy: () => {
     const elements = elementPaths.filter(
       (path) =>
         fillContainerApplicable(metadata, path) &&

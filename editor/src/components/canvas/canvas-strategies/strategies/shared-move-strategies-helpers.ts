@@ -19,6 +19,7 @@ import type {
 } from '../../../../core/shared/math-utils'
 import {
   boundingRectangleArray,
+  canvasRectangleToLocalRectangle,
   canvasVector,
   nullIfInfinity,
   offsetRect,
@@ -62,6 +63,13 @@ import { memoize } from '../../../../core/shared/memoize'
 import { is } from '../../../../core/shared/equality-utils'
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { InspectorStrategy } from '../../../../components/inspector/inspector-strategies/inspector-strategy'
+import { rectangleToSixFramePoints } from '../../commands/utils/group-resize-utils'
+import invariant from '../../../../third-party/remix/invariant'
+import type { SetCssLengthProperty } from '../../commands/set-css-length-command'
+import {
+  setCssLengthProperty,
+  setValueKeepingOriginalUnit,
+} from '../../commands/set-css-length-command'
 
 export interface MoveCommandsOptions {
   ignoreLocalFrame?: boolean
@@ -77,11 +85,11 @@ export const getAdjustMoveCommands =
   (
     snappedDragVector: CanvasPoint,
   ): {
-    commands: Array<AdjustCssLengthProperties>
+    commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
     intendedBounds: Array<CanvasFrameAndTarget>
   } => {
     const filteredSelectedElements = flattenSelection(targets)
-    let commands: Array<AdjustCssLengthProperties> = []
+    let commands: Array<SetCssLengthProperty | AdjustCssLengthProperties> = []
     let intendedBounds: Array<CanvasFrameAndTarget> = []
     filteredSelectedElements.forEach((selectedElement) => {
       const elementResult = getInteractionMoveCommandsForSelectedElement(
@@ -190,7 +198,7 @@ export function getDirectMoveCommandsForSelectedElement(
   newPixelValue: number,
   options?: MoveCommandsOptions,
 ): {
-  commands: Array<AdjustCssLengthProperties>
+  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const localFrame = getAppropriateLocalFrame(options, selectedElement, startingMetadata)
@@ -217,7 +225,7 @@ export function getMoveCommandsForSelectedElement(
   drag: CanvasVector,
   options?: MoveCommandsOptions,
 ): {
-  commands: Array<AdjustCssLengthProperties>
+  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const element: JSXElement | null = getJSXElementFromProjectContents(
@@ -233,22 +241,44 @@ export function getMoveCommandsForSelectedElement(
   const elementParentBounds =
     elementMetadata?.specialSizeMeasurements.coordinateSystemBounds ?? null
 
-  const localFrame = getAppropriateLocalFrame(options, selectedElement, startingMetadata)
-
   const globalFrame = nullIfInfinity(
     MetadataUtils.getFrameInCanvasCoords(selectedElement, startingMetadata),
+  )
+
+  invariant(
+    globalFrame != null,
+    `Error in changeBounds: the ${EP.toString(
+      selectedElement,
+    )} element's global frame was null or infinity`,
+  )
+  invariant(
+    elementParentBounds != null,
+    `Error in changeBounds: the ${EP.toString(
+      selectedElement,
+    )} element's coordinateSystemBounds was null`,
   )
 
   if (element == null) {
     return { commands: [], intendedBounds: [] }
   }
 
-  return createMoveCommandsForElement(
+  if (options?.ignoreLocalFrame === true) {
+    return createMoveCommandsForElementPositionRelative(
+      element,
+      selectedElement,
+      mappedPath,
+      drag,
+      globalFrame,
+      elementParentBounds,
+      elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
+    )
+  }
+
+  return createMoveCommandsForElementCreatingMissingPins(
     element,
     selectedElement,
     mappedPath,
     drag,
-    localFrame,
     globalFrame,
     elementParentBounds,
     elementMetadata?.specialSizeMeasurements.parentFlexDirection ?? null,
@@ -262,7 +292,7 @@ export function getInteractionMoveCommandsForSelectedElement(
   interactionSession: InteractionSession,
   options?: MoveCommandsOptions,
 ): {
-  commands: Array<AdjustCssLengthProperties>
+  commands: Array<SetCssLengthProperty | AdjustCssLengthProperties>
   intendedBounds: Array<CanvasFrameAndTarget>
 } {
   const mappedPath =
@@ -279,12 +309,14 @@ export function getInteractionMoveCommandsForSelectedElement(
 }
 
 export function moveInspectorStrategy(
+  metadata: ElementInstanceMetadataMap,
+  selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   movement: CanvasVector,
 ): InspectorStrategy {
   return {
     name: 'Move by pixels',
-    strategy: (metadata, selectedElementPaths, _elementPathTree, _allElementProps) => {
+    strategy: () => {
       let commands: Array<CanvasCommand> = []
       let intendedBounds: Array<CanvasFrameAndTarget> = []
       for (const selectedPath of selectedElementPaths) {
@@ -306,13 +338,15 @@ export function moveInspectorStrategy(
 }
 
 export function directMoveInspectorStrategy(
+  metadata: ElementInstanceMetadataMap,
+  selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   leftOrTop: 'left' | 'top',
   newPixelValue: number,
 ): InspectorStrategy {
   return {
     name: 'Move to a pixel position',
-    strategy: (metadata, selectedElementPaths, _elementPathTree, _allElementProps) => {
+    strategy: () => {
       let commands: Array<CanvasCommand> = []
       let intendedBounds: Array<CanvasFrameAndTarget> = []
       for (const selectedPath of selectedElementPaths) {
@@ -334,12 +368,11 @@ export function directMoveInspectorStrategy(
   }
 }
 
-export function createMoveCommandsForElement(
+export function createMoveCommandsForElementPositionRelative(
   element: JSXElement,
   selectedElement: ElementPath,
   mappedPath: ElementPath,
   drag: CanvasVector,
-  localFrame: LocalRectangle | null,
   globalFrame: CanvasRectangle | null,
   elementParentBounds: CanvasRectangle | null,
   elementParentFlexDirection: FlexDirection | null,
@@ -356,15 +389,7 @@ export function createMoveCommandsForElement(
     )
     const negative = pin === 'right' || pin === 'bottom'
 
-    // if this is a new pin which was missing, we offset the drag value with the initial value, which is
-    // coming from the localFrame from metadata
-    const isNewPin = !existingPins.includes(pin)
-
-    const offsetX = isNewPin && pin === 'left' ? localFrame?.x ?? 0 : 0
-    const offsetY = isNewPin && pin === 'top' ? localFrame?.y ?? 0 : 0
-
-    const updatedPropValue =
-      (horizontal ? offsetX + drag.x : offsetY + drag.y) * (negative ? -1 : 1)
+    const updatedPropValue = (horizontal ? drag.x : drag.y) * (negative ? -1 : 1)
     const parentDimension = horizontal ? elementParentBounds?.width : elementParentBounds?.height
 
     return lengthPropertyToAdjust(
@@ -391,6 +416,73 @@ export function createMoveCommandsForElement(
   })()
 
   return { commands: [adjustPinCommand], intendedBounds: intendedBounds }
+}
+
+export function createMoveCommandsForElementCreatingMissingPins(
+  element: JSXElement,
+  selectedElement: ElementPath,
+  mappedPath: ElementPath,
+  drag: CanvasVector,
+  globalFrame: CanvasRectangle,
+  elementParentBounds: CanvasRectangle,
+  elementParentFlexDirection: FlexDirection | null,
+): {
+  commands: Array<SetCssLengthProperty>
+  intendedBounds: Array<CanvasFrameAndTarget>
+} {
+  const { extendedPins } = ensureAtLeastOnePinPerDimension(right(element.props))
+  const pinsOnlyForDimensionThatChanged = (() => {
+    const filteredPins: Array<AbsolutePin> = []
+    if (drag.x !== 0) {
+      // only vertical pins
+      filteredPins.push(...extendedPins.filter((p) => horizontalPins.includes(p)))
+    }
+    if (drag.y !== 0) {
+      // only vertical pins
+      filteredPins.push(...extendedPins.filter((p) => verticalPins.includes(p)))
+    }
+    return filteredPins
+  })()
+
+  const intendedGlobalFrame = roundRectangleToNearestWhole(offsetRect(globalFrame, drag))
+
+  const intendedLocalFullFrame = rectangleToSixFramePoints(
+    canvasRectangleToLocalRectangle(intendedGlobalFrame, elementParentBounds),
+    elementParentBounds,
+  )
+
+  const setCssLengthPropertyCommands = mapDropNulls((pin) => {
+    const horizontal = isHorizontalPoint(
+      // TODO avoid using the loaded FramePoint enum
+      framePointForPinnedProp(pin),
+    )
+
+    const adjustedValue = intendedLocalFullFrame[pin]
+
+    return setCssLengthProperty(
+      'always',
+      selectedElement,
+      stylePropPathMappingFn(pin, styleStringInArray),
+      setValueKeepingOriginalUnit(
+        adjustedValue,
+        horizontal ? elementParentBounds?.width : elementParentBounds?.height,
+      ),
+      elementParentFlexDirection,
+
+      'create-if-not-existing',
+      'warn-about-replacement',
+    )
+  }, pinsOnlyForDimensionThatChanged)
+
+  const intendedBounds = (() => {
+    if (globalFrame == null) {
+      return []
+    } else {
+      return [{ target: mappedPath, frame: intendedGlobalFrame }]
+    }
+  })()
+
+  return { commands: setCssLengthPropertyCommands, intendedBounds: intendedBounds }
 }
 
 export function getMultiselectBounds(

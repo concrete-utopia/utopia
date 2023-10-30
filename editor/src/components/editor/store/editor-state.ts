@@ -172,8 +172,8 @@ import {
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-data'
 import type { ProjectServerState } from './project-server-state'
-import { GridMenuWidth } from '../../canvas/grid-panels-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
+import { GridMenuWidth } from '../../canvas/stored-layout'
 
 const ObjectPathImmutable: any = OPI
 

@@ -13,14 +13,11 @@ import {
 import { fillContainerStrategyFlexParent } from './fill-container-basic-strategy'
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import type { InspectorStrategy } from './inspector-strategy'
-import type { AllElementProps } from '../../editor/store/editor-state'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 function swapAxesCommands(
   metadata: ElementInstanceMetadataMap,
   selectedElement: ElementPath,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
   currentFlexDirection: FlexDirection | null,
   flexDirectionToBeApplied: FlexDirection,
 ): Array<CanvasCommand> {
@@ -37,15 +34,16 @@ function swapAxesCommands(
     verticalSizing?.type === 'fixed'
   ) {
     return [
-      ...(fixedSizeBasicStrategy('always', 'horizontal', verticalSizing.value).strategy(
+      ...(fixedSizeBasicStrategy(
+        'always',
         metadata,
         [selectedElement],
-        elementPathTree,
-        allElementProps,
-      ) ?? []),
-      ...(fillContainerStrategyFlexParent('vertical', 'default', {
+        'horizontal',
+        verticalSizing.value,
+      ).strategy() ?? []),
+      ...(fillContainerStrategyFlexParent(metadata, [selectedElement], 'vertical', 'default', {
         forceFlexDirectionForParent: flexDirectionToBeApplied,
-      }).strategy(metadata, [selectedElement], elementPathTree, allElementProps) ?? []),
+      }).strategy() ?? []),
     ]
   }
 
@@ -56,15 +54,16 @@ function swapAxesCommands(
     horizontalSizing?.type === 'fixed'
   ) {
     return [
-      ...(fixedSizeBasicStrategy('always', 'vertical', horizontalSizing.value).strategy(
+      ...(fixedSizeBasicStrategy(
+        'always',
         metadata,
         [selectedElement],
-        elementPathTree,
-        allElementProps,
-      ) ?? []),
-      ...(fillContainerStrategyFlexParent('horizontal', 'default', {
+        'vertical',
+        horizontalSizing.value,
+      ).strategy() ?? []),
+      ...(fillContainerStrategyFlexParent(metadata, [selectedElement], 'horizontal', 'default', {
         forceFlexDirectionForParent: flexDirectionToBeApplied,
-      }).strategy(metadata, [selectedElement], elementPathTree, allElementProps) ?? []),
+      }).strategy() ?? []),
     ]
   }
 
@@ -75,7 +74,6 @@ function setFlexDirectionSwapAxesSingleElement(
   direction: FlexDirection,
   metadata: ElementInstanceMetadataMap,
   elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
   selectedElement: ElementPath,
 ): Array<CanvasCommand> {
   if (
@@ -92,16 +90,7 @@ function setFlexDirectionSwapAxesSingleElement(
     metadata,
     elementPathTree,
     selectedElement,
-  ).flatMap((child) =>
-    swapAxesCommands(
-      metadata,
-      child,
-      elementPathTree,
-      allElementProps,
-      currentFlexDirection,
-      direction,
-    ),
-  )
+  ).flatMap((child) => swapAxesCommands(metadata, child, currentFlexDirection, direction))
 
   if (commands.length === 0) {
     return []
@@ -113,18 +102,17 @@ function setFlexDirectionSwapAxesSingleElement(
   ]
 }
 
-export const setFlexDirectionSwapAxes = (direction: FlexDirection): InspectorStrategy => ({
+export const setFlexDirectionSwapAxes = (
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  selectedElementPaths: ElementPath[],
+  direction: FlexDirection,
+): InspectorStrategy => ({
   name: 'Swap fill axes',
-  strategy: (metadata, selectedElementPaths, elementPathTree, allElementProps) =>
+  strategy: () =>
     nullOrNonEmpty(
       selectedElementPaths.flatMap((path) =>
-        setFlexDirectionSwapAxesSingleElement(
-          direction,
-          metadata,
-          elementPathTree,
-          allElementProps,
-          path,
-        ),
+        setFlexDirectionSwapAxesSingleElement(direction, metadata, elementPathTree, path),
       ),
     ),
 })

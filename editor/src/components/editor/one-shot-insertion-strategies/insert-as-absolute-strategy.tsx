@@ -2,7 +2,7 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import type { NodeModules, ElementPath } from '../../../core/shared/project-file-types'
+import type { NodeModules } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import { front } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
@@ -20,18 +20,16 @@ import type { InsertionPath } from '../store/insertion-path'
 
 export const insertAsAbsoluteStrategy = (
   element: ElementToReparent,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
   nodeModules: NodeModules,
 ): InspectorStrategy => ({
   name: 'Insert as absolute',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
+  strategy: () => {
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
       allElementProps,

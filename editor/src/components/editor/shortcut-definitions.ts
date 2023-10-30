@@ -7,7 +7,6 @@ import {
   getKeysFromComplexMap,
   getValueFromComplexMap,
 } from '../../utils/map'
-import { CSSProperties } from 'twind'
 
 const key = Keyboard.key
 
@@ -44,7 +43,6 @@ export const DUPLICATE_SELECTION_SHORTCUT = 'duplicate-selection'
 export const TOGGLE_BACKGROUND_SHORTCUT = 'toggle-background'
 export const UNWRAP_ELEMENT_SHORTCUT = 'unwrap-element'
 export const WRAP_ELEMENT_PICKER_SHORTCUT = 'wrap-element-picker'
-export const WRAP_ELEMENT_DEFAULT_SHORTCUT = 'wrap-element-default'
 export const GROUP_ELEMENT_PICKER_SHORTCUT = 'group-element-picker'
 export const GROUP_ELEMENT_DEFAULT_SHORTCUT = 'group-element-default'
 export const TOGGLE_HIDDEN_SHORTCUT = 'toggle-hidden'
@@ -151,7 +149,6 @@ const shortcutDetailsWithDefaults: ShortcutDetails = {
     key('g', ['cmd', 'shift']),
   ),
   [WRAP_ELEMENT_PICKER_SHORTCUT]: shortcut('Wrap elements with a selected element.', key('w', [])),
-  [WRAP_ELEMENT_DEFAULT_SHORTCUT]: shortcut('Wrap elements with a div.', key('w', 'cmd')),
   [GROUP_ELEMENT_PICKER_SHORTCUT]: shortcut(
     'Group elements with a selected element.',
     key('g', []),

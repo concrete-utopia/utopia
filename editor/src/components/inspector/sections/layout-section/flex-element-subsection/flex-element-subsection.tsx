@@ -320,11 +320,13 @@ const FlexWidthControls = React.memo(() => {
     (value: CSSNumber, transient: boolean) => {
       executeFirstApplicableStrategy(
         dispatch,
-        editorStateRef.current.metadata,
-        editorStateRef.current.selectedViews,
-        editorStateRef.current.elementPathTree,
-        editorStateRef.current.allElementProps,
-        setPropFixedSizeStrategies(transient ? 'mid-interaction' : 'always', 'horizontal', value),
+        setPropFixedSizeStrategies(
+          transient ? 'mid-interaction' : 'always',
+          editorStateRef.current.metadata,
+          editorStateRef.current.selectedViews,
+          'horizontal',
+          value,
+        ),
       )
     },
     [dispatch, editorStateRef],
@@ -355,11 +357,13 @@ const FlexHeightControls = React.memo(() => {
     (value: CSSNumber, transient: boolean) => {
       executeFirstApplicableStrategy(
         dispatch,
-        editorStateRef.current.metadata,
-        editorStateRef.current.selectedViews,
-        editorStateRef.current.elementPathTree,
-        editorStateRef.current.allElementProps,
-        setPropFixedSizeStrategies(transient ? 'mid-interaction' : 'always', 'vertical', value),
+        setPropFixedSizeStrategies(
+          transient ? 'mid-interaction' : 'always',
+          editorStateRef.current.metadata,
+          editorStateRef.current.selectedViews,
+          'vertical',
+          value,
+        ),
       )
     },
     [dispatch, editorStateRef],

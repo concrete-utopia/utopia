@@ -2715,6 +2715,7 @@ export function createFakeMetadataForElement(
     parentElement?.specialSizeMeasurements.padding ??
     sides(undefined, undefined, undefined, undefined)
   specialSizeMeasurements.parentFlexGap = parentElement?.specialSizeMeasurements.gap ?? 0
+  specialSizeMeasurements.coordinateSystemBounds = zeroCanvasRect
 
   return elementInstanceMetadata(
     path,

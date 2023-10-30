@@ -215,29 +215,28 @@ export function useToInsert(): (elementToInsert: InsertMenuItem | null) => void 
         return
       }
 
-      executeFirstApplicableStrategy(
-        dispatch,
-        jsxMetadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        [
-          insertAsAbsoluteStrategy(
-            element,
-            targetParent.value.parentPath,
-            builtInDependenciesRef.current,
-            projectContentsRef.current,
-            nodeModulesRef.current.files,
-          ),
-          insertAsStaticStrategy(
-            element,
-            targetParent.value.parentPath,
-            builtInDependenciesRef.current,
-            projectContentsRef.current,
-            nodeModulesRef.current.files,
-          ),
-        ],
-      )
+      executeFirstApplicableStrategy(dispatch, [
+        insertAsAbsoluteStrategy(
+          element,
+          jsxMetadataRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          targetParent.value.parentPath,
+          builtInDependenciesRef.current,
+          projectContentsRef.current,
+          nodeModulesRef.current.files,
+        ),
+        insertAsStaticStrategy(
+          element,
+          jsxMetadataRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+          targetParent.value.parentPath,
+          builtInDependenciesRef.current,
+          projectContentsRef.current,
+          nodeModulesRef.current.files,
+        ),
+      ])
     },
     [
       allElementPropsRef,

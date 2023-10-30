@@ -848,18 +848,10 @@ export function resizeToFitCommands(
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
-      metadata,
-      selectedViews,
-      elementPathTree,
-      allElementProps,
-      setPropHugStrategies('horizontal'),
+      setPropHugStrategies(metadata, selectedViews, elementPathTree, 'horizontal'),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
-      metadata,
-      selectedViews,
-      elementPathTree,
-      allElementProps,
-      setPropHugStrategies('vertical'),
+      setPropHugStrategies(metadata, selectedViews, elementPathTree, 'vertical'),
     ) ?? []),
   ]
   return commands
@@ -868,23 +860,13 @@ export function resizeToFitCommands(
 export function resizeToFillCommands(
   metadata: ElementInstanceMetadataMap,
   selectedViews: Array<ElementPath>,
-  elementPathTree: ElementPathTrees,
-  allElementProps: AllElementProps,
 ): Array<CanvasCommand> {
   const commands = [
     ...(commandsForFirstApplicableStrategy(
-      metadata,
-      selectedViews,
-      elementPathTree,
-      allElementProps,
-      setPropFillStrategies('horizontal', 'default', false),
+      setPropFillStrategies(metadata, selectedViews, 'horizontal', 'default', false),
     ) ?? []),
     ...(commandsForFirstApplicableStrategy(
-      metadata,
-      selectedViews,
-      elementPathTree,
-      allElementProps,
-      setPropFillStrategies('vertical', 'default', false),
+      setPropFillStrategies(metadata, selectedViews, 'vertical', 'default', false),
     ) ?? []),
   ]
   return commands

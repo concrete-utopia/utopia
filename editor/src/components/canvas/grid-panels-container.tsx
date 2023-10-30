@@ -1,22 +1,13 @@
 import React from 'react'
 import { accumulate } from '../../core/shared/array-utils'
+import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
 import { GridPanel } from './grid-panel'
 import {
   CanvasPaneDragTargets,
   ColumnDragTargets,
   GridColumnResizeHandle,
 } from './grid-panels-drag-targets'
-import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
 import {
-  GridHorizontalExtraPadding,
-  GridMenuDefaultPanels,
-  GridMenuWidth,
-  GridPaneWidth,
-  GridPanelHorizontalGapHalf,
-  GridPanelVerticalGapHalf,
-  GridPanelsStateAtom,
-  GridVerticalExtraPadding,
-  NumberOfColumns,
   normalizeColIndex,
   updateLayout,
   useColumnWidths,
@@ -24,9 +15,14 @@ import {
   useResolvedGridPanels,
   wrapAroundColIndex,
 } from './grid-panels-state'
-import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
-import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
-import { useAtom } from 'jotai'
+import type { LayoutUpdate, StoredPanel } from './stored-layout'
+import {
+  GridHorizontalExtraPadding,
+  GridPanelHorizontalGapHalf,
+  GridPanelVerticalGapHalf,
+  GridVerticalExtraPadding,
+  NumberOfColumns,
+} from './stored-layout'
 
 export const GridPanelsContainer = React.memo(() => {
   const [panelState, setPanelState] = useGridPanelState()
