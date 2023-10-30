@@ -3,12 +3,12 @@ import { colorTheme } from '../../uuiui'
 import { LeftPaneComponent } from '../navigator/left-pane'
 import { CodeEditorPane, RightPane } from './design-panel-root'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
-import type { GridPanelData, LayoutUpdate, StoredPanel } from './grid-panels-state'
+import type { StoredPanel, LayoutUpdate, GridPanelData } from './stored-layout'
 import {
+  GridPanelsNumberOfRows,
   GridPanelHorizontalGapHalf,
   GridPanelVerticalGapHalf,
-  GridPanelsNumberOfRows,
-} from './grid-panels-state'
+} from './stored-layout'
 
 interface GridPanelProps {
   onDrop: (itemToMove: StoredPanel, newPosition: LayoutUpdate) => void

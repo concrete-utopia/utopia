@@ -6,17 +6,8 @@ import {
   ColumnDragTargets,
   GridColumnResizeHandle,
 } from './grid-panels-drag-targets'
-import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
+import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
 import {
-  GridHorizontalExtraPadding,
-  GridMenuDefaultPanels,
-  GridMenuWidth,
-  GridPaneWidth,
-  GridPanelHorizontalGapHalf,
-  GridPanelVerticalGapHalf,
-  GridPanelsStateAtom,
-  GridVerticalExtraPadding,
-  NumberOfColumns,
   normalizeColIndex,
   updateLayout,
   useColumnWidths,
@@ -24,12 +15,36 @@ import {
   useResolvedGridPanels,
   wrapAroundColIndex,
 } from './grid-panels-state'
-import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
-import { usePropControlledStateV2 } from '../inspector/common/inspector-utils'
-import { useAtom } from 'jotai'
+import type { StoredPanel, LayoutUpdate } from './stored-layout'
+import {
+  NumberOfColumns,
+  GridPanelVerticalGapHalf,
+  GridVerticalExtraPadding,
+  GridPanelHorizontalGapHalf,
+  GridHorizontalExtraPadding,
+} from './stored-layout'
+import { loadUserPreferences, saveUserPreferences } from '../common/user-preferences'
 
 export const GridPanelsContainer = React.memo(() => {
+  const [loaded, setLoaded] = React.useState(false)
   const [panelState, setPanelState] = useGridPanelState()
+
+  React.useEffect(() => {
+    async function loadPrefs() {
+      const prefs = await loadUserPreferences()
+      setPanelState(prefs.storedLayout)
+    }
+    if (!loaded) {
+      setLoaded(true)
+      void loadPrefs()
+    }
+  }, [loaded, setPanelState])
+
+  React.useEffect(() => {
+    if (loaded) {
+      void saveUserPreferences({ storedLayout: panelState })
+    }
+  }, [loaded, panelState])
 
   const orderedPanels = useResolvedGridPanels()
 
