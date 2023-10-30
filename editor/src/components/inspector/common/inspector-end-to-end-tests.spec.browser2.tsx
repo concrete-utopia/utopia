@@ -4144,50 +4144,55 @@ describe('inspector tests with real metadata', () => {
 })
 
 describe('Inspector fields and code remain in sync', () => {
-  // TODO flipping this to true highlights a big issue with adjustCssLengthProperties, see https://github.com/concrete-utopia/utopia/pull/4421
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   const propsToTest = [
     {
       stylePropKey: 'top',
-      controlTestId: 'position-top-number-input',
+      controlTestId: 'frame-top-number-input',
       startValue: '200em',
-      endValue: '300em',
-    },
-    {
-      stylePropKey: 'left',
-      controlTestId: 'position-left-number-input',
-      startValue: '200cm',
-      endValue: '300cm',
-    },
-    {
-      stylePropKey: 'bottom',
-      controlTestId: 'position-bottom-number-input',
-      startValue: '200vw',
-      endValue: '300vw',
-    },
-    {
-      stylePropKey: 'right',
-      controlTestId: 'position-right-number-input',
-      startValue: '200%',
-      endValue: '300%',
+      endValue: 4800,
+      startValueDisplayed: '3200',
+      endValueDisplayed: '4800',
     },
     {
       stylePropKey: 'width',
-      controlTestId: 'hug-fixed-fill-width',
+      controlTestId: 'frame-width-number-input',
+      startValue: '200em',
+      endValue: 4800,
+      startValueDisplayed: '3200',
+      endValueDisplayed: '4800',
+    },
+    {
+      stylePropKey: 'left',
+      controlTestId: 'frame-left-number-input',
+      startValue: '200cm',
+      endValue: 11338,
+      startValueDisplayed: '7559',
+      endValueDisplayed: '11338',
+    },
+    {
+      stylePropKey: 'width',
+      controlTestId: 'frame-width-number-input',
       startValue: '200pt',
-      endValue: '300pt',
+      endValue: 400,
+      startValueDisplayed: '266.5',
+      endValueDisplayed: '400',
     },
     {
       stylePropKey: 'height',
-      controlTestId: 'hug-fixed-fill-height',
+      controlTestId: 'frame-height-number-input',
       startValue: 200,
       endValue: 300,
+      startValueDisplayed: '200',
+      endValueDisplayed: '300',
     },
     {
       stylePropKey: 'height',
-      controlTestId: 'hug-fixed-fill-height',
+      controlTestId: 'frame-height-number-input',
       startValue: '200pt',
-      endValue: '100pt',
+      endValue: 400,
+      startValueDisplayed: '266.5',
+      endValueDisplayed: '400',
     },
   ]
 
@@ -4212,52 +4217,61 @@ describe('Inspector fields and code remain in sync', () => {
   }
   const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
-  propsToTest.forEach(({ stylePropKey, controlTestId, startValue, endValue }) => {
-    it(`Updating the code updates the Inspector for prop ${stylePropKey}`, async () => {
-      const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
-      const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
+  propsToTest.forEach(
+    ({
+      stylePropKey,
+      controlTestId,
+      startValue,
+      startValueDisplayed,
+      endValue,
+      endValueDisplayed,
+    }) => {
+      it(`Updating the code updates the Inspector for prop ${stylePropKey}`, async () => {
+        const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
+        const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
 
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(startCodeSnippet),
-        'await-first-dom-report',
-      )
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(startCodeSnippet),
+          'await-first-dom-report',
+        )
 
-      await selectElement(targetPath, renderResult)
+        await selectElement(targetPath, renderResult)
 
-      // Capture the starting value
-      const startControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
+        // Capture the starting value
+        const startControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
 
-      // Simulate a code change
-      const updateActions = actionsForUpdatedCode(endCodeSnippet)
-      await dispatchActionsAndWaitUntilComplete(updateActions, renderResult)
+        // Simulate a code change
+        const updateActions = actionsForUpdatedCode(endCodeSnippet)
+        await dispatchActionsAndWaitUntilComplete(updateActions, renderResult)
 
-      // Capture the new value
-      const endControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
+        // Capture the new value
+        const endControlValue = await getControlValue(controlTestId, renderResult.renderedDOM)
 
-      expect(startControlValue).toEqual(`${startValue}`)
-      expect(endControlValue).toEqual(`${endValue}`)
-    })
+        expect(startControlValue).toEqual(`${startValueDisplayed}`)
+        expect(endControlValue).toEqual(`${endValueDisplayed}`)
+      })
 
-    it(`Updating the Inspector updates the code for prop ${stylePropKey}`, async () => {
-      const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
-      const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
+      it(`Updating the Inspector updates the code for prop ${stylePropKey}`, async () => {
+        const startCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, startValue)
+        const endCodeSnippet = makeCodeSnippetWithKeyValue(stylePropKey, endValue)
 
-      const renderResult = await renderTestEditorWithCode(
-        makeTestProjectCodeWithSnippet(startCodeSnippet),
-        'await-first-dom-report',
-      )
+        const renderResult = await renderTestEditorWithCode(
+          makeTestProjectCodeWithSnippet(startCodeSnippet),
+          'await-first-dom-report',
+        )
 
-      await selectElement(targetPath, renderResult)
+        await selectElement(targetPath, renderResult)
 
-      // Update the value via the Inspector control
-      await setControlValue(controlTestId, `${endValue}`, renderResult.renderedDOM)
+        // Update the value via the Inspector control
+        await setControlValue(controlTestId, `${endValueDisplayed}`, renderResult.renderedDOM)
 
-      // Ensure the printed code is as correct
-      expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
-        makeTestProjectCodeWithSnippet(endCodeSnippet),
-      )
-    })
-  })
+        // Ensure the printed code is as correct
+        expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
+          makeTestProjectCodeWithSnippet(endCodeSnippet),
+        )
+      })
+    },
+  )
 })
 
 describe('Undo behavior in inspector', () => {

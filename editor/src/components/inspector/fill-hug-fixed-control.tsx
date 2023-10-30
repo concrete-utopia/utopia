@@ -66,6 +66,7 @@ import type { InspectorStrategy } from './inspector-strategies/inspector-strateg
 import { executeFirstApplicableStrategy } from './inspector-strategies/inspector-strategy'
 import type { GridRowVariant } from './widgets/ui-grid-row'
 import { UIGridRow } from './widgets/ui-grid-row'
+import type { ElementPathTrees } from '../../core/shared/element-path-tree'
 
 export const FillFixedHugControlId = (segment: 'width' | 'height'): string =>
   `hug-fixed-fill-${segment}`
@@ -349,11 +350,13 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
         }
         executeFirstApplicableStrategy(
           dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFixedSizeStrategies('always', axis, value),
+          setPropFixedSizeStrategies(
+            'always',
+            metadataRef.current,
+            selectedViewsRef.current,
+            axis,
+            value,
+          ),
         )
         return
       }
@@ -364,11 +367,13 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
         }
         executeFirstApplicableStrategy(
           dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFillStrategies(axis, value.value, false),
+          setPropFillStrategies(
+            metadataRef.current,
+            selectedViewsRef.current,
+            axis,
+            value.value,
+            false,
+          ),
         )
       }
       if (
@@ -377,11 +382,13 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
       ) {
         executeFirstApplicableStrategy(
           dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
-          setPropFixedSizeStrategies('always', axis, value),
+          setPropFixedSizeStrategies(
+            'always',
+            metadataRef.current,
+            selectedViewsRef.current,
+            axis,
+            value,
+          ),
         )
       }
     },
@@ -390,8 +397,6 @@ const WidthHeightNumberControl = React.memo((props: { dimension: 'width' | 'heig
       axis,
       currentValue.fixedHugFill?.type,
       metadataRef,
-      allElementPropsRef,
-      elementPathTreeRef,
       selectedViewsRef,
       elementOrParentGroupRef,
     ],
@@ -485,6 +490,10 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
               )
             : currentComputedValue
         const strategy = strategyForChangingFillFixedHugType(
+          metadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
           valueToUse,
           axis,
           value,
@@ -492,10 +501,7 @@ function useOnSubmitFixedFillHugType(dimension: 'width' | 'height') {
         )
         executeFirstApplicableStrategy(
           dispatch,
-          metadataRef.current,
-          selectedViewsRef.current,
-          elementPathTreeRef.current,
-          allElementPropsRef.current,
+
           strategy,
         )
       }
@@ -642,6 +648,10 @@ export const GroupConstraintSelect = React.memo(
 GroupConstraintSelect.displayName = 'GroupConstraintSelect'
 
 function strategyForChangingFillFixedHugType(
+  metadata: ElementInstanceMetadataMap,
+  selectedElements: ElementPath[],
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   fixedValue: number,
   axis: Axis,
   mode: FixedHugFillMode,
@@ -649,15 +659,21 @@ function strategyForChangingFillFixedHugType(
 ): Array<InspectorStrategy> {
   switch (mode) {
     case 'fill':
-      return setPropFillStrategies(axis, 'default', otherAxisSetToFill)
+      return setPropFillStrategies(metadata, selectedElements, axis, 'default', otherAxisSetToFill)
     case 'hug':
-      return setPropHugStrategies(axis)
+      return setPropHugStrategies(metadata, selectedElements, elementPathTree, axis)
     case 'fixed':
     case 'scaled':
     case 'detected':
     case 'computed':
     case 'hug-group':
-      return setPropFixedSizeStrategies('always', axis, cssNumber(fixedValue, null))
+      return setPropFixedSizeStrategies(
+        'always',
+        metadata,
+        selectedElements,
+        axis,
+        cssNumber(fixedValue, null),
+      )
     default:
       assertNever(mode)
   }

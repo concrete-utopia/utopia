@@ -1,5 +1,5 @@
-import { RemixContext } from '@remix-run/react/dist/components'
-import type { RouteModules, RouteModule } from '@remix-run/react/dist/routeModules'
+import { UNSAFE_RemixContext as RemixContext } from '@remix-run/react'
+import type { UNSAFE_RouteModules as RouteModules } from '@remix-run/react'
 import React from 'react'
 import type { DataRouteObject, Location } from 'react-router'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -17,6 +17,7 @@ import { forceNotNull } from '../../../core/shared/optional-utils'
 import { AlwaysFalse, usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
 
+type RouteModule = RouteModules[keyof RouteModules]
 type RouterType = ReturnType<typeof createMemoryRouter>
 
 interface RemixNavigationContext {

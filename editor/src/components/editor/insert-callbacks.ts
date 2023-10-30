@@ -196,30 +196,28 @@ export function insertWithStrategies(
     indexPosition: IndexPosition
   }>,
 ): insertWithStrategiesResult | null {
-  const result = resultForFirstApplicableStrategy(
-    editorContext.metadata,
-    editorContext.selectedViews,
-    editorContext.elementPathTree,
-    editorContext.allElementProps,
-    [
-      insertAsAbsoluteStrategy(
-        element,
-        targetParent,
-        editorContext.builtInDependencies,
-        editorContext.projectContents,
-        editorContext.nodeModules.files,
-        { toPosition: insertionContext.position, indexPosition: insertionContext.indexPosition },
-      ),
-      insertAsStaticStrategy(
-        element,
-        targetParent,
-        editorContext.builtInDependencies,
-        editorContext.projectContents,
-        editorContext.nodeModules.files,
-        { indexPosition: insertionContext.indexPosition },
-      ),
-    ],
-  )
+  const result = resultForFirstApplicableStrategy([
+    insertAsAbsoluteStrategy(
+      element,
+      editorContext.metadata,
+      editorContext.elementPathTree,
+      editorContext.allElementProps,
+      targetParent,
+      editorContext.builtInDependencies,
+      editorContext.projectContents,
+      editorContext.nodeModules.files,
+    ),
+    insertAsStaticStrategy(
+      element,
+      editorContext.metadata,
+      editorContext.elementPathTree,
+      editorContext.allElementProps,
+      targetParent,
+      editorContext.builtInDependencies,
+      editorContext.projectContents,
+      editorContext.nodeModules.files,
+    ),
+  ])
 
   if (result == null) {
     return null

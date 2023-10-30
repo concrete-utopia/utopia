@@ -49,9 +49,15 @@ type WrapInDivError =
   | 'Cannot determine the bounding box of selected elements'
   | 'Cannot insert into parent of selected elements'
 
-export const wrapInDivStrategy = (projectContents: ProjectContentTreeRoot): InspectorStrategy => ({
+export const wrapInDivStrategy = (
+  metadata: ElementInstanceMetadataMap,
+  selectedViews: ElementPath[],
+  elementPathTrees: ElementPathTrees,
+  allElementProps: AllElementProps,
+  projectContents: ProjectContentTreeRoot,
+): InspectorStrategy => ({
   name: 'Wrap in div',
-  strategy: (metadata, selectedViews, elementPathTrees, allElementProps) => {
+  strategy: () => {
     const result = wrapInDivCommands(
       metadata,
       elementPathTrees,

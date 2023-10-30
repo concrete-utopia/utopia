@@ -34,6 +34,9 @@ const DefaultOptions: InsertAsAbsoluteOptions = {
 
 export const insertAsAbsoluteStrategy = (
   element: ToReparent,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
@@ -41,12 +44,7 @@ export const insertAsAbsoluteStrategy = (
   options: Partial<InsertAsAbsoluteOptions> = DefaultOptions,
 ): CustomInspectorStrategy<{ newPath: ElementPath }> => ({
   name: 'Insert as absolute',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
+  strategy: () => {
     const { indexPosition, toPosition }: InsertAsAbsoluteOptions = { ...DefaultOptions, ...options }
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,

@@ -11,7 +11,6 @@ import type { ToReparent } from '../../canvas/canvas-strategies/strategies/repar
 import { getReparentOutcome } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { foldAndApplyCommandsInner } from '../../canvas/commands/commands'
 import { updateFunctionCommand } from '../../canvas/commands/update-function-command'
-import { updateSelectedViews } from '../../canvas/commands/update-selected-views-command'
 import type { CustomInspectorStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import type { AllElementProps } from '../store/editor-state'
 import type { InsertionPath } from '../store/insertion-path'
@@ -26,6 +25,9 @@ const DefaultOptions: InsertAsStaticOptions = {
 
 export const insertAsStaticStrategy = (
   element: ToReparent,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
   builtInDependencies: BuiltInDependencies,
   projectContents: ProjectContentTreeRoot,
@@ -33,12 +35,7 @@ export const insertAsStaticStrategy = (
   options: Partial<InsertAsStaticOptions> = DefaultOptions,
 ): CustomInspectorStrategy<{ newPath: ElementPath }> => ({
   name: 'Insert as absolute',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
+  strategy: () => {
     const { indexPosition }: InsertAsStaticOptions = { ...DefaultOptions, ...options }
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,

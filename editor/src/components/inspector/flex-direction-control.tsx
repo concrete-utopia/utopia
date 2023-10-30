@@ -168,14 +168,12 @@ function maybeSetFlexDirection(
 ) {
   const strategies =
     desiredFlexDirection == null
-      ? removeFlexDirectionStrategies()
-      : updateFlexDirectionStrategies(desiredFlexDirection)
-  executeFirstApplicableStrategy(
-    dispatch,
-    metadata,
-    selectedViews,
-    elementPathTree,
-    allElementProps,
-    strategies,
-  )
+      ? removeFlexDirectionStrategies(metadata, selectedViews)
+      : updateFlexDirectionStrategies(
+          metadata,
+          selectedViews,
+          elementPathTree,
+          desiredFlexDirection,
+        )
+  executeFirstApplicableStrategy(dispatch, strategies)
 }

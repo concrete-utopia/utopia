@@ -2,7 +2,7 @@ import type { BuiltInDependencies } from '../../../core/es-modules/package-manag
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
-import type { NodeModules, ElementPath } from '../../../core/shared/project-file-types'
+import type { NodeModules } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
 import { autoLayoutParentAbsoluteOrStatic } from '../../canvas/canvas-strategies/strategies/reparent-helpers/reparent-strategy-parent-lookup'
@@ -14,6 +14,9 @@ import type { UnwrapInspectorStrategy } from './unwrap-strategies-common'
 
 export const reparentToUnwrapAsAbsoluteStrategy = (
   element: PathToReparent,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
@@ -21,12 +24,7 @@ export const reparentToUnwrapAsAbsoluteStrategy = (
   nodeModules: NodeModules,
 ): UnwrapInspectorStrategy => ({
   name: 'Reparent to unwrap as absolute',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
+  strategy: () => {
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
       allElementProps,
