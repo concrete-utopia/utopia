@@ -1108,7 +1108,11 @@ export const MetadataUtils = {
     }
 
     const elementValue = element.element.value
-    if (!MetadataUtils.intrinsicElementThatSupportsChildren(elementValue)) {
+    if (
+      isJSXElement(elementValue) &&
+      isIntrinsicHTMLElement(elementValue.name) &&
+      !intrinsicHTMLElementNamesThatSupportChildren.includes(elementValue.name.baseVariable)
+    ) {
       return false
     }
     if (isJSXConditionalExpression(elementValue)) {
