@@ -26,7 +26,7 @@ import {
 import { loadUserPreferences, saveUserPreferences } from '../common/user-preferences'
 
 export const GridPanelsContainer = React.memo(() => {
-  const [loaded, setLoaded] = React.useState(false)
+  const [panelStateLoaded, setPanelStateLoaded] = React.useState(false)
   const [panelState, setPanelState] = useGridPanelState()
 
   React.useEffect(() => {
@@ -34,17 +34,17 @@ export const GridPanelsContainer = React.memo(() => {
       const prefs = await loadUserPreferences()
       setPanelState(prefs.storedLayout)
     }
-    if (!loaded) {
-      setLoaded(true)
+    if (!panelStateLoaded) {
+      setPanelStateLoaded(true)
       void loadPrefs()
     }
-  }, [loaded, setPanelState])
+  }, [panelStateLoaded, setPanelState])
 
   React.useEffect(() => {
-    if (loaded) {
+    if (panelStateLoaded) {
       void saveUserPreferences({ storedLayout: panelState })
     }
-  }, [loaded, panelState])
+  }, [panelStateLoaded, panelState])
 
   const orderedPanels = useResolvedGridPanels()
 
