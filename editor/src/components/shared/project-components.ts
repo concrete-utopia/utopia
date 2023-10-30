@@ -657,7 +657,7 @@ export function getComponentGroups(
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
 
-  addDependencyDescriptor(null, insertableComponentGroupDiv(), divComponentGroup)
+  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup)
 
   // Add HTML entries.
   addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
