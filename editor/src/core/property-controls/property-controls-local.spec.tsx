@@ -88,7 +88,6 @@ describe('registered property controls', () => {
     await wait(10) // this is quite ugly but we want to wait for a timeout(0) in ui-jsx-canvas before calling validateControlsToCheck
     const editorState = renderResult.getEditorState().editor
 
-    // TODO: figure this out before merge
     expect(editorState.propertyControlsInfo['/src/storyboard.js']).toMatchInlineSnapshot(`
       Object {
         "Card": Object {
