@@ -84,8 +84,6 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   const dispatch = useDispatch()
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
   const originalGlobalFrame: CanvasRectangle = useEditorState(
     Substores.metadata,
@@ -153,30 +151,25 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             frameUpdate.edgePosition === EdgePositionTop ||
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
-            executeFirstApplicableStrategy(
-              dispatch,
-              metadataRef.current,
-              selectedViewsRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              [moveInspectorStrategy(projectContentsRef.current, frameUpdate.edgeMovement)],
-            )
+            executeFirstApplicableStrategy(dispatch, [
+              moveInspectorStrategy(
+                metadataRef.current,
+                selectedViewsRef.current,
+                projectContentsRef.current,
+                frameUpdate.edgeMovement,
+              ),
+            ])
           } else {
-            executeFirstApplicableStrategy(
-              dispatch,
-              metadataRef.current,
-              selectedViewsRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              [
-                resizeInspectorStrategy(
-                  projectContentsRef.current,
-                  originalGlobalFrame,
-                  frameUpdate.edgePosition,
-                  frameUpdate.edgeMovement,
-                ),
-              ],
-            )
+            executeFirstApplicableStrategy(dispatch, [
+              resizeInspectorStrategy(
+                metadataRef.current,
+                selectedViewsRef.current,
+                projectContentsRef.current,
+                originalGlobalFrame,
+                frameUpdate.edgePosition,
+                frameUpdate.edgeMovement,
+              ),
+            ])
           }
           break
         case 'DIRECT_FRAME_UPDATE':
@@ -185,52 +178,34 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
             frameUpdate.edgePosition === EdgePositionLeft
           ) {
             const leftOrTop = frameUpdate.edgePosition === EdgePositionLeft ? 'left' : 'top'
-            executeFirstApplicableStrategy(
-              dispatch,
-              metadataRef.current,
-              selectedViewsRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              [
-                directMoveInspectorStrategy(
-                  projectContentsRef.current,
-                  leftOrTop,
-                  frameUpdate.edgeValue,
-                ),
-              ],
-            )
+            executeFirstApplicableStrategy(dispatch, [
+              directMoveInspectorStrategy(
+                metadataRef.current,
+                selectedViewsRef.current,
+                projectContentsRef.current,
+                leftOrTop,
+                frameUpdate.edgeValue,
+              ),
+            ])
           } else {
             const widthOrHeight =
               frameUpdate.edgePosition === EdgePositionRight ? 'width' : 'height'
-            executeFirstApplicableStrategy(
-              dispatch,
-              metadataRef.current,
-              selectedViewsRef.current,
-              elementPathTreeRef.current,
-              allElementPropsRef.current,
-              [
-                directResizeInspectorStrategy(
-                  projectContentsRef.current,
-                  widthOrHeight,
-                  frameUpdate.edgeValue,
-                ),
-              ],
-            )
+            executeFirstApplicableStrategy(dispatch, [
+              directResizeInspectorStrategy(
+                metadataRef.current,
+                selectedViewsRef.current,
+                projectContentsRef.current,
+                widthOrHeight,
+                frameUpdate.edgeValue,
+              ),
+            ])
           }
           break
         default:
           assertNever(frameUpdate)
       }
     },
-    [
-      allElementPropsRef,
-      dispatch,
-      elementPathTreeRef,
-      metadataRef,
-      originalGlobalFrame,
-      projectContentsRef,
-      selectedViewsRef,
-    ],
+    [dispatch, metadataRef, originalGlobalFrame, projectContentsRef, selectedViewsRef],
   )
 
   return (

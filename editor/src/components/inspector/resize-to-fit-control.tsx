@@ -3,7 +3,6 @@ import type { CSSProperties } from 'react'
 import React from 'react'
 import { safeIndex } from '../../core/shared/array-utils'
 import { FlexRow, Icn, Tooltip } from '../../uuiui'
-import { convertGroupToFrameCommands } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
 import { treatElementAsGroupLike } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { applyCommandsAction } from '../editor/actions/action-creators'
 import { useDispatch } from '../editor/store/dispatch-context'
@@ -125,24 +124,12 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
 
   const onResizeToFill = React.useCallback(() => {
     if (isFillApplicable) {
-      const commands = resizeToFillCommands(
-        metadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-      )
+      const commands = resizeToFillCommands(metadataRef.current, selectedViewsRef.current)
       if (commands.length > 0) {
         dispatch([applyCommandsAction(commands)])
       }
     }
-  }, [
-    allElementPropsRef,
-    dispatch,
-    metadataRef,
-    elementPathTreeRef,
-    selectedViewsRef,
-    isFillApplicable,
-  ])
+  }, [dispatch, metadataRef, selectedViewsRef, isFillApplicable])
 
   const onSetToFixedSize = React.useCallback(() => {
     const commands = setToFixedSizeCommands(

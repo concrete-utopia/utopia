@@ -28,12 +28,16 @@ function removeFlexConvertToAbsoluteOne(
   ]
 }
 
-export const removeFlexConvertToAbsolute: InspectorStrategy = {
+export const removeFlexConvertToAbsolute = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
+): InspectorStrategy => ({
   name: 'Remove flex layout and convert children to absolute',
-  strategy: (metadata, elementPaths, pathTrees) => {
+  strategy: () => {
     const commands = filterKeepFlexContainers(metadata, elementPaths).flatMap((path) =>
       removeFlexConvertToAbsoluteOne(metadata, pathTrees, path),
     )
     return nullOrNonEmpty(commands)
   },
-}
+})

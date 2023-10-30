@@ -6,7 +6,10 @@ import { jsx } from '@emotion/react'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import * as EP from '../../../core/shared/element-path'
 import { useColorTheme } from '../../../uuiui'
-import type { ElementInstanceMetadata } from '../../../core/shared/element-template'
+import type {
+  ElementInstanceMetadata,
+  ElementInstanceMetadataMap,
+} from '../../../core/shared/element-template'
 import { clearHighlightedViews, setHighlightedView } from '../../editor/actions/action-creators'
 import { selectComponents } from '../../editor/actions/meta-actions'
 import type { CanvasPoint, CanvasRectangle } from '../../../core/shared/math-utils'
@@ -41,6 +44,7 @@ import {
 } from '../../inspector/inspector-common'
 import type { CanvasCommand } from '../commands/commands'
 import { setProperty } from '../commands/set-property-command'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 
 export const ZeroSizedControlTestID = 'zero-sized-control'
 export const ZeroSizedEventsControlTestID = `${ZeroSizedControlTestID}-events`
@@ -145,9 +149,13 @@ export const ZeroSizedElementControls = controlForStrategyMemoized(
   },
 )
 
-const convertFlexChildToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
+const convertFlexChildToSizedStrategy = (
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  element: ElementInstanceMetadata,
+): InspectorStrategy => ({
   name: 'convert flex child to non-zero frame',
-  strategy: (metadata, _, pathTrees) => {
+  strategy: () => {
     if (
       element.specialSizeMeasurements.parentLayoutSystem !== 'flex' ||
       element.specialSizeMeasurements.parentFlexDirection == null
@@ -169,9 +177,13 @@ function maybeAddDisplayInlineBlockCommands(
     : []
 }
 
-const convertToSizedStrategy = (element: ElementInstanceMetadata): InspectorStrategy => ({
+const convertToSizedStrategy = (
+  metadata: ElementInstanceMetadataMap,
+  pathTrees: ElementPathTrees,
+  element: ElementInstanceMetadata,
+): InspectorStrategy => ({
   name: 'convert element to non-zero frame',
-  strategy: (metadata, _, pathTrees) => {
+  strategy: () => {
     return [
       ...sizeToDimensionsFromFrame(metadata, pathTrees, element.elementPath, {
         width: 100,
@@ -300,7 +312,7 @@ interface ZeroSizeResizeControlWrapperProps {
 
 export const ZeroSizeResizeControlWrapper = controlForStrategyMemoized(
   ({ targets }: ZeroSizeResizeControlWrapperProps) => {
-    const { maybeHighlightOnHover, maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
+    const { maybeClearHighlightsOnHoverEnd } = useMaybeHighlightElement()
     const zeroSizeElements = useEditorState(
       Substores.metadata,
       (store) => {
@@ -363,7 +375,6 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
   const { dispatch, element, maybeClearHighlightsOnHoverEnd } = props
   const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
   const elementPathTreesRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
 
   const onControlMouseDown = useZeroSizeStartDrag(element.elementPath)
 
@@ -398,15 +409,11 @@ export const ZeroSizeResizeControl = React.memo((props: ZeroSizeResizeControlPro
       return
     }
 
-    executeFirstApplicableStrategy(
-      dispatch,
-      metadataRef.current,
-      [],
-      elementPathTreesRef.current,
-      allElementPropsRef.current,
-      [convertFlexChildToSizedStrategy(element), convertToSizedStrategy(element)],
-    )
-  }, [allElementPropsRef, dispatch, element, elementPathTreesRef, metadataRef])
+    executeFirstApplicableStrategy(dispatch, [
+      convertFlexChildToSizedStrategy(metadataRef.current, elementPathTreesRef.current, element),
+      convertToSizedStrategy(metadataRef.current, elementPathTreesRef.current, element),
+    ])
+  }, [dispatch, element, elementPathTreesRef, metadataRef])
 
   return (
     <CanvasOffsetWrapper>

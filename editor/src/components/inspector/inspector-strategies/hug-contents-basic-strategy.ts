@@ -9,10 +9,9 @@ import {
   setCssLengthProperty,
   setExplicitCssValue,
 } from '../../canvas/commands/set-css-length-command'
-import { SetProperty, setProperty } from '../../canvas/commands/set-property-command'
 import { showToastCommand } from '../../canvas/commands/show-toast-command'
 import type { FlexDirection } from '../common/css-utils'
-import { cssKeyword, cssUnitlessLength } from '../common/css-utils'
+import { cssKeyword } from '../common/css-utils'
 import type { Axis } from '../inspector-common'
 import {
   detectFillHugFixedState,
@@ -86,9 +85,14 @@ function hugContentsSingleElement(
   ]
 }
 
-export const hugContentsBasicStrategy = (axis: Axis): InspectorStrategy => ({
+export const hugContentsBasicStrategy = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
+  axis: Axis,
+): InspectorStrategy => ({
   name: 'Set to Hug',
-  strategy: (metadata, elementPaths, pathTrees) => {
+  strategy: () => {
     const elements = elementPaths.filter(
       (path) =>
         hugContentsApplicableForContainer(metadata, pathTrees, path) ||

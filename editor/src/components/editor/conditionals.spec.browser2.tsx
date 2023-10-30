@@ -1,35 +1,24 @@
-/* eslint-disable jest/expect-expect */
 import { act, within } from '@testing-library/react'
 import { forElementChildOptic } from '../../core/model/common-optics'
 import { conditionalWhenTrueOptic, maybeConditionalExpression } from '../../core/model/conditionals'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
 import { isRight } from '../../core/shared/either'
 import * as EP from '../../core/shared/element-path'
-import {
-  emptyComments,
-  isJSExpressionValue,
-  isJSXConditionalExpression,
-  jsExpressionValue,
-  jsxConditionalExpression,
-} from '../../core/shared/element-template'
+import { isJSExpressionValue, isJSXConditionalExpression } from '../../core/shared/element-template'
 import { filtered, fromField, fromTypeGuard } from '../../core/shared/optics/optic-creators'
 import { unsafeGet } from '../../core/shared/optics/optic-utilities'
 import type { Optic } from '../../core/shared/optics/optics'
 import { forceNotNull } from '../../core/shared/optional-utils'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { selectComponentsForTest } from '../../utils/utils.test-utils'
+import { searchInFloatingMenu, selectComponentsForTest } from '../../utils/utils.test-utils'
+import type { EditorRenderResult } from '../canvas/ui-jsx.test-utils'
 import {
   TestScenePath,
   getPrintedUiJsCode,
   makeTestProjectCodeWithSnippet,
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
-import {
-  deleteSelected,
-  selectComponents,
-  unwrapElements,
-  wrapInElement,
-} from '../editor/actions/action-creators'
+import { deleteSelected, selectComponents, unwrapElements } from '../editor/actions/action-creators'
 import { ConditionalSectionTestId } from '../inspector/sections/layout-section/conditional-section'
 import type { EditorStorePatched } from './store/editor-state'
 import type { InsertionPath } from './store/insertion-path'
@@ -408,23 +397,10 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const conditional = jsxConditionalExpression(
-        'cond',
-        jsExpressionValue(true, emptyComments),
-        'true',
-        jsExpressionValue(null, emptyComments),
-        jsExpressionValue(null, emptyComments),
-        emptyComments,
-      )
-
       const targetPath = EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb'])
 
-      await act(async () => {
-        await renderResult.dispatch(
-          [wrapInElement([targetPath], { element: conditional, importsToAdd: {} })],
-          true,
-        )
-      })
+      await selectComponentsForTest(renderResult, [targetPath])
+      await wrapInConditional(renderResult)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -449,27 +425,12 @@ describe('conditionals', () => {
         makeTestProjectCodeWithSnippet(startSnippet),
         'await-first-dom-report',
       )
-
-      const conditional = jsxConditionalExpression(
-        'cond',
-        jsExpressionValue(true, emptyComments),
-        'true',
-        jsExpressionValue(null, emptyComments),
-        jsExpressionValue(null, emptyComments),
-        emptyComments,
-      )
-
-      const targetPaths = [
+      await selectComponentsForTest(renderResult, [
         EP.appendNewElementPath(TestScenePath, ['aaa', 'bbb']),
         EP.appendNewElementPath(TestScenePath, ['aaa', 'ccc']),
-      ]
+      ])
 
-      await act(async () => {
-        await renderResult.dispatch(
-          [wrapInElement(targetPaths, { element: conditional, importsToAdd: {} })],
-          true,
-        )
-      })
+      await wrapInConditional(renderResult)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -501,15 +462,6 @@ describe('conditionals', () => {
         'await-first-dom-report',
       )
 
-      const conditional = jsxConditionalExpression(
-        'cond',
-        jsExpressionValue(true, emptyComments),
-        'true',
-        jsExpressionValue(null, emptyComments),
-        jsExpressionValue(null, emptyComments),
-        emptyComments,
-      )
-
       const targetPath = forceNotNull(
         `Missing ${targetUID} element`,
         Object.keys(renderResult.getEditorState().editor.jsxMetadata).find((path) =>
@@ -517,12 +469,8 @@ describe('conditionals', () => {
         ),
       )
 
-      await act(async () => {
-        await renderResult.dispatch(
-          [wrapInElement([EP.fromString(targetPath)], { element: conditional, importsToAdd: {} })],
-          true,
-        )
-      })
+      await selectComponentsForTest(renderResult, [EP.fromString(targetPath)])
+      await wrapInConditional(renderResult)
 
       expect(getPrintedUiJsCode(renderResult.getEditorState())).toEqual(
         makeTestProjectCodeWithSnippet(`
@@ -1163,3 +1111,8 @@ describe('conditionals', () => {
     })
   })
 })
+
+async function wrapInConditional(renderResult: EditorRenderResult) {
+  await pressKey('w') // open the wrap menu
+  await searchInFloatingMenu(renderResult, 'Condition')
+}

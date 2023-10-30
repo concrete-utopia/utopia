@@ -3,7 +3,7 @@ import { createSelector } from 'reselect'
 import { cartesianProduct } from '../../core/shared/array-utils'
 import type { Size } from '../../core/shared/math-utils'
 import { size } from '../../core/shared/math-utils'
-import { UtopiaTheme, colorTheme, useColorTheme } from '../../uuiui'
+import { UtopiaTheme, colorTheme } from '../../uuiui'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FlexDirection } from './common/css-utils'
@@ -267,32 +267,26 @@ export const NineBlockControl = React.memo(() => {
 
   const metadataRef = useRefEditorState(metadataSelector)
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
-  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const flexDirectionRef = useRefEditorState(flexDirectionSelector)
 
   const setAlignItemsJustifyContent = React.useCallback(
     (intendedFlexAlignment: StartCenterEnd, intendedJustifyContent: StartCenterEnd) => {
       const strategies = isFlexColumn(flexDirectionRef.current ?? DefaultFlexDirection)
-        ? setFlexAlignJustifyContentStrategies(intendedJustifyContent, intendedFlexAlignment)
-        : setFlexAlignJustifyContentStrategies(intendedFlexAlignment, intendedJustifyContent)
-      executeFirstApplicableStrategy(
-        dispatch,
-        metadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        strategies,
-      )
+        ? setFlexAlignJustifyContentStrategies(
+            metadataRef.current,
+            selectedViewsRef.current,
+            intendedJustifyContent,
+            intendedFlexAlignment,
+          )
+        : setFlexAlignJustifyContentStrategies(
+            metadataRef.current,
+            selectedViewsRef.current,
+            intendedFlexAlignment,
+            intendedJustifyContent,
+          )
+      executeFirstApplicableStrategy(dispatch, strategies)
     },
-    [
-      allElementPropsRef,
-      dispatch,
-      flexDirectionRef,
-      metadataRef,
-      elementPathTreeRef,
-      selectedViewsRef,
-    ],
+    [dispatch, flexDirectionRef, metadataRef, selectedViewsRef],
   )
 
   const paddingControlsForHover: Array<CanvasControlWithProps<SubduedPaddingControlProps>> =

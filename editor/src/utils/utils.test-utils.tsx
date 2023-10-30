@@ -55,7 +55,7 @@ import {
 } from '../core/shared/project-file-types'
 import { foldEither, right } from '../core/shared/either'
 import Utils from './utils'
-import type { SimpleRectangle, WindowRectangle } from '../core/shared/math-utils'
+import type { SimpleRectangle } from '../core/shared/math-utils'
 import { canvasRectangle, localRectangle, negate, offsetRect } from '../core/shared/math-utils'
 import {
   createSceneUidFromIndex,
@@ -73,14 +73,14 @@ import type { StrategyState } from '../components/canvas/canvas-strategies/inter
 import { createEmptyStrategyState } from '../components/canvas/canvas-strategies/interaction-state'
 import type { EditorRenderResult } from '../components/canvas/ui-jsx.test-utils'
 import { selectComponents } from '../components/editor/actions/action-creators'
-import { fireEvent } from '@testing-library/react'
+import { act, fireEvent, queryByAttribute } from '@testing-library/react'
 import type { FeatureName } from './feature-switches'
 import { isFeatureEnabled, setFeatureEnabled } from './feature-switches'
 import { getUtopiaID } from '../core/shared/uid-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/remix-derived-data'
-import { UTOPIA_IRRECOVERABLE_ERROR_MESSAGE } from '../components/editor/store/dispatch'
 import { getCanvasRectangleFromElement } from '../core/shared/dom-utils'
 import { CanvasContainerID } from '../components/canvas/canvas-types'
+import { CanvasToolbarSearchTestID } from '../components/editor/canvas-toolbar'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -574,4 +574,16 @@ export function boundingClientRectToCanvasRectangle(
   const canvasBounds = offsetRect(canvasRectangle(elementBounds), negate(canvasRootRectangle))
 
   return canvasBounds
+}
+
+export async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
+  const floatingMenu = editor.renderedDOM.getByTestId(CanvasToolbarSearchTestID)
+  const searchBox = queryByAttribute('type', floatingMenu, 'text')!
+
+  await act(() => {
+    fireEvent.focus(searchBox)
+    fireEvent.change(searchBox, { target: { value: query } })
+    fireEvent.blur(searchBox)
+    fireEvent.keyDown(searchBox, { key: 'Enter', keyCode: 13, metaKey: true })
+  })
 }
