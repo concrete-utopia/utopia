@@ -142,9 +142,7 @@ function useGetRoutes() {
 
     function addLoaderAndActionToRoutes(innerRoutes: DataRouteObject[]) {
       innerRoutes.forEach((route) => {
-        // FIXME Adding a loader function to the 'root' route causes the `createShouldRevalidate` to fail, because
-        // we only ever pass in an empty object for the `routeModules` and never mutate it
-        const creatorForRoute = route.id === 'root' ? null : creators[route.id]
+        const creatorForRoute = creators[route.id] ?? null
         if (creatorForRoute != null) {
           route.action = (args: any) =>
             creatorForRoute
