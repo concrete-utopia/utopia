@@ -282,7 +282,7 @@ describe('Absolute Move Strategy', () => {
           `
         <View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
           data-uid='bbb'
           data-testid='bbb'
         />
@@ -323,7 +323,7 @@ describe('Absolute Move Strategy', () => {
           `
         <View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '65px', top: 65, width: 250, height: 300 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, width: 250, height: 300 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -379,7 +379,7 @@ describe('Absolute Move Strategy', () => {
           `
           <View style={{ ...(props.style || {}) }} data-uid='aaa'>
             <View
-              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 100, bottom: 50, width: 250, height: 300 }}
               data-uid='bbb'
               data-testid='bbb'
             />
@@ -401,7 +401,7 @@ describe('Absolute Move Strategy', () => {
           `
           <View style={{ ...(props.style || {}) }} data-uid='aaa'>
             <View
-              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, right: 35, bottom: 35, width: 250, height: 300 }}
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 65, top: 65, right: 85, bottom: 35, width: 250, height: 300 }}
               data-uid='bbb'
               data-testid='bbb'
             />
@@ -411,14 +411,13 @@ describe('Absolute Move Strategy', () => {
       )
     })
 
-    // TODO needs design review
-    it('keeps expressions intact', async () => {
+    it('overrides expressions + fires toast', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
           `
         <View style={{ ...(props.style || {}) }} data-uid='aaa'>
           <View
-            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50 + 5, top: 50 + props.top, width: 250, height: 300 }}
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50 + 5, top: 50 + (props.top ?? 0), width: 250, height: 300 }}
             data-uid='bbb'
             data-testid='bbb'
           />
@@ -428,8 +427,6 @@ describe('Absolute Move Strategy', () => {
         'await-first-dom-report',
       )
 
-      const initialEditorCode = getPrintedUiJsCode(editor.getEditorState())
-
       const targetElement = EP.fromString(
         `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:aaa/bbb`,
       )
@@ -438,8 +435,23 @@ describe('Absolute Move Strategy', () => {
 
       await dragByPixels(editor, windowPoint({ x: 15, y: 15 }), 'bbb')
 
-      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(initialEditorCode)
+      expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(
+        makeTestProjectCodeWithSnippet(
+          `
+          <View style={{ ...(props.style || {}) }} data-uid='aaa'>
+            <View
+              style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 70, top: 65, width: 250, height: 300 }}
+              data-uid='bbb'
+              data-testid='bbb'
+            />
+          </View>
+          `,
+        ),
+      )
+
+      expect(editor.getEditorState().editor.toasts.length).toBe(1)
     })
+
     it('works with percentages', async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippet(
