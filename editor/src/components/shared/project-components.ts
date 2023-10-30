@@ -293,7 +293,7 @@ function makeHTMLDescriptor(
   extraPropertyControls: PropertyControls,
   attributes?: () => JSXAttributes,
 ): ComponentDescriptor {
-  const supportsChildren = intrinsicHTMLElementNamesThatSupportChildren.includes(tag) // TODO: maybe circ dep
+  const supportsChildren = intrinsicHTMLElementNamesThatSupportChildren.includes(tag)
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
