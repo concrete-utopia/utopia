@@ -17,6 +17,7 @@ import { InspectorPropsContext } from './common/property-path-hooks'
 import { PinControl, PinHeightControl, PinWidthControl } from './controls/pin-control'
 import {
   allElementsAreGroupChildren,
+  allElementsArePositionedAbsolutelySelector,
   anySelectedElementGroupOrChildOfGroup,
 } from './fill-hug-fixed-control'
 import { selectedViewsSelector } from './inpector-selectors'
@@ -51,10 +52,22 @@ export const ConstraintsSection = React.memo(() => {
     allElementsAreGroupChildren,
     'ConstraintsSection onlyGroupChildrenSelected',
   )
+  const allElementsArePositionedAbsolutely = useEditorState(
+    Substores.metadata,
+    allElementsArePositionedAbsolutelySelector,
+    'ConstraintsSection allElementsArePositionedAbsolutely',
+  )
 
   const showSection = React.useMemo(() => {
-    return noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected
-  }, [noGroupOrGroupChildrenSelected, onlyGroupChildrenSelected])
+    return (
+      allElementsArePositionedAbsolutely &&
+      (noGroupOrGroupChildrenSelected || onlyGroupChildrenSelected)
+    )
+  }, [
+    noGroupOrGroupChildrenSelected,
+    onlyGroupChildrenSelected,
+    allElementsArePositionedAbsolutely,
+  ])
 
   if (!showSection) {
     return null
@@ -321,6 +334,10 @@ const ChildConstraintSelect = React.memo(
     const onSubmit = React.useCallback(
       (option: SelectOption) => {
         const requestedPins: RequestedPins = option.value
+        if (activeOption.label === option.label) {
+          // using the same *label* as a noop to ensure consistency between the different dispatches
+          return
+        }
         dispatch(
           isGroupChild === 'group-child'
             ? getConstraintAndFrameChangeActionsForGroupChild(
@@ -340,7 +357,7 @@ const ChildConstraintSelect = React.memo(
               ),
         )
       },
-      [dispatch, propertyTarget, editorRef, isGroupChild],
+      [dispatch, propertyTarget, editorRef, isGroupChild, activeOption],
     )
 
     return (

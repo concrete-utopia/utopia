@@ -65,7 +65,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`698`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`720`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 

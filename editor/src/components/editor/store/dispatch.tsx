@@ -95,6 +95,8 @@ type DispatchResultFields = {
 
 export type DispatchResult = EditorStoreFull & DispatchResultFields
 
+const cannotUndoRedoToastId = 'cannot-undo-or-redo'
+
 function processAction(
   dispatchEvent: EditorDispatch,
   editorStoreUnpatched: EditorStoreUnpatched,
@@ -111,10 +113,38 @@ function processAction(
     return processActions(dispatchEvent, working, action.actions, spyCollector)
   } else if (action.action === 'UNDO' && !History.canUndo(working.history)) {
     // Bail early and make no changes.
-    return working
+    return processActions(
+      dispatchEvent,
+      working,
+      [
+        EditorActions.addToast(
+          notice(
+            `Can't undo, reached the end of the undo history.`,
+            'NOTICE',
+            false,
+            cannotUndoRedoToastId,
+          ),
+        ),
+      ],
+      spyCollector,
+    )
   } else if (action.action === 'REDO' && !History.canRedo(working.history)) {
     // Bail early and make no changes.
-    return working
+    return processActions(
+      dispatchEvent,
+      working,
+      [
+        EditorActions.addToast(
+          notice(
+            `Can't redo, reached the end of the undo history.`,
+            'NOTICE',
+            false,
+            cannotUndoRedoToastId,
+          ),
+        ),
+      ],
+      spyCollector,
+    )
   } else if (action.action === 'SET_SHORTCUT') {
     return {
       ...working,

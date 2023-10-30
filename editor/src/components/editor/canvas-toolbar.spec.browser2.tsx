@@ -1,11 +1,9 @@
-import { queryByAttribute, fireEvent } from '@testing-library/react'
-import { act } from 'react-dom/test-utils'
 import { BakedInStoryboardUID } from '../../core/model/scene-utils'
 import { createTestProjectWithMultipleFiles } from '../../sample-projects/sample-project-utils.test-utils'
 import {
   selectComponentsForTest,
   expectSingleUndo2Saves,
-  expectNoAction,
+  searchInFloatingMenu,
 } from '../../utils/utils.test-utils'
 import {
   FOR_TESTS_setNextGeneratedUid,
@@ -33,7 +31,6 @@ import {
 } from '../canvas/ui-jsx.test-utils'
 import {
   CanvasToolbarEditButtonID,
-  CanvasToolbarSearchTestID,
   InsertConditionalButtonTestId,
   InsertMenuButtonTestId,
   PlayModeButtonTestId,
@@ -1548,16 +1545,4 @@ async function wrapViaAddElementPopup(editor: EditorRenderResult, query: string)
 async function convertViaAddElementPopup(editor: EditorRenderResult, query: string) {
   await pressKey('c')
   await searchInFloatingMenu(editor, query)
-}
-
-async function searchInFloatingMenu(editor: EditorRenderResult, query: string) {
-  const floatingMenu = editor.renderedDOM.getByTestId(CanvasToolbarSearchTestID)
-  const searchBox = queryByAttribute('type', floatingMenu, 'text')!
-
-  await act(() => {
-    fireEvent.focus(searchBox)
-    fireEvent.change(searchBox, { target: { value: query } })
-    fireEvent.blur(searchBox)
-    fireEvent.keyDown(searchBox, { key: 'Enter', keyCode: 13, metaKey: true })
-  })
 }
