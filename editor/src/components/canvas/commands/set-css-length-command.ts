@@ -11,6 +11,7 @@ import {
   getModifiableJSXAttributeAtPath,
   jsxSimpleAttributeToValue,
 } from '../../../core/shared/jsx-attributes'
+import { roundTo } from '../../../core/shared/math-utils'
 import type { ElementPath, PropertyPath } from '../../../core/shared/project-file-types'
 import * as PP from '../../../core/shared/property-path'
 import type { EditorState, EditorStatePatch } from '../../editor/store/editor-state'
@@ -135,7 +136,10 @@ export const runSetCssLengthProperty: CommandFunction<SetCssLengthProperty> = (
     command.value.parentDimensionPx != null
   ) {
     const currentValuePercent = parsePercentResult.value
-    const valueInPercent = (command.value.valuePx / command.value.parentDimensionPx) * 100
+    const valueInPercent = roundTo(
+      (command.value.valuePx / command.value.parentDimensionPx) * 100,
+      2,
+    )
     const newValueCssNumber: CSSNumber = {
       value: valueInPercent,
       unit: currentValuePercent.unit,
