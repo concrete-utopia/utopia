@@ -37,10 +37,10 @@ import json5 from 'json5'
 import { load } from '../../../components/editor/actions/actions'
 import { when } from '../../../utils/react-conditionals'
 import { useTriggerForkProject } from '../../editor/persistence-hooks'
-import { SettingsPanel } from '../../inspector/sections/settings-panel/inspector-settingspanel'
 import { saveUserPreferencesDefaultLayout } from '../../common/user-preferences'
 import { useGridPanelState } from '../../canvas/grid-panels-state'
 import { notice } from '../../common/notice'
+import { gridMenuDefaultPanels } from '../../canvas/stored-layout'
 
 const themeOptions = [
   {
@@ -211,14 +211,27 @@ export const SettingsPane = React.memo(() => {
 
   const onForkProjectClicked = useTriggerForkProject()
 
-  const [panelState] = useGridPanelState()
+  const [panelState, setPanelState] = useGridPanelState()
 
-  const onSavePanelsLayout = React.useCallback(() => {
+  const onSavePanelsDefaultLayout = React.useCallback(() => {
     void saveUserPreferencesDefaultLayout(panelState)
     dispatch([
-      EditorActions.addToast(notice('Saved panels layout as default for new project.', 'SUCCESS')),
+      EditorActions.addToast(
+        notice('Saved current panels layout as default for new projects.', 'SUCCESS'),
+      ),
     ])
   }, [panelState, dispatch])
+
+  const onResetPanelsLayout = React.useCallback(() => {
+    setPanelState(gridMenuDefaultPanels())
+    dispatch([EditorActions.addToast(notice('Restored project panels layout.', 'SUCCESS'))])
+  }, [dispatch, setPanelState])
+
+  const onResetPanelsDefaultLayout = React.useCallback(async () => {
+    await saveUserPreferencesDefaultLayout(gridMenuDefaultPanels())
+    setPanelState(gridMenuDefaultPanels())
+    dispatch([EditorActions.addToast(notice('Restored default panels layout.', 'SUCCESS'))])
+  }, [dispatch, setPanelState])
 
   return (
     <FlexColumn
@@ -309,22 +322,32 @@ export const SettingsPane = React.memo(() => {
               style={{ width: 150 }}
             />
           </UIGridRow>
-          <UIGridRow padded variant='<---1fr--->|------172px-------|'>
+          <UIGridRow
+            padded
+            variant='<---1fr--->|------172px-------|'
+            style={{ alignItems: 'flex-start' }}
+          >
             <span style={{ color: colorTheme.fg2.value }}>Panels </span>
-            <Button
-              outline={false}
-              highlight
-              onClick={onSavePanelsLayout}
-              style={{
-                width: '100%',
-                cursor: 'pointer',
-                height: UtopiaTheme.layout.inputHeight.default,
-                background: colorTheme.dynamicBlue.value,
-                color: colorTheme.bg1.value,
-              }}
-            >
-              Save panels as default
-            </Button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <Button
+                outline={false}
+                highlight
+                onClick={onSavePanelsDefaultLayout}
+                style={{
+                  cursor: 'pointer',
+                  background: colorTheme.dynamicBlue.value,
+                  color: colorTheme.bg1.value,
+                }}
+              >
+                Set as default
+              </Button>
+              <Button outline={false} highlight spotlight onClick={onResetPanelsLayout}>
+                Reset for this project
+              </Button>
+              <Button outline={false} highlight spotlight onClick={onResetPanelsDefaultLayout}>
+                Restore defaults
+              </Button>
+            </div>
           </UIGridRow>
           <UIGridRow padded variant='<-------------1fr------------->'>
             <br />

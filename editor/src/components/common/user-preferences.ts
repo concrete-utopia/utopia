@@ -1,6 +1,6 @@
 import localforage from 'localforage'
 import type { StoredLayout } from '../canvas/stored-layout'
-import { GridMenuDefaultPanels } from '../canvas/stored-layout'
+import { gridMenuDefaultPanels } from '../canvas/stored-layout'
 
 export type UserPreferences = {
   panelsLayout: PanelsLayout
@@ -28,7 +28,7 @@ export const USER_PREFERENCES_KEY = 'utopia.userPreferences'
 export function defaultUserPreferences(): UserPreferences {
   return {
     panelsLayout: {
-      default: GridMenuDefaultPanels,
+      default: gridMenuDefaultPanels(),
       project: {},
     },
   }

@@ -16,17 +16,17 @@ import type {
   StoredPanel,
 } from './stored-layout'
 import {
-  GridMenuDefaultPanels,
   GridMenuMaxWidth,
   GridMenuMinWidth,
   GridPanelsNumberOfRows,
   IndexOfCanvas,
   NumberOfColumns,
+  gridMenuDefaultPanels,
   storedColumn,
   storedPanel,
 } from './stored-layout'
 
-export const GridPanelsStateAtom = atom(GridMenuDefaultPanels)
+export const GridPanelsStateAtom = atom(gridMenuDefaultPanels())
 
 export function useGridPanelState() {
   return useAtom(GridPanelsStateAtom)

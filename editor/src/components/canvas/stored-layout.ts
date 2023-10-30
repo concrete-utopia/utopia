@@ -95,12 +95,14 @@ export type AfterIndex = {
 export type RowUpdate = BeforeIndex | AfterIndex
 export type LayoutUpdate = ColumnUpdate | RowUpdate
 
-export const GridMenuDefaultPanels: StoredLayout = [
-  storedColumn([
-    storedPanel({ name: 'navigator', type: 'menu' }),
-    storedPanel({ name: 'code-editor', type: 'pane' }),
-  ]),
-  storedColumn([]),
-  storedColumn([]),
-  storedColumn([storedPanel({ name: 'inspector', type: 'menu' })]),
-]
+export function gridMenuDefaultPanels(): StoredLayout {
+  return [
+    storedColumn([
+      storedPanel({ name: 'navigator', type: 'menu' }),
+      storedPanel({ name: 'code-editor', type: 'pane' }),
+    ]),
+    storedColumn([]),
+    storedColumn([]),
+    storedColumn([storedPanel({ name: 'inspector', type: 'menu' })]),
+  ]
+}
