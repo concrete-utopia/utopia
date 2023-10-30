@@ -43,12 +43,25 @@ function useCreateExecutionScopes(): { [routeId: string]: MapLike<any> } {
   const hiddenInstancesRef = useRefEditorState((store) => store.editor.hiddenInstances)
   const displayNoneInstancesRef = useRefEditorState((store) => store.editor.displayNoneInstances)
 
+  const defaultExports = useEditorState(
+    Substores.derived,
+    (store) => {
+      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
+      return Object.values(routeModuleCreators).map(
+        (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
+      )
+    },
+    'useGetRouteModules defaultExports',
+  )
+
   let metadataContext: UiJsxCanvasContextData = forceNotNull(
     `Missing UiJsxCanvasCtxAtom provider`,
     usePubSubAtomReadOnly(UiJsxCanvasCtxAtom, AlwaysFalse),
   )
 
   return React.useMemo(() => {
+    const defaultExportsIgnored = defaultExports // Forcibly update the routeModules only when the default exports have changed
+
     if (remixDerivedDataRef.current == null) {
       return {}
     }
@@ -75,6 +88,7 @@ function useCreateExecutionScopes(): { [routeId: string]: MapLike<any> } {
 
     return executionScopes
   }, [
+    defaultExports,
     displayNoneInstancesRef,
     fileBlobsRef,
     hiddenInstancesRef,
@@ -88,22 +102,9 @@ function useGetRouteModules() {
   const remixDerivedDataRef = useRefEditorState((store) => store.derived.remixData)
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
-  const defaultExports = useEditorState(
-    Substores.derived,
-    (store) => {
-      const routeModuleCreators = store.derived.remixData?.routeModuleCreators ?? {}
-      return Object.values(routeModuleCreators).map(
-        (rmc) => getDefaultExportNameAndUidFromFile(projectContentsRef.current, rmc.filePath)?.name,
-      )
-    },
-    'useGetRouteModules defaultExports',
-  )
-
   const executionScopes = useCreateExecutionScopes()
 
   return React.useMemo(() => {
-    const defaultExportsIgnored = defaultExports // Forcibly update the routeModules only when the default exports have changed
-
     if (remixDerivedDataRef.current == null) {
       return null
     }
@@ -140,7 +141,7 @@ function useGetRouteModules() {
     }
 
     return routeModulesResult
-  }, [defaultExports, remixDerivedDataRef, projectContentsRef, executionScopes])
+  }, [remixDerivedDataRef, projectContentsRef, executionScopes])
 }
 
 function useGetRoutes() {
