@@ -25,11 +25,45 @@ import {
   storedColumn,
   storedPanel,
 } from './stored-layout'
+import {
+  loadUserPreferences,
+  getProjectStoredLayoutOrDefault,
+  saveUserPreferencesProjectLayout,
+} from '../common/user-preferences'
 
 export const GridPanelsStateAtom = atom(gridMenuDefaultPanels())
 
 export function useGridPanelState() {
-  return useAtom(GridPanelsStateAtom)
+  const [loaded, setLoaded] = React.useState(false)
+  const stateAtom = useAtom(GridPanelsStateAtom)
+  const [state, setState] = stateAtom
+
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'GridPanelsContainer projectId',
+  )
+
+  React.useEffect(() => {
+    if (projectId == null || loaded) {
+      return
+    }
+    setLoaded(true)
+    async function loadPrefs(id: string) {
+      const prefs = await loadUserPreferences()
+      setState(getProjectStoredLayoutOrDefault(prefs.panelsLayout, id))
+    }
+    void loadPrefs(projectId)
+  }, [loaded, setState, projectId])
+
+  React.useEffect(() => {
+    if (projectId == null || !loaded) {
+      return
+    }
+    void saveUserPreferencesProjectLayout(projectId, state)
+  }, [loaded, state, projectId])
+
+  return stateAtom
 }
 
 function useVisibleGridPanels() {

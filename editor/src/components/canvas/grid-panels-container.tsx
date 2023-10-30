@@ -1,12 +1,12 @@
 import React from 'react'
 import { accumulate } from '../../core/shared/array-utils'
+import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
 import { GridPanel } from './grid-panel'
 import {
   CanvasPaneDragTargets,
   ColumnDragTargets,
   GridColumnResizeHandle,
 } from './grid-panels-drag-targets'
-import { CanvasFloatingToolbars } from './canvas-floating-toolbars'
 import {
   normalizeColIndex,
   updateLayout,
@@ -15,48 +15,17 @@ import {
   useResolvedGridPanels,
   wrapAroundColIndex,
 } from './grid-panels-state'
-import type { StoredPanel, LayoutUpdate } from './stored-layout'
+import type { LayoutUpdate, StoredPanel } from './stored-layout'
 import {
-  NumberOfColumns,
+  GridHorizontalExtraPadding,
+  GridPanelHorizontalGapHalf,
   GridPanelVerticalGapHalf,
   GridVerticalExtraPadding,
-  GridPanelHorizontalGapHalf,
-  GridHorizontalExtraPadding,
+  NumberOfColumns,
 } from './stored-layout'
-import {
-  getProjectStoredLayoutOrDefault,
-  loadUserPreferences,
-  saveUserPreferencesProjectLayout,
-} from '../common/user-preferences'
-import { Substores, useEditorState } from '../editor/store/store-hook'
 
 export const GridPanelsContainer = React.memo(() => {
-  const [panelStateLoaded, setPanelStateLoaded] = React.useState(false)
   const [panelState, setPanelState] = useGridPanelState()
-  const projectId = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.id,
-    'GridPanelsContainer projectId',
-  )
-
-  React.useEffect(() => {
-    if (projectId == null || panelStateLoaded) {
-      return
-    }
-    setPanelStateLoaded(true)
-    async function loadPrefs(id: string) {
-      const prefs = await loadUserPreferences()
-      setPanelState(getProjectStoredLayoutOrDefault(prefs.panelsLayout, id))
-    }
-    void loadPrefs(projectId)
-  }, [panelStateLoaded, setPanelState, projectId])
-
-  React.useEffect(() => {
-    if (projectId == null || !panelStateLoaded) {
-      return
-    }
-    void saveUserPreferencesProjectLayout(projectId, panelState)
-  }, [panelStateLoaded, panelState, projectId])
 
   const orderedPanels = useResolvedGridPanels()
 
