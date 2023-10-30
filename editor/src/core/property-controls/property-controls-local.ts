@@ -19,6 +19,7 @@ import {
   objectKeyParser,
   optionalObjectKeyParser,
   parseArray,
+  parseBoolean,
   parseObject,
   parseString,
 } from '../../utils/value-parser-utils'
@@ -101,6 +102,7 @@ async function componentDescriptorForComponentToRegister(
   return mapEither((variants) => {
     return {
       componentName: componentName,
+      supportsChildren: componentToRegister.supportsChildren,
       properties: componentToRegister.properties,
       variants: variants,
     }
@@ -164,14 +166,16 @@ function parseComponentInsertOption(value: unknown): ParseResult<ComponentInsert
 }
 
 function parseComponentToRegister(value: unknown): ParseResult<ComponentToRegister> {
-  return applicative2Either(
-    (properties, variants) => {
+  return applicative3Either(
+    (properties, supportsChildren, variants) => {
       return {
         properties: properties,
+        supportsChildren: supportsChildren,
         variants: variants,
       }
     },
     objectKeyParser(fullyParsePropertyControls, 'properties')(value),
+    objectKeyParser(parseBoolean, 'supportsChildren')(value),
     objectKeyParser(parseArray(parseComponentInsertOption), 'variants')(value),
   )
 }

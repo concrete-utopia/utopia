@@ -4,7 +4,11 @@ import {
   hasStyleControls,
   propertyControlsForComponentInFile,
 } from '../../core/property-controls/property-controls-utils'
-import type { JSXAttributes } from '../../core/shared/element-template'
+import type {
+  JSXAttributes,
+  JSXElementChild,
+  UtopiaJSXComponent,
+} from '../../core/shared/element-template'
 import {
   emptyComments,
   jsExpressionValue,
@@ -39,13 +43,20 @@ import type {
 } from '../custom-code/code-file'
 import { clearComponentElementToInsertUniqueIDs } from '../custom-code/code-file'
 import { defaultElementStyle } from '../editor/defaults'
-import { getExportedComponentImports } from '../editor/export-utils'
+import {
+  getExportedComponentImports,
+  getExportedComponentImportsFromParseSuccess,
+} from '../editor/export-utils'
 import {
   groupJSXElement,
   groupJSXElementImportsToAdd,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import type { InsertMenuMode } from '../canvas/ui/floating-insert-menu-helpers'
 import { insertMenuModes } from '../canvas/ui/floating-insert-menu-helpers'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { elementUsesProperty } from '../../core/model/element-template-utils'
+import { intrinsicHTMLElementNamesThatSupportChildren } from '../../core/shared/dom-utils'
+import { getTopLevelElementByExportsDetail } from '../../core/model/project-file-utils'
 
 export type StylePropOption = 'do-not-add' | 'add-size'
 
@@ -283,12 +294,14 @@ function makeHTMLDescriptor(
   extraPropertyControls: PropertyControls,
   attributes?: () => JSXAttributes,
 ): ComponentDescriptor {
+  const supportsChildren = intrinsicHTMLElementNamesThatSupportChildren.includes(tag)
   const propertyControls: PropertyControls = {
     ...stockHTMLPropertyControls,
     ...extraPropertyControls,
   }
   return {
     properties: propertyControls,
+    supportsChildren: supportsChildren,
     variants: [
       {
         insertMenuLabel: tag,
@@ -377,6 +390,7 @@ const divComponentGroup = {
 const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
   conditional: {
     properties: {},
+    supportsChildren: true,
     variants: [
       {
         insertMenuLabel: 'Conditional',
@@ -397,6 +411,7 @@ const conditionalElementsDescriptors: ComponentDescriptorsForFile = {
 const groupElementsDescriptors: ComponentDescriptorsForFile = {
   group: {
     properties: {},
+    supportsChildren: true,
     variants: [
       {
         insertMenuLabel: 'Group',
@@ -422,6 +437,7 @@ export const fragmentComponentInfo: ComponentInfo = {
 const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
   fragment: {
     properties: {},
+    supportsChildren: true,
     variants: [fragmentComponentInfo],
   },
 }
@@ -429,6 +445,7 @@ const fragmentElementsDescriptors: ComponentDescriptorsForFile = {
 const samplesDescriptors: ComponentDescriptorsForFile = {
   sampleText: {
     properties: {},
+    supportsChildren: false,
     variants: [
       {
         insertMenuLabel: 'Sample text',
@@ -512,6 +529,27 @@ export function moveSceneToTheBeginningAndSetDefaultSize(
   return groups
 }
 
+function isDescriptorEligibleForMode(
+  insertMenuMode: InsertMenuMode,
+  component: ComponentDescriptor,
+): boolean {
+  return insertMenuMode === 'wrap' ? component.supportsChildren : true
+}
+
+function isUtopiaJSXComponentEligibleForMode(
+  insertMenuMode: InsertMenuMode,
+  element: UtopiaJSXComponent | null,
+): boolean {
+  if (insertMenuMode === 'wrap') {
+    return (
+      element != null &&
+      element.param != null &&
+      elementUsesProperty(element.rootElement, element.param, 'children')
+    )
+  }
+  return true
+}
+
 export function getComponentGroups(
   insertMenuMode: InsertMenuMode,
   packageStatus: PackageStatusMap,
@@ -524,33 +562,37 @@ export function getComponentGroups(
   // Add entries for the exported components of files within the project.
   walkContentsTree(projectContents, (fullPath: string, file: ProjectFile) => {
     if (isTextFile(file)) {
-      const possibleExportedComponents = getExportedComponentImports(
+      if (file.fileContents.parsed.type !== 'PARSE_SUCCESS') {
+        return
+      }
+      const parsed = file.fileContents.parsed
+      const possibleExportedComponents = getExportedComponentImportsFromParseSuccess(
         originatingPath,
         fullPath,
         file.fileContents.parsed,
       )
-      if (possibleExportedComponents != null) {
-        let insertableComponents: Array<InsertableComponent> = []
-        fastForEach(possibleExportedComponents, (exportedComponent) => {
-          const pathWithoutExtension = dropFileExtension(fullPath)
-          const propertyControls = propertyControlsForComponentInFile(
-            exportedComponent.listingName,
-            pathWithoutExtension,
-            propertyControlsInfo,
-          )
+      let insertableComponents: Array<InsertableComponent> = []
+      fastForEach(possibleExportedComponents, (exportedComponent) => {
+        const pathWithoutExtension = dropFileExtension(fullPath)
+        const propertyControls = propertyControlsForComponentInFile(
+          exportedComponent.listingName,
+          pathWithoutExtension,
+          propertyControlsInfo,
+        )
 
-          // Drill down into the property controls to see if this has an appropriate style object entry.
-          const stylePropOptions = hasStyleControls(propertyControls)
-            ? addSizeAndNotStyleProp
-            : doNotAddStyleProp
+        // Drill down into the property controls to see if this has an appropriate style object entry.
+        const stylePropOptions = hasStyleControls(propertyControls)
+          ? addSizeAndNotStyleProp
+          : doNotAddStyleProp
 
-          const propertyControlsForDependency =
-            propertyControlsInfo[fullPath] ?? propertyControlsInfo[pathWithoutExtension]
-          if (
-            propertyControlsForDependency != null &&
-            propertyControlsForDependency[exportedComponent.listingName] != null
-          ) {
-            const descriptor = propertyControlsForDependency[exportedComponent.listingName]
+        const propertyControlsForDependency =
+          propertyControlsInfo[fullPath] ?? propertyControlsInfo[pathWithoutExtension]
+        if (
+          propertyControlsForDependency != null &&
+          propertyControlsForDependency[exportedComponent.listingName] != null
+        ) {
+          const descriptor = propertyControlsForDependency[exportedComponent.listingName]
+          if (isDescriptorEligibleForMode(insertMenuMode, descriptor)) {
             fastForEach(descriptor.variants, (insertOption) => {
               insertableComponents.push(
                 insertableComponent(
@@ -562,7 +604,10 @@ export function getComponentGroups(
                 ),
               )
             })
-          } else {
+          }
+        } else {
+          const element = getTopLevelElementByExportsDetail(parsed, exportedComponent.listingName)
+          if (element == null || isUtopiaJSXComponentEligibleForMode(insertMenuMode, element)) {
             insertableComponents.push(
               insertableComponent(
                 exportedComponent.importsToAdd,
@@ -573,19 +618,18 @@ export function getComponentGroups(
               ),
             )
           }
-        })
-        result.push(
-          insertableComponentGroup(
-            insertableComponentGroupProjectComponent(fullPath),
-            insertableComponents,
-          ),
-        )
-      }
+        }
+      })
+      result.push(
+        insertableComponentGroup(
+          insertableComponentGroupProjectComponent(fullPath),
+          insertableComponents,
+        ),
+      )
     }
   })
 
   function addDependencyDescriptor(
-    moduleName: string | null,
     groupType: InsertableComponentGroupType,
     components: ComponentDescriptorsForFile,
   ): void {
@@ -597,42 +641,39 @@ export function getComponentGroups(
       const stylePropOptions = hasStyleControls(propertyControls)
         ? addSizeAndNotStyleProp
         : doNotAddStyleProp
-
-      fastForEach(component.variants, (insertOption) => {
-        insertableComponents.push(
-          insertableComponent(
-            insertOption.importsToAdd,
-            insertOption.elementToInsert,
-            insertOption.insertMenuLabel,
-            stylePropOptions,
-            null,
-          ),
-        )
-      })
+      if (isDescriptorEligibleForMode(insertMenuMode, component)) {
+        fastForEach(component.variants, (insertOption) => {
+          insertableComponents.push(
+            insertableComponent(
+              insertOption.importsToAdd,
+              insertOption.elementToInsert,
+              insertOption.insertMenuLabel,
+              stylePropOptions,
+              null,
+            ),
+          )
+        })
+      }
     })
     result.push(insertableComponentGroup(groupType, insertableComponents))
   }
 
-  addDependencyDescriptor(null, insertableComponentGroupDiv(), divComponentGroup)
+  addDependencyDescriptor(insertableComponentGroupDiv(), divComponentGroup)
 
   // Add HTML entries.
-  addDependencyDescriptor(null, insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
+  addDependencyDescriptor(insertableComponentGroupHTML(), basicHTMLElementsDescriptors)
 
   // Add conditionals group.
-  addDependencyDescriptor(
-    null,
-    insertableComponentGroupConditionals(),
-    conditionalElementsDescriptors,
-  )
+  addDependencyDescriptor(insertableComponentGroupConditionals(), conditionalElementsDescriptors)
 
   // Add fragment group.
-  addDependencyDescriptor(null, insertableComponentGroupFragment(), fragmentElementsDescriptors)
+  addDependencyDescriptor(insertableComponentGroupFragment(), fragmentElementsDescriptors)
 
   // Add samples group.
-  addDependencyDescriptor(null, { type: 'SAMPLES_GROUP' }, samplesDescriptors)
+  addDependencyDescriptor({ type: 'SAMPLES_GROUP' }, samplesDescriptors)
 
   // Add groups group.
-  addDependencyDescriptor(null, insertableComponentGroupGroups(), groupElementsDescriptors) // TODO instead of this, use createWrapInGroupActions!
+  addDependencyDescriptor(insertableComponentGroupGroups(), groupElementsDescriptors) // TODO instead of this, use createWrapInGroupActions!
 
   // Add entries for dependencies of the project.
   for (const dependency of dependencies) {
@@ -647,7 +688,6 @@ export function getComponentGroups(
         if (infoKey.startsWith(dependency.name)) {
           const propertyControlsForDependency = propertyControlsInfo[infoKey]
           addDependencyDescriptor(
-            dependency.name,
             insertableComponentGroupProjectDependency(dependency.name, dependencyStatus),
             propertyControlsForDependency,
           )

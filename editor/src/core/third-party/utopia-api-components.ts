@@ -6,7 +6,6 @@ import {
   defaultFlexRowOrColStyle,
   defaultRectangleElementStyle,
   defaultSceneElementStyle,
-  defaultTextElementStyle,
   defaultElementStyle,
 } from '../../components/editor/defaults'
 import type { JSExpression } from '../shared/element-template'
@@ -14,6 +13,7 @@ import { emptyComments, jsxAttributesEntry, jsxElementWithoutUID } from '../shar
 
 const BasicUtopiaComponentDescriptor = (
   name: string,
+  supportsChildren: boolean,
   styleProp: () => JSExpression,
 ): ComponentDescriptor => {
   return {
@@ -22,6 +22,7 @@ const BasicUtopiaComponentDescriptor = (
         control: 'style-controls',
       },
     },
+    supportsChildren: supportsChildren,
     variants: [
       {
         insertMenuLabel: name,
@@ -45,11 +46,13 @@ const BasicUtopiaComponentDescriptor = (
 }
 
 export const UtopiaApiComponents: ComponentDescriptorsForFile = {
-  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', defaultElementStyle),
-  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', defaultRectangleElementStyle),
-  View: BasicUtopiaComponentDescriptor('View', defaultElementStyle),
-  FlexRow: BasicUtopiaComponentDescriptor('FlexRow', defaultFlexRowOrColStyle),
-  FlexCol: BasicUtopiaComponentDescriptor('FlexCol', defaultFlexRowOrColStyle),
-  Scene: BasicUtopiaComponentDescriptor('Scene', () => defaultSceneElementStyle(null)),
-  RemixScene: BasicUtopiaComponentDescriptor('RemixScene', () => defaultSceneElementStyle(null)),
+  Ellipse: BasicUtopiaComponentDescriptor('Ellipse', false, defaultElementStyle),
+  Rectangle: BasicUtopiaComponentDescriptor('Rectangle', false, defaultRectangleElementStyle),
+  View: BasicUtopiaComponentDescriptor('View', true, defaultElementStyle),
+  FlexRow: BasicUtopiaComponentDescriptor('FlexRow', true, defaultFlexRowOrColStyle),
+  FlexCol: BasicUtopiaComponentDescriptor('FlexCol', true, defaultFlexRowOrColStyle),
+  Scene: BasicUtopiaComponentDescriptor('Scene', true, () => defaultSceneElementStyle(null)),
+  RemixScene: BasicUtopiaComponentDescriptor('RemixScene', false, () =>
+    defaultSceneElementStyle(null),
+  ),
 }

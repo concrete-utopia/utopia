@@ -1078,6 +1078,13 @@ export const MetadataUtils = {
       }
     }
   },
+  intrinsicElementThatSupportsChildren: (element: JSXElementChild) => {
+    return (
+      isJSXElement(element) &&
+      isIntrinsicHTMLElement(element.name) &&
+      intrinsicHTMLElementNamesThatSupportChildren.includes(element.name.baseVariable)
+    )
+  },
   targetTextEditable(
     metadata: ElementInstanceMetadataMap,
     pathTree: ElementPathTrees,
