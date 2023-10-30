@@ -109,9 +109,9 @@ describe('Keyboard Absolute Move Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '${
-            50 + moveX
-          }px', top: '${50 + moveY}px', width: 250, height: 300 }}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
+            moveX == 0 ? "'50px'" : 50 + moveX
+          }, top: ${moveY == 0 ? "'50px'" : 50 + moveY}, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -145,7 +145,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: 100, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -159,7 +159,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         makeTestProjectCodeWithSnippet(
           `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
-          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: ${50 - moveX}
+          style={{ backgroundColor: '#aaaaaa33', position: 'absolute', right: ${100 - moveX}
           , bottom: ${50 - moveY}, width: 250, height: 300 }}
           data-uid='bbb'
         />
@@ -194,7 +194,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 50, bottom: 50, width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 50, top: 50, right: 100, bottom: 50, width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -210,7 +210,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         <View
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${50 + moveX}, top: ${
             50 + moveY
-          } , right: ${50 - moveX}, bottom: ${50 - moveY}, width: 250, height: 300 }}
+          } , right: ${100 - moveX}, bottom: ${50 - moveY}, width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
@@ -219,7 +219,6 @@ describe('Keyboard Absolute Move Strategy', () => {
     },
   )
 
-  // TODO needs design review
   it.each([
     [['left'] as Array<KeyCharacter>, emptyModifiers, -1, 0],
     [['right'] as Array<KeyCharacter>, emptyModifiers, 1, 0],
@@ -234,7 +233,7 @@ describe('Keyboard Absolute Move Strategy', () => {
     [['left', 'up'] as Array<KeyCharacter>, shiftModifier, -10, -10],
     [['left', 'right'] as Array<KeyCharacter>, shiftModifier, 0, 0],
   ])(
-    'Key %s with modifiers %o keeps expressions intact',
+    'Key %s with modifiers %o replace expressions and fires toast',
     async (keys: Array<KeyCharacter>, modifiers: Modifiers, moveX: number, moveY: number) => {
       const targetElement = elementPath([
         ['scene-aaa', 'app-entity'],
@@ -256,7 +255,16 @@ describe('Keyboard Absolute Move Strategy', () => {
       const finalEditor = pressKeys(initialEditor, keyboardAbsoluteMoveStrategy, keys, modifiers)
 
       expect(testPrintCodeFromEditorState(finalEditor)).toEqual(
-        testPrintCodeFromEditorState(initialEditor),
+        makeTestProjectCodeWithSnippet(
+          `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
+          <View
+            style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: ${
+              moveX == 0 ? '50 + 5' : 50 + moveX
+            }, top: ${moveY == 0 ? '50 + props.top' : 50 + moveY}, width: 250, height: 300 }}
+            data-uid='bbb'
+          />
+        </View>`,
+        ),
       )
     },
   )
@@ -286,7 +294,7 @@ describe('Keyboard Absolute Move Strategy', () => {
         `
     <View style={{ ...(props.style || {}) }} data-uid='aaa'>
       <View
-        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '25%', top: '25%', width: 250, height: 300 }}
+        style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '12.5%', top: '12.5%', width: 250, height: 300 }}
         data-uid='bbb'
       />
     </View>
@@ -302,8 +310,8 @@ describe('Keyboard Absolute Move Strategy', () => {
             `<View style={{ ...(props.style || {}) }} data-uid='aaa'>
         <View
           style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: '${
-            25 + moveX * 0.25
-          }%', top: '${25 + moveY * 0.25}%', width: 250, height: 300 }}
+            12.5 + moveX * 0.25
+          }%', top: '${12.5 + moveY * 0.25}%', width: 250, height: 300 }}
           data-uid='bbb'
         />
       </View>`,
