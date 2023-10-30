@@ -34,10 +34,10 @@ import { useGridPanelDraggable } from '../canvas/grid-panels-dnd'
 import { FlexRow } from 'utopia-api'
 import {
   useUpdateGridPanelLayout,
-  type StoredPanel,
   useUpdateGridPanelLayoutPutCodeEditorBelowNavigator,
 } from '../canvas/grid-panels-state'
 import { NO_OP } from '../../core/shared/utils'
+import type { StoredPanel } from '../canvas/stored-layout'
 
 interface ProjectTitleProps {}
 

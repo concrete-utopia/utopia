@@ -4,14 +4,14 @@ import { colorTheme } from '../../uuiui'
 import { usePropControlledRef_DANGEROUS } from '../inspector/common/inspector-utils'
 import { CSSCursor } from './canvas-types'
 import { useGridPanelDragInfo, useGridPanelDropArea } from './grid-panels-dnd'
-import type { LayoutUpdate, StoredPanel } from './grid-panels-state'
+import { wrapAroundColIndex } from './grid-panels-state'
+import type { StoredPanel, LayoutUpdate } from './stored-layout'
 import {
   ExtraHorizontalDropTargetPadding,
   GridPanelHorizontalGapHalf,
   IndexOfCanvas,
   ResizeColumnWidth,
-  wrapAroundColIndex,
-} from './grid-panels-state'
+} from './stored-layout'
 
 export const ColumnDragTargets = React.memo(
   (props: {

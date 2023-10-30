@@ -1,123 +1,69 @@
+import immutableUpdate from 'immutability-helper'
+import { atom, useAtom, useSetAtom } from 'jotai'
 import findLastIndex from 'lodash.findlastindex'
 import React from 'react'
-import { v4 as UUID } from 'uuid'
 import { accumulate, insert, removeAll, removeIndexFromArray } from '../../core/shared/array-utils'
 import { clamp, mod } from '../../core/shared/math-utils'
 import { assertNever } from '../../core/shared/utils'
-import {
-  usePropControlledRef_DANGEROUS,
-  usePropControlledStateV2,
-} from '../inspector/common/inspector-utils'
-import invariant from '../../third-party/remix/invariant'
-import { useKeepShallowReferenceEquality } from '../../utils/react-performance'
-import { atom, useAtom, useAtomValue, useSetAtom, useStore } from 'jotai'
-import immutableUpdate from 'immutability-helper'
 import { deepFreeze } from '../../utils/deep-freeze'
 import { Substores, useEditorState } from '../editor/store/store-hook'
+import type {
+  GridPanelData,
+  LayoutUpdate,
+  PanelName,
+  StoredColumn,
+  StoredLayout,
+  StoredPanel,
+} from './stored-layout'
+import {
+  GridMenuMaxWidth,
+  GridMenuMinWidth,
+  GridPanelsNumberOfRows,
+  IndexOfCanvas,
+  NumberOfColumns,
+  gridMenuDefaultPanels,
+  storedColumn,
+  storedPanel,
+} from './stored-layout'
+import {
+  loadUserPreferences,
+  getProjectStoredLayoutOrDefault,
+  saveUserPreferencesProjectLayout,
+} from '../common/user-preferences'
 
-export const GridMenuWidth = 268
-export const GridMenuMinWidth = 200
-export const GridMenuMaxWidth = 500
-
-export const GridPaneWidth = 500
-
-export const NumberOfColumns = 4
-export const IndexOfCanvas = 2
-
-export const GridPanelVerticalGapHalf = 6
-export const GridVerticalExtraPadding = -4
-export const GridPanelHorizontalGapHalf = 6
-export const GridHorizontalExtraPadding = -4
-
-export const ExtraHorizontalDropTargetPadding = 45
-
-export const ResizeColumnWidth = 10
-
-export const GridPanelsNumberOfRows = 12
-
-export type Menu = 'inspector' | 'navigator'
-export type Pane = 'code-editor'
-
-export const allMenusAndPanels: Array<Menu | Pane> = [
-  'navigator',
-  'code-editor',
-  'inspector',
-  // 'preview', // Does this exist?
-]
-
-export interface GridPanelData {
-  panel: StoredPanel
-  span: number
-  index: number
-  order: number
-  visible: boolean
-}
-
-export type PanelName = Menu | Pane
-
-export interface StoredPanel {
-  name: PanelName
-  type: 'menu' | 'pane'
-  uid: string
-}
-
-function storedPanel({ name, type }: { name: PanelName; type: 'menu' | 'pane' }): StoredPanel {
-  return {
-    name: name,
-    type: type,
-    uid: UUID(),
-  }
-}
-
-interface StoredColumn {
-  panels: Array<StoredPanel>
-  paneWidth: number // the width to use if they only contain Panes
-  menuWidth: number // the width to use if they contain at least one Menu
-}
-
-function storedColumn(panels: Array<StoredPanel>): StoredColumn {
-  return { panels: panels, paneWidth: GridPaneWidth, menuWidth: GridMenuWidth }
-}
-
-type StoredLayout = Array<StoredColumn>
-
-type BeforeColumn = {
-  type: 'before-column'
-  columnIndex: number
-}
-type AfterColumn = {
-  type: 'after-column'
-  columnIndex: number
-}
-type ColumnUpdate = BeforeColumn | AfterColumn
-
-type BeforeIndex = {
-  type: 'before-index'
-  columnIndex: number
-  indexInColumn: number
-}
-type AfterIndex = {
-  type: 'after-index'
-  columnIndex: number
-  indexInColumn: number
-}
-type RowUpdate = BeforeIndex | AfterIndex
-export type LayoutUpdate = ColumnUpdate | RowUpdate
-
-export const GridMenuDefaultPanels: StoredLayout = [
-  storedColumn([
-    storedPanel({ name: 'navigator', type: 'menu' }),
-    storedPanel({ name: 'code-editor', type: 'pane' }),
-  ]),
-  storedColumn([]),
-  storedColumn([]),
-  storedColumn([storedPanel({ name: 'inspector', type: 'menu' })]),
-]
-
-export const GridPanelsStateAtom = atom(GridMenuDefaultPanels)
+export const GridPanelsStateAtom = atom(gridMenuDefaultPanels())
 
 export function useGridPanelState() {
-  return useAtom(GridPanelsStateAtom)
+  const [loaded, setLoaded] = React.useState(false)
+  const stateAtom = useAtom(GridPanelsStateAtom)
+  const [state, setState] = stateAtom
+
+  const projectId = useEditorState(
+    Substores.restOfEditor,
+    (store) => store.editor.id,
+    'GridPanelsContainer projectId',
+  )
+
+  React.useEffect(() => {
+    if (projectId == null || loaded) {
+      return
+    }
+    setLoaded(true)
+    async function loadPrefs(id: string) {
+      const prefs = await loadUserPreferences()
+      setState(getProjectStoredLayoutOrDefault(prefs.panelsLayout, id))
+    }
+    void loadPrefs(projectId)
+  }, [loaded, setState, projectId])
+
+  React.useEffect(() => {
+    if (projectId == null || !loaded) {
+      return
+    }
+    void saveUserPreferencesProjectLayout(projectId, state)
+  }, [loaded, state, projectId])
+
+  return stateAtom
 }
 
 function useVisibleGridPanels() {
