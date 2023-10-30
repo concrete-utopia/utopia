@@ -359,7 +359,7 @@ describe('canvas toolbar', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
+    FOR_TESTS_setNextGeneratedUids(['new-div'])
 
     await insertViaAddElementPopup(editor, 'div')
 
@@ -410,7 +410,7 @@ describe('canvas toolbar', () => {
       'await-first-dom-report',
     )
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-div'])
+    FOR_TESTS_setNextGeneratedUids(['new-div'])
 
     await insertViaAddElementPopup(editor, 'div')
 
@@ -445,7 +445,7 @@ describe('canvas toolbar', () => {
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'sample-text'])
+    FOR_TESTS_setNextGeneratedUids(['sample-text'])
 
     await insertViaAddElementPopup(editor, 'sampl')
 
@@ -605,14 +605,14 @@ export var storyboard = (
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img'])
+    FOR_TESTS_setNextGeneratedUids(['new-img'])
     await insertViaAddElementPopup(editor, 'img')
 
     await selectComponentsForTest(editor, [
       EP.fromString(`${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:container`),
     ])
 
-    FOR_TESTS_setNextGeneratedUids(['reserved', 'new-img-2'])
+    FOR_TESTS_setNextGeneratedUids(['new-img-2'])
     await insertViaAddElementPopup(editor, 'img')
 
     expect(editor.getActionsCausingDuplicateUIDs()).toHaveLength(0)
@@ -697,7 +697,7 @@ export var storyboard = (
               left: 0,
             }}
             src='/editor/utopia-logo-white-fill.png?hash=nocommit'
-            data-uid='ele'
+            data-uid='wra'
           />
         </div>
       `),
@@ -716,7 +716,7 @@ export var storyboard = (
         'await-first-dom-report',
       )
 
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
 
       await clickEmptySlot(editor)
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
@@ -765,7 +765,7 @@ export var storyboard = (
       )
 
       await clickEmptySlot(editor) // This click will add an override
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
       expect(editor.getEditorState().editor.selectedViews.map(EP.toString)).toEqual([
@@ -828,7 +828,7 @@ export var storyboard = (
         'utopia-storyboard-uid/scene-aaa/app-entity:container/conditional/img',
       ])
 
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
 
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
@@ -896,7 +896,7 @@ export var storyboard = (
       )
       await mouseClickAtPoint(slot, { x: 5, y: 5 })
 
-      FOR_TESTS_setNextGeneratedUids(['reserved for fragment wrapper', 'newly-added-img'])
+      FOR_TESTS_setNextGeneratedUids(['newly-added-img'])
 
       await expectSingleUndo2Saves(editor, () => insertViaAddElementPopup(editor, 'img'))
 
@@ -1205,10 +1205,19 @@ export var Playground = () => {
             data-uid='container'
           >
             <Group
-              style={{ position: 'absolute', left: 0, top: 0 }}
+              style={{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                width: 247,
+                height: 0,
+              }}
               data-uid='new-group'
             >
-              <div data-uid='target' />
+              <div
+                data-uid='target'
+                style={{ top: 0, left: 0, position: 'absolute' }}
+              />
             </Group>
           </div>
       `),

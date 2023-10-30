@@ -62,6 +62,8 @@ import { generateConsistentUID } from '../../core/shared/uid-utils'
 import { deleteElement } from '../canvas/commands/delete-element-command'
 import { addElements } from '../canvas/commands/add-elements-command'
 import { updateSelectedViews } from '../canvas/commands/update-selected-views-command'
+import { addImportsToFile } from '../canvas/commands/add-imports-to-file-command'
+import { withUnderlyingTarget } from './store/editor-state'
 
 export function convertToConditionalOrFragment(
   selectedViews: Array<ElementPath>,
@@ -196,6 +198,18 @@ export function wrapWithFragmentOrConditional(
     return null
   }
 
+  const targetFilePath = withUnderlyingTarget(
+    targetParent.value.parentPath.intendedParentPath,
+    projectContents,
+    null,
+    (_, __, ___, underlyingFilePath) => {
+      return underlyingFilePath
+    },
+  )
+  if (targetFilePath == null) {
+    return null
+  }
+
   const indexInParent =
     MetadataUtils.getIndexInParent(metadata, elementPathTrees, selectedViews[0]) ?? 0
 
@@ -212,6 +226,13 @@ export function wrapWithFragmentOrConditional(
       ...selectedViews.map((path) =>
         reparentElement('always', path, childInsertionPath(newParentPath)),
       ),
+      addImportsToFile('always', targetFilePath, {
+        react: {
+          importedAs: 'React',
+          importedFromWithin: [],
+          importedWithName: null,
+        },
+      }),
       updateSelectedViews('always', [newParentPath]),
     ]
   }
@@ -283,7 +304,7 @@ export function useWrapInto(): (wrapInto: InsertMenuItem | null) => void {
 
       const allElementUids = new Set(getAllUniqueUids(projectContentsRef.current).allIDs)
       allElementUids.add(element.uid)
-      const wrapperUid = generateConsistentUID('wrapper', allElementUids)
+      const wrapperUid = generateConsistentUID('fragment-wrapper', allElementUids)
 
       const fragmentOrConditionalCommands = wrapWithFragmentOrConditional(
         jsxMetadataRef.current,

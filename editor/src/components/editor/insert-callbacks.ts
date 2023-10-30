@@ -233,7 +233,7 @@ export function elementFromInsertItem(
 ): JSXElementChild {
   const allElementUids = new Set(getAllUniqueUids(projectContents).uniqueIDs)
 
-  const elementUid = generateConsistentUID('element', allElementUids)
+  const elementUid = generateConsistentUID('wrapper', allElementUids)
 
   const element = fixUtopiaElement(
     elementFromInsertMenuItem(elementToInsert.value.element(), elementUid),
