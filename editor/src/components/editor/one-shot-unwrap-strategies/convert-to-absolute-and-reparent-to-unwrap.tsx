@@ -7,7 +7,7 @@ import {
   getLocalRectangleInNewParentContext,
   isFiniteRectangle,
 } from '../../../core/shared/math-utils'
-import type { NodeModules, ElementPath } from '../../../core/shared/project-file-types'
+import type { NodeModules } from '../../../core/shared/project-file-types'
 import type { IndexPosition } from '../../../utils/utils'
 import { front } from '../../../utils/utils'
 import type { ProjectContentTreeRoot } from '../../assets'
@@ -22,6 +22,9 @@ import type { UnwrapInspectorStrategy } from './unwrap-strategies-common'
 
 export const convertToAbsoluteAndReparentToUnwrapStrategy = (
   element: PathToReparent,
+  metadata: ElementInstanceMetadataMap,
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
   parentInsertionPath: InsertionPath,
   indexPosition: IndexPosition,
   builtInDependencies: BuiltInDependencies,
@@ -29,12 +32,7 @@ export const convertToAbsoluteAndReparentToUnwrapStrategy = (
   nodeModules: NodeModules,
 ): UnwrapInspectorStrategy => ({
   name: 'Convert to absolute and reparent to unwrap',
-  strategy: (
-    metadata: ElementInstanceMetadataMap,
-    _: Array<ElementPath>,
-    elementPathTree: ElementPathTrees,
-    allElementProps: AllElementProps,
-  ) => {
+  strategy: () => {
     const shouldReparentAsAbsoluteOrStatic = autoLayoutParentAbsoluteOrStatic(
       metadata,
       allElementProps,

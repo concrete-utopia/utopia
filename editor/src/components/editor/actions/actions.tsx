@@ -718,30 +718,30 @@ export function reparentElementToUnwrap(
   editor: EditorModel,
   builtInDependencies: BuiltInDependencies,
 ): { editor: EditorModel; newPath: ElementPath | null } {
-  const result = resultForFirstApplicableStrategy(
-    editor.jsxMetadata,
-    editor.selectedViews,
-    editor.elementPathTree,
-    editor.allElementProps,
-    [
-      reparentToUnwrapAsAbsoluteStrategy(
-        pathToReparent(target),
-        insertionPath,
-        indexPosition,
-        builtInDependencies,
-        editor.projectContents,
-        editor.nodeModules.files,
-      ),
-      convertToAbsoluteAndReparentToUnwrapStrategy(
-        pathToReparent(target),
-        insertionPath,
-        indexPosition,
-        builtInDependencies,
-        editor.projectContents,
-        editor.nodeModules.files,
-      ),
-    ],
-  )
+  const result = resultForFirstApplicableStrategy([
+    reparentToUnwrapAsAbsoluteStrategy(
+      pathToReparent(target),
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      editor.allElementProps,
+      insertionPath,
+      indexPosition,
+      builtInDependencies,
+      editor.projectContents,
+      editor.nodeModules.files,
+    ),
+    convertToAbsoluteAndReparentToUnwrapStrategy(
+      pathToReparent(target),
+      editor.jsxMetadata,
+      editor.elementPathTree,
+      editor.allElementProps,
+      insertionPath,
+      indexPosition,
+      builtInDependencies,
+      editor.projectContents,
+      editor.nodeModules.files,
+    ),
+  ])
 
   if (result == null) {
     return { editor: editor, newPath: null }

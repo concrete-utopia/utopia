@@ -1,4 +1,3 @@
-import * as EP from '../../../core/shared/element-path'
 import * as PP from '../../../core/shared/property-path'
 import { MetadataUtils } from '../../../core/model/element-metadata-utils'
 import type { WhenToRun } from '../../canvas/commands/commands'
@@ -16,14 +15,18 @@ import {
   maybeInvalidGroupState,
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 
 export const fixedSizeBasicStrategy = (
   whenToRun: WhenToRun,
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   axis: Axis,
   value: CSSNumber,
 ): InspectorStrategy => ({
   name: 'Set to Fixed',
-  strategy: (metadata, elementPaths) => {
+  strategy: () => {
     if (elementPaths.length === 0) {
       return null
     }

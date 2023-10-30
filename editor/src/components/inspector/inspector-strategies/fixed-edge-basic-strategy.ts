@@ -14,21 +14,25 @@ import {
 } from '../../canvas/canvas-strategies/strategies/group-helpers'
 import { trueUpGroupElementChanged } from '../../../components/editor/store/editor-state'
 import type { LayoutEdgeProp } from '../../../core/layout/layout-helpers-new'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
 
 export const fixedEdgeBasicStrategy = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   whenToRun: WhenToRun,
   edge: LayoutEdgeProp,
   value: CSSNumber,
 ): InspectorStrategy => ({
   name: 'Set edge to Fixed',
-  strategy: (metadata, elementPaths) => {
+  strategy: () => {
     if (elementPaths.length === 0) {
       return null
     }
 
     const invalidGroupState = maybeInvalidGroupState(elementPaths, metadata, {
       onGroup: () => (value.unit === '%' ? 'group-has-percentage-pins' : null),
-      onGroupChild: (path) => {
+      onGroupChild: () => {
         return value.unit === '%' ? 'child-has-percentage-pins' : null
       },
     })

@@ -874,11 +874,18 @@ export function handleKeyDown(
           elementsConsideredForFlexConversion,
         )
         const commands = commandsForFirstApplicableStrategy(
-          editor.jsxMetadata,
-          elementsConsideredForFlexConversion,
-          editor.elementPathTree,
-          editor.allElementProps,
-          selectedElementsFlexContainers ? removeFlexLayoutStrategies : addFlexLayoutStrategies,
+          selectedElementsFlexContainers
+            ? removeFlexLayoutStrategies(
+                editor.jsxMetadata,
+                elementsConsideredForFlexConversion,
+                editor.elementPathTree,
+              )
+            : addFlexLayoutStrategies(
+                editor.jsxMetadata,
+                elementsConsideredForFlexConversion,
+                editor.elementPathTree,
+                editor.allElementProps,
+              ),
         )
         if (commands == null) {
           return []
@@ -928,13 +935,15 @@ export function handleKeyDown(
         if (!isSelectMode(editor.mode)) {
           return []
         }
-        const commands = commandsForFirstApplicableStrategy(
-          editor.jsxMetadata,
-          editor.selectedViews,
-          editor.elementPathTree,
-          editor.allElementProps,
-          [wrapInDivStrategy(editor.projectContents)],
-        )
+        const commands = commandsForFirstApplicableStrategy([
+          wrapInDivStrategy(
+            editor.jsxMetadata,
+            editor.selectedViews,
+            editor.elementPathTree,
+            editor.allElementProps,
+            editor.projectContents,
+          ),
+        ])
         if (commands == null) {
           return []
         }

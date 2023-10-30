@@ -22,13 +22,19 @@ import { setSpacingModePacked, setSpacingModeSpaceBetween } from './spacing-mode
 import { convertLayoutToFlexCommands } from '../../common/shared-strategies/convert-to-flex-strategy'
 import { fixedSizeBasicStrategy } from './fixed-size-basic-strategy'
 import { setFlexDirectionSwapAxes } from './change-flex-direction-swap-axes'
-import { fixedEdgeBasicStrategy } from './fixed-edge-basic-strategy'
-import type { LayoutEdgeProp } from '../../../core/layout/layout-helpers-new'
+import type { ElementInstanceMetadataMap } from '../../../core/shared/element-template'
+import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
+import type { AllElementProps } from '../../editor/store/editor-state'
 
-export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<InspectorStrategy> => [
+export const setFlexAlignStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  flexAlignment: FlexAlignment,
+): Array<InspectorStrategy> => [
   {
     name: 'Set flex-align',
-    strategy: (metadata, elementPaths) => {
+    strategy: () => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
@@ -43,11 +49,13 @@ export const setFlexAlignStrategies = (flexAlignment: FlexAlignment): Array<Insp
 ]
 
 export const setJustifyContentStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   justifyContent: FlexJustifyContent,
 ): Array<InspectorStrategy> => [
   {
     name: 'Set justify-content',
-    strategy: (metadata, elementPaths) => {
+    strategy: () => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
@@ -62,12 +70,14 @@ export const setJustifyContentStrategies = (
 ]
 
 export const setFlexAlignJustifyContentStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   flexAlignment: FlexAlignment,
   justifyContent: FlexJustifyContent,
 ): Array<InspectorStrategy> => [
   {
     name: 'Set flex-align and justify-content',
-    strategy: (metadata, elementPaths) => {
+    strategy: () => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
@@ -82,10 +92,13 @@ export const setFlexAlignJustifyContentStrategies = (
   },
 ]
 
-export const removeFlexDirectionStrategies = (): Array<InspectorStrategy> => [
+export const removeFlexDirectionStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): Array<InspectorStrategy> => [
   {
     name: 'Unset flex direction',
-    strategy: (metadata, elementPaths) => {
+    strategy: () => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
@@ -100,12 +113,15 @@ export const removeFlexDirectionStrategies = (): Array<InspectorStrategy> => [
 ]
 
 export const updateFlexDirectionStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
   flexDirection: FlexDirection,
 ): Array<InspectorStrategy> => [
-  setFlexDirectionSwapAxes(flexDirection),
+  setFlexDirectionSwapAxes(metadata, pathTrees, elementPaths, flexDirection),
   {
     name: 'Set flex direction',
-    strategy: (metadata, elementPaths, pathTrees) => {
+    strategy: () => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
@@ -123,20 +139,29 @@ export const updateFlexDirectionStrategies = (
   },
 ]
 
-export const addFlexLayoutStrategies: Array<InspectorStrategy> = [
+export const addFlexLayoutStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  elementPathTree: ElementPathTrees,
+  allElementProps: AllElementProps,
+): Array<InspectorStrategy> => [
   {
     name: 'Add flex layout',
-    strategy: (metadata, elementPaths, elementPathTree, allElementProps) => {
+    strategy: () => {
       return convertLayoutToFlexCommands(metadata, elementPathTree, elementPaths, allElementProps)
     },
   },
 ]
 
-export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
-  removeFlexConvertToAbsolute,
+export const removeFlexLayoutStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
+): Array<InspectorStrategy> => [
+  removeFlexConvertToAbsolute(metadata, elementPaths, pathTrees),
   {
     name: 'Remove flex layout',
-    strategy: (metadata, elementPaths) => {
+    strategy: () => {
       const elements = filterKeepFlexContainers(metadata, elementPaths)
 
       if (elements.length === 0) {
@@ -151,34 +176,39 @@ export const removeFlexLayoutStrategies: Array<InspectorStrategy> = [
 ]
 
 export const setPropFillStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   axis: Axis,
   value: 'default' | number,
   otherAxisSetToFill: boolean,
 ): Array<InspectorStrategy> => [
-  fillContainerStrategyFlexParent(axis, value),
-  fillContainerStrategyFlow(axis, value, otherAxisSetToFill),
+  fillContainerStrategyFlexParent(metadata, elementPaths, axis, value),
+  fillContainerStrategyFlow(metadata, elementPaths, axis, value, otherAxisSetToFill),
 ]
 
 export const setPropFixedSizeStrategies = (
   whenToRun: WhenToRun,
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
   axis: Axis,
   value: CSSNumber,
-): Array<InspectorStrategy> => [fixedSizeBasicStrategy(whenToRun, axis, value)]
-
-export function setPropFixedEdgeStrategies(
-  whenToRun: WhenToRun,
-  edge: LayoutEdgeProp,
-  value: CSSNumber,
-): Array<InspectorStrategy> {
-  return [fixedEdgeBasicStrategy(whenToRun, edge, value)]
-}
-
-export const setPropHugStrategies = (axis: Axis): Array<InspectorStrategy> => [
-  hugContentsBasicStrategy(axis),
+): Array<InspectorStrategy> => [
+  fixedSizeBasicStrategy(whenToRun, metadata, elementPaths, axis, value),
 ]
 
-export const setSpacingModeSpaceBetweenStrategies: Array<InspectorStrategy> = [
-  setSpacingModeSpaceBetween,
-]
+export const setPropHugStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+  pathTrees: ElementPathTrees,
+  axis: Axis,
+): Array<InspectorStrategy> => [hugContentsBasicStrategy(metadata, elementPaths, pathTrees, axis)]
 
-export const setSpacingModePackedStrategies: Array<InspectorStrategy> = [setSpacingModePacked]
+export const setSpacingModeSpaceBetweenStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): Array<InspectorStrategy> => [setSpacingModeSpaceBetween(metadata, elementPaths)]
+
+export const setSpacingModePackedStrategies = (
+  metadata: ElementInstanceMetadataMap,
+  elementPaths: ElementPath[],
+): Array<InspectorStrategy> => [setSpacingModePacked(metadata, elementPaths)]

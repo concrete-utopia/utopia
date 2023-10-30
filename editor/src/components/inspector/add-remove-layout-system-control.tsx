@@ -42,11 +42,12 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     () =>
       executeFirstApplicableStrategy(
         dispatch,
-        elementMetadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        addFlexLayoutStrategies,
+        addFlexLayoutStrategies(
+          elementMetadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+          allElementPropsRef.current,
+        ),
       ),
     [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
   )
@@ -55,13 +56,13 @@ export const AddRemoveLayoutSystemControl = React.memo<AddRemoveLayoutSystemCont
     () =>
       executeFirstApplicableStrategy(
         dispatch,
-        elementMetadataRef.current,
-        selectedViewsRef.current,
-        elementPathTreeRef.current,
-        allElementPropsRef.current,
-        removeFlexLayoutStrategies,
+        removeFlexLayoutStrategies(
+          elementMetadataRef.current,
+          selectedViewsRef.current,
+          elementPathTreeRef.current,
+        ),
       ),
-    [allElementPropsRef, dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
+    [dispatch, elementMetadataRef, elementPathTreeRef, selectedViewsRef],
   )
 
   const colorTheme = useColorTheme()

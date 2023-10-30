@@ -279,12 +279,14 @@ export function getInteractionMoveCommandsForSelectedElement(
 }
 
 export function moveInspectorStrategy(
+  metadata: ElementInstanceMetadataMap,
+  selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   movement: CanvasVector,
 ): InspectorStrategy {
   return {
     name: 'Move by pixels',
-    strategy: (metadata, selectedElementPaths, _elementPathTree, _allElementProps) => {
+    strategy: () => {
       let commands: Array<CanvasCommand> = []
       let intendedBounds: Array<CanvasFrameAndTarget> = []
       for (const selectedPath of selectedElementPaths) {
@@ -306,13 +308,15 @@ export function moveInspectorStrategy(
 }
 
 export function directMoveInspectorStrategy(
+  metadata: ElementInstanceMetadataMap,
+  selectedElementPaths: ElementPath[],
   projectContents: ProjectContentTreeRoot,
   leftOrTop: 'left' | 'top',
   newPixelValue: number,
 ): InspectorStrategy {
   return {
     name: 'Move to a pixel position',
-    strategy: (metadata, selectedElementPaths, _elementPathTree, _allElementProps) => {
+    strategy: () => {
       let commands: Array<CanvasCommand> = []
       let intendedBounds: Array<CanvasFrameAndTarget> = []
       for (const selectedPath of selectedElementPaths) {
