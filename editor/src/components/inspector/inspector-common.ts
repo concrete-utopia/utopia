@@ -75,6 +75,7 @@ import { fixedSizeDimensionHandlingText } from '../text-editor/text-handling'
 import { convertToAbsolute } from '../canvas/commands/convert-to-absolute-command'
 import { hugPropertiesFromStyleMap } from '../../core/shared/dom-utils'
 import { setHugContentForAxis } from './inspector-strategies/hug-contents-basic-strategy'
+import { invariant } from 'immutability-helper'
 
 export type StartCenterEnd = 'flex-start' | 'center' | 'flex-end'
 
@@ -660,8 +661,8 @@ export function detectFillHugFixedState(
     getSimpleAttributeAtPath(right(element.element.value.props), PP.create('style', property)),
   )
 
-  const detectedHugType = element.specialSizeMeasurements.computedHugProperty[property]
-  if (detectedHugType != null) {
+  const detectedHugType = element.specialSizeMeasurements.computedHugProperty?.[property]
+  if (detectedHugType != null && detectedHugType !== 'not-hugging') {
     const hugTypeFromStyleProps = hugTypeFromStyleAttribute(
       element.element.value.props,
       property,
@@ -794,7 +795,7 @@ export function hugTypeFromStyleAttribute(
   property: 'width' | 'height',
   display: string,
   globalFrame: MaybeInfinityCanvasRectangle | null,
-): 'hug' | 'squeeze' | 'collapsed' | null {
+): 'hug' | 'squeeze' | 'collapsed' | 'not-hugging' {
   const getStyleValue = (prop: string) =>
     prop === 'display'
       ? display
@@ -1346,5 +1347,8 @@ export function getConstraintsIncludingImplicitForElement(
 }
 
 export function isHuggingParent(element: ElementInstanceMetadata, property: 'width' | 'height') {
-  return element.specialSizeMeasurements.computedHugProperty[property] != null
+  if (element.specialSizeMeasurements.computedHugProperty == null) {
+    return false // we could throw an error instead
+  }
+  return element.specialSizeMeasurements.computedHugProperty[property] != 'not-hugging'
 }

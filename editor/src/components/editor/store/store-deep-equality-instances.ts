@@ -131,6 +131,7 @@ import type {
   ActiveAndDefaultConditionValues,
   JSXMapExpression,
   JSExpressionMapOrOtherJavascript,
+  HugProperty,
 } from '../../../core/shared/element-template'
 import {
   elementInstanceMetadata,
@@ -1611,9 +1612,10 @@ export function SpecialSizeMeasurementsKeepDeepEquality(): KeepDeepEqualityCall<
       oldSize.textBounds,
       newSize.textBounds,
     ).areEqual
-    const computedHugPropertyEqual =
-      oldSize.computedHugProperty.width === newSize.computedHugProperty.width &&
-      oldSize.computedHugProperty.height === newSize.computedHugProperty.height
+
+    const computedHugPropertyEqual = nullableDeepEquality(
+      objectDeepEquality(createCallWithTripleEquals<HugProperty>()),
+    )(oldSize.computedHugProperty, newSize.computedHugProperty).areEqual
 
     const areEqual =
       offsetResult.areEqual &&
