@@ -20,7 +20,11 @@ import {
   emptyAttributeMetadata,
 } from '../../core/shared/element-template'
 import type { ElementPath } from '../../core/shared/project-file-types'
-import { getCanvasRectangleFromElement, getDOMAttribute } from '../../core/shared/dom-utils'
+import {
+  getCanvasRectangleFromElement,
+  getDOMAttribute,
+  hugPropertiesFromStyleMap,
+} from '../../core/shared/dom-utils'
 import {
   applicative4Either,
   defaultEither,
@@ -824,7 +828,10 @@ function getComputedStyle(
   paths: Array<ElementPath>,
   invalidatedPathsForStylesheetCache: Set<string>,
   selectedViews: Array<ElementPath>,
-): { computedStyle: ComputedStyle | null; attributeMetadata: StyleAttributeMetadata | null } {
+): {
+  computedStyle: ComputedStyle | null
+  attributeMetadata: StyleAttributeMetadata | null
+} {
   const isSelectedOnAnyPaths = selectedViews.some((sv) =>
     paths.some((path) => EP.pathsEqual(sv, path)),
   )
@@ -1051,6 +1058,13 @@ function getSpecialMeasurements(
       })
     : null
 
+  const computedStyleMap =
+    typeof element.computedStyleMap === 'function' ? element.computedStyleMap() : null // TODO: this is for jest tests, no computedStyleMap in jsdom :()
+  const computedHugProperty = hugPropertiesFromStyleMap(
+    (styleProp: string) => computedStyleMap?.get(styleProp)?.toString() ?? null,
+    globalFrame,
+  )
+
   return specialSizeMeasurements(
     offset,
     coordinateSystemBounds,
@@ -1094,6 +1108,7 @@ function getSpecialMeasurements(
     fontStyle,
     textDecorationLine,
     textBounds,
+    computedHugProperty,
   )
 }
 
