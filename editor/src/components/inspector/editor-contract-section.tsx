@@ -1,50 +1,52 @@
 /** @jsxRuntime classic */
 /** @jsx jsx */
-import React from 'react'
 import { jsx } from '@emotion/react'
+import React from 'react'
 import { createSelector } from 'reselect'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import { allElemsEqual, mapDropNulls } from '../../core/shared/array-utils'
+import * as EP from '../../core/shared/element-path'
 import { assertNever } from '../../core/shared/utils'
+import { when } from '../../utils/react-conditionals'
 import {
+  Button,
   FlexColumn,
+  FlexRow,
   InspectorSectionHeader,
   PopupList,
-  FlexRow,
+  Tooltip,
   colorTheme,
-  Button,
 } from '../../uuiui'
 import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles } from '../../uuiui-deps'
+import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
+import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
-import { addToast, applyCommandsAction } from '../editor/actions/action-creators'
-import { useDispatch } from '../editor/store/dispatch-context'
-import { useRefEditorState, useEditorState, Substores } from '../editor/store/store-hook'
-import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
-import type { SelectOption } from './controls/select-control'
-import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
+  getCommandsForConversionToDesiredType,
   getInstanceForFragmentToFrameConversion,
   getInstanceForFragmentToGroupConversion,
   getInstanceForFrameToFragmentConversion,
   getInstanceForFrameToGroupConversion,
   getInstanceForGroupToFrameConversion,
   isConversionForbidden,
-  getCommandsForConversionToDesiredType,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
-import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
-import { allElemsEqual } from '../../core/shared/array-utils'
-import * as EP from '../../core/shared/element-path'
-import { notice } from '../common/notice'
+import type { GroupProblem } from '../canvas/canvas-strategies/strategies/group-helpers'
 import {
-  fixGroupCommands,
+  getFixGroupProblemsCommands,
+  getGroupChildState,
   getGroupState,
-  invalidPercentagePinsFromElement,
+  invalidGroupStateToString,
   isInvalidGroupState,
-  isNonEmptyGroupChildPercentagePins,
   treatElementAsGroupLike,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
-import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import { when } from '../../utils/react-conditionals'
+import { notice } from '../common/notice'
+import { addToast, applyCommandsAction } from '../editor/actions/action-creators'
+import { useDispatch } from '../editor/store/dispatch-context'
+import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
+import type { MetadataSubstate } from '../editor/store/store-hook-substore-types'
+import type { SelectOption } from './controls/select-control'
+import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -283,10 +285,10 @@ export const EditorContractDropdown = React.memo(() => {
 
   const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
 
-  const thereAreProblems = useEditorState(
+  const groupProblems = useEditorState(
     Substores.metadata,
-    (store) =>
-      selectedViews.some((path) => {
+    (store): GroupProblem[] =>
+      mapDropNulls((path) => {
         if (treatElementAsGroupLike(store.editor.jsxMetadata, path)) {
           const state = getGroupState(
             path,
@@ -296,26 +298,26 @@ export const EditorContractDropdown = React.memo(() => {
             projectContentsRef.current,
           )
           if (isInvalidGroupState(state)) {
-            return true
+            return { target: 'group', path: path, state: state }
           }
         } else if (treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path))) {
           const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-          const invalidPins = invalidPercentagePinsFromElement(metadata)
-          if (isNonEmptyGroupChildPercentagePins(invalidPins)) {
-            return true
+          const state = getGroupChildState(projectContentsRef.current, metadata)
+          if (isInvalidGroupState(state)) {
+            return { target: 'group-child', path: path, state: state }
           }
         }
-        return false
-      }),
-    'EditorContractDropdown thereAreProblems',
+        return null
+      }, selectedViews),
+    'EditorContractDropdown groupProblems',
   )
 
-  const fixProblems = React.useCallback(() => {
-    const commands = fixGroupCommands(metadataRef.current, selectedViews)
+  const fixGroupProblems = React.useCallback(() => {
+    const commands = getFixGroupProblemsCommands(metadataRef.current, groupProblems)
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
-  }, [selectedViews, dispatch, metadataRef])
+  }, [groupProblems, dispatch, metadataRef])
 
   return (
     <FlexRow data-testid={EditorContractSelectorTestID} style={{ flex: 1 }}>
@@ -333,20 +335,27 @@ export const EditorContractDropdown = React.memo(() => {
         style={{ position: 'relative', left: -8 }}
       />
       {when(
-        thereAreProblems,
-        <Button
-          highlight
-          spotlight
-          style={{
-            backgroundColor: colorTheme.errorForeground20.value,
-            color: colorTheme.errorForeground.value,
-            padding: '0 6px',
-            borderRadius: 2,
-          }}
-          onClick={fixProblems}
+        groupProblems.length > 0,
+        <Tooltip
+          title={groupProblems
+            .map((problem) => `Fix: ${invalidGroupStateToString(problem.state).toLowerCase()}`)
+            .join(', ')}
+          placement='left'
         >
-          Fix problems
-        </Button>,
+          <Button
+            highlight
+            spotlight
+            style={{
+              backgroundColor: colorTheme.errorForeground20.value,
+              color: colorTheme.errorForeground.value,
+              padding: '0 6px',
+              borderRadius: 2,
+            }}
+            onClick={fixGroupProblems}
+          >
+            Fix problems
+          </Button>
+        </Tooltip>,
       )}
     </FlexRow>
   )

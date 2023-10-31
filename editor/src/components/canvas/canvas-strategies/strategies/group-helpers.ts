@@ -11,7 +11,6 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
-import * as PP from '../../../../core/shared/property-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
@@ -30,6 +29,7 @@ import {
 import { isFiniteRectangle } from '../../../../core/shared/math-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { notice } from '../../../common/notice'
@@ -40,6 +40,7 @@ import { stylePropPathMappingFn } from '../../../inspector/common/property-path-
 import { MaxContent } from '../../../inspector/inspector-common'
 import type { CanvasCommand } from '../../commands/commands'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
+import { setProperty } from '../../commands/set-property-command'
 import type { ShowToastCommand } from '../../commands/show-toast-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
@@ -257,6 +258,15 @@ function getLayoutPropVerbatim(props: PropsOrJSXAttributes, pin: AbsolutePin): E
   return getSimpleAttributeAtPath(props, stylePropPathMappingFn(pin, styleStringInArray))
 }
 
+function getNumericPin(jsxElement: JSXElement, pin: AbsolutePin) {
+  const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
+  const isNumericPin = isRight(prop) && prop.value != null
+  if (!isNumericPin) {
+    return null
+  }
+  return prop.value
+}
+
 function elementHasValidPins(jsxElement: JSXElement): boolean {
   function isMaxContentWidthOrHeight(pin: AbsolutePin): boolean {
     if (pin !== 'width' && pin !== 'height') {
@@ -269,10 +279,7 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
   }
 
   function containsPin(pin: AbsolutePin): boolean {
-    const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
-    const isNumericPin = isRight(prop) && prop.value != null
-
-    return isNumericPin || isMaxContentWidthOrHeight(pin)
+    return getNumericPin(jsxElement, pin) != null || isMaxContentWidthOrHeight(pin)
   }
 
   return (
@@ -588,6 +595,12 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
   }
   const frame = metadata.globalFrame
 
+  const jsxElement = MetadataUtils.getJSXElementFromMetadata(jsxMetadata, path)
+  if (jsxElement == null) {
+    return []
+  }
+
+  // must have valid pins
   const invalidPins = invalidPercentagePinsFromElement(metadata)
   if (invalidPins.width.isPercent) {
     commands.push(fixLengthCommand(path, 'width', frame.width))
@@ -604,23 +617,50 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
     commands.push(fixLengthCommand(path, 'top', top))
   }
 
+  // must have absolute position
+  if (maybeGroupChildNotPositionAbsolutely(jsxElement) != null) {
+    commands.push(setProperty('always', path, PP.create('style', 'position'), 'absolute'))
+  }
+
+  // must have valid pins
+  if (maybeGroupChildHasMissingPins(jsxElement) != null) {
+    commands.push(
+      fixLengthCommand(path, 'width', getNumericPin(jsxElement, 'width')?.value ?? frame.width),
+      fixLengthCommand(path, 'height', getNumericPin(jsxElement, 'height')?.value ?? frame.height),
+      fixLengthCommand(path, 'left', getNumericPin(jsxElement, 'left')?.value ?? 0),
+      fixLengthCommand(path, 'top', getNumericPin(jsxElement, 'top')?.value ?? 0),
+    )
+  }
+
   return commands
 }
 
-export function fixGroupCommands(
+export type GroupProblem = {
+  target: 'group' | 'group-child'
+  path: ElementPath
+  state: InvalidGroupState
+}
+
+export function getFixGroupProblemsCommands(
   jsxMetadata: ElementInstanceMetadataMap,
-  paths: ElementPath[],
+  problems: GroupProblem[],
 ): CanvasCommand[] {
   let commands: CanvasCommand[] = []
-  for (const path of paths) {
-    if (treatElementAsGroupLike(jsxMetadata, path)) {
-      const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
-      for (const child of children) {
-        commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
-      }
-    } else if (treatElementAsGroupLike(jsxMetadata, EP.parentPath(path))) {
-      commands.push(...fixGroupChildCommands(jsxMetadata, path))
+  for (const problem of problems) {
+    switch (problem.target) {
+      case 'group':
+        const children = MetadataUtils.getChildrenUnordered(jsxMetadata, problem.path)
+        for (const child of children) {
+          commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
+        }
+        break
+      case 'group-child':
+        commands.push(...fixGroupChildCommands(jsxMetadata, problem.path))
+        break
+      default:
+        assertNever(problem.target)
     }
   }
+  // TODO queue related trueups
   return commands
 }
