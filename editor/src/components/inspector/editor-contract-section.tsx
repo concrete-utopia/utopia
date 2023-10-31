@@ -4,7 +4,14 @@ import React from 'react'
 import { jsx } from '@emotion/react'
 import { createSelector } from 'reselect'
 import { assertNever } from '../../core/shared/utils'
-import { FlexColumn, InspectorSectionHeader, PopupList, FlexRow, colorTheme } from '../../uuiui'
+import {
+  FlexColumn,
+  InspectorSectionHeader,
+  PopupList,
+  FlexRow,
+  colorTheme,
+  Button,
+} from '../../uuiui'
 import type { ControlStyles } from '../../uuiui-deps'
 import { getControlStyles } from '../../uuiui-deps'
 import { getElementFragmentLikeType } from '../canvas/canvas-strategies/strategies/fragment-like-helpers'
@@ -15,11 +22,6 @@ import type { MetadataSubstate } from '../editor/store/store-hook-substore-types
 import type { SelectOption } from './controls/select-control'
 import { metadataSelector, selectedViewsSelector } from './inpector-selectors'
 import {
-  convertFragmentToFrame,
-  convertFragmentToGroup,
-  convertGroupOrFrameToFragmentCommands,
-  convertFrameToGroup,
-  convertGroupToFrameCommands,
   getInstanceForFragmentToFrameConversion,
   getInstanceForFragmentToGroupConversion,
   getInstanceForFrameToFragmentConversion,
@@ -33,7 +35,25 @@ import type { EditorContract } from '../canvas/canvas-strategies/strategies/cont
 import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { allElemsEqual } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
+import * as PP from '../../core/shared/property-path'
 import { notice } from '../common/notice'
+import {
+  getGroupState,
+  invalidPercentagePinsFromElement,
+  isInvalidGroupState,
+  treatElementAsGroupLike,
+} from '../canvas/canvas-strategies/strategies/group-helpers'
+import { MetadataUtils } from '../../core/model/element-metadata-utils'
+import {
+  setCssLengthProperty,
+  setExplicitCssValue,
+} from '../canvas/commands/set-css-length-command'
+import { cssNumber } from './common/css-utils'
+import { when } from '../../utils/react-conditionals'
+import type { CanvasRectangle } from '../../core/shared/math-utils'
+import { canvasRectangle, isFiniteRectangle, zeroRectangle } from '../../core/shared/math-utils'
+import type { StyleLayoutProp } from '../../core/layout/layout-helpers-new'
+import type { ElementPath } from '../../core/shared/project-file-types'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -270,6 +290,100 @@ export const EditorContractDropdown = React.memo(() => {
     ]
   }, [selectedViews, metadataRef, elementPathTreeRef, allElementPropsRef, currentValue])
 
+  const projectContentsRef = useRefEditorState((store) => store.editor.projectContents)
+
+  const thereAreProblems = useEditorState(
+    Substores.metadata,
+    (store) =>
+      selectedViews.some((path) => {
+        if (treatElementAsGroupLike(store.editor.jsxMetadata, path)) {
+          const state = getGroupState(
+            path,
+            store.editor.jsxMetadata,
+            store.editor.elementPathTree,
+            store.editor.allElementProps,
+            projectContentsRef.current,
+          )
+          if (isInvalidGroupState(state)) {
+            return true
+          }
+        } else if (treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path))) {
+          const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+          const invalidPins = invalidPercentagePinsFromElement(metadata)
+          if (
+            invalidPins.width?.isPercent ??
+            invalidPins.height?.isPercent ??
+            invalidPins.left?.isPercent ??
+            invalidPins.top?.isPercent ??
+            false
+          ) {
+            return true
+          }
+        }
+        return false
+      }),
+    '',
+  )
+
+  const fixProblems = React.useCallback(() => {
+    let commands: CanvasCommand[] = []
+    function fixGroupChild(path: ElementPath) {
+      const parentMetadata = MetadataUtils.findElementByElementPath(
+        metadataRef.current,
+        EP.parentPath(path),
+      )
+      const parentFrame: CanvasRectangle =
+        parentMetadata != null &&
+        parentMetadata.globalFrame != null &&
+        isFiniteRectangle(parentMetadata.globalFrame)
+          ? parentMetadata.globalFrame
+          : canvasRectangle(zeroRectangle)
+      const metadata = MetadataUtils.findElementByElementPath(metadataRef.current, path)
+      const invalidPins = invalidPercentagePinsFromElement(metadata)
+      const frame: CanvasRectangle =
+        metadata != null && metadata.globalFrame != null && isFiniteRectangle(metadata.globalFrame)
+          ? metadata.globalFrame
+          : canvasRectangle(zeroRectangle)
+      function fixLength(prop: StyleLayoutProp, size: number) {
+        commands.push(
+          setCssLengthProperty(
+            'always',
+            path,
+            PP.create('style', prop),
+            setExplicitCssValue(cssNumber(size, 'px')),
+            null,
+            'create-if-not-existing',
+          ),
+        )
+      }
+      if (invalidPins.width?.isPercent) {
+        fixLength('width', frame.width)
+      }
+      if (invalidPins.height?.isPercent) {
+        fixLength('height', frame.height)
+      }
+      if (invalidPins.left?.isPercent) {
+        fixLength('left', parentFrame.width * (invalidPins.left.value / 100))
+      }
+      if (invalidPins.top?.isPercent) {
+        fixLength('top', parentFrame.height * (invalidPins.top.value / 100))
+      }
+    }
+    for (const path of selectedViews) {
+      if (treatElementAsGroupLike(metadataRef.current, path)) {
+        const children = MetadataUtils.getChildrenUnordered(metadataRef.current, path)
+        for (const child of children) {
+          fixGroupChild(child.elementPath)
+        }
+      } else if (treatElementAsGroupLike(metadataRef.current, EP.parentPath(path))) {
+        fixGroupChild(path)
+      }
+    }
+    if (commands.length > 0) {
+      dispatch([applyCommandsAction(commands)])
+    }
+  }, [selectedViews, dispatch, metadataRef])
+
   return (
     <FlexRow data-testid={EditorContractSelectorTestID} style={{ flex: 1 }}>
       <PopupList
@@ -285,6 +399,22 @@ export const EditorContractDropdown = React.memo(() => {
         containerMode={'noBorder'}
         style={{ position: 'relative', left: -8 }}
       />
+      {when(
+        thereAreProblems,
+        <Button
+          highlight
+          spotlight
+          style={{
+            backgroundColor: colorTheme.errorForeground20.value,
+            color: colorTheme.errorForeground.value,
+            padding: '0 6px',
+            borderRadius: 2,
+          }}
+          onClick={fixProblems}
+        >
+          Fix problems
+        </Button>,
+      )}
     </FlexRow>
   )
 })

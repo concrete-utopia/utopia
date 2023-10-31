@@ -114,19 +114,31 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
   const groupChildren = selectedViewsRef.current.filter((path) =>
     treatElementAsGroupLike(metadataRef.current, EP.parentPath(path)),
   )
-  const groupChildrenWithInvalidPins: GroupChildPercentagePins =
-    groupChildren
-      .map((path) => {
-        const metadata = MetadataUtils.findElementByElementPath(metadataRef.current, path)
-        const state = getGroupChildState(projectContentsRef.current, metadata)
-        if (state === 'child-has-percentage-pins') {
-          return invalidPercentagePinsFromElement(metadata)
-        }
-        return null
-      })
-      .find(
-        (matrix) => matrix != null && (matrix.width || matrix.height || matrix.left || matrix.top),
-      ) ?? {}
+  const groupChildrenWithInvalidPins = useEditorState(
+    Substores.metadata,
+    (store) => {
+      return (
+        groupChildren
+          .map((path) => {
+            const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+            const state = getGroupChildState(projectContentsRef.current, metadata)
+            if (state === 'child-has-percentage-pins') {
+              return invalidPercentagePinsFromElement(metadata)
+            }
+            return null
+          })
+          .find(
+            (matrix) =>
+              matrix != null &&
+              (matrix.width?.isPercent ||
+                matrix.height?.isPercent ||
+                matrix.left?.isPercent ||
+                matrix.top?.isPercent),
+          ) ?? {}
+      )
+    },
+    '',
+  )
 
   const originalLTWHValues: LTWHPixelValues = useEditorState(
     Substores.metadata,
@@ -245,12 +257,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='L'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.left}
+          invalid={groupChildrenWithInvalidPins.left?.isPercent}
         />
         <FrameUpdatingLayoutControl
           property='top'
           label='T'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.top}
+          invalid={groupChildrenWithInvalidPins.top?.isPercent}
         />
       </UIGridRow>
       <UIGridRow
@@ -263,13 +277,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='W'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.width}
-          invalid={groupChildrenWithInvalidPins.width}
+          invalid={groupChildrenWithInvalidPins.width?.isPercent}
         />
         <FrameUpdatingLayoutControl
           property='height'
           label='H'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.height}
+          invalid={groupChildrenWithInvalidPins.height?.isPercent}
         />
       </UIGridRow>
     </>

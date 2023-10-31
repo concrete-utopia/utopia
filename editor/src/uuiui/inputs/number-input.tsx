@@ -687,7 +687,6 @@ export const NumberInput = React.memo<NumberInputProps>(
             css={{
               '::placeholder': { color: invalid ? colorTheme.error.value : undefined },
             }}
-            disabled={invalid}
             className='number-input'
             height={height}
             id={id}

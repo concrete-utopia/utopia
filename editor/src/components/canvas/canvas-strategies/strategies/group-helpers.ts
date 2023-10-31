@@ -185,10 +185,10 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
 }
 
 export type GroupChildPercentagePins = {
-  width?: boolean
-  height?: boolean
-  left?: boolean
-  top?: boolean
+  width?: { isPercent: boolean; value: number }
+  height?: { isPercent: boolean; value: number }
+  left?: { isPercent: boolean; value: number }
+  top?: { isPercent: boolean; value: number }
 }
 
 export function invalidPercentagePinsFromElement(
@@ -198,9 +198,15 @@ export function invalidPercentagePinsFromElement(
   if (jsxElement?.props == null) {
     return {}
   }
-  function isPercentage(element: JSXElement, name: StyleLayoutProp): boolean {
+  function isPercentage(
+    element: JSXElement,
+    name: StyleLayoutProp,
+  ): { isPercent: boolean; value: number } {
     const pin = getLayoutProperty(name, right(element.props), styleStringInArray)
-    return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%'
+    if (!(isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%')) {
+      return { isPercent: false, value: 0 }
+    }
+    return { isPercent: true, value: pin.value.value }
   }
   return {
     width: isPercentage(jsxElement, 'width'),
@@ -247,14 +253,7 @@ export function getGroupStateFromJSXElement(
 ): GroupState {
   return (
     maybeGroupHasPercentagePins(jsxElement) ??
-    maybeInvalidGroupChildren(
-      jsxElement,
-      path,
-      metadata,
-      pathTrees,
-      allElementProps,
-      projectContents,
-    ) ??
+    maybeInvalidGroupChildren(path, metadata, pathTrees, allElementProps, projectContents) ??
     'valid'
   )
 }
@@ -281,7 +280,6 @@ export function getGroupState(
 }
 
 function maybeInvalidGroupChildren(
-  group: JSXElement,
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
