@@ -57,7 +57,7 @@ function createProject(withBoundary: boolean) {
       </Storyboard>
     )
     `,
-    ['/src/root.js']: `import React from 'react'
+    ['/app/root.js']: `import React from 'react'
     import { Outlet } from '@remix-run/react'
     
     export default function Root() {
@@ -68,7 +68,7 @@ function createProject(withBoundary: boolean) {
       )
     }
     `,
-    ['/src/routes/_index.js']: `import React from 'react'
+    ['/app/routes/_index.js']: `import React from 'react'
     import { Link } from '@remix-run/react'
     
     export default function Index() {
@@ -86,7 +86,7 @@ function createProject(withBoundary: boolean) {
       )
     }
     `,
-    ['/src/routes/thrower.js']: `import React from 'react'
+    ['/app/routes/thrower.js']: `import React from 'react'
     import { useRouteError } from '@remix-run/react'
     
     ${
