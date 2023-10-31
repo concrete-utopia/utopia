@@ -44,8 +44,6 @@ import path from 'path'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
-const ROOT_DIR = '/src'
-
 export type RouteManifestWithContents = RouteManifest<EntryRoute>
 
 export const DefaultFutureConfig: FutureConfig = {
@@ -85,11 +83,12 @@ function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): File
 
 export function createRouteManifestFromProjectContents(
   rootFilePath: string,
+  rootDir: string,
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRoute> | null {
   const routesFromRemix = (() => {
     try {
-      return flatRoutes(ROOT_DIR, projectContentsToFileOps(projectContents))
+      return flatRoutes(rootDir, projectContentsToFileOps(projectContents))
     } catch (e) {
       return null
     }
@@ -98,11 +97,12 @@ export function createRouteManifestFromProjectContents(
   if (routesFromRemix == null) {
     return null
   }
-  return patchRemixRoutes(rootFilePath, routesFromRemix, projectContents)
+  return patchRemixRoutes(rootFilePath, rootDir, routesFromRemix, projectContents)
 }
 
 function patchRemixRoutes(
   rootFilePath: string,
+  rootDir: string,
   routesFromRemix: RouteManifest<ConfigRoute> | null,
   projectContents: ProjectContentTreeRoot,
 ) {
@@ -112,7 +112,7 @@ function patchRemixRoutes(
   }
 
   const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
-    const filePath = `${ROOT_DIR}/${route.file}`
+    const filePath = `${rootDir}/${route.file}`
 
     // Maybe we should fill hasAction and hasLoader properly, but it is not used for anything
     acc[route.id] = {
@@ -337,6 +337,7 @@ function safeGetClientRoutes(
 }
 
 export function getRootFile(
+  rootDir: string,
   projectContents: ProjectContentTreeRoot,
 ): { file: TextFile; path: string } | null {
   function getTextFileAtPath(filePath: string) {
@@ -348,7 +349,9 @@ export function getRootFile(
   }
 
   return (
-    getTextFileAtPath(`${ROOT_DIR}/root.js`) ?? getTextFileAtPath(`${ROOT_DIR}/root.jsx`) ?? null
+    getTextFileAtPath(path.join(rootDir, 'root.js')) ??
+    getTextFileAtPath(path.join(rootDir, 'root.jsx')) ??
+    null
   )
 }
 

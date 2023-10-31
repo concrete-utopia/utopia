@@ -1,6 +1,10 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
-import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
+import {
+  CreateRemixDerivedDataRefsGLOBAL,
+  REMIX_CONFIG_JS_PATH,
+  getRemixRootDir,
+} from '../../editor/store/remix-derived-data'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   DefaultFutureConfig,
@@ -26,6 +30,13 @@ export var storyboard = (
     />
   </Storyboard>
 );
+`
+
+const remixConfigJsFromRemixDocs = `
+/** @type {import('@remix-run/dev').AppConfig} */
+module.exports = {
+  appDirectory: "src",
+};
 `
 
 const rootFileContentWithExportedStuff = `import React from 'react'
@@ -102,15 +113,17 @@ describe('Route manifest', () => {
   it('Parses the route manifest from a simple project', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['/src/root.js']: rootFileContent,
-      ['/src/routes/_index.js']: routeFileContent('Index route'),
-      ['/src/routes/posts.$postId.js']: routeFileContent('A specific post'),
-      ['/src/routes/posts._index.js']: routeFileContent('Posts'),
+      ['/app/root.js']: rootFileContent,
+      ['/app/routes/_index.js']: routeFileContent('Index route'),
+      ['/app/routes/posts.$postId.js']: routeFileContent('A specific post'),
+      ['/app/routes/posts._index.js']: routeFileContent('Posts'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const remixManifest = createRouteManifestFromProjectContents(
-      getRootFile(renderResult.getEditorState().editor.projectContents)!.path,
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? '',
+      rootDir,
       renderResult.getEditorState().editor.projectContents,
     )
 
@@ -120,7 +133,7 @@ describe('Route manifest', () => {
         id: 'routes/posts.$postId',
         path: 'posts/:postId',
         parentId: 'root',
-        module: '/src/routes/posts.$postId.js',
+        module: '/app/routes/posts.$postId.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -131,7 +144,7 @@ describe('Route manifest', () => {
         path: 'posts',
         index: true,
         parentId: 'root',
-        module: '/src/routes/posts._index.js',
+        module: '/app/routes/posts._index.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -141,7 +154,7 @@ describe('Route manifest', () => {
         id: 'root',
         file: 'root.js',
         parentId: '',
-        module: '/src/root.js',
+        module: '/app/root.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -153,7 +166,7 @@ describe('Route manifest', () => {
         hasLoader: false,
         id: 'routes/_index',
         index: true,
-        module: '/src/routes/_index.js',
+        module: '/app/routes/_index.js',
         parentId: 'root',
         path: undefined,
       },
@@ -165,8 +178,10 @@ describe('Route manifest', () => {
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const remixManifest = createRouteManifestFromProjectContents(
-      getRootFile(renderResult.getEditorState().editor.projectContents)?.path ?? '',
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? '',
+      rootDir,
       renderResult.getEditorState().editor.projectContents,
     )
 
@@ -175,20 +190,22 @@ describe('Route manifest', () => {
   it('Parses the route manifest from the Remix Blog Tutorial project files', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['/src/root.js']: rootFileContent,
-      ['/src/routes/_index.js']: routeFileContent('Index route'),
-      ['/src/routes/healthcheck.js']: routeFileContent("Stayin' alive"),
-      ['/src/routes/join.js']: routeFileContent('Join me, and together we can rule the galaxy'),
-      ['/src/routes/logout.js']: routeFileContent('Goodbye'),
-      ['/src/routes/notes.js']: routeFileContentWithOutlet('Notes'),
-      ['/src/routes/notes._index.js']: routeFileContent('Notes too'),
-      ['/src/routes/notes.$noteId.js']: routeFileContent('A specific note'),
-      ['/src/routes/notes.new.js']: routeFileContent('Dear diary'),
+      ['/app/root.js']: rootFileContent,
+      ['/app/routes/_index.js']: routeFileContent('Index route'),
+      ['/app/routes/healthcheck.js']: routeFileContent("Stayin' alive"),
+      ['/app/routes/join.js']: routeFileContent('Join me, and together we can rule the galaxy'),
+      ['/app/routes/logout.js']: routeFileContent('Goodbye'),
+      ['/app/routes/notes.js']: routeFileContentWithOutlet('Notes'),
+      ['/app/routes/notes._index.js']: routeFileContent('Notes too'),
+      ['/app/routes/notes.$noteId.js']: routeFileContent('A specific note'),
+      ['/app/routes/notes.new.js']: routeFileContent('Dear diary'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const remixManifest = createRouteManifestFromProjectContents(
-      getRootFile(renderResult.getEditorState().editor.projectContents)!.path,
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? '',
+      rootDir,
       renderResult.getEditorState().editor.projectContents,
     )
 
@@ -198,7 +215,7 @@ describe('Route manifest', () => {
         id: 'routes/notes.$noteId',
         path: ':noteId',
         parentId: 'routes/notes',
-        module: '/src/routes/notes.$noteId.js',
+        module: '/app/routes/notes.$noteId.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -208,7 +225,7 @@ describe('Route manifest', () => {
         id: 'routes/notes._index',
         index: true,
         parentId: 'routes/notes',
-        module: '/src/routes/notes._index.js',
+        module: '/app/routes/notes._index.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -218,7 +235,7 @@ describe('Route manifest', () => {
         id: 'routes/healthcheck',
         path: 'healthcheck',
         parentId: 'root',
-        module: '/src/routes/healthcheck.js',
+        module: '/app/routes/healthcheck.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -228,7 +245,7 @@ describe('Route manifest', () => {
         id: 'routes/notes.new',
         path: 'new',
         parentId: 'routes/notes',
-        module: '/src/routes/notes.new.js',
+        module: '/app/routes/notes.new.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -238,7 +255,7 @@ describe('Route manifest', () => {
         id: 'routes/_index',
         index: true,
         parentId: 'root',
-        module: '/src/routes/_index.js',
+        module: '/app/routes/_index.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -248,7 +265,7 @@ describe('Route manifest', () => {
         id: 'routes/logout',
         path: 'logout',
         parentId: 'root',
-        module: '/src/routes/logout.js',
+        module: '/app/routes/logout.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -258,7 +275,7 @@ describe('Route manifest', () => {
         id: 'routes/notes',
         path: 'notes',
         parentId: 'root',
-        module: '/src/routes/notes.js',
+        module: '/app/routes/notes.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -268,7 +285,7 @@ describe('Route manifest', () => {
         id: 'routes/join',
         path: 'join',
         parentId: 'root',
-        module: '/src/routes/join.js',
+        module: '/app/routes/join.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -278,7 +295,7 @@ describe('Route manifest', () => {
         id: 'root',
         file: 'root.js',
         parentId: '',
-        module: '/src/root.js',
+        module: '/app/root.js',
         hasAction: false,
         hasLoader: false,
         hasErrorBoundary: false,
@@ -291,22 +308,24 @@ describe('Routes', () => {
   it('Parses the routes from a simple project', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['/src/root.js']: rootFileContent,
-      ['/src/routes/_index.js']: routeFileContent('Index route'),
-      ['/src/routes/posts.$postId.js']: routeFileContent('A specific post'),
-      ['/src/routes/posts._index.js']: routeFileContent('Posts'),
+      ['/app/root.js']: rootFileContent,
+      ['/app/routes/_index.js']: routeFileContent('Index route'),
+      ['/app/routes/posts.$postId.js']: routeFileContent('A specific post'),
+      ['/app/routes/posts._index.js']: routeFileContent('Posts'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const remixManifest = createRouteManifestFromProjectContents(
-      getRootFile(renderResult.getEditorState().editor.projectContents)!.path,
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? '',
+      rootDir,
       renderResult.getEditorState().editor.projectContents,
     )
     expect(remixManifest).not.toBeNull()
 
     let routeModuleCache = { current: {} }
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRootFile(renderResult.getEditorState().editor.projectContents)!.file,
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,
@@ -338,8 +357,8 @@ describe('Routes', () => {
   it('Parses exported functions', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['/src/root.js']: rootFileContentWithExportedStuff,
-      ['/src/routes/_index.js']: routeFileContent('Index route'),
+      ['/app/root.js']: rootFileContentWithExportedStuff,
+      ['/app/routes/_index.js']: routeFileContent('Index route'),
     })
 
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
@@ -386,30 +405,48 @@ describe('Routes', () => {
     expect(remixRoutes![0].id).toEqual('root')
     expect(remixRoutes![0].children).toHaveLength(1)
   })
+  it('Parses different route dir', async () => {
+    const project = createModifiedProject({
+      [REMIX_CONFIG_JS_PATH]: remixConfigJsFromRemixDocs,
+      [StoryboardFilePath]: storyboardFileContent,
+      ['/src/root.js']: rootFileContentWithExportedStuff,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixRoutes = renderResult.getEditorState().derived.remixData?.routes
+    expect(remixRoutes).toBeDefined()
+
+    expect(remixRoutes).toHaveLength(1)
+    expect(remixRoutes![0].children).toHaveLength(1)
+  })
   it('Parses the routes from the Remix Blog Tutorial project files', async () => {
     const project = createModifiedProject({
       [StoryboardFilePath]: storyboardFileContent,
-      ['/src/root.js']: rootFileContent,
-      ['/src/routes/_index.js']: routeFileContent('Index route'),
-      ['/src/routes/healthcheck.js']: routeFileContent("Stayin' alive"),
-      ['/src/routes/join.js']: routeFileContent('Join me, and together we can rule the galaxy'),
-      ['/src/routes/logout.js']: routeFileContent('Goodbye'),
-      ['/src/routes/notes._index.js']: routeFileContent('Notes too'),
-      ['/src/routes/notes.$noteId.js']: routeFileContent('A specific note'),
-      ['/src/routes/notes.new.js']: routeFileContent('Dear diary'),
-      ['/src/routes/notes.js']: routeFileContentWithOutlet('Notes'),
+      ['/app/root.js']: rootFileContent,
+      ['/app/routes/_index.js']: routeFileContent('Index route'),
+      ['/app/routes/healthcheck.js']: routeFileContent("Stayin' alive"),
+      ['/app/routes/join.js']: routeFileContent('Join me, and together we can rule the galaxy'),
+      ['/app/routes/logout.js']: routeFileContent('Goodbye'),
+      ['/app/routes/notes._index.js']: routeFileContent('Notes too'),
+      ['/app/routes/notes.$noteId.js']: routeFileContent('A specific note'),
+      ['/app/routes/notes.new.js']: routeFileContent('Dear diary'),
+      ['/app/routes/notes.js']: routeFileContentWithOutlet('Notes'),
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
     const remixManifest = createRouteManifestFromProjectContents(
-      getRootFile(renderResult.getEditorState().editor.projectContents)!.path,
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? '',
+      rootDir,
       renderResult.getEditorState().editor.projectContents,
     )
 
     let routeModuleCache = { current: {} }
     expect(remixManifest).not.toBeNull()
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRootFile(renderResult.getEditorState().editor.projectContents)!.file,
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,

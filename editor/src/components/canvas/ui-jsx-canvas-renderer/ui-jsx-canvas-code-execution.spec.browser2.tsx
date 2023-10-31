@@ -17,18 +17,18 @@ import { StoryboardFilePath } from '../../editor/store/editor-state'
 import { mouseClickAtPoint } from '../event-helpers.test-utils'
 import { type EditorRenderResult, renderTestEditorWithModel } from '../ui-jsx.test-utils'
 
-const indirectFilePath = '/src/indirect.js'
+const indirectFilePath = '/app/indirect.js'
 const indirectDependencyValueBefore = 'Initial indirect dependency value'
 const indirectFileContent = `export const IndirectDependencyValue = '${indirectDependencyValueBefore}'`
 
-const directFilePath = '/src/direct.js'
+const directFilePath = '/app/direct.js'
 const directFileContent = `
 import { IndirectDependencyValue } from '${indirectFilePath}'
 
 export const DirectDependencyValue = 'IndirectDependencyValue: ' + IndirectDependencyValue
 `
 
-const appFilePath = '/src/app.js'
+const appFilePath = '/app/app.js'
 const appFileContent = `
 import * as React from 'react'
 import { DirectDependencyValue } from '${directFilePath}'
@@ -187,7 +187,7 @@ describe('Re-mounting is avoided when', () => {
   }
 
   it('arbitrary JS or a component is edited in a regular project', async () => {
-    const clickerComponentFile = '/src/clicker.js'
+    const clickerComponentFile = '/app/clicker.js'
 
     const project = createModifiedProject({
       [StoryboardFilePath]: `
@@ -237,7 +237,7 @@ describe('Re-mounting is avoided when', () => {
   })
 
   it('arbitrary JS or a component is edited in a remix project', async () => {
-    const clickerRouteFile = '/src/routes/_index.js'
+    const clickerRouteFile = '/app/routes/_index.js'
 
     const project = createModifiedProject({
       [StoryboardFilePath]: `import * as React from 'react'
@@ -257,7 +257,7 @@ describe('Re-mounting is avoided when', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
 
       export default function Root() {
