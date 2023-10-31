@@ -86,6 +86,7 @@ interface TestCase {
   expectedProject: string
 }
 
+// Re-enable these tests when reactivating pin toggling for the new world
 xdescribe('Group child constraints', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   function makeTestCase(testCase: TestCase): () => Promise<void> {
