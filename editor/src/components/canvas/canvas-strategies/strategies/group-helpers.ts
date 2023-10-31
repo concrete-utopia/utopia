@@ -11,6 +11,7 @@ import { mapDropNulls } from '../../../../core/shared/array-utils'
 import type { Either } from '../../../../core/shared/either'
 import { isLeft, isRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
+import * as PP from '../../../../core/shared/property-path'
 import type { ElementPathTrees } from '../../../../core/shared/element-path-tree'
 import type {
   ElementInstanceMetadata,
@@ -26,6 +27,7 @@ import {
   jsxAttributesFromMap,
   jsxElementWithoutUID,
 } from '../../../../core/shared/element-template'
+import { isFiniteRectangle } from '../../../../core/shared/math-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
 import { assertNever } from '../../../../core/shared/utils'
@@ -33,9 +35,11 @@ import { styleStringInArray } from '../../../../utils/common-constants'
 import { notice } from '../../../common/notice'
 import type { AddToast } from '../../../editor/action-types'
 import { showToast } from '../../../editor/actions/action-creators'
-import { isCSSNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, isCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { MaxContent } from '../../../inspector/inspector-common'
+import type { CanvasCommand } from '../../commands/commands'
+import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 import type { ShowToastCommand } from '../../commands/show-toast-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
@@ -67,7 +71,7 @@ export function allowGroupTrueUp(
   path: ElementPath,
 ): boolean {
   const isGroupLike = treatElementAsGroupLike(metadata, path)
-  if (isGroupLike) {
+  if (!isGroupLike) {
     const groupValidity = getGroupValidity(
       path,
       metadata,
@@ -184,11 +188,45 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
   })
 }
 
+type PercentagePin = { isPercent: boolean; value: number }
+
+function emptyPercentagePin(): PercentagePin {
+  return { isPercent: false, value: 0 }
+}
+
+function percentagePin(value: number): PercentagePin {
+  return { isPercent: true, value: value }
+}
+
 export type GroupChildPercentagePins = {
-  width?: { isPercent: boolean; value: number }
-  height?: { isPercent: boolean; value: number }
-  left?: { isPercent: boolean; value: number }
-  top?: { isPercent: boolean; value: number }
+  width: PercentagePin
+  height: PercentagePin
+  left: PercentagePin
+  top: PercentagePin
+}
+
+export function isNonEmptyGroupChildPercentagePins(
+  percentagePins: GroupChildPercentagePins | null,
+): boolean {
+  if (percentagePins == null) {
+    return false
+  }
+  return (
+    percentagePins.width?.isPercent ||
+    percentagePins.height?.isPercent ||
+    percentagePins.top?.isPercent ||
+    percentagePins.left?.isPercent ||
+    false
+  )
+}
+
+export function emptyGroupChildPercentagePins(): GroupChildPercentagePins {
+  return {
+    width: emptyPercentagePin(),
+    height: emptyPercentagePin(),
+    top: emptyPercentagePin(),
+    left: emptyPercentagePin(),
+  }
 }
 
 export function invalidPercentagePinsFromElement(
@@ -196,23 +234,22 @@ export function invalidPercentagePinsFromElement(
 ): GroupChildPercentagePins {
   const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata)
   if (jsxElement?.props == null) {
-    return {}
+    return emptyGroupChildPercentagePins()
   }
-  function isPercentage(
+  function isPercent(
     element: JSXElement,
     name: StyleLayoutProp,
   ): { isPercent: boolean; value: number } {
     const pin = getLayoutProperty(name, right(element.props), styleStringInArray)
-    if (!(isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%')) {
-      return { isPercent: false, value: 0 }
-    }
-    return { isPercent: true, value: pin.value.value }
+    return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%'
+      ? percentagePin(pin.value.value)
+      : emptyPercentagePin()
   }
   return {
-    width: isPercentage(jsxElement, 'width'),
-    height: isPercentage(jsxElement, 'height'),
-    left: isPercentage(jsxElement, 'left'),
-    top: isPercentage(jsxElement, 'top'),
+    width: isPercent(jsxElement, 'width'),
+    height: isPercent(jsxElement, 'height'),
+    left: isPercent(jsxElement, 'left'),
+    top: isPercent(jsxElement, 'top'),
   }
 }
 
@@ -515,4 +552,75 @@ export function isEmptyGroup(metadata: ElementInstanceMetadataMap, path: Element
     treatElementAsGroupLike(metadata, path) &&
     MetadataUtils.getChildrenUnordered(metadata, path).length === 0
   )
+}
+
+function fixLengthCommand(path: ElementPath, prop: StyleLayoutProp, size: number): CanvasCommand {
+  return setCssLengthProperty(
+    'always',
+    path,
+    PP.create('style', prop),
+    setExplicitCssValue(cssNumber(size, 'px')),
+    null,
+    'create-if-not-existing',
+  )
+}
+
+function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+  let commands: CanvasCommand[] = []
+
+  const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
+  if (
+    parentMetadata == null ||
+    parentMetadata.globalFrame == null ||
+    !isFiniteRectangle(parentMetadata.globalFrame)
+  ) {
+    return []
+  }
+  const parentFrame = parentMetadata.globalFrame
+
+  const metadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (
+    metadata == null ||
+    metadata.globalFrame == null ||
+    !isFiniteRectangle(metadata.globalFrame)
+  ) {
+    return []
+  }
+  const frame = metadata.globalFrame
+
+  const invalidPins = invalidPercentagePinsFromElement(metadata)
+  if (invalidPins.width.isPercent) {
+    commands.push(fixLengthCommand(path, 'width', frame.width))
+  }
+  if (invalidPins.height.isPercent) {
+    commands.push(fixLengthCommand(path, 'height', frame.height))
+  }
+  if (invalidPins.left.isPercent) {
+    const left = parentFrame.width * (invalidPins.left.value / 100)
+    commands.push(fixLengthCommand(path, 'left', left))
+  }
+  if (invalidPins.top.isPercent) {
+    const top = parentFrame.height * (invalidPins.top.value / 100)
+    commands.push(fixLengthCommand(path, 'top', top))
+  }
+
+  return commands
+}
+
+export function fixGroupCommands(
+  jsxMetadata: ElementInstanceMetadataMap,
+  paths: ElementPath[],
+): CanvasCommand[] {
+  let commands: CanvasCommand[] = []
+  for (const path of paths) {
+    if (treatElementAsGroupLike(jsxMetadata, path)) {
+      const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+      for (const child of children) {
+        commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
+      }
+    } else if (treatElementAsGroupLike(jsxMetadata, EP.parentPath(path))) {
+      commands.push(...fixGroupChildCommands(jsxMetadata, path))
+    }
+  }
+  return commands
 }

@@ -30,30 +30,21 @@ import {
   isConversionForbidden,
   getCommandsForConversionToDesiredType,
 } from '../canvas/canvas-strategies/strategies/group-conversion-helpers'
-import type { CanvasCommand } from '../canvas/commands/commands'
 import type { EditorContract } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { getEditorContractForElement } from '../canvas/canvas-strategies/strategies/contracts/contract-helpers'
 import { allElemsEqual } from '../../core/shared/array-utils'
 import * as EP from '../../core/shared/element-path'
-import * as PP from '../../core/shared/property-path'
 import { notice } from '../common/notice'
 import {
+  fixGroupCommands,
   getGroupState,
   invalidPercentagePinsFromElement,
   isInvalidGroupState,
+  isNonEmptyGroupChildPercentagePins,
   treatElementAsGroupLike,
 } from '../canvas/canvas-strategies/strategies/group-helpers'
 import { MetadataUtils } from '../../core/model/element-metadata-utils'
-import {
-  setCssLengthProperty,
-  setExplicitCssValue,
-} from '../canvas/commands/set-css-length-command'
-import { cssNumber } from './common/css-utils'
 import { when } from '../../utils/react-conditionals'
-import type { CanvasRectangle } from '../../core/shared/math-utils'
-import { canvasRectangle, isFiniteRectangle, zeroRectangle } from '../../core/shared/math-utils'
-import type { StyleLayoutProp } from '../../core/layout/layout-helpers-new'
-import type { ElementPath } from '../../core/shared/project-file-types'
 
 const simpleControlStyles = getControlStyles('simple')
 const disabledControlStyles: ControlStyles = {
@@ -310,75 +301,17 @@ export const EditorContractDropdown = React.memo(() => {
         } else if (treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path))) {
           const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
           const invalidPins = invalidPercentagePinsFromElement(metadata)
-          if (
-            invalidPins.width?.isPercent ??
-            invalidPins.height?.isPercent ??
-            invalidPins.left?.isPercent ??
-            invalidPins.top?.isPercent ??
-            false
-          ) {
+          if (isNonEmptyGroupChildPercentagePins(invalidPins)) {
             return true
           }
         }
         return false
       }),
-    '',
+    'EditorContractDropdown thereAreProblems',
   )
 
   const fixProblems = React.useCallback(() => {
-    let commands: CanvasCommand[] = []
-    function fixGroupChild(path: ElementPath) {
-      const parentMetadata = MetadataUtils.findElementByElementPath(
-        metadataRef.current,
-        EP.parentPath(path),
-      )
-      const parentFrame: CanvasRectangle =
-        parentMetadata != null &&
-        parentMetadata.globalFrame != null &&
-        isFiniteRectangle(parentMetadata.globalFrame)
-          ? parentMetadata.globalFrame
-          : canvasRectangle(zeroRectangle)
-      const metadata = MetadataUtils.findElementByElementPath(metadataRef.current, path)
-      const invalidPins = invalidPercentagePinsFromElement(metadata)
-      const frame: CanvasRectangle =
-        metadata != null && metadata.globalFrame != null && isFiniteRectangle(metadata.globalFrame)
-          ? metadata.globalFrame
-          : canvasRectangle(zeroRectangle)
-      function fixLength(prop: StyleLayoutProp, size: number) {
-        commands.push(
-          setCssLengthProperty(
-            'always',
-            path,
-            PP.create('style', prop),
-            setExplicitCssValue(cssNumber(size, 'px')),
-            null,
-            'create-if-not-existing',
-          ),
-        )
-      }
-      if (invalidPins.width?.isPercent) {
-        fixLength('width', frame.width)
-      }
-      if (invalidPins.height?.isPercent) {
-        fixLength('height', frame.height)
-      }
-      if (invalidPins.left?.isPercent) {
-        fixLength('left', parentFrame.width * (invalidPins.left.value / 100))
-      }
-      if (invalidPins.top?.isPercent) {
-        fixLength('top', parentFrame.height * (invalidPins.top.value / 100))
-      }
-    }
-    for (const path of selectedViews) {
-      if (treatElementAsGroupLike(metadataRef.current, path)) {
-        const children = MetadataUtils.getChildrenUnordered(metadataRef.current, path)
-        for (const child of children) {
-          fixGroupChild(child.elementPath)
-        }
-      } else if (treatElementAsGroupLike(metadataRef.current, EP.parentPath(path))) {
-        fixGroupChild(path)
-      }
-    }
+    const commands = fixGroupCommands(metadataRef.current, selectedViews)
     if (commands.length > 0) {
       dispatch([applyCommandsAction(commands)])
     }
