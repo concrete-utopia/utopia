@@ -915,3 +915,14 @@ export function fileExportsFunctionWithName(
     ) != null
   )
 }
+
+export function getTopLevelElementByExportsDetail(
+  file: ParseSuccess,
+  nameToLookFor: string,
+): UtopiaJSXComponent | null {
+  return (
+    file.topLevelElements.find(
+      (t): t is UtopiaJSXComponent => t.type === 'UTOPIA_JSX_COMPONENT' && t.name === nameToLookFor,
+    ) ?? null
+  )
+}

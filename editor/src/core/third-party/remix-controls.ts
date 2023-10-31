@@ -12,6 +12,7 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
     properties: {
       to: { control: 'string-input' },
     },
+    supportsChildren: true,
     variants: [
       {
         insertMenuLabel: 'Link',
@@ -38,6 +39,7 @@ export const RemixRunReactComponents: ComponentDescriptorsForFile = {
   },
   Outlet: {
     properties: {},
+    supportsChildren: false,
     variants: [
       {
         insertMenuLabel: 'Outlet',

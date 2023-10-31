@@ -47,7 +47,6 @@ import type {
 import type { ProjectContentTreeRoot } from '../assets'
 import { getProjectFileByFilePath } from '../assets'
 import type { EditorDispatch } from '../editor/action-types'
-import type { RemixRoutingTable } from '../editor/store/remix-derived-data'
 
 type ModuleExportTypes = { [name: string]: ExportType }
 
@@ -124,15 +123,18 @@ export function componentInfo(
 
 export interface ComponentDescriptor {
   properties: PropertyControls
+  supportsChildren: boolean
   variants: ComponentInfo[]
 }
 
 export function componentDescriptor(
   properties: PropertyControls,
+  supportsChildren: boolean,
   variants: Array<ComponentInfo>,
 ): ComponentDescriptor {
   return {
     properties: properties,
+    supportsChildren: supportsChildren,
     variants: variants,
   }
 }

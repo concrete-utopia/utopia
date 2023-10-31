@@ -165,6 +165,10 @@ Object {
         "parts": Array [],
         "type": "elementpath",
       },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
+      },
       "coordinateSystemBounds": null,
       "display": "initial",
       "flexDirection": null,
@@ -277,6 +281,10 @@ Object {
       "closestOffsetParentPath": Object {
         "parts": Array [],
         "type": "elementpath",
+      },
+      "computedHugProperty": Object {
+        "height": null,
+        "width": null,
       },
       "coordinateSystemBounds": null,
       "display": "initial",

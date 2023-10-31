@@ -22,7 +22,7 @@ import { useDispatch } from '../editor/store/dispatch-context'
 import { Substores, useEditorState, useRefEditorState } from '../editor/store/store-hook'
 import type { FramePinsInfo } from './common/layout-property-path-hooks'
 import { InspectorPropsContext } from './common/property-path-hooks'
-import { PinControl, PinHeightControl, PinWidthControl } from './controls/pin-control'
+import { CombinedPinControl, PinControl } from './controls/pin-control'
 import {
   allElementsAreGroupChildren,
   allElementsArePositionedAbsolutelySelector,
@@ -40,7 +40,6 @@ import {
   GroupChildHorizontalPinChangeOptions,
   GroupChildVerticalPinChangeOptions,
   getConstraintAndFrameChangeActionsForGroupChild,
-  getFixedPointsForPinning,
   getFrameChangeActionsForFrameChild,
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
@@ -101,26 +100,13 @@ export const ConstraintsSection = React.memo(() => {
 ConstraintsSection.displayName = 'ConstraintsSection'
 
 const GroupChildConstraintsSection = React.memo(() => {
-  const pins = useDetectedConstraints('group-child')
-  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
-
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <ChildPinControl isGroupChild='group-child' pins={pins} framePinsInfo={framePinsInfo} />
-        <FlexColumn style={{ gap: 8 }}>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinWidthControl controlStatus='simple' framePins={framePinsInfo} toggleWidth={NO_OP} />
-            <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
-          </FlexRow>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinHeightControl
-              controlStatus='simple'
-              framePins={framePinsInfo}
-              toggleHeight={NO_OP}
-            />
-            <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
-          </FlexRow>
+        <CombinedPinControl isGroupChild='group-child' />
+        <FlexColumn css={{ gap: 8 }}>
+          <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
+          <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
         </FlexColumn>
       </UIGridRow>
     </FlexColumn>
@@ -129,26 +115,13 @@ const GroupChildConstraintsSection = React.memo(() => {
 GroupChildConstraintsSection.displayName = 'GroupChildConstraintsSection'
 
 const FrameChildConstraintsSection = React.memo(() => {
-  const pins = useDetectedConstraints('frame-child')
-  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
-
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <ChildPinControl isGroupChild='frame-child' pins={pins} framePinsInfo={framePinsInfo} />
+        <CombinedPinControl isGroupChild='frame-child' />
         <FlexColumn css={{ gap: 8 }}>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinWidthControl controlStatus='simple' framePins={framePinsInfo} toggleWidth={NO_OP} />
-            <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />
-          </FlexRow>
-          <FlexRow css={InspectorRowHoverCSS}>
-            <PinHeightControl
-              controlStatus='simple'
-              framePins={framePinsInfo}
-              toggleHeight={NO_OP}
-            />
-            <ChildConstraintSelect isGroupChild='frame-child' dimension={'height'} />
-          </FlexRow>
+          <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />
+          <ChildConstraintSelect isGroupChild='frame-child' dimension={'height'} />
         </FlexColumn>
       </UIGridRow>
     </FlexColumn>
@@ -156,7 +129,7 @@ const FrameChildConstraintsSection = React.memo(() => {
 })
 FrameChildConstraintsSection.displayName = 'FrameChildConstraintsSection'
 
-const ChildPinControl = React.memo(
+export const ChildPinControl = React.memo(
   ({
     isGroupChild,
     pins,
@@ -281,6 +254,7 @@ const ChildPinControl = React.memo(
         framePoints={framePinsInfo}
         controlStatus='simple'
         name='group-child-controls'
+        regularBorder={true}
       />
     )
   },

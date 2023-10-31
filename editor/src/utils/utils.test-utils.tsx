@@ -53,7 +53,7 @@ import {
   EmptyExportsDetail,
   parseSuccess,
 } from '../core/shared/project-file-types'
-import { foldEither, right } from '../core/shared/either'
+import { foldEither, forEachLeft, right } from '../core/shared/either'
 import Utils from './utils'
 import type { SimpleRectangle } from '../core/shared/math-utils'
 import { canvasRectangle, localRectangle, negate, offsetRect } from '../core/shared/math-utils'
@@ -81,6 +81,9 @@ import { unpatchedCreateRemixDerivedDataMemo } from '../components/editor/store/
 import { getCanvasRectangleFromElement } from '../core/shared/dom-utils'
 import { CanvasContainerID } from '../components/canvas/canvas-types'
 import { CanvasToolbarSearchTestID } from '../components/editor/canvas-toolbar'
+import { MetadataUtils } from '../core/model/element-metadata-utils'
+import { editorStateToElementChildOptic } from '../core/model/common-optics'
+import { toFirst } from '../core/shared/optics/optic-utilities'
 
 export function delay(time: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, time))
@@ -487,6 +490,21 @@ export async function selectComponentsForTest(
   editor: EditorRenderResult,
   paths: Array<ElementPath>,
 ): Promise<void> {
+  for (const path of paths) {
+    const element = MetadataUtils.findElementByElementPath(
+      editor.getEditorState().editor.jsxMetadata,
+      path,
+    )
+    if (element == null) {
+      const underlyingElement = toFirst(
+        editorStateToElementChildOptic(path),
+        editor.getEditorState().editor,
+      )
+      forEachLeft(underlyingElement, () => {
+        throw new Error(`Could not find ${EP.toString(path)} in metadata or in project contents.`)
+      })
+    }
+  }
   await editor.dispatch([selectComponents(paths, false)], true)
   await editor.getDispatchFollowUpActionsFinished()
 }

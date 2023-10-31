@@ -89,14 +89,9 @@ function applyUpdateResizeHuggingElementsCommands(
       editor.jsxMetadata,
       frameAndTarget.target,
     )
-    const jsxElement = MetadataUtils.getJSXElementFromMetadata(
-      editor.jsxMetadata,
-      frameAndTarget.target,
-    )
     if (
       metadata == null ||
-      jsxElement == null ||
-      !(isHuggingParent(jsxElement, 'width') || isHuggingParent(jsxElement, 'height'))
+      !(isHuggingParent(metadata, 'width') || isHuggingParent(metadata, 'height'))
     ) {
       continue
     }
@@ -136,15 +131,12 @@ function applyUpdateResizeHuggingElementsCommands(
       )
 
       const parentPath = EP.parentPath(frameAndTarget.target)
-      const parentJSXElement = MetadataUtils.getJSXElementFromMetadata(
-        editor.jsxMetadata,
-        parentPath,
-      )
+      const parentElement = MetadataUtils.findElementByElementPath(editor.jsxMetadata, parentPath)
       const parentIsHugging =
-        parentJSXElement != null &&
-        (isHuggingParent(parentJSXElement, 'width') || isHuggingParent(parentJSXElement, 'height'))
+        parentElement != null &&
+        (isHuggingParent(parentElement, 'width') || isHuggingParent(parentElement, 'height'))
       const shouldSetAbsolutePosition =
-        EP.isStoryboardPath(parentPath) || parentJSXElement == null || parentIsHugging
+        EP.isStoryboardPath(parentPath) || parentElement == null || parentIsHugging
       if (shouldSetAbsolutePosition) {
         commands.push(
           setProperty('always', frameAndTarget.target, PP.create('style', 'position'), 'absolute'),

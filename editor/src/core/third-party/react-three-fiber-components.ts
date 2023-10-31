@@ -39,6 +39,7 @@ function createBasicComponent(
 ): ComponentDescriptor {
   return {
     properties: propertyControls,
+    supportsChildren: false,
     variants: [
       {
         insertMenuLabel: name,

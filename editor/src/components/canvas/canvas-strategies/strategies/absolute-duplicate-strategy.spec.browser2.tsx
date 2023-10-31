@@ -246,7 +246,7 @@ describe('Absolute Duplicate Strategy', () => {
 
         expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
           formatTestProjectCode(
-            projectWithFragment(`
+            projectWithFragmentWithoutUID(`
               ${getOpeningFragmentLikeTag(type, { stripTestId: true, stripUids: true })}
         <div
           style={{
@@ -287,6 +287,17 @@ describe('Absolute Duplicate Strategy', () => {
 })
 
 const projectWithFragment = (innards: string) => `import * as React from 'react'
+import { Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard data-uid={'sb'}>
+    ${innards}
+  </Storyboard>
+)
+
+`
+
+const projectWithFragmentWithoutUID = (innards: string) => `import * as React from 'react'
 import { Storyboard } from 'utopia-api'
 
 export var storyboard = (

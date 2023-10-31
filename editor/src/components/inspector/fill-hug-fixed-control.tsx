@@ -75,6 +75,8 @@ export const FillContainerLabel = 'Fill container' as const
 export const FixedLabel = 'Fixed' as const
 export const ScaledLabel = 'Scaled' as const
 export const HugContentsLabel = 'Hug contents' as const
+export const SqueezeContentsLabel = 'Squeeze' as const
+export const CollapsedLabel = 'Collapsed' as const
 export const HugGroupContentsLabel = 'Hug contents' as const
 export const ComputedLabel = 'Computed' as const
 export const DetectedLabel = 'Detected' as const
@@ -89,6 +91,10 @@ export function selectOptionLabel(mode: FixedHugFillMode): string {
       return ScaledLabel
     case 'hug':
       return HugContentsLabel
+    case 'squeeze':
+      return SqueezeContentsLabel
+    case 'collapsed':
+      return CollapsedLabel
     case 'hug-group':
       return HugGroupContentsLabel
     case 'computed':
@@ -111,7 +117,9 @@ export function selectOptionIconType(
     case 'scaled': // TODO: needs separate icon
       return `fixed-${dimension}`
     case 'hug':
-      return `hug-${dimension}`
+    case 'squeeze':
+    case 'collapsed':
+      return `hug-${dimension}` // TODO: needs separate icon
     case 'hug-group':
       return `hug-${dimension}`
     case 'computed':
@@ -300,6 +308,7 @@ export const GroupChildPinControl = React.memo(() => {
       controlStatus='simple'
       exclude={{ center: true }}
       name='group-child-controls'
+      regularBorder={false}
     />
   )
 })
@@ -661,6 +670,8 @@ function strategyForChangingFillFixedHugType(
     case 'fill':
       return setPropFillStrategies(metadata, selectedElements, axis, 'default', otherAxisSetToFill)
     case 'hug':
+    case 'squeeze':
+    case 'collapsed':
       return setPropHugStrategies(metadata, selectedElements, elementPathTree, axis)
     case 'fixed':
     case 'scaled':
@@ -689,6 +700,8 @@ function pickFixedValue(value: FixedHugFill): CSSNumber | undefined {
     case 'hug-group':
       return value.value
     case 'hug':
+    case 'squeeze':
+    case 'collapsed':
       return undefined
     default:
       assertNever(value)
@@ -802,7 +815,7 @@ function groupChildConstraintOption(type: GroupChildConstraintOptionType): Selec
 
 export type ConstraintsMode = 'add' | 'remove'
 
-function setGroupChildConstraint(
+export function setGroupChildConstraint(
   dispatch: EditorDispatch,
   option: GroupChildConstraintOptionType | 'toggle',
   selectedViews: ElementPath[],

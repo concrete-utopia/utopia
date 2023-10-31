@@ -47,7 +47,7 @@ describe('Remix navigator', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -59,7 +59,7 @@ describe('Remix navigator', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -109,7 +109,7 @@ describe('Remix navigator', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -122,7 +122,7 @@ describe('Remix navigator', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -174,7 +174,7 @@ describe('Remix navigator', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -186,7 +186,7 @@ describe('Remix navigator', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -237,7 +237,7 @@ describe('Remix navigator', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -249,7 +249,7 @@ describe('Remix navigator', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -312,7 +312,7 @@ describe('Reparenting in Remix projects in the navigator', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -324,7 +324,7 @@ describe('Reparenting in Remix projects in the navigator', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -425,7 +425,7 @@ describe('Reparenting in Remix projects in the navigator', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -437,7 +437,7 @@ describe('Reparenting in Remix projects in the navigator', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div

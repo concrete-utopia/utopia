@@ -9,6 +9,7 @@ import { OptionChainControl } from '../../../controls/option-chain-control'
 import type { FixedHugFill } from '../../../inspector-common'
 import {
   detectFillHugFixedState,
+  isHuggingFixedHugFill,
   setAutoHeightCommands,
   setAutoWidthCommands,
   setFixedSizeCommands,
@@ -38,15 +39,24 @@ function detectTextSizingState(
   const horizontal = detectFillHugFixedState('horizontal', metadata, elementPath)
   const vertical = detectFillHugFixedState('vertical', metadata, elementPath)
 
-  if (horizontal.fixedHugFill?.type === 'hug' && vertical.fixedHugFill?.type === 'hug') {
+  if (
+    isHuggingFixedHugFill(horizontal.fixedHugFill?.type) &&
+    isHuggingFixedHugFill(vertical.fixedHugFill?.type)
+  ) {
     return 'auto-width'
   }
 
-  if (horizontal.fixedHugFill?.type === 'hug' && isConsideredFixed(vertical.fixedHugFill?.type)) {
+  if (
+    isHuggingFixedHugFill(horizontal.fixedHugFill?.type) &&
+    isConsideredFixed(vertical.fixedHugFill?.type)
+  ) {
     return 'auto-width'
   }
 
-  if (vertical.fixedHugFill?.type === 'hug' && isConsideredFixed(horizontal.fixedHugFill?.type)) {
+  if (
+    isHuggingFixedHugFill(vertical.fixedHugFill?.type) &&
+    isConsideredFixed(horizontal.fixedHugFill?.type)
+  ) {
     return 'auto-height'
   }
 

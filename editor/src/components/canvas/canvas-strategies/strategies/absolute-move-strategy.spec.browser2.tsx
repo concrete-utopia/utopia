@@ -1377,7 +1377,7 @@ describe('Absolute Move Strategy', () => {
               width: 36,
               height: 44,
             }}
-            data-uid='b44'
+            data-uid='drag-me'
             data-testid='drag-me'
           />
         ${getClosingFragmentLikeTag(type)}
@@ -1460,7 +1460,7 @@ describe('Absolute Move Strategy', () => {
             width: 36,
             height: 44,
           }}
-          data-uid='b44'
+          data-uid='drag-me'
           data-testid='drag-me'
         />
       ${getClosingFragmentLikeTag(type)}
@@ -1549,7 +1549,7 @@ describe('Absolute Move Strategy', () => {
                 width: 33,
                 height: 61,
               }}
-              data-uid='839'
+              data-uid='drag-me'
               data-testid='drag-me'
             />
             ${getClosingFragmentLikeTag(inner)}

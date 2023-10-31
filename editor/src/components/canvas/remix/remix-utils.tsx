@@ -43,8 +43,6 @@ import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
-const ROOT_DIR = '/src'
-
 export type RouteManifestWithContents = RouteManifest<EntryRoute>
 
 export const DefaultFutureConfig: FutureConfig = {
@@ -83,11 +81,12 @@ function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): File
 }
 
 export function createRouteManifestFromProjectContents(
+  rootDir: string,
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRoute> | null {
   const routesFromRemix = (() => {
     try {
-      return flatRoutes(ROOT_DIR, projectContentsToFileOps(projectContents))
+      return flatRoutes(rootDir, projectContentsToFileOps(projectContents))
     } catch (e) {
       return null
     }
@@ -96,10 +95,11 @@ export function createRouteManifestFromProjectContents(
   if (routesFromRemix == null) {
     return null
   }
-  return patchRemixRoutes(routesFromRemix, projectContents)
+  return patchRemixRoutes(rootDir, routesFromRemix, projectContents)
 }
 
 function patchRemixRoutes(
+  rootDir: string,
   routesFromRemix: RouteManifest<ConfigRoute> | null,
   projectContents: ProjectContentTreeRoot,
 ) {
@@ -109,7 +109,7 @@ function patchRemixRoutes(
   }
 
   const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
-    const filePath = `${ROOT_DIR}/${route.file}`
+    const filePath = `${rootDir}/${route.file}`
 
     // Maybe we should fill hasAction and hasLoader properly, but it is not used for anything
     acc[route.id] = {
@@ -235,6 +235,11 @@ function getRemixExportsOfModule(
   executionScopeCreator: ExecutionScopeCreator
   rootComponentUid: string
 } {
+  let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+  let topLevelComponentRendererComponents: {
+    current: MapLike<MapLike<ComponentRendererComponent>>
+  } = { current: {} }
+
   const executionScopeCreator = (
     innerProjectContents: ProjectContentTreeRoot,
     fileBlobs: CanvasBase64Blobs,
@@ -247,11 +252,6 @@ function getRemixExportsOfModule(
 
     const requireFn = curriedRequireFn(innerProjectContents)
     const resolve = curriedResolveFn(innerProjectContents)
-
-    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
-    let topLevelComponentRendererComponents: {
-      current: MapLike<MapLike<ComponentRendererComponent>>
-    } = { current: {} }
 
     const customRequire = (importOrigin: string, toImport: string) => {
       if (resolvedFiles[importOrigin] == null) {
@@ -334,6 +334,7 @@ function safeGetClientRoutes(
 }
 
 export function getRoutesAndModulesFromManifest(
+  rootDir: string,
   routeManifest: RouteManifestWithContents,
   futureConfig: FutureConfig,
   curriedRequireFn: CurriedUtopiaRequireFn,
@@ -344,7 +345,7 @@ export function getRoutesAndModulesFromManifest(
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
 
-  const rootJsFile = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
+  const rootJsFile = getProjectFileByFilePath(projectContents, `${rootDir}/root.js`)
   if (rootJsFile == null || rootJsFile.type !== 'TEXT_FILE') {
     return null
   }
