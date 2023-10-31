@@ -34,7 +34,7 @@ export var storyboard = (
 const remixConfigJsFromRemixDocs = `
 /** @type {import('@remix-run/dev').AppConfig} */
 module.exports = {
-  appDirectory: "app",
+  appDirectory: "src",
   assetsBuildDirectory: "public/build",
   ignoredRouteFiles: ["**/.*"],
   publicPath: "/build/",
@@ -393,8 +393,8 @@ describe('Routes', () => {
     const project = createModifiedProject({
       [REMIX_CONFIG_JS_PATH]: remixConfigJsFromRemixDocs,
       [StoryboardFilePath]: storyboardFileContent,
-      ['/app/root.js']: rootFileContentWithExportedStuff,
-      ['/app/routes/_index.js']: routeFileContent('Index route'),
+      ['/src/root.js']: rootFileContentWithExportedStuff,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
     })
 
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
