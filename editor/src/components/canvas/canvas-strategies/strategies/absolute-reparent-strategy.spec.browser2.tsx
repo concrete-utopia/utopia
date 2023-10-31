@@ -2000,6 +2000,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
               height: 80,
               padding: '11px 12px',
             }}
+            data-uid='container'
           >
             <img
               src='https://github.com/concrete-utopia/utopia/blob/master/editor/resources/editor/pyramid_fullsize@2x.jpg?raw=true'
@@ -2011,6 +2012,7 @@ export var ${BakedInStoryboardVariableName} = (props) => {
                 left: 12,
                 top: 11,
               }}
+              data-uid='drag-me'
               data-testid='drag-me'
             />
           </div>
