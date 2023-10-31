@@ -569,6 +569,62 @@ describe('Observing runtime changes', () => {
   })
 })
 
+describe('Text content', () => {
+  it('Is only captured for leaf elements', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      `
+      import * as React from 'react'
+      import { Storyboard } from 'utopia-api'
+
+      export var storyboard = (
+        <Storyboard data-uid='sb'>
+          <div
+            style={{
+              backgroundColor: '#aaaaaa33',
+              position: 'absolute',
+              left: 293,
+              top: 176,
+              width: 355,
+              height: 453,
+            }}
+            data-uid='parent'
+          >
+            <div data-uid='text-only'>Text Only</div>
+            <div data-uid='text-with-br'>
+              Text <br data-uid='br' /> with br
+            </div>
+            <div data-uid='text-with-span'>
+              Text with <span data-uid='span'>span</span>
+            </div>
+          </div>
+        </Storyboard>
+      )
+      `,
+      'await-first-dom-report',
+    )
+
+    const metadata = renderResult.getEditorState().editor.jsxMetadata
+
+    const pathsToCheck = [
+      { path: 'sb', expectsText: false },
+      { path: 'sb/parent', expectsText: false },
+      { path: 'sb/parent/text-only', expectsText: true },
+      { path: 'sb/parent/text-with-br', expectsText: false },
+      { path: 'sb/parent/text-with-br/br', expectsText: false },
+      { path: 'sb/parent/text-with-span', expectsText: false },
+      { path: 'sb/parent/text-with-span/span', expectsText: true },
+    ]
+
+    pathsToCheck.forEach(({ path, expectsText }) => {
+      const elementMetadata = MetadataUtils.findElementByElementPath(metadata, EP.fromString(path))
+      expect(elementMetadata).not.toBeNull()
+      const textLength = elementMetadata!.textContent?.length ?? 0
+      const hasText = textLength > 0
+      expect(hasText).toEqual(expectsText)
+    })
+  })
+})
+
 const TestProject = `
 import * as React from 'react'
 import {
