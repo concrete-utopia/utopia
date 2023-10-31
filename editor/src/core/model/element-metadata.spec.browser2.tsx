@@ -297,7 +297,7 @@ describe('globalContentBoxForChildren calculation', () => {
         'await-first-dom-report',
       )
 
-      await selectComponentsForTest(editor, [elementPathInInnards('a7b/b15/b0e')])
+      await selectComponentsForTest(editor, [elementPathInInnards('a7b/b15')])
 
       const containerInstance = MetadataUtils.findElementByElementPath(
         editor.getEditorState().editor.jsxMetadata,

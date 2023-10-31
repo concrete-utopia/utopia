@@ -1824,7 +1824,13 @@ describe('actions', () => {
       await selectComponentsForTest(renderResult, [makeTargetPath('aaa/ddd')])
       await pressKey('c', { modifiers: cmdModifier })
 
-      await selectComponentsForTest(renderResult, [makeTargetPath('aaa/bbb/b0b')])
+      const childrenOfBBB = MetadataUtils.getChildrenOrdered(
+        renderResult.getEditorState().editor.jsxMetadata,
+        renderResult.getEditorState().editor.elementPathTree,
+        makeTargetPath('aaa/bbb'),
+      )
+
+      await selectComponentsForTest(renderResult, [childrenOfBBB[0].elementPath])
 
       const canvasRoot = renderResult.renderedDOM.getByTestId('canvas-root')
 
