@@ -11,7 +11,7 @@ import { unless, when } from '../../../utils/react-conditionals'
 import { FlexCol, FlexRow } from 'utopia-api'
 import { getFixedPointsForPinning, useDetectedConstraints } from '../simplified-pinning-helpers'
 import { GroupChildPinControl, setGroupChildConstraint } from '../fill-hug-fixed-control'
-import { assertNever } from '../../../core/shared/utils'
+import { NO_OP, assertNever } from '../../../core/shared/utils'
 import { useDispatch } from '../../editor/store/dispatch-context'
 import { useRefEditorState } from '../../editor/store/store-hook'
 import { PinHeightControl, PinWidthControl } from '../utility-controls/pin-control'
@@ -372,7 +372,7 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
       {when(
         props.isGroupChild === 'frame-child',
         <PinControl
-          handlePinMouseDown={togglePin}
+          handlePinMouseDown={NO_OP}
           name={'pin-control'}
           controlStatus={'simple'}
           framePoints={framePinsInfo}
@@ -386,17 +386,13 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
         }}
       >
         <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
-          <PinWidthControl
-            controlStatus={'simple'}
-            framePins={framePinsInfo}
-            toggleWidth={toggleWidth}
-          />
+          <PinWidthControl controlStatus={'simple'} framePins={framePinsInfo} toggleWidth={NO_OP} />
         </FlexRow>
         <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
           <PinHeightControl
             controlStatus={'simple'}
             framePins={framePinsInfo}
-            toggleHeight={toggleHeight}
+            toggleHeight={NO_OP}
           />
         </FlexRow>
       </FlexCol>
