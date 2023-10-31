@@ -305,7 +305,7 @@ export const PinHeightSVG = React.memo(() => {
 export const PinWidthControl = React.memo((props: PinWidthControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <SquareButton onClick={props.toggleWidth} outline={true}>
+    <SquareButton data-testid={'pin-width-control-button'} onClick={props.toggleWidth}>
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-width'
@@ -350,7 +350,7 @@ interface PinHeightControlProps {
 export const PinHeightControl = React.memo((props: PinHeightControlProps) => {
   const controlStyles: ControlStyles = getControlStyles(props.controlStatus)
   return (
-    <SquareButton onClick={props.toggleHeight} outline={true}>
+    <SquareButton data-testid={'pin-height-control-button'} onClick={props.toggleHeight}>
       <svg width='20' height='20'>
         <g
           id='dimensioncontrols-pin-height'

@@ -308,6 +308,7 @@ export const GroupChildPinControl = React.memo(() => {
       controlStatus='simple'
       exclude={{ center: true }}
       name='group-child-controls'
+      regularBorder={false}
     />
   )
 })
@@ -814,7 +815,7 @@ function groupChildConstraintOption(type: GroupChildConstraintOptionType): Selec
 
 export type ConstraintsMode = 'add' | 'remove'
 
-function setGroupChildConstraint(
+export function setGroupChildConstraint(
   dispatch: EditorDispatch,
   option: GroupChildConstraintOptionType | 'toggle',
   selectedViews: ElementPath[],
