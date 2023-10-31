@@ -235,6 +235,11 @@ function getRemixExportsOfModule(
   executionScopeCreator: ExecutionScopeCreator
   rootComponentUid: string
 } {
+  let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
+  let topLevelComponentRendererComponents: {
+    current: MapLike<MapLike<ComponentRendererComponent>>
+  } = { current: {} }
+
   const executionScopeCreator = (
     innerProjectContents: ProjectContentTreeRoot,
     fileBlobs: CanvasBase64Blobs,
@@ -247,11 +252,6 @@ function getRemixExportsOfModule(
 
     const requireFn = curriedRequireFn(innerProjectContents)
     const resolve = curriedResolveFn(innerProjectContents)
-
-    let mutableContextRef: { current: MutableUtopiaCtxRefData } = { current: {} }
-    let topLevelComponentRendererComponents: {
-      current: MapLike<MapLike<ComponentRendererComponent>>
-    } = { current: {} }
 
     const customRequire = (importOrigin: string, toImport: string) => {
       if (resolvedFiles[importOrigin] == null) {
