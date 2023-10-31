@@ -1,6 +1,7 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
+import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   DefaultFutureConfig,
@@ -42,15 +43,18 @@ export function loader() {
   })
 }
 
-export const handle = {
+export const handle = () => ({
   its: "all yours",
-};
+});
 
 export const shouldRevalidate = () => true;
 
-export const links = () => [];
+export const links = () => [{
+  rel: "stylesheet",
+  href: "https://example.com/some/styles.css",
+}];
 
-export const meta = () => [];
+export const meta = () => [{ title: "Very cool app | Remix" }];
 
 export function action() {
   return json({ message: "this is a dummy action function" })
@@ -343,8 +347,23 @@ describe('Routes', () => {
       expect(remixRoutes![0][routeExport]).toBeDefined()
     }
 
-    // TODO: meta
-    // TOOD: links
+    expect(remixRoutes![0].handle?.()).toEqual({
+      its: 'all yours',
+    })
+
+    expect(remixRoutes![0].shouldRevalidate?.({} as any)).toEqual(true)
+
+    const { meta, links } = CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current['root']
+    expect(meta).toBeDefined()
+    expect(links).toBeDefined()
+
+    expect(meta?.({} as any)).toEqual([{ title: 'Very cool app | Remix' }])
+    expect(links?.()).toEqual([
+      {
+        rel: 'stylesheet',
+        href: 'https://example.com/some/styles.css',
+      },
+    ])
   })
   it('Parses the routes from the Remix Blog Tutorial project files', async () => {
     const project = createModifiedProject({

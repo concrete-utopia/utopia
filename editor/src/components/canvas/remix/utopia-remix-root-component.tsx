@@ -93,9 +93,8 @@ function useGetRouteModules(basePath: ElementPath) {
         ? (componentProps: any) => createExecutionScope()['ErrorBoundary']?.(componentProps) ?? null
         : undefined
 
-      const links: RouteModule['links'] = () => createExecutionScope()['links'] ?? null
-      const meta: RouteModule['meta'] = (args: any) =>
-        createExecutionScope()['meta']?.(args) ?? null
+      const links: RouteModule['links'] = () => createExecutionScope()['links']?.() ?? null
+      const meta: RouteModule['meta'] = (args) => createExecutionScope()['meta']?.(args) ?? null
 
       const routeModule: RouteModule = {
         ...value,
