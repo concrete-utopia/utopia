@@ -26,7 +26,12 @@ import {
   jsxAttributesFromMap,
   jsxElementWithoutUID,
 } from '../../../../core/shared/element-template'
-import { isFiniteRectangle } from '../../../../core/shared/math-utils'
+import {
+  boundingRectangleArray,
+  canvasRectangle,
+  isFiniteRectangle,
+  zeroRectangle,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
 import * as PP from '../../../../core/shared/property-path'
@@ -572,6 +577,46 @@ function fixLengthCommand(path: ElementPath, prop: StyleLayoutProp, size: number
   )
 }
 
+function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+  let commands: CanvasCommand[] = []
+
+  const metadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (
+    metadata == null ||
+    metadata.globalFrame == null ||
+    !isFiniteRectangle(metadata.globalFrame)
+  ) {
+    return []
+  }
+  const frame = metadata.globalFrame
+
+  const childFrames = MetadataUtils.getChildrenUnordered(jsxMetadata, path).map((c) =>
+    c.globalFrame != null && isFiniteRectangle(c.globalFrame)
+      ? c.globalFrame
+      : canvasRectangle(zeroRectangle),
+  )
+  const childrenBounds = boundingRectangleArray(childFrames) ?? frame
+
+  // must have valid pins
+  const invalidPins = invalidPercentagePinsFromElement(metadata)
+  if (invalidPins.width.isPercent) {
+    commands.push(fixLengthCommand(path, 'width', childrenBounds.width))
+  }
+  if (invalidPins.height.isPercent) {
+    commands.push(fixLengthCommand(path, 'height', childrenBounds.height))
+  }
+  if (invalidPins.left.isPercent) {
+    const left = childrenBounds.x
+    commands.push(fixLengthCommand(path, 'left', left))
+  }
+  if (invalidPins.top.isPercent) {
+    const top = childrenBounds.y
+    commands.push(fixLengthCommand(path, 'top', top))
+  }
+
+  return commands
+}
+
 function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
   let commands: CanvasCommand[] = []
 
@@ -649,6 +694,7 @@ export function getFixGroupProblemsCommands(
   for (const problem of problems) {
     switch (problem.target) {
       case 'group':
+        commands.push(...fixGroupCommands(jsxMetadata, problem.path))
         const children = MetadataUtils.getChildrenUnordered(jsxMetadata, problem.path)
         for (const child of children) {
           commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
