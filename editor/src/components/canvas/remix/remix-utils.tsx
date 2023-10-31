@@ -18,7 +18,7 @@ import type { UiJsxCanvasContextData } from '../ui-jsx-canvas'
 import { attemptToResolveParsedComponents } from '../ui-jsx-canvas'
 import type { ComponentRendererComponent } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 import type { MutableUtopiaCtxRefData } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-contexts'
-import type { ElementPath } from '../../../core/shared/project-file-types'
+import type { ElementPath, TextFile } from '../../../core/shared/project-file-types'
 import type { ExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import { createExecutionScope } from '../ui-jsx-canvas-renderer/ui-jsx-canvas-execution-scope'
 import type { RemixRoutingTable } from '../../editor/store/remix-derived-data'
@@ -40,6 +40,7 @@ import type { ElementPathTrees } from '../../../core/shared/element-path-tree'
 import { getAllUniqueUids } from '../../../core/model/get-unique-ids'
 import { safeIndex } from '../../../core/shared/array-utils'
 import { createClientRoutes, groupRoutesByParentId } from '../../../third-party/remix/client-routes'
+import path from 'path'
 
 export const OutletPathContext = React.createContext<ElementPath | null>(null)
 
@@ -83,6 +84,7 @@ function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): File
 }
 
 export function createRouteManifestFromProjectContents(
+  rootFilePath: string,
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRoute> | null {
   const routesFromRemix = (() => {
@@ -96,16 +98,17 @@ export function createRouteManifestFromProjectContents(
   if (routesFromRemix == null) {
     return null
   }
-  return patchRemixRoutes(routesFromRemix, projectContents)
+  return patchRemixRoutes(rootFilePath, routesFromRemix, projectContents)
 }
 
 function patchRemixRoutes(
+  rootFilePath: string,
   routesFromRemix: RouteManifest<ConfigRoute> | null,
   projectContents: ProjectContentTreeRoot,
 ) {
   const routesFromRemixWithRoot: RouteManifest<ConfigRoute> = {
     ...routesFromRemix,
-    root: { path: '', id: 'root', file: 'root.js', parentId: '' },
+    root: { path: '', id: 'root', file: path.basename(rootFilePath), parentId: '' },
   }
 
   const resultRoutes = Object.values(routesFromRemixWithRoot).reduce((acc, route) => {
@@ -248,7 +251,7 @@ function getRemixExportsOfModule(
     metadataContext: UiJsxCanvasContextData,
   ) => {
     let resolvedFiles: MapLike<Array<string>> = {}
-    let resolvedFileNames: Array<string> = ['/src/root.js']
+    let resolvedFileNames: Array<string> = [filename]
 
     const requireFn = curriedRequireFn(innerProjectContents)
     const resolve = curriedResolveFn(innerProjectContents)
@@ -272,7 +275,7 @@ function getRemixExportsOfModule(
         customRequire,
         mutableContextRef,
         topLevelComponentRendererComponents,
-        '/src/root.js',
+        filename,
         fileBlobs,
         hiddenInstances,
         displayNoneInstances,
@@ -333,7 +336,24 @@ function safeGetClientRoutes(
   }
 }
 
+export function getRootFile(
+  projectContents: ProjectContentTreeRoot,
+): { file: TextFile; path: string } | null {
+  function getTextFileAtPath(filePath: string) {
+    const maybeTextFile = getProjectFileByFilePath(projectContents, filePath)
+    if (maybeTextFile == null || maybeTextFile.type !== 'TEXT_FILE') {
+      return null
+    }
+    return { file: maybeTextFile, path: filePath }
+  }
+
+  return (
+    getTextFileAtPath(`${ROOT_DIR}/root.js`) ?? getTextFileAtPath(`${ROOT_DIR}/root.jsx`) ?? null
+  )
+}
+
 export function getRoutesAndModulesFromManifest(
+  rootJsFile: TextFile,
   routeManifest: RouteManifestWithContents,
   futureConfig: FutureConfig,
   curriedRequireFn: CurriedUtopiaRequireFn,
@@ -343,11 +363,6 @@ export function getRoutesAndModulesFromManifest(
 ): GetRoutesAndModulesFromManifestResult | null {
   const routeModuleCreators: RouteIdsToModuleCreators = {}
   const routingTable: RemixRoutingTable = {}
-
-  const rootJsFile = getProjectFileByFilePath(projectContents, `${ROOT_DIR}/root.js`)
-  if (rootJsFile == null || rootJsFile.type !== 'TEXT_FILE') {
-    return null
-  }
 
   const rootJSRootElement = getDefaultExportedTopLevelElement(rootJsFile)
   if (rootJSRootElement == null) {
@@ -396,16 +411,20 @@ export function getRoutesAndModulesFromManifest(
 }
 
 export function getRouteComponentNameForOutlet(
-  path: ElementPath,
+  elementPath: ElementPath,
   metadata: ElementInstanceMetadataMap,
   projectContents: ProjectContentTreeRoot,
   pathTrees: ElementPathTrees,
 ): string | null {
-  if (!MetadataUtils.isProbablyRemixOutlet(metadata, path)) {
+  if (!MetadataUtils.isProbablyRemixOutlet(metadata, elementPath)) {
     return null
   }
 
-  const outletChildren = MetadataUtils.getImmediateChildrenPathsOrdered(metadata, pathTrees, path)
+  const outletChildren = MetadataUtils.getImmediateChildrenPathsOrdered(
+    metadata,
+    pathTrees,
+    elementPath,
+  )
   const outletChild = safeIndex(outletChildren, 0)
   if (outletChild == null) {
     return null

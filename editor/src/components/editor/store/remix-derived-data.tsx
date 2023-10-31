@@ -17,6 +17,7 @@ import {
   DefaultFutureConfig,
   createAssetsManifest,
   createRouteManifestFromProjectContents,
+  getRootFile,
   getRoutesAndModulesFromManifest,
 } from '../../canvas/remix/remix-utils'
 import type { CurriedUtopiaRequireFn, CurriedResolveFn } from '../../custom-code/code-file'
@@ -53,7 +54,12 @@ export function createRemixDerivedData(
   curriedRequireFn: CurriedUtopiaRequireFn,
   curriedResolveFn: CurriedResolveFn,
 ): RemixDerivedData | null {
-  const routeManifest = createRouteManifestFromProjectContents(projectContents)
+  const rootJsFile = getRootFile(projectContents)
+  if (rootJsFile == null) {
+    return null
+  }
+
+  const routeManifest = createRouteManifestFromProjectContents(rootJsFile.path, projectContents)
   if (routeManifest == null) {
     return null
   }
@@ -61,6 +67,7 @@ export function createRemixDerivedData(
   const assetsManifest = createAssetsManifest(routeManifest)
 
   const routesAndModulesFromManifestResult = getRoutesAndModulesFromManifest(
+    rootJsFile.file,
     routeManifest,
     DefaultFutureConfig,
     curriedRequireFn,
