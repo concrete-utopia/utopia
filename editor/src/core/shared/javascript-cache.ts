@@ -98,7 +98,17 @@ function resolveDefinedElsewhere(
     }
 
     if ((global as any).hasOwnProperty(elsewhere) as boolean) {
-      definedElsewhereInfo[elsewhere] = (global as any)[elsewhere]
+      // By spreading the `window.location` we can prevent redirection via e.g. `window.location.href = '...'`
+      const resolved =
+        elsewhere === 'window'
+          ? {
+              ...window,
+              location: {
+                ...window.location,
+              },
+            }
+          : (global as any)[elsewhere]
+      definedElsewhereInfo[elsewhere] = resolved
       continue
     }
   }
