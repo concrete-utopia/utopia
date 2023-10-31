@@ -60,27 +60,6 @@ const DefaultRouteTextContent = 'Hello Remix!'
 const RootTextContent = 'This is root!'
 const AboutTextContent = 'About'
 
-const storyboardFileContent = `
-import * as React from 'react';
-import Utopia, {
-  Scene,
-  Storyboard,
-  RemixScene,
-} from 'utopia-api';
-
-
-export var storyboard = (
-  <Storyboard data-uid='storyboard'>
-    <Scene
-      data-uid='scene'
-      style={{ position: 'absolute', left: 400, top: 0, width: 375, height: 812 }}
-    >
-      <RemixScene />
-    </Scene>
-  </Storyboard>
-);
-`
-
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "expectRemixSceneToBeRendered"] }] */
 
 async function renderRemixProject(project: PersistentModel) {
@@ -110,7 +89,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -122,7 +101,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <h1>${DefaultRouteTextContent}</h1>
@@ -154,7 +133,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -166,7 +145,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       const Index = () => (<h1>${DefaultRouteTextContent}</h1>)
       export default Index
@@ -198,7 +177,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -210,7 +189,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -267,7 +246,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -279,7 +258,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -326,7 +305,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -338,7 +317,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
@@ -380,7 +359,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
 
       export default function Root() {
@@ -392,7 +371,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
@@ -414,7 +393,7 @@ describe('Remix content', () => {
     await renderResult.dispatch(
       [
         updateFromCodeEditor(
-          '/src/routes/_index.js',
+          '/app/routes/_index.js',
           `import React from 'react'
     import { Link } from '@remix-run/react'
 
@@ -468,7 +447,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -480,7 +459,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -551,7 +530,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -564,7 +543,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
@@ -635,7 +614,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -647,7 +626,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div data-uid='remix-route-root'>
@@ -694,7 +673,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -707,7 +686,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div data-uid='remix-route-root'>
@@ -766,7 +745,7 @@ describe('Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -778,7 +757,7 @@ describe('Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <h1>${DefaultRouteTextContent}</h1>
@@ -824,7 +803,7 @@ describe('Remix navigation', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -836,14 +815,14 @@ describe('Remix navigation', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
         return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
       }
       `,
-      ['/src/routes/about.js']: `import React from 'react'
+      ['/app/routes/about.js']: `import React from 'react'
 
       export default function About() {
         return <h1>${AboutTextContent}</h1>
@@ -889,7 +868,7 @@ describe('Remix navigation', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -901,14 +880,14 @@ describe('Remix navigation', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
         return <Link to='/about' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
       }
       `,
-      ['/src/routes/about.js']: `import React from 'react'
+      ['/app/routes/about.js']: `import React from 'react'
 
       export default function About() {
         return <h1>${AboutTextContent}</h1>
@@ -938,7 +917,7 @@ describe('Remix navigation', () => {
         </Storyboard>
       )
       `,
-        ['/src/root.js']: `import React from 'react'
+        ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -950,14 +929,14 @@ describe('Remix navigation', () => {
         )
       }
       `,
-        ['/src/routes/_index.js']: `import React from 'react'
+        ['/app/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
         return <Link to='/posts' data-testid='remix-link'>${DefaultRouteTextContent}</Link>
       }
       `,
-        ['/src/routes/posts._index.js']: `import React from 'react'
+        ['/app/routes/posts._index.js']: `import React from 'react'
         import { Link } from '@remix-run/react'
         import { json, useLoaderData } from 'react-router'
         
@@ -988,7 +967,7 @@ describe('Remix navigation', () => {
           )
         }
         `,
-        ['/src/routes/posts.$postId.js']: `import React from 'react'
+        ['/app/routes/posts.$postId.js']: `import React from 'react'
         import { json, useLoaderData } from 'react-router'
         
         export function loader({ params }) {
@@ -1038,7 +1017,7 @@ describe('Remix navigation', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -1050,14 +1029,14 @@ describe('Remix navigation', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
 
       export default function Index() {
         return <Link to='/about' data-testid='remix-link' data-uid='remixlink'>${DefaultRouteTextContent}</Link>
       }
       `,
-      ['/src/routes/about.js']: `import React from 'react'
+      ['/app/routes/about.js']: `import React from 'react'
 
       export default function About() {
         return <div
@@ -1128,7 +1107,7 @@ describe('Remix navigation', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -1140,7 +1119,7 @@ describe('Remix navigation', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
       import { Link } from '@remix-run/react'
       
       export default function Index() {
@@ -1155,7 +1134,7 @@ describe('Remix navigation', () => {
         )
       }      
       `,
-      ['/src/routes/$postId.js']: `import React from 'react'
+      ['/app/routes/$postId.js']: `import React from 'react'
       import { Link, useParams } from '@remix-run/react'
       
       export default function PostForId() {
@@ -1332,7 +1311,7 @@ describe('Editing Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -1344,7 +1323,7 @@ describe('Editing Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <h1 data-uid='title' data-testid='title'>${DefaultRouteTextContent}</h1>
@@ -1368,7 +1347,7 @@ describe('Editing Remix content', () => {
   const AbsoluteDivTestId = 'absolute-div'
   const Child1TestId = 'child-1'
 
-  const IndexJSFIlePath = '/src/routes/_index.js'
+  const IndexJSFIlePath = '/app/routes/_index.js'
 
   const remixProjectForEditingTests = createModifiedProject({
     [StoryboardFilePath]: `import * as React from 'react'
@@ -1392,7 +1371,7 @@ describe('Editing Remix content', () => {
       </Storyboard>
     )    
     `,
-    ['/src/root.js']: `import * as React from 'react'
+    ['/app/root.js']: `import * as React from 'react'
     import { Outlet } from '@remix-run/react'
     
     export default function App() {
@@ -1515,7 +1494,7 @@ describe('Editing Remix content', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -1527,7 +1506,7 @@ describe('Editing Remix content', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <h1 data-uid='title' data-testid='title'>${DefaultRouteTextContent}</h1>
@@ -2001,7 +1980,7 @@ describe('Canvas controls with Remix', () => {
         </Storyboard>
       )
       `,
-      ['/src/root.js']: `import React from 'react'
+      ['/app/root.js']: `import React from 'react'
       import { Outlet } from '@remix-run/react'
       
       export default function Root() {
@@ -2013,7 +1992,7 @@ describe('Canvas controls with Remix', () => {
         )
       }
       `,
-      ['/src/routes/_index.js']: `import React from 'react'
+      ['/app/routes/_index.js']: `import React from 'react'
 
       export default function Index() {
         return <div
