@@ -1,4 +1,5 @@
 import React from 'react'
+import * as EP from '../../../../../core/shared/element-path'
 import {
   directResizeInspectorStrategy,
   resizeInspectorStrategy,
@@ -42,6 +43,12 @@ import {
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import type { GroupChildPercentagePins } from '../../../../canvas/canvas-strategies/strategies/group-helpers'
+import {
+  getGroupChildState,
+  invalidPercentagePinsFromElement,
+  treatElementAsGroupLike,
+} from '../../../../canvas/canvas-strategies/strategies/group-helpers'
 
 type TLWH = 'top' | 'left' | 'width' | 'height'
 
@@ -103,6 +110,24 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
     'SimplifiedLayoutSubsection originalGlobalFrame',
     oneLevelNestedEquals,
   )
+
+  const groupChildren = selectedViewsRef.current.filter((path) =>
+    treatElementAsGroupLike(metadataRef.current, EP.parentPath(path)),
+  )
+  const groupChildrenWithInvalidPins: GroupChildPercentagePins =
+    groupChildren
+      .map((path) => {
+        const metadata = MetadataUtils.findElementByElementPath(metadataRef.current, path)
+        const state = getGroupChildState(projectContentsRef.current, metadata)
+        if (state === 'child-has-percentage-pins') {
+          return invalidPercentagePinsFromElement(metadata)
+        }
+        return null
+      })
+      .find(
+        (matrix) => matrix != null && (matrix.width || matrix.height || matrix.left || matrix.top),
+      ) ?? {}
+
   const originalLTWHValues: LTWHPixelValues = useEditorState(
     Substores.metadata,
     (store) => {
@@ -238,6 +263,7 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='W'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.width}
+          invalid={groupChildrenWithInvalidPins.width}
         />
         <FrameUpdatingLayoutControl
           property='height'
@@ -289,6 +315,7 @@ interface LayoutPinPropertyControlProps {
   property: TLWH
   currentValues: Array<number>
   updateFrame: (frameUpdate: FrameUpdate) => void
+  invalid?: boolean
 }
 
 function getSingleCommonValue(currentValues: Array<number>): number | null {
@@ -310,7 +337,7 @@ function getSingleCommonValue(currentValues: Array<number>): number | null {
 }
 
 const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlProps) => {
-  const { property, currentValues, updateFrame } = props
+  const { property, currentValues, updateFrame, invalid } = props
   const pointInfo = useInspectorLayoutInfo(props.property)
 
   // a way to reset the NumberInput to the real measured value it was displaying before the user started typing into it
@@ -354,6 +381,7 @@ const FrameUpdatingLayoutControl = React.memo((props: LayoutPinPropertyControlPr
         key={`frame-${props.property}-number-input-mount-${mountCount}`}
         data-controlstatus={pointInfo.controlStatus}
         value={optionalMap(cssNumber, singleCommonValue)}
+        invalid={invalid}
         id={`frame-${props.property}-number-input`}
         testId={`frame-${props.property}-number-input`}
         labelInner={props.label}

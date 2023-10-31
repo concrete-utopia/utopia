@@ -18,6 +18,7 @@ export interface ControlStyles {
   set: boolean
   interactive: boolean
   mixed: boolean
+  invalid: boolean
   unknown: boolean
   trackColor: string
   railColor: string

@@ -1,6 +1,7 @@
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
 import type { AllElementProps } from '../../../../components/editor/store/editor-state'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
+import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import {
   MetadataUtils,
@@ -183,6 +184,32 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
   })
 }
 
+export type GroupChildPercentagePins = {
+  width?: boolean
+  height?: boolean
+  left?: boolean
+  top?: boolean
+}
+
+export function invalidPercentagePinsFromElement(
+  metadata: ElementInstanceMetadata | null,
+): GroupChildPercentagePins {
+  const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata)
+  if (jsxElement?.props == null) {
+    return {}
+  }
+  function isPercentage(element: JSXElement, name: StyleLayoutProp): boolean {
+    const pin = getLayoutProperty(name, right(element.props), styleStringInArray)
+    return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%'
+  }
+  return {
+    width: isPercentage(jsxElement, 'width'),
+    height: isPercentage(jsxElement, 'height'),
+    left: isPercentage(jsxElement, 'left'),
+    top: isPercentage(jsxElement, 'top'),
+  }
+}
+
 function getLayoutPropVerbatim(props: PropsOrJSXAttributes, pin: AbsolutePin): Either<string, any> {
   return getSimpleAttributeAtPath(props, stylePropPathMappingFn(pin, styleStringInArray))
 }
@@ -302,7 +329,7 @@ export function getGroupValidity(
   return groupValidityFromGroupState(groupState)
 }
 
-function getGroupChildState(
+export function getGroupChildState(
   projectContents: ProjectContentTreeRoot,
   elementMetadata: ElementInstanceMetadata | null,
 ): GroupState {

@@ -6,7 +6,14 @@ import React from 'react'
 import { useContextSelector } from 'use-context-selector'
 import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
 import { when } from '../../utils/react-conditionals'
-import { FlexColumn, FlexRow, InspectorSubsectionHeader, PopupList, UtopiaTheme } from '../../uuiui'
+import {
+  FlexColumn,
+  FlexRow,
+  InspectorSubsectionHeader,
+  PopupList,
+  UtopiaTheme,
+  useColorTheme,
+} from '../../uuiui'
 import type { SelectOption } from '../../uuiui-deps'
 import { getControlStyles } from '../../uuiui-deps'
 import { InspectorRowHoverCSS } from '../context-menu-wrapper'
@@ -360,6 +367,12 @@ const ChildConstraintSelect = React.memo(
       [dispatch, propertyTarget, editorRef, isGroupChild, activeOption],
     )
 
+    const styles = React.useMemo(() => {
+      return getControlStyles('simple')
+    }, [])
+
+    const colorTheme = useColorTheme()
+
     return (
       <PopupList
         id={`frame-child-constraint-${dimension}`}
@@ -369,7 +382,10 @@ const ChildConstraintSelect = React.memo(
         style={{
           position: 'relative',
         }}
-        controlStyles={getControlStyles('simple')}
+        controlStyles={{
+          ...styles,
+          mainColor: activeOption.invalid ? colorTheme.error.value : styles.mainColor,
+        }}
       />
     )
   },
