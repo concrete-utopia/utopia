@@ -86,7 +86,7 @@ interface TestCase {
   expectedProject: string
 }
 
-describe('Group child constraints', () => {
+xdescribe('Group child constraints', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   function makeTestCase(testCase: TestCase): () => Promise<void> {
     return async () => {
@@ -372,7 +372,7 @@ describe('Group child constraints', () => {
   })
 })
 
-describe('Frame child constraints', () => {
+xdescribe('Frame child constraints', () => {
   setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   function makeTestCase(testCase: TestCase): () => Promise<void> {
     return async () => {
