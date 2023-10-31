@@ -1,12 +1,14 @@
 import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
 import { setFeatureForBrowserTestsUseInDescribeBlockOnly } from '../../../utils/utils.test-utils'
 import { StoryboardFilePath } from '../../editor/store/editor-state'
+import { CreateRemixDerivedDataRefsGLOBAL } from '../../editor/store/remix-derived-data'
 import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   DefaultFutureConfig,
   createRouteManifestFromProjectContents,
   getRoutesAndModulesFromManifest,
 } from './remix-utils'
+import { RouteExportsForRouteObject } from './utopia-remix-root-component'
 
 const storyboardFileContent = `
 import * as React from 'react';
@@ -25,6 +27,47 @@ export var storyboard = (
   </Storyboard>
 );
 `
+
+const rootFileContentWithExportedStuff = `import React from 'react'
+import { Outlet } from '@remix-run/react'
+import { json } from 'react-router'
+
+export function loader() {
+  return json({
+    activities: [
+      {
+        id: 0,
+        name: 'Do the thing',
+      },
+    ]
+  })
+}
+
+export const handle = () => ({
+  its: "all yours",
+});
+
+export const shouldRevalidate = () => true;
+
+export const links = () => [{
+  rel: "stylesheet",
+  href: "https://example.com/some/styles.css",
+}];
+
+export const meta = () => [{ title: "Very cool app | Remix" }];
+
+export function action() {
+  return json({ message: "this is a dummy action function" })
+}
+
+export default function Root() {
+  return (
+    <div>
+      This is root!
+      <Outlet />
+    </div>
+  )
+}`
 
 const rootFileContent = `import React from 'react'
 import { Outlet } from '@remix-run/react'
@@ -286,6 +329,41 @@ describe('Routes', () => {
     expect(remixRoutes![0]!.children![2]).toEqual(
       expect.objectContaining({ id: 'routes/_index', path: undefined, index: true }),
     )
+  })
+  it('Parses exported functions', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: storyboardFileContent,
+      ['/src/root.js']: rootFileContentWithExportedStuff,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixRoutes = renderResult.getEditorState().derived.remixData?.routes
+    expect(remixRoutes).toBeDefined()
+
+    expect(remixRoutes).toHaveLength(1)
+    for (const routeExport of RouteExportsForRouteObject) {
+      expect(remixRoutes![0][routeExport]).toBeDefined()
+    }
+
+    expect(remixRoutes![0].handle?.()).toEqual({
+      its: 'all yours',
+    })
+
+    expect(remixRoutes![0].shouldRevalidate?.({} as any)).toEqual(true)
+
+    const { meta, links } = CreateRemixDerivedDataRefsGLOBAL.routeModulesCache.current['root']
+    expect(meta).toBeDefined()
+    expect(links).toBeDefined()
+
+    expect(meta?.({} as any)).toEqual([{ title: 'Very cool app | Remix' }])
+    expect(links?.()).toEqual([
+      {
+        rel: 'stylesheet',
+        href: 'https://example.com/some/styles.css',
+      },
+    ])
   })
   it('Parses the routes from the Remix Blog Tutorial project files', async () => {
     const project = createModifiedProject({
