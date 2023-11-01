@@ -136,7 +136,7 @@ export const DetectedFrameChildHorizontalPinChangeOptions: {
   },
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
-    label: 'Invalid', // todo write something more clever!
+    label: 'Invalid',
     invalid: true,
   },
   mixed: {
@@ -153,7 +153,7 @@ export const DetectedGroupChildHorizontalPinChangeOptions: {
   ...GroupChildHorizontalPinChangeOptions,
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
-    label: 'Invalid', // todo write something more clever!
+    label: 'Invalid',
     invalid: true,
   },
   mixed: {
@@ -238,7 +238,7 @@ export const DetectedFrameChildVerticalPinChangeOptions: {
   },
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
-    label: 'Invalid', // todo write something more clever!
+    label: 'Invalid',
     invalid: true,
   },
   mixed: {
@@ -255,7 +255,7 @@ export const DetectedGroupChildVerticalPinChangeOptions: {
   ...GroupChildVerticalPinChangeOptions,
   'group-child-error-percentage': {
     value: 'group-child-error-percentage',
-    label: 'Invalid', // todo write something more clever!
+    label: 'Invalid',
     invalid: true,
   },
   mixed: {
