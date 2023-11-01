@@ -565,7 +565,8 @@ function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: Element
   }
   const frame = metadata.globalFrame
 
-  const childFrames = MetadataUtils.getChildrenUnordered(jsxMetadata, path).map((c) =>
+  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+  const childFrames = children.map((c) =>
     c.globalFrame != null && isFiniteRectangle(c.globalFrame)
       ? c.globalFrame
       : canvasRectangle(zeroRectangle),
@@ -589,21 +590,16 @@ function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: Element
     commands.push(fixLengthCommand(path, 'top', top))
   }
 
+  // apply children fixes too
+  for (const child of children) {
+    commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
+  }
+
   return commands
 }
 
 function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
   let commands: CanvasCommand[] = []
-
-  const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
-  if (
-    parentMetadata == null ||
-    parentMetadata.globalFrame == null ||
-    !isFiniteRectangle(parentMetadata.globalFrame)
-  ) {
-    return []
-  }
-  const parentFrame = parentMetadata.globalFrame
 
   const metadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
   if (
@@ -615,10 +611,20 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
   }
   const frame = metadata.globalFrame
 
-  const jsxElement = MetadataUtils.getJSXElementFromMetadata(jsxMetadata, path)
+  const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata)
   if (jsxElement == null) {
     return []
   }
+
+  const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
+  if (
+    parentMetadata == null ||
+    parentMetadata.globalFrame == null ||
+    !isFiniteRectangle(parentMetadata.globalFrame)
+  ) {
+    return []
+  }
+  const parentFrame = parentMetadata.globalFrame
 
   // must have non-percent pins
   const invalidPins = invalidPercentagePinsFromElement(metadata)
@@ -669,16 +675,16 @@ export function getFixGroupProblemsCommands(
   for (const problem of problems) {
     switch (problem.target) {
       case 'group':
-        commands.push(...fixGroupCommands(jsxMetadata, problem.path))
-        const children = MetadataUtils.getChildrenUnordered(jsxMetadata, problem.path)
-        for (const child of children) {
-          commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
-        }
-        commands.push(queueTrueUpElement([trueUpChildrenOfGroupChanged(problem.path)]))
+        commands.push(
+          ...fixGroupCommands(jsxMetadata, problem.path),
+          queueTrueUpElement([trueUpChildrenOfGroupChanged(problem.path)]),
+        )
         break
       case 'group-child':
-        commands.push(...fixGroupChildCommands(jsxMetadata, problem.path))
-        commands.push(queueTrueUpElement([trueUpGroupElementChanged(problem.path)]))
+        commands.push(
+          ...fixGroupChildCommands(jsxMetadata, problem.path),
+          queueTrueUpElement([trueUpGroupElementChanged(problem.path)]),
+        )
         break
       default:
         assertNever(problem.target)
