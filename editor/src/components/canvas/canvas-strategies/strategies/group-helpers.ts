@@ -206,21 +206,6 @@ export type GroupChildPercentagePins = {
   top: number | null
 }
 
-export function isNonEmptyGroupChildPercentagePins(
-  percentagePins: GroupChildPercentagePins | null,
-): boolean {
-  if (percentagePins == null) {
-    return false
-  }
-  return (
-    percentagePins.width != null ||
-    percentagePins.height != null ||
-    percentagePins.top != null ||
-    percentagePins.left != null ||
-    false
-  )
-}
-
 export function emptyGroupChildPercentagePins(): GroupChildPercentagePins {
   return {
     width: null,
