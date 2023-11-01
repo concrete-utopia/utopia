@@ -150,17 +150,6 @@ export const updateProjectWithBranchContent =
               currentProjectContents,
             )
 
-            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
-            if (packageJson != null && isTextFile(packageJson)) {
-              await refreshDependencies(
-                dispatch,
-                packageJson.fileContents.code,
-                currentDeps,
-                builtInDependencies,
-                {},
-              )
-            }
-
             dispatch(
               [
                 ...connectRepo(
@@ -182,6 +171,32 @@ export const updateProjectWithBranchContent =
               ],
               'everyone',
             )
+
+            // After a slight pause, refresh the dependencies.
+            setTimeout(() => {
+              void runGithubOperation(
+                {
+                  name: 'loadBranch',
+                  branchName: branchName,
+                  githubRepo: githubRepo,
+                },
+                dispatch,
+                async () => {
+                  const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
+                  if (packageJson != null && isTextFile(packageJson)) {
+                    await refreshDependencies(
+                      dispatch,
+                      packageJson.fileContents.code,
+                      currentDeps,
+                      builtInDependencies,
+                      {},
+                    )
+                  }
+                  return []
+                },
+              )
+            }, 3000)
+
             break
           default:
             const _exhaustiveCheck: never = responseBody
