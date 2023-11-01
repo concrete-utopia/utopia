@@ -215,10 +215,9 @@ export function emptyGroupChildPercentagePins(): GroupChildPercentagePins {
   }
 }
 
-export function invalidPercentagePinsFromElement(
-  metadata: ElementInstanceMetadata | null,
+export function invalidPercentagePinsFromJSXElement(
+  jsxElement: JSXElement | null,
 ): GroupChildPercentagePins {
-  const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata)
   if (jsxElement?.props == null) {
     return emptyGroupChildPercentagePins()
   }
@@ -574,7 +573,8 @@ function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: Element
   const childrenBounds = boundingRectangleArray(childFrames) ?? frame
 
   // must have non-percentage pins
-  const invalidPins = invalidPercentagePinsFromElement(metadata)
+  const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata)
+  const invalidPins = invalidPercentagePinsFromJSXElement(jsxElement)
   if (invalidPins.width != null) {
     commands.push(fixLengthCommand(path, 'width', childrenBounds.width))
   }
@@ -627,7 +627,7 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
   const parentFrame = parentMetadata.globalFrame
 
   // must have non-percent pins
-  const invalidPins = invalidPercentagePinsFromElement(metadata)
+  const invalidPins = invalidPercentagePinsFromJSXElement(jsxElement)
   if (invalidPins.width != null) {
     commands.push(fixLengthCommand(path, 'width', frame.width))
   }
