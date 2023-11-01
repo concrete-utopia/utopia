@@ -2867,7 +2867,7 @@ export function persistentModelForProjectContents(
     forkedFromProjectId: null,
     projectVersion: CURRENT_PROJECT_VERSION,
     projectDescription: '',
-    projectContents: projectContents,
+    projectContents: removeParsedModelsFromProjectContents(projectContents),
     exportsInfo: [],
     codeEditorErrors: {
       buildErrors: {},
