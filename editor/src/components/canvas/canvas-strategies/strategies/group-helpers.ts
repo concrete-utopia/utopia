@@ -194,21 +194,11 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
   })
 }
 
-type PercentagePin = { isPercent: boolean; value: number }
-
-function emptyPercentagePin(): PercentagePin {
-  return { isPercent: false, value: 0 }
-}
-
-function percentagePin(value: number): PercentagePin {
-  return { isPercent: true, value: value }
-}
-
 export type GroupChildPercentagePins = {
-  width: PercentagePin
-  height: PercentagePin
-  left: PercentagePin
-  top: PercentagePin
+  width: number | null
+  height: number | null
+  left: number | null
+  top: number | null
 }
 
 export function isNonEmptyGroupChildPercentagePins(
@@ -218,20 +208,20 @@ export function isNonEmptyGroupChildPercentagePins(
     return false
   }
   return (
-    percentagePins.width?.isPercent ||
-    percentagePins.height?.isPercent ||
-    percentagePins.top?.isPercent ||
-    percentagePins.left?.isPercent ||
+    percentagePins.width != null ||
+    percentagePins.height != null ||
+    percentagePins.top != null ||
+    percentagePins.left != null ||
     false
   )
 }
 
 export function emptyGroupChildPercentagePins(): GroupChildPercentagePins {
   return {
-    width: emptyPercentagePin(),
-    height: emptyPercentagePin(),
-    top: emptyPercentagePin(),
-    left: emptyPercentagePin(),
+    width: null,
+    height: null,
+    top: null,
+    left: null,
   }
 }
 
@@ -242,20 +232,15 @@ export function invalidPercentagePinsFromElement(
   if (jsxElement?.props == null) {
     return emptyGroupChildPercentagePins()
   }
-  function isPercent(
-    element: JSXElement,
-    name: StyleLayoutProp,
-  ): { isPercent: boolean; value: number } {
+  function maybePercentValue(element: JSXElement, name: StyleLayoutProp): number | null {
     const pin = getLayoutProperty(name, right(element.props), styleStringInArray)
-    return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%'
-      ? percentagePin(pin.value.value)
-      : emptyPercentagePin()
+    return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%' ? pin.value.value : null
   }
   return {
-    width: isPercent(jsxElement, 'width'),
-    height: isPercent(jsxElement, 'height'),
-    left: isPercent(jsxElement, 'left'),
-    top: isPercent(jsxElement, 'top'),
+    width: maybePercentValue(jsxElement, 'width'),
+    height: maybePercentValue(jsxElement, 'height'),
+    left: maybePercentValue(jsxElement, 'left'),
+    top: maybePercentValue(jsxElement, 'top'),
   }
 }
 
@@ -597,19 +582,19 @@ function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: Element
   )
   const childrenBounds = boundingRectangleArray(childFrames) ?? frame
 
-  // must have valid pins
+  // must have non-percentage pins
   const invalidPins = invalidPercentagePinsFromElement(metadata)
-  if (invalidPins.width.isPercent) {
+  if (invalidPins.width != null) {
     commands.push(fixLengthCommand(path, 'width', childrenBounds.width))
   }
-  if (invalidPins.height.isPercent) {
+  if (invalidPins.height != null) {
     commands.push(fixLengthCommand(path, 'height', childrenBounds.height))
   }
-  if (invalidPins.left.isPercent) {
+  if (invalidPins.left != null) {
     const left = childrenBounds.x
     commands.push(fixLengthCommand(path, 'left', left))
   }
-  if (invalidPins.top.isPercent) {
+  if (invalidPins.top != null) {
     const top = childrenBounds.y
     commands.push(fixLengthCommand(path, 'top', top))
   }
@@ -645,20 +630,20 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
     return []
   }
 
-  // must have valid pins
+  // must have non-percent pins
   const invalidPins = invalidPercentagePinsFromElement(metadata)
-  if (invalidPins.width.isPercent) {
+  if (invalidPins.width != null) {
     commands.push(fixLengthCommand(path, 'width', frame.width))
   }
-  if (invalidPins.height.isPercent) {
+  if (invalidPins.height != null) {
     commands.push(fixLengthCommand(path, 'height', frame.height))
   }
-  if (invalidPins.left.isPercent) {
-    const left = parentFrame.width * (invalidPins.left.value / 100)
+  if (invalidPins.left != null) {
+    const left = parentFrame.width * (invalidPins.left / 100)
     commands.push(fixLengthCommand(path, 'left', left))
   }
-  if (invalidPins.top.isPercent) {
-    const top = parentFrame.height * (invalidPins.top.value / 100)
+  if (invalidPins.top != null) {
+    const top = parentFrame.height * (invalidPins.top / 100)
     commands.push(fixLengthCommand(path, 'top', top))
   }
 

@@ -1,5 +1,4 @@
 import React from 'react'
-import * as EP from '../../../../../core/shared/element-path'
 import {
   directResizeInspectorStrategy,
   resizeInspectorStrategy,
@@ -22,6 +21,10 @@ import { optionalMap } from '../../../../../core/shared/optional-utils'
 import { assertNever } from '../../../../../core/shared/utils'
 import { NumberInput } from '../../../../../uuiui'
 import {
+  getGroupChildState,
+  invalidPercentagePinsFromElement,
+} from '../../../../canvas/canvas-strategies/strategies/group-helpers'
+import {
   EdgePositionBottom,
   EdgePositionLeft,
   EdgePositionRight,
@@ -43,13 +46,6 @@ import {
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
-import type { GroupChildPercentagePins } from '../../../../canvas/canvas-strategies/strategies/group-helpers'
-import {
-  emptyGroupChildPercentagePins,
-  getGroupChildState,
-  invalidPercentagePinsFromElement,
-  isNonEmptyGroupChildPercentagePins,
-} from '../../../../canvas/canvas-strategies/strategies/group-helpers'
 
 type TLWH = 'top' | 'left' | 'width' | 'height'
 
@@ -112,22 +108,36 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
     oneLevelNestedEquals,
   )
 
-  const groupChildrenWithInvalidPins = useEditorState(
+  const invalidPins: {
+    width: boolean
+    height: boolean
+    left: boolean
+    top: boolean
+  } = useEditorState(
     Substores.metadata,
-    (store): GroupChildPercentagePins => {
-      return (
-        store.editor.selectedViews
-          .map((path) => {
-            const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-            const state = getGroupChildState(projectContentsRef.current, metadata)
-            if (state === 'child-has-percentage-pins') {
-              return invalidPercentagePinsFromElement(metadata)
-            }
-            return null
-          })
-          .find((percentagePins) => isNonEmptyGroupChildPercentagePins(percentagePins)) ??
-        emptyGroupChildPercentagePins()
-      )
+    (store) => {
+      let result = {
+        width: false,
+        height: false,
+        left: false,
+        top: false,
+      }
+      const percentPins = store.editor.selectedViews.map((path) => {
+        const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+        const state = getGroupChildState(projectContentsRef.current, metadata)
+        if (state === 'child-has-percentage-pins') {
+          return invalidPercentagePinsFromElement(metadata)
+        }
+        return null
+      })
+      for (const pins of percentPins) {
+        result.width ||= pins?.width != null
+        result.height ||= pins?.height != null
+        result.left ||= pins?.left != null
+        result.top ||= pins?.top != null
+      }
+
+      return result
     },
     'FrameUpdatingLayoutSection groupChildrenWithInvalidPins',
   )
@@ -249,14 +259,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='L'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.left}
-          invalid={groupChildrenWithInvalidPins.left.isPercent}
+          invalid={invalidPins.left}
         />
         <FrameUpdatingLayoutControl
           property='top'
           label='T'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.top}
-          invalid={groupChildrenWithInvalidPins.top.isPercent}
+          invalid={invalidPins.top}
         />
       </UIGridRow>
       <UIGridRow
@@ -269,14 +279,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='W'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.width}
-          invalid={groupChildrenWithInvalidPins.width.isPercent}
+          invalid={invalidPins.width}
         />
         <FrameUpdatingLayoutControl
           property='height'
           label='H'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.height}
-          invalid={groupChildrenWithInvalidPins.height.isPercent}
+          invalid={invalidPins.height}
         />
       </UIGridRow>
     </>
