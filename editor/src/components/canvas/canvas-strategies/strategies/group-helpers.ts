@@ -1,5 +1,9 @@
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
-import type { AllElementProps } from '../../../../components/editor/store/editor-state'
+import {
+  trueUpGroupElementChanged,
+  type AllElementProps,
+  trueUpChildrenOfGroupChanged,
+} from '../../../../components/editor/store/editor-state'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
 import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
@@ -44,6 +48,7 @@ import { cssNumber, isCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { MaxContent } from '../../../inspector/inspector-common'
 import type { CanvasCommand } from '../../commands/commands'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
 import type { ShowToastCommand } from '../../commands/show-toast-command'
@@ -684,14 +689,15 @@ export function getFixGroupProblemsCommands(
         for (const child of children) {
           commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
         }
+        commands.push(queueTrueUpElement([trueUpChildrenOfGroupChanged(problem.path)]))
         break
       case 'group-child':
         commands.push(...fixGroupChildCommands(jsxMetadata, problem.path))
+        commands.push(queueTrueUpElement([trueUpGroupElementChanged(problem.path)]))
         break
       default:
         assertNever(problem.target)
     }
   }
-  // TODO queue related trueups
   return commands
 }
