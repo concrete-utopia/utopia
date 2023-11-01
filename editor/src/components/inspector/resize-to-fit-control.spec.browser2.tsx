@@ -15,17 +15,13 @@ import {
   renderTestEditorWithCode,
 } from '../canvas/ui-jsx.test-utils'
 import { MaxContent } from './inspector-common'
-import {
-  ResizeToFillControlTestId,
-  ResizeToFitControlTestId,
-  ResizeToFixedControlTestId,
-} from './resize-to-fit-control'
+import { ResizeToFitControlTestId } from './resize-to-fit-control'
 import * as EP from '../../core/shared/element-path'
 
 describe('Resize to fit control', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', false)
+  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
 
-  it('resizes to fit and back to fixed', async () => {
+  it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(projectSnippet),
       'await-first-dom-report',
@@ -48,65 +44,6 @@ describe('Resize to fit control', () => {
 
     const control = editor.renderedDOM.getByTestId(ResizeToFitControlTestId)
     expect(control.style.opacity).toEqual('0.5')
-
-    await expectSingleUndo2Saves(editor, async () => {
-      await clickResizeTo(editor, ResizeToFixedControlTestId)
-    })
-
-    expect(view.style.width).toEqual('154px')
-    expect(view.style.minWidth).toEqual('')
-    expect(view.style.maxWidth).toEqual('')
-    expect(view.style.height).toEqual('343px')
-    expect(view.style.minHeight).toEqual('')
-    expect(view.style.maxHeight).toEqual('')
-    expect(view.style.flex).toEqual('')
-    expect(view.style.flexShrink).toEqual('')
-    expect(view.style.flexGrow).toEqual('')
-    expect(view.style.flexBasis).toEqual('')
-
-    expect(control.style.opacity).toEqual('')
-  })
-
-  it('resizes to fill and back to fixed', async () => {
-    const editor = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(projectSnippet),
-      'await-first-dom-report',
-    )
-    const view = await selectView(editor, 'middle')
-    await expectSingleUndo2Saves(editor, async () => {
-      await clickResizeTo(editor, ResizeToFillControlTestId)
-    })
-
-    expect(view.style.flex).toEqual('')
-    expect(view.style.flexGrow).toEqual('1')
-    expect(view.style.flexShrink).toEqual('')
-    expect(view.style.flexBasis).toEqual('')
-    expect(view.style.minWidth).toEqual('')
-    expect(view.style.width).toEqual('')
-    expect(view.style.maxWidth).toEqual('')
-    expect(view.style.height).toEqual('100%')
-    expect(view.style.minHeight).toEqual('')
-    expect(view.style.maxHeight).toEqual('')
-
-    const control = editor.renderedDOM.getByTestId(ResizeToFillControlTestId)
-    expect(control.style.opacity).toEqual('0.5')
-
-    await expectSingleUndo2Saves(editor, async () => {
-      await clickResizeTo(editor, ResizeToFixedControlTestId)
-    })
-
-    expect(view.style.width).toEqual('765px')
-    expect(view.style.minWidth).toEqual('')
-    expect(view.style.maxWidth).toEqual('')
-    expect(view.style.height).toEqual('343px')
-    expect(view.style.minHeight).toEqual('')
-    expect(view.style.maxHeight).toEqual('')
-    expect(view.style.flex).toEqual('')
-    expect(view.style.flexShrink).toEqual('')
-    expect(view.style.flexGrow).toEqual('')
-    expect(view.style.flexBasis).toEqual('')
-
-    expect(control.style.opacity).toEqual('')
   })
 
   it('resizes to fit, with shortcut', async () => {
@@ -180,16 +117,6 @@ describe('Resize to fit control', () => {
           await clickResizeTo(editor, ResizeToFitControlTestId)
         })
       })
-      it('resize to fill is disabled', async () => {
-        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-        await selectComponentsForTest(editor, [
-          EP.fromString(`storyboard/scene/group/child-1`),
-          EP.fromString(`storyboard/scene/group/child-2`),
-        ])
-        await expectNoAction(editor, async () => {
-          await clickResizeTo(editor, ResizeToFillControlTestId)
-        })
-      })
     })
     describe('targeting children of groups that are not groups themselves', () => {
       it('resize to fit works as usual', async () => {
@@ -259,80 +186,6 @@ export var storyboard = (
 )
 `)
       })
-      it('resize to fill is disabled', async () => {
-        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group/child-1`)])
-        await expectNoAction(editor, async () => {
-          await clickResizeTo(editor, ResizeToFillControlTestId)
-        })
-      })
-      it('set fixed sized works as it does normally', async () => {
-        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group/child-1`)])
-        await expectSingleUndo2Saves(editor, async () => {
-          await clickResizeTo(editor, ResizeToFixedControlTestId)
-        })
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-import { Group } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='storyboard'>
-    <Scene
-      style={{
-        width: 700,
-        height: 759,
-        position: 'absolute',
-        left: 212,
-        top: 128,
-      }}
-      data-label='Playground'
-      data-uid='scene'
-    >
-      <Group
-        data-uid='group'
-        data-testid='group'
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 300,
-          height: 400,
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            backgroundColor: '#aaaaaa33',
-            left: 0,
-            top: 0,
-            width: 50,
-            height: 50,
-          }}
-          data-uid='child-1'
-        >
-          <div
-            style={{ width: 600, height: 600 }}
-            data-uid='grandchild-1'
-          />
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            backgroundColor: '#aaaaaa33',
-            left: 250,
-            top: 250,
-            width: 50,
-            height: 50,
-          }}
-          data-uid='child-2'
-        />
-      </Group>
-    </Scene>
-  </Storyboard>
-)
-`)
-      })
     })
     describe('targeting children of groups that are groups', () => {
       it('resize to fit is disabled', async () => {
@@ -345,92 +198,6 @@ export var storyboard = (
           await clickResizeTo(editor, ResizeToFitControlTestId)
         })
       })
-      it('resize to fill is disabled', async () => {
-        const editor = await renderTestEditorWithCode(
-          projectWithNestedGroup,
-          'await-first-dom-report',
-        )
-        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group-1/group-2`)])
-        await expectNoAction(editor, async () => {
-          await clickResizeTo(editor, ResizeToFillControlTestId)
-        })
-      })
-      it('set fixed sized works as it does normally', async () => {
-        const editor = await renderTestEditorWithCode(
-          projectWithNestedGroup,
-          'await-first-dom-report',
-        )
-        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group-1/group-2`)])
-        await expectSingleUndo2Saves(editor, async () => {
-          await clickResizeTo(editor, ResizeToFixedControlTestId)
-        })
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-import { Group } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='storyboard'>
-    <Scene
-      style={{
-        width: 700,
-        height: 759,
-        position: 'absolute',
-        left: 212,
-        top: 128,
-      }}
-      data-label='Playground'
-      data-uid='scene'
-    >
-      <Group
-        data-uid='group-1'
-        data-testid='group-1'
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 300,
-          height: 400,
-        }}
-      >
-        <Group
-          data-uid='group-2'
-          data-testid='group-2'
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            width: 300,
-            height: 400,
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: '#aaaaaa33',
-              left: 0,
-              top: 0,
-              width: 50,
-              height: 50,
-            }}
-            data-uid='grandchild-1'
-          />
-          <div
-            style={{
-              position: 'absolute',
-              backgroundColor: '#aaaaaa33',
-              left: 250,
-              top: 350,
-              width: 50,
-              height: 50,
-            }}
-            data-uid='grandchild-2'
-          />
-        </Group>
-      </Group>
-    </Scene>
-  </Storyboard>
-)
-`)
-      })
     })
     describe('targeting groups with non-group children', () => {
       it('resize to fit is disabled', async () => {
@@ -439,80 +206,6 @@ export var storyboard = (
         await expectNoAction(editor, async () => {
           await clickResizeTo(editor, ResizeToFitControlTestId)
         })
-      })
-      it('resize to fill is disabled', async () => {
-        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
-        await expectNoAction(editor, async () => {
-          await clickResizeTo(editor, ResizeToFillControlTestId)
-        })
-      })
-      it('set fixed sized converts to a frame', async () => {
-        const editor = await renderTestEditorWithCode(projectWithGroup, 'await-first-dom-report')
-        await selectComponentsForTest(editor, [EP.fromString(`storyboard/scene/group`)])
-        await expectSingleUndo2Saves(editor, async () => {
-          await clickResizeTo(editor, ResizeToFixedControlTestId)
-        })
-        expect(getPrintedUiJsCode(editor.getEditorState())).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-import { Group } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='storyboard'>
-    <Scene
-      style={{
-        width: 700,
-        height: 759,
-        position: 'absolute',
-        left: 212,
-        top: 128,
-      }}
-      data-label='Playground'
-      data-uid='scene'
-    >
-      <div
-        data-uid='group'
-        data-testid='group'
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          width: 300,
-          height: 400,
-        }}
-      >
-        <div
-          style={{
-            position: 'absolute',
-            backgroundColor: '#aaaaaa33',
-            left: 0,
-            top: 0,
-            width: 50,
-            height: 50,
-          }}
-          data-uid='child-1'
-        >
-          <div
-            style={{ width: 600, height: 600 }}
-            data-uid='grandchild-1'
-          />
-        </div>
-        <div
-          style={{
-            position: 'absolute',
-            backgroundColor: '#aaaaaa33',
-            left: 250,
-            top: 250,
-            width: 50,
-            height: 50,
-          }}
-          data-uid='child-2'
-        />
-      </div>
-    </Scene>
-  </Storyboard>
-)
-`)
       })
     })
   })
