@@ -77,7 +77,7 @@ export function allowGroupTrueUp(
   path: ElementPath,
 ): boolean {
   const isGroupLike = treatElementAsGroupLike(metadata, path)
-  if (!isGroupLike) {
+  if (isGroupLike) {
     const groupValidity = getGroupValidity(
       path,
       metadata,
