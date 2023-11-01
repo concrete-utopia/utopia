@@ -189,7 +189,10 @@ export const NumberInput = React.memo<NumberInputProps>(
     const colorTheme = useColorTheme()
 
     const controlStyles = React.useMemo((): ControlStyles => {
-      return { ...getControlStyles(controlStatus), invalid: invalid ?? false }
+      return {
+        ...getControlStyles(controlStatus),
+        invalid: invalid ?? false,
+      }
     }, [controlStatus, invalid])
 
     const { mixed, showContent } = React.useMemo(

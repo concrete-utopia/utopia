@@ -22,7 +22,7 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { NumberInput } from '../../../../../uuiui'
 import {
   getGroupChildState,
-  invalidPercentagePinsFromElement,
+  invalidPercentagePinsFromJSXElement,
 } from '../../../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   EdgePositionBottom,
@@ -126,7 +126,9 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
         const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
         const state = getGroupChildState(projectContentsRef.current, metadata)
         if (state === 'child-has-percentage-pins') {
-          return invalidPercentagePinsFromElement(metadata)
+          return invalidPercentagePinsFromJSXElement(
+            MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata),
+          )
         }
         return null
       })
