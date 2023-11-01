@@ -22,7 +22,9 @@ import { assertNever } from '../../../../../core/shared/utils'
 import { NumberInput } from '../../../../../uuiui'
 import {
   getGroupChildState,
+  getGroupState,
   invalidPercentagePinsFromJSXElement,
+  treatElementAsGroupLike,
 } from '../../../../canvas/canvas-strategies/strategies/group-helpers'
 import {
   EdgePositionBottom,
@@ -46,6 +48,7 @@ import {
 import { useInspectorLayoutInfo } from '../../../common/property-path-hooks'
 import { executeFirstApplicableStrategy } from '../../../inspector-strategies/inspector-strategy'
 import { UIGridRow } from '../../../widgets/ui-grid-row'
+import * as EP from '../../../../../core/shared/element-path'
 
 type TLWH = 'top' | 'left' | 'width' | 'height'
 
@@ -122,17 +125,33 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
         left: false,
         top: false,
       }
-      const percentPins = store.editor.selectedViews.map((path) => {
-        const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-        const state = getGroupChildState(projectContentsRef.current, metadata)
-        if (state === 'child-has-percentage-pins') {
-          return invalidPercentagePinsFromJSXElement(
-            MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata),
+      const groupPercentPins = store.editor.selectedViews.map((path) => {
+        if (treatElementAsGroupLike(store.editor.jsxMetadata, path)) {
+          const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+          const state = getGroupState(
+            path,
+            store.editor.jsxMetadata,
+            store.editor.elementPathTree,
+            store.editor.allElementProps,
+            projectContentsRef.current,
           )
+          if (state === 'group-has-percentage-pins') {
+            return invalidPercentagePinsFromJSXElement(
+              MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata),
+            )
+          }
+        } else if (treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path))) {
+          const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
+          const state = getGroupChildState(projectContentsRef.current, metadata)
+          if (state === 'child-has-percentage-pins') {
+            return invalidPercentagePinsFromJSXElement(
+              MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata),
+            )
+          }
         }
         return null
       })
-      for (const pins of percentPins) {
+      for (const pins of groupPercentPins) {
         result.width ||= pins?.width != null
         result.height ||= pins?.height != null
         result.left ||= pins?.left != null
