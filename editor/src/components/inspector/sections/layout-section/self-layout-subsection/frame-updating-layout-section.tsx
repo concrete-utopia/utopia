@@ -283,14 +283,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='L'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.left}
-          invalid={invalidPins.left || invalidPins.right}
+          invalid={invalidPins.left || invalidPins.right} // currently showing red for BOTH directions
         />
         <FrameUpdatingLayoutControl
           property='top'
           label='T'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.top}
-          invalid={invalidPins.top || invalidPins.bottom}
+          invalid={invalidPins.top || invalidPins.bottom} // currently showing red for BOTH directions
         />
       </UIGridRow>
       <UIGridRow
