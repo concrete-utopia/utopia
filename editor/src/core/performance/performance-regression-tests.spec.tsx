@@ -65,7 +65,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`734`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`718`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
@@ -127,7 +127,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`757`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`741`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
@@ -183,7 +183,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`489`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`449`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 
@@ -249,7 +249,7 @@ describe('React Render Count Tests -', () => {
 
     const renderCountAfter = renderResult.getNumberOfRenders()
     // if this breaks, GREAT NEWS but update the test please :)
-    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`561`)
+    expect(renderCountAfter - renderCountBefore).toMatchInlineSnapshot(`521`)
     expect(renderResult.getRenderInfo()).toMatchSnapshot()
   })
 })
