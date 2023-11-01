@@ -116,6 +116,8 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
     height: boolean
     left: boolean
     top: boolean
+    bottom: boolean
+    right: boolean
   } = useEditorState(
     Substores.metadata,
     (store) => {
@@ -124,6 +126,8 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
         height: false,
         left: false,
         top: false,
+        bottom: false,
+        right: false,
       }
       const groupPercentPins = store.editor.selectedViews.map((path) => {
         if (treatElementAsGroupLike(store.editor.jsxMetadata, path)) {
@@ -142,12 +146,9 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           }
         } else if (treatElementAsGroupLike(store.editor.jsxMetadata, EP.parentPath(path))) {
           const metadata = MetadataUtils.findElementByElementPath(store.editor.jsxMetadata, path)
-          const state = getGroupChildState(projectContentsRef.current, metadata)
-          if (state === 'child-has-percentage-pins') {
-            return invalidPercentagePinsFromJSXElement(
-              MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata),
-            )
-          }
+          return invalidPercentagePinsFromJSXElement(
+            MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata),
+          )
         }
         return null
       })
@@ -156,6 +157,8 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
         result.height ||= pins?.height != null
         result.left ||= pins?.left != null
         result.top ||= pins?.top != null
+        result.right ||= pins?.right != null
+        result.bottom ||= pins?.bottom != null
       }
 
       return result
@@ -280,14 +283,14 @@ export const FrameUpdatingLayoutSection = React.memo(() => {
           label='L'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.left}
-          invalid={invalidPins.left}
+          invalid={invalidPins.left || invalidPins.right}
         />
         <FrameUpdatingLayoutControl
           property='top'
           label='T'
           updateFrame={updateFrame}
           currentValues={originalLTWHValues.top}
-          invalid={invalidPins.top}
+          invalid={invalidPins.top || invalidPins.bottom}
         />
       </UIGridRow>
       <UIGridRow

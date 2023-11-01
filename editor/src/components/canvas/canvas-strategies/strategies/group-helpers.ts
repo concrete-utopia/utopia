@@ -48,6 +48,7 @@ import { cssNumber, isCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { MaxContent } from '../../../inspector/inspector-common'
 import type { CanvasCommand } from '../../commands/commands'
+import { deleteProperties } from '../../commands/delete-properties-command'
 import { queueTrueUpElement } from '../../commands/queue-true-up-command'
 import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
 import { setProperty } from '../../commands/set-property-command'
@@ -204,6 +205,8 @@ export type GroupChildPercentagePins = {
   height: number | null
   left: number | null
   top: number | null
+  bottom: number | null
+  right: number | null
 }
 
 export function emptyGroupChildPercentagePins(): GroupChildPercentagePins {
@@ -212,6 +215,8 @@ export function emptyGroupChildPercentagePins(): GroupChildPercentagePins {
     height: null,
     top: null,
     left: null,
+    bottom: null,
+    right: null,
   }
 }
 
@@ -230,6 +235,8 @@ export function invalidPercentagePinsFromJSXElement(
     height: maybePercentValue(jsxElement, 'height'),
     left: maybePercentValue(jsxElement, 'left'),
     top: maybePercentValue(jsxElement, 'top'),
+    bottom: maybePercentValue(jsxElement, 'bottom'),
+    right: maybePercentValue(jsxElement, 'right'),
   }
 }
 
@@ -581,13 +588,54 @@ function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: Element
   if (invalidPins.height != null) {
     commands.push(fixLengthCommand(path, 'height', childrenBounds.height))
   }
+
+  const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
+  const maybeParentFrame =
+    parentMetadata?.globalFrame != null && isFiniteRectangle(parentMetadata.globalFrame)
+      ? parentMetadata.globalFrame
+      : null
+
   if (invalidPins.left != null) {
-    const left = childrenBounds.x
+    const left =
+      maybeParentFrame != null
+        ? maybeParentFrame.width * (invalidPins.left / 100)
+        : childrenBounds.x
     commands.push(fixLengthCommand(path, 'left', left))
   }
   if (invalidPins.top != null) {
-    const top = childrenBounds.y
+    const top =
+      maybeParentFrame != null
+        ? maybeParentFrame.height * (invalidPins.top / 100)
+        : childrenBounds.y
     commands.push(fixLengthCommand(path, 'top', top))
+  }
+  if (invalidPins.bottom != null) {
+    const bottom =
+      maybeParentFrame != null
+        ? maybeParentFrame.height * (100 - invalidPins.bottom / 100)
+        : childrenBounds.y
+    const top =
+      maybeParentFrame != null
+        ? maybeParentFrame.y + maybeParentFrame.height - (childrenBounds.height + bottom)
+        : childrenBounds.y
+    commands.push(
+      fixLengthCommand(path, 'top', top),
+      deleteProperties('always', path, [PP.create('style', 'bottom')]),
+    )
+  }
+  if (invalidPins.right != null) {
+    const rightPin =
+      maybeParentFrame != null
+        ? maybeParentFrame.width * (100 - invalidPins.right / 100)
+        : childrenBounds.x
+    const left =
+      maybeParentFrame != null
+        ? maybeParentFrame.x + maybeParentFrame.width - (childrenBounds.width + rightPin)
+        : childrenBounds.x
+    commands.push(
+      fixLengthCommand(path, 'left', left),
+      deleteProperties('always', path, [PP.create('style', 'right')]),
+    )
   }
 
   // apply children fixes too
@@ -641,6 +689,14 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
   if (invalidPins.top != null) {
     const top = parentFrame.height * (invalidPins.top / 100)
     commands.push(fixLengthCommand(path, 'top', top))
+  }
+  if (invalidPins.bottom != null) {
+    const bottom = parentFrame.height * (100 - invalidPins.bottom / 100)
+    commands.push(fixLengthCommand(path, 'bottom', bottom))
+  }
+  if (invalidPins.right != null) {
+    const rightPin = parentFrame.width * (100 - invalidPins.right / 100)
+    commands.push(fixLengthCommand(path, 'right', rightPin))
   }
 
   // must have absolute position
