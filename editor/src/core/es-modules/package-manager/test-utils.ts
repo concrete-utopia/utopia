@@ -1,13 +1,30 @@
-import type { PackagerServerFileDescriptor } from '../../shared/npm-dependency-types'
+import {
+  isPackagerServerFileEntry,
+  type PackagerServerResponse,
+} from '../../shared/npm-dependency-types'
 import type { NodeModules } from '../../shared/project-file-types'
-import { esCodeFile } from '../../shared/project-file-types'
-import { objectMap } from '../../shared/object-utils'
+import { esCodeFile, esRemoteDependencyPlaceholder } from '../../shared/project-file-types'
 
-export function createNodeModules(contents: {
-  [filepath: string]: PackagerServerFileDescriptor
-}): NodeModules {
-  return objectMap(
-    (content, key: string) => esCodeFile(content.content, 'NODE_MODULES', key),
-    contents,
-  )
+export function createNodeModules(contents: PackagerServerResponse['contents']): NodeModules {
+  return contents.reduce((workingResult, entry) => {
+    if (isPackagerServerFileEntry(entry)) {
+      if (entry.fileEntry.fileContents === 'PLACEHOLDER_FILE') {
+        return {
+          ...workingResult,
+          [entry.fileEntry.filename]: esRemoteDependencyPlaceholder('', false),
+        }
+      } else {
+        return {
+          ...workingResult,
+          [entry.fileEntry.filename]: esCodeFile(
+            entry.fileEntry.fileContents.content,
+            'NODE_MODULES',
+            entry.fileEntry.filename,
+          ),
+        }
+      }
+    } else {
+      return workingResult
+    }
+  }, {})
 }

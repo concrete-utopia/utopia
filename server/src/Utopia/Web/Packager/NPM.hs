@@ -9,6 +9,7 @@
 module Utopia.Web.Packager.NPM where
 
 import           Conduit
+import qualified Conduit as C
 import           Control.Lens              hiding ((.=))
 import           Control.Monad.Catch
 import           Data.Aeson
@@ -106,21 +107,21 @@ ioErrorCatcher _ = pure ()
 ignoringIOErrors :: MonadCatch m => m () -> m ()
 ignoringIOErrors action = catch action ioErrorCatcher
 
-withInstalledProject :: (MonadIO m, MonadMask m, MonadResource m) => FastLogger -> NPMMetrics -> QSem -> Text -> (FilePath -> ConduitT i o m r) -> ConduitT i o m r
-withInstalledProject logger NPMMetrics{..} semaphore versionedPackageName withInstalledPath = do
+withInstalledProject :: (Exception e, MonadUnliftIO m, MonadIO m, MonadMask m, MonadResource m) => FastLogger -> NPMMetrics -> QSem -> Text -> (FilePath -> ConduitT i o m r) -> (e -> ConduitT i o m r) -> ConduitT i o m r
+withInstalledProject logger NPMMetrics{..} semaphore versionedPackageName withInstalledPath fromError = do
   -- Create temporary folder.
   let createDir = do
         tmpDir <- getCanonicalTemporaryDirectory
         createTempDirectory tmpDir "packager"
   let deleteDir = ignoringIOErrors . removeDirectoryRecursive
-  bracketP createDir deleteDir $ \tempDir -> do
-    -- Run `npm install "packageName@packageVersion"`.
+  handleC fromError $ bracketP createDir deleteDir $ \tempDir -> do
+    -- Run `yarn add --silent --ignore-scripts "packageName@packageVersion"`.
     let baseProc = proc "yarn" ["add", "--silent", "--ignore-scripts", toS versionedPackageName]
     let procWithCwd = baseProc { cwd = Just tempDir, env = Just [("NODE_OPTIONS", "--max_old_space_size=256")] }
     liftIO $ limitWithSemaphore semaphore $ do
       loggerLn logger ("Starting Yarn Add: " <> toLogStr versionedPackageName)
       _ <- invokeAndMeasure npmInstallMetric $
-          addInvocationDescription npmInstallMetric ("NPM install for " <> versionedPackageName) $
+          addInvocationDescription npmInstallMetric ("Yarn add for " <> versionedPackageName) $
           readCreateProcess procWithCwd ""
       loggerLn logger ("Yarn Add Finished: " <> toLogStr versionedPackageName)
     -- Invoke action against path.
@@ -135,16 +136,22 @@ data FileContentOrPlaceholder = FileContent BL.ByteString | Placeholder
 encodedPlaceholder :: Value
 encodedPlaceholder = toJSON ("PLACEHOLDER_FILE" :: Text)
 
-getFileContent :: MonadIO m => FilePath -> FilePath -> m (FilePath, Value)
+getFileContent :: MonadIO m => FilePath -> FilePath -> m StreamedFileEntry 
 getFileContent rootPath path = do
   let relevant = isRelevantFilename path
   let entryFilename = fromMaybe path $ stripPrefix rootPath path
   let placeHolderResult = pure encodedPlaceholder
   let fileContentResult = (\t -> object ["content" .= t]) <$> readFileUtf8 path
   content <- if relevant then fileContentResult else placeHolderResult
-  pure (entryFilename, content)
+  pure $ StreamedFile (entryFilename, content)
 
-getModuleAndDependenciesFiles :: MonadResource m => FilePath -> ConduitT () (FilePath, Value) m ()
+data StreamedFileEntry = StreamedFile (FilePath, Value)
+                       | StreamedError Text
+
+getModuleAndDependenciesErrorHandler :: MonadResource m => SomeException -> ConduitT () StreamedFileEntry m ()
+getModuleAndDependenciesErrorHandler _ = C.yield $ StreamedError "Error loading dependency."
+
+getModuleAndDependenciesFiles :: MonadResource m => FilePath -> ConduitT () StreamedFileEntry m ()
 getModuleAndDependenciesFiles projectPath = do
   sourceDirectoryDeep True projectPath .| mapM (getFileContent projectPath)
 

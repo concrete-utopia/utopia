@@ -1,260 +1,330 @@
 {
-  "contents": {
-    "/node_modules/mypackage/package.json": {
-      "content": "{\"name\": \"mypackage\", \"main\": \"./index.js\"}",
-      "isModule": false,
-      "requires": []
+  "contents": [
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/package.json",
+        "fileContents": { "content": "{\"name\": \"mypackage\", \"main\": \"./index.js\"}" }
+      }
     },
-    "/node_modules/mypackage/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/moduleA.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/moduleA.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/moduleB.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/moduleB.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/folder/moduleC.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folder/moduleC.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/folder/moduleD.jsx": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folder/moduleD.jsx",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/folder/moduleE.json": {
-      "content": "{\"hello\": \"hello world\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folder/moduleE.json",
+        "fileContents": { "content": "{\"hello\": \"hello world\"}" }
+      }
     },
-    "/node_modules/mypackage/src/folderWithPackageJson/package.json": {
-      "content": "{\"main\": \"./actualModuleE.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folderWithPackageJson/package.json",
+        "fileContents": { "content": "{\"main\": \"./actualModuleE.js\"}" }
+      }
     },
-    "/node_modules/mypackage/src/folderWithPackageJson/actualModuleE.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folderWithPackageJson/actualModuleE.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/folderWithBrokenPackageJson/package.json": {
-      "content": "garbage package json",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folderWithBrokenPackageJson/package.json",
+        "fileContents": { "content": "garbage package json" }
+      }
     },
-    "/node_modules/mypackage/src/folderWithBrokenPackageJson/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folderWithBrokenPackageJson/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/folderWithPackageJsonWithMissingFile/package.json": {
-      "content": "{\"main\": \"./actualModuleE.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folderWithPackageJsonWithMissingFile/package.json",
+        "fileContents": { "content": "{\"main\": \"./actualModuleE.js\"}" }
+      }
     },
-    "/node_modules/mypackage/src/folderWithpackageJsonMissingField/package.json": {
-      "content": "{}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/folderWithpackageJsonMissingField/package.json",
+        "fileContents": { "content": "{}" }
+      }
     },
-    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFile.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFile.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/actualModuleB.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/actualModuleB.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/package.json": {
-      "content": "{\"main\": \"./actualModuleB.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderPackageJson/package.json",
+        "fileContents": { "content": "{\"main\": \"./actualModuleB.js\"}" }
+      }
     },
-    "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderIndexJs/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/src/node_modules/srcFolderNodeModuleFolderIndexJs/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/node_modules/packageRootNodeModuleFile.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/node_modules/packageRootNodeModuleFile.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/dist/actualModuleB.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/dist/actualModuleB.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/package.json": {
-      "content": "{\"main\": \"./dist/actualModuleB.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderPackageJson/package.json",
+        "fileContents": { "content": "{\"main\": \"./dist/actualModuleB.js\"}" }
+      }
     },
-    "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderIndexJs/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/node_modules/packageRootNodeModuleFolderIndexJs/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/globalNodeModuleFile.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/globalNodeModuleFile.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/globalNodeModuleFolderPackageJson/lib/actualModuleB.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/globalNodeModuleFolderPackageJson/lib/actualModuleB.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/globalNodeModuleFolderPackageJson/package.json": {
-      "content": "{\"main\": \"../globalNodeModuleFolderPackageJson/lib/actualModuleB.js\", \"thisIsAnEvilPath\": true}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/globalNodeModuleFolderPackageJson/package.json",
+        "fileContents": {
+          "content": "{\"main\": \"../globalNodeModuleFolderPackageJson/lib/actualModuleB.js\", \"thisIsAnEvilPath\": true}"
+        }
+      }
     },
-    "/node_modules/globalNodeModuleFolderIndexJs/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/globalNodeModuleFolderIndexJs/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/@namespaced/module/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/@namespaced/module/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/@othernamespace/othermodule/dist/actual.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/@othernamespace/othermodule/dist/actual.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/@othernamespace/othermodule/package.json": {
-      "content": "{\"main\": \"./dist/actual.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/@othernamespace/othermodule/package.json",
+        "fileContents": { "content": "{\"main\": \"./dist/actual.js\"}" }
+      }
     },
-    "/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/dist/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/dist/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/package.json": {
-      "content": "{\"main\": \"dist\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/@othernamespace/module-with-main-entry-pointing-to-directory/package.json",
+        "fileContents": { "content": "{\"main\": \"dist\"}" }
+      }
     },
-    "/node_modules/es-module-only-package/package.json": {
-      "content": "{\"name\": \"es-module-only-package\", \"module\": \"index.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/es-module-only-package/package.json",
+        "fileContents": {
+          "content": "{\"name\": \"es-module-only-package\", \"module\": \"index.js\"}"
+        }
+      }
     },
-    "/node_modules/es-module-only-package/index.js": {
-      "content": "import { other } from './module.js';\nexport const hello = 'hello!';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/es-module-only-package/index.js",
+        "fileContents": {
+          "content": "import { other } from './module.js';\nexport const hello = 'hello!';"
+        }
+      }
     },
-    "/node_modules/es-module-only-package/module.js": {
-      "content": "export const other = 'Other';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/es-module-only-package/module.js",
+        "fileContents": { "content": "export const other = 'Other';" }
+      }
     },
-    "/node_modules/module-with-browser-module-and-main-fields/package.json": {
-      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": \"index.browser.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-module-and-main-fields/package.json",
+        "fileContents": {
+          "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": \"index.browser.js\"}"
+        }
+      }
     },
-    "/node_modules/module-with-browser-module-and-main-fields/index.browser.js": {
-      "content": "export const whoami = 'Browser';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-module-and-main-fields/index.browser.js",
+        "fileContents": { "content": "export const whoami = 'Browser';" }
+      }
     },
-    "/node_modules/other-module/package.json": {
-      "content": "{\"name\": \"es-module-only-package\", \"main\": \"index.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/other-module/package.json",
+        "fileContents": {
+          "content": "{\"name\": \"es-module-only-package\", \"main\": \"index.js\"}"
+        }
+      }
     },
-    "/node_modules/other-module/index.js": {
-      "content": "export const greeting = 'Hello Other Module!'",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/other-module/index.js",
+        "fileContents": { "content": "export const greeting = 'Hello Other Module!'" }
+      }
     },
-    "/node_modules/module-with-browser-replacements/package.json": {
-      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"./localFile.js\": \"./localFile.shim.js\", \"node-only-module\": \"other-module\", \"node-only-module-2\": \"./local.shim.js\"}}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements/package.json",
+        "fileContents": {
+          "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"./localFile.js\": \"./localFile.shim.js\", \"node-only-module\": \"other-module\", \"node-only-module-2\": \"./local.shim.js\"}}"
+        }
+      }
     },
-    "/node_modules/module-with-browser-replacements/local.shim.js": {
-      "content": "export const greeting = 'Hello Browser Shim!'",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements/local.shim.js",
+        "fileContents": { "content": "export const greeting = 'Hello Browser Shim!'" }
+      }
     },
-    "/node_modules/module-with-browser-replacements/localFile.shim.js": {
-      "content": "export const value = 'Browser!'",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements/localFile.shim.js",
+        "fileContents": { "content": "export const value = 'Browser!'" }
+      }
     },
-    "/node_modules/module-with-browser-replacements/index.module.js": {
-      "content": "import { value } from './localFile'; export const cica = value;",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements/index.module.js",
+        "fileContents": {
+          "content": "import { value } from './localFile'; export const cica = value;"
+        }
+      }
     },
-    "/node_modules/module-with-browser-replacements-chained/package.json": {
-      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": \"other-module\", \"other-module\": \"./local-shim.js\"}}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements-chained/package.json",
+        "fileContents": {
+          "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": \"other-module\", \"other-module\": \"./local-shim.js\"}}"
+        }
+      }
     },
-    "/node_modules/module-with-browser-replacements-chained/local-shim.js": {
-      "content": "export const value = 'local-shim for some-module chained through other-module'",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements-chained/local-shim.js",
+        "fileContents": {
+          "content": "export const value = 'local-shim for some-module chained through other-module'"
+        }
+      }
     },
-    "/node_modules/module-with-browser-replacements-chained/index.module.js": {
-      "content": "import { value } from 'some-module'; export const cica = value;",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements-chained/index.module.js",
+        "fileContents": {
+          "content": "import { value } from 'some-module'; export const cica = value;"
+        }
+      }
     },
-    "/node_modules/module-with-browser-replacements-ignore-module/package.json": {
-      "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": false}}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements-ignore-module/package.json",
+        "fileContents": {
+          "content": "{\"main\": \"index.main.js\", \"module\": \"index.module.js\", \"browser\": {\"some-module\": false}}"
+        }
+      }
     },
-    "/node_modules/module-with-browser-replacements-ignore-module/index.module.js": {
-      "content": "import { value } from 'some-module'; export const cica = value;",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/module-with-browser-replacements-ignore-module/index.module.js",
+        "fileContents": {
+          "content": "import { value } from 'some-module'; export const cica = value;"
+        }
+      }
     },
-    "my-package-with-package-root/src/deep-folder/moduleA.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "my-package-with-package-root/src/deep-folder/moduleA.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "my-package-with-package-root/src/other-folder/moduleB.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "my-package-with-package-root/src/other-folder/moduleB.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "my-package-with-package-root/index.js": {
-      "content": "exports.cica = 'kitten';",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "my-package-with-package-root/index.js",
+        "fileContents": { "content": "exports.cica = 'kitten';" }
+      }
     },
-    "my-package-with-package-root/package.json": {
-      "content": "{\"name\": \"my-package-with-package-root\", \"main\": \".index.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "my-package-with-package-root/package.json",
+        "fileContents": {
+          "content": "{\"name\": \"my-package-with-package-root\", \"main\": \".index.js\"}"
+        }
+      }
     }
-  },
-  "dependency": {
-    "name": "mypackage",
-    "version": "0.0.1"
-  },
-  "peerDependencies": {},
-  "dependencyDependencies": {}
+  ]
 }

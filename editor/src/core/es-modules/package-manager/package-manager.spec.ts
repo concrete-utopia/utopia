@@ -24,7 +24,10 @@ import {
   npmVersionLookupSuccess,
 } from '../../../components/editor/npm-dependency/npm-dependency'
 import type { PackagerServerResponse } from '../../shared/npm-dependency-types'
-import { requestedNpmDependency } from '../../shared/npm-dependency-types'
+import {
+  isPackagerServerFileEntry,
+  requestedNpmDependency,
+} from '../../shared/npm-dependency-types'
 import {
   InjectedCSSFilePrefix,
   unimportAllButTheseCSSFiles,
@@ -33,6 +36,7 @@ import { svgToBase64 } from '../../shared/file-utils'
 import { createBuiltInDependenciesList } from './built-in-dependencies-list'
 import * as moduleResolutionExamples from '../test-cases/module-resolution-examples.json'
 import { createNodeModules } from './test-utils'
+import { forceNotNull } from '../../shared/optional-utils'
 
 require('jest-fetch-mock').enableMocks()
 
@@ -143,8 +147,17 @@ describe('ES Dependency Package Manager', () => {
     const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
     expect(requireResult).toHaveProperty('ReactComponent')
     expect(requireResult).toHaveProperty('default')
+    const simpleSVG = forceNotNull(
+      'Should be able to find simple.svg.',
+      fileWithImports.contents.find((content) => {
+        return (
+          isPackagerServerFileEntry(content) &&
+          content.fileEntry.filename === '/node_modules/mypackage/simple.svg'
+        )
+      }),
+    )
     expect((requireResult as any).default).toEqual(
-      svgToBase64(fileWithImports.contents['/node_modules/mypackage/simple.svg'].content),
+      svgToBase64(simpleSVG.fileEntry.fileContents.content),
     )
   })
 

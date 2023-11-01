@@ -81,10 +81,39 @@ export interface PackagerServerFileDescriptor {
 
 export type PackagerServerFile = PackagerServerFileDescriptor | 'PLACEHOLDER_FILE'
 
-export interface PackagerServerResponse {
-  contents: {
-    [filepath: string]: PackagerServerFile
+export function isPackagerServerFileDescriptor(
+  file: PackagerServerFile,
+): file is PackagerServerFileDescriptor {
+  return file !== 'PLACEHOLDER_FILE'
+}
+
+export interface PackagerServerFileEntry {
+  fileEntry: {
+    filename: string
+    fileContents: PackagerServerFile
   }
+}
+
+export interface PackagerServerErrorEntry {
+  error: string
+}
+
+export type PackagerServerEntry = PackagerServerFileEntry | PackagerServerErrorEntry
+
+export function isPackagerServerFileEntry(
+  entry: PackagerServerEntry,
+): entry is PackagerServerFileEntry {
+  return 'fileEntry' in entry
+}
+
+export function isPackagerServerErrorEntry(
+  entry: PackagerServerEntry,
+): entry is PackagerServerErrorEntry {
+  return 'error' in entry
+}
+
+export interface PackagerServerResponse {
+  contents: Array<PackagerServerEntry>
 }
 
 export interface JsdelivrResponse {

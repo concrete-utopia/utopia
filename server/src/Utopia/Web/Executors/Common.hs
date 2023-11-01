@@ -312,17 +312,21 @@ cachePackagerContent locksRef versionedPackageName fallback = do
   conduit <- if fileExists then pure whenFileExists else whenFileDoesNotExistSafe
   pure (conduit, lastModified)
 
-filePairsToBytes :: (Monad m) => ConduitT () (FilePath, Value) m () -> ConduitBytes m
-filePairsToBytes filePairs =
-  let pairToBytes (filePath, pathValue) = BL.toStrict (encode filePath) <> ": " <> BL.toStrict (encode pathValue)
-      pairsAsBytes = filePairs .| C.map pairToBytes
-      withCommas = pairsAsBytes .| C.intersperse ", "
-   in sequence_ [yield "{\"contents\": {", withCommas, yield "}}"]
+streamedEntryToBytes :: StreamedFileEntry -> ByteString
+streamedEntryToBytes (StreamedFile (filePath, fileContents)) = "{\"fileEntry\":{\"filename\":" <> BL.toStrict (encode filePath) <> ", \"fileContents\":" <> BL.toStrict (encode fileContents) <> "}}"
+streamedEntryToBytes (StreamedError errorText) = "{\"error\":" <> BL.toStrict (encode errorText) <> "}"
 
-getPackagerContent :: (MonadResource m, MonadMask m) => FastLogger -> NPMMetrics -> QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
+filePairsToBytes :: (Monad m) => ConduitT () StreamedFileEntry m () -> ConduitBytes m
+filePairsToBytes filePairs =
+  let entriesAsBytes = filePairs .| C.map streamedEntryToBytes
+      withCommas = entriesAsBytes .| C.intersperse ", "
+   in sequence_ [yield "{\"contents\": [", withCommas, yield "]}"]
+
+getPackagerContent :: (MonadUnliftIO m, MonadResource m, MonadMask m) => FastLogger -> NPMMetrics -> QSem -> PackageVersionLocksRef -> Text -> IO (ConduitBytes m, UTCTime)
 getPackagerContent logger npmMetrics npmSemaphore packageLocksRef versionedPackageName = do
   cachePackagerContent packageLocksRef versionedPackageName $ do
-    withInstalledProject logger npmMetrics npmSemaphore versionedPackageName (filePairsToBytes . getModuleAndDependenciesFiles)
+    filePairsToBytes $ 
+      withInstalledProject logger npmMetrics npmSemaphore versionedPackageName getModuleAndDependenciesFiles getModuleAndDependenciesErrorHandler 
 
 getUserConfigurationWithDBPool :: (MonadIO m) => DB.DatabaseMetrics -> DBPool -> Text -> (Maybe DecodedUserConfiguration -> a) -> m a
 getUserConfigurationWithDBPool metrics pool userID action = do

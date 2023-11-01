@@ -1,20 +1,20 @@
 {
-  "contents": {
-    "/node_modules/mypackage/index.js": {
-      "content": "export const hello = 'hello!';",
-      "isModule": false,
-      "requires": []
+  "contents": [
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/index.js",
+        "fileContents": {
+          "content": "export const hello = 'hello!';"
+        }
+      }
     },
-    "/node_modules/mypackage/package.json": {
-      "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"module\": \"index.js\"}",
-      "isModule": false,
-      "requires": []
+    {
+      "fileEntry": {
+        "filename": "/node_modules/mypackage/package.json",
+        "fileContents": {
+          "content": "{\"name\": \"mypackage\", \"version\": \"0.0.1\", \"module\": \"index.js\"}"
+        }
+      }
     }
-  },
-  "dependency": {
-    "name": "mypackage",
-    "version": "0.0.1"
-  },
-  "peerDependencies": {},
-  "dependencyDependencies": {}
+  ]
 }

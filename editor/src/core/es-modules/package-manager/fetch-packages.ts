@@ -22,6 +22,7 @@ import { pluck } from '../../shared/array-utils'
 import type { Either } from '../../shared/either'
 import {
   applicative3Either,
+  defaultEither,
   flatMapEither,
   foldEither,
   isLeft,
@@ -30,10 +31,11 @@ import {
   mapEither,
   right,
 } from '../../shared/either'
-import type {
-  PackagerServerFile,
-  PackagerServerResponse,
-  RequestedNpmDependency,
+import {
+  isPackagerServerFileEntry,
+  type PackagerServerFile,
+  type PackagerServerResponse,
+  type RequestedNpmDependency,
 } from '../../shared/npm-dependency-types'
 import { objectMap } from '../../shared/object-utils'
 import type {
@@ -72,7 +74,12 @@ function findPackageJsonForFile(filePath: string, response: PackagerServerRespon
   const parentDir = getParentDirectory(filePath)
   const maybePackageJsonPath = appendToPath(parentDir, 'package.json')
 
-  if (response.contents[maybePackageJsonPath] != null) {
+  if (
+    response.contents.some(
+      (content) =>
+        isPackagerServerFileEntry(content) && content.fileEntry.filename === maybePackageJsonPath,
+    )
+  ) {
     return maybePackageJsonPath
   } else if (parentDir === '/') {
     return null
@@ -120,11 +127,22 @@ function packagerResponseFileToNodeModule(
   if (fileContentsOrPlaceholder === 'PLACEHOLDER_FILE') {
     const packageJsonFilePath = findPackageJsonForFile(filePath, response)
     const packageJsonPackagerServerFile =
-      packageJsonFilePath == null ? null : response.contents[packageJsonFilePath]
-    const packageJsonFileContent =
-      packageJsonPackagerServerFile == null || packageJsonPackagerServerFile === 'PLACEHOLDER_FILE'
+      packageJsonFilePath == null
         ? null
-        : packageJsonPackagerServerFile.content
+        : response.contents.find((content) => {
+            return (
+              isPackagerServerFileEntry(content) &&
+              content.fileEntry.filename === packageJsonFilePath
+            )
+          })
+    let packageJsonFileContent: string | null = null
+    if (
+      packageJsonPackagerServerFile != null &&
+      isPackagerServerFileEntry(packageJsonPackagerServerFile) &&
+      packageJsonPackagerServerFile.fileEntry.fileContents !== 'PLACEHOLDER_FILE'
+    ) {
+      packageJsonFileContent = packageJsonPackagerServerFile.fileEntry.fileContents.content
+    }
     if (packageJsonFileContent == null || packageJsonFilePath == null) {
       return esCodeFile(
         `throw new Error('Failed to find package.json for file ${filePath}')`,
@@ -163,9 +181,18 @@ function packagerResponseFileToNodeModule(
 export function extractNodeModulesFromPackageResponse(
   response: PackagerServerResponse,
 ): NodeModules {
-  const extractFile = (fileContentsOrPlaceholder: PackagerServerFile, filePath: string) =>
-    packagerResponseFileToNodeModule(response, filePath, fileContentsOrPlaceholder)
-  return objectMap(extractFile, response.contents)
+  let nodeModules: NodeModules = {}
+  for (const content of response.contents) {
+    if (isPackagerServerFileEntry(content)) {
+      const nodeModule = packagerResponseFileToNodeModule(
+        response,
+        content.fileEntry.filename,
+        content.fileEntry.fileContents,
+      )
+      nodeModules[content.fileEntry.filename] = nodeModule
+    }
+  }
+  return nodeModules
 }
 
 export function resetDepPackagerCache() {
@@ -237,7 +264,7 @@ async function fetchPackagerResponse(
       depPackagerCache[packagesUrl] = resp
       const convertedResult = extractNodeModulesFromPackageResponse(resp)
       result = convertedResult
-      // This result includes transitive dependencies too, but for all modules it only includes package.json, .js and .d.ts files.
+      // This result includes transitive dependencies too, but for all modules it only includes packagerjson, .js and .d.ts files.
       // All other file types are replaced with placeholders to save on downloading unnecessary files. Placeholders are then
       // downloaded when they are first needed
     } else {

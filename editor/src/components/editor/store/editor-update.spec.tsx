@@ -34,7 +34,6 @@ import Utils, { front } from '../../../utils/utils'
 import { renameComponent } from '../../navigator/actions'
 import * as EP from '../../../core/shared/element-path'
 import * as fileWithImports from '../../../core/es-modules/test-cases/file-with-imports.json'
-import * as fileNoImports from '../../../core/es-modules/test-cases/file-no-imports.json'
 import { createNodeModules } from '../../../core/es-modules/package-manager/test-utils'
 import {
   clearSelection,
