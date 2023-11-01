@@ -88,14 +88,12 @@ interface TestCase {
 
 // Re-enable these tests when reactivating pin toggling for the new world
 xdescribe('Group child constraints', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   function makeTestCase(testCase: TestCase): () => Promise<void> {
     return async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode(testCase.baseProject),
         'await-first-dom-report',
         RegisteredCanvasStrategies,
-        { 'Simplified Layout Section': true },
       )
 
       await testCase.actionChange(editor)
@@ -374,14 +372,12 @@ xdescribe('Group child constraints', () => {
 })
 
 xdescribe('Frame child constraints', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   function makeTestCase(testCase: TestCase): () => Promise<void> {
     return async () => {
       const editor = await renderTestEditorWithCode(
         makeTestProjectCode(testCase.baseProject),
         'await-first-dom-report',
         RegisteredCanvasStrategies,
-        { 'Simplified Layout Section': true },
       )
 
       await testCase.actionChange(editor)

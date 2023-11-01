@@ -66,8 +66,6 @@ import { LowPriorityStoreProvider } from '../editor/store/store-context-provider
 import { FlexSection } from './flex-section'
 import { useDispatch } from '../editor/store/dispatch-context'
 import { styleStringInArray } from '../../utils/common-constants'
-import { SizingSection } from './sizing-section'
-import { PositionSection } from './sections/layout-section/position-section'
 import { ConditionalSection } from './sections/layout-section/conditional-section'
 import { allSelectedElementsContractSelector } from './editor-contract-section'
 import { FragmentSection } from './sections/layout-section/fragment-section'
@@ -397,22 +395,8 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
                   multiselectedContract === 'fragment',
                   // Position and Sizing sections are shown if Frame or Group is selected
                   <>
-                    {when(
-                      isFeatureEnabled('Simplified Layout Section'),
-                      <>
-                        <SimplifiedLayoutSubsection />
-                        <ConstraintsSection />
-                      </>,
-                    )}
-                    {unless(
-                      isFeatureEnabled('Simplified Layout Section'),
-                      <>
-                        <PositionSection
-                          hasNonDefaultPositionAttributes={hasNonDefaultPositionAttributes}
-                        />
-                        <SizingSection />
-                      </>,
-                    )}
+                    <SimplifiedLayoutSubsection />
+                    <ConstraintsSection />
                   </>,
                 )}
                 {unless(

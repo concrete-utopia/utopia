@@ -1,8 +1,5 @@
 import React from 'react'
-import { isFeatureEnabled } from '../../../../utils/feature-switches'
-import { when } from '../../../../utils/react-conditionals'
 import type { InspectorPartProps } from '../../inspector'
-import { SizingSection } from '../../sizing-section'
 import { BackgroundSubsection } from './background-subsection/background-subsection'
 import { BorderSubsection } from './border-subsection/border-subsection'
 import { ContainerSubsection } from './container-subsection/container-subsection'

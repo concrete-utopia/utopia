@@ -164,7 +164,6 @@ async function pressKeyTimes(
 }
 
 describe('inspector tests with real metadata', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   it('padding controls', async () => {
     const renderResult = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(`
@@ -3196,7 +3195,6 @@ describe('inspector tests with real metadata', () => {
   })
 
   describe('groups', () => {
-    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
     it('ignores removing pins from a group child', async () => {
       const renderResult = await renderTestEditorWithCode(
         makeTestProjectCodeWithSnippetStyledComponents(`
@@ -3406,7 +3404,6 @@ describe('inspector tests with real metadata', () => {
 
     describe('group children', () => {
       // TODO rewrite this to use the dropdown
-      setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
 
       function runTest(test: {
         input: string
@@ -4144,7 +4141,6 @@ describe('inspector tests with real metadata', () => {
 })
 
 describe('Inspector fields and code remain in sync', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
   const propsToTest = [
     {
       stylePropKey: 'top',

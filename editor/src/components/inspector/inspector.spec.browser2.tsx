@@ -5,7 +5,6 @@ import { CanvasControlsContainerID } from '../canvas/controls/new-canvas-control
 import { mouseClickAtPoint, mouseMoveToPoint } from '../canvas/event-helpers.test-utils'
 import { getPrintedUiJsCode, renderTestEditorWithCode } from '../canvas/ui-jsx.test-utils'
 import { clearSelection, selectComponents } from '../editor/actions/action-creators'
-import { AspectRatioLockButtonTestId } from './sections/layout-section/self-layout-subsection/gigantic-size-pins-subsection'
 import { cmdModifier } from '../../utils/modifiers'
 import { wait } from '../../utils/utils.test-utils'
 
@@ -169,53 +168,6 @@ export var storyboard = (
 
 describe('inspector', () => {
   // TODO aspect ratio lock is gone from inspector
-
-  xit('toggle aspect ratio lock off', async () => {
-    const codeAfterToggle = await runToggleAspectRatioLockTest('locked')
-    expect(codeAfterToggle).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='7a0'
-    />
-  </Storyboard>
-)
-`)
-  })
-
-  xit('toggle aspect ratio lock on', async () => {
-    const codeAfterToggle = await runToggleAspectRatioLockTest('not-locked')
-    expect(codeAfterToggle).toEqual(`import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='7a0'
-      data-aspect-ratio-locked
-    />
-  </Storyboard>
-)
-`)
-  })
 
   it('switching selection should not break the inspector', async () => {
     const editor = await renderTestEditorWithCode(
@@ -463,63 +415,4 @@ async function setupRemovalTest(buttonToPress: string): Promise<string> {
 
   await editor.getDispatchFollowUpActionsFinished()
   return getPrintedUiJsCode(editor.getEditorState())
-}
-
-async function runToggleAspectRatioLockTest(
-  aspectRatioLocked: AspectRatioLockedState,
-): Promise<string> {
-  const editor = await renderTestEditorWithCode(
-    projectSource(aspectRatioLocked),
-    'await-first-dom-report',
-  )
-  const target = elementPath([['0cd', '7a0']])
-
-  await editor.dispatch([selectComponents([target], false)], true)
-  await editor.getDispatchFollowUpActionsFinished()
-
-  const aspectRatioLockButton = editor.renderedDOM.getByTestId(AspectRatioLockButtonTestId)
-  const aspectRatioLockButtonBounds = aspectRatioLockButton.getBoundingClientRect()
-  await mouseClickAtPoint(aspectRatioLockButton, {
-    x: aspectRatioLockButtonBounds.x + 1,
-    y: aspectRatioLockButtonBounds.y + 1,
-  })
-
-  await editor.getDispatchFollowUpActionsFinished()
-  return getPrintedUiJsCode(editor.getEditorState())
-}
-
-type AspectRatioLockedState = 'locked' | 'not-locked'
-
-const isAspectRatioLocked = (state: AspectRatioLockedState): boolean => {
-  switch (state) {
-    case 'locked':
-      return true
-    case 'not-locked':
-      return false
-    default:
-      assertNever(state)
-  }
-}
-
-function projectSource(aspectRatioLockedState: AspectRatioLockedState) {
-  return `import * as React from 'react'
-import { Scene, Storyboard } from 'utopia-api'
-
-export var storyboard = (
-  <Storyboard data-uid='0cd'>
-    <div
-      style={{
-        backgroundColor: '#aaaaaa33',
-        position: 'absolute',
-        left: 33,
-        top: 307,
-        width: 363,
-        height: 426,
-      }}
-      data-uid='7a0'
-      data-aspect-ratio-locked${isAspectRatioLocked(aspectRatioLockedState) ? `` : `={false}`}
-    />
-  </Storyboard>
-)
-`
 }

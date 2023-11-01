@@ -112,7 +112,6 @@ describe('Frame updating layout section', () => {
         makeTestProjectCode(testCase.baseProject),
         'await-first-dom-report',
         RegisteredCanvasStrategies,
-        { 'Simplified Layout Section': true },
       )
 
       await testCase.actionChange(editor)
