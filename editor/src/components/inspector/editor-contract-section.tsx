@@ -119,6 +119,8 @@ const FragmentOption = groupSectionOption('fragment')
 const FrameOption = groupSectionOption('frame')
 const GroupOption = groupSectionOption('group')
 
+export const EditorFixProblemsButtonTestId = 'editor-fix-problems-button'
+
 export const EditorContractDropdown = React.memo(() => {
   const dispatch = useDispatch()
 
@@ -345,6 +347,7 @@ export const EditorContractDropdown = React.memo(() => {
           <Button
             highlight
             spotlight
+            data-testid={EditorFixProblemsButtonTestId}
             style={{
               backgroundColor: colorTheme.errorForeground20.value,
               color: colorTheme.errorForeground.value,
