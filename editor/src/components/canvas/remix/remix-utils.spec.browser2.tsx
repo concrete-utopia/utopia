@@ -34,16 +34,7 @@ export var storyboard = (
 const remixConfigJsFromRemixDocs = `
 /** @type {import('@remix-run/dev').AppConfig} */
 module.exports = {
-  appDirectory: "app",
-  assetsBuildDirectory: "public/build",
-  ignoredRouteFiles: ["**/.*"],
-  publicPath: "/build/",
-  routes(defineRoutes) {
-    return defineRoutes((route) => {
-      route("/somewhere/cool/*", "catchall.tsx");
-    });
-  },
-  serverBuildPath: "build/index.js",
+  appDirectory: "src",
 };
 `
 
@@ -393,8 +384,8 @@ describe('Routes', () => {
     const project = createModifiedProject({
       [REMIX_CONFIG_JS_PATH]: remixConfigJsFromRemixDocs,
       [StoryboardFilePath]: storyboardFileContent,
-      ['/app/root.js']: rootFileContentWithExportedStuff,
-      ['/app/routes/_index.js']: routeFileContent('Index route'),
+      ['/src/root.js']: rootFileContentWithExportedStuff,
+      ['/src/routes/_index.js']: routeFileContent('Index route'),
     })
 
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')

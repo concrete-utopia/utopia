@@ -673,7 +673,7 @@ function collectMetadataForElement(
     'no-rounding',
   )
 
-  const textContentsMaybe = element.textContent
+  const textContentsMaybe = element.children.length === 0 ? element.textContent : null
 
   const specialSizeMeasurementsObject = getSpecialMeasurements(
     element,

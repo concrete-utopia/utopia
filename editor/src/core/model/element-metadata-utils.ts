@@ -1309,7 +1309,7 @@ export const MetadataUtils = {
             return VoidElementsToFilter.includes(r.name.baseVariable)
           }
           if (
-            isJSExpressionMapOrOtherJavaScript(r) &&
+            isJSExpressionOtherJavaScript(r) &&
             !MetadataUtils.isElementPathConditionalFromMetadata(metadata, EP.parentPath(path))
           ) {
             const children = MetadataUtils.getChildrenOrdered(metadata, pathTree, path)

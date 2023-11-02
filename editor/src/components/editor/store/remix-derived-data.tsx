@@ -53,8 +53,8 @@ export const CreateRemixDerivedDataRefsGLOBAL: {
 export const REMIX_CONFIG_JS_PATH = '/remix.config.js'
 
 export function getRemixRootDir(projectContents: ProjectContentTreeRoot): string {
-  const DEFAULT_ROOT_DIR_NAME = 'app'
-  const makeRootDirPath = (dir: string = DEFAULT_ROOT_DIR_NAME) => `/${dir}`
+  const defaultRootDirName = 'app'
+  const makeRootDirPath = (dir: string = defaultRootDirName) => `/${dir}`
 
   const code = getProjectFileByFilePath(projectContents, REMIX_CONFIG_JS_PATH)
   if (code == null || code.type !== 'TEXT_FILE') {
@@ -70,7 +70,7 @@ export function getRemixRootDir(projectContents: ProjectContentTreeRoot): string
     () => null,
   )
 
-  const dir = m?.['exports']?.['appDirectory'] ?? DEFAULT_ROOT_DIR_NAME
+  const dir = m?.['exports']?.['appDirectory'] ?? defaultRootDirName
   return makeRootDirPath(dir)
 }
 
