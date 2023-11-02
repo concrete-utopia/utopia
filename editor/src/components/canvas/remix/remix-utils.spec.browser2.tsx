@@ -9,6 +9,7 @@ import { renderTestEditorWithModel } from '../ui-jsx.test-utils'
 import {
   DefaultFutureConfig,
   createRouteManifestFromProjectContents,
+  getRootFile,
   getRoutesAndModulesFromManifest,
 } from './remix-utils'
 import { RouteExportsForRouteObject } from './utopia-remix-root-component'
@@ -119,8 +120,11 @@ describe('Route manifest', () => {
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
+    const rootFilePath =
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
-      getRemixRootDir(renderResult.getEditorState().editor.projectContents),
+      { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
     )
 
@@ -175,8 +179,11 @@ describe('Route manifest', () => {
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
+    const rootFilePath =
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
-      getRemixRootDir(renderResult.getEditorState().editor.projectContents),
+      { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
     )
 
@@ -197,8 +204,11 @@ describe('Route manifest', () => {
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
+    const rootFilePath =
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
-      getRemixRootDir(renderResult.getEditorState().editor.projectContents),
+      { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
     )
 
@@ -308,15 +318,18 @@ describe('Routes', () => {
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
+    const rootFilePath =
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
-      getRemixRootDir(renderResult.getEditorState().editor.projectContents),
+      { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
     )
     expect(remixManifest).not.toBeNull()
 
     let routeModuleCache = { current: {} }
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRemixRootDir(renderResult.getEditorState().editor.projectContents),
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,
@@ -380,6 +393,22 @@ describe('Routes', () => {
       },
     ])
   })
+  it('Parses root.jsx', async () => {
+    const project = createModifiedProject({
+      [StoryboardFilePath]: storyboardFileContent,
+      ['/app/root.jsx']: rootFileContentWithExportedStuff,
+      ['/app/routes/_index.js']: routeFileContent('Index route'),
+    })
+
+    const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
+
+    const remixRoutes = renderResult.getEditorState().derived.remixData?.routes
+    expect(remixRoutes).toBeDefined()
+
+    expect(remixRoutes).toHaveLength(1)
+    expect(remixRoutes![0].id).toEqual('root')
+    expect(remixRoutes![0].children).toHaveLength(1)
+  })
   it('Parses different route dir', async () => {
     const project = createModifiedProject({
       [REMIX_CONFIG_JS_PATH]: remixConfigJsFromRemixDocs,
@@ -411,15 +440,18 @@ describe('Routes', () => {
     })
     const renderResult = await renderTestEditorWithModel(project, 'await-first-dom-report')
 
+    const rootDir = getRemixRootDir(renderResult.getEditorState().editor.projectContents)
+    const rootFilePath =
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)?.path ?? ''
     const remixManifest = createRouteManifestFromProjectContents(
-      getRemixRootDir(renderResult.getEditorState().editor.projectContents),
+      { rootDir, rootFilePath },
       renderResult.getEditorState().editor.projectContents,
     )
 
     let routeModuleCache = { current: {} }
     expect(remixManifest).not.toBeNull()
     const remixRoutes = getRoutesAndModulesFromManifest(
-      getRemixRootDir(renderResult.getEditorState().editor.projectContents),
+      getRootFile(rootDir, renderResult.getEditorState().editor.projectContents)!.file,
       remixManifest!,
       DefaultFutureConfig,
       renderResult.getEditorState().editor.codeResultCache.curriedRequireFn,
