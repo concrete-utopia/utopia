@@ -180,6 +180,9 @@ export const ChildPinControl = React.memo(
               }
             }
             case 'width': {
+              if (pins.horizontal.includes('width')) {
+                return 'no-op' // if Height is already pressed, we leave it as-is
+              }
               return 'left-and-width'
             }
             case 'top': {
@@ -197,6 +200,9 @@ export const ChildPinControl = React.memo(
               }
             }
             case 'height': {
+              if (pins.vertical.includes('height')) {
+                return 'no-op' // if Height is already pressed, we leave it as-is
+              }
               return 'top-and-height'
             }
             case 'centerX': {
