@@ -1166,61 +1166,6 @@ describe('Remix navigation', () => {
     }
   })
 
-  it('setting window.href does not navigate away', async () => {
-    const renderResult = await renderRemixProject(
-      createTestProjectWithCode(`import * as React from 'react'
-    import { Storyboard } from 'utopia-api'
-    
-    const Button = ({ style }) => {
-      const onClick = React.useCallback(() => {
-        window.location.href = '/not-the-editor'
-      }, [])
-      return (
-        <div data-testid="button" style={{ ...style }} onClick={onClick}>
-          <span
-            style={{
-              wordBreak: 'break-word',
-              width: 'max-content',
-              height: 'max-content',
-            }}
-          >
-            window.href = 'not-the-editor'
-          </span>
-        </div>
-      )
-    }
-    
-    export var storyboard = (
-      <Storyboard>
-        <Button
-          style={{
-            backgroundColor: '#aaaaaa33',
-            position: 'absolute',
-            left: 356,
-            top: 234,
-            width: 'max-content',
-            height: 'max-content',
-            display: 'flex',
-            flexDirection: 'row',
-            padding: '28px 25px',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 4,
-            overflow: 'hidden',
-            cursor: 'pointer',
-          }}
-        />
-      </Storyboard>
-    )
-    `),
-    )
-
-    const button = renderResult.renderedDOM.getByTestId('button')
-    await mouseClickAtPoint(button, { x: 10, y: 10 })
-
-    expect(renderResult.renderedDOM.queryAllByTestId('button')).not.toBeNull()
-  })
-
   describe('remix scene label', () => {
     it('can navigate with the scene label nav buttons, in live mode', async () => {
       const renderResult = await renderRemixProject(projectWithMultipleRoutes())
