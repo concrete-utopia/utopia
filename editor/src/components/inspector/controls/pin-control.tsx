@@ -5,7 +5,7 @@ import type { ControlStatus } from '../common/control-status'
 import { getControlStyles } from '../common/control-styles'
 import { FramePoint } from 'utopia-api/core'
 import type { LayoutPinnedPropIncludingCenter } from '../../../core/layout/layout-helpers-new'
-import { usePinToggling, type FramePinsInfo } from '../common/layout-property-path-hooks'
+import { type FramePinsInfo } from '../common/layout-property-path-hooks'
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
 import { unless, when } from '../../../utils/react-conditionals'
 import { FlexCol, FlexRow } from 'utopia-api'
@@ -332,40 +332,7 @@ export interface CombinedPinControlProps {
 
 export const CombinedPinControl = React.memo((props: CombinedPinControlProps) => {
   const pins = useDetectedConstraints(props.isGroupChild)
-  const dispatch = useDispatch()
-  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
-  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
   const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
-  const { togglePin } = usePinToggling()
-  const toggleGroupChildOrFrameChildPin = React.useCallback(
-    (layoutProp: LayoutPinnedPropIncludingCenter) => {
-      switch (props.isGroupChild) {
-        case 'frame-child':
-          togglePin(layoutProp)
-          break
-        case 'group-child':
-          if (layoutProp !== 'centerX' && layoutProp !== 'centerY') {
-            setGroupChildConstraint(
-              dispatch,
-              'toggle',
-              selectedViewsRef.current,
-              allElementPropsRef.current,
-              layoutProp,
-            )
-          }
-          break
-        default:
-          assertNever(props.isGroupChild)
-      }
-    },
-    [props.isGroupChild, togglePin, dispatch, selectedViewsRef, allElementPropsRef],
-  )
-  const toggleWidth = React.useCallback(() => {
-    toggleGroupChildOrFrameChildPin('width')
-  }, [toggleGroupChildOrFrameChildPin])
-  const toggleHeight = React.useCallback(() => {
-    toggleGroupChildOrFrameChildPin('height')
-  }, [toggleGroupChildOrFrameChildPin])
   return (
     <FlexRow css={{ border: `1px solid ${colorTheme.subduedBorder.value}`, margin: `2px` }}>
       {when(props.isGroupChild === 'group-child', <GroupChildPinControl />)}

@@ -1299,7 +1299,6 @@ describe('Fixed / Fill / Hug control', () => {
   })
 
   describe('fixed size', () => {
-    setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
     it('global frames are correct for frames wrapping frames', async () => {
       const editor = await renderTestEditorWithCode(
         projectWithNestedFrames,

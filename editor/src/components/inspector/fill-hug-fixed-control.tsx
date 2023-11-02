@@ -162,44 +162,6 @@ const fixedHugFillOptionsSelector = createCachedSelector(
   },
 )((_, dimension: 'width' | 'height') => dimension)
 
-export const FillHugFixedControlOld = React.memo(() => {
-  const onlyGroupChildrenSelected = useEditorState(
-    Substores.metadata,
-    allElementsAreGroupChildren,
-    'FillHugFixedControl groupChildrenSelected',
-  )
-
-  const gridTemplate = React.useMemo((): GridRowVariant => {
-    return onlyGroupChildrenSelected ? '|--67px--|<--------1fr-------->' : '<--1fr--><--1fr-->'
-  }, [onlyGroupChildrenSelected])
-
-  return (
-    <FlexCol css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
-      <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <GroupChildPinControl />
-        <FlexCol css={{ gap: 0 }}>
-          <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
-            <WidthHeightNumberControl dimension='width' />
-            {onlyGroupChildrenSelected ? (
-              <GroupConstraintSelect dimension={'width'} />
-            ) : (
-              <FixedHugDropdown dimension='width' />
-            )}
-          </UIGridRow>
-          <UIGridRow padded={false} variant={gridTemplate} css={InspectorRowHoverCSS}>
-            <WidthHeightNumberControl dimension='height' />
-            {onlyGroupChildrenSelected ? (
-              <GroupConstraintSelect dimension={'height'} />
-            ) : (
-              <FixedHugDropdown dimension='height' />
-            )}
-          </UIGridRow>
-        </FlexCol>
-      </UIGridRow>
-    </FlexCol>
-  )
-})
-
 export const GroupChildPinControl = React.memo(() => {
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState(selectedViewsSelector)
