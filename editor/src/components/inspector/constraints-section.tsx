@@ -231,14 +231,7 @@ export const ChildPinControl = React.memo(
         }
         dispatch(
           isGroupChild === 'group-child'
-            ? getConstraintAndFrameChangeActionsForGroupChild(
-                metadataRef.current,
-                allElementPropsRef.current,
-                elementPathTreesRef.current,
-                propertyTarget,
-                selectedViewsRef.current,
-                requestedPinChange,
-              )
+            ? [] // nothing for Group children yet!!
             : getFrameChangeActionsForFrameChild(
                 metadataRef.current,
                 elementPathTreesRef.current,
@@ -252,7 +245,6 @@ export const ChildPinControl = React.memo(
         dispatch,
         isGroupChild,
         metadataRef,
-        allElementPropsRef,
         elementPathTreesRef,
         propertyTarget,
         selectedViewsRef,
