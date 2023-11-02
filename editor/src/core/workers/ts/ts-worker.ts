@@ -1,5 +1,6 @@
 import * as Babel from '@babel/standalone'
 import * as ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
+import * as BabelProposalThrowExpressions from '@babel/plugin-proposal-throw-expressions'
 import * as TS from 'typescript-for-the-editor'
 import * as BrowserFS from 'browserfs'
 import type { TypeDefinitions } from '../../shared/npm-dependency-types'
@@ -697,7 +698,7 @@ function watch(
 }
 
 function runBabel(code: string, filename: string, sourceMap: RawSourceMap | null) {
-  const plugins = [infiniteLoopPrevention]
+  const plugins = [infiniteLoopPrevention, BabelProposalThrowExpressions]
   return Babel.transform(code, {
     presets: ['es2015'],
     plugins: plugins,

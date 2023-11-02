@@ -3,6 +3,8 @@ import type * as BabelTraverse from '@babel/traverse'
 import * as BabelTypes from '@babel/types'
 import ReactSyntaxPlugin from 'babel-plugin-syntax-jsx'
 import ReactTransformPlugin from 'babel-plugin-transform-react-jsx'
+import * as BabelSyntaxThrowExpressions from '@babel/plugin-syntax-throw-expressions'
+import * as BabelProposalThrowExpressions from '@babel/plugin-proposal-throw-expressions'
 import type { SourceNode } from 'source-map'
 import type { Either } from '../../shared/either'
 import { left, right } from '../../shared/either'
@@ -223,6 +225,7 @@ export function insertDataUIDsIntoCode(
       codeToUse = wrapCodeInParens(codeToUse)
     }
     const plugins: Array<any> = [
+      BabelProposalThrowExpressions,
       babelRewriteJSExpressionCode(elementsWithin, false),
       ReactSyntaxPlugin,
     ]
@@ -269,6 +272,8 @@ export function transpileJavascriptFromCode(
       plugins.push(babelRewriteJSExpressionCode(elementsWithin, true))
     }
     plugins.push(infiniteLoopPrevention)
+    //plugins.push(BabelSyntaxThrowExpressions)
+    plugins.push(BabelProposalThrowExpressions)
     plugins.push('external-helpers')
     plugins.push('transform-typescript')
     plugins.push('transform-react-jsx')

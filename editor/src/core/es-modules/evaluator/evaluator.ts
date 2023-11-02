@@ -3,6 +3,8 @@ import * as Babel from '@babel/standalone'
 import * as BabelTransformCommonJS from '@babel/plugin-transform-modules-commonjs'
 import * as BabelExportNamespaceFrom from '@babel/plugin-proposal-export-namespace-from'
 import * as BabelClassProperties from '@babel/plugin-proposal-class-properties'
+import * as BabelSyntaxThrowExpressions from '@babel/plugin-syntax-throw-expressions'
+import * as BabelProposalThrowExpressions from '@babel/plugin-proposal-throw-expressions'
 
 import type { FileEvaluationCache } from '../package-manager/package-manager'
 import type { RawSourceMap } from '../../workers/ts/ts-typings/RawSourceMap'
@@ -29,7 +31,13 @@ function transformToCommonJS(
   filePath: string,
   moduleCode: string,
 ): { transpiledCode: string; sourceMap: RawSourceMap } {
-  const plugins = [BabelTransformCommonJS, BabelExportNamespaceFrom, BabelClassProperties]
+  const plugins = [
+    BabelTransformCommonJS,
+    BabelExportNamespaceFrom,
+    BabelClassProperties,
+    //BabelSyntaxThrowExpressions,
+    BabelProposalThrowExpressions,
+  ]
   const result = Babel.transform(moduleCode, {
     presets: ['es2015', 'react'],
     plugins: plugins,
