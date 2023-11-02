@@ -19,6 +19,8 @@ import {
 } from '../../../utils/utils.test-utils'
 import { mouseClickAtPoint } from '../../canvas/event-helpers.test-utils'
 import { getDomRectCenter } from '../../../core/shared/dom-utils'
+import type { Modifiers } from '../../../utils/modifiers'
+import { cmdModifier } from '../../../utils/modifiers'
 
 function makeTestProjectCode(componentInnards: string): string {
   const code = `
@@ -452,7 +454,7 @@ describe('Frame child constraints', () => {
     )
 
     it(
-      'If width is already active, clicking on it is a NO_OP',
+      'If width is already active, clicking on it is a no-op',
       makeTestCase({
         baseProject: `<div
           data-uid={'root'}
@@ -511,70 +513,10 @@ describe('Frame child constraints', () => {
       }),
     )
   })
-  describe('height constraint sets Top + Height', () => {
-    it(
-      'toggling with top and bottom set',
-      makeTestCase({
-        baseProject: `<div
-          data-uid={'root'}
-          style={{
-            backgroundColor: 'lightblue',
-            position: 'absolute',
-            height: 300,
-            left: 150,
-            top: 100,
-            width: 500,
-          }}
-        >
-          <div
-            data-uid={'target-div'}
-            data-testid='target-div'
-            style={{
-              backgroundColor: 'lightgrey',
-              position: 'absolute',
-              left: 100,
-              width: 150,
-              top: 100,
-              bottom: 50,
-            }}
-          />
-        </div>`,
-        actionChange: async function (renderResult: EditorRenderResult): Promise<void> {
-          const targetPath = EP.fromString(
-            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/target-div`,
-          )
-          await selectComponentsForTest(renderResult, [targetPath])
 
-          await clickOnPin(renderResult, 'pin-height-control-button')
-        },
-        expectedProject: `<div
-          style={{
-            backgroundColor: 'lightblue',
-            position: 'absolute',
-            height: 300,
-            left: 150,
-            top: 100,
-            width: 500,
-          }}
-        >
-          <div
-            data-testid='target-div'
-            style={{
-              backgroundColor: 'lightgrey',
-              position: 'absolute',
-              left: 100,
-              width: 150,
-              top: 100,
-              height: 150,
-            }}
-          />
-        </div>`,
-      }),
-    )
-  })
-  describe('bottom constraint sets Bottom + Height', () => {
+  describe('bottom pin', () => {
     it(
-      'toggling with top and height set',
+      'clicking bottom pin with top and height set sets Bottom and Height',
       makeTestCase({
         baseProject: `<div
           data-uid={'root'}
@@ -632,10 +574,9 @@ describe('Frame child constraints', () => {
         </div>`,
       }),
     )
-  })
-  describe('right constraint sets Right + Width', () => {
+
     it(
-      'toggling with top and bottom set',
+      'clicking bottom pin bottom and height set is a no-op',
       makeTestCase({
         baseProject: `<div
           data-uid={'root'}
@@ -654,10 +595,10 @@ describe('Frame child constraints', () => {
             style={{
               backgroundColor: 'lightgrey',
               position: 'absolute',
-              left: 100,
-              width: 150,
-              top: 100,
-              bottom: 50,
+              left: 150,
+              width: 500,
+              bottom: 100,
+              height: 100,
             }}
           />
         </div>`,
@@ -667,7 +608,7 @@ describe('Frame child constraints', () => {
           )
           await selectComponentsForTest(renderResult, [targetPath])
 
-          await clickOnPin(renderResult, 'pin-control-catcher-pin-right')
+          await clickOnPin(renderResult, 'pin-control-catcher-pin-bottom')
         },
         expectedProject: `<div
           style={{
@@ -684,10 +625,72 @@ describe('Frame child constraints', () => {
             style={{
               backgroundColor: 'lightgrey',
               position: 'absolute',
+              left: 150,
+              width: 500,
+              bottom: 100,
+              height: 100,
+            }}
+          />
+        </div>`,
+      }),
+    )
+
+    it(
+      'cmd + clicking bottom pin with top and height set sets Top and Bottom',
+      makeTestCase({
+        baseProject: `<div
+          data-uid={'root'}
+          style={{
+            backgroundColor: 'lightblue',
+            position: 'absolute',
+            height: 300,
+            left: 150,
+            top: 100,
+            width: 500,
+          }}
+        >
+          <div
+            data-uid={'target-div'}
+            data-testid='target-div'
+            style={{
+              backgroundColor: 'lightgrey',
+              position: 'absolute',
+              left: 150,
               top: 100,
-              bottom: 50,
-              right: 250,
-              width: 150,
+              height: 100,
+              width: 500,
+            }}
+          />
+        </div>`,
+        actionChange: async function (renderResult: EditorRenderResult): Promise<void> {
+          const targetPath = EP.fromString(
+            `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root/target-div`,
+          )
+          await selectComponentsForTest(renderResult, [targetPath])
+
+          await clickOnPin(renderResult, 'pin-control-catcher-pin-bottom', {
+            modifiers: cmdModifier,
+          })
+        },
+        expectedProject: `<div
+          style={{
+            backgroundColor: 'lightblue',
+            position: 'absolute',
+            height: 300,
+            left: 150,
+            top: 100,
+            width: 500,
+          }}
+        >
+          <div
+            data-testid='target-div'
+            style={{
+              backgroundColor: 'lightgrey',
+              position: 'absolute',
+              left: 150,
+              width: 500,
+              top: 100,
+              bottom: 100,
             }}
           />
         </div>`,
@@ -695,9 +698,15 @@ describe('Frame child constraints', () => {
     )
   })
 })
-async function clickOnPin(renderResult: EditorRenderResult, pinTestId: string) {
+async function clickOnPin(
+  renderResult: EditorRenderResult,
+  pinTestId: string,
+  options: {
+    modifiers?: Modifiers
+  } = {},
+) {
   const pinWidthButton = await renderResult.renderedDOM.findByTestId(pinTestId)
   const pinWidthButtonBounds = pinWidthButton.getBoundingClientRect()
   const pinWidthButtonCenter = getDomRectCenter(pinWidthButtonBounds)
-  await mouseClickAtPoint(pinWidthButton, pinWidthButtonCenter)
+  await mouseClickAtPoint(pinWidthButton, pinWidthButtonCenter, options)
 }
