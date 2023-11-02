@@ -2155,8 +2155,13 @@ async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
   await mouseClickAtPoint(targetElement, clickPoint)
 }
 
-const clickRemixLink = (editor: EditorRenderResult) => clickLinkWithTestId(editor, 'remix-link')
-const clickPostLink = (editor: EditorRenderResult) => clickLinkWithTestId(editor, 'post-link')
+async function clickRemixLink(editor: EditorRenderResult) {
+  await clickLinkWithTestId(editor, 'remix-link')
+}
+
+async function clickPostLink(editor: EditorRenderResult) {
+  await clickLinkWithTestId(editor, 'post-link')
+}
 
 const navigateWithRemixSceneLabelButton = (
   renderResult: EditorRenderResult,
