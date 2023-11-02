@@ -543,6 +543,9 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
     isList: boolean,
   ) => Either<string, T>,
 ): Either<string, WithParserMetadata<T>> {
+  // if (expressionsAndTexts.some((e) => e.text.includes('showMeWhatYouGot'))) {
+  //   console.log('parseOtherJavaScript expressionsAndTexts', expressionsAndTexts)
+  // }
   if (expressionsAndTexts.length === 0) {
     throw new Error('Unable to deal with a collection of zero expressions.')
   } else {
@@ -858,7 +861,12 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
             } else if (TS.isNonNullExpression(node)) {
               addIfDefinedElsewhere(scope, node.expression, false)
             } else if (TS.isObjectLiteralExpression(node)) {
-              fastForEach(node.properties, (p) => addIfDefinedElsewhere(scope, p, false))
+              fastForEach(node.properties, (p) => {
+                addIfDefinedElsewhere(scope, p, false)
+                if (TS.isPropertyAssignment(p)) {
+                  addIfDefinedElsewhere(scope, p.initializer, false)
+                }
+              })
             } else if (TS.isParenthesizedExpression(node)) {
               addIfDefinedElsewhere(scope, node.expression, false)
             } else if (TS.isPostfixUnaryExpression(node)) {
