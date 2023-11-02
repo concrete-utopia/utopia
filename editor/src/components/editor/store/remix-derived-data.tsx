@@ -57,14 +57,14 @@ export function getRemixRootDir(projectContents: ProjectContentTreeRoot): string
   const defaultRootDirName = 'app'
   const makeRootDirPath = (dir: string = defaultRootDirName) => `/${dir}`
 
-  const code = getProjectFileByFilePath(projectContents, REMIX_CONFIG_JS_PATH)
-  if (code == null || code.type !== 'TEXT_FILE') {
+  const remixConfigFile = getProjectFileByFilePath(projectContents, REMIX_CONFIG_JS_PATH)
+  if (remixConfigFile == null || remixConfigFile.type !== 'TEXT_FILE') {
     return makeRootDirPath()
   }
 
   const m = evaluator(
     REMIX_CONFIG_JS_PATH,
-    code.fileContents.code,
+    remixConfigFile.fileContents.code,
     {
       exports: {},
     },
@@ -89,8 +89,7 @@ export function createRemixDerivedData(
   }
 
   const routeManifest = createRouteManifestFromProjectContents(
-    rootDir,
-    rootJsFile.path,
+    { rootFilePath: rootJsFile.path, rootDir: rootDir },
     projectContents,
   )
   if (routeManifest == null) {

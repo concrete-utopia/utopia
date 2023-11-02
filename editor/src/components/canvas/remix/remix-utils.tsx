@@ -82,8 +82,13 @@ function projectContentsToFileOps(projectContents: ProjectContentTreeRoot): File
 }
 
 export function createRouteManifestFromProjectContents(
-  rootFilePath: string,
-  rootDir: string,
+  {
+    rootFilePath,
+    rootDir,
+  }: {
+    rootFilePath: string
+    rootDir: string
+  },
   projectContents: ProjectContentTreeRoot,
 ): RouteManifest<EntryRoute> | null {
   const routesFromRemix = (() => {
