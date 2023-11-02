@@ -615,9 +615,12 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
           return true
         }
       }
-      if (TS.isObjectLiteralElement(nodeToCheck)) {
-        const nameToAdd = nodeToCheck.getText(sourceFile)
-        pushToDefinedElsewhereIfNotThere(inScope, nameToAdd)
+      if (
+        TS.isObjectLiteralElement(nodeToCheck) &&
+        nodeToCheck.name != null &&
+        TS.isIdentifier(nodeToCheck.name)
+      ) {
+        pushToDefinedElsewhereIfNotThere(inScope, nodeToCheck.name.getText(sourceFile))
         return true
       }
 
@@ -864,7 +867,6 @@ function parseOtherJavaScript<E extends TS.Node, T extends { uid: string }>(
               addIfDefinedElsewhere(scope, node.expression, false)
             } else if (TS.isObjectLiteralExpression(node)) {
               fastForEach(node.properties, (p) => {
-                addIfDefinedElsewhere(scope, p, false)
                 if (TS.isPropertyAssignment(p)) {
                   addIfDefinedElsewhere(scope, p.initializer, false)
                 } else if (TS.isShorthandPropertyAssignment(p)) {
