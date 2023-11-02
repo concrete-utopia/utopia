@@ -5,6 +5,7 @@ import { jsx } from '@emotion/react'
 import React from 'react'
 import { useContextSelector } from 'use-context-selector'
 import type { LayoutPinnedPropIncludingCenter } from '../../core/layout/layout-helpers-new'
+import { NO_OP } from '../../core/shared/utils'
 import { when } from '../../utils/react-conditionals'
 import {
   FlexColumn,
@@ -43,7 +44,6 @@ import {
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
 import { UIGridRow } from './widgets/ui-grid-row'
-import { NO_OP } from '../../core/shared/utils'
 
 export const InspectorSectionConstraintsTestId = 'inspector-section-constraints'
 
@@ -83,7 +83,7 @@ export const ConstraintsSection = React.memo(() => {
     <React.Fragment>
       <InspectorSubsectionHeader>
         <FlexRow
-          data-testId={InspectorSectionConstraintsTestId}
+          data-testid={InspectorSectionConstraintsTestId}
           style={{
             flexGrow: 1,
             height: 42,
@@ -341,6 +341,12 @@ const ChildConstraintSelect = React.memo(
       [dispatch, propertyTarget, editorRef, isGroupChild, activeOption],
     )
 
+    const styles = React.useMemo(() => {
+      return getControlStyles('simple')
+    }, [])
+
+    const colorTheme = useColorTheme()
+
     return (
       <PopupList
         id={`frame-child-constraint-${dimension}`}
@@ -350,7 +356,10 @@ const ChildConstraintSelect = React.memo(
         style={{
           position: 'relative',
         }}
-        controlStyles={getControlStyles('simple')}
+        controlStyles={{
+          ...styles,
+          mainColor: activeOption.invalid ? colorTheme.error.value : styles.mainColor,
+        }}
       />
     )
   },

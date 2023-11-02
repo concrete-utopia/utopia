@@ -1,6 +1,11 @@
 import type { ProjectContentTreeRoot } from '../../../../components/assets'
-import type { AllElementProps } from '../../../../components/editor/store/editor-state'
+import {
+  trueUpGroupElementChanged,
+  type AllElementProps,
+  trueUpChildrenOfGroupChanged,
+} from '../../../../components/editor/store/editor-state'
 import { getLayoutProperty } from '../../../../core/layout/getLayoutProperty'
+import type { StyleLayoutProp } from '../../../../core/layout/layout-helpers-new'
 import type { PropsOrJSXAttributes } from '../../../../core/model/element-metadata-utils'
 import {
   MetadataUtils,
@@ -25,16 +30,28 @@ import {
   jsxAttributesFromMap,
   jsxElementWithoutUID,
 } from '../../../../core/shared/element-template'
+import {
+  boundingRectangleArray,
+  canvasRectangle,
+  isFiniteRectangle,
+  zeroRectangle,
+} from '../../../../core/shared/math-utils'
 import type { ElementPath, Imports } from '../../../../core/shared/project-file-types'
 import { importAlias } from '../../../../core/shared/project-file-types'
+import * as PP from '../../../../core/shared/property-path'
 import { assertNever } from '../../../../core/shared/utils'
 import { styleStringInArray } from '../../../../utils/common-constants'
 import { notice } from '../../../common/notice'
 import type { AddToast } from '../../../editor/action-types'
 import { showToast } from '../../../editor/actions/action-creators'
-import { isCSSNumber } from '../../../inspector/common/css-utils'
+import { cssNumber, isCSSNumber } from '../../../inspector/common/css-utils'
 import { stylePropPathMappingFn } from '../../../inspector/common/property-path-hooks'
 import { MaxContent } from '../../../inspector/inspector-common'
+import type { CanvasCommand } from '../../commands/commands'
+import { deleteProperties } from '../../commands/delete-properties-command'
+import { queueTrueUpElement } from '../../commands/queue-true-up-command'
+import { setCssLengthProperty, setExplicitCssValue } from '../../commands/set-css-length-command'
+import { setProperty } from '../../commands/set-property-command'
 import type { ShowToastCommand } from '../../commands/show-toast-command'
 import { showToastCommand } from '../../commands/show-toast-command'
 import { replaceNonDOMElementPathsWithTheirChildrenRecursive } from './fragment-like-helpers'
@@ -183,8 +200,57 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
   })
 }
 
+export type GroupChildPercentagePins = {
+  width: number | null
+  height: number | null
+  left: number | null
+  top: number | null
+  bottom: number | null
+  right: number | null
+}
+
+export function emptyGroupChildPercentagePins(): GroupChildPercentagePins {
+  return {
+    width: null,
+    height: null,
+    top: null,
+    left: null,
+    bottom: null,
+    right: null,
+  }
+}
+
+export function invalidPercentagePinsFromJSXElement(
+  jsxElement: JSXElement | null,
+): GroupChildPercentagePins {
+  if (jsxElement?.props == null) {
+    return emptyGroupChildPercentagePins()
+  }
+  function maybePercentValue(element: JSXElement, name: StyleLayoutProp): number | null {
+    const pin = getLayoutProperty(name, right(element.props), styleStringInArray)
+    return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%' ? pin.value.value : null
+  }
+  return {
+    width: maybePercentValue(jsxElement, 'width'),
+    height: maybePercentValue(jsxElement, 'height'),
+    left: maybePercentValue(jsxElement, 'left'),
+    top: maybePercentValue(jsxElement, 'top'),
+    bottom: maybePercentValue(jsxElement, 'bottom'),
+    right: maybePercentValue(jsxElement, 'right'),
+  }
+}
+
 function getLayoutPropVerbatim(props: PropsOrJSXAttributes, pin: AbsolutePin): Either<string, any> {
   return getSimpleAttributeAtPath(props, stylePropPathMappingFn(pin, styleStringInArray))
+}
+
+function getNumericPin(jsxElement: JSXElement, pin: AbsolutePin) {
+  const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
+  const isNumericPin = isRight(prop) && prop.value != null
+  if (!isNumericPin) {
+    return null
+  }
+  return prop.value
 }
 
 function elementHasValidPins(jsxElement: JSXElement): boolean {
@@ -199,10 +265,7 @@ function elementHasValidPins(jsxElement: JSXElement): boolean {
   }
 
   function containsPin(pin: AbsolutePin): boolean {
-    const prop = getLayoutProperty(pin, right(jsxElement.props), styleStringInArray)
-    const isNumericPin = isRight(prop) && prop.value != null
-
-    return isNumericPin || isMaxContentWidthOrHeight(pin)
+    return getNumericPin(jsxElement, pin) != null || isMaxContentWidthOrHeight(pin)
   }
 
   return (
@@ -220,14 +283,7 @@ export function getGroupStateFromJSXElement(
 ): GroupState {
   return (
     maybeGroupHasPercentagePins(jsxElement) ??
-    maybeInvalidGroupChildren(
-      jsxElement,
-      path,
-      metadata,
-      pathTrees,
-      allElementProps,
-      projectContents,
-    ) ??
+    maybeInvalidGroupChildren(path, metadata, pathTrees, allElementProps, projectContents) ??
     'valid'
   )
 }
@@ -254,7 +310,6 @@ export function getGroupState(
 }
 
 function maybeInvalidGroupChildren(
-  group: JSXElement,
   path: ElementPath,
   metadata: ElementInstanceMetadataMap,
   pathTrees: ElementPathTrees,
@@ -302,7 +357,7 @@ export function getGroupValidity(
   return groupValidityFromGroupState(groupState)
 }
 
-function getGroupChildState(
+export function getGroupChildState(
   projectContents: ProjectContentTreeRoot,
   elementMetadata: ElementInstanceMetadata | null,
 ): GroupState {
@@ -490,4 +545,206 @@ export function isEmptyGroup(metadata: ElementInstanceMetadataMap, path: Element
     treatElementAsGroupLike(metadata, path) &&
     MetadataUtils.getChildrenUnordered(metadata, path).length === 0
   )
+}
+
+function fixLengthCommand(path: ElementPath, prop: StyleLayoutProp, size: number): CanvasCommand {
+  return setCssLengthProperty(
+    'always',
+    path,
+    PP.create('style', prop),
+    setExplicitCssValue(cssNumber(size, 'px')),
+    null,
+    'create-if-not-existing',
+  )
+}
+
+function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+  let commands: CanvasCommand[] = []
+
+  const metadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (
+    metadata == null ||
+    metadata.globalFrame == null ||
+    !isFiniteRectangle(metadata.globalFrame)
+  ) {
+    return []
+  }
+  const frame = metadata.globalFrame
+
+  const children = MetadataUtils.getChildrenUnordered(jsxMetadata, path)
+  const childFrames = children.map((c) =>
+    c.globalFrame != null && isFiniteRectangle(c.globalFrame)
+      ? c.globalFrame
+      : canvasRectangle(zeroRectangle),
+  )
+  const childrenBounds = boundingRectangleArray(childFrames) ?? frame
+
+  // must have non-percentage pins
+  const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata)
+  const invalidPins = invalidPercentagePinsFromJSXElement(jsxElement)
+  if (invalidPins.width != null) {
+    commands.push(fixLengthCommand(path, 'width', childrenBounds.width))
+  }
+  if (invalidPins.height != null) {
+    commands.push(fixLengthCommand(path, 'height', childrenBounds.height))
+  }
+
+  const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
+  const maybeParentFrame =
+    parentMetadata?.globalFrame != null && isFiniteRectangle(parentMetadata.globalFrame)
+      ? parentMetadata.globalFrame
+      : null
+
+  if (invalidPins.left != null) {
+    const left =
+      maybeParentFrame != null
+        ? maybeParentFrame.width * (invalidPins.left / 100)
+        : childrenBounds.x
+    commands.push(fixLengthCommand(path, 'left', left))
+  }
+  if (invalidPins.top != null) {
+    const top =
+      maybeParentFrame != null
+        ? maybeParentFrame.height * (invalidPins.top / 100)
+        : childrenBounds.y
+    commands.push(fixLengthCommand(path, 'top', top))
+  }
+  if (invalidPins.bottom != null) {
+    const bottom =
+      maybeParentFrame != null
+        ? maybeParentFrame.height * (100 - invalidPins.bottom / 100)
+        : childrenBounds.y
+    const top =
+      maybeParentFrame != null
+        ? maybeParentFrame.y + maybeParentFrame.height - (childrenBounds.height + bottom)
+        : childrenBounds.y
+    commands.push(
+      fixLengthCommand(path, 'top', top),
+      deleteProperties('always', path, [PP.create('style', 'bottom')]),
+    )
+  }
+  if (invalidPins.right != null) {
+    const rightPin =
+      maybeParentFrame != null
+        ? maybeParentFrame.width * (100 - invalidPins.right / 100)
+        : childrenBounds.x
+    const left =
+      maybeParentFrame != null
+        ? maybeParentFrame.x + maybeParentFrame.width - (childrenBounds.width + rightPin)
+        : childrenBounds.x
+    commands.push(
+      fixLengthCommand(path, 'left', left),
+      deleteProperties('always', path, [PP.create('style', 'right')]),
+    )
+  }
+
+  // apply children fixes too
+  for (const child of children) {
+    commands.push(...fixGroupChildCommands(jsxMetadata, child.elementPath))
+  }
+
+  return commands
+}
+
+function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: ElementPath) {
+  let commands: CanvasCommand[] = []
+
+  const metadata = MetadataUtils.findElementByElementPath(jsxMetadata, path)
+  if (
+    metadata == null ||
+    metadata.globalFrame == null ||
+    !isFiniteRectangle(metadata.globalFrame)
+  ) {
+    return []
+  }
+  const frame = metadata.globalFrame
+
+  const jsxElement = MetadataUtils.getJSXElementFromElementInstanceMetadata(metadata)
+  if (jsxElement == null) {
+    return []
+  }
+
+  const parentMetadata = MetadataUtils.findElementByElementPath(jsxMetadata, EP.parentPath(path))
+  if (
+    parentMetadata == null ||
+    parentMetadata.globalFrame == null ||
+    !isFiniteRectangle(parentMetadata.globalFrame)
+  ) {
+    return []
+  }
+  const parentFrame = parentMetadata.globalFrame
+
+  // must have non-percent pins
+  const invalidPins = invalidPercentagePinsFromJSXElement(jsxElement)
+  if (invalidPins.width != null) {
+    commands.push(fixLengthCommand(path, 'width', frame.width))
+  }
+  if (invalidPins.height != null) {
+    commands.push(fixLengthCommand(path, 'height', frame.height))
+  }
+  if (invalidPins.left != null) {
+    const left = parentFrame.width * (invalidPins.left / 100)
+    commands.push(fixLengthCommand(path, 'left', left))
+  }
+  if (invalidPins.top != null) {
+    const top = parentFrame.height * (invalidPins.top / 100)
+    commands.push(fixLengthCommand(path, 'top', top))
+  }
+  if (invalidPins.bottom != null) {
+    const bottom = parentFrame.height * (100 - invalidPins.bottom / 100)
+    commands.push(fixLengthCommand(path, 'bottom', bottom))
+  }
+  if (invalidPins.right != null) {
+    const rightPin = parentFrame.width * (100 - invalidPins.right / 100)
+    commands.push(fixLengthCommand(path, 'right', rightPin))
+  }
+
+  // must have absolute position
+  if (maybeGroupChildNotPositionAbsolutely(jsxElement) != null) {
+    commands.push(setProperty('always', path, PP.create('style', 'position'), 'absolute'))
+  }
+
+  // must have valid pins
+  if (maybeGroupChildHasMissingPins(jsxElement) != null) {
+    commands.push(
+      fixLengthCommand(path, 'width', getNumericPin(jsxElement, 'width')?.value ?? frame.width),
+      fixLengthCommand(path, 'height', getNumericPin(jsxElement, 'height')?.value ?? frame.height),
+      fixLengthCommand(path, 'left', getNumericPin(jsxElement, 'left')?.value ?? 0),
+      fixLengthCommand(path, 'top', getNumericPin(jsxElement, 'top')?.value ?? 0),
+    )
+  }
+
+  return commands
+}
+
+export type GroupProblem = {
+  target: 'group' | 'group-child'
+  path: ElementPath
+  state: InvalidGroupState
+}
+
+export function getFixGroupProblemsCommands(
+  jsxMetadata: ElementInstanceMetadataMap,
+  problems: GroupProblem[],
+): CanvasCommand[] {
+  let commands: CanvasCommand[] = []
+  for (const problem of problems) {
+    switch (problem.target) {
+      case 'group':
+        commands.push(
+          ...fixGroupCommands(jsxMetadata, problem.path),
+          queueTrueUpElement([trueUpChildrenOfGroupChanged(problem.path)]),
+        )
+        break
+      case 'group-child':
+        commands.push(
+          ...fixGroupChildCommands(jsxMetadata, problem.path),
+          queueTrueUpElement([trueUpGroupElementChanged(problem.path)]),
+        )
+        break
+      default:
+        assertNever(problem.target)
+    }
+  }
+  return commands
 }

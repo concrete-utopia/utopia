@@ -34,6 +34,7 @@ export interface SelectOption {
   options?: SelectOption[]
   disabled?: boolean
   tooltip?: string
+  invalid?: boolean
 }
 
 const DropdownIndicator: React.FunctionComponent<
