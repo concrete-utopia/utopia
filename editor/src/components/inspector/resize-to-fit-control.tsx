@@ -76,7 +76,7 @@ const isApplicableSelector = createCachedSelector(
 
 interface ResizeToFitControlProps {}
 
-export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
+export const ResizeToFitControl = React.memo(() => {
   const dispatch = useDispatch()
   const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
   const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
@@ -95,11 +95,14 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
     'ResizeToFitControl isHugApplicable',
   )
 
-  const isFillApplicable = useEditorState(
-    Substores.metadata,
-    (store) => onlyOneElementSelected && isApplicableSelector(store, 'fill'),
-    'ResizeToFitControl isHugApplicable',
-  )
+  const disabledStyles = (enabled: boolean): CSSProperties =>
+    enabled
+      ? { cursor: 'pointer' }
+      : {
+          cursor: 'pointer',
+          opacity: 0.5,
+          pointerEvents: 'none',
+        }
 
   const onResizeToFit = React.useCallback(() => {
     if (isHugApplicable) {
@@ -121,6 +124,38 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
     allElementPropsRef,
     dispatch,
   ])
+
+  return (
+    <Tooltip title={'Resize to Fit'}>
+      <div
+        data-testid={ResizeToFitControlTestId}
+        onClick={onResizeToFit}
+        style={{ cursor: 'pointer', ...disabledStyles(isHugApplicable) }}
+      >
+        <Icn type='fitToChildren' color='main' category='layout/commands' width={16} height={16} />
+      </div>
+    </Tooltip>
+  )
+})
+
+export const ResizeToFitFillFixedControl = React.memo<ResizeToFitControlProps>(() => {
+  const dispatch = useDispatch()
+  const selectedViewsRef = useRefEditorState((store) => store.editor.selectedViews)
+  const elementPathTreeRef = useRefEditorState((store) => store.editor.elementPathTree)
+  const allElementPropsRef = useRefEditorState((store) => store.editor.allElementProps)
+  const metadataRef = useRefEditorState((store) => store.editor.jsxMetadata)
+
+  const onlyOneElementSelected = useEditorState(
+    Substores.selectedViews,
+    (store) => store.editor.selectedViews.length === 1,
+    'ResizeToFitControl onlyOneElementSelected',
+  )
+
+  const isFillApplicable = useEditorState(
+    Substores.metadata,
+    (store) => onlyOneElementSelected && isApplicableSelector(store, 'fill'),
+    'ResizeToFitControl isHugApplicable',
+  )
 
   const onResizeToFill = React.useCallback(() => {
     if (isFillApplicable) {
@@ -154,21 +189,7 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
 
   return (
     <FlexRow style={{ gap: 12 }}>
-      <Tooltip title={'Resize to Fit'}>
-        <div
-          data-testid={ResizeToFitControlTestId}
-          onClick={onResizeToFit}
-          style={{ cursor: 'pointer', ...disabledStyles(isHugApplicable) }}
-        >
-          <Icn
-            type='fitToChildren'
-            color='main'
-            category='layout/commands'
-            width={16}
-            height={16}
-          />
-        </div>
-      </Tooltip>
+      <ResizeToFitControl />
       <Tooltip title={'Resize to Fill'}>
         <div
           data-testid={ResizeToFillControlTestId}
@@ -190,4 +211,4 @@ export const ResizeToFitControl = React.memo<ResizeToFitControlProps>(() => {
     </FlexRow>
   )
 })
-ResizeToFitControl.displayName = 'ResizeToFitControl'
+ResizeToFitFillFixedControl.displayName = 'ResizeToFitControl'
