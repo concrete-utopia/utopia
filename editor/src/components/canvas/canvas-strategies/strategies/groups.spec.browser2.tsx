@@ -1,38 +1,38 @@
 /* eslint jest/expect-expect: ["warn", { "assertFunctionNames": ["expect", "assertStylePropsSet"] }] */
+import { screen } from '@testing-library/react'
 import { getSimpleAttributeAtPath } from '../../../../core/model/element-metadata-utils'
 import {
   BakedInStoryboardUID,
   BakedInStoryboardVariableName,
 } from '../../../../core/model/scene-utils'
+import { safeIndex } from '../../../../core/shared/array-utils'
 import { getDomRectCenter } from '../../../../core/shared/dom-utils'
-import { forceRight } from '../../../../core/shared/either'
-import { right } from '../../../../core/shared/either'
-import { foldEither } from '../../../../core/shared/either'
-import { fromString } from '../../../../core/shared/element-path'
+import { foldEither, forceRight, right } from '../../../../core/shared/either'
 import * as EP from '../../../../core/shared/element-path'
+import { fromString } from '../../../../core/shared/element-path'
 import { forceNotNull } from '../../../../core/shared/optional-utils'
 import { create } from '../../../../core/shared/property-path'
 import type { Modifiers } from '../../../../utils/modifiers'
 import { emptyModifiers } from '../../../../utils/modifiers'
-import { selectComponentsForTest, wait } from '../../../../utils/utils.test-utils'
+import { selectComponentsForTest } from '../../../../utils/utils.test-utils'
+import { changeInspectorNumberControl } from '../../../inspector/common/inspector.test-utils'
+import { EditorFixProblemsButtonTestId } from '../../../inspector/editor-contract-section'
 import { EdgePositionBottomRight, EdgePositionTopLeft } from '../../canvas-types'
 import { CanvasControlsContainerID } from '../../controls/new-canvas-controls'
-import { mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
+import { ParentBoundsTestIdSuffix } from '../../controls/parent-bounds'
+import { ParentOutlinesTestIdSuffix } from '../../controls/parent-outlines'
+import { mouseClickAtPoint, mouseDragFromPointWithDelta } from '../../event-helpers.test-utils'
 import type { EditorRenderResult } from '../../ui-jsx.test-utils'
 import {
+  TestAppUID,
+  TestSceneUID,
+  formatTestProjectCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippet,
   makeTestProjectCodeWithSnippetWithoutUIDs,
+  renderTestEditorWithCode,
 } from '../../ui-jsx.test-utils'
-import { makeTestProjectCodeWithSnippet } from '../../ui-jsx.test-utils'
-import { formatTestProjectCode } from '../../ui-jsx.test-utils'
-import { TestAppUID } from '../../ui-jsx.test-utils'
-import { TestSceneUID } from '../../ui-jsx.test-utils'
-import { renderTestEditorWithCode } from '../../ui-jsx.test-utils'
 import { resizeElement } from './absolute-resize.test-utils'
-import { changeInspectorNumberControl } from '../../../inspector/common/inspector.test-utils'
-import { ParentOutlinesTestIdSuffix } from '../../controls/parent-outlines'
-import { ParentBoundsTestIdSuffix } from '../../controls/parent-bounds'
-import { safeIndex } from '../../../../core/shared/array-utils'
 
 const GroupPath = `${BakedInStoryboardUID}/${TestSceneUID}/${TestAppUID}:root-div/group`
 
@@ -4786,5 +4786,272 @@ describe('Inspector Pins section for group child', () => {
       width: 25,
       height: 25,
     })
+  })
+})
+
+describe('Autofix problems', () => {
+  it('fixes a child with percent pins', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 10, top: 10, width: 264, height: 132, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: '50%', height: 59 }} />
+					<div data-uid='child3' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/group/child2`),
+    ])
+
+    const button = await screen.findByTestId(EditorFixProblemsButtonTestId)
+    await mouseClickAtPoint(button, { x: 1, y: 1 })
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+			<div>
+				<Group style={{ position: 'absolute', left: 10, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 132, height: 59 }} />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+    )
+  })
+  it('fixes a child with non absolute position', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 10, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'relative', left: 162, top: 13, width: 132, height: 59 }} />
+					<div data-uid='child3' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/group/child2`),
+    ])
+
+    const button = await screen.findByTestId(EditorFixProblemsButtonTestId)
+    await mouseClickAtPoint(button, { x: 1, y: 1 })
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+			<div>
+				<Group style={{ position: 'absolute', left: 10, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 132, height: 59 }} />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+    )
+  })
+  it('fixes a group child with percentage pin (tl)', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 10, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: "10%", width: 132, height: 59 }} />
+					<div data-uid='child3' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/group/child2`),
+    ])
+
+    const button = await screen.findByTestId(EditorFixProblemsButtonTestId)
+    await mouseClickAtPoint(button, { x: 1, y: 1 })
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+			<div>
+				<Group style={{ position: 'absolute', left: 10, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13.2, width: 132, height: 59 }} />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+    )
+  })
+  it('fixes a group with percent pins', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 10, top: 10, width: '50%', height: 132, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 132, height: 59 }} />
+					<div data-uid='child3' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/group`),
+    ])
+
+    const button = await screen.findByTestId(EditorFixProblemsButtonTestId)
+    await mouseClickAtPoint(button, { x: 1, y: 1 })
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+			<div>
+				<Group style={{ position: 'absolute', left: 10, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 132, height: 59 }} />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+    )
+  })
+  it('fixes a group with children with problems', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+				<Group data-uid='group' style={{ position: 'absolute', left: "10%", top: 10, width: "50%", height: 132, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: '50%', height: 59 }} />
+					<div data-uid='child3' style={{ backgroundColor: '#aaaaaa33', position: 'relative', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/group`),
+    ])
+
+    const button = await screen.findByTestId(EditorFixProblemsButtonTestId)
+    await mouseClickAtPoint(button, { x: 1, y: 1 })
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+			<div>
+				<Group style={{ position: 'absolute', left: 40, top: 10, width: 262, height: 132, backgroundColor: 'white' }}>
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 100, height: 59 }} />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+    )
+  })
+  it('fixes multiple children with problems', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+				<Group data-uid='group' style={{ position: 'absolute', left: 10, top: 10, width: 264, height: 132, backgroundColor: 'white' }}>
+					<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: '50%', height: 59 }} />
+					<div data-uid='child3' style={{ backgroundColor: '#aaaaaa33', position: 'relative', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/group/child2`),
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/group/child3`),
+    ])
+
+    const button = await screen.findByTestId(EditorFixProblemsButtonTestId)
+    await mouseClickAtPoint(button, { x: 1, y: 1 })
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+			<div>
+				<Group style={{ position: 'absolute', left: 10, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 132, height: 59 }} />
+					<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+				</Group>
+			</div>
+		`),
+      ),
+    )
+  })
+  it('fixes a group with percent pins inside another element', async () => {
+    const renderResult = await renderTestEditorWithCode(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippet(`
+            <div data-uid='root'>
+				<div data-uid='container' style={{ position: 'absolute', left: 25, top: 25, width: 300, height: 300 }}>
+					<Group data-uid='group' style={{ position: 'absolute', left: '20%', top: 10, width: '50%', height: 132, backgroundColor: 'white' }}>
+						<div data-uid='child1' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+						<div data-uid='child2' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 132, height: 59 }} />
+						<div data-uid='child3' style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+					</Group>
+				</div>
+			</div>
+		`),
+      ),
+      'await-first-dom-report',
+    )
+
+    await selectComponentsForTest(renderResult, [
+      EP.fromString(`utopia-storyboard-uid/scene-aaa/app-entity:root/container/group`),
+    ])
+
+    const button = await screen.findByTestId(EditorFixProblemsButtonTestId)
+    await mouseClickAtPoint(button, { x: 1, y: 1 })
+
+    expect(getPrintedUiJsCodeWithoutUIDs(renderResult.getEditorState())).toEqual(
+      formatTestProjectCode(
+        makeTestProjectCodeWithSnippetWithoutUIDs(`
+			<div>
+				<div style={{ position: 'absolute', left: 25, top: 25, width: 300, height: 300 }}>
+					<Group style={{ position: 'absolute', left: 60, top: 10, width: 294, height: 132, backgroundColor: 'white' }}>
+						<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 0, top: 0, width: 102, height: 59 }}  />
+						<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 162, top: 13, width: 132, height: 59 }} />
+						<div style={{ backgroundColor: '#aaaaaa33', position: 'absolute', left: 45, top: 73, width: 102, height: 59 }} />
+					</Group>
+				</div>
+			</div>
+		`),
+      ),
+    )
   })
 })
