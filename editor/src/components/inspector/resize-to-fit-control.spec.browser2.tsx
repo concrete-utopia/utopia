@@ -19,8 +19,6 @@ import { ResizeToFitControlTestId } from './resize-to-fit-control'
 import * as EP from '../../core/shared/element-path'
 
 describe('Resize to fit control', () => {
-  setFeatureForBrowserTestsUseInDescribeBlockOnly('Simplified Layout Section', true)
-
   it('resizes to fit', async () => {
     const editor = await renderTestEditorWithCode(
       makeTestProjectCodeWithSnippet(projectSnippet),
