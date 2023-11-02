@@ -4,7 +4,10 @@ import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { NO_OP } from '../../../core/shared/utils'
-import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
+import {
+  createModifiedProject,
+  createTestProjectWithCode,
+} from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
 import {
@@ -42,6 +45,8 @@ import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
   renderTestEditorWithModel,
 } from '../ui-jsx.test-utils'
 import {
@@ -1159,6 +1164,61 @@ describe('Remix navigation', () => {
       await clickRemixLink(renderResult)
       expect(renderResult.renderedDOM.queryAllByText(`post id: ${i}`)).toHaveLength(1)
     }
+  })
+
+  it('setting window.href does not navigate away', async () => {
+    const renderResult = await renderRemixProject(
+      createTestProjectWithCode(`import * as React from 'react'
+    import { Storyboard } from 'utopia-api'
+    
+    const Button = ({ style }) => {
+      const onClick = React.useCallback(() => {
+        window.location.href = '/not-the-editor'
+      }, [])
+      return (
+        <div data-testid="button" style={{ ...style }} onClick={onClick}>
+          <span
+            style={{
+              wordBreak: 'break-word',
+              width: 'max-content',
+              height: 'max-content',
+            }}
+          >
+            window.href = 'not-the-editor'
+          </span>
+        </div>
+      )
+    }
+    
+    export var storyboard = (
+      <Storyboard>
+        <Button
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 356,
+            top: 234,
+            width: 'max-content',
+            height: 'max-content',
+            display: 'flex',
+            flexDirection: 'row',
+            padding: '28px 25px',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 4,
+            overflow: 'hidden',
+            cursor: 'pointer',
+          }}
+        />
+      </Storyboard>
+    )
+    `),
+    )
+
+    const button = renderResult.renderedDOM.getByTestId('button')
+    await mouseClickAtPoint(button, { x: 10, y: 10 })
+
+    expect(renderResult.renderedDOM.queryAllByTestId('button')).not.toBeNull()
   })
 
   describe('remix scene label', () => {
