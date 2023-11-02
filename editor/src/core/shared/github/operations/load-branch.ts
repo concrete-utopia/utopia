@@ -150,6 +150,8 @@ export const updateProjectWithBranchContent =
               currentProjectContents,
             )
 
+            // Update the editor with everything so that if anything else fails past this point
+            // there's no loss of data from the user's perspective.
             dispatch(
               [
                 ...connectRepo(
@@ -162,40 +164,51 @@ export const updateProjectWithBranchContent =
                 updateProjectContents(parsedProjectContents),
                 updateBranchContents(parsedProjectContents),
                 truncateHistory(),
-                showToast(
-                  notice(
-                    `Github: Updated the project with the content from ${branchName}`,
-                    'SUCCESS',
-                  ),
-                ),
               ],
               'everyone',
             )
 
-            // After a slight pause, refresh the dependencies.
-            setTimeout(() => {
-              void runGithubOperation(
-                {
-                  name: 'loadBranch',
-                  branchName: branchName,
-                  githubRepo: githubRepo,
-                },
+            // If there's a package.json file, then attempt to load the dependencies for it.
+            let dependenciesPromise: Promise<void> = Promise.resolve()
+            const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
+            if (packageJson != null && isTextFile(packageJson)) {
+              dependenciesPromise = refreshDependencies(
                 dispatch,
-                async () => {
-                  const packageJson = packageJsonFileFromProjectContents(parsedProjectContents)
-                  if (packageJson != null && isTextFile(packageJson)) {
-                    await refreshDependencies(
-                      dispatch,
-                      packageJson.fileContents.code,
-                      currentDeps,
-                      builtInDependencies,
-                      {},
-                    )
-                  }
-                  return []
-                },
-              )
-            }, 3000)
+                packageJson.fileContents.code,
+                currentDeps,
+                builtInDependencies,
+                {},
+              ).then(() => {})
+            }
+
+            // When the dependencies update has gone through, then indicate that the project was imported.
+            await dependenciesPromise
+              .catch(() => {
+                dispatch(
+                  [
+                    showToast(
+                      notice(
+                        `Github: There was an error when attempting to update the dependencies.`,
+                        'ERROR',
+                      ),
+                    ),
+                  ],
+                  'everyone',
+                )
+              })
+              .finally(() => {
+                dispatch(
+                  [
+                    showToast(
+                      notice(
+                        `Github: Updated the project with the content from ${branchName}`,
+                        'SUCCESS',
+                      ),
+                    ),
+                  ],
+                  'everyone',
+                )
+              })
 
             break
           default:
