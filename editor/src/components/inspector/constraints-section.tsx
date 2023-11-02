@@ -40,6 +40,7 @@ import {
   GroupChildHorizontalPinChangeOptions,
   GroupChildVerticalPinChangeOptions,
   getConstraintAndFrameChangeActionsForGroupChild,
+  getFixedPointsForPinning,
   getFrameChangeActionsForFrameChild,
   useDetectedConstraints,
 } from './simplified-pinning-helpers'
@@ -100,10 +101,13 @@ export const ConstraintsSection = React.memo(() => {
 ConstraintsSection.displayName = 'ConstraintsSection'
 
 const GroupChildConstraintsSection = React.memo(() => {
+  const pins = useDetectedConstraints('group-child')
+  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
+
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <CombinedPinControl isGroupChild='group-child' />
+        <ChildPinControl isGroupChild='group-child' pins={pins} framePinsInfo={framePinsInfo} />
         <FlexColumn css={{ gap: 8 }}>
           <ChildConstraintSelect isGroupChild='group-child' dimension={'width'} />
           <ChildConstraintSelect isGroupChild='group-child' dimension={'height'} />
@@ -115,10 +119,13 @@ const GroupChildConstraintsSection = React.memo(() => {
 GroupChildConstraintsSection.displayName = 'GroupChildConstraintsSection'
 
 const FrameChildConstraintsSection = React.memo(() => {
+  const pins = useDetectedConstraints('frame-child')
+  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
+
   return (
     <FlexColumn css={{ paddingBottom: UtopiaTheme.layout.rowHorizontalPadding }}>
       <UIGridRow padded variant='<-auto-><----------1fr--------->'>
-        <CombinedPinControl isGroupChild='frame-child' />
+        <ChildPinControl isGroupChild='frame-child' pins={pins} framePinsInfo={framePinsInfo} />
         <FlexColumn css={{ gap: 8 }}>
           <ChildConstraintSelect isGroupChild='frame-child' dimension={'width'} />
           <ChildConstraintSelect isGroupChild='frame-child' dimension={'height'} />
@@ -249,12 +256,10 @@ export const ChildPinControl = React.memo(
     )
 
     return (
-      <PinControl
-        handlePinMouseDown={NO_OP} // for group children, the visual controls are so confusing, I'm going to disable them until they are fixed
-        framePoints={framePinsInfo}
-        controlStatus='simple'
-        name='group-child-controls'
-        regularBorder={true}
+      <CombinedPinControl
+        handlePinMouseDown={onPinControlMouseDown}
+        pins={pins}
+        framePinsInfo={framePinsInfo}
       />
     )
   },
