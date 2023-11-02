@@ -4,7 +4,10 @@ import type { WindowPoint } from '../../../core/shared/math-utils'
 import { windowPoint } from '../../../core/shared/math-utils'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { NO_OP } from '../../../core/shared/utils'
-import { createModifiedProject } from '../../../sample-projects/sample-project-utils.test-utils'
+import {
+  createModifiedProject,
+  createTestProjectWithCode,
+} from '../../../sample-projects/sample-project-utils.test-utils'
 import type { Modifiers } from '../../../utils/modifiers'
 import { emptyModifiers, cmdModifier } from '../../../utils/modifiers'
 import { selectComponentsForTest } from '../../../utils/utils.test-utils'
@@ -38,6 +41,8 @@ import type { EditorRenderResult } from '../ui-jsx.test-utils'
 import {
   getPrintedUiJsCode,
   getPrintedUiJsCodeWithoutUIDs,
+  makeTestProjectCodeWithSnippet,
+  renderTestEditorWithCode,
   renderTestEditorWithModel,
 } from '../ui-jsx.test-utils'
 import {
@@ -2091,8 +2096,13 @@ async function clickLinkWithTestId(editor: EditorRenderResult, testId: string) {
   await mouseClickAtPoint(targetElement, clickPoint)
 }
 
-const clickRemixLink = (editor: EditorRenderResult) => clickLinkWithTestId(editor, 'remix-link')
-const clickPostLink = (editor: EditorRenderResult) => clickLinkWithTestId(editor, 'post-link')
+async function clickRemixLink(editor: EditorRenderResult) {
+  await clickLinkWithTestId(editor, 'remix-link')
+}
+
+async function clickPostLink(editor: EditorRenderResult) {
+  await clickLinkWithTestId(editor, 'post-link')
+}
 
 const navigateWithRemixSceneLabelButton = (
   renderResult: EditorRenderResult,
