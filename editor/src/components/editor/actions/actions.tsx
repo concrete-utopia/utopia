@@ -352,6 +352,7 @@ import {
   trueUpChildrenOfGroupChanged,
   trueUpHuggingElement,
   trueUpGroupElementChanged,
+  deriveState,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -1485,7 +1486,7 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
-    const parsedProjectFiles = applyToAllUIJSFiles(
+    let parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
         const lastSavedFileContents = optionalMap((lastSaved) => {
@@ -1499,9 +1500,16 @@ export const UPDATE_FNS = {
         )
       },
     )
+
     const storyboardFile = getProjectFileByFilePath(parsedProjectFiles, StoryboardFilePath)
-    const openFilePath = storyboardFile != null ? StoryboardFilePath : null
-    initVSCodeBridge(parsedProjectFiles, dispatch, openFilePath)
+    if (storyboardFile == null) {
+      parsedProjectFiles = addFileToProjectContents(
+        parsedProjectFiles,
+        StoryboardFilePath,
+        codeFile(DefaultStoryboardContents, null), // TODO: contents
+      )
+    }
+    initVSCodeBridge(parsedProjectFiles, dispatch, StoryboardFilePath)
 
     const parsedModel = {
       ...migratedModel,
@@ -5541,3 +5549,38 @@ function saveFileInProjectContents(
     return addFileToProjectContents(projectContents, filePath, saveFile(file))
   }
 }
+
+const DefaultStoryboardContents = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 603,
+        height: 794,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '253px 101px',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <span
+        style={{
+          wordBreak: 'break-word',
+          fontSize: '25px',
+          width: 257,
+          height: 130,
+        }}
+      >
+        Open the insert menu or press the + button in the
+        toolbar to insert elements
+      </span>
+    </Scene>
+  </Storyboard>
+  )
+`
