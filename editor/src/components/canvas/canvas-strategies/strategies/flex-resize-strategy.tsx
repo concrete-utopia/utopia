@@ -358,9 +358,6 @@ export function flexResizeStrategy(
               [{ target: selectedElement, frame: newFrame }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) =>
-              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
-            ),
           ])
         } else {
           return strategyApplicationResult([

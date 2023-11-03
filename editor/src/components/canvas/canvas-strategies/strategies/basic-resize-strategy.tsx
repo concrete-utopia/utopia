@@ -224,9 +224,6 @@ export function basicResizeStrategy(
               [{ target: selectedElement, frame: resizedBounds }],
               'starting-metadata',
             ),
-            ...groupChildren.map((c) =>
-              queueTrueUpElement([trueUpGroupElementChanged(c.elementPath)]),
-            ),
           ])
         } else {
           return strategyApplicationResult([
