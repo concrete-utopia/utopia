@@ -7,6 +7,7 @@ import React from 'react'
 import * as ReactDOM from 'react-dom'
 import type {
   InputProps,
+  KeyboardEventHandler,
   MenuListComponentProps,
   OptionProps,
   OptionsType,
@@ -26,7 +27,6 @@ import type { ControlStyles, SelectOption } from '../../../uuiui-deps'
 import { CommonUtils, getControlStyles } from '../../../uuiui-deps'
 import { SmallerIcons } from '../../../uuiui/icons'
 import { Tooltip } from '../../tooltip'
-import { stopPropagation } from '../../../components/inspector/common/inspector-utils'
 
 type ContainerMode = 'default' | 'showBorderOnHover' | 'noBorder'
 
@@ -605,6 +605,13 @@ export const PopupList = React.memo<PopupListProps>(
       function isOptionDisabled(option: SelectOption) {
         return option.disabled === true
       }
+
+      const stopPropagation: KeyboardEventHandler = React.useCallback((event) => {
+        if (event.key.includes('Arrow')) {
+          // if the user is using the ArrowUp or ArrowDown to navigate the react select, don't trigger keyboard moves on the Canvas
+          event.stopPropagation()
+        }
+      }, [])
 
       return (
         <Select
