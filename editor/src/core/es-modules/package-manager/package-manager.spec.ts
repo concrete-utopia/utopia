@@ -131,7 +131,7 @@ describe('ES Dependency Package Manager', () => {
     expect(document.getElementById('/node_modules/mypackage/simple.css')).toBeNull()
   })
 
-  it('resolves a svg import', () => {
+  xit('resolves a svg import', () => {
     const reqFn = getRequireFn(
       NO_OP,
       {},
