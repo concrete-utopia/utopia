@@ -1294,12 +1294,12 @@ return { a: a };",
     },
   ],
   "fullHighlightBounds": Object {
-    "29f": Object {
+    "24a": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "29f",
+      "uid": "24a",
     },
     "854": Object {
       "endCol": 48,
@@ -1324,12 +1324,12 @@ return { a: a };",
     },
   },
   "highlightBounds": Object {
-    "29f": Object {
+    "24a": Object {
       "endCol": 9,
       "endLine": 13,
       "startCol": 3,
       "startLine": 13,
-      "uid": "29f",
+      "uid": "24a",
     },
     "bbb": Object {
       "endCol": 7,
@@ -1508,7 +1508,9 @@ return { a: a };",
               "leadingComments": Array [],
               "trailingComments": Array [],
             },
-            "definedElsewhere": Array [],
+            "definedElsewhere": Array [
+              "a",
+            ],
             "elementsWithin": Object {},
             "javascript": "({ a: a });",
             "originalJavascript": "{a: a}",

@@ -1,7 +1,7 @@
 /* eslint jest/expect-expect: ["error", { "assertFunctionNames": ["expect", "FastCheck.assert", "ensureElementsHaveUID", "checkElementUIDs"] }] */
 import * as FastCheck from 'fast-check'
 import { getSourceMapConsumer } from '../../../third-party/react-error-overlay/utils/getSourceMap'
-import type { JSXAttributes } from '../../shared/element-template'
+import type { JSXAttributes, JSXElement, UtopiaJSXComponent } from '../../shared/element-template'
 import {
   arbitraryJSBlock,
   isArbitraryJSBlock,
@@ -22,7 +22,6 @@ import {
   jsxSpreadAssignment,
   jsxTextBlock,
   utopiaJSXComponent,
-  UtopiaJSXComponent,
   defaultPropsParam,
   clearArbitraryJSBlockUniqueIDs,
   jsxAttributesFromMap,
@@ -36,7 +35,7 @@ import {
 import { sampleCode } from '../../model/new-project-files'
 import { addImport, emptyImports } from '../common/project-file-utils'
 import { onlyImportReact, sampleImportsForTests } from '../../model/test-ui-js-file.test-utils'
-import type { ProjectContents } from '../../shared/project-file-types'
+import type { ParseSuccess, ProjectContents } from '../../shared/project-file-types'
 import {
   isParseSuccess,
   importAlias,
@@ -1948,6 +1947,66 @@ return { a: a, b: b };`
       expect.objectContaining({}),
     )
     expect(actualResult).toEqual(expectedResult)
+  })
+
+  it('parses object literal initializers', () => {
+    const code = `import * as React from 'react'
+    import { Scene, Storyboard } from 'utopia-api'
+    
+    function showMeWhatYouGot(obj) {
+      return obj.t
+    }
+    
+    const App = (props) => {
+      const text = 'I got this!'
+      const t = text
+      const obj = { t: text }
+    
+      return (
+        <div style={props.style}>
+          {showMeWhatYouGot(obj)}
+          <br />
+          {showMeWhatYouGot({ t })}
+          <br />
+          {showMeWhatYouGot({ t: text })}
+        </div>
+      )
+    }
+    
+    export var storyboard = (
+      <Storyboard data-uid='0cd'>
+        <App
+          style={{
+            backgroundColor: '#aaaaaa33',
+            position: 'absolute',
+            left: 178,
+            top: 131,
+            width: 443,
+            height: 451,
+          }}
+        />
+      </Storyboard>
+    )
+    `
+
+    const actualResult = simplifyParsedTextFileAttributes(
+      clearParseResultUniqueIDsAndEmptyBlocks(testParseCode(code)),
+    )
+    expect(actualResult.type).toEqual('PARSE_SUCCESS')
+    const jsxComponent = (actualResult as ParseSuccess).topLevelElements.find(
+      (e): e is UtopiaJSXComponent => e.type === 'UTOPIA_JSX_COMPONENT',
+    )!
+    const definedElseWhere = (jsxComponent.rootElement as JSXElement).children.flatMap((c) =>
+      c.type === 'ATTRIBUTE_OTHER_JAVASCRIPT' ? c.definedElsewhere : [],
+    )
+    expect(definedElseWhere).toEqual([
+      'showMeWhatYouGot',
+      'obj',
+      'showMeWhatYouGot',
+      't',
+      'showMeWhatYouGot',
+      'text',
+    ])
   })
 
   it('parses the code when it is a function, with some arbitrary JavaScript (object spread)', () => {
