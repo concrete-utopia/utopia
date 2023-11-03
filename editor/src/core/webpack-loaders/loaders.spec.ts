@@ -45,7 +45,7 @@ describe('Applying loaders', () => {
   verifyCorrectLoaderUsed(JSONLoader, ['.json'], '{}')
   verifyCorrectLoaderUsed(
     FileLoader,
-    ['.avif', '.bmp', '.gif', '.jpg', '.jpeg', '.png', '.glb', '.data', '.cica'],
+    ['.avif', '.bmp', '.gif', '.jpg', '.jpeg', '.png', '.glb', '.data', '.cica', '.svg'],
     '',
   )
 })
