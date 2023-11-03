@@ -293,8 +293,6 @@ export function runSimpleLocalEditorAction(
       return UPDATE_FNS.SET_PACKAGE_STATUS(action, state)
     case 'UPDATE_PROPERTY_CONTROLS_INFO':
       return UPDATE_FNS.UPDATE_PROPERTY_CONTROLS_INFO(action, state)
-    case 'ADD_STORYBOARD_FILE':
-      return UPDATE_FNS.ADD_STORYBOARD_FILE(action, state)
     case 'SELECT_FROM_FILE_AND_POSITION':
       return UPDATE_FNS.SELECT_FROM_FILE_AND_POSITION(action, state, derivedState, dispatch)
     case 'SEND_LINTER_REQUEST_MESSAGE':

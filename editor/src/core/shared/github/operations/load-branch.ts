@@ -34,6 +34,7 @@ import {
 } from '../helpers'
 import { updateProjectContentsWithParseResults } from '../../parser-projectcontents-utils'
 import type { GithubOperationContext } from './github-operation-context'
+import { createStoryboardFileIfNecessary } from '../../../../components/editor/actions/actions'
 
 export const saveAssetsToProject =
   (operationContext: GithubOperationContext) =>
@@ -136,9 +137,8 @@ export const updateProjectWithBranchContent =
 
             // Push any code through the parser so that the representations we end up with are in a state of `BOTH_MATCH`.
             // So that it will override any existing files that might already exist in the project when sending them to VS Code.
-            const parsedProjectContents = await updateProjectContentsWithParseResults(
-              workers,
-              responseBody.branch.content,
+            const parsedProjectContents = createStoryboardFileIfNecessary(
+              await updateProjectContentsWithParseResults(workers, responseBody.branch.content),
             )
 
             // Save assets to the server from Github.

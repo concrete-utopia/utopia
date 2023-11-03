@@ -68,14 +68,13 @@ export var App = (props) => {
 
 describe('addStoryboardFileToProject', () => {
   it('adds storyboard file to project that does not have one', () => {
-    const actualResult = addStoryboardFileToProject(createTestProjectLackingStoryboardFile())
+    const actualResult = addStoryboardFileToProject(
+      createTestProjectLackingStoryboardFile().projectContents,
+    )
     if (actualResult == null) {
       throw new Error('Editor state was not updated.')
     } else {
-      const storyboardFile = getProjectFileByFilePath(
-        actualResult.projectContents,
-        StoryboardFilePath,
-      )
+      const storyboardFile = getProjectFileByFilePath(actualResult, StoryboardFilePath)
       if (storyboardFile == null) {
         throw new Error('No storyboard file was created.')
       } else {
@@ -115,7 +114,7 @@ describe('addStoryboardFileToProject', () => {
         expectedFile,
       ),
     }
-    const actualResult = addStoryboardFileToProject(editorModel)
+    const actualResult = addStoryboardFileToProject(editorModel.projectContents)
     expect(actualResult).toBeNull()
   })
 })

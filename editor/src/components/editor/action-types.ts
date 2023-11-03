@@ -851,10 +851,6 @@ export interface UpdatePropertyControlsInfo {
   moduleNamesOrPathsToDelete: Array<string>
 }
 
-export interface AddStoryboardFile {
-  action: 'ADD_STORYBOARD_FILE'
-}
-
 export interface UpdateText {
   action: 'UPDATE_TEXT'
   target: ElementPath
@@ -1180,7 +1176,6 @@ export type EditorAction =
   | SetPackageStatus
   | SetShortcut
   | UpdatePropertyControlsInfo
-  | AddStoryboardFile
   | UpdateText
   | SetFocusedElement
   | ScrollToElement

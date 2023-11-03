@@ -29,6 +29,7 @@ import {
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
 import type { Either } from '../../../core/shared/either'
 import {
+  defaultEither,
   eitherToMaybe,
   foldEither,
   forceRight,
@@ -175,7 +176,6 @@ import type {
   AddFolder,
   AddImports,
   AddMissingDimensions,
-  AddStoryboardFile,
   AddTailwindConfig,
   AddTextFile,
   AddToast,
@@ -352,6 +352,7 @@ import {
   trueUpChildrenOfGroupChanged,
   trueUpHuggingElement,
   trueUpGroupElementChanged,
+  getPackageJsonFromProjectContents,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -1462,6 +1463,61 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
   }
 }
 
+function createStoryboardFileIfRemixProject(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot | null {
+  const packageJsonContents = defaultEither(
+    null,
+    getPackageJsonFromProjectContents(projectContents),
+  )
+  if (packageJsonContents == null) {
+    return null
+  }
+  const remixNotIncluded = packageJsonContents['dependencies']?.['@remix-run/react'] == null
+  if (remixNotIncluded) {
+    return null
+  }
+
+  const updatedProjectContents = addFileToProjectContents(
+    projectContents,
+    StoryboardFilePath,
+    codeFile(DefaultStoryboardWithRemix, null, 1),
+  )
+  return updatedProjectContents
+}
+
+function createStoryboardFileIfMainComponentPresent(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot | null {
+  return addStoryboardFileToProject(projectContents)
+}
+
+function createStoryboardFileWithPlaceholderContents(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
+  const updatedProjectContents = addFileToProjectContents(
+    projectContents,
+    StoryboardFilePath,
+    codeFile(DefaultStoryboardContents, null, 1),
+  )
+  return updatedProjectContents
+}
+
+export function createStoryboardFileIfNecessary(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
+  const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
+  if (storyboardFile != null) {
+    return projectContents
+  }
+
+  return (
+    createStoryboardFileIfRemixProject(projectContents) ??
+    createStoryboardFileIfMainComponentPresent(projectContents) ??
+    createStoryboardFileWithPlaceholderContents(projectContents)
+  )
+}
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -1499,15 +1555,13 @@ export const UPDATE_FNS = {
         )
       },
     )
-    const storyboardFile = getProjectFileByFilePath(parsedProjectFiles, StoryboardFilePath)
-    const openFilePath = storyboardFile != null ? StoryboardFilePath : null
-    initVSCodeBridge(parsedProjectFiles, dispatch, openFilePath)
 
     const parsedModel = {
       ...migratedModel,
       projectContents: parsedProjectFiles,
     }
-    const newModel: EditorModel = {
+
+    let newModel: EditorModel = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
@@ -1521,12 +1575,17 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
     }
-    const newModelMergedWithStoredState: EditorModel = mergeStoredEditorStateIntoEditorState(
-      action.storedState,
-      newModel,
+
+    const newModelMergedWithStoredStateAndStoryboardFile: EditorModel =
+      mergeStoredEditorStateIntoEditorState(action.storedState, newModel)
+
+    initVSCodeBridge(
+      newModelMergedWithStoredStateAndStoryboardFile.projectContents,
+      dispatch,
+      StoryboardFilePath,
     )
 
-    return loadModel(newModelMergedWithStoredState, oldEditor)
+    return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
   },
   SET_HIGHLIGHTED_VIEWS: (action: SetHighlightedViews, editor: EditorModel): EditorModel => {
     return {
@@ -3593,7 +3652,7 @@ export const UPDATE_FNS = {
     }
     return {
       ...editor,
-      projectContents: workingProjectContents,
+      projectContents: createStoryboardFileIfNecessary(workingProjectContents),
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount: anyParsedUpdates
@@ -4279,15 +4338,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       propertyControlsInfo: updatedPropertyControlsInfo,
-    }
-  },
-  ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
-    const updatedEditor = addStoryboardFileToProject(editor)
-    if (updatedEditor == null) {
-      return editor
-    } else {
-      const openTab = openCodeEditorFile(StoryboardFilePath, true)
-      return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {
@@ -5541,3 +5591,58 @@ function saveFileInProjectContents(
     return addFileToProjectContents(projectContents, filePath, saveFile(file))
   }
 }
+
+const DefaultStoryboardWithRemix = `import * as React from 'react'
+import { Storyboard, RemixScene } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <RemixScene
+      style={{
+        position: 'absolute',
+        width: 644,
+        height: 750,
+        left: 200,
+        top: 30,
+        overflow: 'hidden',
+      }}
+      data-label='Mood Board'
+    />
+  </Storyboard>
+)
+`
+
+const DefaultStoryboardContents = `import * as React from 'react'
+import { Scene, Storyboard } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <Scene
+      style={{
+        width: 603,
+        height: 794,
+        position: 'absolute',
+        left: 212,
+        top: 128,
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '253px 101px',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <span
+        style={{
+          wordBreak: 'break-word',
+          fontSize: '25px',
+          width: 257,
+          height: 130,
+        }}
+      >
+        Open the insert menu or press the + button in the
+        toolbar to insert components
+      </span>
+    </Scene>
+  </Storyboard>
+  )
+`
