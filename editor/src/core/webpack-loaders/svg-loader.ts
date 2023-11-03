@@ -11,6 +11,7 @@ const matchFile: MatchFile = (filename: string) => {
 }
 
 const loadModule: LoadModule = (filename: string, contents: string) => {
+  /*
   // Use @svgr/plugin-jsx to generate the code for a react component that matches https://create-react-app.dev/docs/adding-images-fonts-and-files/#adding-svgs
   const defaultExport = `export default '${svgToBase64(contents)}';`
   const firstPass = svgToJSX(
@@ -29,11 +30,16 @@ const loadModule: LoadModule = (filename: string, contents: string) => {
       caller: { previousExport: defaultExport },
     },
   )
+  */
+
+  const codeToTransform = `import * as React from 'react'
+export default () => null
+`
 
   // In theory we should be able to pass in the below plugins and presets into the above call via jsx.babelConfig,
   // as outlined in https://github.com/gregberge/svgr/blob/7eb5ef668c64ce07ab47dcdc543f8d835d5d5596/packages/plugin-jsx/README.md#applying-custom-transformations
   // Unfortunately that fails when trying to pass in the standard presets, so to work around it we're having to run babel manually on the result
-  const loadedContents = Babel.transform(firstPass, {
+  const loadedContents = Babel.transform(codeToTransform, {
     presets: ['es2015'],
     plugins: [BabelTransformCommonJS, ReactTransformPlugin],
     sourceType: 'module',
