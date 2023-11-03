@@ -63,7 +63,7 @@ export const ClosedPanels = React.memo(() => {
 
   return (
     <FlexColumn
-      style={{ gap: 10, background: 'lime', flex: 1 }}
+      style={{ gap: 10 }}
       // Mouse events should never go through this component.
       onClick={stopPropagation}
       onMouseDown={focusCanvasOnMouseDown}
