@@ -87,13 +87,13 @@ const GridPanelInner = React.memo<GridPanelProps>((props) => {
   return (
     <div
       style={{
+        position: 'relative',
         pointerEvents: 'initial',
         gridColumn: `col ${index > -1 ? index + 1 : index}`,
         gridRow: `span ${span}`,
         order: order,
         display: visible ? 'flex' : 'none',
         flexDirection: 'column',
-        contain: 'layout',
         paddingLeft: GridPanelHorizontalGapHalf,
         paddingRight: GridPanelHorizontalGapHalf,
         paddingTop: GridPanelVerticalGapHalf,
