@@ -1,6 +1,7 @@
 import React from 'react'
 import { FlexRow } from '../../uuiui'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
+import { ClosedPanels } from '../editor/closed-panels'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { ErrorOverlayComponent } from './canvas-error-overlay'
 import { SafeModeErrorOverlay } from './canvas-wrapper-component'
@@ -25,17 +26,21 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
         transform: 'translateZ(0)', // to keep this from tarnishing canvas render performance, we force it to a new layer
         pointerEvents: 'none', // you need to re-enable pointerevents for the various overlays
         ...props.style,
+        background: '#ffff0030',
       }}
     >
       <FlexRow
         style={{
           position: 'absolute',
           top: 0,
+          flex: 1,
           alignItems: 'flex-start',
           margin: 10,
           gap: 10,
+          background: 'red',
         }}
       >
+        <ClosedPanels />
         <CanvasToolbar />
         <CanvasStrategyPicker />
         <TestMenu />
