@@ -32,6 +32,8 @@ const loadModule: LoadModule = (filename: string, contents: string) => {
   )
   */
 
+  // Temporarily disabled the SVG to React component conversion as it's failing with SVG parser errors on even the most basic SVGs.
+  // Also as this is receiving empty `contents` values for `ASSET_FILE` instances we don't want those to trigger failures either.
   const codeToTransform = `import * as React from 'react'
 export default () => null
 `
