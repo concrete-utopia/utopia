@@ -390,7 +390,7 @@ export const CanvasToolbar = React.memo(() => {
 
   return (
     <FlexColumn
-      style={{ alignItems: 'start' }}
+      style={{ alignItems: 'start', justifySelf: 'center' }}
       // Mouse events should never go through this component.
       onClick={stopPropagation}
       onMouseDown={focusCanvasOnMouseDown}
