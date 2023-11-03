@@ -194,6 +194,8 @@ function elementHasPercentagePins(jsxElement: JSXElement): boolean {
     getLayoutProperty('height', right(jsxElement.props), styleStringInArray),
     getLayoutProperty('left', right(jsxElement.props), styleStringInArray),
     getLayoutProperty('top', right(jsxElement.props), styleStringInArray),
+    getLayoutProperty('right', right(jsxElement.props), styleStringInArray),
+    getLayoutProperty('bottom', right(jsxElement.props), styleStringInArray),
   ]
   return pins.some((pin) => {
     return isRight(pin) && isCSSNumber(pin.value) && pin.value.unit === '%'
@@ -340,7 +342,7 @@ function maybeInvalidGroupChildren(
 export function getGroupChildStateFromJSXElement(jsxElement: JSXElement): GroupState {
   return (
     maybeGroupChildNotPositionAbsolutely(jsxElement) ??
-    maybeGroupChildHasPercentagePinsWithoutGroupSize(jsxElement) ??
+    maybeGroupChildHasPercentagePins(jsxElement) ??
     maybeGroupChildHasMissingPins(jsxElement) ??
     'valid'
   )
@@ -455,7 +457,7 @@ export function maybeGroupChildNotPositionAbsolutely(
   return isLeft(position) || position.value !== 'absolute' ? 'child-not-position-absolute' : null
 }
 
-export function maybeGroupChildHasPercentagePinsWithoutGroupSize(
+export function maybeGroupChildHasPercentagePins(
   jsxElement: JSXElement | null,
 ): InvalidGroupState | null {
   if (jsxElement == null) {
@@ -595,45 +597,43 @@ function fixGroupCommands(jsxMetadata: ElementInstanceMetadataMap, path: Element
       ? parentMetadata.globalFrame
       : null
 
+  let left = jsxElement != null ? getNumericPin(jsxElement, 'left')?.value : null
   if (invalidPins.left != null) {
-    const left =
+    left =
       maybeParentFrame != null
         ? maybeParentFrame.width * (invalidPins.left / 100)
         : childrenBounds.x
     commands.push(fixLengthCommand(path, 'left', left))
   }
+  let top = jsxElement != null ? getNumericPin(jsxElement, 'top')?.value : null
   if (invalidPins.top != null) {
-    const top =
+    top =
       maybeParentFrame != null
         ? maybeParentFrame.height * (invalidPins.top / 100)
         : childrenBounds.y
     commands.push(fixLengthCommand(path, 'top', top))
   }
   if (invalidPins.bottom != null) {
-    const bottom =
-      maybeParentFrame != null
-        ? maybeParentFrame.height * (100 - invalidPins.bottom / 100)
-        : childrenBounds.y
-    const top =
-      maybeParentFrame != null
-        ? maybeParentFrame.y + maybeParentFrame.height - (childrenBounds.height + bottom)
+    const newTop =
+      top != null
+        ? top
+        : maybeParentFrame != null
+        ? (maybeParentFrame.height * (100 - invalidPins.bottom)) / 100.0 - childrenBounds.height
         : childrenBounds.y
     commands.push(
-      fixLengthCommand(path, 'top', top),
+      fixLengthCommand(path, 'top', newTop),
       deleteProperties('always', path, [PP.create('style', 'bottom')]),
     )
   }
   if (invalidPins.right != null) {
-    const rightPin =
-      maybeParentFrame != null
-        ? maybeParentFrame.width * (100 - invalidPins.right / 100)
-        : childrenBounds.x
-    const left =
-      maybeParentFrame != null
-        ? maybeParentFrame.x + maybeParentFrame.width - (childrenBounds.width + rightPin)
+    const newLeft =
+      left != null
+        ? left
+        : maybeParentFrame != null
+        ? (maybeParentFrame.width * (100 - invalidPins.right)) / 100.0 - childrenBounds.width
         : childrenBounds.x
     commands.push(
-      fixLengthCommand(path, 'left', left),
+      fixLengthCommand(path, 'left', newLeft),
       deleteProperties('always', path, [PP.create('style', 'right')]),
     )
   }
@@ -682,21 +682,31 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
   if (invalidPins.height != null) {
     commands.push(fixLengthCommand(path, 'height', frame.height))
   }
+  let left = getNumericPin(jsxElement, 'left')?.value
   if (invalidPins.left != null) {
-    const left = parentFrame.width * (invalidPins.left / 100)
+    left = parentFrame.width * (invalidPins.left / 100)
     commands.push(fixLengthCommand(path, 'left', left))
   }
+  let top = getNumericPin(jsxElement, 'top')?.value
   if (invalidPins.top != null) {
-    const top = parentFrame.height * (invalidPins.top / 100)
+    top = parentFrame.height * (invalidPins.top / 100)
     commands.push(fixLengthCommand(path, 'top', top))
   }
   if (invalidPins.bottom != null) {
-    const bottom = parentFrame.height * (100 - invalidPins.bottom / 100)
-    commands.push(fixLengthCommand(path, 'bottom', bottom))
+    const newTop =
+      top != null ? top : (parentFrame.height * (100 - invalidPins.bottom)) / 100.0 - frame.height
+    commands.push(
+      fixLengthCommand(path, 'top', newTop),
+      deleteProperties('always', path, [PP.create('style', 'bottom')]),
+    )
   }
   if (invalidPins.right != null) {
-    const rightPin = parentFrame.width * (100 - invalidPins.right / 100)
-    commands.push(fixLengthCommand(path, 'right', rightPin))
+    const newLeft =
+      left != null ? left : (parentFrame.width * (100 - invalidPins.right)) / 100.0 - frame.width
+    commands.push(
+      fixLengthCommand(path, 'left', newLeft),
+      deleteProperties('always', path, [PP.create('style', 'right')]),
+    )
   }
 
   // must have absolute position
@@ -712,6 +722,10 @@ function fixGroupChildCommands(jsxMetadata: ElementInstanceMetadataMap, path: El
       fixLengthCommand(path, 'left', getNumericPin(jsxElement, 'left')?.value ?? 0),
       fixLengthCommand(path, 'top', getNumericPin(jsxElement, 'top')?.value ?? 0),
     )
+  }
+
+  if (commands.length > 0) {
+    commands.push(queueTrueUpElement([trueUpGroupElementChanged(path)]))
   }
 
   return commands
@@ -731,16 +745,10 @@ export function getFixGroupProblemsCommands(
   for (const problem of problems) {
     switch (problem.target) {
       case 'group':
-        commands.push(
-          ...fixGroupCommands(jsxMetadata, problem.path),
-          queueTrueUpElement([trueUpChildrenOfGroupChanged(problem.path)]),
-        )
+        commands.push(...fixGroupCommands(jsxMetadata, problem.path))
         break
       case 'group-child':
-        commands.push(
-          ...fixGroupChildCommands(jsxMetadata, problem.path),
-          queueTrueUpElement([trueUpGroupElementChanged(problem.path)]),
-        )
+        commands.push(...fixGroupChildCommands(jsxMetadata, problem.path))
         break
       default:
         assertNever(problem.target)
