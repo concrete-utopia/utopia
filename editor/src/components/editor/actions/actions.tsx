@@ -352,8 +352,7 @@ import {
   trueUpChildrenOfGroupChanged,
   trueUpHuggingElement,
   trueUpGroupElementChanged,
-  deriveState,
-  getPackageJsonFromEditorState,
+  getPackageJsonFromProjectContents,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -1467,7 +1466,10 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
 function createStoryboardFileIfRemixProject(
   projectContents: ProjectContentTreeRoot,
 ): ProjectContentTreeRoot | null {
-  const packageJsonContents = defaultEither(null, getPackageJsonFromEditorState(projectContents))
+  const packageJsonContents = defaultEither(
+    null,
+    getPackageJsonFromProjectContents(projectContents),
+  )
   if (packageJsonContents == null) {
     return null
   }

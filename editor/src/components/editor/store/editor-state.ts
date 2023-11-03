@@ -2913,7 +2913,7 @@ export const DefaultPackageJson = {
   },
 }
 
-export function getPackageJsonFromEditorState(
+export function getPackageJsonFromProjectContents(
   projectContents: ProjectContentTreeRoot,
 ): Either<string, any> {
   const packageJsonFile = packageJsonFileFromProjectContents(projectContents)
@@ -2928,7 +2928,7 @@ export function getPackageJsonFromEditorState(
 }
 
 export function getMainUIFromModel(model: EditorState): string | null {
-  const packageJsonContents = getPackageJsonFromEditorState(model.projectContents)
+  const packageJsonContents = getPackageJsonFromProjectContents(model.projectContents)
   if (isRight(packageJsonContents)) {
     const mainUI = Utils.path(['utopia', 'main-ui'], packageJsonContents.value)
     // Make sure someone hasn't put something bizarro in there.
@@ -2942,7 +2942,7 @@ export function getMainUIFromModel(model: EditorState): string | null {
 export function getIndexHtmlFileFromEditorState(editor: EditorState): Either<string, TextFile> {
   const parsedFilePath = mapEither(
     (contents) => contents?.utopia?.html,
-    getPackageJsonFromEditorState(editor.projectContents),
+    getPackageJsonFromProjectContents(editor.projectContents),
   )
   const filePath =
     isRight(parsedFilePath) && typeof parsedFilePath.value === 'string'
