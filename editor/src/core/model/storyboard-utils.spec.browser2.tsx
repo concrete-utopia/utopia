@@ -10,7 +10,7 @@ import { createModifiedProject } from '../../sample-projects/sample-project-util
 describe('Storyboard utils', () => {
   describe("Create a storyboard file if one doesn't exist in the project", () => {
     it('Remix project', async () => {
-      const RemixComponentText = 'Hello Remix!'
+      const RemixRootComponentTestId = 'remix-root-component'
       const renderResult = await renderTestEditorWithModel(
         createModifiedProject(
           {
@@ -36,8 +36,8 @@ describe('Storyboard utils', () => {
               
               export default function Root() {
                 return (
-                  <div>
-                    ${RemixComponentText}
+                  <div data-testid="${RemixRootComponentTestId}">
+                    "Hello Remix!"
                   </div>
                 )
               }
@@ -49,10 +49,10 @@ describe('Storyboard utils', () => {
       )
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryByText(RemixComponentText)).not.toBeNull()
+      expect(renderResult.renderedDOM.queryByTestId(RemixRootComponentTestId)).not.toBeNull()
     })
     it('project with an exported App component', async () => {
-      const AppComponentText = 'This is App'
+      const AppTestId = 'App'
       const renderResult = await renderTestEditorWithModel(
         createModifiedProject(
           {
@@ -60,8 +60,8 @@ describe('Storyboard utils', () => {
                   
                   export function App() {
                     return (
-                      <div>
-                      ${AppComponentText}
+                      <div data-testid="${AppTestId}">
+                        This is App
                       </div>
                     )
                   }
@@ -73,7 +73,7 @@ describe('Storyboard utils', () => {
       )
 
       expectStoryboardFileExists(renderResult)
-      expect(renderResult.renderedDOM.queryByText(AppComponentText)).not.toBeNull()
+      expect(renderResult.renderedDOM.queryAllByTestId(AppTestId)).not.toBeNull()
     })
     it('project with no main component', async () => {
       const renderResult = await renderTestEditorWithModel(
