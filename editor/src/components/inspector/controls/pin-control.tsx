@@ -9,11 +9,7 @@ import { type FramePinsInfo } from '../common/layout-property-path-hooks'
 import { UtopiaTheme, colorTheme } from '../../../uuiui'
 import { unless, when } from '../../../utils/react-conditionals'
 import { FlexCol, FlexRow } from 'utopia-api'
-import { getFixedPointsForPinning, useDetectedConstraints } from '../simplified-pinning-helpers'
-import { GroupChildPinControl, setGroupChildConstraint } from '../fill-hug-fixed-control'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
-import { useDispatch } from '../../editor/store/dispatch-context'
-import { useRefEditorState } from '../../editor/store/store-hook'
+import type { DetectedPins } from '../simplified-pinning-helpers'
 import { PinHeightControl, PinWidthControl } from '../utility-controls/pin-control'
 
 interface PinControlProps {
@@ -327,25 +323,24 @@ export const PinControl = (props: PinControlProps) => {
 }
 
 export interface CombinedPinControlProps {
-  isGroupChild: 'group-child' | 'frame-child'
+  pins: DetectedPins
+  framePinsInfo: FramePinsInfo
+  handlePinMouseDown: (
+    frameProp: LayoutPinnedPropIncludingCenter,
+    event: React.MouseEvent<Element, MouseEvent>,
+  ) => void
 }
 
 export const CombinedPinControl = React.memo((props: CombinedPinControlProps) => {
-  const pins = useDetectedConstraints(props.isGroupChild)
-  const framePinsInfo: FramePinsInfo = React.useMemo(() => getFixedPointsForPinning(pins), [pins])
   return (
     <FlexRow css={{ border: `1px solid ${colorTheme.subduedBorder.value}`, margin: `2px` }}>
-      {when(props.isGroupChild === 'group-child', <GroupChildPinControl />)}
-      {when(
-        props.isGroupChild === 'frame-child',
-        <PinControl
-          handlePinMouseDown={NO_OP}
-          name={'pin-control'}
-          controlStatus={'simple'}
-          framePoints={framePinsInfo}
-          regularBorder={false}
-        />,
-      )}
+      <PinControl
+        handlePinMouseDown={props.handlePinMouseDown}
+        name={'pin-control'}
+        controlStatus={'simple'}
+        framePoints={props.framePinsInfo}
+        regularBorder={false}
+      />
       <FlexCol
         css={{
           justifyContent: 'space-evenly',
@@ -353,13 +348,17 @@ export const CombinedPinControl = React.memo((props: CombinedPinControlProps) =>
         }}
       >
         <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
-          <PinWidthControl controlStatus={'simple'} framePins={framePinsInfo} toggleWidth={NO_OP} />
+          <PinWidthControl
+            controlStatus={'simple'}
+            framePins={props.framePinsInfo}
+            handlePinMouseDown={props.handlePinMouseDown}
+          />
         </FlexRow>
         <FlexRow css={{ flexGrow: 1, alignItems: 'center' }}>
           <PinHeightControl
             controlStatus={'simple'}
-            framePins={framePinsInfo}
-            toggleHeight={NO_OP}
+            framePins={props.framePinsInfo}
+            handlePinMouseDown={props.handlePinMouseDown}
           />
         </FlexRow>
       </FlexCol>
