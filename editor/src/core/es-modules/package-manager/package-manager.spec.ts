@@ -131,23 +131,6 @@ describe('ES Dependency Package Manager', () => {
     expect(document.getElementById('/node_modules/mypackage/simple.css')).toBeNull()
   })
 
-  xit('resolves a svg import', () => {
-    const reqFn = getRequireFn(
-      NO_OP,
-      {},
-      extractNodeModulesFromPackageResponse(fileWithImports),
-      {},
-      createBuiltInDependenciesList(null),
-    )
-
-    const requireResult = reqFn('/src/index.js', 'mypackage/simple.svg')
-    expect(requireResult).toHaveProperty('ReactComponent')
-    expect(requireResult).toHaveProperty('default')
-    expect((requireResult as any).default).toEqual(
-      svgToBase64(fileWithImports.contents['/node_modules/mypackage/simple.svg'].content),
-    )
-  })
-
   it('throws exception on not found dependency', () => {
     const reqFn = getRequireFn(
       NO_OP,
