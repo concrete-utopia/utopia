@@ -3,12 +3,11 @@ import { runTestReturningErrorBoundaries } from './remix-error-handling.test-uti
 
 describe('Remix error handling', () => {
   it('Supports a user-defined error boundary', async () => {
-    const renderResult = await renderTestEditorWithCode(
-      makeTestProjectCodeWithSnippet(`<div>Helo</div>`),
-      'await-first-dom-report',
+    const { customBoundary, canvasOverlay } = await runTestReturningErrorBoundaries(
+      'with-custom-boundary',
     )
-
-    expect(renderResult.renderedDOM.getByText('Helo')).toBeDefined()
+    expect(customBoundary).not.toBeNull()
+    expect(canvasOverlay).toBeNull()
   })
 
   it('Bubbles errors to the canvas if no error boundary exists', async () => {
