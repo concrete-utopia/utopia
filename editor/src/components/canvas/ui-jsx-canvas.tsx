@@ -92,6 +92,7 @@ import { useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
+import { IS_TEST_ENVIRONMENT } from '../../common/env-vars'
 
 applyUIDMonkeyPatch()
 
@@ -326,9 +327,11 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     }, 0)
   })
 
-  // FIXME This is illegal! The two lines below are triggering a re-render
-  clearConsoleLogs()
-  proxyConsole(console, addToConsoleLogs)
+  if (!IS_TEST_ENVIRONMENT) {
+    // FIXME This is illegal! The two lines below are triggering a re-render
+    clearConsoleLogs()
+    proxyConsole(console, addToConsoleLogs)
+  }
 
   React.useEffect(() => {
     if (clearErrors != null) {
