@@ -51,7 +51,6 @@ import type { InsertableComponent, StylePropOption } from '../../shared/project-
 import type {
   AddFolder,
   AddMissingDimensions,
-  AddStoryboardFile,
   AddTextFile,
   Alignment,
   AlignSelectedViews,
@@ -1341,12 +1340,6 @@ export function updatePropertyControlsInfo(
     action: 'UPDATE_PROPERTY_CONTROLS_INFO',
     propertyControlsInfo: propertyControlsInfo,
     moduleNamesOrPathsToDelete: moduleNamesOrPathsToDelete,
-  }
-}
-
-export function addStoryboardFile(): AddStoryboardFile {
-  return {
-    action: 'ADD_STORYBOARD_FILE',
   }
 }
 

@@ -176,7 +176,6 @@ import type {
   AddFolder,
   AddImports,
   AddMissingDimensions,
-  AddStoryboardFile,
   AddTailwindConfig,
   AddTextFile,
   AddToast,
@@ -1465,8 +1464,10 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
   }
 }
 
-function createStoryboardFileIfRemixProject(state: EditorState): EditorState | null {
-  const packageJsonContents = defaultEither(null, getPackageJsonFromEditorState(state))
+function createStoryboardFileIfRemixProject(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot | null {
+  const packageJsonContents = defaultEither(null, getPackageJsonFromEditorState(projectContents))
   if (packageJsonContents == null) {
     return null
   }
@@ -1476,36 +1477,42 @@ function createStoryboardFileIfRemixProject(state: EditorState): EditorState | n
   }
 
   const updatedProjectContents = addFileToProjectContents(
-    state.projectContents,
+    projectContents,
     StoryboardFilePath,
     codeFile(DefaultStoryboardWithRemix, null, 1),
   )
-  return { ...state, projectContents: updatedProjectContents }
+  return updatedProjectContents
 }
 
-function createStoryboardFileIfMainComponentPresent(state: EditorState): EditorState | null {
-  return addStoryboardFileToProject(state)
+function createStoryboardFileIfMainComponentPresent(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot | null {
+  return addStoryboardFileToProject(projectContents)
 }
 
-function createStoryboardFileWithPlaceholderContents(state: EditorState): EditorState {
+function createStoryboardFileWithPlaceholderContents(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
   const updatedProjectContents = addFileToProjectContents(
-    state.projectContents,
+    projectContents,
     StoryboardFilePath,
     codeFile(DefaultStoryboardContents, null, 1),
   )
-  return { ...state, projectContents: updatedProjectContents }
+  return updatedProjectContents
 }
 
-function createStoryboardFileIfNecessary(state: EditorState): EditorState {
-  const storyboardFile = getProjectFileByFilePath(state.projectContents, StoryboardFilePath)
+export function createStoryboardFileIfNecessary(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
+  const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile != null) {
-    return state
+    return projectContents
   }
 
   return (
-    createStoryboardFileIfRemixProject(state) ??
-    createStoryboardFileIfMainComponentPresent(state) ??
-    createStoryboardFileWithPlaceholderContents(state)
+    createStoryboardFileIfRemixProject(projectContents) ??
+    createStoryboardFileIfMainComponentPresent(projectContents) ??
+    createStoryboardFileWithPlaceholderContents(projectContents)
   )
 }
 
@@ -3641,9 +3648,9 @@ export const UPDATE_FNS = {
       // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
       PP.clearPropertyPathCache()
     }
-    const updatedEditor = {
+    return {
       ...editor,
-      projectContents: workingProjectContents,
+      projectContents: createStoryboardFileIfNecessary(workingProjectContents),
       canvas: {
         ...editor.canvas,
         canvasContentInvalidateCount: anyParsedUpdates
@@ -3655,7 +3662,6 @@ export const UPDATE_FNS = {
       },
       parseOrPrintInFlight: false, // only ever clear it here
     }
-    return createStoryboardFileIfNecessary(updatedEditor)
   },
   UPDATE_FROM_CODE_EDITOR: (
     action: UpdateFromCodeEditor,
@@ -4330,15 +4336,6 @@ export const UPDATE_FNS = {
     return {
       ...editor,
       propertyControlsInfo: updatedPropertyControlsInfo,
-    }
-  },
-  ADD_STORYBOARD_FILE: (_action: AddStoryboardFile, editor: EditorModel): EditorModel => {
-    const updatedEditor = addStoryboardFileToProject(editor)
-    if (updatedEditor == null) {
-      return editor
-    } else {
-      const openTab = openCodeEditorFile(StoryboardFilePath, true)
-      return UPDATE_FNS.OPEN_CODE_EDITOR_FILE(openTab, updatedEditor)
     }
   },
   UPDATE_TEXT: (action: UpdateText, editorStore: EditorStoreUnpatched): EditorStoreUnpatched => {

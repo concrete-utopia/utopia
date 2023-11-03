@@ -158,8 +158,10 @@ const compareComponentToImport: Compare<ComponentToImport> = compareCompose(
   ),
 )
 
-export function addStoryboardFileToProject(editorModel: EditorModel): EditorModel | null {
-  const storyboardFile = getProjectFileByFilePath(editorModel.projectContents, StoryboardFilePath)
+export function addStoryboardFileToProject(
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot | null {
+  const storyboardFile = getProjectFileByFilePath(projectContents, StoryboardFilePath)
   if (storyboardFile == null) {
     let currentImportCandidate: ComponentToImport | null = null
     function updateCandidate(importCandidate: ComponentToImport): void {
@@ -171,7 +173,7 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
         }
       }
     }
-    walkContentsTree(editorModel.projectContents, (fullPath, file) => {
+    walkContentsTree(projectContents, (fullPath, file) => {
       if (isParsedTextFile(file)) {
         // For those successfully parsed files, we want to search all of the components.
         forEachParseSuccess((success) => {
@@ -264,7 +266,7 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
     if (currentImportCandidate == null) {
       return null
     } else {
-      return addStoryboardFileForComponent(currentImportCandidate, editorModel)
+      return addStoryboardFileForComponent(currentImportCandidate, projectContents)
     }
   } else {
     return null
@@ -273,8 +275,8 @@ export function addStoryboardFileToProject(editorModel: EditorModel): EditorMode
 
 function addStoryboardFileForComponent(
   createFileWithComponent: ComponentToImport,
-  editorModel: EditorState,
-): EditorState {
+  projectContents: ProjectContentTreeRoot,
+): ProjectContentTreeRoot {
   // Add import of storyboard and scene components.
   let imports = addImport(StoryboardFilePath, 'react', null, [], 'React', {})
   imports = addImport(
@@ -287,7 +289,7 @@ function addStoryboardFileForComponent(
   )
   // Create the storyboard variable.
   let sceneElement: JSXElement
-  let updatedProjectContents: ProjectContentTreeRoot = editorModel.projectContents
+  let updatedProjectContents: ProjectContentTreeRoot = projectContents
   switch (createFileWithComponent.type) {
     case 'NAMED_COMPONENT_TO_IMPORT':
       sceneElement = createSceneFromComponent(
@@ -413,8 +415,6 @@ function addStoryboardFileForComponent(
     StoryboardFilePath,
     storyboardFileContents,
   )
-  return {
-    ...editorModel,
-    projectContents: updatedProjectContents,
-  }
+
+  return updatedProjectContents
 }
