@@ -29,6 +29,7 @@ import {
 import { getStoryboardElementPath, PathForSceneDataLabel } from '../../../core/model/scene-utils'
 import type { Either } from '../../../core/shared/either'
 import {
+  defaultEither,
   eitherToMaybe,
   foldEither,
   forceRight,
@@ -353,6 +354,7 @@ import {
   trueUpHuggingElement,
   trueUpGroupElementChanged,
   deriveState,
+  getPackageJsonFromEditorState,
 } from '../store/editor-state'
 import {
   areGeneratedElementsTargeted,
@@ -1463,6 +1465,50 @@ function updateCodeEditorVisibility(editor: EditorModel, codePaneVisible: boolea
   }
 }
 
+function createStoryboardFileIfRemixProject(state: EditorState): EditorState | null {
+  const packageJsonContents = defaultEither(null, getPackageJsonFromEditorState(state))
+  if (packageJsonContents == null) {
+    return null
+  }
+  const remixNotIncluded = packageJsonContents['dependencies']?.['@remix-run/react'] == null
+  if (remixNotIncluded) {
+    return null
+  }
+
+  const updatedProjectContents = addFileToProjectContents(
+    state.projectContents,
+    StoryboardFilePath,
+    codeFile(DefaultStoryboardWithRemix, null, 1),
+  )
+  return { ...state, projectContents: updatedProjectContents }
+}
+
+function createStoryboardFileIfMainComponentPresent(state: EditorState): EditorState | null {
+  return addStoryboardFileToProject(state)
+}
+
+function createStoryboardFileWithPlaceholderContents(state: EditorState): EditorState {
+  const updatedProjectContents = addFileToProjectContents(
+    state.projectContents,
+    StoryboardFilePath,
+    codeFile(DefaultStoryboardContents, null, 1),
+  )
+  return { ...state, projectContents: updatedProjectContents }
+}
+
+function createStoryboardFileIfNecessary(state: EditorState): EditorState {
+  const storyboardFile = getProjectFileByFilePath(state.projectContents, StoryboardFilePath)
+  if (storyboardFile != null) {
+    return state
+  }
+
+  return (
+    createStoryboardFileIfRemixProject(state) ??
+    createStoryboardFileIfMainComponentPresent(state) ??
+    createStoryboardFileWithPlaceholderContents(state)
+  )
+}
+
 // JS Editor Actions:
 export const UPDATE_FNS = {
   NEW: (
@@ -1486,7 +1532,7 @@ export const UPDATE_FNS = {
   },
   LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
     const migratedModel = applyMigrations(action.model)
-    let parsedProjectFiles = applyToAllUIJSFiles(
+    const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
       (filename: string, file: TextFile) => {
         const lastSavedFileContents = optionalMap((lastSaved) => {
@@ -1501,21 +1547,12 @@ export const UPDATE_FNS = {
       },
     )
 
-    const storyboardFile = getProjectFileByFilePath(parsedProjectFiles, StoryboardFilePath)
-    if (storyboardFile == null) {
-      parsedProjectFiles = addFileToProjectContents(
-        parsedProjectFiles,
-        StoryboardFilePath,
-        codeFile(DefaultStoryboardContents, null), // TODO: contents
-      )
-    }
-    initVSCodeBridge(parsedProjectFiles, dispatch, StoryboardFilePath)
-
     const parsedModel = {
       ...migratedModel,
       projectContents: parsedProjectFiles,
     }
-    const newModel: EditorModel = {
+
+    let newModel: EditorModel = {
       ...editorModelFromPersistentModel(parsedModel, dispatch),
       projectName: action.title,
       id: action.projectId,
@@ -1529,12 +1566,17 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
       safeMode: action.safeMode,
     }
-    const newModelMergedWithStoredState: EditorModel = mergeStoredEditorStateIntoEditorState(
-      action.storedState,
-      newModel,
+
+    const newModelMergedWithStoredStateAndStoryboardFile: EditorModel =
+      mergeStoredEditorStateIntoEditorState(action.storedState, newModel)
+
+    initVSCodeBridge(
+      newModelMergedWithStoredStateAndStoryboardFile.projectContents,
+      dispatch,
+      StoryboardFilePath,
     )
 
-    return loadModel(newModelMergedWithStoredState, oldEditor)
+    return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
   },
   SET_HIGHLIGHTED_VIEWS: (action: SetHighlightedViews, editor: EditorModel): EditorModel => {
     return {
@@ -3599,7 +3641,7 @@ export const UPDATE_FNS = {
       // FIXME take a similar approach as ElementPath cache culling to the PropertyPath cache culling. Or don't even clear it.
       PP.clearPropertyPathCache()
     }
-    return {
+    const updatedEditor = {
       ...editor,
       projectContents: workingProjectContents,
       canvas: {
@@ -3613,6 +3655,7 @@ export const UPDATE_FNS = {
       },
       parseOrPrintInFlight: false, // only ever clear it here
     }
+    return createStoryboardFileIfNecessary(updatedEditor)
   },
   UPDATE_FROM_CODE_EDITOR: (
     action: UpdateFromCodeEditor,
@@ -5550,6 +5593,26 @@ function saveFileInProjectContents(
   }
 }
 
+const DefaultStoryboardWithRemix = `import * as React from 'react'
+import { Storyboard, RemixScene } from 'utopia-api'
+
+export var storyboard = (
+  <Storyboard>
+    <RemixScene
+      style={{
+        position: 'absolute',
+        width: 644,
+        height: 750,
+        left: 200,
+        top: 30,
+        overflow: 'hidden',
+      }}
+      data-label='Mood Board'
+    />
+  </Storyboard>
+)
+`
+
 const DefaultStoryboardContents = `import * as React from 'react'
 import { Scene, Storyboard } from 'utopia-api'
 
@@ -5578,7 +5641,7 @@ export var storyboard = (
         }}
       >
         Open the insert menu or press the + button in the
-        toolbar to insert elements
+        toolbar to insert components
       </span>
     </Scene>
   </Storyboard>
