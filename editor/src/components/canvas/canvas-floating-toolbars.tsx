@@ -1,6 +1,7 @@
 import React from 'react'
 import { FlexRow } from '../../uuiui'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
+import { ClosedPanels } from '../editor/closed-panels'
 import { Substores, useEditorState } from '../editor/store/store-hook'
 import { ErrorOverlayComponent } from './canvas-error-overlay'
 import { SafeModeErrorOverlay } from './canvas-wrapper-component'
@@ -32,12 +33,14 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
           position: 'absolute',
           top: 0,
           alignItems: 'flex-start',
+          justifyContent: 'space-between',
           margin: 10,
-          gap: 10,
+          width: '100%',
         }}
       >
+        <ClosedPanels />
         <CanvasToolbar />
-        <CanvasStrategyPicker />
+        {/* <CanvasStrategyPicker /> */}
         <TestMenu />
       </FlexRow>
       {/* The error overlays are deliberately the last here so they hide other canvas UI */}
