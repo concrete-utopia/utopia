@@ -1,5 +1,5 @@
 import React from 'react'
-import { FlexRow } from '../../uuiui'
+import { FlexColumn, FlexRow } from '../../uuiui'
 import { CanvasToolbar } from '../editor/canvas-toolbar'
 import { ClosedPanels } from '../editor/closed-panels'
 import { Substores, useEditorState } from '../editor/store/store-hook'
@@ -7,6 +7,7 @@ import { ErrorOverlayComponent } from './canvas-error-overlay'
 import { SafeModeErrorOverlay } from './canvas-wrapper-component'
 import { CanvasStrategyPicker } from './controls/select-mode/canvas-strategy-picker'
 import { TestMenu } from '../titlebar/test-menu'
+import { FlexCol } from 'utopia-api'
 
 export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSProperties }) => {
   const safeMode = useEditorState(
@@ -18,7 +19,7 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
   )
 
   return (
-    <FlexRow
+    <FlexColumn
       style={{
         position: 'absolute',
         width: '100%',
@@ -34,8 +35,10 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
           top: 0,
           alignItems: 'flex-start',
           justifyContent: 'space-between',
-          margin: 10,
+          padding: 10,
           width: '100%',
+          height: '100%',
+          // background: '#ffff0090',
         }}
       >
         <ClosedPanels />
@@ -45,7 +48,7 @@ export const CanvasFloatingToolbars = React.memo((props: { style: React.CSSPrope
       </FlexRow>
       {/* The error overlays are deliberately the last here so they hide other canvas UI */}
       {safeMode ? <SafeModeErrorOverlay /> : <ErrorOverlayComponent />}
-    </FlexRow>
+    </FlexColumn>
   )
 })
 CanvasFloatingToolbars.displayName = 'CanvasFloatingToolbars'

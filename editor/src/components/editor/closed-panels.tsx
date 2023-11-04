@@ -4,7 +4,7 @@
 import { jsx } from '@emotion/react'
 import React, { useState } from 'react'
 import type { TooltipProps } from '../../uuiui'
-import { UtopiaTheme } from '../../uuiui'
+import { UtopiaTheme, colorTheme } from '../../uuiui'
 import {
   FlexColumn,
   Icn,
@@ -61,85 +61,53 @@ export const ClosedPanels = React.memo(() => {
     [dispatch],
   )
 
+  const [isVisible, setIsVisible] = useState(false)
+  const setIsVisibleTrue = React.useCallback(() => {
+    setIsVisible(true)
+  }, [])
+
+  const setIsVisibleFalse = React.useCallback(() => {
+    setIsVisible(false)
+  }, [])
+
   return (
     <FlexColumn
-      style={{ gap: 10 }}
       // Mouse events should never go through this component.
       onClick={stopPropagation}
       onMouseDown={focusCanvasOnMouseDown}
       onMouseUp={stopPropagation}
+      style={{
+        gap: 10,
+        height: 300,
+        width: 32,
+        zIndex: 100,
+        // background: isVisible ? 'pink' : 'yellow',
+      }}
+      onMouseEnter={setIsVisibleTrue}
+      onMouseLeave={setIsVisibleFalse}
     >
       {navigatorInvisible ? (
-        <div
-          style={{
-            backgroundColor: theme.inspectorBackground.value,
-            overflow: 'hidden',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-            display: 'flex',
-            flexDirection: 'row',
-            width: 32,
-            height: 32,
-            borderRadius: 32,
-          }}
-        >
-          <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
-            <InsertModeButton
-              iconType='navigator'
-              iconCategory='semantic'
-              size={22}
-              onClick={toggleNavigatorVisible}
-            />
-          </Tooltip>
-        </div>
+        <Tooltip title='Toggle Navigator (⌘⌥1)' placement='bottom'>
+          <InsertModeButton
+            iconType='navigator'
+            onClick={toggleNavigatorVisible}
+            visible={isVisible}
+          />
+        </Tooltip>
       ) : null}
       {editorInvisible ? (
-        <div
-          style={{
-            backgroundColor: theme.inspectorBackground.value,
-            overflow: 'hidden',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-            display: 'flex',
-            flexDirection: 'row',
-            width: 32,
-            height: 32,
-            borderRadius: 32,
-          }}
-        >
-          <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
-            <InsertModeButton
-              iconType='cody'
-              iconCategory='semantic'
-              size={22}
-              onClick={toggleCodeEditorVisible}
-            />
-          </Tooltip>
-        </div>
+        <Tooltip title='Toggle Code Editor (⌘.)' placement='bottom'>
+          <InsertModeButton iconType='cody' onClick={toggleCodeEditorVisible} visible={isVisible} />
+        </Tooltip>
       ) : null}
       {inspectorInvisible ? (
-        <div
-          style={{
-            backgroundColor: theme.inspectorBackground.value,
-            overflow: 'hidden',
-            boxShadow: UtopiaTheme.panelStyles.shadows.medium,
-            pointerEvents: 'initial',
-            display: 'flex',
-            flexDirection: 'row',
-            width: 32,
-            height: 32,
-            borderRadius: 32,
-          }}
-        >
-          <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
-            <InsertModeButton
-              iconType='inspector'
-              iconCategory='semantic'
-              size={22}
-              onClick={toggleInspectorVisible}
-            />
-          </Tooltip>
-        </div>
+        <Tooltip title='Toggle Inspector (⌘⌥2)' placement='bottom'>
+          <InsertModeButton
+            iconType='inspector'
+            onClick={toggleInspectorVisible}
+            visible={isVisible}
+          />
+        </Tooltip>
       ) : null}
     </FlexColumn>
   )
@@ -147,33 +115,11 @@ export const ClosedPanels = React.memo(() => {
 
 interface InsertModeButtonProps {
   iconType: string
-  iconCategory?: string
-  primary?: boolean
-  secondary?: boolean
-  keepActiveInLiveMode?: boolean
-  style?: React.CSSProperties
-  testid?: string
+  visible?: boolean
   onClick: (event: React.MouseEvent<Element>) => void
-  size?: number
 }
 const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
   const [isHovered, setIsHovered] = useState(false)
-  const keepActiveInLiveMode = props.keepActiveInLiveMode ?? false
-  const primary = props.primary ?? false
-  const secondary = props.secondary ?? false
-  const canvasInLiveMode = useEditorState(
-    Substores.restOfEditor,
-    (store) => store.editor.mode.type === 'live',
-    'CanvasToolbar canvasInLiveMode',
-  )
-  const iconCategory = props.iconCategory ?? 'element'
-  const onClickHandler = React.useCallback(
-    (event: React.MouseEvent<Element>) => {
-      event.stopPropagation()
-      props.onClick(event)
-    },
-    [props],
-  )
   const setIsHoveredTrue = React.useCallback(() => {
     setIsHovered(true)
   }, [])
@@ -184,30 +130,27 @@ const InsertModeButton = React.memo((props: InsertModeButtonProps) => {
 
   return (
     <SquareButton
-      data-testid={props.testid}
-      style={{ height: 32, width: 32, ...props.style }}
-      primary={primary}
-      spotlight={secondary}
-      highlight
+      style={{
+        backgroundColor: props.visible ? colorTheme.bg1.value : 'transparent',
+        overflow: 'hidden',
+        boxShadow: UtopiaTheme.panelStyles.shadows.medium,
+        pointerEvents: 'initial',
+        display: 'flex',
+        flexDirection: 'row',
+        width: 32,
+        height: 32,
+        borderRadius: 32,
+      }}
       onClick={props.onClick}
-      disabled={canvasInLiveMode && !keepActiveInLiveMode}
-      overriddenBackground={secondary ? 'transparent' : undefined}
       onMouseEnter={setIsHoveredTrue}
       onMouseLeave={setIsHoveredFalse}
     >
       <Icn
-        category={iconCategory}
+        category='semantic'
         type={props.iconType}
-        width={props.size ?? 18}
-        height={props.size ?? 18}
-        testId={props.testid == null ? undefined : `${props.testid}-icon`}
-        color={
-          (isHovered && !props.primary) || props.secondary
-            ? 'dynamic'
-            : props.primary
-            ? 'on-highlight-main'
-            : 'main'
-        }
+        width={22}
+        height={22}
+        color={isHovered ? 'dynamic' : 'main'}
       />
     </SquareButton>
   )
