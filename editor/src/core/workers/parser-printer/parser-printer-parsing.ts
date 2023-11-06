@@ -1028,7 +1028,7 @@ export function parseAttributeOtherJavaScript(
     (code, _, definedElsewhere, fileSourceNode, parsedElementsWithin, isList) => {
       const { code: codeFromFile, map } = fileSourceNode.toStringWithSourceMap({ file: filename })
       const rawMap = JSON.parse(map.toString())
-      const transpileEither = transpileJavascriptFromCode(
+      const firstTraspileEither = transpileJavascriptFromCode(
         sourceFile.fileName,
         sourceFile.text,
         codeFromFile,
@@ -1036,6 +1036,21 @@ export function parseAttributeOtherJavaScript(
         parsedElementsWithin,
         true,
       )
+      const transpileEither = foldEither(
+        () =>
+          transpileJavascriptFromCode(
+            sourceFile.fileName,
+            sourceFile.text,
+            codeFromFile,
+            rawMap,
+            parsedElementsWithin,
+            false,
+            true,
+          ),
+        (success) => right(success),
+        firstTraspileEither,
+      )
+
       return mapEither((transpileResult) => {
         const prependedWithReturn = prependToSourceString(
           sourceFile.fileName,
@@ -2984,6 +2999,7 @@ export function parseOutFunctionContents(
         declared.push(...jsBlock.definedWithin)
       }
 
+      // This bit is the problem
       const parsedElements = parseOutJSXElements(
         sourceFile,
         sourceText,
@@ -2995,15 +3011,49 @@ export function parseOutFunctionContents(
         highlightBounds,
         alreadyExistingUIDs,
       )
-      return mapEither((parsed) => {
-        highlightBounds = mergeHighlightBounds(highlightBounds, parsed.highlightBounds)
-        return withParserMetadata(
-          functionContents(jsBlock, 'block', parsed.value, returnStatementComments),
-          highlightBounds,
-          propsUsed.concat(parsed.propsUsed),
-          definedElsewhere.concat(parsed.definedElsewhere),
-        )
-      }, parsedElements)
+
+      return foldEither(
+        () => {
+          const parsedAsArbitrary = parseAttributeOtherJavaScript(
+            sourceFile,
+            sourceText,
+            filename,
+            imports,
+            topLevelNames,
+            propsObjectName,
+            possibleElement,
+            highlightBounds,
+            alreadyExistingUIDs,
+          )
+
+          return bimapEither(
+            (failure) => failure,
+            (success) => {
+              highlightBounds = mergeHighlightBounds(highlightBounds, success.highlightBounds)
+              const elem = successfullyParsedElement(sourceFile, possibleElement, success.value)
+              return withParserMetadata(
+                functionContents(jsBlock, 'block', [elem], returnStatementComments),
+                highlightBounds,
+                propsUsed.concat(success.propsUsed),
+                definedElsewhere.concat(success.definedElsewhere),
+              )
+            },
+            parsedAsArbitrary,
+          )
+        },
+        (parsed) => {
+          highlightBounds = mergeHighlightBounds(highlightBounds, parsed.highlightBounds)
+          return right(
+            withParserMetadata(
+              functionContents(jsBlock, 'block', parsed.value, returnStatementComments),
+              highlightBounds,
+              propsUsed.concat(parsed.propsUsed),
+              definedElsewhere.concat(parsed.definedElsewhere),
+            ),
+          )
+        },
+        parsedElements,
+      )
     }
   } else {
     const parsedElements = parseOutJSXElements(

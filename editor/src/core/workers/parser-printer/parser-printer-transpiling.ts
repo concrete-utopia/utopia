@@ -16,7 +16,11 @@ import { fastForEach } from '../../shared/utils'
 import type { RawSourceMap } from '../ts/ts-typings/RawSourceMap'
 import infiniteLoopPrevention from './transform-prevent-infinite-loops'
 import type { ElementsWithinInPosition, CodeWithMap } from './parser-printer-utils'
-import { wrapCodeInParens, wrapCodeInParensWithMap } from './parser-printer-utils'
+import {
+  wrapCodeInAnonFunctionWithMap,
+  wrapCodeInParens,
+  wrapCodeInParensWithMap,
+} from './parser-printer-utils'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../shared/dom-utils'
 
 interface TranspileResult {
@@ -250,6 +254,7 @@ export function transpileJavascriptFromCode(
   map: RawSourceMap,
   elementsWithin: ElementsWithinInPosition,
   wrapInParens: boolean,
+  wrapInAnonFunction: boolean = false,
 ): Either<string, TranspileResult> {
   try {
     let codeToUse: string = code
@@ -263,6 +268,15 @@ export function transpileJavascriptFromCode(
       )
       codeToUse = wrappedInParens.code
       mapToUse = wrappedInParens.sourceMap
+    } else if (wrapInAnonFunction) {
+      const wrappedInAnonFunction = wrapCodeInAnonFunctionWithMap(
+        sourceFileName,
+        sourceFileText,
+        codeToUse,
+        mapToUse,
+      )
+      codeToUse = wrappedInAnonFunction.code
+      mapToUse = wrappedInAnonFunction.sourceMap
     }
     let plugins: Array<any> = []
     if (Object.keys(elementsWithin).length > 0) {
@@ -274,6 +288,7 @@ export function transpileJavascriptFromCode(
     plugins.push('transform-react-jsx')
     plugins.push('proposal-class-properties')
     plugins.push(ReactTransformPlugin)
+    // Babel doesn't like this either wrapped or unwrapped
     const transformResult = Babel.transform(codeToUse, {
       presets: ['es2015', 'react'],
       plugins: plugins,

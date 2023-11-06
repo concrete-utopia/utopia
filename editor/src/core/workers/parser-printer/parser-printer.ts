@@ -43,6 +43,7 @@ import type {
   ImportStatement,
   ParsedComments,
   JSExpressionMapOrOtherJavascript,
+  JSExpressionOtherJavaScript,
 } from '../../shared/element-template'
 import {
   destructuredArray,
@@ -675,10 +676,15 @@ function printUtopiaJSXComponent(
     TS.isJsxSelfClosingElement(asJSX) ||
     TS.isJsxFragment(asJSX) ||
     TS.isConditionalExpression(asJSX) ||
+    TS.isJsxText(asJSX) ||
     asJSX.kind === TS.SyntaxKind.NullKeyword
   ) {
     let elementNode: TS.Node
-    const jsxElementExpression = asJSX
+    const jsxElementExpression = TS.isJsxText(asJSX)
+      ? TS.createUnparsedSourceFile(
+          (element.rootElement as JSExpressionOtherJavaScript).originalJavascript,
+        )
+      : asJSX
     const modifiers = getModifersForComponent(element, detailOfExports)
     const nodeFlags =
       element.declarationSyntax === 'function'
@@ -696,7 +702,9 @@ function printUtopiaJSXComponent(
           statements.push(printArbitraryJSBlock(element.arbitraryJSBlock) as any)
         }
 
-        const returnStatement = TS.createReturn(jsxElementExpression)
+        const returnStatement = TS.isUnparsedSource(jsxElementExpression)
+          ? (jsxElementExpression as any)
+          : TS.createReturn(jsxElementExpression)
         addCommentsToNode(returnStatement, element.returnStatementComments)
         statements.push(returnStatement)
         return TS.createBlock(statements, printOptions.insertLinesBetweenStatements)
@@ -706,11 +714,13 @@ function printUtopiaJSXComponent(
         if (element.arbitraryJSBlock != null || element.blockOrExpression === 'block') {
           return bodyForFunction()
         } else if (element.blockOrExpression === 'parenthesized-expression') {
-          const bodyExpression = TS.factory.createParenthesizedExpression(jsxElementExpression)
+          const bodyExpression = TS.factory.createParenthesizedExpression(
+            jsxElementExpression as any,
+          )
           addCommentsToNode(bodyExpression, element.returnStatementComments)
           return bodyExpression
         } else {
-          return jsxElementExpression
+          return jsxElementExpression as any
         }
       }
 
@@ -744,9 +754,18 @@ function printUtopiaJSXComponent(
       }
     } else {
       if (element.name == null) {
-        elementNode = TS.createExportAssignment(undefined, modifiers, undefined, asJSX)
+        elementNode = TS.createExportAssignment(
+          undefined,
+          modifiers,
+          undefined,
+          jsxElementExpression as any,
+        )
       } else {
-        const varDec = TS.createVariableDeclaration(element.name, undefined, asJSX)
+        const varDec = TS.createVariableDeclaration(
+          element.name,
+          undefined,
+          jsxElementExpression as any,
+        )
         const varDecList = TS.createVariableDeclarationList([varDec], nodeFlags)
         elementNode = TS.createVariableStatement(modifiers, varDecList)
       }
