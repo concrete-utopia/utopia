@@ -10,7 +10,10 @@ import {
   getPropsForStyleProp,
   makeInspectorHookContextProvider,
 } from './property-path-hooks.test-utils'
-import type { EditorStorePatched } from '../../editor/store/editor-state'
+import {
+  emptyCollaborativeEditingSupport,
+  type EditorStorePatched,
+} from '../../editor/store/editor-state'
 import create, { GetState, Mutate, SetState, StoreApi } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import type { UtopiaStoreAPI } from '../../editor/store/store-hook'
@@ -25,6 +28,7 @@ import { setProp_UNSAFE, unsetProperty } from '../../editor/actions/action-creat
 import { DispatchContext } from '../../editor/store/dispatch-context'
 import { styleStringInArray } from '../../../utils/common-constants'
 import { emptyProjectServerState } from '../../editor/store/project-server-state'
+import * as Y from 'yjs'
 
 const TestSelectedComponent = EP.elementPath([['scene1'], ['aaa', 'bbb']])
 
@@ -66,6 +70,7 @@ function getPaddingHookResult<P extends ParsedPropertiesKeys, S extends ParsedPr
       builtInDependencies: [],
       storeName: 'editor-store',
       projectServerState: emptyProjectServerState(),
+      collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
     }
 
     const storeHook: UtopiaStoreAPI = createStoresAndState(initialEditorStore)

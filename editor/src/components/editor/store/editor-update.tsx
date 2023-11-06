@@ -1,4 +1,10 @@
-import type { EditorState, DerivedState, UserState, EditorStoreUnpatched } from './editor-state'
+import type {
+  EditorState,
+  DerivedState,
+  UserState,
+  EditorStoreUnpatched,
+  CollaborativeEditingSupport,
+} from './editor-state'
 import type {
   EditorAction,
   EditorDispatch,
@@ -24,6 +30,7 @@ export function runLocalEditorAction(
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
   builtInDependencies: BuiltInDependencies,
+  collaborativeEditingSupport: CollaborativeEditingSupport,
 ): EditorState {
   switch (action.action) {
     case 'SET_CANVAS_FRAMES':
@@ -45,6 +52,7 @@ export function runLocalEditorAction(
         dispatch,
         spyCollector,
         builtInDependencies,
+        collaborativeEditingSupport,
       )
   }
 }
@@ -59,12 +67,13 @@ export function runSimpleLocalEditorAction(
   dispatch: EditorDispatch,
   spyCollector: UiJsxCanvasContextData,
   builtInDependencies: BuiltInDependencies,
+  collaborativeEditingSupport: CollaborativeEditingSupport,
 ): EditorState {
   switch (action.action) {
     case 'NEW':
       return UPDATE_FNS.NEW(action, state, workers, dispatch)
     case 'LOAD':
-      return UPDATE_FNS.LOAD(action, state, dispatch)
+      return UPDATE_FNS.LOAD(action, state, dispatch, collaborativeEditingSupport)
     case 'DUPLICATE_SELECTED':
       return UPDATE_FNS.DUPLICATE_SELECTED(state, dispatch)
     case 'UPDATE_DUPLICATION_STATE':

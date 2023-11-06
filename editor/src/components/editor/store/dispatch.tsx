@@ -42,6 +42,7 @@ import type {
 } from './editor-state'
 import {
   deriveState,
+  emptyCollaborativeEditingSupport,
   persistentModelFromEditorModel,
   reconstructJSXMetadata,
   storedEditorStateFromEditorState,
@@ -87,6 +88,7 @@ import {
 } from '../../../core/shared/parser-projectcontents-utils'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
 import { maybeClearPseudoInsertMode } from '../canvas-toolbar-states'
+import { updateCollaborativeProjectContents } from './collaborative-editing'
 
 type DispatchResultFields = {
   nothingChanged: boolean
@@ -207,6 +209,7 @@ function processAction(
     dispatchEvent,
     spyCollector,
     working.builtInDependencies,
+    working.collaborativeEditingSupport,
   )
   const editorAfterCanvas = runLocalCanvasAction(
     dispatchEvent,
@@ -262,6 +265,7 @@ function processAction(
     saveCountThisSession: working.saveCountThisSession,
     builtInDependencies: working.builtInDependencies,
     projectServerState: working.projectServerState,
+    collaborativeEditingSupport: working.collaborativeEditingSupport,
   }
 }
 
@@ -596,6 +600,7 @@ export function editorDispatchClosingOut(
     saveCountThisSession: saveCountThisSession + (shouldSave ? 1 : 0),
     builtInDependencies: storedState.builtInDependencies,
     projectServerState: storedState.projectServerState,
+    collaborativeEditingSupport: storedState.collaborativeEditingSupport,
   }
 
   reduxDevtoolsSendActions(actionGroupsToProcess, finalStore, allTransient)
@@ -640,6 +645,7 @@ export function editorDispatchClosingOut(
       updatedFromVSCodeOrParsedAfterCodeChange,
     )
     applyProjectChangesToVSCode(frozenEditorState, projectChanges)
+    updateCollaborativeProjectContents(finalStore.collaborativeEditingSupport, projectChanges)
   }
 
   const shouldUpdatePreview =
@@ -727,7 +733,9 @@ function applyProjectChangesToEditor(
   frozenEditorState: EditorState,
   projectChanges: ProjectChanges,
 ): void {
-  const updatedFileNames = projectChanges.fileChanges.map((fileChange) => fileChange.fullPath)
+  const updatedFileNames = projectChanges.fileChanges.allChanges.map(
+    (fileChange) => fileChange.fullPath,
+  )
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(
     frozenEditorState.projectContents,
     frozenEditorState.nodeModules.files,
@@ -924,6 +932,7 @@ function editorDispatchInner(
       saveCountThisSession: storedState.saveCountThisSession,
       builtInDependencies: storedState.builtInDependencies,
       projectServerState: storedState.projectServerState,
+      collaborativeEditingSupport: storedState.collaborativeEditingSupport,
     }
   } else {
     //empty return

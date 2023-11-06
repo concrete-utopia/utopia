@@ -58,9 +58,10 @@ import {
   interactionUpdate,
 } from './dispatch-strategies'
 import type { EditorStoreFull } from './editor-state'
-import { createEditorState, deriveState } from './editor-state'
+import { createEditorState, deriveState, emptyCollaborativeEditingSupport } from './editor-state'
 import { emptyProjectServerState } from './project-server-state'
 import { unpatchedCreateRemixDerivedDataMemo } from './remix-derived-data'
+import * as Y from 'yjs'
 
 function createEditorStore(
   interactionSession: InteractionSessionWithoutMetadata | null,
@@ -111,6 +112,7 @@ function createEditorStore(
     builtInDependencies: createBuiltInDependenciesList(null),
     postActionInteractionSession: null,
     projectServerState: emptyProjectServerState(),
+    collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
   }
 
   return initialEditorStore
