@@ -538,7 +538,10 @@ import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategie
 import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
 import { Multiplayer } from '../../canvas/multiplayer'
 import { messageSelection } from '../../canvas/multiplayer-messages'
-import { populateCollaborativeProjectContents } from '../store/collaborative-editing'
+import {
+  addHookForProjectChanges,
+  populateCollaborativeProjectContents,
+} from '../store/collaborative-editing'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1598,6 +1601,7 @@ export const UPDATE_FNS = {
       collaborativeEditingSupport,
       newModelMergedWithStoredStateAndStoryboardFile.projectContents,
     )
+    addHookForProjectChanges(collaborativeEditingSupport, dispatch)
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
   },
