@@ -63,6 +63,7 @@ import {
   getJSXComponentsAndImportsForPathFromState,
   DefaultPackageJson,
   regularNavigatorEntry,
+  emptyCollaborativeEditingSupport,
 } from './editor-state'
 import { runLocalEditorAction } from './editor-update'
 import { getLayoutPropertyOr } from '../../../core/layout/getLayoutProperty'
@@ -120,6 +121,7 @@ describe('action SELECT_VIEWS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testElementPath])
   })
@@ -136,6 +138,7 @@ describe('action SELECT_VIEWS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const action2 = selectComponents([testElementPath], false)
     const updatedEditor = runLocalEditorAction(
@@ -148,6 +151,7 @@ describe('action SELECT_VIEWS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testElementPath])
     chaiExpect(updatedEditor.navigator.collapsedViews).to.deep.equal([testElementPath])
@@ -165,6 +169,7 @@ describe('action SELECT_VIEWS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testScenePath])
   })
@@ -184,6 +189,7 @@ describe('action CLEAR_SELECTION', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     chaiExpect(updatedEditor.selectedViews).to.deep.equal([testElementPath])
 
@@ -198,6 +204,7 @@ describe('action CLEAR_SELECTION', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     chaiExpect(updatedEditor2.selectedViews).to.deep.equal([])
   })
@@ -218,6 +225,7 @@ describe('action RENAME_COMPONENT', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const updatedMetadata = createFakeMetadataForEditor(updatedEditor)
     chaiExpect(
@@ -240,6 +248,7 @@ describe('action RENAME_COMPONENT', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const clearedNameMetadata = createFakeMetadataForEditor(clearedNameEditor)
     chaiExpect(
@@ -271,6 +280,7 @@ describe('action TOGGLE_PANE', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
@@ -282,6 +292,7 @@ describe('action TOGGLE_PANE', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     chaiExpect(updatedEditor2.inspector.visible).to.not.equal(updatedEditor.inspector.visible)
   })
@@ -299,6 +310,7 @@ describe('action TOGGLE_PANE', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const updatedEditor2 = runLocalEditorAction(
       updatedEditor,
@@ -310,6 +322,7 @@ describe('action TOGGLE_PANE', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     chaiExpect(updatedEditor2.preview.visible).to.not.equal(updatedEditor.preview.visible)
   })
@@ -333,6 +346,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
     const oldUIJSFile = getProjectFileByFilePath(editor.projectContents, StoryboardFilePath)
@@ -374,6 +388,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
     const oldUIJSFile = getProjectFileByFilePath(editor.projectContents, StoryboardFilePath)
@@ -423,6 +438,7 @@ describe('action DUPLICATE_SPECIFIC_ELEMENTS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     expect(updatedEditor.projectContents).toEqual(editor.projectContents)
   })
@@ -466,6 +482,7 @@ describe('action DELETE_SELECTED', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
     if (
@@ -616,6 +633,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const updatedComponents = getJSXComponentsAndImportsForPathFromState(
       parentPath,
@@ -695,6 +713,7 @@ describe('INSERT_JSX_ELEMENT', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const updatedComponents = getJSXComponentsAndImportsForPathFromState(
       ScenePathForTestUiJsFile,
@@ -730,6 +749,7 @@ describe('action UPDATE_FRAME_DIMENSIONS', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     const mainUIJSFile = getProjectFileByFilePath(updatedEditor.projectContents, StoryboardFilePath)
     if (
@@ -773,6 +793,7 @@ describe('action SET_SAFE_MODE', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     expect(updatedEditor.safeMode).toBeTruthy()
   })
@@ -793,6 +814,7 @@ describe('action SET_SAVE_ERROR', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     expect(updatedEditor.saveError).toBeTruthy()
   })
@@ -813,6 +835,7 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     expect(updatedEditor.toasts).toHaveLength(1)
     expect(updatedEditor.toasts[0]).toEqual(firstToast)
@@ -828,6 +851,7 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     expect(updatedEditor2.toasts).toHaveLength(2)
     expect(updatedEditor2.toasts[0]).toEqual(firstToast)
@@ -844,6 +868,7 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
     expect(updatedEditor3.toasts).toHaveLength(3)
     expect(updatedEditor3.toasts[0]).toEqual(firstToast)
@@ -860,6 +885,7 @@ describe('action ADD_TOAST and REMOVE_TOAST', () => {
       dispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
 
     expect(updatedEditor4.toasts).toHaveLength(2)
@@ -897,6 +923,7 @@ describe('updating node_modules', () => {
       mockDispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
 
     expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeDefined()
@@ -921,6 +948,7 @@ describe('updating node_modules', () => {
       mockDispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
 
     expect(updatedEditor.nodeModules.files['/node_modules/example.js']).toBeUndefined()
@@ -948,6 +976,7 @@ describe('updating package.json', () => {
       mockDispatch,
       emptyUiJsxCanvasContextData(),
       builtInDependencies,
+      emptyCollaborativeEditingSupport(),
     )
 
     const packageJsonFile = getProjectFileByFilePath(updatedEditor.projectContents, '/package.json')

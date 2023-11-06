@@ -15,7 +15,11 @@ import type {
   EditorState,
   EditorStorePatched,
 } from '../../editor/store/editor-state'
-import { editorModelFromPersistentModel, StoryboardFilePath } from '../../editor/store/editor-state'
+import {
+  editorModelFromPersistentModel,
+  emptyCollaborativeEditingSupport,
+  StoryboardFilePath,
+} from '../../editor/store/editor-state'
 import { NO_OP } from '../../../core/shared/utils'
 import * as EP from '../../../core/shared/element-path'
 import type { ElementPath } from '../../../core/shared/project-file-types'
@@ -216,6 +220,7 @@ function callPropertyControlsHook(
     builtInDependencies: [],
     storeName: 'editor-store',
     projectServerState: emptyProjectServerState(),
+    collaborativeEditingSupport: emptyCollaborativeEditingSupport(),
   }
 
   const storeHook = createStoresAndState(initialEditorStore)

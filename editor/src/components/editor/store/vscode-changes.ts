@@ -25,7 +25,7 @@ import type {
   ToVSCodeMessageNoAccumulated,
 } from 'utopia-vscode-common'
 import { accumulatedToVSCodeMessage, toVSCodeExtensionMessage } from 'utopia-vscode-common'
-import type { EditorState } from './editor-state'
+import type { CollaborativeEditingSupport, EditorState } from './editor-state'
 import { getHighlightBoundsForElementPaths, getUnderlyingVSCodeBridgeID } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import * as EP from '../../../core/shared/element-path'
@@ -214,23 +214,36 @@ export function shouldIncludeSelectedElementChanges(
   )
 }
 
+export interface ProjectContentProjectChanges {
+  allChanges: Array<ProjectFileChange>
+  changesForVSCode: Array<ProjectFileChange>
+}
+
 export function getProjectContentsChanges(
   oldEditorState: EditorState,
   newEditorState: EditorState,
-): Array<ProjectFileChange> {
+): ProjectContentProjectChanges {
+  const projectChanges = collateProjectChanges(
+    getUnderlyingVSCodeBridgeID(oldEditorState.vscodeBridgeId),
+    oldEditorState.projectContents,
+    newEditorState.projectContents,
+  )
+
   if (oldEditorState.vscodeBridgeId != null) {
-    return collateProjectChanges(
-      getUnderlyingVSCodeBridgeID(oldEditorState.vscodeBridgeId),
-      oldEditorState.projectContents,
-      newEditorState.projectContents,
-    )
+    return {
+      allChanges: projectChanges,
+      changesForVSCode: projectChanges,
+    }
   } else {
-    return []
+    return {
+      allChanges: projectChanges,
+      changesForVSCode: [],
+    }
   }
 }
 
 export interface ProjectChanges {
-  fileChanges: Array<ProjectFileChange>
+  fileChanges: ProjectContentProjectChanges
   updateDecorations: UpdateDecorationsMessage | null
   selectedChanged: SelectedElementChanged | null
 }
@@ -264,14 +277,23 @@ export function combineProjectChanges(
   second: ProjectChanges,
 ): ProjectChanges {
   return {
-    fileChanges: combineFileChanges(first.fileChanges, second.fileChanges),
+    fileChanges: {
+      changesForVSCode: combineFileChanges(
+        first.fileChanges.changesForVSCode,
+        second.fileChanges.changesForVSCode,
+      ),
+      allChanges: combineFileChanges(first.fileChanges.allChanges, second.fileChanges.allChanges),
+    },
     updateDecorations: second.updateDecorations ?? first.updateDecorations,
     selectedChanged: second.selectedChanged ?? first.selectedChanged,
   }
 }
 
 export const emptyProjectChanges: ProjectChanges = {
-  fileChanges: [],
+  fileChanges: {
+    changesForVSCode: [],
+    allChanges: [],
+  },
   updateDecorations: null,
   selectedChanged: null,
 }
@@ -292,8 +314,9 @@ export function getProjectChanges(
   newEditorState: EditorState,
   updatedFromVSCode: boolean,
 ): ProjectChanges {
+  const projectChanges = getProjectContentsChanges(oldEditorState, newEditorState)
   return {
-    fileChanges: updatedFromVSCode ? [] : getProjectContentsChanges(oldEditorState, newEditorState),
+    fileChanges: updatedFromVSCode ? { ...projectChanges, changesForVSCode: [] } : projectChanges,
     updateDecorations: shouldIncludeVSCodeDecorations(oldEditorState, newEditorState)
       ? getCodeEditorDecorations(newEditorState)
       : null,
@@ -305,7 +328,7 @@ export function getProjectChanges(
 }
 
 export function sendVSCodeChanges(changes: ProjectChanges) {
-  applyProjectChanges(changes.fileChanges)
+  applyProjectChanges(changes.fileChanges.changesForVSCode)
   const toVSCodeAccumulated = projectChangesToVSCodeMessages(changes)
   if (toVSCodeAccumulated.messages.length > 0) {
     sendMessage(toVSCodeExtensionMessage(toVSCodeAccumulated))

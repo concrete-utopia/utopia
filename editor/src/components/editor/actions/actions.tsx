@@ -347,6 +347,7 @@ import type {
   NavigatorEntry,
   TrueUpTarget,
   TrueUpHuggingElement,
+  CollaborativeEditingSupport,
 } from '../store/editor-state'
 import {
   trueUpChildrenOfGroupChanged,
@@ -534,6 +535,7 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
 import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
+import { populateCollaborativeProjectContents } from '../store/collaborative-editing'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1539,7 +1541,12 @@ export const UPDATE_FNS = {
       codeResultCache: action.codeResultCache,
     }
   },
-  LOAD: (action: Load, oldEditor: EditorModel, dispatch: EditorDispatch): EditorModel => {
+  LOAD: (
+    action: Load,
+    oldEditor: EditorModel,
+    dispatch: EditorDispatch,
+    collaborativeEditingSupport: CollaborativeEditingSupport,
+  ): EditorModel => {
     const migratedModel = applyMigrations(action.model)
     const parsedProjectFiles = applyToAllUIJSFiles(
       migratedModel.projectContents,
@@ -1583,6 +1590,10 @@ export const UPDATE_FNS = {
       newModelMergedWithStoredStateAndStoryboardFile.projectContents,
       dispatch,
       StoryboardFilePath,
+    )
+    populateCollaborativeProjectContents(
+      collaborativeEditingSupport,
+      newModelMergedWithStoredStateAndStoryboardFile.projectContents,
     )
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)

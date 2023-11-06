@@ -77,7 +77,7 @@ import type {
 import type { KeysPressed } from '../../../utils/keyboard'
 import type { IndexPosition } from '../../../utils/utils'
 import Utils from '../../../utils/utils'
-import type { ProjectContentTreeRoot } from '../../assets'
+import type { ProjectContentFile, ProjectContentTreeRoot } from '../../assets'
 import { packageJsonFileFromProjectContents } from '../../assets'
 import {
   addFileToProjectContents,
@@ -174,6 +174,8 @@ import type { RemixDerivedData, RemixDerivedDataFactory } from './remix-derived-
 import type { ProjectServerState } from './project-server-state'
 import type { ReparentTargetForPaste } from '../../canvas/canvas-strategies/strategies/reparent-utils'
 import { GridMenuWidth } from '../../canvas/stored-layout'
+import * as Y from 'yjs'
+import { WebrtcProvider } from 'y-webrtc'
 
 const ObjectPathImmutable: any = OPI
 
@@ -388,6 +390,25 @@ export const defaultUserState: UserState = {
   },
 }
 
+export interface CollaborativeEditingSupport {
+  mergeDoc: Y.Doc
+  projectContents: Y.Map<ProjectFile | 'DIRECTORY'>
+  webRTCProvider: WebrtcProvider
+}
+
+export function emptyCollaborativeEditingSupport(): CollaborativeEditingSupport {
+  const doc = new Y.Doc()
+  const webRTCProvider = new WebrtcProvider('utopia-room', doc, {
+    signaling: ['ws://192.168.1.144:4444'],
+    password: 'utopia-password',
+  })
+  return {
+    mergeDoc: doc,
+    projectContents: doc.getMap('projectContents'),
+    webRTCProvider: webRTCProvider,
+  }
+}
+
 export type EditorStoreShared = {
   postActionInteractionSession: PostActionMenuSession | null
   strategyState: StrategyState
@@ -398,6 +419,7 @@ export type EditorStoreShared = {
   builtInDependencies: BuiltInDependencies
   saveCountThisSession: number
   projectServerState: ProjectServerState
+  collaborativeEditingSupport: CollaborativeEditingSupport
 }
 
 export type EditorStoreFull = EditorStoreShared & {
