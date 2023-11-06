@@ -8,7 +8,7 @@ import { drop } from '../../../core/shared/array-utils'
 import { walkContentsTree, type ProjectContentTreeRoot } from '../../../components/assets'
 import type { EditorDispatch } from '../action-types'
 import { updateFile } from '../actions/action-creators'
-import { forceNotNull } from 'src/core/shared/optional-utils'
+import { forceNotNull } from '../../../core/shared/optional-utils'
 
 function applyFileChangeToMap(
   change: ProjectFileChange,
