@@ -79,8 +79,9 @@ import { FlexCol } from 'utopia-api'
 import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel'
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
-import { isFeatureEnabled } from '../../utils/feature-switches'
 import { ConstraintsSection } from './constraints-section'
+import { ComponentStateDataAtom } from '../../core/shared/javascript-cache'
+import { useAtom } from 'jotai'
 
 export interface ElementPathElement {
   name?: string
@@ -95,6 +96,24 @@ export interface InspectorProps extends TargetSelectorSectionProps {
   setSelectedTarget: React.Dispatch<React.SetStateAction<string[]>>
   selectedViews: Array<ElementPath>
 }
+
+const TheThing = React.memo(() => {
+  const [componentStateData] = useAtom(ComponentStateDataAtom)
+
+  const onClick = React.useCallback(() => {
+    // console.log(componentStateData)
+  }, [])
+  // }, [componentStateData])
+
+  return (
+    <FlexRow>
+      The Thing
+      <Button onClick={onClick}>
+        <Icn type='fitToChildren' color='main' category='layout/commands' width={16} height={16} />
+      </Button>
+    </FlexRow>
+  )
+})
 
 interface AlignDistributeButtonProps {
   onMouseUp: () => void
@@ -362,6 +381,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               paddingBottom: 50,
             }}
           >
+            <TheThing />
             {rootElementIsSelected ? (
               <RootElementIndicator />
             ) : (

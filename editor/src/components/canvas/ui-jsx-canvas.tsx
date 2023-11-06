@@ -90,8 +90,10 @@ import {
 import { forceNotNull } from '../../core/shared/optional-utils'
 import { useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
-import { useAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
+import type { UpdateComponentStateData } from '../../core/shared/javascript-cache'
+import { ComponentStateDataAtom } from '../../core/shared/javascript-cache'
 
 applyUIDMonkeyPatch()
 
@@ -385,6 +387,8 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
   let resolvedFiles = React.useRef<MapLike<MapLike<any>>>({}) // Mapping from importOrigin to resolved scopes for the imported files
   resolvedFiles.current = {}
 
+  const setHookValues = useSetAtom(ComponentStateDataAtom)
+
   const customRequire = React.useCallback(
     (importOrigin: string, toImport: string) => {
       if (resolvedFiles.current[importOrigin] == null) {
@@ -413,6 +417,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
         displayNoneInstances,
         metadataContext,
         updateInvalidatedPaths,
+        setHookValues,
         shouldIncludeCanvasRootInTheSpy,
         filePathResolveResult,
         editedText,
@@ -430,7 +435,6 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       )
     },
     [
-      requireFn,
       resolve,
       projectContentsForRequireFn,
       uiFilePath,
@@ -439,8 +443,10 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       displayNoneInstances,
       metadataContext,
       updateInvalidatedPaths,
+      setHookValues,
       shouldIncludeCanvasRootInTheSpy,
       editedText,
+      requireFn,
     ],
   )
 
@@ -457,6 +463,7 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
       displayNoneInstances,
       metadataContext,
       updateInvalidatedPaths,
+      setHookValues,
       props.shouldIncludeCanvasRootInTheSpy,
       editedText,
     )
@@ -469,16 +476,17 @@ export const UiJsxCanvas = React.memo<UiJsxCanvasPropsWithErrorCallback>((props)
     }
     return executionScope
   }, [
-    base64FileBlobs,
+    uiFilePath,
     customRequire,
-    displayNoneInstances,
-    hiddenInstances,
-    metadataContext,
     projectContentsForRequireFn,
+    base64FileBlobs,
+    hiddenInstances,
+    displayNoneInstances,
+    metadataContext,
+    updateInvalidatedPaths,
+    setHookValues,
     props.shouldIncludeCanvasRootInTheSpy,
     editedText,
-    uiFilePath,
-    updateInvalidatedPaths,
   ])
 
   evaluatedFileNames.current = getListOfEvaluatedFiles()
@@ -594,6 +602,7 @@ export function attemptToResolveParsedComponents(
   displayNoneInstances: Array<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
+  updateComponentStateData: UpdateComponentStateData,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePathResolveResult: Either<string, string>,
   editedText: ElementPath | null,
@@ -635,6 +644,7 @@ export function attemptToResolveParsedComponents(
             displayNoneInstances,
             metadataContext,
             updateInvalidatedPaths,
+            updateComponentStateData,
             shouldIncludeCanvasRootInTheSpy,
             editedText,
           )

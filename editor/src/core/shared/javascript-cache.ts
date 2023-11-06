@@ -6,7 +6,10 @@ import type {
 import type { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 import React from 'react'
+import type { SetStateAction, useSetAtom } from 'jotai'
 import { atom } from 'jotai'
+import type { ElementPath } from './project-file-types'
+import * as EP from './element-path'
 
 type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock | JSXMapExpression
 
@@ -21,17 +24,40 @@ export function resetFunctionCache(): void {
 }
 
 type PropsData = Record<string, any>
+type HookData = Record<string, any>
 
 interface ComponentStateData {
   props: PropsData
-  hooks: [any]
+  hooks: HookData
 }
 
 interface ComponentStateDataMap {
   [pathString: string]: ComponentStateData
 }
 
-const ComponentStateDataAtom = atom<ComponentStateDataMap>({})
+export const ComponentStateDataAtom = atom<ComponentStateDataMap>({})
+
+export type UpdateComponentStateData = (
+  update: (currentValue: ComponentStateDataMap) => ComponentStateDataMap,
+) => void
+
+export function updateComponentStateDataAtom(
+  componentStateData: ComponentStateDataMap,
+  elementPath: ElementPath,
+  hookId: string,
+  value: any,
+): ComponentStateDataMap {
+  const elementPathString = EP.toString(elementPath)
+  const entryForThisPath = componentStateData[elementPathString] ?? { props: {}, hooks: {} }
+  const updatedEntries = {
+    ...componentStateData,
+    [elementPathString]: {
+      props: entryForThisPath.props,
+      hooks: { ...entryForThisPath.hooks, [hookId]: value },
+    },
+  }
+  return updatedEntries
+}
 
 type Callable<Args extends any[] = any[], ReturnType = any> = (...args: Args) => ReturnType
 

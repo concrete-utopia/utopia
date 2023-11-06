@@ -43,8 +43,14 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
-import type { SetHookResultFunction } from '../../../core/shared/javascript-cache'
-import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
+import type {
+  SetHookResultFunction,
+  UpdateComponentStateData,
+} from '../../../core/shared/javascript-cache'
+import {
+  resolveParamsAndRunJsCode,
+  updateComponentStateDataAtom,
+} from '../../../core/shared/javascript-cache'
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
@@ -80,6 +86,7 @@ export function createLookupRender(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: UpdateComponentStateData,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
@@ -128,6 +135,7 @@ export function createLookupRender(
       reactChildren,
       metadataContext,
       updateInvalidatedPaths,
+      updateComponentStateData,
       jsxFactoryFunctionName,
       null,
       shouldIncludeCanvasRootInTheSpy,
@@ -173,6 +181,7 @@ export function renderCoreElement(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: UpdateComponentStateData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -187,8 +196,13 @@ export function renderCoreElement(
   }
 
   const setHookValue: SetHookResultFunction = (id, value) => {
-    // TODO setHookValue
-    // console.log('renderCoreElement:', { id, value })
+    if (elementPath == null) {
+      return
+    }
+    // console.log('createExecutionScope:', { id, value })
+    updateComponentStateData((componentStateDataMap) =>
+      updateComponentStateDataAtom(componentStateDataMap, elementPath, id, value),
+    )
   }
 
   switch (element.type) {
@@ -210,6 +224,7 @@ export function renderCoreElement(
             reactChildren,
             metadataContext,
             updateInvalidatedPaths,
+            updateComponentStateData,
             jsxFactoryFunctionName,
             shouldIncludeCanvasRootInTheSpy,
             filePath,
@@ -259,6 +274,7 @@ export function renderCoreElement(
         passthroughProps,
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
@@ -329,6 +345,7 @@ export function renderCoreElement(
         reactChildren,
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         filePath,
@@ -368,6 +385,7 @@ export function renderCoreElement(
         [],
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         null,
         shouldIncludeCanvasRootInTheSpy,
@@ -492,6 +510,7 @@ export function renderCoreElement(
         reactChildren,
         metadataContext,
         updateInvalidatedPaths,
+        updateComponentStateData,
         jsxFactoryFunctionName,
         codeError,
         shouldIncludeCanvasRootInTheSpy,
@@ -675,6 +694,7 @@ function renderJSXElement(
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: UpdateComponentStateData,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -701,6 +721,7 @@ function renderJSXElement(
       undefined,
       metadataContext,
       updateInvalidatedPaths,
+      updateComponentStateData,
       jsxFactoryFunctionName,
       codeError,
       shouldIncludeCanvasRootInTheSpy,

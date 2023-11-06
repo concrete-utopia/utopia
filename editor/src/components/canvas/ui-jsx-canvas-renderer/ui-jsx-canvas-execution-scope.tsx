@@ -24,7 +24,10 @@ import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { getParseSuccessForFilePath } from '../canvas-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import type { SetHookResultFunction } from '../../../core/shared/javascript-cache'
+import {
+  type SetHookResultFunction,
+  type UpdateComponentStateData,
+} from '../../../core/shared/javascript-cache'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -48,6 +51,7 @@ export function createExecutionScope(
   displayNoneInstances: Array<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
+  updateComponentStateData: UpdateComponentStateData,
   shouldIncludeCanvasRootInTheSpy: boolean,
   editedText: ElementPath | null,
 ): {
@@ -128,6 +132,7 @@ export function createExecutionScope(
       undefined,
       metadataContext,
       updateInvalidatedPaths,
+      updateComponentStateData,
       jsxFactoryFunction,
       shouldIncludeCanvasRootInTheSpy,
       openStoryboardFileNameKILLME,
@@ -145,8 +150,11 @@ export function createExecutionScope(
     )
 
     const setHookValue: SetHookResultFunction = (id, value) => {
-      // TODO setHookValue
+      // TODO spike: can't get the element path here, we need to figure out what to do here
       // console.log('createExecutionScope:', { id, value })
+      // updateComponentStateData((componentStateDataMap) =>
+      //   updateComponentStateDataAtom(componentStateDataMap, instancePath, id, value),
+      // )
     }
 
     runBlockUpdatingScope(

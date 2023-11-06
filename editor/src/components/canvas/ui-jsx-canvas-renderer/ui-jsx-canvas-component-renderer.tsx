@@ -31,7 +31,12 @@ import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elem
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import type { SetHookResultFunction } from '../../../core/shared/javascript-cache'
+import {
+  ComponentStateDataAtom,
+  updateComponentStateDataAtom,
+  type SetHookResultFunction,
+} from '../../../core/shared/javascript-cache'
+import { useSetAtom } from 'jotai'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -134,9 +139,16 @@ export function createComponentRendererComponent(params: {
       throw new ReferenceError(`${params.topLevelElementName} is not defined`)
     }
 
+    const setHookValues = useSetAtom(ComponentStateDataAtom)
+
     const setHookValue: SetHookResultFunction = (id, value) => {
-      // TODO setHookValue
+      if (instancePath == null) {
+        return
+      }
       // console.log('createExecutionScope:', { id, value })
+      setHookValues((componentStateDataMap) =>
+        updateComponentStateDataAtom(componentStateDataMap, instancePath, id, value),
+      )
     }
 
     const appliedProps = optionalMap(
@@ -201,6 +213,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
+        setHookValues,
         mutableContext.jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         params.filePath,
@@ -247,6 +260,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
+        setHookValues,
         mutableContext.jsxFactoryFunctionName,
         codeError,
         shouldIncludeCanvasRootInTheSpy,
