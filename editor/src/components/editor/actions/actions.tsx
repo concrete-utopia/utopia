@@ -535,7 +535,10 @@ import { getLayoutProperty } from '../../../core/layout/getLayoutProperty'
 import { resultForFirstApplicableStrategy } from '../../inspector/inspector-strategies/inspector-strategy'
 import { reparentToUnwrapAsAbsoluteStrategy } from '../one-shot-unwrap-strategies/reparent-to-unwrap-as-absolute-strategy'
 import { convertToAbsoluteAndReparentToUnwrapStrategy } from '../one-shot-unwrap-strategies/convert-to-absolute-and-reparent-to-unwrap'
-import { populateCollaborativeProjectContents } from '../store/collaborative-editing'
+import {
+  addHookForProjectChanges,
+  populateCollaborativeProjectContents,
+} from '../store/collaborative-editing'
 
 export const MIN_CODE_PANE_REOPEN_WIDTH = 100
 
@@ -1595,6 +1598,7 @@ export const UPDATE_FNS = {
       collaborativeEditingSupport,
       newModelMergedWithStoredStateAndStoryboardFile.projectContents,
     )
+    addHookForProjectChanges(collaborativeEditingSupport, dispatch)
 
     return loadModel(newModelMergedWithStoredStateAndStoryboardFile, oldEditor)
   },
