@@ -24,7 +24,6 @@ import {
   renderCoreElement,
   utopiaCanvasJSXLookup,
 } from './ui-jsx-canvas-element-renderer-utils'
-import { useContextSelector } from 'use-context-selector'
 import type { ElementPath } from '../../../core/shared/project-file-types'
 import { UTOPIA_INSTANCE_PATH, UTOPIA_PATH_KEY } from '../../../core/model/utopia-constants'
 import { getPathsFromString, getUtopiaID } from '../../../core/shared/uid-utils'
@@ -32,7 +31,7 @@ import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elem
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
+import type { SetHookResultFunction } from '../../../core/shared/javascript-cache'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -135,6 +134,11 @@ export function createComponentRendererComponent(params: {
       throw new ReferenceError(`${params.topLevelElementName} is not defined`)
     }
 
+    const setHookValue: SetHookResultFunction = (id, value) => {
+      // TODO setHookValue
+      // console.log('createExecutionScope:', { id, value })
+    }
+
     const appliedProps = optionalMap(
       (param) =>
         applyPropsParamToPassedProps(
@@ -143,6 +147,7 @@ export function createComponentRendererComponent(params: {
           mutableContext.requireResult,
           realPassedProps,
           param,
+          setHookValue,
         ),
       utopiaJsxComponent.param,
     ) ?? { props: realPassedProps }
@@ -217,6 +222,7 @@ export function createComponentRendererComponent(params: {
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
+        setHookValue,
       )
     }
 

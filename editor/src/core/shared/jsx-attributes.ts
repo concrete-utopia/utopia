@@ -36,6 +36,7 @@ import {
   jsxAttributeNestedArraySimple,
   clearExpressionUniqueIDs,
 } from './element-template'
+import type { SetHookResultFunction } from './javascript-cache'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type { PropertyPath, PropertyPathPart } from './project-file-types'
 import * as PP from './property-path'
@@ -182,6 +183,7 @@ export function jsxAttributeToValue(
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
   attribute: JSExpression,
+  setHookResult: SetHookResultFunction,
 ): any {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -189,7 +191,13 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_NESTED_ARRAY':
       let returnArray: Array<any> = []
       for (const elem of attribute.content) {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, elem.value)
+        const value = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          elem.value,
+          setHookResult,
+        )
         switch (elem.type) {
           case 'ARRAY_VALUE':
             returnArray.push(value)
@@ -206,7 +214,13 @@ export function jsxAttributeToValue(
     case 'ATTRIBUTE_NESTED_OBJECT':
       let returnObject: { [key: string]: any } = {}
       for (const prop of attribute.content) {
-        const value = jsxAttributeToValue(filePath, inScope, requireResult, prop.value)
+        const value = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          prop.value,
+          setHookResult,
+        )
 
         switch (prop.type) {
           case 'PROPERTY_ASSIGNMENT':
@@ -225,14 +239,14 @@ export function jsxAttributeToValue(
       const foundFunction = (UtopiaUtils as any)[attribute.functionName]
       if (foundFunction != null) {
         const resolvedParameters = attribute.parameters.map((param) => {
-          return jsxAttributeToValue(filePath, inScope, requireResult, param)
+          return jsxAttributeToValue(filePath, inScope, requireResult, param, setHookResult)
         })
         return foundFunction(...resolvedParameters)
       }
       throw new Error(`Couldn't find helper function with name ${attribute.functionName}`)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, attribute, requireResult, inScope)
+      return resolveParamsAndRunJsCode(filePath, attribute, requireResult, inScope, setHookResult)
     default:
       assertNever(attribute)
   }
@@ -243,17 +257,24 @@ export function jsxAttributesToProps(
   inScope: MapLike<any>,
   attributes: JSXAttributes,
   requireResult: MapLike<any>,
+  setHookResult: SetHookResultFunction,
 ): any {
   let result: any = {}
   for (const entry of attributes) {
     switch (entry.type) {
       case 'JSX_ATTRIBUTES_ENTRY':
-        result[entry.key] = jsxAttributeToValue(filePath, inScope, requireResult, entry.value)
+        result[entry.key] = jsxAttributeToValue(
+          filePath,
+          inScope,
+          requireResult,
+          entry.value,
+          setHookResult,
+        )
         break
       case 'JSX_ATTRIBUTES_SPREAD':
         Object.assign(
           result,
-          jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue),
+          jsxAttributeToValue(filePath, inScope, requireResult, entry.spreadValue, setHookResult),
         )
         break
       default:

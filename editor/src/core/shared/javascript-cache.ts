@@ -3,9 +3,10 @@ import type {
   ArbitraryJSBlock,
   JSXMapExpression,
 } from './element-template'
-import { JSExpression } from './element-template'
 import type { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
+import React from 'react'
+import { atom } from 'jotai'
 
 type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock | JSXMapExpression
 
@@ -19,17 +20,61 @@ export function resetFunctionCache(): void {
   functionCache = {}
 }
 
+type PropsData = Record<string, any>
+
+interface ComponentStateData {
+  props: PropsData
+  hooks: [any]
+}
+
+interface ComponentStateDataMap {
+  [pathString: string]: ComponentStateData
+}
+
+const ComponentStateDataAtom = atom<ComponentStateDataMap>({})
+
+type Callable<Args extends any[] = any[], ReturnType = any> = (...args: Args) => ReturnType
+
+export type SetHookResultFunction = (hookId: string, result: any) => void
+
 export function resolveParamsAndRunJsCode(
   filePath: string,
   javascriptBlock: JavaScriptContainer,
   requireResult: MapLike<any>,
   currentScope: MapLike<any>,
+  setHookResult: SetHookResultFunction,
 ): any {
+  let hookCounter = 0
+  const hookOverride =
+    <Hook extends Callable, StoredType>(
+      name: string,
+      originalHook: Hook,
+      picker: (_: ReturnType<Hook>) => StoredType,
+    ) =>
+    (...args: unknown[]) => {
+      hookCounter += 1
+      const hookId = `${name}-${hookCounter}`
+      const useStateResult = originalHook(args)
+      setHookResult(hookId, picker(useStateResult))
+
+      return useStateResult
+    }
+
+  const useStateOverridden = hookOverride('useState', React.useState, (a) => a[0])
+
+  const MonkeyReact = {
+    ...React,
+    useState: useStateOverridden,
+  }
+
   const definedElsewhereInfo = resolveDefinedElsewhere(
     javascriptBlock.definedElsewhere,
     requireResult,
     currentScope,
   )
+  definedElsewhereInfo['React'] = MonkeyReact
+  definedElsewhereInfo['useState'] = useStateOverridden
+
   const updatedBlock = {
     ...javascriptBlock,
     definedElsewhere: Object.keys(definedElsewhereInfo),

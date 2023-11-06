@@ -1,7 +1,6 @@
 import type { MapLike } from 'typescript'
 import type {
   Param,
-  JSExpressionOtherJavaScript,
   BoundParam,
   JSExpressionMapOrOtherJavascript,
 } from '../../../core/shared/element-template'
@@ -10,7 +9,8 @@ import {
   isDestructuredObject,
   isOmittedParam,
 } from '../../../core/shared/element-template'
-import { AnyMap, jsxAttributeToValue } from '../../../core/shared/jsx-attributes'
+import { jsxAttributeToValue } from '../../../core/shared/jsx-attributes'
+import type { SetHookResultFunction } from '../../../core/shared/javascript-cache'
 
 export function applyPropsParamToPassedProps(
   filePath: string,
@@ -18,6 +18,7 @@ export function applyPropsParamToPassedProps(
   requireResult: MapLike<any>,
   passedProps: MapLike<unknown>,
   propsParam: Param,
+  setHookResult: SetHookResultFunction,
 ): MapLike<unknown> {
   let output: MapLike<unknown> = {}
 
@@ -26,7 +27,7 @@ export function applyPropsParamToPassedProps(
     defaultExpression: JSExpressionMapOrOtherJavascript | null,
   ): unknown {
     if (value === undefined && defaultExpression != null) {
-      return jsxAttributeToValue(filePath, inScope, requireResult, defaultExpression)
+      return jsxAttributeToValue(filePath, inScope, requireResult, defaultExpression, setHookResult)
     } else {
       return value
     }

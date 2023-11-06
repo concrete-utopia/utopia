@@ -43,6 +43,7 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
+import type { SetHookResultFunction } from '../../../core/shared/javascript-cache'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
@@ -66,7 +67,6 @@ import {
   isUtopiaCommentFlagMapCount,
 } from '../../../core/shared/comment-flags'
 import { RemixSceneComponent } from './remix-scene-component'
-import { isFeatureEnabled } from '../../../utils/feature-switches'
 
 export function createLookupRender(
   elementPath: ElementPath | null,
@@ -186,6 +186,11 @@ export function renderCoreElement(
     throw codeError
   }
 
+  const setHookValue: SetHookResultFunction = (id, value) => {
+    // TODO setHookValue
+    // console.log('renderCoreElement:', { id, value })
+  }
+
   switch (element.type) {
     case 'JSX_ELEMENT': {
       const elementsWithinProps = getAccumulatedElementsWithin(element.props)
@@ -232,6 +237,7 @@ export function renderCoreElement(
         blockScope,
         element.props,
         requireResult,
+        setHookValue,
       )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
@@ -341,7 +347,8 @@ export function renderCoreElement(
           innerRender,
         ),
       }
-      return runJSExpression(filePath, requireResult, element, blockScope)
+
+      return runJSExpression(filePath, requireResult, element, blockScope, setHookValue)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -398,6 +405,7 @@ export function renderCoreElement(
         inScope,
         requireResult,
         element.condition,
+        setHookValue,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -527,7 +535,7 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(filePath, inScope, requireResult, element)
+      return jsxAttributeToValue(filePath, inScope, requireResult, element, setHookValue)
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -899,17 +907,17 @@ function runJSExpression(
   requireResult: MapLike<any>,
   block: JSExpression,
   currentScope: MapLike<any>,
-  limit?: number,
+  setHookResult: SetHookResultFunction,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
     case 'ATTRIBUTE_NESTED_ARRAY':
     case 'ATTRIBUTE_NESTED_OBJECT':
     case 'ATTRIBUTE_FUNCTION_CALL':
-      return jsxAttributeToValue(filePath, block, requireResult, block)
+      return jsxAttributeToValue(filePath, block, requireResult, block, setHookResult)
     case 'JSX_MAP_EXPRESSION':
     case 'ATTRIBUTE_OTHER_JAVASCRIPT':
-      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope)
+      return resolveParamsAndRunJsCode(filePath, block, requireResult, currentScope, setHookResult)
     default:
       assertNever(block)
   }
