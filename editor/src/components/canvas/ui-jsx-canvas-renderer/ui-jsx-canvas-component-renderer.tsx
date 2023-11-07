@@ -79,6 +79,15 @@ function tryToGetInstancePath(
   }
 }
 
+const HookValueReff: {
+  current: {
+    [elementPathString: string]: {
+      fiberReference: any
+      hookValues: Array<any>
+    }
+  }
+} = { current: {} }
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
   filePath: string
@@ -203,6 +212,7 @@ export function createComponentRendererComponent(params: {
       if (instancePath == null) {
         return
       }
+      const elementPathString = EP.toString(instancePath)
       /**
        * TODO move this to a dedicated helper and share code with dom-walker
        */
@@ -257,6 +267,28 @@ export function createComponentRendererComponent(params: {
       }
 
       const firstHookAfterSentinel = findHooksAfterSentinel(matchingFiber.memoizedState)
+
+      function forEachHook(callback: (hookValue: any, hookIndex: number) => void, firstHook: any) {
+        if (firstHook == null) {
+          return
+        }
+        let workingHook = firstHook
+        let hookIndex = 0
+        while (workingHook.memoizedState !== 'uto-sentinel') {
+          callback(workingHook.memoizedState, hookIndex)
+          hookIndex++
+          workingHook = workingHook.next
+        }
+      }
+
+      HookValueReff.current[elementPathString] = {
+        fiberReference: matchingFiber,
+        hookValues: [],
+      }
+
+      forEachHook((hookValue, index) => {
+        HookValueReff.current[elementPathString].hookValues.push(hookValue)
+      }, firstHookAfterSentinel)
     })
 
     React.useState('sentinel')
