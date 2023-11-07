@@ -12,6 +12,7 @@ import {
 import { setPanelVisibility, setRightMenuTab } from './actions/action-creators'
 import { InsertMenuFilterTestId } from './insertmenu'
 import { RightMenuTab } from './store/editor-state'
+import { wait } from '../../utils/utils.test-utils'
 
 function getInsertItems() {
   return screen.queryAllByTestId(/^insert-item-/gi)
@@ -26,7 +27,7 @@ function openInsertMenu(renderResult: EditorRenderResult) {
   )
 }
 
-describe('insert menu', () => {
+describe.only('insert menu', () => {
   describe('filter search', () => {
     it('can filter by component name', async () => {
       const renderResult = await renderTestEditorWithCode(
@@ -35,6 +36,8 @@ describe('insert menu', () => {
       )
 
       await openInsertMenu(renderResult)
+
+      await wait(100000)
 
       expect(getInsertItems().length).toEqual(allInsertItemsCount)
 
