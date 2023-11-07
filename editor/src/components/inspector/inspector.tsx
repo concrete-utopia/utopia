@@ -123,13 +123,10 @@ const SnapshotUI = React.memo(() => {
     setSnapshotSequenceNumber((s) => s + 1)
   }, [snapshotSequenceNumber])
 
-  const restoreSnapshot = React.useCallback(
-    (snapshot: any) => {
-      restoreHookValues(snapshot)
-      dispatch([EditorActions.resetCanvas()])
-    },
-    [dispatch],
-  )
+  const restoreSnapshot = React.useCallback((snapshot: any) => {
+    restoreHookValues(snapshot)
+    // dispatch([EditorActions.resetCanvas()])
+  }, [])
 
   return (
     <FlexColumn>

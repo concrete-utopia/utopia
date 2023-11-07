@@ -97,7 +97,7 @@ export function restoreHookValues(snapshot: typeof HookValueReff.current) {
     forEachHook((hook, index) => {
       hook.memoizedState = hookValues[index]
       hook.baseState = hookValues[index]
-    }, fiberReference)
+    }, findHooksAfterSentinel(fiberReference.memoizedState))
 
     // We aren't actually adding an update to the queue,
     // because there is no update we can add for useReducer hooks that won't trigger an error.
@@ -274,20 +274,6 @@ export function createComponentRendererComponent(params: {
 
       const matchingFiber = walkUpUntilMatchingFiber(foundFiber)
 
-      function findHooksAfterSentinel(maybeSentinel: any) {
-        if (maybeSentinel == null) {
-          return null
-        }
-
-        if (maybeSentinel.memoizedState === 'sentinel') {
-          if (maybeSentinel.next?.memoizedState === 'uto-sentinel') {
-            return null
-          }
-          return maybeSentinel.next
-        }
-        return findHooksAfterSentinel(maybeSentinel.next)
-      }
-
       const firstHookAfterSentinel = findHooksAfterSentinel(matchingFiber.memoizedState)
 
       HookValueReff.current[elementPathString] = {
@@ -450,4 +436,18 @@ function forEachHook(callback: (hook: any, hookIndex: number) => void, firstHook
     hookIndex++
     workingHook = workingHook.next
   }
+}
+
+function findHooksAfterSentinel(maybeSentinel: any) {
+  if (maybeSentinel == null) {
+    return null
+  }
+
+  if (maybeSentinel.memoizedState === 'sentinel') {
+    if (maybeSentinel.next?.memoizedState === 'uto-sentinel') {
+      return null
+    }
+    return maybeSentinel.next
+  }
+  return findHooksAfterSentinel(maybeSentinel.next)
 }
