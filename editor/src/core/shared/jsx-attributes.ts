@@ -36,7 +36,7 @@ import {
   jsxAttributeNestedArraySimple,
   clearExpressionUniqueIDs,
 } from './element-template'
-import type { SetHookResultFunction } from './javascript-cache'
+import type { HookResultFunction } from './javascript-cache'
 import { resolveParamsAndRunJsCode } from './javascript-cache'
 import type { PropertyPath, PropertyPathPart } from './project-file-types'
 import * as PP from './property-path'
@@ -183,7 +183,7 @@ export function jsxAttributeToValue(
   inScope: MapLike<any>,
   requireResult: MapLike<any>,
   attribute: JSExpression,
-  setHookResult: SetHookResultFunction,
+  setHookResult: HookResultFunction,
 ): any {
   switch (attribute.type) {
     case 'ATTRIBUTE_VALUE':
@@ -257,7 +257,7 @@ export function jsxAttributesToProps(
   inScope: MapLike<any>,
   attributes: JSXAttributes,
   requireResult: MapLike<any>,
-  setHookResult: SetHookResultFunction,
+  setHookResult: HookResultFunction,
 ): any {
   let result: any = {}
   for (const entry of attributes) {

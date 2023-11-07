@@ -33,10 +33,13 @@ import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
 import {
   ComponentStateDataAtom,
-  updateComponentStateDataAtom,
-  type SetHookResultFunction,
+  updateComponentStateData,
+  type HookResultFunction,
+  ComponentStateRecordingModeAtom,
+  getFromComponentStateData,
 } from '../../../core/shared/javascript-cache'
-import { useSetAtom } from 'jotai'
+import { useAtom, useSetAtom } from 'jotai'
+import { NO_OP, assertNever } from '../../../core/shared/utils'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -140,16 +143,7 @@ export function createComponentRendererComponent(params: {
     }
 
     const setHookValues = useSetAtom(ComponentStateDataAtom)
-
-    const setHookValue: SetHookResultFunction = (id, value) => {
-      if (instancePath == null) {
-        return
-      }
-      // console.log('createExecutionScope:', { id, value })
-      setHookValues((componentStateDataMap) =>
-        updateComponentStateDataAtom(componentStateDataMap, instancePath, id, value),
-      )
-    }
+    const [hookValuesMode] = useAtom(ComponentStateRecordingModeAtom)
 
     const appliedProps = optionalMap(
       (param) =>
@@ -159,7 +153,7 @@ export function createComponentRendererComponent(params: {
           mutableContext.requireResult,
           realPassedProps,
           param,
-          setHookValue,
+          NO_OP,
         ),
       utopiaJsxComponent.param,
     ) ?? { props: realPassedProps }
@@ -201,6 +195,22 @@ export function createComponentRendererComponent(params: {
     }
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
+      const setHookValuesFn: HookResultFunction =
+        hookValuesMode.type === 'recording'
+          ? (hookId, value) =>
+              setHookValues((currentValue) =>
+                updateComponentStateData(currentValue, rootElementPath ?? EP.emptyElementPath)(
+                  hookId,
+                  value,
+                ),
+              )
+          : hookValuesMode.type === 'pinned'
+          ? getFromComponentStateData(
+              hookValuesMode.componentStateDataMap,
+              rootElementPath ?? EP.emptyElementPath,
+            )
+          : assertNever(hookValuesMode)
+
       const lookupRenderer = createLookupRender(
         rootElementPath,
         scope,
@@ -213,7 +223,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
-        setHookValues,
+        setHookValuesFn,
         mutableContext.jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         params.filePath,
@@ -235,7 +245,7 @@ export function createComponentRendererComponent(params: {
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
-        setHookValue,
+        setHookValuesFn,
       )
     }
 
@@ -244,6 +254,22 @@ export function createComponentRendererComponent(params: {
         (path) => EP.appendNewElementPath(path, getUtopiaID(element)),
         instancePath,
       )
+
+      const setHookValuesFn: HookResultFunction =
+        hookValuesMode.type === 'recording'
+          ? (hookId, value) =>
+              setHookValues((currentValue) =>
+                updateComponentStateData(currentValue, ownElementPath ?? EP.emptyElementPath)(
+                  hookId,
+                  value,
+                ),
+              )
+          : hookValuesMode.type === 'pinned'
+          ? getFromComponentStateData(
+              hookValuesMode.componentStateDataMap,
+              ownElementPath ?? EP.emptyElementPath,
+            )
+          : assertNever(hookValuesMode)
 
       const renderedCoreElement = renderCoreElement(
         element,
@@ -260,7 +286,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
-        setHookValues,
+        setHookValuesFn,
         mutableContext.jsxFactoryFunctionName,
         codeError,
         shouldIncludeCanvasRootInTheSpy,

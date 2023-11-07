@@ -6,10 +6,10 @@ import type {
 import type { MapLike } from 'typescript'
 import { SafeFunctionCurriedErrorHandler } from './code-exec-utils'
 import React from 'react'
-import type { SetStateAction, useSetAtom } from 'jotai'
 import { atom } from 'jotai'
 import type { ElementPath } from './project-file-types'
 import * as EP from './element-path'
+import invariant from '../../third-party/remix/invariant'
 
 type JavaScriptContainer = JSExpressionOtherJavaScript | ArbitraryJSBlock | JSXMapExpression
 
@@ -31,44 +31,59 @@ interface ComponentStateData {
   hooks: HookData
 }
 
-interface ComponentStateDataMap {
+export interface ComponentStateDataMap {
   [pathString: string]: ComponentStateData
 }
 
 export const ComponentStateDataAtom = atom<ComponentStateDataMap>({})
+type ComponentStateRecordingMode =
+  | { type: 'recording' }
+  | { type: 'pinned'; componentStateDataMap: ComponentStateDataMap }
 
-export type UpdateComponentStateData = (
-  update: (currentValue: ComponentStateDataMap) => ComponentStateDataMap,
-) => void
+export const ComponentStateRecordingModeAtom = atom<ComponentStateRecordingMode>({
+  type: 'recording',
+})
 
-export function updateComponentStateDataAtom(
-  componentStateData: ComponentStateDataMap,
-  elementPath: ElementPath,
-  hookId: string,
-  value: any,
-): ComponentStateDataMap {
-  const elementPathString = EP.toString(elementPath)
-  const entryForThisPath = componentStateData[elementPathString] ?? { props: {}, hooks: {} }
-  const updatedEntries = {
-    ...componentStateData,
-    [elementPathString]: {
-      props: entryForThisPath.props,
-      hooks: { ...entryForThisPath.hooks, [hookId]: value },
-    },
+export type HookResultFunction = (hookId: string, result: any) => any
+
+export const updateComponentStateData =
+  (componentStateData: ComponentStateDataMap, elementPath: ElementPath): HookResultFunction =>
+  (hookId, value) => {
+    const elementPathString = EP.toString(elementPath)
+    const entryForThisPath = componentStateData[elementPathString] ?? { props: {}, hooks: {} }
+    const updatedEntries = {
+      ...componentStateData,
+      [elementPathString]: {
+        props: entryForThisPath.props,
+        hooks: { ...entryForThisPath.hooks, [hookId]: value },
+      },
+    }
+    return updatedEntries
   }
-  return updatedEntries
-}
+
+export const getFromComponentStateData =
+  (componentStateData: ComponentStateDataMap, elementPath: ElementPath): HookResultFunction =>
+  (hookId) => {
+    const elementPathString = EP.toString(elementPath)
+    const dataForElement = componentStateData[elementPathString] ?? null
+    invariant(
+      dataForElement,
+      `No data provided for element at path ${elementPathString} in componentStateData`,
+    )
+    if (!(hookId in dataForElement)) {
+      throw new Error(`No data provided for hook with id ${hookId} in componentStateData`)
+    }
+    return dataForElement.hooks[hookId]
+  }
 
 type Callable<Args extends any[] = any[], ReturnType = any> = (...args: Args) => ReturnType
-
-export type SetHookResultFunction = (hookId: string, result: any) => void
 
 export function resolveParamsAndRunJsCode(
   filePath: string,
   javascriptBlock: JavaScriptContainer,
   requireResult: MapLike<any>,
   currentScope: MapLike<any>,
-  setHookResult: SetHookResultFunction,
+  setHookResult: HookResultFunction,
 ): any {
   let hookCounter = 0
   const hookOverride =
@@ -81,9 +96,9 @@ export function resolveParamsAndRunJsCode(
       hookCounter += 1
       const hookId = `${name}-${hookCounter}`
       const useStateResult = originalHook(args)
-      setHookResult(hookId, picker(useStateResult))
+      const valueFromRecording = setHookResult(hookId, picker(useStateResult))
 
-      return useStateResult
+      return valueFromRecording
     }
 
   const useStateOverridden = hookOverride('useState', React.useState, (a) => a[0])

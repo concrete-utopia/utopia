@@ -51,7 +51,7 @@ import {
   useKeepReferenceEqualityIfPossible,
   useKeepShallowReferenceEquality,
 } from '../../utils/react-performance'
-import { Icn, useColorTheme, UtopiaTheme, FlexRow, Button } from '../../uuiui'
+import { Icn, useColorTheme, UtopiaTheme, FlexRow, FlexColumn, Button } from '../../uuiui'
 import { getElementsToTarget } from './common/inspector-utils'
 import type { ElementPath, PropertyPath } from '../../core/shared/project-file-types'
 import { unless, when } from '../../utils/react-conditionals'
@@ -80,6 +80,7 @@ import { SettingsPanel } from './sections/settings-panel/inspector-settingspanel
 import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { ConstraintsSection } from './constraints-section'
+import type { ComponentStateDataMap } from '../../core/shared/javascript-cache'
 import { ComponentStateDataAtom } from '../../core/shared/javascript-cache'
 import { useAtom } from 'jotai'
 
@@ -98,6 +99,8 @@ export interface InspectorProps extends TargetSelectorSectionProps {
 }
 
 const TheThing = React.memo(() => {
+  const [snapshotSequenceNumber, setSnapshotSequenceNumber] = React.useState(1)
+  const [snapshots, setSnapshots] = React.useState<Array<[number, ComponentStateDataMap]>>([])
   const [componentStateData] = useAtom(ComponentStateDataAtom)
 
   const onClick = React.useCallback(() => {
@@ -105,13 +108,57 @@ const TheThing = React.memo(() => {
   }, [])
   // }, [componentStateData])
 
+  const onCreateSnapShot = React.useCallback(() => {
+    setSnapshots((currentSnapshots) => [
+      [snapshotSequenceNumber, { ...componentStateData }],
+      ...currentSnapshots,
+    ])
+    setSnapshotSequenceNumber((s) => s + 1)
+  }, [componentStateData, snapshotSequenceNumber])
+
   return (
-    <FlexRow>
-      The Thing
-      <Button onClick={onClick}>
-        <Icn type='fitToChildren' color='main' category='layout/commands' width={16} height={16} />
-      </Button>
-    </FlexRow>
+    <FlexColumn>
+      {snapshots.map(([n, s]) => {
+        return (
+          <FlexRow key={n} style={{ gap: 12 }}>
+            {`Reset snapshot #${n}`}
+            <Button onClick={onClick}>
+              <Icn
+                type='fitToChildren'
+                color='main'
+                category='layout/commands'
+                width={16}
+                height={16}
+              />
+            </Button>
+          </FlexRow>
+        )
+      })}
+      <FlexRow style={{ gap: 12 }}>
+        Snapshot application state
+        <Button onClick={onCreateSnapShot}>
+          <Icn
+            type='fitToChildren'
+            color='main'
+            category='layout/commands'
+            width={16}
+            height={16}
+          />
+        </Button>
+      </FlexRow>
+      <FlexRow style={{ gap: 12 }}>
+        Print application state snapshot
+        <Button onClick={onClick}>
+          <Icn
+            type='fitToChildren'
+            color='main'
+            category='layout/commands'
+            width={16}
+            height={16}
+          />
+        </Button>
+      </FlexRow>
+    </FlexColumn>
   )
 })
 

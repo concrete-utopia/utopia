@@ -92,7 +92,7 @@ import { useRefEditorState } from '../editor/store/store-hook'
 import { matchRoutes } from 'react-router'
 import { useAtom, useSetAtom } from 'jotai'
 import { RemixNavigationAtom } from './remix/utopia-remix-root-component'
-import type { UpdateComponentStateData } from '../../core/shared/javascript-cache'
+import type { HookResultFunction } from '../../core/shared/javascript-cache'
 import { ComponentStateDataAtom } from '../../core/shared/javascript-cache'
 
 applyUIDMonkeyPatch()
@@ -602,7 +602,7 @@ export function attemptToResolveParsedComponents(
   displayNoneInstances: Array<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: UpdateMutableCallback<Set<string>>,
-  updateComponentStateData: UpdateComponentStateData,
+  updateComponentStateData: HookResultFunction,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePathResolveResult: Either<string, string>,
   editedText: ElementPath | null,

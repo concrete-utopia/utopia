@@ -43,14 +43,8 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
-import type {
-  SetHookResultFunction,
-  UpdateComponentStateData,
-} from '../../../core/shared/javascript-cache'
-import {
-  resolveParamsAndRunJsCode,
-  updateComponentStateDataAtom,
-} from '../../../core/shared/javascript-cache'
+import type { HookResultFunction } from '../../../core/shared/javascript-cache'
+import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
 import { filterDataProps } from '../../../utils/canvas-react-utils'
@@ -86,7 +80,7 @@ export function createLookupRender(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  updateComponentStateData: UpdateComponentStateData,
+  updateComponentStateData: HookResultFunction,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
@@ -181,7 +175,7 @@ export function renderCoreElement(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  updateComponentStateData: UpdateComponentStateData,
+  updateComponentStateData: HookResultFunction,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -193,16 +187,6 @@ export function renderCoreElement(
 ): React.ReactChild {
   if (codeError != null) {
     throw codeError
-  }
-
-  const setHookValue: SetHookResultFunction = (id, value) => {
-    if (elementPath == null) {
-      return
-    }
-    // console.log('createExecutionScope:', { id, value })
-    updateComponentStateData((componentStateDataMap) =>
-      updateComponentStateDataAtom(componentStateDataMap, elementPath, id, value),
-    )
   }
 
   switch (element.type) {
@@ -252,7 +236,7 @@ export function renderCoreElement(
         blockScope,
         element.props,
         requireResult,
-        setHookValue,
+        updateComponentStateData,
       )
 
       const passthroughProps = monkeyUidProp(uid, assembledProps)
@@ -365,7 +349,7 @@ export function renderCoreElement(
         ),
       }
 
-      return runJSExpression(filePath, requireResult, element, blockScope, setHookValue)
+      return runJSExpression(filePath, requireResult, element, blockScope, updateComponentStateData)
     }
     case 'JSX_FRAGMENT': {
       const key = optionalMap(EP.toString, elementPath) ?? element.uid
@@ -423,7 +407,7 @@ export function renderCoreElement(
         inScope,
         requireResult,
         element.condition,
-        setHookValue,
+        updateComponentStateData,
       )
       // Coerce `defaultConditionValueAsAny` to a value that is definitely a boolean, not something that is truthy.
       // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
@@ -554,7 +538,13 @@ export function renderCoreElement(
         )
       }
 
-      return jsxAttributeToValue(filePath, inScope, requireResult, element, setHookValue)
+      return jsxAttributeToValue(
+        filePath,
+        inScope,
+        requireResult,
+        element,
+        updateComponentStateData,
+      )
     default:
       const _exhaustiveCheck: never = element
       throw new Error(`Unhandled type ${JSON.stringify(element)}`)
@@ -694,7 +684,7 @@ function renderJSXElement(
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  updateComponentStateData: UpdateComponentStateData,
+  updateComponentStateData: HookResultFunction,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -928,7 +918,7 @@ function runJSExpression(
   requireResult: MapLike<any>,
   block: JSExpression,
   currentScope: MapLike<any>,
-  setHookResult: SetHookResultFunction,
+  setHookResult: HookResultFunction,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':
