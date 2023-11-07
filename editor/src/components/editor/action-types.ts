@@ -60,6 +60,7 @@ import type {
   ThemeSetting,
   ColorSwatch,
   PostActionMenuData,
+  CollabFile,
 } from './store/editor-state'
 import { NavigatorEntry } from './store/editor-state'
 import type { Notice } from '../common/notice'
@@ -1054,6 +1055,12 @@ export interface UpdateProjectServerState {
   serverState: ProjectServerState
 }
 
+export interface ApplyCollabFileUpdate {
+  action: 'APPLY_COLLAB_FILE_UPDATE'
+  fullPath: string
+  update: CollabFile
+}
+
 export type EditorAction =
   | ClearSelection
   | InsertJSXElement
@@ -1225,6 +1232,7 @@ export type EditorAction =
   | FromVSCodeAction
   | TruncateHistory
   | UpdateProjectServerState
+  | ApplyCollabFileUpdate
 
 export type DispatchPriority =
   | 'everyone'

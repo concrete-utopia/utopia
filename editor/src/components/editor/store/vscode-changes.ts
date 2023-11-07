@@ -29,6 +29,7 @@ import type { CollaborativeEditingSupport, EditorState } from './editor-state'
 import { getHighlightBoundsForElementPaths, getUnderlyingVSCodeBridgeID } from './editor-state'
 import { shallowEqual } from '../../../core/shared/equality-utils'
 import * as EP from '../../../core/shared/element-path'
+import { collateCollaborativeProjectChanges } from './collaborative-editing'
 
 export interface WriteProjectFileChange {
   type: 'WRITE_PROJECT_FILE'
@@ -215,7 +216,7 @@ export function shouldIncludeSelectedElementChanges(
 }
 
 export interface ProjectContentProjectChanges {
-  allChanges: Array<ProjectFileChange>
+  collabProjectChanges: Array<ProjectFileChange>
   changesForVSCode: Array<ProjectFileChange>
 }
 
@@ -228,15 +229,19 @@ export function getProjectContentsChanges(
     oldEditorState.projectContents,
     newEditorState.projectContents,
   )
+  const collabProjectChanges = collateCollaborativeProjectChanges(
+    oldEditorState.projectContents,
+    newEditorState.projectContents,
+  )
 
   if (oldEditorState.vscodeBridgeId != null) {
     return {
-      allChanges: projectChanges,
+      collabProjectChanges: collabProjectChanges,
       changesForVSCode: projectChanges,
     }
   } else {
     return {
-      allChanges: projectChanges,
+      collabProjectChanges: collabProjectChanges,
       changesForVSCode: [],
     }
   }
@@ -282,7 +287,10 @@ export function combineProjectChanges(
         first.fileChanges.changesForVSCode,
         second.fileChanges.changesForVSCode,
       ),
-      allChanges: combineFileChanges(first.fileChanges.allChanges, second.fileChanges.allChanges),
+      collabProjectChanges: combineFileChanges(
+        first.fileChanges.collabProjectChanges,
+        second.fileChanges.collabProjectChanges,
+      ),
     },
     updateDecorations: second.updateDecorations ?? first.updateDecorations,
     selectedChanged: second.selectedChanged ?? first.selectedChanged,
@@ -292,7 +300,7 @@ export function combineProjectChanges(
 export const emptyProjectChanges: ProjectChanges = {
   fileChanges: {
     changesForVSCode: [],
-    allChanges: [],
+    collabProjectChanges: [],
   },
   updateDecorations: null,
   selectedChanged: null,

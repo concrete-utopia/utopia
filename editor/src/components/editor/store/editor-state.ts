@@ -390,9 +390,23 @@ export const defaultUserState: UserState = {
   },
 }
 
+export interface CollabTextFile {
+  type: 'COLLAB_TEXT_FILE'
+  success: ParseSuccess
+}
+
+export function collabTextFile(success: ParseSuccess): CollabTextFile {
+  return {
+    type: 'COLLAB_TEXT_FILE',
+    success: success,
+  }
+}
+
+export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
+
 export interface CollaborativeEditingSupport {
   mergeDoc: Y.Doc
-  projectContents: Y.Map<ProjectFile | 'DIRECTORY'>
+  projectContents: Y.Map<CollabFile>
   webRTCProvider: WebrtcProvider
 }
 
@@ -3253,6 +3267,7 @@ export function modifyParseSuccessAtPath(
   filePath: string,
   editor: EditorState,
   modifyParseSuccess: (parseSuccess: ParseSuccess) => ParseSuccess,
+  throwForErrors: boolean = true,
 ): EditorState {
   const projectFile = getProjectFileByFilePath(editor.projectContents, filePath)
   if (projectFile != null && isTextFile(projectFile)) {
@@ -3278,10 +3293,18 @@ export function modifyParseSuccessAtPath(
         }
       }
     } else {
-      throw new Error(`File ${filePath} is not currently parsed.`)
+      if (throwForErrors) {
+        throw new Error(`File ${filePath} is not currently parsed.`)
+      } else {
+        return editor
+      }
     }
   } else {
-    throw new Error(`No text file found at ${filePath}`)
+    if (throwForErrors) {
+      throw new Error(`No text file found at ${filePath}`)
+    } else {
+      return editor
+    }
   }
 }
 

@@ -312,6 +312,7 @@ import type {
   SetMapCountOverride,
   ScrollToPosition,
   SetSelectedComponents,
+  ApplyCollabFileUpdate,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -5334,6 +5335,16 @@ export const UPDATE_FNS = {
     )
 
     return updatedEditor
+  },
+  APPLY_COLLAB_FILE_UPDATE: (action: ApplyCollabFileUpdate, editor: EditorModel): EditorModel => {
+    return modifyParseSuccessAtPath(
+      action.fullPath,
+      editor,
+      () => {
+        return action.update.success
+      },
+      false,
+    )
   },
 }
 
