@@ -19,7 +19,7 @@ describe('combineAccumulatedVSCodeChanges', () => {
 
     const first: ProjectChanges = {
       fileChanges: {
-        allChanges: [ensureDirectoryExists1, deletePath1, fileWrite1],
+        collabProjectChanges: [ensureDirectoryExists1, deletePath1, fileWrite1],
         changesForVSCode: [ensureDirectoryExists1, deletePath1, fileWrite1],
       },
       updateDecorations: null,
@@ -28,7 +28,7 @@ describe('combineAccumulatedVSCodeChanges', () => {
 
     const second: ProjectChanges = {
       fileChanges: {
-        allChanges: [ensureDirectoryExists2, deletePath2, fileWrite2, fileWrite3],
+        collabProjectChanges: [ensureDirectoryExists2, deletePath2, fileWrite2, fileWrite3],
         changesForVSCode: [ensureDirectoryExists2, deletePath2, fileWrite2, fileWrite3],
       },
       updateDecorations: null,

@@ -733,7 +733,7 @@ function applyProjectChangesToEditor(
   frozenEditorState: EditorState,
   projectChanges: ProjectChanges,
 ): void {
-  const updatedFileNames = projectChanges.fileChanges.allChanges.map(
+  const updatedFileNames = projectChanges.fileChanges.collabProjectChanges.map(
     (fileChange) => fileChange.fullPath,
   )
   const updatedAndReverseDepFilenames = getTransitiveReverseDependencies(

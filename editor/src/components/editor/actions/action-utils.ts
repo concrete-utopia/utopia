@@ -196,6 +196,7 @@ export function isTransientAction(action: EditorAction): boolean {
     case 'SWITCH_CONDITIONAL_BRANCHES':
     case 'UPDATE_CONIDTIONAL_EXPRESSION':
     case 'CUT_SELECTION_TO_CLIPBOARD':
+    case 'APPLY_COLLAB_FILE_UPDATE':
       return false
     case 'SAVE_ASSET':
       return (
