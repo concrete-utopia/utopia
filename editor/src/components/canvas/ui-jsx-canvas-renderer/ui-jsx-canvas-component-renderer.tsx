@@ -39,6 +39,7 @@ import {
 } from '../../../core/shared/javascript-cache'
 import { useAtom, useSetAtom } from 'jotai'
 import { NO_OP } from '../../../core/shared/utils'
+import { useForceUpdate } from '../../editor/hook-utils'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -84,6 +85,7 @@ const HookValueReff: {
     [elementPathString: string]: {
       fiberReference: any
       hookValues: Array<any>
+      forceUpdate: () => void
     }
   }
 } = { current: {} }
@@ -93,20 +95,15 @@ export function getHookValueRef() {
 }
 
 export function restoreHookValues(snapshot: typeof HookValueReff.current) {
-  Object.values(snapshot).forEach(({ fiberReference, hookValues }) => {
+  Object.values(snapshot).forEach(({ fiberReference, hookValues, forceUpdate }) => {
     forEachHook((hook, index) => {
       hook.memoizedState = hookValues[index]
       hook.baseState = hookValues[index]
     }, findHooksAfterSentinel(fiberReference.memoizedState))
 
-    // We aren't actually adding an update to the queue,
-    // because there is no update we can add for useReducer hooks that won't trigger an error.
-    // (There's no appropriate action type for DevTools overrides.)
-    // As a result though, React will see the scheduled update as a noop and bailout.
-    // Shallow cloning props works as a workaround for now to bypass the bailout check.
+    fiberReference.memoizedProps = { ...fiberReference.memoizedProps }
 
-    // TODO do we also want to do this?
-    // fiberReference.memoizedProps = { ...fiberReference.memoizedProps }
+    forceUpdate()
   })
 }
 
@@ -131,6 +128,8 @@ export function createComponentRendererComponent(params: {
       instancePath,
     )}`
     React.useState(componentIdHookGuardValue)
+
+    const forceUpdate = useForceUpdate()
 
     function shouldUpdate() {
       return (
@@ -279,6 +278,7 @@ export function createComponentRendererComponent(params: {
       HookValueReff.current[elementPathString] = {
         fiberReference: matchingFiber,
         hookValues: [],
+        forceUpdate: forceUpdate,
       }
 
       forEachHook((hook, index) => {
