@@ -199,8 +199,6 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    React.useState('sentinel')
-
     React.useEffect(() => {
       if (instancePath == null) {
         return
@@ -243,7 +241,25 @@ export function createComponentRendererComponent(params: {
       }
 
       const matchingFiber = walkUpUntilMatchingFiber(foundFiber)
+
+      function findHooksAfterSentinel(maybeSentinel: any) {
+        if (maybeSentinel == null) {
+          return null
+        }
+
+        if (maybeSentinel.memoizedState === 'sentinel') {
+          if (maybeSentinel.next?.memoizedState === 'uto-sentinel') {
+            return null
+          }
+          return maybeSentinel.next
+        }
+        return findHooksAfterSentinel(maybeSentinel.next)
+      }
+
+      const firstHookAfterSentinel = findHooksAfterSentinel(matchingFiber.memoizedState)
     })
+
+    React.useState('sentinel')
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const hookResultContext: HookResultContext =
@@ -348,6 +364,7 @@ export function createComponentRendererComponent(params: {
         return renderedCoreElement
       }
     }
+    React.useState('uto-sentinel')
 
     const buildResult = React.useRef<React.ReactElement | null>(
       buildComponentRenderResult(utopiaJsxComponent.rootElement),
