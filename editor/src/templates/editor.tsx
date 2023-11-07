@@ -641,13 +641,8 @@ async function renderProjectLoadError(error: string): Promise<void> {
   }
 }
 
-const runDispatchFlow = (
-  boundDispatch: (
-    dispatchedActions: readonly EditorAction[],
-    priority?: DispatchPriority,
-  ) => {
-    entireUpdateFinished: Promise<any>
-  },
+export const runDispatchFlow = (
+  boundDispatch: EditorDispatch,
   currentStoredState: EditorStoreFull,
   utopiaStoreHook: UtopiaStoreAPI,
   canvasStore: UtopiaStoreAPI,
