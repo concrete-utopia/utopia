@@ -1,6 +1,6 @@
 import type { MapLike } from 'typescript'
 import type { ArbitraryJSBlock } from '../../../core/shared/element-template'
-import type { HookResultFunction } from '../../../core/shared/javascript-cache'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 
 export function runBlockUpdatingScope(
@@ -8,7 +8,7 @@ export function runBlockUpdatingScope(
   requireResult: MapLike<any>,
   block: ArbitraryJSBlock,
   currentScope: MapLike<any>,
-  setHookResult: HookResultFunction,
+  setHookResult: HookResultContext,
 ): void {
   const result = resolveParamsAndRunJsCode(
     filePath,

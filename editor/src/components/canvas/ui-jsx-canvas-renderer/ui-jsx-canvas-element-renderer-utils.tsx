@@ -43,7 +43,7 @@ import type { DomWalkerInvalidatePathsCtxData, UiJsxCanvasContextData } from '..
 import { SceneComponent } from './scene-component'
 import * as PP from '../../../core/shared/property-path'
 import * as EP from '../../../core/shared/element-path'
-import type { HookResultFunction } from '../../../core/shared/javascript-cache'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
 import { resolveParamsAndRunJsCode } from '../../../core/shared/javascript-cache'
 import { objectMap } from '../../../core/shared/object-utils'
 import { cssValueOnlyContainsComments } from '../../../printer-parsers/css/css-parser-utils'
@@ -80,7 +80,7 @@ export function createLookupRender(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  updateComponentStateData: HookResultFunction,
+  updateComponentStateData: HookResultContext,
   jsxFactoryFunctionName: string | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
   filePath: string,
@@ -175,7 +175,7 @@ export function renderCoreElement(
   reactChildren: React.ReactNode | undefined,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  updateComponentStateData: HookResultFunction,
+  updateComponentStateData: HookResultContext,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -684,7 +684,7 @@ function renderJSXElement(
   passthroughProps: MapLike<any>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  updateComponentStateData: HookResultFunction,
+  updateComponentStateData: HookResultContext,
   jsxFactoryFunctionName: string | null,
   codeError: Error | null,
   shouldIncludeCanvasRootInTheSpy: boolean,
@@ -918,7 +918,7 @@ function runJSExpression(
   requireResult: MapLike<any>,
   block: JSExpression,
   currentScope: MapLike<any>,
-  setHookResult: HookResultFunction,
+  setHookResult: HookResultContext,
 ): any {
   switch (block.type) {
     case 'ATTRIBUTE_VALUE':

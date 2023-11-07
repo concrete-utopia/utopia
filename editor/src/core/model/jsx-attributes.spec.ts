@@ -201,7 +201,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.top).toEqual(55)
   })
@@ -230,7 +230,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.my.property.path).toEqual('hello')
   })
@@ -248,7 +248,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.layout.left).toEqual(2000)
   })
@@ -266,7 +266,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.layout.deep.path).toEqual('easy!')
   })
@@ -284,7 +284,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.objectWithArray.array).toEqual([0, 1, 'wee'])
   })
@@ -302,7 +302,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
   })
@@ -320,7 +320,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual([0, 1, 'wee'])
   })
@@ -338,7 +338,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.objectWithNestedArray.array).toEqual({ 0: 0, 1: 1, 2: 2, wee: 'wee' })
   })
@@ -357,7 +357,7 @@ describe('setJSXValueAtPath', () => {
         { props: sampleParentProps },
         updatedAttributes,
         {},
-        NO_OP,
+        { type: 'transparent' },
       )
     }).toThrow()
   })
@@ -375,7 +375,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.style.backgroundColor).toEqual('wee')
   })
@@ -400,7 +400,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes2,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.my.property.path).toEqual('hello')
     expect(compiledProps.my.property.other.path).toEqual('hola')
@@ -419,7 +419,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps.style.backgroundColor).toEqual('blue')
   })
@@ -577,7 +577,7 @@ describe('setJSXValueAtPath', () => {
       { props: sampleParentProps },
       updatedAttributes,
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps).toEqual({ top: [55] })
   })
@@ -590,7 +590,7 @@ describe('jsxAttributesToProps', () => {
       { props: sampleParentProps },
       sampleJsxAttributes(),
       {},
-      NO_OP,
+      { type: 'transparent' },
     )
     expect(compiledProps).toEqual(expectedCompiledProps)
   })
@@ -611,7 +611,13 @@ describe('jsxAttributesToProps', () => {
         emptyComments,
       ),
     })
-    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      'test.js',
+      {},
+      attributes,
+      {},
+      { type: 'transparent' },
+    )
 
     expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
     expect(Object.entries(compiledProps.style)).toEqual([
@@ -653,7 +659,13 @@ describe('jsxAttributesToProps', () => {
       ),
     })
 
-    const compiledProps = jsxAttributesToProps('test.js', {}, attributes, {}, NO_OP)
+    const compiledProps = jsxAttributesToProps(
+      'test.js',
+      {},
+      attributes,
+      {},
+      { type: 'transparent' },
+    )
 
     expect(compiledProps).toEqual({ style: { paddingLeft: 23, padding: 5 } })
     expect(Object.entries(compiledProps.style)).toEqual([

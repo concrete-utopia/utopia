@@ -10,7 +10,7 @@ import {
   isOmittedParam,
 } from '../../../core/shared/element-template'
 import { jsxAttributeToValue } from '../../../core/shared/jsx-attributes'
-import type { HookResultFunction } from '../../../core/shared/javascript-cache'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
 
 export function applyPropsParamToPassedProps(
   filePath: string,
@@ -18,7 +18,7 @@ export function applyPropsParamToPassedProps(
   requireResult: MapLike<any>,
   passedProps: MapLike<unknown>,
   propsParam: Param,
-  setHookResult: HookResultFunction,
+  setHookResult: HookResultContext,
 ): MapLike<unknown> {
   let output: MapLike<unknown> = {}
 

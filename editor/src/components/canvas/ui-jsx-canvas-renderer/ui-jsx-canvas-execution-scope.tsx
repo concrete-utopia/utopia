@@ -24,7 +24,7 @@ import { defaultIfNull } from '../../../core/shared/optional-utils'
 import { getParseSuccessForFilePath } from '../canvas-utils'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
-import { type HookResultFunction } from '../../../core/shared/javascript-cache'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
 
 const emptyFileBlobs: UIFileBase64Blobs = {}
 
@@ -48,7 +48,7 @@ export function createExecutionScope(
   displayNoneInstances: Array<ElementPath>,
   metadataContext: UiJsxCanvasContextData,
   updateInvalidatedPaths: DomWalkerInvalidatePathsCtxData,
-  updateComponentStateData: HookResultFunction,
+  updateComponentStateData: HookResultContext,
   shouldIncludeCanvasRootInTheSpy: boolean,
   editedText: ElementPath | null,
 ): {
@@ -146,21 +146,9 @@ export function createExecutionScope(
       lookupRenderer,
     )
 
-    const setHookValue: HookResultFunction = (id, value) => {
-      // TODO spike: can't get the element path here, we need to figure out what to do here
-      // console.log('createExecutionScope:', { id, value })
-      // updateComponentStateData((componentStateDataMap) =>
-      //   updateComponentStateDataAtom(componentStateDataMap, instancePath, id, value),
-      // )
-    }
-
-    runBlockUpdatingScope(
-      filePath,
-      requireResult,
-      combinedTopLevelArbitraryBlock,
-      executionScope,
-      setHookValue,
-    )
+    runBlockUpdatingScope(filePath, requireResult, combinedTopLevelArbitraryBlock, executionScope, {
+      type: 'transparent',
+    })
   }
   // WARNING: mutating the mutableContextRef
   updateMutableUtopiaCtxRefWithNewProps(mutableContextRef, {

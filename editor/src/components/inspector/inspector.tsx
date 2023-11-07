@@ -81,8 +81,11 @@ import { strictEvery } from '../../core/shared/array-utils'
 import { SimplifiedLayoutSubsection } from './sections/layout-section/self-layout-subsection/simplified-layout-subsection'
 import { ConstraintsSection } from './constraints-section'
 import type { ComponentStateDataMap } from '../../core/shared/javascript-cache'
-import { ComponentStateDataAtom } from '../../core/shared/javascript-cache'
-import { useAtom } from 'jotai'
+import {
+  ComponentStateDataAtom,
+  ComponentStateRecordingModeAtom,
+} from '../../core/shared/javascript-cache'
+import { useAtom, useSetAtom } from 'jotai'
 
 export interface ElementPathElement {
   name?: string
@@ -98,10 +101,22 @@ export interface InspectorProps extends TargetSelectorSectionProps {
   selectedViews: Array<ElementPath>
 }
 
-const TheThing = React.memo(() => {
+const SnapshotUI = React.memo(() => {
   const [snapshotSequenceNumber, setSnapshotSequenceNumber] = React.useState(1)
   const [snapshots, setSnapshots] = React.useState<Array<[number, ComponentStateDataMap]>>([])
   const [componentStateData] = useAtom(ComponentStateDataAtom)
+  const setComponentStateRecordingMode = useSetAtom(ComponentStateRecordingModeAtom)
+  const dispatch = useDispatch()
+
+  const mountCount = useEditorState(
+    Substores.canvas,
+    (store) => store.editor.canvas.mountCount,
+    'mountcount',
+  )
+
+  React.useEffect(() => {
+    setComponentStateRecordingMode({ type: 'recording' })
+  }, [mountCount, setComponentStateRecordingMode])
 
   const onClick = React.useCallback(() => {
     // console.log(componentStateData)
@@ -116,46 +131,71 @@ const TheThing = React.memo(() => {
     setSnapshotSequenceNumber((s) => s + 1)
   }, [componentStateData, snapshotSequenceNumber])
 
+  const restoreSnapshot = React.useCallback(
+    (snapshot: ComponentStateDataMap) => {
+      setComponentStateRecordingMode({ type: 'pinned', componentStateDataMap: snapshot })
+      dispatch([EditorActions.resetCanvas()])
+    },
+    [dispatch, setComponentStateRecordingMode],
+  )
+
   return (
     <FlexColumn>
       {snapshots.map(([n, s]) => {
         return (
           <FlexRow key={n} style={{ gap: 12 }}>
-            {`Reset snapshot #${n}`}
-            <Button onClick={onClick}>
-              <Icn
-                type='fitToChildren'
-                color='main'
-                category='layout/commands'
-                width={16}
-                height={16}
-              />
-            </Button>
+            <Button
+              // eslint-disable-next-line react/jsx-no-bind
+              onClick={() => restoreSnapshot(s)}
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '10px 10px 10px 10px',
+                borderRadius: 10,
+                overflow: 'hidden',
+                backgroundColor: '#0074ff',
+                color: '#ffffff',
+              }}
+            >{`Reset snapshot #${n}`}</Button>
           </FlexRow>
         )
       })}
       <FlexRow style={{ gap: 12 }}>
-        Snapshot application state
-        <Button onClick={onCreateSnapShot}>
-          <Icn
-            type='fitToChildren'
-            color='main'
-            category='layout/commands'
-            width={16}
-            height={16}
-          />
+        <Button
+          onClick={onCreateSnapShot}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '10px 10px 10px 10px',
+            borderRadius: 10,
+            overflow: 'hidden',
+            backgroundColor: '#0074ff',
+            color: '#ffffff',
+          }}
+        >
+          Snapshot application state
         </Button>
       </FlexRow>
       <FlexRow style={{ gap: 12 }}>
-        Print application state snapshot
-        <Button onClick={onClick}>
-          <Icn
-            type='fitToChildren'
-            color='main'
-            category='layout/commands'
-            width={16}
-            height={16}
-          />
+        <Button
+          onClick={onClick}
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '10px 10px 10px 10px',
+            borderRadius: 10,
+            overflow: 'hidden',
+            backgroundColor: '#0074ff',
+            color: '#ffffff',
+          }}
+        >
+          Print application state snapshot
         </Button>
       </FlexRow>
     </FlexColumn>
@@ -428,7 +468,7 @@ export const Inspector = React.memo<InspectorProps>((props: InspectorProps) => {
               paddingBottom: 50,
             }}
           >
-            <TheThing />
+            <SnapshotUI />
             {rootElementIsSelected ? (
               <RootElementIndicator />
             ) : (

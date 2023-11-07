@@ -31,15 +31,14 @@ import { useGetTopLevelElementsAndImports } from './ui-jsx-canvas-top-level-elem
 import { useGetCodeAndHighlightBounds } from './ui-jsx-canvas-execution-scope'
 import { usePubSubAtomReadOnly } from '../../../core/shared/atom-with-pub-sub'
 import { JSX_CANVAS_LOOKUP_FUNCTION_NAME } from '../../../core/shared/dom-utils'
+import type { HookResultContext } from '../../../core/shared/javascript-cache'
 import {
   ComponentStateDataAtom,
   updateComponentStateData,
-  type HookResultFunction,
   ComponentStateRecordingModeAtom,
-  getFromComponentStateData,
 } from '../../../core/shared/javascript-cache'
 import { useAtom, useSetAtom } from 'jotai'
-import { NO_OP, assertNever } from '../../../core/shared/utils'
+import { NO_OP } from '../../../core/shared/utils'
 
 export type ComponentRendererComponent = React.ComponentType<
   React.PropsWithChildren<{
@@ -153,7 +152,7 @@ export function createComponentRendererComponent(params: {
           mutableContext.requireResult,
           realPassedProps,
           param,
-          NO_OP,
+          { type: 'transparent' },
         ),
       utopiaJsxComponent.param,
     ) ?? { props: realPassedProps }
@@ -195,21 +194,18 @@ export function createComponentRendererComponent(params: {
     }
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
-      const setHookValuesFn: HookResultFunction =
-        hookValuesMode.type === 'recording'
-          ? (hookId, value) =>
-              setHookValues((currentValue) =>
-                updateComponentStateData(currentValue, rootElementPath ?? EP.emptyElementPath)(
-                  hookId,
-                  value,
+      const hookResultContext: HookResultContext =
+        rootElementPath === null
+          ? { type: 'transparent' }
+          : {
+              type: 'active',
+              mode: hookValuesMode,
+              elementPath: rootElementPath,
+              setHookResult: (hookId, value) =>
+                setHookValues((currentValue) =>
+                  updateComponentStateData(currentValue, rootElementPath)(hookId, value),
                 ),
-              )
-          : hookValuesMode.type === 'pinned'
-          ? getFromComponentStateData(
-              hookValuesMode.componentStateDataMap,
-              rootElementPath ?? EP.emptyElementPath,
-            )
-          : assertNever(hookValuesMode)
+            }
 
       const lookupRenderer = createLookupRender(
         rootElementPath,
@@ -223,7 +219,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
-        setHookValuesFn,
+        hookResultContext,
         mutableContext.jsxFactoryFunctionName,
         shouldIncludeCanvasRootInTheSpy,
         params.filePath,
@@ -245,7 +241,7 @@ export function createComponentRendererComponent(params: {
         mutableContext.requireResult,
         utopiaJsxComponent.arbitraryJSBlock,
         scope,
-        setHookValuesFn,
+        hookResultContext,
       )
     }
 
@@ -255,21 +251,18 @@ export function createComponentRendererComponent(params: {
         instancePath,
       )
 
-      const setHookValuesFn: HookResultFunction =
-        hookValuesMode.type === 'recording'
-          ? (hookId, value) =>
-              setHookValues((currentValue) =>
-                updateComponentStateData(currentValue, ownElementPath ?? EP.emptyElementPath)(
-                  hookId,
-                  value,
+      const hookResultContext: HookResultContext =
+        ownElementPath === null
+          ? { type: 'transparent' }
+          : {
+              type: 'active',
+              mode: hookValuesMode,
+              elementPath: ownElementPath,
+              setHookResult: (hookId, value) =>
+                setHookValues((currentValue) =>
+                  updateComponentStateData(currentValue, ownElementPath)(hookId, value),
                 ),
-              )
-          : hookValuesMode.type === 'pinned'
-          ? getFromComponentStateData(
-              hookValuesMode.componentStateDataMap,
-              ownElementPath ?? EP.emptyElementPath,
-            )
-          : assertNever(hookValuesMode)
+            }
 
       const renderedCoreElement = renderCoreElement(
         element,
@@ -286,7 +279,7 @@ export function createComponentRendererComponent(params: {
         undefined,
         metadataContext,
         updateInvalidatedPaths,
-        setHookValuesFn,
+        hookResultContext,
         mutableContext.jsxFactoryFunctionName,
         codeError,
         shouldIncludeCanvasRootInTheSpy,

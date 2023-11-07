@@ -165,7 +165,7 @@ export async function benchmarkAttributes(): Promise<void> {
       }
       const attributes = sampleJsxAttributes()
       return () => {
-        jsxAttributesToProps('test.js', inScope, attributes, NO_OP, NO_OP)
+        jsxAttributesToProps('test.js', inScope, attributes, NO_OP, { type: 'transparent' })
       }
     }),
     Benny.cycle(),

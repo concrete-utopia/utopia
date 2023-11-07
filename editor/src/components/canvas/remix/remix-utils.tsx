@@ -286,7 +286,7 @@ function getRemixExportsOfModule(
         displayNoneInstances,
         metadataContext,
         NO_OP,
-        NO_OP, // TODO this has to be filled out
+        { type: 'transparent' }, // TODO this has to be filled out
         false,
         alreadyResolved,
         null,
@@ -315,7 +315,7 @@ function getRemixExportsOfModule(
       displayNoneInstances,
       metadataContext,
       NO_OP,
-      NO_OP, // TODO this has to be filled out
+      { type: 'transparent' }, // TODO this has to be filled out
       false,
       null,
     )
