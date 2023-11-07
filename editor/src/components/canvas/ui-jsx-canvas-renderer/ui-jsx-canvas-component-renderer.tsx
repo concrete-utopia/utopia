@@ -95,6 +95,12 @@ export function createComponentRendererComponent(params: {
 
     const instancePath: ElementPath | null = tryToGetInstancePath(instancePathAny, pathsString)
 
+    const componentIdHookGuardValue = `utopia-component-renderer-component-${optionalMap(
+      EP.toString,
+      instancePath,
+    )}`
+    React.useState(componentIdHookGuardValue)
+
     function shouldUpdate() {
       return (
         ElementsToRerenderGLOBAL.current === 'rerender-all-elements' ||
@@ -193,7 +199,51 @@ export function createComponentRendererComponent(params: {
       })
     }
 
-    useState('here')
+    React.useState('sentinel')
+
+    React.useEffect(() => {
+      if (instancePath == null) {
+        return
+      }
+      /**
+       * TODO move this to a dedicated helper and share code with dom-walker
+       */
+      /**
+       * if a elementToFocusOn path points to a component instance, such as App/card-instance, the DOM will
+       * only contain an element with the path App/card-instance:card-root. To be able to quickly find the "rootest" element
+       * that belongs to a path, we use the ^= prefix search in querySelector.
+       * The assumption is that querySelector will return the "topmost" DOM-element with the matching prefix,
+       * which is the same as the "rootest" element we are looking for
+       */
+      const foundElement = document.querySelector(
+        `[${UTOPIA_PATH_KEY}^="${EP.toString(instancePath)}"]`,
+      ) as HTMLElement | null
+
+      if (foundElement == null) {
+        return // give up?
+      }
+
+      const foundFiber = (() => {
+        const fiberName = Object.keys(foundElement).find((key) => key.startsWith(`__reactFiber$`))
+        if (fiberName == null) {
+          return null
+        }
+        return (foundElement as any)[fiberName]
+      })()
+
+      function walkUpUntilMatchingFiber(maybeMatchingFiber: any) {
+        if (maybeMatchingFiber == null) {
+          return null // we reached the root of a React tree
+        }
+        if (maybeMatchingFiber.memoizedState?.baseState === componentIdHookGuardValue) {
+          return maybeMatchingFiber
+        }
+        // otherwise walk up, rinse, repeat
+        return walkUpUntilMatchingFiber(maybeMatchingFiber.return)
+      }
+
+      const matchingFiber = walkUpUntilMatchingFiber(foundFiber)
+    })
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const hookResultContext: HookResultContext =
