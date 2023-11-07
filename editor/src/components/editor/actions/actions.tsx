@@ -311,6 +311,7 @@ import type {
   UpdateConditionalExpression,
   SetMapCountOverride,
   ScrollToPosition,
+  SetCommentId,
 } from '../action-types'
 import { isLoggedIn } from '../action-types'
 import type { Mode } from '../editor-modes'
@@ -4066,6 +4067,35 @@ export const UPDATE_FNS = {
           comments: {
             leadingComments: leadingComments,
             trailingComments: element.comments.trailingComments.filter(isNotMapCountFlag),
+            questionTokenComments: element.comments.questionTokenComments,
+          },
+        }
+      },
+      editor,
+    )
+  },
+  SET_COMMENT_ID: (action: SetCommentId, editor: EditorModel): EditorModel => {
+    return modifyOpenJsxChildAtPath(
+      action.target,
+      (element) => {
+        if (!isJSXConditionalExpression(element)) {
+          return element
+        }
+
+        function isNotCommentFlag(c: Comment): boolean {
+          return !isUtopiaCommentFlag(c, 'comment')
+        }
+
+        const leadingComments = [...element.comments.leadingComments.filter(isNotCommentFlag)]
+        if (action.commentId != null) {
+          leadingComments.push(makeUtopiaFlagComment({ type: 'comment', value: action.commentId }))
+        }
+
+        return {
+          ...element,
+          comments: {
+            leadingComments: leadingComments,
+            trailingComments: element.comments.trailingComments.filter(isNotCommentFlag),
             questionTokenComments: element.comments.questionTokenComments,
           },
         }
