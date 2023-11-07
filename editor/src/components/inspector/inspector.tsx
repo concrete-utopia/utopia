@@ -86,6 +86,10 @@ import {
   ComponentStateRecordingModeAtom,
 } from '../../core/shared/javascript-cache'
 import { useAtom, useSetAtom } from 'jotai'
+import {
+  getHookValueRef,
+  restoreHookValues,
+} from '../canvas/ui-jsx-canvas-renderer/ui-jsx-canvas-component-renderer'
 
 export interface ElementPathElement {
   name?: string
@@ -103,20 +107,8 @@ export interface InspectorProps extends TargetSelectorSectionProps {
 
 const SnapshotUI = React.memo(() => {
   const [snapshotSequenceNumber, setSnapshotSequenceNumber] = React.useState(1)
-  const [snapshots, setSnapshots] = React.useState<Array<[number, ComponentStateDataMap]>>([])
-  const [componentStateData] = useAtom(ComponentStateDataAtom)
-  const setComponentStateRecordingMode = useSetAtom(ComponentStateRecordingModeAtom)
+  const [snapshots, setSnapshots] = React.useState<Array<[number, any]>>([])
   const dispatch = useDispatch()
-
-  const mountCount = useEditorState(
-    Substores.canvas,
-    (store) => store.editor.canvas.mountCount,
-    'mountcount',
-  )
-
-  React.useEffect(() => {
-    setComponentStateRecordingMode({ type: 'recording' })
-  }, [mountCount, setComponentStateRecordingMode])
 
   const onClick = React.useCallback(() => {
     // console.log(componentStateData)
@@ -125,18 +117,18 @@ const SnapshotUI = React.memo(() => {
 
   const onCreateSnapShot = React.useCallback(() => {
     setSnapshots((currentSnapshots) => [
-      [snapshotSequenceNumber, { ...componentStateData }],
+      [snapshotSequenceNumber, getHookValueRef()],
       ...currentSnapshots,
     ])
     setSnapshotSequenceNumber((s) => s + 1)
-  }, [componentStateData, snapshotSequenceNumber])
+  }, [snapshotSequenceNumber])
 
   const restoreSnapshot = React.useCallback(
-    (snapshot: ComponentStateDataMap) => {
-      setComponentStateRecordingMode({ type: 'pinned', componentStateDataMap: snapshot })
+    (snapshot: any) => {
+      restoreHookValues(snapshot)
       dispatch([EditorActions.resetCanvas()])
     },
-    [dispatch, setComponentStateRecordingMode],
+    [dispatch],
   )
 
   return (

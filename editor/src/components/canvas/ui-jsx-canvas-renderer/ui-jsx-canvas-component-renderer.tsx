@@ -88,6 +88,28 @@ const HookValueReff: {
   }
 } = { current: {} }
 
+export function getHookValueRef() {
+  return { ...HookValueReff.current }
+}
+
+export function restoreHookValues(snapshot: typeof HookValueReff.current) {
+  Object.values(snapshot).forEach(({ fiberReference, hookValues }) => {
+    forEachHook((hook, index) => {
+      hook.memoizedState = hookValues[index]
+      hook.baseState = hookValues[index]
+    }, fiberReference)
+
+    // We aren't actually adding an update to the queue,
+    // because there is no update we can add for useReducer hooks that won't trigger an error.
+    // (There's no appropriate action type for DevTools overrides.)
+    // As a result though, React will see the scheduled update as a noop and bailout.
+    // Shallow cloning props works as a workaround for now to bypass the bailout check.
+
+    // TODO do we also want to do this?
+    // fiberReference.memoizedProps = { ...fiberReference.memoizedProps }
+  })
+}
+
 export function createComponentRendererComponent(params: {
   topLevelElementName: string | null
   filePath: string
@@ -268,26 +290,13 @@ export function createComponentRendererComponent(params: {
 
       const firstHookAfterSentinel = findHooksAfterSentinel(matchingFiber.memoizedState)
 
-      function forEachHook(callback: (hookValue: any, hookIndex: number) => void, firstHook: any) {
-        if (firstHook == null) {
-          return
-        }
-        let workingHook = firstHook
-        let hookIndex = 0
-        while (workingHook.memoizedState !== 'uto-sentinel') {
-          callback(workingHook.memoizedState, hookIndex)
-          hookIndex++
-          workingHook = workingHook.next
-        }
-      }
-
       HookValueReff.current[elementPathString] = {
         fiberReference: matchingFiber,
         hookValues: [],
       }
 
-      forEachHook((hookValue, index) => {
-        HookValueReff.current[elementPathString].hookValues.push(hookValue)
+      forEachHook((hook, index) => {
+        HookValueReff.current[elementPathString].hookValues.push(hook.memoizedState)
       }, firstHookAfterSentinel)
     })
 
@@ -427,5 +436,18 @@ function isElementInChildrenPropTree(elementPath: string, props: any): boolean {
     return true
   } else {
     return childrenArr.some((c) => isElementInChildrenPropTree(elementPath, c.props))
+  }
+}
+
+function forEachHook(callback: (hook: any, hookIndex: number) => void, firstHook: any) {
+  if (firstHook == null) {
+    return
+  }
+  let workingHook = firstHook
+  let hookIndex = 0
+  while (workingHook.memoizedState !== 'uto-sentinel') {
+    callback(workingHook, hookIndex)
+    hookIndex++
+    workingHook = workingHook.next
   }
 }
