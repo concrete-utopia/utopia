@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { MapLike } from 'typescript'
 import type { PropertyControls } from 'utopia-api/core'
 import type { JSXElementChild, UtopiaJSXComponent } from '../../../core/shared/element-template'
@@ -192,6 +192,8 @@ export function createComponentRendererComponent(params: {
         }
       })
     }
+
+    useState('here')
 
     if (utopiaJsxComponent.arbitraryJSBlock != null) {
       const hookResultContext: HookResultContext =

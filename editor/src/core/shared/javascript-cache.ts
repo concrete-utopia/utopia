@@ -97,6 +97,18 @@ interface MergeHookResult<HookResult, StoredValue> {
   fromStoredValue: (storedValue: StoredValue, hookResult: HookResult) => HookResult
 }
 
+// TODO: https://github.com/facebook/react/blob/ce2bc58a9f6f3b0bfc8c738a0d8e2a5f3a332ff5/packages/react-reconciler/src/ReactFiberReconciler.js#L644
+function setMemoizedStateValue() {}
+
+/**
+ * - get DOM element from the document via querying the data-path prop
+ * - walk up the `return` ladder until we find the first component with a non-null `memoized state`
+ * + add a first useState with the path value, check if the same
+ * + add a last  useState with the path value, check if the same
+ * - walk down `memoizedState` until we find a hook with the path string
+ * - call `setMemoizedStateValue`
+ */
+
 export function resolveParamsAndRunJsCode(
   filePath: string,
   javascriptBlock: JavaScriptContainer,
