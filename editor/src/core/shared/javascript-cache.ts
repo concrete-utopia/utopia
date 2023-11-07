@@ -149,23 +149,23 @@ export function resolveParamsAndRunJsCode(
       assertNever(hookResultContext)
     }
 
-  const useStateOverridden = hookOverride('useState', React.useState, {
-    toStoredValue: ([value]) => value,
-    fromStoredValue: (value, [_, setter]) => [value, setter] as [unknown, Dispatch<unknown>],
-  })
+  // const useStateOverridden = hookOverride('useState', React.useState, {
+  //   toStoredValue: ([value]) => value,
+  //   fromStoredValue: (value, [_, setter]) => [value, setter] as [unknown, Dispatch<unknown>],
+  // })
 
-  const MonkeyReact = {
-    ...React,
-    useState: useStateOverridden,
-  }
+  // const MonkeyReact = {
+  //   ...React,
+  //   useState: useStateOverridden,
+  // }
 
   const definedElsewhereInfo = resolveDefinedElsewhere(
     javascriptBlock.definedElsewhere,
     requireResult,
     currentScope,
   )
-  definedElsewhereInfo['React'] = MonkeyReact
-  definedElsewhereInfo['useState'] = useStateOverridden
+  // definedElsewhereInfo['React'] = MonkeyReact
+  // definedElsewhereInfo['useState'] = useStateOverridden
 
   const updatedBlock = {
     ...javascriptBlock,
