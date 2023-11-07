@@ -1,4 +1,5 @@
-import { collabTextFile, type CollaborativeEditingSupport } from './editor-state'
+import type { CollabTextFile } from './editor-state'
+import { type CollaborativeEditingSupport } from './editor-state'
 import {
   writeProjectFileChange,
   type ProjectChanges,
@@ -18,8 +19,13 @@ import type { EditorDispatch } from '../action-types'
 import { applyCollabFileUpdate, updateFile } from '../actions/action-creators'
 import { forceNotNull } from '../../../core/shared/optional-utils'
 import { assertNever, isBrowserEnvironment } from '../../../core/shared/utils'
+import type { ParseSuccess } from '../../../core/shared/project-file-types'
 import { isTextFile } from '../../../core/shared/project-file-types'
-import { ParsedTextFileKeepDeepEquality } from './store-deep-equality-instances'
+import {
+  ParsedTextFileKeepDeepEquality,
+  TopLevelElementKeepDeepEquality,
+} from './store-deep-equality-instances'
+import * as Y from 'yjs'
 
 export function collateCollaborativeProjectChanges(
   oldContents: ProjectContentTreeRoot,
@@ -132,10 +138,13 @@ function applyFileChangeToMap(
         change.projectFile.type === 'TEXT_FILE' &&
         change.projectFile.fileContents.parsed.type === 'PARSE_SUCCESS'
       ) {
-        projectContentsMap.set(
-          change.fullPath,
-          collabTextFile(change.projectFile.fileContents.parsed),
+        const collabFile: CollabTextFile = new Y.Map()
+        collabFile.set('type', 'TEXT_FILE')
+        collabFile.set(
+          'topLevelElements',
+          Y.Array.from(change.projectFile.fileContents.parsed.topLevelElements),
         )
+        projectContentsMap.set(change.fullPath, collabFile)
       }
       break
     case 'ENSURE_DIRECTORY_EXISTS':
@@ -191,4 +200,55 @@ export function addHookForProjectChanges(
       }
     })
   })
+}
+
+export interface ArrayChanges {
+  updatesAt: Array<number>
+  deleteFrom: number | null
+}
+
+function arrayChanges(updatesAt: Array<number>, deleteFrom: number | null): ArrayChanges {
+  return {
+    updatesAt: updatesAt,
+    deleteFrom: deleteFrom,
+  }
+}
+
+export function calculateArrayChanges<T>(
+  from: Array<T>,
+  into: Y.Array<T>,
+  equals: (from: T, into: T) => boolean = (fromToCheck, intoToCheck) => fromToCheck === intoToCheck,
+): ArrayChanges {
+  let updatesAt: Array<number> = []
+  for (let index: number = 0; index < Math.min(from.length, into.length); index++) {
+    if (!equals(from[index], into.get(index))) {
+      updatesAt.push(index)
+    }
+  }
+
+  let deleteFrom: number | null = null
+  if (into.length < from.length) {
+    deleteFrom = into.length
+  }
+
+  return arrayChanges(updatesAt, deleteFrom)
+}
+
+export function synchroniseParseSuccessToCollabFile(
+  success: ParseSuccess,
+  collabFile: CollabTextFile,
+): void {
+  const collabFileTopLevelElements = collabFile.get('topLevelElements')
+  if (collabFileTopLevelElements === 'TEXT_FILE' || collabFileTopLevelElements === undefined) {
+    throw new Error('Invalid value for topLevelElements.')
+  } else {
+    const changes = calculateArrayChanges(success.topLevelElements, collabFileTopLevelElements)
+    for (const updateAtIndex of changes.updatesAt) {
+      collabFileTopLevelElements.delete(updateAtIndex, 1)
+      collabFileTopLevelElements.insert(updateAtIndex, [success.topLevelElements[updateAtIndex]])
+    }
+    if (changes.deleteFrom != null) {
+      collabFileTopLevelElements.delete(changes.deleteFrom)
+    }
+  }
 }

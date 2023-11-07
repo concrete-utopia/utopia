@@ -48,9 +48,11 @@ import { isFiniteRectangle, size } from '../../../core/shared/math-utils'
 import type { PackageStatus, PackageStatusMap } from '../../../core/shared/npm-dependency-types'
 import type {
   ElementPath,
+  ExportDetail,
   HighlightBoundsForUids,
   HighlightBoundsWithFile,
   HighlightBoundsWithFileForUids,
+  ImportDetails,
   Imports,
   NodeModules,
   ParseSuccess,
@@ -390,17 +392,9 @@ export const defaultUserState: UserState = {
   },
 }
 
-export interface CollabTextFile {
-  type: 'COLLAB_TEXT_FILE'
-  success: ParseSuccess
-}
+export type CollabTextFileTopLevelElements = Y.Array<TopLevelElement>
 
-export function collabTextFile(success: ParseSuccess): CollabTextFile {
-  return {
-    type: 'COLLAB_TEXT_FILE',
-    success: success,
-  }
-}
+export type CollabTextFile = Y.Map<'TEXT_FILE' | CollabTextFileTopLevelElements>
 
 export type CollabFile = CollabTextFile //| CollabImageFileUpdate | CollabAssetFileUpdate | CollabDirectoryFileUpdate
 
