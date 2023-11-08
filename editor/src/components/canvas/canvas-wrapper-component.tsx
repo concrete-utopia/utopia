@@ -178,9 +178,10 @@ export const CanvasWrapperComponent = React.memo(() => {
           const newPlayers = [...state.players]
           const index = newPlayers.findIndex((p) => p.id === data.move.playerId)
           if (index >= 0) {
-            newPlayers[index].position = data.move.position
-            newPlayers[index].canvasOffset = data.move.canvasOffset
-            newPlayers[index].canvasScale = data.move.canvasScale
+            newPlayers[index].position = data.move.position ?? newPlayers[index].position
+            newPlayers[index].canvasOffset =
+              data.move.canvasOffset ?? newPlayers[index].canvasOffset
+            newPlayers[index].canvasScale = data.move.canvasScale ?? newPlayers[index].canvasScale
           }
           return { ...state, players: newPlayers }
         })
@@ -259,9 +260,11 @@ export const CanvasWrapperComponent = React.memo(() => {
 
   const onClickFollow = React.useCallback(
     (id: string) => () => {
-      setFollowing((current) => (current === id ? null : id))
+      const newFollowing = following === id ? null : id
+      Multiplayer.state.following = newFollowing != null
+      setFollowing(newFollowing)
     },
-    [],
+    [following],
   )
 
   return (
@@ -298,6 +301,7 @@ export const CanvasWrapperComponent = React.memo(() => {
           {roomState.players
             .sort((a, b) => -a.id.localeCompare(b.id))
             .map((p) => {
+              const isSelf = p.id === Multiplayer.state.playerId
               return (
                 <div
                   key={p.id}
@@ -312,13 +316,15 @@ export const CanvasWrapperComponent = React.memo(() => {
                   <div
                     style={{
                       borderRadius: '100%',
-                      backgroundColor: playerColors[p.id]?.background ?? '#000',
+                      backgroundColor: isSelf
+                        ? 'transparent'
+                        : playerColors[p.id]?.background ?? '#000',
                       width: 6,
                       height: 6,
                     }}
                   />
                   <div style={{ flex: 1 }}>{p.name}</div>
-                  {p.id !== Multiplayer.state.playerId ? (
+                  {!isSelf ? (
                     <Button
                       spotlight
                       highlight
